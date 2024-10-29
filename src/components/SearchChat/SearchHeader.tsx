@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from "react";
+import React, { useState } from "react";
 import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/react";
 import { ChevronDown } from "lucide-react";
 
@@ -21,24 +21,24 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
   onChange,
 }) => {
   return (
-    <Menu as="div" className="relative text-xs">
-      <MenuButton className="inline-flex items-center px-3 py-1.5 text-sm bg-white text-gray-700 hover:bg-gray-50 rounded-lg border border-gray-200 font-medium">
+    <Menu as="div" className="relative">
+      <MenuButton className="inline-flex items-center px-2.5 py-1 text-xs bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 font-medium">
         {label}
-        <ChevronDown className="w-4 h-4 ml-1.5 text-gray-500" />
+        <ChevronDown className="w-3.5 h-3.5 ml-1 text-gray-500 dark:text-gray-400" />
       </MenuButton>
 
-      <MenuItems className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10 focus:outline-none">
+      <MenuItems className="absolute right-0 mt-1 w-44 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10 focus:outline-none">
         {options.map((option) => (
           <MenuItem key={option.id}>
             {({ active }) => (
               <button
                 onClick={() => onChange(option.id)}
-                className={`w-full text-left px-4 py-2 text-sm ${
-                  active ? "bg-gray-50" : ""
+                className={`w-full text-left px-3 py-1.5 text-xs ${
+                  active ? "bg-gray-50 dark:bg-gray-700" : ""
                 } ${
                   value === option.id
-                    ? "text-blue-600 bg-blue-50"
-                    : "text-gray-700"
+                    ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/50"
+                    : "text-gray-700 dark:text-gray-300"
                 }`}
               >
                 {option.label}
@@ -77,11 +77,15 @@ export const SearchHeader: React.FC = () => {
   const [creatorFilter, setCreatorFilter] = useState("all");
 
   return (
-    <div className="flex items-center justify-between py-4 border-b border-gray-200 text-xs">
-      <div className="text-gray-600">
-        搜索到 <span className="font-medium text-gray-900">200</span> 条数据
+    <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+      <div className="text-xs text-gray-600 dark:text-gray-400">
+        搜索到{" "}
+        <span className="font-medium text-gray-900 dark:text-gray-100">
+          200
+        </span>{" "}
+        条数据
       </div>
-      <div className="flex gap-3">
+      <div className="flex gap-2">
         <FilterDropdown
           label="类型"
           options={typeOptions}
