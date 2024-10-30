@@ -23,10 +23,12 @@ At COCO AI, we aim to streamline workplace collaboration by centralizing access 
 
 ### Initial Setup
 
+**This version of pnpm requires at least Node.js v18.12**
+
 To set up the Coco App for development:
 
 ```bash
-cd coco
+cd coco-app
 pnpm install
 pnpm tauri dev
 ```
