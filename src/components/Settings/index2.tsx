@@ -1,21 +1,7 @@
 import { createContext, useContext, useState } from "react";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import {
-  Monitor,
-  Moon,
-  Sun,
-  Keyboard,
-  Bell,
-  Palette,
-  Shield,
-  Workflow,
-  Settings,
-  Puzzle,
-  User,
-  Users,
-  Settings2,
-  Info,
-} from "lucide-react";
+import { Settings, Puzzle, User, Users, Settings2, Info } from "lucide-react";
+
 import SettingsPanel from "./SettingsPanel";
 import GeneralSettings from "./GeneralSettings";
 import Footer from "../Footer";
@@ -45,7 +31,7 @@ function SettingsPage() {
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
       <div className={theme}>
-        <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+        <div className="min-h-screen pb-8 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
           <div className="max-w-6xl mx-auto p-4">
             <div className="flex items-center justify-center mb-2">
               <h1 className="text-xl font-bold">Coco Settings</h1>

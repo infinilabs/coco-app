@@ -14,10 +14,14 @@
       {
         "title": "Coco AI",
         "width": 800,
-        "height": 600,
+        "height": 150,
+        "maxHeight": 600,
+        "transparent": true,
         "resizable": false,
         "fullscreen": false,
-        "decorations": false
+        "decorations": false,
+        "label": "main",
+        "url": "/"
       }
     ],
     "security": {
@@ -27,6 +31,11 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
+    },
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

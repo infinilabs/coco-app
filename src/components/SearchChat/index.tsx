@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { Mic, Filter, Upload, MessageSquare } from "lucide-react";
+import { Mic, Filter, Upload } from "lucide-react";
 import { Switch } from "@headlessui/react";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 import { SearchResults } from "./SearchResults";
 import { Footer } from "./Footer";
+import { LogicalSize } from "@tauri-apps/api/dpi";
 
 interface Tag {
   id: string;
@@ -15,20 +17,25 @@ function Search() {
   const [input, setInput] = useState("");
   const [isChatMode, setIsChatMode] = useState(false);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = async (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && input.trim()) {
       setTags([...tags, { id: Date.now().toString(), text: input.trim() }]);
       setInput("");
+      await getCurrentWebviewWindow().setSize(new LogicalSize(800, 600));
     }
   };
 
-  const removeTag = (tagId: string) => {
-    setTags(tags.filter((tag) => tag.id !== tagId));
+  const removeTag = async (tagId: string) => {
+    const newTag = tags.filter((tag) => tag.id !== tagId)
+    setTags(newTag);
+    if (newTag.length === 0) {
+      await getCurrentWebviewWindow().setSize(new LogicalSize(800, 150));
+    }
   };
 
   return (
-    <div className="max-h-screen bg-gray-50 dark:bg-gray-900 flex items-start justify-center pt-10 px-4 pb-16 ">
-      <div className="w-full max-w-3xl space-y-4">
+    <div className="max-h-screen flex items-start justify-center pb-8 rounded-xl">
+      <div className="w-full space-y-4">
         <div className="border b-t-none border-gray-200 dark:border-gray-700 rounded-xl">
           {/* Search Bar */}
           <div className="relative">
@@ -66,12 +73,8 @@ function Search() {
           {/* Controls */}
           <div className="flex justify-between items-center p-2">
             <div className="flex gap-3 text-xs">
-              <button className="inline-flex items-center px-2 py-1 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
-                <MessageSquare className="w-4 h-4 mr-2" />问 Coco
-              </button>
               <button className="inline-flex items-center px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
-                <Filter className="w-4 h-4 mr-2" />
-                筛选
+                <Filter className="w-4 h-4 mr-2" />问 Coco
               </button>
               <button className="inline-flex items-center px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
                 <Upload className="w-4 h-4 mr-2" />
@@ -88,12 +91,14 @@ function Search() {
                 checked={isChatMode}
                 onChange={setIsChatMode}
                 className={`${
-                  isChatMode ? 'bg-blue-600 dark:bg-blue-500' : 'bg-gray-200 dark:bg-gray-700'
+                  isChatMode
+                    ? "bg-blue-600 dark:bg-blue-500"
+                    : "bg-gray-200 dark:bg-gray-700"
                 } relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900`}
               >
                 <span
                   className={`${
-                    isChatMode ? 'translate-x-6' : 'translate-x-1'
+                    isChatMode ? "translate-x-6" : "translate-x-1"
                   } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
                 />
               </Switch>

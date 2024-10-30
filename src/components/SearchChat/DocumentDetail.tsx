@@ -23,20 +23,22 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({
           产品需求规划文档
         </h2>
 
-        <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            <span>2024-02-20</span>
+        <div>
+          <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              <span>2024-02-20</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              <span>张小明</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <User className="w-4 h-4" />
-            <span>张小明</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            <span>最近更新于 2小时前</span>
+          <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              <span>最近更新于 2小时前</span>
+            </div>
           </div>
         </div>
       </div>

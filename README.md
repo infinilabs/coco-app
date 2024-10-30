@@ -28,8 +28,7 @@ To set up the Coco App for development:
 ```bash
 cd coco
 pnpm install
-pnpm tauri android init
-pnpm tauri ios init
+pnpm tauri dev
 ```
 
 #### Desktop Development:
@@ -38,19 +37,4 @@ To start desktop development, run:
 
 ```
 pnpm tauri dev
-```
-
-#### Android Development:
-
-For Android development, run:
-
-```
-pnpm tauri android dev
-```
-
-#### iOS Development:
-
-For iOS development, run:
-```
-pnpm tauri ios dev
 ```

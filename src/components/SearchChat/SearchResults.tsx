@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { SearchHeader } from './SearchHeader';
-import { DocumentList } from './DocumentList';
-import { DocumentDetail } from './DocumentDetail';
+import React, { useState } from "react";
+import { SearchHeader } from "./SearchHeader";
+import { DocumentList } from "./DocumentList";
+import { DocumentDetail } from "./DocumentDetail";
 
 export const SearchResults: React.FC = () => {
-  const [selectedDocumentId, setSelectedDocumentId] = useState('1');
+  const [selectedDocumentId, setSelectedDocumentId] = useState("1");
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mt-4 overflow-hidden">
@@ -14,7 +14,7 @@ export const SearchResults: React.FC = () => {
           <div className="px-4 flex-shrink-0">
             <SearchHeader />
           </div>
-          <div className="overflow-y-auto flex-1">
+          <div className="overflow-y-auto flex-1 custom-scrollbar">
             <DocumentList
               onSelectDocument={setSelectedDocumentId}
               selectedId={selectedDocumentId}
