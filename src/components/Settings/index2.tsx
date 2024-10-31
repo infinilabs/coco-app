@@ -33,9 +33,9 @@ function SettingsPage() {
       <div className={theme}>
         <div className="min-h-screen pb-8 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
           <div className="max-w-6xl mx-auto p-4">
-            <div className="flex items-center justify-center mb-2">
+            {/* <div className="flex items-center justify-center mb-2">
               <h1 className="text-xl font-bold">Coco Settings</h1>
-            </div>
+            </div> */}
 
             <TabGroup>
               <TabList className="flex space-x-1 rounded-xl bg-gray-100 dark:bg-gray-800 p-1">

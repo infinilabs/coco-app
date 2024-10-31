@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Mic, Filter, Upload } from "lucide-react";
 import { Switch } from "@headlessui/react";
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { WebviewWindow, getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 import { SearchResults } from "./SearchResults";
 import { Footer } from "./Footer";
@@ -32,6 +32,27 @@ function Search() {
       await getCurrentWebviewWindow().setSize(new LogicalSize(800, 150));
     }
   };
+
+  async function openChatAI() {
+    const webview = new WebviewWindow("chat", {
+      title: "Coco AI",
+      dragDropEnabled: true,
+      center: true,
+      width: 900,
+      height: 700,
+      alwaysOnTop: true,
+      skipTaskbar: true,
+      decorations: true,
+      closable: true,
+      url: "/chat",
+    });
+    webview.once("tauri://created", function () {
+      console.log("webview created");
+    });
+    webview.once("tauri://error", function (e) {
+      console.log("error creating webview", e);
+    });
+  }
 
   return (
     <div className="max-h-screen flex items-start justify-center pb-8 rounded-xl">
@@ -73,7 +94,7 @@ function Search() {
           {/* Controls */}
           <div className="flex justify-between items-center p-2">
             <div className="flex gap-3 text-xs">
-              <button className="inline-flex items-center px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <button className="inline-flex items-center px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300" onClick={openChatAI}>
                 <Filter className="w-4 h-4 mr-2" />问 Coco
               </button>
               <button className="inline-flex items-center px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">

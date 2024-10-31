@@ -14,6 +14,7 @@ const shortcuts = [
 export const Footer: React.FC = () => {
   async function openWebviewWindowSettings() {
     const webview = new WebviewWindow("settings", {
+      title: "Coco Settings",
       dragDropEnabled: true,
       center: true,
       width: 900,
