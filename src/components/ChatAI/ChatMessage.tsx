@@ -1,12 +1,16 @@
 import { Bot, User } from "lucide-react";
+import { useState } from "react";
 
 import type { Message } from "./types";
+import { TypingAnimation } from "./TypingAnimation";
 
 interface ChatMessageProps {
   message: Message;
+  isTyping?: boolean;
 }
 
-export function ChatMessage({ message }: ChatMessageProps) {
+export function ChatMessage({ message, isTyping }: ChatMessageProps) {
+  const [isAnimationComplete, setIsAnimationComplete] = useState(!isTyping);
   const isAssistant = message.role === "assistant";
 
   return (
@@ -35,7 +39,19 @@ export function ChatMessage({ message }: ChatMessageProps) {
           </p>
           <div className="prose dark:prose-invert prose-sm max-w-none">
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-              {message.content}
+              {isTyping && isAssistant ? (
+                <>
+                  <TypingAnimation
+                    text={message.content}
+                    onComplete={() => setIsAnimationComplete(true)}
+                  />
+                  {!isAnimationComplete && (
+                    <span className="inline-block w-1.5 h-4 ml-0.5 -mb-0.5 bg-current animate-pulse" />
+                  )}
+                </>
+              ) : (
+                message.content
+              )}
             </p>
           </div>
         </div>

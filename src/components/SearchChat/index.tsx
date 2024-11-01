@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { Mic, Filter, Upload } from "lucide-react";
 import { Switch } from "@headlessui/react";
-import { WebviewWindow, getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import {
+  WebviewWindow,
+  getCurrentWebviewWindow,
+} from "@tauri-apps/api/webviewWindow";
 
 import { SearchResults } from "./SearchResults";
 import { Footer } from "./Footer";
@@ -26,10 +29,10 @@ function Search() {
   };
 
   const removeTag = async (tagId: string) => {
-    const newTag = tags.filter((tag) => tag.id !== tagId)
+    const newTag = tags.filter((tag) => tag.id !== tagId);
     setTags(newTag);
     if (newTag.length === 0) {
-      await getCurrentWebviewWindow().setSize(new LogicalSize(800, 150));
+      await getCurrentWebviewWindow().setSize(new LogicalSize(800, 110));
     }
   };
 
@@ -55,9 +58,13 @@ function Search() {
   }
 
   return (
-    <div className="max-h-screen flex items-start justify-center pb-8 rounded-xl">
-      <div className="w-full space-y-4">
-        <div className="border b-t-none border-gray-200 dark:border-gray-700 rounded-xl">
+    <div
+      className={`min-h-screen flex items-start justify-center ${
+        tags.length > 0 ? "pb-8" : ""
+      } rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-900`}
+    >
+      <div className="w-full space-y-4 rounded-xl overflow-hidden">
+        <div className="border b-t-none border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
           {/* Search Bar */}
           <div className="relative">
             <div className="flex items-center bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-2 focus-within:ring-2 focus-within:ring-blue-100 dark:focus-within:ring-blue-900 focus-within:border-blue-400 dark:focus-within:border-blue-500 transition-all">
@@ -92,9 +99,12 @@ function Search() {
           </div>
 
           {/* Controls */}
-          <div className="flex justify-between items-center p-2">
+          <div className="flex justify-between items-center p-2 rounded-xl overflow-hidden">
             <div className="flex gap-3 text-xs">
-              <button className="inline-flex items-center px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300" onClick={openChatAI}>
+              <button
+                className="inline-flex items-center px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
+                onClick={openChatAI}
+              >
                 <Filter className="w-4 h-4 mr-2" />问 Coco
               </button>
               <button className="inline-flex items-center px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
@@ -128,10 +138,10 @@ function Search() {
         </div>
 
         {/* Search Results Panel */}
-        <SearchResults />
+        {tags.length > 0 ? <SearchResults /> : null}
       </div>
 
-      <Footer />
+      {tags.length > 0 ? <Footer /> : null}
     </div>
   );
 }

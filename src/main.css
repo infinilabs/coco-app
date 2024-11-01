@@ -22,11 +22,11 @@
   }
 
   body {
-    @apply bg-gray-50 text-gray-900 rounded-lg antialiased;
+    @apply text-gray-900 rounded-lg shadow-lg overflow-hidden antialiased;
   }
 
   .dark body {
-    @apply bg-gray-900 text-gray-100 rounded-lg;
+    @apply text-gray-100;
   }
 }
 

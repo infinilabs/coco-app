@@ -15,10 +15,10 @@
       {
         "title": "Coco AI",
         "width": 800,
-        "height": 150,
+        "height": 110,
         "maxHeight": 600,
         "transparent": true,
-        "resizable": false,
+        "resizable": true,
         "fullscreen": false,
         "decorations": false,
         "label": "main",
