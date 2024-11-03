@@ -8,6 +8,7 @@ import { Sidebar } from "./Sidebar";
 import type { Message, Chat } from "./types";
 import { useTheme } from "../ThemeProvider";
 import ChatSwitch from "../SearchChat/ChatSwitch";
+import { Footer } from "../SearchChat/Footer";
 
 const INITIAL_CHAT: Chat = {
   id: "1",
@@ -124,82 +125,86 @@ export default function ChatAI({ changeMode }: ChatAIProps) {
   };
 
   return (
-    <div className="h-screen flex">
-      {/* Sidebar */}
-      <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 transform ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block ${
-          theme === "dark" ? "bg-gray-800" : "bg-gray-100"
-        }`}
-      >
-        <Sidebar
-          chats={chats}
-          activeChat={activeChat}
-          isDark={theme === "dark"}
-          onNewChat={createNewChat}
-          onSelectChat={(chat: any) => {
-            setActiveChat(chat);
-            setIsSidebarOpen(false);
-          }}
-          onDeleteChat={deleteChat}
-        />
-      </div>
-
-      {/* Main content */}
-      <div
-        className={`flex-1 flex flex-col ${
-          theme === "dark" ? "bg-gray-900" : "bg-white"
-        }`}
-      >
-        {/* Header */}
-        <header
-          className={`flex items-center justify-between p-4 border-b ${
-            theme === "dark" ? "border-gray-800" : "border-gray-200"
+    <div className="h-screen pb-8">
+      <div className="h-[100%] flex">
+        {/* Sidebar */}
+        <div
+          className={`fixed inset-y-0 left-0 z-50 w-64 transform ${
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block ${
+            theme === "dark" ? "bg-gray-800" : "bg-gray-100"
           }`}
         >
-          <button
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className={`md:hidden p-2 rounded-lg transition-colors ${
-              theme === "dark"
-                ? "hover:bg-gray-800 text-gray-300"
-                : "hover:bg-gray-100 text-gray-600"
+          <Sidebar
+            chats={chats}
+            activeChat={activeChat}
+            isDark={theme === "dark"}
+            onNewChat={createNewChat}
+            onSelectChat={(chat: any) => {
+              setActiveChat(chat);
+              setIsSidebarOpen(false);
+            }}
+            onDeleteChat={deleteChat}
+          />
+        </div>
+
+        {/* Main content */}
+        <div
+          className={`flex-1 flex flex-col ${
+            theme === "dark" ? "bg-gray-900" : "bg-white"
+          }`}
+        >
+          {/* Header */}
+          <header
+            className={`flex items-center justify-between p-4 border-b ${
+              theme === "dark" ? "border-gray-800" : "border-gray-200"
             }`}
           >
-            <Menu className="h-6 w-6" />
-          </button>
-          <div className="flex-1">
-            <ChatSwitch isChat={true} changeMode={changeMode} />
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className={`md:hidden p-2 rounded-lg transition-colors ${
+                theme === "dark"
+                  ? "hover:bg-gray-800 text-gray-300"
+                  : "hover:bg-gray-100 text-gray-600"
+              }`}
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+            <div className="flex-1">
+              <ChatSwitch isChat={true} changeMode={changeMode} />
+            </div>
+
+            <ThemeToggle />
+          </header>
+
+          {/* Chat messages */}
+          <div className="flex-1 overflow-y-auto">
+            {activeChat.messages.map((message, index) => (
+              <ChatMessage
+                key={message.id}
+                message={message}
+                isTyping={
+                  isTyping &&
+                  index === activeChat.messages.length - 1 &&
+                  message.role === "assistant"
+                }
+              />
+            ))}
+            <div ref={messagesEndRef} />
           </div>
 
-          <ThemeToggle />
-        </header>
-
-        {/* Chat messages */}
-        <div className="flex-1 overflow-y-auto">
-          {activeChat.messages.map((message, index) => (
-            <ChatMessage
-              key={message.id}
-              message={message}
-              isTyping={
-                isTyping &&
-                index === activeChat.messages.length - 1 &&
-                message.role === "assistant"
-              }
-            />
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Input area */}
-        <div
-          className={`border-t p-4 ${
-            theme === "dark" ? "border-gray-800" : "border-gray-200"
-          }`}
-        >
-          <ChatInput onSend={handleSendMessage} disabled={isTyping} />
+          {/* Input area */}
+          <div
+            className={`border-t p-4 ${
+              theme === "dark" ? "border-gray-800" : "border-gray-200"
+            }`}
+          >
+            <ChatInput onSend={handleSendMessage} disabled={isTyping} />
+          </div>
         </div>
       </div>
+
+      <Footer isChat={true}/>
     </div>
   );
 }

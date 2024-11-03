@@ -126,7 +126,7 @@ function Search({ changeMode }: SearchProps) {
         {tags.length > 0 ? <SearchResults /> : null}
       </div>
 
-      {tags.length > 0 ? <Footer /> : null}
+      {tags.length > 0 ? <Footer isChat={false} /> : null}
     </div>
   );
 }

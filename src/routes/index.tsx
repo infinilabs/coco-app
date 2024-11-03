@@ -5,7 +5,7 @@ import ErrorPage from "../error-page";
 // import Settings from "../components/Settings";
 import Settings2 from "../components/Settings/index2";
 import SearchChat from "../components/SearchChat";
-import ChatAI from "../components/ChatAI";
+// import ChatAI from "../components/ChatAI";
 import MySearch from "../components/MySearch";
 import Layout from "./Layout";
 
@@ -17,7 +17,7 @@ export const router = createBrowserRouter([
     children: [
       { path: "/", element: <SearchChat /> },
       { path: "/settings", element: <Settings2 /> },
-      { path: "/chat", element: <ChatAI /> },
+      // { path: "/chat", element: <ChatAI /> },
       { path: "/my", element: <MySearch /> },
     ],
   },
