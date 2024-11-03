@@ -4,25 +4,30 @@ import { Menu } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
-import { Sidebar } from './Sidebar';
+import { Sidebar } from "./Sidebar";
 import type { Message, Chat } from "./types";
 import { useTheme } from "../ThemeProvider";
+import ChatSwitch from "../SearchChat/ChatSwitch";
 
 const INITIAL_CHAT: Chat = {
-  id: '1',
-  title: 'New Chat',
+  id: "1",
+  title: "New Chat",
   messages: [
     {
-      id: '1',
-      role: 'assistant',
-      content: 'Hello! How can I help you today?',
+      id: "1",
+      role: "assistant",
+      content: "Hello! How can I help you today?",
       timestamp: new Date(),
     },
   ],
   createdAt: new Date(),
 };
 
-export default function ChatAI() {
+interface ChatAIProps {
+  changeMode: (isChatMode: boolean) => void;
+}
+
+export default function ChatAI({ changeMode }: ChatAIProps) {
   const [chats, setChats] = useState<Chat[]>([INITIAL_CHAT]);
   const [activeChat, setActiveChat] = useState<Chat>(INITIAL_CHAT);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -31,7 +36,10 @@ export default function ChatAI() {
   const { theme } = useTheme();
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
   };
 
   useEffect(() => {
@@ -41,12 +49,12 @@ export default function ChatAI() {
   const createNewChat = () => {
     const newChat: Chat = {
       id: Date.now().toString(),
-      title: 'New Chat',
+      title: "New Chat",
       messages: [
         {
-          id: '1',
-          role: 'assistant',
-          content: 'Hello! How can I help you today?',
+          id: "1",
+          role: "assistant",
+          content: "Hello! How can I help you today?",
           timestamp: new Date(),
         },
       ],
@@ -72,14 +80,17 @@ export default function ChatAI() {
   const handleSendMessage = (content: string) => {
     const newMessage: Message = {
       id: Date.now().toString(),
-      role: 'user',
+      role: "user",
       content,
       timestamp: new Date(),
     };
 
     const updatedChat = {
       ...activeChat,
-      title: activeChat.messages.length === 1 ? content.slice(0, 30) + '...' : activeChat.title,
+      title:
+        activeChat.messages.length === 1
+          ? content.slice(0, 30) + "..."
+          : activeChat.title,
       messages: [...activeChat.messages, newMessage],
     };
 
@@ -93,16 +104,17 @@ export default function ChatAI() {
     setTimeout(() => {
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: 'This is a simulated response. In a real application, this would be connected to an AI backend.',
+        role: "assistant",
+        content:
+          "This is a simulated response. In a real application, this would be connected to an AI backend.",
         timestamp: new Date(),
       };
-      
+
       const finalChat = {
         ...updatedChat,
         messages: [...updatedChat.messages, assistantMessage],
       };
-      
+
       setActiveChat(finalChat);
       setChats((prev) =>
         prev.map((chat) => (chat.id === activeChat.id ? finalChat : chat))
@@ -116,9 +128,9 @@ export default function ChatAI() {
       {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-50 w-64 transform ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block ${
-          theme === "dark" ? 'bg-gray-800' : 'bg-gray-100'
+          theme === "dark" ? "bg-gray-800" : "bg-gray-100"
         }`}
       >
         <Sidebar
@@ -135,41 +147,56 @@ export default function ChatAI() {
       </div>
 
       {/* Main content */}
-      <div className={`flex-1 flex flex-col ${theme === "dark" ? 'bg-gray-900' : 'bg-white'}`}>
+      <div
+        className={`flex-1 flex flex-col ${
+          theme === "dark" ? "bg-gray-900" : "bg-white"
+        }`}
+      >
         {/* Header */}
-        <header className={`flex items-center justify-between p-4 border-b ${
-          theme === "dark" ? 'border-gray-800' : 'border-gray-200'
-        }`}>
+        <header
+          className={`flex items-center justify-between p-4 border-b ${
+            theme === "dark" ? "border-gray-800" : "border-gray-200"
+          }`}
+        >
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className={`md:hidden p-2 rounded-lg transition-colors ${
               theme === "dark"
-                ? 'hover:bg-gray-800 text-gray-300'
-                : 'hover:bg-gray-100 text-gray-600'
+                ? "hover:bg-gray-800 text-gray-300"
+                : "hover:bg-gray-100 text-gray-600"
             }`}
           >
             <Menu className="h-6 w-6" />
           </button>
-          <div className="flex-1" />
+          <div className="flex-1">
+            <ChatSwitch isChat={true} changeMode={changeMode} />
+          </div>
+
           <ThemeToggle />
         </header>
 
         {/* Chat messages */}
         <div className="flex-1 overflow-y-auto">
           {activeChat.messages.map((message, index) => (
-            <ChatMessage 
-              key={message.id} 
-              message={message} 
-              isTyping={isTyping && index === activeChat.messages.length - 1 && message.role === 'assistant'}
+            <ChatMessage
+              key={message.id}
+              message={message}
+              isTyping={
+                isTyping &&
+                index === activeChat.messages.length - 1 &&
+                message.role === "assistant"
+              }
             />
           ))}
           <div ref={messagesEndRef} />
         </div>
 
         {/* Input area */}
-        <div className={`border-t p-4 ${
-          theme === "dark" ? 'border-gray-800' : 'border-gray-200'
-        }`}>
+        <div
+          className={`border-t p-4 ${
+            theme === "dark" ? "border-gray-800" : "border-gray-200"
+          }`}
+        >
           <ChatInput onSend={handleSendMessage} disabled={isTyping} />
         </div>
       </div>
