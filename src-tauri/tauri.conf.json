@@ -46,6 +46,7 @@
     ]
   },
   "plugins": {
-    "window": {}
+    "window": {},
+    "websocket": {}
   }
 }

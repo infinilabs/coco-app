@@ -12,6 +12,8 @@ fn main() {
     coco_lib::run();
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_websocket::init())
+        .plugin(tauri_plugin_http::init())
         .plugin(tauri_nspanel::init())
         .invoke_handler(tauri::generate_handler![
             show_panel,

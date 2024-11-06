@@ -11,9 +11,9 @@ export default function SearchChat() {
   async function changeMode(value: boolean) {
     console.log(11111, value);
     if (value) {
-      await getCurrentWebviewWindow().setSize(new LogicalSize(900, 700));
+      await getCurrentWebviewWindow()?.setSize(new LogicalSize(900, 700));
     } else {
-      await getCurrentWebviewWindow().setSize(new LogicalSize(800, 110));
+      await getCurrentWebviewWindow()?.setSize(new LogicalSize(800, 110));
     }
     setIsChatMode(value);
   }

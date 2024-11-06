@@ -2,10 +2,12 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:event:allow-listen",
-    "core:window:default", 
+    "core:window:default",
     "core:window:allow-start-dragging",
     "core:webview:allow-create-webview",
     "core:window:allow-show",
@@ -24,8 +26,22 @@
     "http:allow-fetch-send",
     {
       "identifier": "http:default",
-      "allow": [{ "url": "https://*.tauri.app" }],
-      "deny": [{ "url": "https://private.tauri.app" }]
-    }
+      "allow": [
+        {
+          "url": "http://localhost:2900"
+        },
+        {
+          "url": "https://*.tauri.app"
+        }
+      ],
+      "deny": [
+        {
+          "url": "https://private.tauri.app"
+        }
+      ]
+    },
+    "websocket:default",
+    "websocket:allow-connect",
+    "websocket:allow-send"
   ]
 }

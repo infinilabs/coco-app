@@ -42,9 +42,9 @@ export function Sidebar({
       <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-1">
         {chats.map((chat) => (
           <div
-            key={chat.id}
+            key={chat._id}
             className={`group relative rounded-lg transition-all ${
-              activeChat.id === chat.id
+              activeChat._id === chat._id
                 ? isDark
                   ? "bg-gray-700/50 text-white"
                   : "bg-white text-gray-900 shadow-sm"
@@ -59,7 +59,7 @@ export function Sidebar({
             >
               <MessageSquare
                 className={`h-4 w-4 flex-shrink-0 ${
-                  activeChat.id === chat.id
+                  activeChat._id === chat._id
                     ? isDark
                       ? "text-indigo-400"
                       : "text-indigo-600"
@@ -68,11 +68,11 @@ export function Sidebar({
                     : "text-gray-500"
                 }`}
               />
-              <span className="truncate">{chat.title}</span>
+              <span className="truncate">{chat.title || chat._id}</span>
             </button>
-            {chats.length > 1 && (
+            {/* {chats.length > 1 && (
               <button
-                onClick={() => onDeleteChat(chat.id)}
+                onClick={() => onDeleteChat(chat._id)}
                 className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md opacity-0 group-hover:opacity-100 transition-all ${
                   isDark
                     ? "hover:bg-gray-600 text-gray-400 hover:text-red-400"
@@ -81,8 +81,8 @@ export function Sidebar({
               >
                 <Trash2 className="h-4 w-4" />
               </button>
-            )}
-            {activeChat.id === chat.id && (
+            )} */}
+            {activeChat._id === chat._id && (
               <div
                 className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-full ${
                   isDark ? "bg-indigo-400" : "bg-indigo-600"
