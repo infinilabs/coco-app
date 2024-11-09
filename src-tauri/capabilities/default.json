@@ -2,9 +2,7 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": [
-    "main"
-  ],
+  "windows": ["main"],
   "permissions": [
     "core:event:allow-listen",
     "core:window:default",
@@ -29,16 +27,9 @@
       "allow": [
         {
           "url": "http://localhost:2900"
-        },
-        {
-          "url": "https://*.tauri.app"
         }
       ],
-      "deny": [
-        {
-          "url": "https://private.tauri.app"
-        }
-      ]
+      "deny": []
     },
     "websocket:default",
     "websocket:allow-connect",
