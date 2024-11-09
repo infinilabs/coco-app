@@ -26,7 +26,7 @@
   }
 
   .dark body {
-    @apply text-gray-100;
+    @apply text-gray-100 rounded-lg shadow-lg overflow-hidden antialiased;
   }
 }
 

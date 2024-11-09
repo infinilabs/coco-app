@@ -44,7 +44,7 @@ export const Footer = ({ isChat }: FooterProps) => {
   return (
     <div
       style={{ zIndex: 999 }}
-      className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 h-8 flex items-center justify-between"
+      className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 h-8 flex items-center justify-between rounded-xl rounded-t-none overflow-hidden"
     >
       <div className="flex items-center">
         <Menu as="div" className="relative">

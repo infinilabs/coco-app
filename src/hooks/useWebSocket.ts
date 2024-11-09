@@ -5,7 +5,7 @@ export function useWebSocket(
   filterMessages?: (message: string) => string
 ) {
   const [ws, setWs] = useState<WebSocket | null>(null);
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<string>("");
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
@@ -18,11 +18,10 @@ export function useWebSocket(
     };
 
     websocket.onmessage = (event) => {
-      console.log("收到消息:", event.data);
+      // console.log("收到消息:", event.data);
       const data = filterMessages ? filterMessages(event.data) : event.data;
-      console.log(1121212, data);
       if (data) {
-        setMessages((prevMessages) => [...prevMessages, data]);
+        setMessages((prevMessages) => prevMessages + data);
       }
     };
 
@@ -52,5 +51,5 @@ export function useWebSocket(
     }
   };
 
-  return { messages, connected, sendMessage };
+  return { messages, connected, sendMessage, setMessages };
 }

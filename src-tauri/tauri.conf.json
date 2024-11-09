@@ -14,15 +14,13 @@
     "windows": [
       {
         "title": "Coco AI",
-        "width": 800,
-        "height": 110,
-        "maxHeight": 600,
+        "width": 900,
+        "height": 800,
+        "maxHeight": 800,
         "transparent": true,
         "resizable": true,
         "fullscreen": false,
-        "decorations": false,
-        "label": "main",
-        "url": "/"
+        "decorations": false
       }
     ],
     "security": {

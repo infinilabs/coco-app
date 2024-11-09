@@ -25,6 +25,7 @@
     "react-dom": "^18.2.0",
     "react-hotkeys-hook": "^4.5.1",
     "react-i18next": "^15.1.0",
+    "react-markdown": "^9.0.1",
     "react-router-dom": "^6.27.0",
     "zustand": "^5.0.0"
   },

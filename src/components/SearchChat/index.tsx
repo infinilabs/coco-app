@@ -6,14 +6,13 @@ import Search from "./Search";
 import ChatAI from "../ChatAI";
 
 export default function SearchChat() {
-  const [isChatMode, setIsChatMode] = useState(false);
+  const [isChatMode, setIsChatMode] = useState(true);
 
   async function changeMode(value: boolean) {
-    console.log(11111, value);
     if (value) {
-      await getCurrentWebviewWindow()?.setSize(new LogicalSize(900, 700));
+      await getCurrentWebviewWindow()?.setSize(new LogicalSize(900, 800));
     } else {
-      await getCurrentWebviewWindow()?.setSize(new LogicalSize(800, 110));
+      await getCurrentWebviewWindow()?.setSize(new LogicalSize(900, 110));
     }
     setIsChatMode(value);
   }

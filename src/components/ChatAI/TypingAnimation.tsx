@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
 
+import "./index.css";
 interface TypingAnimationProps {
   text: string;
   onComplete?: () => void;
@@ -27,5 +29,7 @@ export function TypingAnimation({
     }
   }, [currentIndex, text, speed, onComplete]);
 
-  return <>{displayedText}</>;
+  // console.log("text", text);
+
+  return <ReactMarkdown>{text}</ReactMarkdown>;
 }

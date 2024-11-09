@@ -1,0 +1,8 @@
+.markdown-content p {
+  margin: 1em 0;
+  line-height: 1.6;
+}
+
+.markdown-content strong {
+  font-weight: bold;
+}

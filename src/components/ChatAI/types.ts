@@ -1,25 +1,26 @@
 export interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
+  _id: string;
+  _source: ISource;
+  [key: string]: any;
 }
 
 export interface ISource {
-  id: string;
-  created: string;
-  updated: string;
-  status: string;
+  id?: string;
+  created?: string;
+  updated?: string;
+  status?: string;
   session_id?: string;
+  type?: string;
+  message?: any;
 }
 export interface Chat {
-  _index: string;
-  _type: string;
   _id: string;
-  _source: ISource;
+  _index?: string;
+  _type?: string;
+  _source?: ISource;
   _score?: number;
+  found?: boolean;
   title?: string;
   messages?: any[];
-  createdAt?: Date;
   [key: string]: any;
 }

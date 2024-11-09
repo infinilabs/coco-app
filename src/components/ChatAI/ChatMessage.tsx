@@ -11,15 +11,18 @@ interface ChatMessageProps {
 
 export function ChatMessage({ message, isTyping }: ChatMessageProps) {
   const [isAnimationComplete, setIsAnimationComplete] = useState(!isTyping);
-  const isAssistant = message.role === "assistant";
+  const isAssistant = message._source?.type === "assistant";
 
   return (
     <div
-      className={`py-8 ${
-        isAssistant ? "bg-gray-50/50 dark:bg-gray-800/30" : ""
-      }`}
+      className={`py-8 flex ${isAssistant ? "justify-start" : "justify-end"}`}
     >
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-6">
+      <div
+        className={`max-w-3xl px-4 sm:px-6 lg:px-8 flex gap-4 ${
+          isAssistant ? "" : "flex-row-reverse"
+        }`}
+      >
+        {/* 头像部分 */}
         <div
           className={`flex-shrink-0 h-8 w-8 rounded-lg flex items-center justify-center ${
             isAssistant
@@ -33,7 +36,13 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
             <User className="h-5 w-5 text-white" />
           )}
         </div>
-        <div className="flex-1 space-y-2">
+
+        {/* 消息内容 */}
+        <div
+          className={`flex-1 space-y-2 ${
+            isAssistant ? "text-left" : "text-right"
+          }`}
+        >
           <p className="font-medium text-sm text-gray-900 dark:text-gray-100">
             {isAssistant ? "Assistant" : "You"}
           </p>
@@ -42,7 +51,7 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
               {isTyping && isAssistant ? (
                 <>
                   <TypingAnimation
-                    text={message.content}
+                    text={message._source?.message || ""}
                     onComplete={() => setIsAnimationComplete(true)}
                   />
                   {!isAnimationComplete && (
@@ -50,7 +59,7 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
                   )}
                 </>
               ) : (
-                message.content
+                message._source?.message || ""
               )}
             </p>
           </div>
