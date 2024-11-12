@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 import "./index.css";
 interface TypingAnimationProps {
@@ -31,5 +32,13 @@ export function TypingAnimation({
 
   // console.log("text", text);
 
-  return <ReactMarkdown>{text}</ReactMarkdown>;
+  // return <ReactMarkdown>{text}</ReactMarkdown>;
+
+  return (
+    <ReactMarkdown
+      className="prose" // 使用 Tailwind 的 `prose` 类来美化 Markdown
+      children={text}
+      remarkPlugins={[remarkGfm]}
+    />
+  );
 }

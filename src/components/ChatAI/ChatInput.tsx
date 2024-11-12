@@ -1,4 +1,4 @@
-import { SendHorizontal, OctagonX } from "lucide-react";
+import { SendHorizontal, OctagonX, Filter, Upload } from "lucide-react";
 import {
   useState,
   type FormEvent,
@@ -6,17 +6,20 @@ import {
   useRef,
   useEffect,
 } from "react";
+import ChatSwitch from "../SearchChat/ChatSwitch";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
   disabled: boolean;
   disabledChange: (disabled: boolean) => void;
+  changeMode: (isChatMode: boolean) => void;
 }
 
 export function ChatInput({
   onSend,
   disabled,
   disabledChange,
+  changeMode,
 }: ChatInputProps) {
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -87,9 +90,20 @@ export function ChatInput({
           </button>
         )}
       </div>
-      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-        Press Enter to send, Shift + Enter for new line
-      </p>
+      <div className="flex justify-between items-center p-2 rounded-xl overflow-hidden">
+        <div className="flex gap-3 text-xs">
+          <button className="inline-flex items-center px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+            <Filter className="w-4 h-4 mr-2" />问 Coco
+          </button>
+          <button className="inline-flex items-center px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+            <Upload className="w-4 h-4 mr-2" />
+            上传
+          </button>
+        </div>
+
+        {/* Switch */}
+        <ChatSwitch isChat={true} changeMode={changeMode} />
+      </div>
     </form>
   );
 }

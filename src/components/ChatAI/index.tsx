@@ -1,13 +1,17 @@
 import { useState, useRef, useEffect } from "react";
-import { Menu, Loader } from "lucide-react";
+import {
+  PanelRightClose,
+  PanelRightOpen,
+  MessageSquarePlus,
+} from "lucide-react";
+import { motion } from "framer-motion";
 
-import { ThemeToggle } from "./ThemeToggle";
+// import { ThemeToggle } from "./ThemeToggle";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { Sidebar } from "./Sidebar";
 import type { Chat, Message } from "./types";
 import { useTheme } from "../ThemeProvider";
-import ChatSwitch from "../SearchChat/ChatSwitch";
 import { Footer } from "../SearchChat/Footer";
 import { tauriFetch } from "../../api/tauriFetchClient";
 import { useWebSocket } from "../../hooks/useWebSocket";
@@ -55,7 +59,6 @@ export default function ChatAI({ changeMode }: ChatAIProps) {
     }
   );
 
-  // websocket
   // websocket
   useEffect(() => {
     if (messages.length === 0 || !activeChat?._id) return;
@@ -220,27 +223,35 @@ export default function ChatAI({ changeMode }: ChatAIProps) {
   };
 
   return (
-    <div className="h-screen pb-8 rounded-xl overflow-hidden">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="h-screen pb-8 rounded-xl overflow-hidden"
+    >
       <div className="h-[100%] flex">
         {/* Sidebar */}
-        <div
-          className={`fixed inset-y-0 left-0 z-50 w-64 transform ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block ${
-            theme === "dark" ? "bg-gray-800" : "bg-gray-100"
-          }`}
-        >
-          {activeChat ? (
-            <Sidebar
-              chats={chats}
-              activeChat={activeChat}
-              isDark={theme === "dark"}
-              onNewChat={createNewChat}
-              onSelectChat={onSelectChat}
-              onDeleteChat={deleteChat}
-            />
-          ) : null}
-        </div>
+        {isSidebarOpen ? (
+          <div
+            className={`fixed inset-y-0 left-0 z-50 w-64 transform ${
+              isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            } transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block ${
+              theme === "dark" ? "bg-gray-800" : "bg-gray-100"
+            }`}
+          >
+            {activeChat ? (
+              <Sidebar
+                chats={chats}
+                activeChat={activeChat}
+                isDark={theme === "dark"}
+                onNewChat={createNewChat}
+                onSelectChat={onSelectChat}
+                onDeleteChat={deleteChat}
+              />
+            ) : null}
+          </div>
+        ) : null}
 
         {/* Main content */}
         <div
@@ -248,31 +259,45 @@ export default function ChatAI({ changeMode }: ChatAIProps) {
             theme === "dark" ? "bg-gray-900" : "bg-white"
           }`}
         >
-          {/* Header */}
-          <header
-            className={`flex items-center justify-between p-4 border-b ${
-              theme === "dark" ? "border-gray-800" : "border-gray-200"
-            }`}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ delay: 0.2 }}
           >
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className={`md:hidden p-2 rounded-lg transition-colors ${
-                theme === "dark"
-                  ? "hover:bg-gray-800 text-gray-300"
-                  : "hover:bg-gray-100 text-gray-600"
+            <header
+              className={`flex items-center justify-between p-4 border-b ${
+                theme === "dark" ? "border-gray-800" : "border-gray-200"
               }`}
             >
-              <Menu className="h-6 w-6" />
-            </button>
-            <div className="flex-1">
-              <ChatSwitch isChat={true} changeMode={changeMode} />
-            </div>
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className={`p-2 rounded-lg transition-colors ${
+                  theme === "dark"
+                    ? "hover:bg-gray-800 text-gray-300"
+                    : "hover:bg-gray-100 text-gray-600"
+                }`}
+              >
+                {isSidebarOpen ? (
+                  <PanelRightClose className="h-6 w-6" />
+                ) : (
+                  <PanelRightOpen className="h-6 w-6" />
+                )}
+              </button>
 
-            <ThemeToggle />
-          </header>
+              {/* <ThemeToggle /> */}
+              <MessageSquarePlus className="cursor-pointer" onClick={createNewChat} />
+            </header>
+          </motion.div>
 
           {/* Chat messages */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex-1 overflow-y-auto custom-scrollbar"
+          >
             {activeChat?.messages?.map((message, index) => (
               <ChatMessage
                 key={message._id + index}
@@ -298,11 +323,6 @@ export default function ChatAI({ changeMode }: ChatAIProps) {
               />
             ) : null}
             {/* Loading */}
-            {/* {isTyping && (
-              <div className="flex pt-0 pb-4 pl-20">
-                <Loader className="animate-spin h-5 w-5 text-gray-500" />
-              </div>
-            )} */}
             {isTyping && (
               <div className="flex pt-0 pb-4 pl-20 gap-2 items-center text-gray-500 dark:text-gray-400">
                 <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
@@ -311,10 +331,14 @@ export default function ChatAI({ changeMode }: ChatAIProps) {
               </div>
             )}
             <div ref={messagesEndRef} />
-          </div>
+          </motion.div>
 
           {/* Input area */}
-          <div
+          <motion.div
+            initial={{ y: 100 }}
+            animate={{ y: 0 }}
+            exit={{ y: 100 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className={`border-t p-4 ${
               theme === "dark" ? "border-gray-800" : "border-gray-200"
             }`}
@@ -323,12 +347,13 @@ export default function ChatAI({ changeMode }: ChatAIProps) {
               onSend={handleSendMessage}
               disabled={isTyping}
               disabledChange={setIsTyping}
+              changeMode={changeMode}
             />
-          </div>
+          </motion.div>
         </div>
       </div>
 
       <Footer isChat={true} />
-    </div>
+    </motion.div>
   );
 }

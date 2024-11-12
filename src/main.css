@@ -21,11 +21,13 @@
     @apply box-border border-[--border];
   }
 
-  body {
+  body,
+  #root {
     @apply text-gray-900 rounded-lg shadow-lg overflow-hidden antialiased;
   }
 
-  .dark body {
+  .dark body,
+  .dark #root{
     @apply text-gray-100 rounded-lg shadow-lg overflow-hidden antialiased;
   }
 }

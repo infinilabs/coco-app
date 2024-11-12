@@ -5,6 +5,7 @@ import {
   getCurrentWebviewWindow,
 } from "@tauri-apps/api/webviewWindow";
 import { LogicalSize } from "@tauri-apps/api/dpi";
+import { motion } from "framer-motion";
 
 import { SearchResults } from "./SearchResults";
 import { Footer } from "./Footer";
@@ -62,13 +63,17 @@ function Search({ changeMode }: SearchProps) {
   }
 
   return (
-    <div
-      className={`min-h-screen flex items-start justify-center ${
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.1 }}
+      className={`min-h-screen bg-opacity-0 flex items-start justify-center rounded-xl overflow-hidden ${
         tags.length > 0 ? "pb-8" : ""
-      } rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-900`}
+      }`}
     >
-      <div className="w-full space-y-4 rounded-xl overflow-hidden">
-        <div className="border b-t-none border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+      <div className="w-full rounded-xl overflow-hidden">
+        <div className="border b-t-none  bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
           {/* Search Bar */}
           <div className="relative">
             <div className="flex items-center bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-2 focus-within:ring-2 focus-within:ring-blue-100 dark:focus-within:ring-blue-900 focus-within:border-blue-400 dark:focus-within:border-blue-500 transition-all">
@@ -123,11 +128,29 @@ function Search({ changeMode }: SearchProps) {
         </div>
 
         {/* Search Results Panel */}
-        {tags.length > 0 ? <SearchResults /> : null}
+        {tags.length > 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ delay: 0.2 }}
+          >
+            <SearchResults />
+          </motion.div>
+        ) : null}
       </div>
 
-      {tags.length > 0 ? <Footer isChat={false} /> : null}
-    </div>
+      {tags.length > 0 ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Footer isChat={false} />
+        </motion.div>
+      ) : null}
+    </motion.div>
   );
 }
 
