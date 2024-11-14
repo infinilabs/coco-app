@@ -1,7 +1,6 @@
 import React, { useRef, useState, RefObject, useEffect, useMemo } from "react";
 import clsx from "clsx";
 import ReactMarkdown from "react-markdown";
-// import "katex/dist/katex.min.css";
 import RemarkMath from "remark-math";
 import RemarkBreaks from "remark-breaks";
 import RehypeKatex from "rehype-katex";
@@ -12,6 +11,10 @@ import { useDebouncedCallback } from "use-debounce";
 
 import { copyToClipboard, useWindowSize } from "../../utils";
 
+import "./markdown.css";
+import "./highlight.css";
+
+// 8
 export function Mermaid(props: { code: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const [hasError, setHasError] = useState(false);
@@ -228,6 +231,7 @@ function _MarkDownContent(props: { content: string }) {
     return tryWrapHtmlCode(escapeBrackets(props.content));
   }, [props.content]);
 
+  console.log(11212, props.content);
   return (
     <ReactMarkdown
       remarkPlugins={[RemarkMath, RemarkGfm, RemarkBreaks]}
@@ -300,15 +304,7 @@ export function Markdown(
       onDoubleClickCapture={props.onDoubleClickCapture}
       dir="auto"
     >
-      {props.loading ? (
-        <div className="flex gap-2 items-center text-gray-500 dark:text-gray-400">
-          <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
-          <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.2s]" />
-          <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.4s]" />
-        </div>
-      ) : (
-        <MarkdownContent content={props.content} />
-      )}
+      <MarkdownContent content={props.content} />
     </div>
   );
 }

@@ -12,7 +12,7 @@ import { ChatInput } from "./ChatInput";
 import { Sidebar } from "./Sidebar";
 import type { Chat, Message } from "./types";
 import { useTheme } from "../ThemeProvider";
-import { Footer } from "../SearchChat/Footer";
+// import { Footer } from "../SearchChat/Footer";
 import { tauriFetch } from "../../api/tauriFetchClient";
 import { useWebSocket } from "../../hooks/useWebSocket";
 
@@ -286,7 +286,11 @@ export default function ChatAI({ changeMode }: ChatAIProps) {
               </button>
 
               {/* <ThemeToggle /> */}
-              <MessageSquarePlus className="cursor-pointer" onClick={createNewChat} />
+
+              <MessageSquarePlus
+                className="cursor-pointer"
+                onClick={createNewChat}
+              />
             </header>
           </motion.div>
 
@@ -319,10 +323,9 @@ export default function ChatAI({ changeMode }: ChatAIProps) {
                     message: curMessage,
                   },
                 }}
-                isTyping={isTyping}
+                isTyping={!curChatEnd}
               />
             ) : null}
-            {/* Loading */}
             {isTyping && (
               <div className="flex pt-0 pb-4 pl-20 gap-2 items-center text-gray-500 dark:text-gray-400">
                 <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
@@ -346,14 +349,16 @@ export default function ChatAI({ changeMode }: ChatAIProps) {
             <ChatInput
               onSend={handleSendMessage}
               disabled={isTyping}
-              disabledChange={setIsTyping}
+              disabledChange={(value) => {
+                setIsTyping(value)
+              }}
               changeMode={changeMode}
             />
           </motion.div>
         </div>
       </div>
 
-      <Footer isChat={true} />
+      {/* <Footer isChat={true} /> */}
     </motion.div>
   );
 }

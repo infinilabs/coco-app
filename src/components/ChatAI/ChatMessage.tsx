@@ -2,8 +2,8 @@ import { Bot, User } from "lucide-react";
 import { useState } from "react";
 
 import type { Message } from "./types";
-import { TypingAnimation } from "./TypingAnimation";
-// import { Markdown } from "./Markdown";
+// import { TypingAnimation } from "./TypingAnimation";
+import { Markdown } from "./Markdown";
 
 interface ChatMessageProps {
   message: Message;
@@ -49,19 +49,19 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
           </p>
           <div className="prose dark:prose-invert prose-sm max-w-none">
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-              {isTyping && isAssistant ? (
+              {isAssistant ? (
                 <>
-                  <TypingAnimation
+                  {/* <TypingAnimation
                     text={message._source?.message || ""}
                     onComplete={() => setIsAnimationComplete(true)}
-                  />
-                  {/* <Markdown
+                  /> */}
+                  <Markdown
                     key={isTyping ? "loading" : "done"}
                     content={(message._source?.message || "")}
                     loading={isTyping}
                     onDoubleClickCapture={() => {}}
-                  /> */}
-                  {!isAnimationComplete && (
+                  />
+                  {isTyping && (
                     <span className="inline-block w-1.5 h-4 ml-0.5 -mb-0.5 bg-current animate-pulse" />
                   )}
                 </>
