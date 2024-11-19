@@ -90,7 +90,7 @@ function Search({ changeMode, changeInput, isChatMode }: SearchProps) {
       skipTaskbar: true,
       decorations: true,
       closable: true,
-      url: "/chat",
+      url: "/gpt",
     });
     webview.once("tauri://created", function () {
       console.log("webview created");
@@ -178,7 +178,7 @@ function Search({ changeMode, changeInput, isChatMode }: SearchProps) {
                 </button>
                 <button className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color">
                   <Plus className="w-4 h-4 mr-1" />
-                  上传
+                  Upload
                 </button>
               </div>
             ) : (

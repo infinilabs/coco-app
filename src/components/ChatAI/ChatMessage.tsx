@@ -23,7 +23,6 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
           isAssistant ? "" : "flex-row-reverse"
         }`}
       >
-        {/* 头像部分 */}
         <div
           className={`flex-shrink-0 h-8 w-8 rounded-lg flex items-center justify-center ${
             isAssistant
@@ -38,7 +37,6 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
           )}
         </div>
 
-        {/* 消息内容 */}
         <div
           className={`flex-1 space-y-2 ${
             isAssistant ? "text-left" : "text-right"

@@ -74,7 +74,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder={mode === "search" ? "搜索文件..." : "输入消息..."}
+                placeholder={mode === "search" ? "Search for files..." : "Input Message..."}
                 className="flex-1 ml-4 p-2 outline-none"
                 autoFocus
               />

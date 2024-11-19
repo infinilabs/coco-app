@@ -71,7 +71,7 @@ export const useTheme = () => {
   const context = useContext(ThemeProviderContext);
 
   if (context === undefined)
-    throw new Error("useTheme 必须在 ThemeProvider 中使用");
+    throw new Error("useTheme must be used in ThemeProvider");
 
   return context;
 };

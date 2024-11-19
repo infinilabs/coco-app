@@ -10,7 +10,6 @@ export type IThemeStore = {
 };
 
 export const useThemeStore = create<IThemeStore>()(
-  // 持久化中间件
   persist(
     (set) => ({
       themes: ["dark", "light", "system"],
@@ -18,9 +17,8 @@ export const useThemeStore = create<IThemeStore>()(
       setTheme: (activeTheme: ITheme) => set(() => ({ activeTheme })),
     }),
     {
-      name: "active-theme", // 存储在 storage 中的 key 名
-      // storage: createJSONStorage(() => sessionStorage), // 存储数据库配置，默认使用 localstorage
-      // 过滤函数
+      name: "active-theme",
+      // storage: createJSONStorage(() => sessionStorage), 
       partialize: (state) =>
         Object.fromEntries(
           Object.entries(state).filter(([key]) => key === "activeTheme")

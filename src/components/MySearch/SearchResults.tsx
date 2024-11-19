@@ -11,10 +11,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({ query }) => {
   >([]);
 
   useEffect(() => {
-    // 这里实现实际的文件搜索逻辑
-    // 可以使用 Electron 的 API 来搜索本地文件
     const searchFiles = async () => {
-      // 示例数据
       setResults([
         { name: "Document.pdf", path: "/documents/Document.pdf", type: "file" },
         { name: "Projects", path: "/documents/projects", type: "folder" },

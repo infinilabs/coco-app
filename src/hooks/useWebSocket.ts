@@ -9,16 +9,16 @@ export function useWebSocket(
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    // 创建 WebSocket 连接
+    // Create WebSocket
     const websocket = new WebSocket(url);
 
     websocket.onopen = () => {
-      console.log("WebSocket 连接成功");
+      console.log("WebSocket success");
       setConnected(true);
     };
 
     websocket.onmessage = (event) => {
-      // console.log("收到消息:", event.data);
+      // console.log("data:", event.data);
       const data = filterMessages ? filterMessages(event.data) : event.data;
       if (data) {
         setMessages((prevMessages) => prevMessages + data);
@@ -26,28 +26,25 @@ export function useWebSocket(
     };
 
     websocket.onclose = () => {
-      console.log("WebSocket 连接关闭");
+      console.log("WebSocket close");
       setConnected(false);
     };
 
     websocket.onerror = (error) => {
-      console.error("WebSocket 连接错误:", error);
+      console.error("WebSocket error:", error);
     };
 
-    // 将 WebSocket 实例保存在状态中
     setWs(websocket);
 
-    // 在组件卸载时关闭 WebSocket 连接
     return () => {
       websocket.close();
     };
   }, [url]);
 
-  // 发送消息的函数
   const sendMessage = (message: string) => {
     if (ws && connected) {
       ws.send(message);
-      console.log("发送消息:", message);
+      console.log("Send:", message);
     }
   };
 

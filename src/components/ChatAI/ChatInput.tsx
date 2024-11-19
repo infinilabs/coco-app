@@ -77,7 +77,7 @@ export function ChatInput({
               className={`ml-1 p-2 ${
                 input ? "bg-[rgba(66,133,244,1)]" : "bg-[#E4E5F0]"
               } rounded-full transition-colors`}
-              onClick={(e)=> handleSubmit(e as unknown as FormEvent)}
+              onClick={(e) => handleSubmit(e as unknown as FormEvent)}
             >
               <Send className="w-3 h-3 text-white hover:text-[#333]" />
             </button>
@@ -96,7 +96,7 @@ export function ChatInput({
             </button>
             <button className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color">
               <Plus className="w-4 h-4 mr-1" />
-              上传
+              Upload
             </button>
           </div>
 

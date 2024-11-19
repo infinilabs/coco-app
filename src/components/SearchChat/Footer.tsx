@@ -14,8 +14,8 @@ import {
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 const shortcuts = [
-  { label: "翻页/换行", keys: "ArrowDownUp" },
-  { label: "快速选行", keys: "Tab" },
+  { label: "Page turn/line break", keys: "ArrowDownUp" },
+  { label: "Quick line selection", keys: "Tab" },
   { label: "Open", keys: "CornerDownLeft" },
 ];
 

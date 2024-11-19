@@ -25,14 +25,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ query }) => {
         },
       ]);
 
-      // 模拟 AI 响应
       setIsTyping(true);
       setTimeout(() => {
         setMessages((prev) => [
           ...prev,
           {
             id: (Date.now() + 1).toString(),
-            content: "这是一个 AI 助手的示例回复...",
+            content: "hello world...",
             isUser: false,
           },
         ]);
@@ -61,7 +60,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ query }) => {
       ))}
       {isTyping && (
         <div className="flex justify-start">
-          <div className="bg-gray-100 p-3 rounded-lg">正在输入...</div>
+          <div className="bg-gray-100 p-3 rounded-lg">...</div>
         </div>
       )}
     </div>
