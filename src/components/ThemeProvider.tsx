@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { setTheme as setThemeApp } from '@tauri-apps/api/app';
 
 type Theme = "dark" | "light" | "system";
 
@@ -42,10 +43,13 @@ export function ThemeProvider({
         : "light";
 
       root.classList.add(systemTheme);
+      setThemeApp(systemTheme);
       return;
     }
 
     root.classList.add(theme);
+    setThemeApp(theme);
+
   }, [theme]);
 
   const value = {

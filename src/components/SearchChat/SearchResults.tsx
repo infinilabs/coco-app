@@ -8,7 +8,7 @@ export const SearchResults: React.FC = () => {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mt-4 overflow-hidden">
-      <div className="flex h-[calc(100vh-130px)]">
+      <div className="flex h-[calc(100vh-100px)]">
         {/* Left Panel */}
         <div className="w-[420px] border-r border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
           <div className="px-4 flex-shrink-0">

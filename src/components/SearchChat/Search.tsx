@@ -1,5 +1,13 @@
-import React, { useState } from "react";
-import { Mic, Filter, Upload } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import {
+  Mic,
+  Library,
+  AudioLines,
+  SquareChevronLeft,
+  Send,
+  Plus,
+  Image,
+} from "lucide-react";
 import {
   WebviewWindow,
   getCurrentWebviewWindow,
@@ -7,9 +15,11 @@ import {
 import { LogicalSize } from "@tauri-apps/api/dpi";
 import { motion } from "framer-motion";
 
-import { SearchResults } from "./SearchResults";
+import DropdownList from "./DropdownList";
 import { Footer } from "./Footer";
 import ChatSwitch from "./ChatSwitch";
+import { SearchResults } from "./SearchResults";
+import { tauriFetch } from "../../api/tauriFetchClient";
 
 interface Tag {
   id: string;
@@ -18,17 +28,45 @@ interface Tag {
 
 interface SearchProps {
   changeMode: (isChatMode: boolean) => void;
+  changeInput: (val: string) => void;
+  isChatMode: boolean;
 }
 
-function Search({ changeMode }: SearchProps) {
+function Search({ changeMode, changeInput, isChatMode }: SearchProps) {
   const [tags, setTags] = useState<Tag[]>([]);
+  const [suggests, setSuggests] = useState<any[]>([]);
   const [input, setInput] = useState("");
+  const [selectedItem, setSelectedItem] = useState<any>(null);
 
-  const handleKeyDown = async (e: React.KeyboardEvent) => {
+  const getSuggest = async () => {
+    try {
+      const response = await tauriFetch({
+        url: `/query/_search?query=${input}`,
+        method: "GET",
+      });
+      console.log("_suggest", response);
+      const data = response.data?.hits?.hits || [];
+      if (data.length > 0) {
+        await getCurrentWebviewWindow().setSize(new LogicalSize(680, 600));
+      }
+      setSuggests(data);
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+    }
+  };
+  const getDataList = async () => {
+    if (isChatMode) {
+      changeInput(input);
+    } else {
+      getSuggest();
+      // setTags([...tags, { id: Date.now().toString(), text: input.trim() }]);
+      // setInput("");
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && input.trim()) {
-      setTags([...tags, { id: Date.now().toString(), text: input.trim() }]);
-      setInput("");
-      await getCurrentWebviewWindow().setSize(new LogicalSize(800, 600));
+      getDataList();
     }
   };
 
@@ -36,7 +74,7 @@ function Search({ changeMode }: SearchProps) {
     const newTag = tags.filter((tag) => tag.id !== tagId);
     setTags(newTag);
     if (newTag.length === 0) {
-      await getCurrentWebviewWindow().setSize(new LogicalSize(800, 110));
+      await getCurrentWebviewWindow().setSize(new LogicalSize(680, 90));
     }
   };
 
@@ -62,23 +100,29 @@ function Search({ changeMode }: SearchProps) {
     });
   }
 
+  useEffect(() => {
+    if (selectedItem) {
+      setTags([]);
+    }
+  }, [selectedItem]);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.1 }}
+      transition={{ duration: 0 }}
       className={`min-h-screen bg-opacity-0 flex items-start justify-center rounded-xl overflow-hidden ${
-        tags.length > 0 ? "pb-8" : ""
+        tags.length > 0 ? "pb-32" : ""
       }`}
     >
       <div className="w-full rounded-xl overflow-hidden">
-        <div className="border b-t-none  bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+        <div className="b-none bg-[#F2F2F2] dark:bg-gray-800 rounded-xl overflow-hidden">
           {/* Search Bar */}
           <div className="relative">
-            <div className="flex items-center bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-2 focus-within:ring-2 focus-within:ring-blue-100 dark:focus-within:ring-blue-900 focus-within:border-blue-400 dark:focus-within:border-blue-500 transition-all">
-              <div className="flex flex-wrap gap-2 flex-1 min-h-12 items-center">
-                {tags.map((tag) => (
+            <div className="p-2.5 flex items-center bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 transition-all">
+              <div className="flex flex-wrap gap-2 flex-1 h-6 items-center">
+                {/* {tags.map((tag) => (
                   <span
                     key={tag.id}
                     className="inline-flex items-center bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 px-2.5 py-1 rounded-lg text-sm"
@@ -91,44 +135,93 @@ function Search({ changeMode }: SearchProps) {
                       ×
                     </button>
                   </span>
-                ))}
+                ))} */}
+                {!isChatMode && selectedItem ? (
+                  <SquareChevronLeft
+                    className="cursor-pointer text-gray-400 dark:text-gray-500"
+                    onClick={() => setSelectedItem(null)}
+                  />
+                ) : null}
                 <input
                   type="text"
-                  className="flex-1 outline-none min-w-[200px] text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 bg-transparent"
-                  placeholder="有问题尽管问 Coco"
+                  className="text-3 flex-1 outline-none min-w-[200px] text-[#999] dark:text-gray-200 placeholder-text-3 placeholder-[#999] dark:placeholder-gray-500 bg-transparent"
+                  placeholder="Ask whatever you want....."
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                 />
               </div>
-              <button className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                <Mic className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+              <button className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-colors">
+                <Mic className="w-3 h-3 text-[#333] dark:text-gray-500" />
+              </button>
+              <button
+                className={`ml-1 p-2 ${
+                  input ? "bg-[rgba(66,133,244,1)]" : "bg-[#E4E5F0]"
+                } rounded-full transition-colors`}
+                onClick={() => getDataList()}
+              >
+                <Send className="w-3 h-3 text-white hover:text-[#333]" />
               </button>
             </div>
           </div>
 
           {/* Controls */}
-          <div className="flex justify-between items-center p-2 rounded-xl overflow-hidden">
-            <div className="flex gap-3 text-xs">
-              <button
-                className="inline-flex items-center px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
-                onClick={openChatAI}
-              >
-                <Filter className="w-4 h-4 mr-2" />问 Coco
-              </button>
-              <button className="inline-flex items-center px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
-                <Upload className="w-4 h-4 mr-2" />
-                上传
-              </button>
-            </div>
+          <div className="flex justify-between items-center p-2 rounded-xl overflow-hidden bg-#F2F2F2">
+            {isChatMode ? (
+              <div className="flex gap-1 text-xs text-[#101010] dark:text-gray-300">
+                <button
+                  className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors "
+                  onClick={openChatAI}
+                >
+                  <Library className="w-4 h-4 mr-1" />
+                  Coco
+                </button>
+                <button className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color">
+                  <Plus className="w-4 h-4 mr-1" />
+                  上传
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-1 text-xs text-[#101010] dark:text-gray-300">
+                <button
+                  className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors "
+                  onClick={openChatAI}
+                >
+                  <AudioLines className="w-4 h-4 mr-1" />
+                </button>
+                <button className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color">
+                  <Image className="w-4 h-4 mr-1" />
+                </button>
+              </div>
+            )}
 
             {/* Switch */}
-            <ChatSwitch isChat={false} changeMode={changeMode} />
+            <ChatSwitch
+              isChat={isChatMode}
+              changeMode={(value) => {
+                changeMode(value);
+                setInput("");
+              }}
+            />
           </div>
         </div>
 
         {/* Search Results Panel */}
-        {tags.length > 0 ? (
+        {!isChatMode && suggests.length > 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ delay: 0.2 }}
+          >
+            <DropdownList
+              suggests={suggests}
+              selected={(item) => setSelectedItem(item)}
+            />
+          </motion.div>
+        ) : null}
+
+        {!isChatMode && selectedItem ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -140,14 +233,14 @@ function Search({ changeMode }: SearchProps) {
         ) : null}
       </div>
 
-      {tags.length > 0 ? (
+      {!isChatMode && (suggests.length > 0 || selectedItem) ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ delay: 0.2 }}
         >
-          <Footer isChat={false} />
+          <Footer isChat={false} name={selectedItem?.source} />
         </motion.div>
       ) : null}
     </motion.div>

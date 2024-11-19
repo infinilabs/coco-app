@@ -1,4 +1,4 @@
-import { SendHorizontal, OctagonX, Filter, Upload } from "lucide-react";
+import { Library, Mic, Send, Plus } from "lucide-react";
 import {
   useState,
   type FormEvent,
@@ -7,6 +7,7 @@ import {
   useEffect,
 } from "react";
 import ChatSwitch from "../SearchChat/ChatSwitch";
+import AutoResizeTextarea from "./AutoResizeTextarea";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -54,55 +55,60 @@ export function ChatInput({
     adjustTextareaHeight();
   }, [input]);
 
+  async function openChatAI() {}
+
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8"
-    >
-      <div className="relative">
-        <textarea
-          ref={textareaRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Send a message... (Press Enter to send, Shift + Enter for new line)"
-          rows={1}
-          className="w-full resize-none rounded-lg border-0 bg-gray-50 dark:bg-gray-800/50 py-3 pl-4 pr-12 text-sm leading-6 text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-gray-200 dark:ring-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-shadow"
-          disabled={disabled}
-        />
-        {disabled ? (
-          <button
-            type="submit"
-            className="absolute right-2 bottom-2.5 rounded-md p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <OctagonX
-              className="h-5 w-5"
-              onClick={() => disabledChange(false)}
-            />
-          </button>
-        ) : (
-          <button
-            type="submit"
-            disabled={disabled || !input.trim()}
-            className="absolute right-2 bottom-2.5 rounded-md p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <SendHorizontal className="h-5 w-5" />
-          </button>
-        )}
-      </div>
-      <div className="flex justify-between items-center p-2 rounded-xl overflow-hidden">
-        <div className="flex gap-3 text-xs">
-          <button className="inline-flex items-center px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
-            <Filter className="w-4 h-4 mr-2" />问 Coco
-          </button>
-          <button className="inline-flex items-center px-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
-            <Upload className="w-4 h-4 mr-2" />
-            上传
-          </button>
+    <form onSubmit={handleSubmit} className="w-full rounded-xl overflow-hidden">
+      <div className="b-none bg-[#F2F2F2] dark:bg-gray-800 rounded-xl overflow-hidden">
+        {/* Search Bar */}
+        <div className="relative">
+          <div className="p-2.5 flex items-center bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 transition-all">
+            <div className="flex flex-wrap gap-2 flex-1 h-auto items-center">
+              <AutoResizeTextarea
+                input={input}
+                setInput={setInput}
+                handleKeyDown={handleKeyDown}
+              />
+            </div>
+            <button className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-colors">
+              <Mic className="w-3 h-3 text-[#333] dark:text-gray-500" />
+            </button>
+            <button
+              className={`ml-1 p-2 ${
+                input ? "bg-[rgba(66,133,244,1)]" : "bg-[#E4E5F0]"
+              } rounded-full transition-colors`}
+              onClick={(e)=> handleSubmit(e as unknown as FormEvent)}
+            >
+              <Send className="w-3 h-3 text-white hover:text-[#333]" />
+            </button>
+          </div>
         </div>
 
-        {/* Switch */}
-        <ChatSwitch isChat={true} changeMode={changeMode} />
+        {/* Controls */}
+        <div className="flex justify-between items-center p-2 rounded-xl overflow-hidden bg-#F2F2F2">
+          <div className="flex gap-1 text-xs text-[#101010] dark:text-gray-300">
+            <button
+              className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors "
+              onClick={openChatAI}
+            >
+              <Library className="w-4 h-4 mr-1" />
+              Coco
+            </button>
+            <button className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color">
+              <Plus className="w-4 h-4 mr-1" />
+              上传
+            </button>
+          </div>
+
+          {/* Switch */}
+          <ChatSwitch
+            isChat={true}
+            changeMode={(value) => {
+              changeMode(value);
+              setInput("");
+            }}
+          />
+        </div>
       </div>
     </form>
   );

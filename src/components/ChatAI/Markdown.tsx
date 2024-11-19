@@ -231,7 +231,6 @@ function _MarkDownContent(props: { content: string }) {
     return tryWrapHtmlCode(escapeBrackets(props.content));
   }, [props.content]);
 
-  console.log(11212, props.content);
   return (
     <ReactMarkdown
       remarkPlugins={[RemarkMath, RemarkGfm, RemarkBreaks]}

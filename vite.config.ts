@@ -32,6 +32,7 @@ export default defineConfig(async () => ({
         target: "http://localhost:2900",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/chat/, ""),
+        secure: false,
       },
     },
   },

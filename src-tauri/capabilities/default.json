@@ -2,26 +2,39 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main"],
+  "windows": ["main", "chat"],
   "permissions": [
+    "core:default",
+    "core:event:allow-emit",
     "core:event:allow-listen",
-    "core:window:default",
-    "core:window:allow-start-dragging",
     "core:webview:allow-create-webview",
-    "core:window:allow-show",
     "core:webview:allow-create-webview-window",
+    "core:webview:allow-get-all-webviews",
     "core:webview:allow-webview-close",
+    "core:webview:allow-webview-hide",
+    "core:webview:allow-webview-show",
+    "core:webview:allow-webview-size",
+    "core:webview:allow-set-webview-size",
+    "core:webview:allow-set-webview-zoom",
+    "core:window:default",
+    "core:window:allow-center",
     "core:window:allow-close",
     "core:window:allow-hide",
-    "core:webview:allow-set-webview-size",
+    "core:window:allow-show",
+    "core:window:allow-create",
+    "core:window:allow-destroy",
+    "core:window:allow-start-dragging",
     "core:window:allow-set-size",
-    "core:default",
+    "core:window:allow-get-all-windows",
     "shell:allow-open",
     "http:default",
     "http:allow-fetch",
     "http:allow-fetch-cancel",
     "http:allow-fetch-read-body",
     "http:allow-fetch-send",
+    "websocket:default",
+    "websocket:allow-connect",
+    "websocket:allow-send",
     {
       "identifier": "http:default",
       "allow": [
@@ -30,9 +43,6 @@
         }
       ],
       "deny": []
-    },
-    "websocket:default",
-    "websocket:allow-connect",
-    "websocket:allow-send"
+    }
   ]
 }

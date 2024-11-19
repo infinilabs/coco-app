@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { PanelRightClose, PanelRightOpen, X } from "lucide-react";
+import { MessageSquarePlus, PanelLeft } from "lucide-react";
 import { motion } from "framer-motion";
 
-// import { ThemeToggle } from "./ThemeToggle";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { Sidebar } from "./Sidebar";
@@ -12,16 +11,19 @@ import { tauriFetch } from "../../api/tauriFetchClient";
 import { useWebSocket } from "../../hooks/useWebSocket";
 import useWindows from "../../hooks/useWindows";
 
-interface ChatAIProps {}
+interface ChatAIProps {
+  changeMode: (isChatMode: boolean) => void;
+  inputValue: string;
+}
 
-export default function ChatAI({}: ChatAIProps) {
+export default function ChatAI({ changeMode, inputValue }: ChatAIProps) {
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChat, setActiveChat] = useState<Chat>();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
-  const { closeWin } = useWindows();
+  const { createWin } = useWindows();
 
   const [websocketId, setWebsocketId] = useState("");
   const [curMessage, setCurMessage] = useState("");
@@ -97,11 +99,7 @@ export default function ChatAI({}: ChatAIProps) {
       console.log("_history", response);
       const hits = response.data?.hits?.hits || [];
       setChats(hits);
-      if (hits[0]) {
-        onSelectChat(hits[0]);
-      } else {
-        createNewChat();
-      }
+      createNewChat();
     } catch (error) {
       console.error("Failed to fetch user data:", error);
     }
@@ -128,6 +126,14 @@ export default function ChatAI({}: ChatAIProps) {
       const newChat: Chat = response.data;
       setChats((prev) => [newChat, ...prev]);
       setActiveChat(newChat);
+      setIsSidebarOpen(false);
+      //
+      console.log(1111, activeChat, inputValue)
+      if (inputValue) {
+        setTimeout(() => {
+          handleSendMessage(inputValue);
+        }, 500);
+      }
     } catch (error) {
       console.error("Failed to fetch user data:", error);
     }
@@ -210,11 +216,12 @@ export default function ChatAI({}: ChatAIProps) {
       });
       console.log("_open", response);
       chatHistory(response.data);
+      setIsSidebarOpen(false);
     } catch (error) {
       console.error("Failed to fetch user data:", error);
     }
   };
-  
+
   const cancelChat = async () => {
     if (!activeChat?._id) return;
     try {
@@ -228,8 +235,20 @@ export default function ChatAI({}: ChatAIProps) {
     }
   };
 
-  async function closeWindow() {
-    await closeWin("chat");
+  async function openChatAI() {
+    createWin({
+      label: "chat",
+      title: "Coco AI",
+      dragDropEnabled: true,
+      center: true,
+      width: 900,
+      height: 800,
+      alwaysOnTop: true,
+      skipTaskbar: true,
+      decorations: true,
+      closable: true,
+      url: "/gpt",
+    });
   }
 
   return (
@@ -238,9 +257,9 @@ export default function ChatAI({}: ChatAIProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="h-screen"
+      className="h-screen rounded-xl overflow-hidden relative"
     >
-      <div className="h-[100%] flex">
+      <div className="h-[calc(100%-100px)] flex rounded-xl overflow-hidden">
         {/* Sidebar */}
         {isSidebarOpen ? (
           <div
@@ -265,7 +284,7 @@ export default function ChatAI({}: ChatAIProps) {
 
         {/* Main content */}
         <div
-          className={`flex-1 flex flex-col ${
+          className={`flex-1 flex flex-col rounded-xl overflow-hidden ${
             theme === "dark" ? "bg-gray-900" : "bg-white"
           }`}
         >
@@ -276,28 +295,33 @@ export default function ChatAI({}: ChatAIProps) {
             transition={{ delay: 0.2 }}
           >
             <header
-              className={`flex items-center justify-between p-2 border-b ${
+              className={`flex items-center justify-between p-2 ${
                 theme === "dark" ? "border-gray-800" : "border-gray-200"
               }`}
             >
               <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className={`rounded-lg transition-colors ${
+                onClick={() => openChatAI()}
+                className={`p-2 rounded-lg transition-colors ${
                   theme === "dark"
                     ? "hover:bg-gray-800 text-gray-300"
-                    : "hover:bg-gray-100 text-gray-600"
+                    : "hover:bg-gray-100 text-[#101010]"
                 }`}
               >
-                {isSidebarOpen ? (
-                  <PanelRightClose className="h-6 w-6" />
-                ) : (
-                  <PanelRightOpen className="h-6 w-6" />
-                )}
+                <PanelLeft className="h-4 w-4" />
               </button>
 
               {/* <ThemeToggle /> */}
 
-              <X className="cursor-pointer" onClick={closeWindow} />
+              <button
+                onClick={() => createNewChat()}
+                className={`p-2 rounded-lg transition-colors ${
+                  theme === "dark"
+                    ? "hover:bg-gray-800 text-gray-300"
+                    : "hover:bg-gray-100 text-[#101010]"
+                }`}
+              >
+                <MessageSquarePlus className="h-4 w-4" />
+              </button>
             </header>
           </motion.div>
 
@@ -307,7 +331,7 @@ export default function ChatAI({}: ChatAIProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ delay: 0.3 }}
-            className="flex-1 overflow-y-auto custom-scrollbar"
+            className="flex-1 overflow-y-auto border-t custom-scrollbar"
           >
             {activeChat?.messages?.map((message, index) => (
               <ChatMessage
@@ -342,29 +366,29 @@ export default function ChatAI({}: ChatAIProps) {
             )}
             <div ref={messagesEndRef} />
           </motion.div>
-
-          {/* Input area */}
-          <motion.div
-            initial={{ y: 100 }}
-            animate={{ y: 0 }}
-            exit={{ y: 100 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className={`border-t p-4 ${
-              theme === "dark" ? "border-gray-800" : "border-gray-200"
-            }`}
-          >
-            <ChatInput
-              onSend={handleSendMessage}
-              disabled={isTyping}
-              disabledChange={(value) => {
-                cancelChat()
-                setIsTyping(value);
-              }}
-              changeMode={() => {}}
-            />
-          </motion.div>
         </div>
       </div>
+
+      {/* Input area */}
+      <motion.div
+        initial={{ y: 100 }}
+        animate={{ y: 0 }}
+        exit={{ y: 100 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className={`mt-2.5 rounded-xl overflow-hidden ${
+          theme === "dark" ? "border-gray-800" : "border-gray-200"
+        }`}
+      >
+        <ChatInput
+          onSend={handleSendMessage}
+          disabled={isTyping}
+          disabledChange={(value) => {
+            cancelChat();
+            setIsTyping(value);
+          }}
+          changeMode={changeMode}
+        />
+      </motion.div>
     </motion.div>
   );
 }
