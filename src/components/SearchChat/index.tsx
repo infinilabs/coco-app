@@ -29,7 +29,7 @@ export default function SearchChat() {
     <LayoutGroup>
       <AnimatePresence mode="wait">
         {isChatMode && input ? (
-          <ChatAI key="ChatAI" input={input} changeMode={changeMode} />
+          <ChatAI key="ChatAI" inputValue={input} changeMode={changeMode} />
         ) : (
           <Search
             key="Search"

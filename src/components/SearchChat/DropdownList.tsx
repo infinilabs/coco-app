@@ -4,9 +4,10 @@ import { open } from "@tauri-apps/plugin-shell";
 interface DropdownListProps {
   selected: (item: any) => void;
   suggests: any[];
+  isSearchComplete: boolean;
 }
 
-function DropdownList({ selected, suggests }: DropdownListProps) {
+function DropdownList({ selected, suggests, isSearchComplete }: DropdownListProps) {
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -47,12 +48,12 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
   useEffect(() => {
     if (suggests.length > 0) {
       setSelectedItem(0);
-    }
 
-    if (containerRef.current) {
-      containerRef.current.focus();
+      if (containerRef.current && isSearchComplete) {
+        containerRef.current.focus();
+      }
     }
-  }, [suggests, selected]);
+  }, [JSON.stringify(suggests), isSearchComplete]);
 
   useEffect(() => {
     if (selectedItem !== null && itemRefs.current[selectedItem]) {

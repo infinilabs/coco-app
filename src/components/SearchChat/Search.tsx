@@ -35,6 +35,7 @@ interface SearchProps {
 function Search({ changeMode, changeInput, isChatMode }: SearchProps) {
   const [tags, setTags] = useState<Tag[]>([]);
   const [suggests, setSuggests] = useState<any[]>([]);
+  const [isSearchComplete, setIsSearchComplete] = useState(false);
   const [input, setInput] = useState("");
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
@@ -48,8 +49,11 @@ function Search({ changeMode, changeInput, isChatMode }: SearchProps) {
       const data = response.data?.hits?.hits || [];
       if (data.length > 0) {
         await getCurrentWebviewWindow().setSize(new LogicalSize(680, 600));
+      } else {
+        await getCurrentWebviewWindow().setSize(new LogicalSize(680, 90));
       }
       setSuggests(data);
+      setIsSearchComplete(true);
     } catch (error) {
       console.error("Failed to fetch user data:", error);
     }
@@ -147,7 +151,10 @@ function Search({ changeMode, changeInput, isChatMode }: SearchProps) {
                   className="text-3 flex-1 outline-none min-w-[200px] text-[#999] dark:text-gray-200 placeholder-text-3 placeholder-[#999] dark:placeholder-gray-500 bg-transparent"
                   placeholder="Ask whatever you want....."
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  onChange={(e) => {
+                    setInput(e.target.value);
+                    setIsSearchComplete(false);
+                  }}
                   onKeyDown={handleKeyDown}
                 />
               </div>
@@ -216,6 +223,7 @@ function Search({ changeMode, changeInput, isChatMode }: SearchProps) {
           >
             <DropdownList
               suggests={suggests}
+              isSearchComplete={isSearchComplete}
               selected={(item) => setSelectedItem(item)}
             />
           </motion.div>

@@ -54,7 +54,7 @@ export const Footer = ({ isChat, name }: FooterProps) => {
   return (
     <div
       style={{ zIndex: 999 }}
-      className="px-4 h-12 fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between rounded-xl rounded-t-none overflow-hidden"
+      className="px-4 h-12 fixed bottom-1 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between rounded-xl rounded-t-none overflow-hidden"
     >
       <div className="flex items-center">
         {
