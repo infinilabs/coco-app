@@ -43,7 +43,7 @@
         "theme": "Light",
         "title": "Coco AI",
         "transparent": true,
-        "url": "/",
+        "url": "/ui",
         "visible": true,
         "visibleOnAllWorkspaces": true,
         "windowEffects": {

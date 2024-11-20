@@ -94,7 +94,7 @@ function Search({ changeMode, changeInput, isChatMode }: SearchProps) {
       skipTaskbar: true,
       decorations: true,
       closable: true,
-      url: "/gpt",
+      url: "/ui/chat",
     });
     webview.once("tauri://created", function () {
       console.log("webview created");

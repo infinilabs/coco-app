@@ -247,7 +247,7 @@ export default function ChatAI({ changeMode, inputValue }: ChatAIProps) {
       skipTaskbar: true,
       decorations: true,
       closable: true,
-      url: "/gpt",
+      url: "/ui/chat",
     });
   }
 

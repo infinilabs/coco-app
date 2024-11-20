@@ -3,13 +3,13 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-  const showBack = location.pathname !== "/";
+  const showBack = location.pathname !== "/ui";
 
   return (
     <div>
-      <div onClick={() => navigate("/")}>Home</div>
+      <div onClick={() => navigate("/ui")}>Home</div>
       <div>
-        <Link to="/settings" title="more">
+        <Link to="/ui/settings" title="more">
           Settings
         </Link>
       </div>

@@ -15,10 +15,10 @@ export const router = createBrowserRouter([
     element: <Layout />,
     errorElement: <ErrorPage />,
     children: [
-      { path: "/", element: <SearchChat /> },
-      { path: "/settings", element: <Settings2 /> },
-      { path: "/gpt", element: <ChatAI /> },
-      { path: "/my", element: <MySearch /> },
+      { path: "/ui", element: <SearchChat /> },
+      { path: "/ui/settings", element: <Settings2 /> },
+      { path: "/ui/chat", element: <ChatAI /> },
+      { path: "/ui/search", element: <MySearch /> },
     ],
   },
 ]);

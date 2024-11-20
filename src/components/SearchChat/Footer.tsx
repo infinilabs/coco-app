@@ -41,7 +41,7 @@ export const Footer = ({ isChat, name }: FooterProps) => {
       skipTaskbar: true,
       decorations: true,
       closable: true,
-      url: "/settings",
+      url: "/ui/settings",
     });
     webview.once("tauri://created", function () {
       console.log("webview created");
