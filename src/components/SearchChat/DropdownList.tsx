@@ -67,7 +67,7 @@ function DropdownList({ selected, suggests, isSearchComplete }: DropdownListProp
   return (
     <div
       ref={containerRef}
-      className="h-[calc(100vh-100px)] mt-2.5 pb-10 flex flex-col bg-search_bg_light dark:bg-chat_bg_dark bg-center rounded-xl overflow-hidden focus:outline-none"
+      className="h-[calc(100vh-100px)] mt-2.5 pb-10 flex flex-col bg-search_bg_light dark:bg-chat_bg_dark bg-cover rounded-xl overflow-hidden focus:outline-none"
       tabIndex={0}
       onKeyDown={handleKeyDown}
     >

@@ -284,7 +284,7 @@ export default function ChatAI({ changeMode, inputValue }: ChatAIProps) {
 
         {/* Main content */}
         <div
-          className={`flex-1 flex flex-col rounded-xl overflow-hidden bg-chat_bg_light dark:bg-chat_bg_dark bg-center`}
+          className={`flex-1 flex flex-col rounded-xl overflow-hidden bg-chat_bg_light dark:bg-chat_bg_dark bg-cover`}
         >
           <motion.div
             initial={{ opacity: 0, y: -20 }}

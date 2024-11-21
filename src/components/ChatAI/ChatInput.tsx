@@ -59,7 +59,7 @@ export function ChatInput({
 
   return (
     <form onSubmit={handleSubmit} className="w-full rounded-xl overflow-hidden">
-      <div className="bg-inputbox_bg_light dark:bg-inputbox_bg_dark bg-center rounded-xl">
+      <div className="bg-inputbox_bg_light dark:bg-inputbox_bg_dark bg-cover rounded-xl">
         {/* Search Bar */}
         <div className="relative">
           <div className="p-[13px] flex items-center bg-white dark:bg-[#202126] rounded-xl transition-all">
