@@ -59,10 +59,10 @@ export function ChatInput({
 
   return (
     <form onSubmit={handleSubmit} className="w-full rounded-xl overflow-hidden">
-      <div className="b-none bg-[#F2F2F2] dark:bg-gray-800 rounded-xl overflow-hidden">
+      <div className="bg-inputbox_bg_light dark:bg-inputbox_bg_dark bg-center rounded-xl">
         {/* Search Bar */}
         <div className="relative">
-          <div className="p-2.5 flex items-center bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 transition-all">
+          <div className="p-[13px] flex items-center bg-white dark:bg-[#202126] rounded-xl transition-all">
             <div className="flex flex-wrap gap-2 flex-1 h-auto items-center">
               <AutoResizeTextarea
                 input={input}
@@ -70,32 +70,32 @@ export function ChatInput({
                 handleKeyDown={handleKeyDown}
               />
             </div>
-            <button className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-colors">
-              <Mic className="w-3 h-3 text-[#333] dark:text-gray-500" />
+            <button className="p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-colors">
+              <Mic className="w-4 h-4 text-[#999] dark:text-[#999]" />
             </button>
             <button
-              className={`ml-1 p-2 ${
-                input ? "bg-[rgba(66,133,244,1)]" : "bg-[#E4E5F0]"
+              className={`ml-1 p-1 ${
+                input ? "bg-[#0072FF]" : "bg-[#E4E5F0]"
               } rounded-full transition-colors`}
               onClick={(e) => handleSubmit(e as unknown as FormEvent)}
             >
-              <Send className="w-3 h-3 text-white hover:text-[#333]" />
+              <Send className="w-4 h-4 text-white hover:text-[#999]" />
             </button>
           </div>
         </div>
 
         {/* Controls */}
-        <div className="flex justify-between items-center p-2 rounded-xl overflow-hidden bg-#F2F2F2">
-          <div className="flex gap-1 text-xs text-[#101010] dark:text-gray-300">
+        <div className="flex justify-between items-center p-2 rounded-xl overflow-hidden">
+          <div className="flex gap-1 text-xs text-[#333] dark:text-[#d8d8d8]">
             <button
               className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors "
               onClick={openChatAI}
             >
-              <Library className="w-4 h-4 mr-1" />
+              <Library className="w-4 h-4 mr-1 text-[#000] dark:text-[#d8d8d8]" />
               Coco
             </button>
             <button className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color">
-              <Plus className="w-4 h-4 mr-1" />
+              <Plus className="w-4 h-4 mr-1 text-[#000] dark:text-[#d8d8d8]" />
               Upload
             </button>
           </div>
@@ -103,7 +103,7 @@ export function ChatInput({
           {/* Switch */}
           <ChatSwitch
             isChat={true}
-            changeMode={(value) => {
+            onChange={(value) => {
               changeMode(value);
               setInput("");
             }}

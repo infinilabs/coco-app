@@ -24,7 +24,7 @@ const AutoResizeTextarea: React.FC<AutoResizeTextareaProps> = ({
   return (
     <textarea
       ref={textareaRef}
-      className="text-3 flex-1 outline-none min-w-[200px] text-[#999] dark:text-gray-200 placeholder-text-3 placeholder-[#999] dark:placeholder-gray-500 bg-transparent"
+      className="text-xs flex-1 outline-none min-w-[200px] text-[#333] dark:text-[#d8d8d8] placeholder-text-xs placeholder-[#999] dark:placeholder-gray-500 bg-transparent"
       placeholder="Ask whatever you want....."
       value={input}
       onChange={(e) => setInput(e.target.value)}

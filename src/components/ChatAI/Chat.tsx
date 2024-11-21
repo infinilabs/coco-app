@@ -128,7 +128,7 @@ export default function ChatAI({ changeMode, inputValue }: ChatAIProps) {
       setActiveChat(newChat);
       setIsSidebarOpen(false);
       //
-      console.log(1111, activeChat, inputValue)
+      console.log(1111, activeChat, inputValue);
       if (inputValue) {
         setTimeout(() => {
           handleSendMessage(inputValue);
@@ -284,9 +284,7 @@ export default function ChatAI({ changeMode, inputValue }: ChatAIProps) {
 
         {/* Main content */}
         <div
-          className={`flex-1 flex flex-col rounded-xl overflow-hidden ${
-            theme === "dark" ? "bg-gray-900" : "bg-white"
-          }`}
+          className={`flex-1 flex flex-col rounded-xl overflow-hidden bg-chat_bg_light dark:bg-chat_bg_dark bg-center`}
         >
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -294,18 +292,10 @@ export default function ChatAI({ changeMode, inputValue }: ChatAIProps) {
             exit={{ opacity: 0, y: -20 }}
             transition={{ delay: 0.2 }}
           >
-            <header
-              className={`flex items-center justify-between p-2 ${
-                theme === "dark" ? "border-gray-800" : "border-gray-200"
-              }`}
-            >
+            <header className={`flex items-center justify-between py-2 px-1`}>
               <button
                 onClick={() => openChatAI()}
-                className={`p-2 rounded-lg transition-colors ${
-                  theme === "dark"
-                    ? "hover:bg-gray-800 text-gray-300"
-                    : "hover:bg-gray-100 text-[#101010]"
-                }`}
+                className={`p-2 rounded-lg transition-colors text-[#333] dark:text-[#d8d8d8]`}
               >
                 <PanelLeft className="h-4 w-4" />
               </button>
@@ -314,11 +304,7 @@ export default function ChatAI({ changeMode, inputValue }: ChatAIProps) {
 
               <button
                 onClick={() => createNewChat()}
-                className={`p-2 rounded-lg transition-colors ${
-                  theme === "dark"
-                    ? "hover:bg-gray-800 text-gray-300"
-                    : "hover:bg-gray-100 text-[#101010]"
-                }`}
+                className={`p-2 rounded-lg transition-colors text-[#333] dark:text-[#d8d8d8]`}
               >
                 <MessageSquarePlus className="h-4 w-4" />
               </button>
@@ -331,7 +317,7 @@ export default function ChatAI({ changeMode, inputValue }: ChatAIProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ delay: 0.3 }}
-            className="flex-1 overflow-y-auto border-t custom-scrollbar"
+            className="flex-1 overflow-y-auto border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.15)] custom-scrollbar"
           >
             {activeChat?.messages?.map((message, index) => (
               <ChatMessage
@@ -375,9 +361,7 @@ export default function ChatAI({ changeMode, inputValue }: ChatAIProps) {
         animate={{ y: 0 }}
         exit={{ y: 100 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className={`mt-2.5 rounded-xl overflow-hidden ${
-          theme === "dark" ? "border-gray-800" : "border-gray-200"
-        }`}
+        className={`mt-2.5 rounded-xl overflow-hidden`}
       >
         <ChatInput
           onSend={handleSendMessage}

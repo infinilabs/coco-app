@@ -67,7 +67,7 @@ function DropdownList({ selected, suggests, isSearchComplete }: DropdownListProp
   return (
     <div
       ref={containerRef}
-      className="h-[calc(100vh-100px)] mt-2.5 pb-12 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden focus:outline-none"
+      className="h-[calc(100vh-100px)] mt-2.5 pb-10 flex flex-col bg-search_bg_light dark:bg-chat_bg_dark bg-center rounded-xl overflow-hidden focus:outline-none"
       tabIndex={0}
       onKeyDown={handleKeyDown}
     >
@@ -86,25 +86,25 @@ function DropdownList({ selected, suggests, isSearchComplete }: DropdownListProp
                   selected(item);
                 }
               }}
-              className={`w-full p-2 text-xs flex items-center justify-between rounded-lg transition-colors ${
+              className={`w-full h-10 px-2 text-sm flex items-center justify-between rounded-lg transition-colors ${
                 isSelected
-                  ? "bg-[#f2f2f2] dark:bg-blue-900/30"
-                  : "hover:bg-[#f2f2f2] dark:hover:bg-gray-700/50"
+                  ? "bg-[rgba(0,0,0,0.1)] dark:bg-[rgba(255,255,255,0.1)]"
+                  : "hover:bg-[rgba(0,0,0,0.1)] dark:hover:bg-[rgba(255,255,255,0.1)]"
               }`}
             >
               <div className="flex gap-2 items-center">
-                <img className="w-4 h-4" src={item?._source?.icon} alt="icon" />
-                <span className="text-[#666] dark:text-gray-100">
-                  {item?._source?.source} / {item?._source?.title}
+                <img className="w-5 h-5" src={item?._source?.icon} alt="icon" />
+                <span className="text-[#333] dark:text-[#d8d8d8]">
+                  {item?._source?.source}/{item?._source?.title}
                 </span>
               </div>
               <div className="flex gap-2 items-center">
-                <span className="text-xs text-[#999] dark:text-gray-400">
+                <span className="text-sm  text-[#666] dark:text-[#666]">
                   {item?._source?.type}
                 </span>
                 <div
-                  className={`w-3.5 h-3.5 flex items-center justify-center text-[#e4e5ef] border border-[#e4e5ef] rounded-sm ${
-                    isSelected ? "text-blue-500" : ""
+                  className={`w-4 h-4 text-xs flex items-center justify-center text-[#e4e5ef] border border-[#e4e5ef] rounded-sm ${
+                    isSelected ? "text-blue-500 dark:bg-white" : ""
                   }`}
                 >
                   {index + 1}

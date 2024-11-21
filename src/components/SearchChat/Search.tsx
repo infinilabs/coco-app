@@ -69,7 +69,7 @@ function Search({ changeMode, changeInput, isChatMode }: SearchProps) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && input.trim()) {
+    if (e.key === "Enter") {
       getDataList();
     }
   };
@@ -116,15 +116,13 @@ function Search({ changeMode, changeInput, isChatMode }: SearchProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0 }}
-      className={`min-h-screen bg-opacity-0 flex items-start justify-center rounded-xl overflow-hidden ${
-        tags.length > 0 ? "pb-32" : ""
-      }`}
+      className={`min-h-screen flex items-start justify-center rounded-xl overflow-hidden`}
     >
       <div className="w-full rounded-xl overflow-hidden">
-        <div className="b-none bg-[#F2F2F2] dark:bg-gray-800 rounded-xl overflow-hidden">
+        <div className="bg-inputbox_bg_light dark:bg-inputbox_bg_dark bg-center rounded-xl">
           {/* Search Bar */}
           <div className="relative">
-            <div className="p-2.5 flex items-center bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 transition-all">
+            <div className="p-[13px] flex items-center dark:text-[#D8D8D8] bg-white dark:bg-[#202126] rounded-xl transition-all">
               <div className="flex flex-wrap gap-2 flex-1 h-6 items-center">
                 {/* {tags.map((tag) => (
                   <span
@@ -148,7 +146,7 @@ function Search({ changeMode, changeInput, isChatMode }: SearchProps) {
                 ) : null}
                 <input
                   type="text"
-                  className="text-3 flex-1 outline-none min-w-[200px] text-[#999] dark:text-gray-200 placeholder-text-3 placeholder-[#999] dark:placeholder-gray-500 bg-transparent"
+                  className="text-xs font-normal flex-1 outline-none min-w-[200px] text-[#333] dark:text-[#d8d8d8] placeholder-text-xs placeholder-[#999] dark:placeholder-gray-500 bg-transparent"
                   placeholder="Ask whatever you want....."
                   value={input}
                   onChange={(e) => {
@@ -158,46 +156,46 @@ function Search({ changeMode, changeInput, isChatMode }: SearchProps) {
                   onKeyDown={handleKeyDown}
                 />
               </div>
-              <button className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-colors">
+              {/* <button className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-colors">
                 <Mic className="w-3 h-3 text-[#333] dark:text-gray-500" />
-              </button>
-              <button
+              </button> */}
+              {/* <button
                 className={`ml-1 p-2 ${
                   input ? "bg-[rgba(66,133,244,1)]" : "bg-[#E4E5F0]"
                 } rounded-full transition-colors`}
                 onClick={() => getDataList()}
               >
                 <Send className="w-3 h-3 text-white hover:text-[#333]" />
-              </button>
+              </button> */}
             </div>
           </div>
 
           {/* Controls */}
-          <div className="flex justify-between items-center p-2 rounded-xl overflow-hidden bg-#F2F2F2">
+          <div className="h-10 px-3 flex justify-between items-center rounded-xl overflow-hidden">
             {isChatMode ? (
               <div className="flex gap-1 text-xs text-[#101010] dark:text-gray-300">
                 <button
                   className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors "
                   onClick={openChatAI}
                 >
-                  <Library className="w-4 h-4 mr-1" />
+                  <Library className="w-3 h-3 mr-1 text-[#000] dark:text-[#d8d8d8]" />
                   Coco
                 </button>
                 <button className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color">
-                  <Plus className="w-4 h-4 mr-1" />
+                  <Plus className="w-3 h-3 mr-1 text-[#000] dark:text-[#d8d8d8]" />
                   Upload
                 </button>
               </div>
             ) : (
-              <div className="flex gap-1 text-xs text-[#101010] dark:text-gray-300">
+              <div className="flex gap-1">
                 <button
                   className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors "
                   onClick={openChatAI}
                 >
-                  <AudioLines className="w-4 h-4 mr-1" />
+                  <AudioLines className="w-3.5 h-3 text-[#000] dark:text-[#d8d8d8]" />
                 </button>
                 <button className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color">
-                  <Image className="w-4 h-4 mr-1" />
+                  <Image className="w-3 h-3 text-[#000] dark:text-[#d8d8d8]" />
                 </button>
               </div>
             )}
@@ -205,7 +203,7 @@ function Search({ changeMode, changeInput, isChatMode }: SearchProps) {
             {/* Switch */}
             <ChatSwitch
               isChat={isChatMode}
-              changeMode={(value) => {
+              onChange={(value) => {
                 changeMode(value);
                 setInput("");
               }}

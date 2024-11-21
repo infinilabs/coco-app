@@ -23,12 +23,12 @@
 
   body,
   #root {
-    @apply text-gray-900 rounded-lg shadow-lg overflow-hidden antialiased;
+    @apply text-gray-900 rounded-xl antialiased;
   }
 
   .dark body,
   .dark #root{
-    @apply text-gray-100 rounded-lg shadow-lg overflow-hidden antialiased;
+    @apply text-gray-100 rounded-xl antialiased;
   }
 }
 

@@ -5,6 +5,7 @@ import {
   User,
   Home,
   ChevronUp,
+  ArrowDown01,
   AppWindowMac,
   ArrowDownUp,
   CornerDownLeft,
@@ -14,8 +15,7 @@ import {
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 const shortcuts = [
-  { label: "Page turn/line break", keys: "ArrowDownUp" },
-  { label: "Quick line selection", keys: "Tab" },
+  { label: "Quick open", keys: "Tab" },
   { label: "Open", keys: "CornerDownLeft" },
 ];
 
@@ -54,12 +54,12 @@ export const Footer = ({ isChat, name }: FooterProps) => {
   return (
     <div
       style={{ zIndex: 999 }}
-      className="px-4 h-12 fixed bottom-1 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between rounded-xl rounded-t-none overflow-hidden"
+      className="px-4 h-10 fixed bottom-0 left-0 right-0 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between rounded-xl rounded-t-none overflow-hidden"
     >
       <div className="flex items-center">
         {
           name ? (
-            <div className="flex gap-2 items-center text-[#666] text-3">
+            <div className="flex gap-2 items-center text-[#666] text-xs">
               <AppWindowMac className="w-5 h-5" /> {name}
             </div>
           ) : null
@@ -138,24 +138,16 @@ export const Footer = ({ isChat, name }: FooterProps) => {
         }
       </div>
 
-      <div className="flex items-center gap-2.5">
-        {(isChat ? isChatShortcuts : shortcuts).map((shortcut, index) => (
-          <div
-            key={index}
-            className="flex items-center text-[#999] dark:text-gray-400 text-xs"
-          >
-            <span className="mr-1.5">{shortcut.label}</span>
-            {shortcut.keys === "Tab" ? (
-              <Command className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs font-medium" />
-            ) : null}
-            {shortcut.keys === "ArrowDownUp" || shortcut.keys === "Tab" ? (
-              <ArrowDownUp className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs font-medium" />
-            ) : null}
-            {shortcut.keys === "CornerDownLeft" ? (
-              <CornerDownLeft className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs font-medium" />
-            ) : null}
-          </div>
-        ))}
+      <div className="flex items-center gap-3">
+        <div className="gap-1 flex items-center text-[#666] dark:text-[#666] text-sm">
+          <span className="mr-1.5 ">Quick open</span>
+          <Command className="w-5 h-5 p-1 border rounded-[6px] dark:text-[#666] dark:border-[rgba(255,255,255,0.15)]" />
+          <ArrowDown01 className="w-5 h-5 p-1 border rounded-[6px] dark:text-[#666] dark:border-[rgba(255,255,255,0.15)]" />
+        </div>
+        <div className="flex items-center text-[#666] dark:text-[#666] text-sm">
+          <span className="mr-1.5 ">Open</span>
+          <CornerDownLeft className="w-5 h-5 p-1 border rounded-[6px] dark:text-[#666] dark:border-[rgba(255,255,255,0.15)]" />
+        </div>
       </div>
     </div>
   );

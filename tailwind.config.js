@@ -10,6 +10,14 @@ export default {
         foreground: "rgb(var(--color-foreground) / <alpha-value>)",
         separator: "rgb(var(--color-separator) / <alpha-value>)",
       },
+      backgroundImage: {
+        'chat_bg_light': "url('src/assets/chat_bg_light.png')",
+        'chat_bg_dark': "url('src/assets/chat_bg_dark.png')",
+        'search_bg_light': "url('src/assets/search_bg_light.png')",
+        'search_bg_dark': "url('src/assets/search_bg_dark.png')",
+        'inputbox_bg_light': "url('src/assets/inputbox_bg_light.png')",
+        'inputbox_bg_dark': "url('src/assets/inputbox_bg_dark.png')",
+      },
       textColor: {
         primary: "rgb(var(--color-foreground) / <alpha-value>)",
       },

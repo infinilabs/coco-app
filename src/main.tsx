@@ -10,7 +10,7 @@ import "./main.css";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <ThemeProvider defaultTheme="light" storageKey="theme">
+    <ThemeProvider defaultTheme="system" storageKey="theme">
       <RouterProvider router={router} />
     </ThemeProvider>
   </React.StrictMode>

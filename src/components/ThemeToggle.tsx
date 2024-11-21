@@ -1,12 +1,20 @@
 import { Sun, Moon } from "lucide-react";
+import { setTheme as setAppTheme } from "@tauri-apps/api/app";
 
 import { useTheme } from "./ThemeProvider";
 
 const ThemeToggle = () => {
   const { theme, setTheme } = useTheme();
+
+  const setThemeClick = async () => {
+    const curTheme = theme === "light" ? "dark" : "light";
+    setTheme(curTheme);
+    await setAppTheme(curTheme);
+  };
+
   return (
     <button
-      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+      onClick={() => setThemeClick()}
       className="inline-flex rounded-md p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900"
     >
       <Sun
