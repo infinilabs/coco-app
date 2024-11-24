@@ -1,10 +1,10 @@
 import { MessageSquare, Plus } from "lucide-react";
 import type { Chat } from "./types";
+import { useTheme } from "../ThemeProvider";
 
 interface SidebarProps {
   chats: Chat[];
   activeChat: Chat;
-  isDark: boolean;
   onNewChat: () => void;
   onSelectChat: (chat: Chat) => void;
   onDeleteChat: (chatId: string) => void;
@@ -14,11 +14,13 @@ interface SidebarProps {
 export function Sidebar({
   chats,
   activeChat,
-  isDark,
   onNewChat,
   onSelectChat,
   className = "",
 }: SidebarProps) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   return (
     <div className={`h-full flex flex-col ${className}`}>
       <div className="p-4">
@@ -26,8 +28,8 @@ export function Sidebar({
           onClick={onNewChat}
           className={`w-full flex items-center gap-3 px-4 py-3 text-sm rounded-lg transition-all ${
             isDark
-              ? "bg-gray-700 text-white hover:bg-gray-600 active:bg-gray-500"
-              : "bg-white text-gray-700 hover:bg-gray-50 active:bg-gray-100 shadow-sm"
+              ? " text-white hover:bg-gray-600 active:bg-gray-500"
+              : " text-gray-700 hover:bg-gray-50 active:bg-gray-100 shadow-sm"
           }`}
         >
           <Plus
@@ -45,8 +47,8 @@ export function Sidebar({
             className={`group relative rounded-lg transition-all ${
               activeChat._id === chat._id
                 ? isDark
-                  ? "bg-gray-700/50 text-white"
-                  : "bg-white text-gray-900 shadow-sm"
+                  ? " text-white"
+                  : " text-gray-900 shadow-sm"
                 : isDark
                 ? "text-gray-300 hover:bg-gray-700/30"
                 : "text-gray-600 hover:bg-white/10"

@@ -12,6 +12,7 @@ import type { Chat, Message } from "./types";
 import { tauriFetch } from "../../api/tauriFetchClient";
 import { useWebSocket } from "../../hooks/useWebSocket";
 import useWindows from "../../hooks/useWindows";
+import { useChatStore } from "../../stores/chatStore";
 
 interface ChatAIProps {
   inputValue: string;
@@ -29,6 +30,8 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
       init: init,
     }));
 
+    const { curChatEnd, setCurChatEnd } = useChatStore();
+
     const [activeChat, setActiveChat] = useState<Chat>();
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -36,7 +39,6 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
 
     const [websocketId, setWebsocketId] = useState("");
     const [curMessage, setCurMessage] = useState("");
-    const [curChatEnd, setCurChatEnd] = useState(true);
     const { messages, setMessages } = useWebSocket(
       "ws://localhost:2900/ws",
       (msg) => {
@@ -92,7 +94,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
       if (curChatEnd) {
         simulateAssistantResponse();
       }
-    }, [messages, isTyping, curChatEnd]);
+    }, [messages, curChatEnd]);
 
     const scrollToBottom = () => {
       messagesEndRef.current?.scrollIntoView({
@@ -168,6 +170,25 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
         console.error("Failed to fetch user data:", error);
       }
     };
+
+    const cancelChat = async () => {
+      if (!activeChat?._id) return;
+      try {
+        const response = await tauriFetch({
+          url: `/chat/${activeChat._id}/_cancel`,
+          method: "POST",
+        });
+        console.log("_cancel", response);
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+      }
+    };
+
+    useEffect(() => {
+      if (curChatEnd) {
+        cancelChat();
+      }
+    }, [curChatEnd]);
 
     async function openChatAI() {
       createWin({

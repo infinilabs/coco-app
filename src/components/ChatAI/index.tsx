@@ -1,12 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { PanelRightClose, PanelRightOpen, X } from "lucide-react";
 
-// import { ThemeToggle } from "./ThemeToggle";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { Sidebar } from "./Sidebar";
 import type { Chat, Message } from "./types";
-import { useTheme } from "../ThemeProvider";
 import { tauriFetch } from "../../api/tauriFetchClient";
 import { useWebSocket } from "../../hooks/useWebSocket";
 import useWindows from "../../hooks/useWindows";
@@ -19,7 +17,6 @@ export default function ChatAI({}: ChatAIProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { theme } = useTheme();
   const { closeWin } = useWindows();
 
   const [websocketId, setWebsocketId] = useState("");
@@ -213,7 +210,7 @@ export default function ChatAI({}: ChatAIProps) {
       console.error("Failed to fetch user data:", error);
     }
   };
-  
+
   const cancelChat = async () => {
     if (!activeChat?._id) return;
     try {
@@ -232,24 +229,19 @@ export default function ChatAI({}: ChatAIProps) {
   }
 
   return (
-    <div
-      className="h-screen"
-    >
+    <div className="h-screen bg-chat_bg_light dark:bg-chat_bg_dark bg-cover">
       <div className="h-[100%] flex">
         {/* Sidebar */}
         {isSidebarOpen ? (
           <div
             className={`fixed inset-y-0 left-0 z-50 w-64 transform ${
               isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-            } transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block ${
-              theme === "dark" ? "bg-gray-800" : "bg-gray-100"
-            }`}
+            } transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block`}
           >
             {activeChat ? (
               <Sidebar
                 chats={chats}
                 activeChat={activeChat}
-                isDark={theme === "dark"}
                 onNewChat={createNewChat}
                 onSelectChat={onSelectChat}
                 onDeleteChat={deleteChat}
@@ -259,40 +251,26 @@ export default function ChatAI({}: ChatAIProps) {
         ) : null}
 
         {/* Main content */}
-        <div
-          className={`flex-1 flex flex-col ${
-            theme === "dark" ? "bg-gray-900" : "bg-white"
-          }`}
-        >
-           <header
-              className={`flex items-center justify-between p-2 border-b ${
-                theme === "dark" ? "border-gray-800" : "border-gray-200"
-              }`}
+        <div className={`flex-1 flex flex-col`}>
+          <header
+            className={`flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-800`}
+          >
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className={`rounded-lg transition-colors hover:bg-gray-100 text-gray-600 dark:hover:bg-gray-800 dark:text-gray-300`}
             >
-              <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className={`rounded-lg transition-colors ${
-                  theme === "dark"
-                    ? "hover:bg-gray-800 text-gray-300"
-                    : "hover:bg-gray-100 text-gray-600"
-                }`}
-              >
-                {isSidebarOpen ? (
-                  <PanelRightClose className="h-6 w-6" />
-                ) : (
-                  <PanelRightOpen className="h-6 w-6" />
-                )}
-              </button>
+              {isSidebarOpen ? (
+                <PanelRightClose className="h-6 w-6" />
+              ) : (
+                <PanelRightOpen className="h-6 w-6" />
+              )}
+            </button>
 
-              {/* <ThemeToggle /> */}
-
-              <X className="cursor-pointer" onClick={closeWindow} />
-            </header>
+            <X className="cursor-pointer" onClick={closeWindow} />
+          </header>
 
           {/* Chat messages */}
-          <div
-            className="flex-1 overflow-y-auto custom-scrollbar"
-          >
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
             {activeChat?.messages?.map((message, index) => (
               <ChatMessage
                 key={message._id + index}
@@ -328,16 +306,12 @@ export default function ChatAI({}: ChatAIProps) {
           </div>
 
           {/* Input area */}
-          <div
-            className={`border-t p-4 ${
-              theme === "dark" ? "border-gray-800" : "border-gray-200"
-            }`}
-          >
+          <div className={`border-t p-4 border-gray-200 dark:border-gray-800`}>
             <ChatInput
               onSend={handleSendMessage}
               disabled={isTyping}
               disabledChange={(value) => {
-                cancelChat()
+                cancelChat();
                 setIsTyping(value);
               }}
               changeMode={() => {}}

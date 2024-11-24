@@ -1,8 +1,17 @@
-import { Library, Mic, Send, Plus, AudioLines, Image } from "lucide-react";
+import {
+  Library,
+  Mic,
+  Send,
+  Plus,
+  AudioLines,
+  Image,
+  CircleStop,
+} from "lucide-react";
 import { useRef, type KeyboardEvent } from "react";
 
 import ChatSwitch from "../SearchChat/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
+import { useChatStore } from "../../stores/chatStore";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -23,6 +32,8 @@ export default function ChatInput({
   changeInput,
 }: ChatInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const { curChatEnd, setCurChatEnd } = useChatStore();
 
   const handleSubmit = () => {
     if (inputValue.trim() && !disabled) {
@@ -78,7 +89,7 @@ export default function ChatInput({
               <Mic className="w-4 h-4 text-[#999] dark:text-[#999]" />
             </button>
           ) : null}
-          {isChatMode ? (
+          {isChatMode && curChatEnd ? (
             <button
               className={`ml-1 p-1 ${
                 inputValue ? "bg-[#0072FF]" : "bg-[#E4E5F0]"
@@ -87,6 +98,15 @@ export default function ChatInput({
               onClick={() => onSend(inputValue.trim())}
             >
               <Send className="w-4 h-4 text-white hover:text-[#999]" />
+            </button>
+          ) : null}
+          {isChatMode && !curChatEnd ? (
+            <button
+              className={`ml-1 p-1 bg-[#0072FF] rounded-full transition-colors`}
+              type="submit"
+              onClick={() => setCurChatEnd(true)}
+            >
+              <CircleStop className="w-4 h-4 text-white hover:text-[#999]" />
             </button>
           ) : null}
         </div>
