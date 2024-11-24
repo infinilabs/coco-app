@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { SearchIcon, MessageCircleIcon } from "lucide-react";
 
 import { SearchResults } from "./SearchResults";
@@ -43,12 +42,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   };
 
   return (
-    <AnimatePresence>
+    <div>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
+        <div
           className="fixed inset-0 z-50 flex items-start justify-center pt-20"
         >
           <div className="w-full max-w-2xl bg-white rounded-lg shadow-2xl">
@@ -88,8 +84,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               )}
             </div>
           </div>
-        </motion.div>
+        </div>
       )}
-    </AnimatePresence>
+    </div>
   );
 };

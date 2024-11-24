@@ -42,4 +42,6 @@ To start desktop development, run:
 
 ```
 pnpm tauri dev
+
+pnpm tauri build --bundles app
 ```

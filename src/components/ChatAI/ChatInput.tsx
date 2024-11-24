@@ -19,7 +19,6 @@ interface ChatInputProps {
 export function ChatInput({
   onSend,
   disabled,
-  disabledChange,
   changeMode,
 }: ChatInputProps) {
   const [input, setInput] = useState("");
@@ -102,7 +101,7 @@ export function ChatInput({
 
           {/* Switch */}
           <ChatSwitch
-            isChat={true}
+            isChatMode={true}
             onChange={(value) => {
               changeMode(value);
               setInput("");

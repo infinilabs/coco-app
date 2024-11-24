@@ -1,5 +1,8 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import {
+  persist,
+  // createJSONStorage
+} from "zustand/middleware";
 
 export type ITheme = "dark" | "light" | "system";
 
@@ -18,7 +21,7 @@ export const useThemeStore = create<IThemeStore>()(
     }),
     {
       name: "active-theme",
-      // storage: createJSONStorage(() => sessionStorage), 
+      // storage: createJSONStorage(() => sessionStorage),
       partialize: (state) =>
         Object.fromEntries(
           Object.entries(state).filter(([key]) => key === "activeTheme")

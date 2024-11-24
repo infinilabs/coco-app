@@ -14,7 +14,9 @@ type ThemeProviderState = {
   setTheme: (theme: Theme) => void;
 };
 
-const ThemeProviderContext = createContext<ThemeProviderState | undefined>(undefined);
+const ThemeProviderContext = createContext<ThemeProviderState | undefined>(
+  undefined
+);
 
 export function ThemeProvider({
   children,
@@ -29,21 +31,20 @@ export function ThemeProvider({
     if (storedTheme) {
       setThemeState(storedTheme);
     }
-  
+
     let unlistenThemeChanges: (() => void) | undefined;
-  
+
     const setupThemeListener = async () => {
       unlistenThemeChanges = await listenForThemeChanges();
     };
-  
+
     setupThemeListener();
-  
+
     return () => {
       // Cleanup listeners on unmount
       unlistenThemeChanges?.();
     };
   }, [storageKey]);
-  
 
   useEffect(() => {
     applyTheme(theme);
@@ -76,12 +77,14 @@ export function ThemeProvider({
     }
 
     // Listen for theme changes
-    const unlisten = await currentWindow.onThemeChanged(({ payload: newTheme }) => {
-      if (theme === "system") {
-        applyTheme(newTheme as Theme);
-        console.log("New theme: " + theme);
+    const unlisten = await currentWindow.onThemeChanged(
+      ({ payload: newTheme }) => {
+        if (theme === "system") {
+          applyTheme(newTheme as Theme);
+          console.log("New theme: " + theme);
+        }
       }
-    });
+    );
 
     return () => {
       unlisten();

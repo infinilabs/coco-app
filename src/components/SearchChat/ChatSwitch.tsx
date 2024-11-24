@@ -1,21 +1,14 @@
-import React, { useState } from "react";
+import React from "react";
 import { Bot, Search } from "lucide-react";
 
 interface ChatSwitchProps {
-  isChat?: boolean;
-  onChange?: (isChatMode: boolean) => void;
+  isChatMode: boolean;
+  onChange: (isChatMode: boolean) => void;
 }
 
-const ChatSwitch: React.FC<ChatSwitchProps> = ({
-  isChat = false,
-  onChange,
-}) => {
-  const [isChatMode, setIsChatMode] = useState(isChat);
-
+const ChatSwitch: React.FC<ChatSwitchProps> = ({ isChatMode, onChange }) => {
   const handleToggle = () => {
-    const newMode = !isChatMode;
-    setIsChatMode(newMode);
-    onChange?.(newMode);
+    onChange?.(!isChatMode);
   };
 
   return (

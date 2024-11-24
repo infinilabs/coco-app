@@ -7,8 +7,9 @@ interface DropdownListProps {
   isSearchComplete: boolean;
 }
 
-function DropdownList({ selected, suggests, isSearchComplete }: DropdownListProps) {
+function DropdownList({ selected, suggests }: DropdownListProps) {
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
+  const [showIndex, setShowIndex] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -22,7 +23,13 @@ function DropdownList({ selected, suggests, isSearchComplete }: DropdownListProp
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    console.log(
+      "handleKeyDown",
+      e.key,
+      showIndex,
+      e.key >= "0" && e.key <= "9" && showIndex
+    );
     if (!suggests.length) return;
 
     if (e.key === "ArrowUp") {
@@ -35,6 +42,9 @@ function DropdownList({ selected, suggests, isSearchComplete }: DropdownListProp
       setSelectedItem((prev) =>
         prev === null || prev === suggests.length - 1 ? 0 : prev + 1
       );
+    } else if (e.key === "Meta") {
+      e.preventDefault();
+      setShowIndex(true);
     } else if (e.key === "Enter" && selectedItem !== null) {
       const item = suggests[selectedItem];
       if (item?._source?.url) {
@@ -43,17 +53,42 @@ function DropdownList({ selected, suggests, isSearchComplete }: DropdownListProp
         selected(item);
       }
     }
+
+    if (e.key >= "0" && e.key <= "9" && showIndex) {
+      console.log(`number ${e.key}`);
+      const item = suggests[parseInt(e.key, 10)];
+      if (item?._source?.url) {
+        handleOpenURL(item?._source?.url);
+      } else {
+        selected(item);
+      }
+    }
   };
+
+  const handleKeyUp = (e: KeyboardEvent) => {
+    console.log("handleKeyUp", e.key);
+    if (!suggests.length) return;
+
+    if (!e.metaKey) {
+      setShowIndex(false);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [showIndex]);
 
   useEffect(() => {
     if (suggests.length > 0) {
       setSelectedItem(0);
-
-      if (containerRef.current && isSearchComplete) {
-        containerRef.current.focus();
-      }
     }
-  }, [JSON.stringify(suggests), isSearchComplete]);
+  }, [JSON.stringify(suggests)]);
 
   useEffect(() => {
     if (selectedItem !== null && itemRefs.current[selectedItem]) {
@@ -67,53 +102,51 @@ function DropdownList({ selected, suggests, isSearchComplete }: DropdownListProp
   return (
     <div
       ref={containerRef}
-      className="h-[calc(100vh-100px)] mt-2.5 pb-10 flex flex-col bg-search_bg_light dark:bg-chat_bg_dark bg-cover rounded-xl overflow-hidden focus:outline-none"
+      data-tauri-drag-region
+      className="h-[500px] w-full p-2 pb-10 flex flex-col bg-search_bg_light dark:bg-chat_bg_dark bg-cover rounded-xl overflow-y-auto overflow-hidden focus:outline-none"
       tabIndex={0}
-      onKeyDown={handleKeyDown}
     >
-      <div className="flex-1 overflow-y-auto p-2">
-        {suggests?.map((item, index) => {
-          const isSelected = selectedItem === index;
-          return (
-            <button
-              key={item._id}
-              ref={(el) => (itemRefs.current[index] = el)}
-              onClick={() => {
-                setSelectedItem(index);
-                if (item?._source?.url) {
-                  handleOpenURL(item?._source?.url);
-                } else {
-                  selected(item);
-                }
-              }}
-              className={`w-full h-10 px-2 text-sm flex items-center justify-between rounded-lg transition-colors ${
-                isSelected
-                  ? "bg-[rgba(0,0,0,0.1)] dark:bg-[rgba(255,255,255,0.1)]"
-                  : "hover:bg-[rgba(0,0,0,0.1)] dark:hover:bg-[rgba(255,255,255,0.1)]"
-              }`}
-            >
-              <div className="flex gap-2 items-center">
-                <img className="w-5 h-5" src={item?._source?.icon} alt="icon" />
-                <span className="text-[#333] dark:text-[#d8d8d8]">
-                  {item?._source?.source}/{item?._source?.title}
-                </span>
-              </div>
-              <div className="flex gap-2 items-center">
-                <span className="text-sm  text-[#666] dark:text-[#666]">
-                  {item?._source?.type}
-                </span>
+      {suggests?.map((item, index) => {
+        const isSelected = selectedItem === index;
+        return (
+          <button
+            key={item._id}
+            ref={(el) => (itemRefs.current[index] = el)}
+            onMouseEnter={() => setSelectedItem(index)}
+            onClick={() => {
+              if (item?._source?.url) {
+                handleOpenURL(item?._source?.url);
+              } else {
+                selected(item);
+              }
+            }}
+            className={`w-full h-10 px-2 text-sm flex items-center justify-between rounded-lg transition-colors ${
+              isSelected
+                ? "bg-[rgba(0,0,0,0.1)] dark:bg-[rgba(255,255,255,0.1)]"
+                : "hover:bg-[rgba(0,0,0,0.1)] dark:hover:bg-[rgba(255,255,255,0.1)]"
+            }`}
+          >
+            <div className="flex gap-2 items-center">
+              <img className="w-5 h-5" src={item?._source?.icon} alt="icon" />
+              <span className="text-[#333] dark:text-[#d8d8d8] truncate w-80 text-left">
+                {item?._source?.source}/{item?._source?.title}
+              </span>
+            </div>
+            <div className="flex gap-2 items-center relative">
+              <span className="text-sm  text-[#666] dark:text-[#666] truncate w-52 text-right">
+                {item?._source?.type}
+              </span>
+              {showIndex && index < 10 ? (
                 <div
-                  className={`w-4 h-4 text-xs flex items-center justify-center text-[#e4e5ef] border border-[#e4e5ef] rounded-sm ${
-                    isSelected ? "text-blue-500 dark:bg-white" : ""
-                  }`}
+                  className={`absolute right-0 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] shadow-[-6px_0px_6px_2px_#e6e6e6] dark:shadow-[-6px_0px_6px_2px_#000] rounded-md`}
                 >
-                  {index + 1}
+                  {index}
                 </div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
+              ) : null}
+            </div>
+          </button>
+        );
+      })}
     </div>
   );
 }

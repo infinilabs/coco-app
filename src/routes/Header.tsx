@@ -1,9 +1,7 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Header() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const showBack = location.pathname !== "/ui";
 
   return (
     <div>

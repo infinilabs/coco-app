@@ -22,10 +22,10 @@
         "create": true,
         "decorations": false,
         "dragDropEnabled": true,
-        "focus": false,
+        "focus": true,
         "fullscreen": false,
-        "height": 90,
-        "maxHeight": 700,
+        "height": 600,
+        "maxHeight": 600,
         "minHeight": 90,
         "width": 680,
         "maxWidth": 680,
@@ -38,7 +38,7 @@
         "maximized": false,
         "proxyUrl": "http://localhost:2900",
         "resizable": false,
-        "shadow": true,
+        "shadow": false,
         "skipTaskbar": false,
         "theme": null,
         "title": "Coco AI",
@@ -73,7 +73,25 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "macOS": {
+      "entitlements": "./Entitlements.plist",
+      "dmg": {
+        "background": "assets/dmg-background.png",
+        "windowSize": {
+          "width": 800,
+          "height": 600
+        },
+        "windowPosition": {
+          "x": 400,
+          "y": 400
+        },
+        "applicationFolderPosition": {
+          "x": 480,
+          "y": 220
+        }
+      }
+    }
   },
   "plugins": {
     "window": {},

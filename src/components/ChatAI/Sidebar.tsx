@@ -1,4 +1,4 @@
-import { MessageSquare, Plus, Trash2 } from "lucide-react";
+import { MessageSquare, Plus } from "lucide-react";
 import type { Chat } from "./types";
 
 interface SidebarProps {
@@ -17,7 +17,6 @@ export function Sidebar({
   isDark,
   onNewChat,
   onSelectChat,
-  onDeleteChat,
   className = "",
 }: SidebarProps) {
   return (

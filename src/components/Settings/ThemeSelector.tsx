@@ -1,15 +1,15 @@
-import React, { useContext } from 'react';
-import { Menu } from '@headlessui/react';
-import { Monitor, Moon, Sun } from 'lucide-react';
-import { Theme, ThemeContext } from './index2';
+import { useContext } from "react";
+import { Menu } from "@headlessui/react";
+import { Monitor, Moon, Sun } from "lucide-react";
+import { Theme, ThemeContext } from "./index2";
 
 const ThemeSelector = () => {
   const { theme, setTheme } = useContext(ThemeContext);
 
   const themes: { value: Theme; label: string; icon: any }[] = [
-    { value: 'light', label: 'Light', icon: Sun },
-    { value: 'dark', label: 'Dark', icon: Moon },
-    { value: 'system', label: 'System', icon: Monitor },
+    { value: "light", label: "Light", icon: Sun },
+    { value: "dark", label: "Dark", icon: Moon },
+    { value: "system", label: "System", icon: Monitor },
   ];
 
   const currentTheme = themes.find((t) => t.value === theme);
@@ -29,8 +29,8 @@ const ThemeSelector = () => {
                   onClick={() => setTheme(item.value)}
                   className={`${
                     active
-                      ? 'bg-gray-100 dark:bg-gray-700'
-                      : 'text-gray-900 dark:text-gray-100'
+                      ? "bg-gray-100 dark:bg-gray-700"
+                      : "text-gray-900 dark:text-gray-100"
                   } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
                 >
                   <item.icon className="w-4 h-4 mr-2" />

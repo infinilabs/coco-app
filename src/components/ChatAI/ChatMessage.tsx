@@ -1,8 +1,4 @@
-import { Bot, User } from "lucide-react";
-import { useState } from "react";
-
 import type { Message } from "./types";
-// import { TypingAnimation } from "./TypingAnimation";
 import { Markdown } from "./Markdown";
 
 interface ChatMessageProps {
@@ -11,7 +7,6 @@ interface ChatMessageProps {
 }
 
 export function ChatMessage({ message, isTyping }: ChatMessageProps) {
-  const [isAnimationComplete, setIsAnimationComplete] = useState(!isTyping);
   const isAssistant = message._source?.type === "assistant";
 
   return (
@@ -23,7 +18,7 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
           isAssistant ? "" : "flex-row-reverse"
         }`}
       >
-        <div
+        {/* <div
           className={`flex-shrink-0 h-8 w-8 rounded-lg flex items-center justify-center ${
             isAssistant
               ? "bg-gradient-to-br from-green-400 to-emerald-500"
@@ -35,27 +30,23 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
           ) : (
             <User className="h-5 w-5 text-white" />
           )}
-        </div>
+        </div> */}
 
         <div
           className={`flex-1 space-y-2 ${
             isAssistant ? "text-left" : "text-right"
           }`}
         >
-          <p className="font-medium text-sm text-gray-900 dark:text-gray-100">
-            {isAssistant ? "Assistant" : "You"}
+          <p className="font-semibold text-sm text-[#333] dark:text-[#d8d8d8]">
+            {isAssistant ? "Summary" : ""}
           </p>
           <div className="prose dark:prose-invert prose-sm max-w-none">
-            <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+            <div className="text-[#333] dark:text-[#d8d8d8] leading-relaxed">
               {isAssistant ? (
                 <>
-                  {/* <TypingAnimation
-                    text={message._source?.message || ""}
-                    onComplete={() => setIsAnimationComplete(true)}
-                  /> */}
                   <Markdown
                     key={isTyping ? "loading" : "done"}
-                    content={(message._source?.message || "")}
+                    content={message._source?.message || ""}
                     loading={isTyping}
                     onDoubleClickCapture={() => {}}
                   />
@@ -64,9 +55,11 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
                   )}
                 </>
               ) : (
-                message._source?.message || ""
+                <div className="px-3 py-2 bg-white dark:bg-[#202126] rounded-xl border border-black/12 dark:border-black/15 font-normal text-sm text-[#333333] dark:text-[#D8D8D8]">
+                  {message._source?.message || ""}
+                </div>
               )}
-            </p>
+            </div>
           </div>
         </div>
       </div>

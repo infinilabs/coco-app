@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { PanelRightClose, PanelRightOpen, X } from "lucide-react";
-import { motion } from "framer-motion";
 
 // import { ThemeToggle } from "./ThemeToggle";
 import { ChatMessage } from "./ChatMessage";
@@ -233,11 +232,7 @@ export default function ChatAI({}: ChatAIProps) {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
+    <div
       className="h-screen"
     >
       <div className="h-[100%] flex">
@@ -269,13 +264,7 @@ export default function ChatAI({}: ChatAIProps) {
             theme === "dark" ? "bg-gray-900" : "bg-white"
           }`}
         >
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ delay: 0.2 }}
-          >
-            <header
+           <header
               className={`flex items-center justify-between p-2 border-b ${
                 theme === "dark" ? "border-gray-800" : "border-gray-200"
               }`}
@@ -299,14 +288,9 @@ export default function ChatAI({}: ChatAIProps) {
 
               <X className="cursor-pointer" onClick={closeWindow} />
             </header>
-          </motion.div>
 
           {/* Chat messages */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ delay: 0.3 }}
+          <div
             className="flex-1 overflow-y-auto custom-scrollbar"
           >
             {activeChat?.messages?.map((message, index) => (
@@ -341,14 +325,10 @@ export default function ChatAI({}: ChatAIProps) {
               </div>
             )}
             <div ref={messagesEndRef} />
-          </motion.div>
+          </div>
 
           {/* Input area */}
-          <motion.div
-            initial={{ y: 100 }}
-            animate={{ y: 0 }}
-            exit={{ y: 100 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          <div
             className={`border-t p-4 ${
               theme === "dark" ? "border-gray-800" : "border-gray-200"
             }`}
@@ -362,9 +342,9 @@ export default function ChatAI({}: ChatAIProps) {
               }}
               changeMode={() => {}}
             />
-          </motion.div>
+          </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

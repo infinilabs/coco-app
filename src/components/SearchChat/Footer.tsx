@@ -1,60 +1,50 @@
 import {
-  Settings,
-  LogOut,
+  // Settings,
+  // LogOut,
   Command,
-  User,
-  Home,
-  ChevronUp,
+  // User,
+  // Home,
+  // ChevronUp,
   ArrowDown01,
   AppWindowMac,
-  ArrowDownUp,
+  // ArrowDownUp,
   CornerDownLeft,
 } from "lucide-react";
 // import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/react";
 // import { Link } from "react-router-dom";
-import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
-
-const shortcuts = [
-  { label: "Quick open", keys: "Tab" },
-  { label: "Open", keys: "CornerDownLeft" },
-];
-
-const isChatShortcuts = [
-  { label: "Go to Search", keys: "⌘ + /" },
-  { label: "Open", keys: "⌘ + O" },
-];
+// import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 interface FooterProps {
   isChat: boolean;
   name?: string;
 }
 
-export const Footer = ({ isChat, name }: FooterProps) => {
-  async function openWebviewWindowSettings() {
-    const webview = new WebviewWindow("settings", {
-      title: "Coco Settings",
-      dragDropEnabled: true,
-      center: true,
-      width: 900,
-      height: 700,
-      alwaysOnTop: true,
-      skipTaskbar: true,
-      decorations: true,
-      closable: true,
-      url: "/ui/settings",
-    });
-    webview.once("tauri://created", function () {
-      console.log("webview created");
-    });
-    webview.once("tauri://error", function (e) {
-      console.log("error creating webview", e);
-    });
-  }
+export const Footer = ({ name }: FooterProps) => {
+  // async function openWebviewWindowSettings() {
+  //   const webview = new WebviewWindow("settings", {
+  //     title: "Coco Settings",
+  //     dragDropEnabled: true,
+  //     center: true,
+  //     width: 900,
+  //     height: 700,
+  //     alwaysOnTop: true,
+  //     skipTaskbar: true,
+  //     decorations: true,
+  //     closable: true,
+  //     url: "/ui/settings",
+  //   });
+  //   webview.once("tauri://created", function () {
+  //     console.log("webview created");
+  //   });
+  //   webview.once("tauri://error", function (e) {
+  //     console.log("error creating webview", e);
+  //   });
+  // }
 
   return (
     <div
-      style={{ zIndex: 999 }}
-      className="px-4 h-10 fixed bottom-0 left-0 right-0 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between rounded-xl rounded-t-none overflow-hidden"
+      data-tauri-drag-region
+      className="px-4 z-999 mx-[1px] h-10 absolute bottom-0 left-0 right-0 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between rounded-xl rounded-t-none overflow-hidden"
     >
       <div className="flex items-center">
         {

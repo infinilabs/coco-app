@@ -37,8 +37,8 @@ export function Mermaid(props: { code: string }) {
   function viewSvgInNewWindow() {
     const svg = ref.current?.querySelector("svg");
     if (!svg) return;
-    const text = new XMLSerializer().serializeToString(svg);
-    const blob = new Blob([text], { type: "image/svg+xml" });
+    // const text = new XMLSerializer().serializeToString(svg);
+    // const blob = new Blob([text], { type: "image/svg+xml" });
     // view img
     // URL.createObjectURL(blob);
   }
@@ -63,12 +63,13 @@ export function Mermaid(props: { code: string }) {
 }
 
 // 7
-export function PreCode(props: { children: any }) {
+export function PreCode(props: { children?: any }) {
   const ref = useRef<HTMLPreElement>(null);
   // const previewRef = useRef<HTMLPreviewHander>(null);
   const [mermaidCode, setMermaidCode] = useState("");
   const [htmlCode, setHtmlCode] = useState("");
   const { height } = useWindowSize();
+  console.log(htmlCode, height);
 
   const renderArtifacts = useDebouncedCallback(() => {
     if (!ref.current) return;
@@ -86,6 +87,7 @@ export function PreCode(props: { children: any }) {
   }, 600);
 
   const enableArtifacts = true;
+  console.log(enableArtifacts);
 
   //Wrap the paragraph for plain-text
   useEffect(() => {
@@ -137,7 +139,7 @@ export function PreCode(props: { children: any }) {
 }
 
 // 6
-function CustomCode(props: { children: any; className?: string }) {
+function CustomCode(props: { children?: any; className?: string }) {
   const enableCodeFold = false;
 
   const ref = useRef<HTMLPreElement>(null);
@@ -213,13 +215,13 @@ function tryWrapHtmlCode(text: string) {
   return text
     .replace(
       /([`]*?)(\w*?)([\n\r]*?)(<!DOCTYPE html>)/g,
-      (match, quoteStart, lang, newLine, doctype) => {
+      (match, quoteStart, doctype) => {
         return !quoteStart ? "\n```html\n" + doctype : match;
       }
     )
     .replace(
       /(<\/body>)([\r\n\s]*?)(<\/html>)([\n\r]*)([`]*)([\n\r]*?)/g,
-      (match, bodyEnd, space, htmlEnd, newLine, quoteEnd) => {
+      (match, bodyEnd, space, htmlEnd, quoteEnd) => {
         return !quoteEnd ? bodyEnd + space + htmlEnd + "\n```\n" : match;
       }
     );
