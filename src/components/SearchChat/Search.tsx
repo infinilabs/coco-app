@@ -64,24 +64,26 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
         isTransitioned ? "opacity-0 pointer-events-none" : "opacity-100"
       } bottom-0 h-[500px]`}
     >
-      <div
-        className={`min-h-full w-full flex items-start justify-center rounded-xl overflow-hidden relative`}
-      >
-        {/* Search Results Panel */}
-        {suggests.length > 0 ? (
-          <DropdownList
-            suggests={suggests}
-            isSearchComplete={isSearchComplete}
-            selected={(item) => setSelectedItem(item)}
-          />
-        ) : null}
+      {isChatMode ? null : (
+        <div
+          className={`min-h-full w-full flex items-start justify-center rounded-xl overflow-hidden relative`}
+        >
+          {/* Search Results Panel */}
+          {suggests.length > 0 ? (
+            <DropdownList
+              suggests={suggests}
+              isSearchComplete={isSearchComplete}
+              selected={(item) => setSelectedItem(item)}
+            />
+          ) : null}
 
-        {selectedItem ? <SearchResults /> : null}
+          {selectedItem ? <SearchResults /> : null}
 
-        {suggests.length > 0 || selectedItem ? (
-          <Footer isChat={false} name={selectedItem?.source} />
-        ) : null}
-      </div>
+          {suggests.length > 0 || selectedItem ? (
+            <Footer isChat={false} name={selectedItem?.source} />
+          ) : null}
+        </div>
+      )}
     </div>
   );
 }

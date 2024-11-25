@@ -129,12 +129,12 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
             <div className="flex gap-2 items-center">
               <img className="w-5 h-5" src={item?._source?.icon} alt="icon" />
               <span className="text-[#333] dark:text-[#d8d8d8] truncate w-80 text-left">
-                {item?._source?.source}/{item?._source?.title}
+                {item?._source?.title}
               </span>
             </div>
             <div className="flex gap-2 items-center relative">
               <span className="text-sm  text-[#666] dark:text-[#666] truncate w-52 text-right">
-                {item?._source?.type}
+                {item?._source?.source}
               </span>
               {showIndex && index < 10 ? (
                 <div

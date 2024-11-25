@@ -48,5 +48,5 @@ export function useWebSocket(
     }
   };
 
-  return { messages, connected, sendMessage, setMessages };
+  return { messages, connected, sendMessage, setMessages, setConnected };
 }
