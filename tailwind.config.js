@@ -11,12 +11,12 @@ export default {
         separator: "rgb(var(--color-separator) / <alpha-value>)",
       },
       backgroundImage: {
-        chat_bg_light: "url('/public/chat_bg_light.png')",
-        chat_bg_dark: "url('/public/chat_bg_dark.png')",
-        search_bg_light: "url('/public/search_bg_light.png')",
-        search_bg_dark: "url('/public/search_bg_dark.png')",
-        inputbox_bg_light: "url('/public/inputbox_bg_light.png')",
-        inputbox_bg_dark: "url('/public/inputbox_bg_dark.png')",
+        chat_bg_light: "url('./assets/chat_bg_light.png')",
+        chat_bg_dark: "url('./assets/chat_bg_dark.png')",
+        search_bg_light: "url('./assets/search_bg_light.png')",
+        search_bg_dark: "url('./assets/search_bg_dark.png')",
+        inputbox_bg_light: "url('./assets/inputbox_bg_light.png')",
+        inputbox_bg_dark: "url('./assets/inputbox_bg_dark.png')",
       },
       textColor: {
         primary: "rgb(var(--color-foreground) / <alpha-value>)",
@@ -31,8 +31,7 @@ export default {
         },
       },
       boxShadow: {
-        "window-custom":
-          "0 1px 5px 0 rgba(0, 0, 0, 0.15), 0 1px 5px -1px rgba(0, 0, 0, 0.1), 0 2px 5px rgba(0, 0, 0, 0.1)",
+        "window-custom": "0px 16px 32px 0px rgba(0,0,0,0.3)",
       },
     },
   },

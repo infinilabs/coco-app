@@ -15,6 +15,7 @@
     "@tauri-apps/plugin-http": "~2.0.1",
     "@tauri-apps/plugin-shell": ">=2.0.0",
     "@tauri-apps/plugin-websocket": "~2",
+    "@tauri-apps/plugin-window": "2.0.0-alpha.1",
     "@traptitech/markdown-it-katex": "^3.6.0",
     "axios": "^1.7.7",
     "clsx": "^2.1.1",

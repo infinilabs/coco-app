@@ -11,7 +11,7 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
   const [showIndex, setShowIndex] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const handleOpenURL = async (url: string) => {
     if (!url) return;
@@ -103,13 +103,16 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
     <div
       ref={containerRef}
       data-tauri-drag-region
-      className="h-[500px] w-full p-2 pb-10 flex flex-col rounded-xl overflow-y-auto overflow-hidden focus:outline-none"
+      className="max-h-[458px] w-full p-2 flex flex-col rounded-xl overflow-y-auto overflow-hidden custom-scrollbar focus:outline-none"
       tabIndex={0}
     >
+      <div className="p-2 text-xs text-[#999] dark:text-[#666]">
+        Results
+      </div>
       {suggests?.map((item, index) => {
         const isSelected = selectedItem === index;
         return (
-          <button
+          <div
             key={item._id}
             ref={(el) => (itemRefs.current[index] = el)}
             onMouseEnter={() => setSelectedItem(index)}
@@ -120,7 +123,7 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
                 selected(item);
               }
             }}
-            className={`w-full h-10 px-2 text-sm flex items-center justify-between rounded-lg transition-colors ${
+            className={`w-full px-2 py-2.5 text-sm flex items-center justify-between rounded-lg transition-colors ${
               isSelected
                 ? "bg-[rgba(0,0,0,0.1)] dark:bg-[rgba(255,255,255,0.1)]"
                 : "hover:bg-[rgba(0,0,0,0.1)] dark:hover:bg-[rgba(255,255,255,0.1)]"
@@ -144,7 +147,7 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
                 </div>
               ) : null}
             </div>
-          </button>
+          </div>
         );
       })}
     </div>

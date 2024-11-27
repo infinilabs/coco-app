@@ -22,6 +22,14 @@ export default function ChatAI({}: ChatAIProps) {
   const [websocketId, setWebsocketId] = useState("");
   const [curMessage, setCurMessage] = useState("");
   const [curChatEnd, setCurChatEnd] = useState(true);
+
+  const [curId, setCurId] = useState("");
+
+  const curChatEndRef = useRef(curChatEnd);
+  curChatEndRef.current = curChatEnd;
+
+  const curIdRef = useRef(curId);
+  curIdRef.current = curId;
   const { messages, setMessages } = useWebSocket(
     "ws://localhost:2900/ws",
     (msg) => {
@@ -31,22 +39,24 @@ export default function ChatAI({}: ChatAIProps) {
       }
 
       if (msg.includes("PRIVATE")) {
-        if (msg.includes("assistant finished output")) {
+        if (
+          msg.includes("assistant finished output") ||
+          curChatEndRef.current
+        ) {
           setCurChatEnd(true);
         } else {
           const cleanedData = msg.replace(/^PRIVATE /, "");
           try {
             const chunkData = JSON.parse(cleanedData);
-            setCurMessage((prev) => prev + chunkData.message_chunk);
-            return chunkData.message_chunk;
+            if (chunkData.reply_to_message === curIdRef.current) {
+              setCurMessage((prev) => prev + chunkData.message_chunk);
+              return chunkData.message_chunk;
+            }
           } catch (error) {
             console.error("JSON Parse error:", error);
           }
-          return "";
         }
       }
-
-      return "";
     }
   );
 
@@ -153,6 +163,7 @@ export default function ChatAI({}: ChatAIProps) {
         body: JSON.stringify({ message: content }),
       });
       console.log("_send", response, websocketId);
+      setCurId(response.data[0]?._id);
       const updatedChat: Chat = {
         ...activeChat,
         messages: [...(activeChat?.messages || []), ...(response.data || [])],
@@ -229,14 +240,14 @@ export default function ChatAI({}: ChatAIProps) {
   }
 
   return (
-    <div className="h-screen bg-chat_bg_light dark:bg-chat_bg_dark bg-cover">
+    <div className="h-screen">
       <div className="h-[100%] flex">
         {/* Sidebar */}
         {isSidebarOpen ? (
           <div
             className={`fixed inset-y-0 left-0 z-50 w-64 transform ${
               isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-            } transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block`}
+            } transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block bg-gray-100 dark:bg-gray-800`}
           >
             {activeChat ? (
               <Sidebar
@@ -251,7 +262,7 @@ export default function ChatAI({}: ChatAIProps) {
         ) : null}
 
         {/* Main content */}
-        <div className={`flex-1 flex flex-col`}>
+        <div className={`flex-1 flex flex-col bg-white dark:bg-gray-900`}>
           <header
             className={`flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-800`}
           >
@@ -295,13 +306,6 @@ export default function ChatAI({}: ChatAIProps) {
                 isTyping={!curChatEnd}
               />
             ) : null}
-            {isTyping && (
-              <div className="flex pt-0 pb-4 pl-20 gap-2 items-center text-gray-500 dark:text-gray-400">
-                <div className="w-2 h-2 rounded-full bg-current animate-bounce" />
-                <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.2s]" />
-                <div className="w-2 h-2 rounded-full bg-current animate-bounce [animation-delay:0.4s]" />
-              </div>
-            )}
             <div ref={messagesEndRef} />
           </div>
 
@@ -310,11 +314,12 @@ export default function ChatAI({}: ChatAIProps) {
             <ChatInput
               onSend={handleSendMessage}
               disabled={isTyping}
-              disabledChange={(value) => {
+              curChatEnd={curChatEnd}
+              disabledChange={() => {
                 cancelChat();
-                setIsTyping(value);
+                setCurChatEnd(true);
+                setIsTyping(false);
               }}
-              changeMode={() => {}}
             />
           </div>
         </div>

@@ -22,15 +22,17 @@ interface ChatAIProps {
 
 export interface ChatAIRef {
   init: () => void;
+  cancelChat: () => void;
 }
 
 const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
   ({ inputValue, isTransitioned, changeInput }, ref) => {
     useImperativeHandle(ref, () => ({
       init: init,
+      cancelChat: cancelChat,
     }));
 
-    const { curChatEnd, setCurChatEnd, stopChat } = useChatStore();
+    const { curChatEnd, setCurChatEnd } = useChatStore();
 
     const [activeChat, setActiveChat] = useState<Chat>();
     const [isTyping, setIsTyping] = useState(false);
@@ -39,6 +41,13 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
 
     const [websocketId, setWebsocketId] = useState("");
     const [curMessage, setCurMessage] = useState("");
+    const [curId, setCurId] = useState("");
+
+    const curChatEndRef = useRef(curChatEnd);
+    curChatEndRef.current = curChatEnd;
+
+    const curIdRef = useRef(curId);
+    curIdRef.current = curId;
     const { messages, setMessages } = useWebSocket(
       "ws://localhost:2900/ws",
       (msg) => {
@@ -48,28 +57,30 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
         }
 
         if (msg.includes("PRIVATE")) {
-          if (msg.includes("assistant finished output")) {
+          if (
+            msg.includes("assistant finished output") ||
+            curChatEndRef.current
+          ) {
             setCurChatEnd(true);
           } else {
             const cleanedData = msg.replace(/^PRIVATE /, "");
             try {
               const chunkData = JSON.parse(cleanedData);
-              setCurMessage((prev) => prev + chunkData.message_chunk);
-              return chunkData.message_chunk;
+              if (chunkData.reply_to_message === curIdRef.current) {
+                setCurMessage((prev) => prev + chunkData.message_chunk);
+                return chunkData.message_chunk;
+              }
             } catch (error) {
               console.error("JSON Parse error:", error);
             }
-            return "";
           }
         }
-
-        return "";
       }
     );
 
     // websocket
     useEffect(() => {
-      if (messages.length === 0 || !activeChat?._id || stopChat) return;
+      if (messages.length === 0 || !activeChat?._id) return;
 
       const simulateAssistantResponse = () => {
         console.log("messages", messages);
@@ -94,7 +105,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
       if (curChatEnd) {
         simulateAssistantResponse();
       }
-    }, [messages, curChatEnd, stopChat]);
+    }, [messages, curChatEnd]);
 
     const scrollToBottom = () => {
       messagesEndRef.current?.scrollIntoView({
@@ -125,6 +136,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
     };
 
     const init = () => {
+      if (!curChatEnd) return;
       if (!activeChat?._id) {
         createNewChat();
       } else {
@@ -145,6 +157,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
           body: JSON.stringify({ message: content }),
         });
         console.log("_send", response, websocketId);
+        setCurId(response.data[0]?._id);
         const updatedChat: Chat = {
           ...newChat,
           messages: [...(newChat?.messages || []), ...(response.data || [])],
@@ -172,23 +185,20 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
     };
 
     const cancelChat = async () => {
+      setCurChatEnd(true);
+      setIsTyping(false);
       if (!activeChat?._id) return;
       try {
         const response = await tauriFetch({
           url: `/chat/${activeChat._id}/_cancel`,
           method: "POST",
         });
+
         console.log("_cancel", response);
       } catch (error) {
         console.error("Failed to fetch user data:", error);
       }
     };
-
-    useEffect(() => {
-      if (curChatEnd) {
-        cancelChat();
-      }
-    }, [curChatEnd]);
 
     async function openChatAI() {
       createWin({

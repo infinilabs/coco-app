@@ -35,7 +35,7 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
       // } else {
       //   await getCurrentWebviewWindow().setSize(new LogicalSize(680, 90));
       // }
-      setSuggests(data);
+      setSuggests([...data, ...data, ...data, ...data]);
       setIsSearchComplete(true);
     } catch (error) {
       console.error("Failed to fetch user data:", error);
@@ -56,23 +56,20 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
     !isChatMode && debouncedSearch();
   }, [input]);
 
-  console.log(11111, isChatMode);
   if (isChatMode || suggests.length === 0) return null;
 
   return (
     <div
-      className={`rounded-xl overflow-hidden bg-search_bg_light dark:bg-search_bg_dark bg-cover border border-[#E6E6E6] dark:border-[#272626] absolute w-full transition-opacity duration-500 ${
+      className={`shadow-window-custom rounded-xl overflow-hidden bg-search_bg_light dark:bg-search_bg_dark bg-cover border border-[#E6E6E6] dark:border-[#272626] absolute w-full transition-opacity duration-500 ${
         isTransitioned ? "opacity-0 pointer-events-none" : "opacity-100"
-      } bottom-0 h-[500px]`}
+      } top-[96px]`}
       style={{
         backgroundPosition: "-1px 0",
         backgroundSize: "101% 100%",
       }}
     >
       {isChatMode ? null : (
-        <div
-          className={`min-h-full w-full flex items-start justify-center overflow-hidden relative`}
-        >
+        <div className={`max-h-[498px] pb-10 w-full relative`}>
           {/* Search Results Panel */}
           {suggests.length > 0 ? (
             <DropdownList

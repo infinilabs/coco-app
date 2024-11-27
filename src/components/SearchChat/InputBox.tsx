@@ -1,22 +1,15 @@
-import {
-  Library,
-  Mic,
-  Send,
-  Plus,
-  AudioLines,
-  Image,
-  CircleStop,
-} from "lucide-react";
+import { Library, Mic, Send, Plus, AudioLines, Image } from "lucide-react";
 import { useRef, type KeyboardEvent } from "react";
 
 import ChatSwitch from "../SearchChat/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import { useChatStore } from "../../stores/chatStore";
+import StopIcon from "../../icons/Stop";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
   disabled: boolean;
-  disabledChange: (disabled: boolean) => void;
+  disabledChange: () => void;
   changeMode: (isChatMode: boolean) => void;
   isChatMode: boolean;
   inputValue: string;
@@ -30,14 +23,14 @@ export default function ChatInput({
   isChatMode,
   inputValue,
   changeInput,
+  disabledChange,
 }: ChatInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { stopChat, setStopChat } = useChatStore();
+  const { curChatEnd } = useChatStore();
 
   const handleSubmit = () => {
     if (inputValue.trim() && !disabled) {
-      setStopChat(false);
       onSend(inputValue.trim());
     }
   };
@@ -90,24 +83,28 @@ export default function ChatInput({
               <Mic className="w-4 h-4 text-[#999] dark:text-[#999]" />
             </button>
           ) : null}
-          {isChatMode && stopChat ? (
+          {isChatMode && curChatEnd ? (
             <button
               className={`ml-1 p-1 ${
-                inputValue ? "bg-[#0072FF]" : "bg-[#E4E5F0]"
+                inputValue ? "bg-[#0072FF]" : "bg-[#E4E5F0] dark:bg-[#545454]"
               } rounded-full transition-colors`}
               type="submit"
               onClick={() => onSend(inputValue.trim())}
             >
-              <Send className="w-4 h-4 text-white hover:text-[#999]" />
+              <Send className="w-4 h-4 text-white" />
             </button>
           ) : null}
-          {isChatMode && !stopChat ? (
+          {isChatMode && !curChatEnd ? (
             <button
-              className={`ml-1 p-1 bg-[#0072FF] rounded-full transition-colors`}
+              className={`ml-1 px-1 bg-[#0072FF] rounded-full transition-colors`}
               type="submit"
-              onClick={() => setStopChat(true)}
+              onClick={() => disabledChange()}
             >
-              <CircleStop className="w-4 h-4 text-white hover:text-[#999]" />
+              <StopIcon
+                size={16}
+                className="w-4 h-4 text-white"
+                aria-label="Stop message"
+              />
             </button>
           ) : null}
         </div>
@@ -147,7 +144,7 @@ export default function ChatInput({
           <ChatSwitch
             isChatMode={isChatMode}
             onChange={(value) => {
-              setStopChat(!value);
+              value && disabledChange();
               changeMode(value);
             }}
           />

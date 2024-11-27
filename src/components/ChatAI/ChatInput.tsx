@@ -6,20 +6,21 @@ import {
   useRef,
   useEffect,
 } from "react";
-import ChatSwitch from "../SearchChat/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
+import StopIcon from "../../icons/Stop";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
   disabled: boolean;
-  disabledChange: (disabled: boolean) => void;
-  changeMode: (isChatMode: boolean) => void;
+  curChatEnd: boolean;
+  disabledChange: () => void;
 }
 
 export function ChatInput({
   onSend,
   disabled,
-  changeMode,
+  curChatEnd,
+  disabledChange,
 }: ChatInputProps) {
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -58,7 +59,7 @@ export function ChatInput({
 
   return (
     <form onSubmit={handleSubmit} className="w-full rounded-xl overflow-hidden">
-      <div className="bg-inputbox_bg_light dark:bg-inputbox_bg_dark bg-cover rounded-xl">
+      <div className="bg-inputbox_bg_light dark:bg-inputbox_bg_dark bg-cover rounded-xl border border-[#E6E6E6] dark:border-[#272626]">
         {/* Search Bar */}
         <div className="relative">
           <div className="p-[13px] flex items-center bg-white dark:bg-[#202126] rounded-xl transition-all">
@@ -72,14 +73,29 @@ export function ChatInput({
             <button className="p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-colors">
               <Mic className="w-4 h-4 text-[#999] dark:text-[#999]" />
             </button>
-            <button
-              className={`ml-1 p-1 ${
-                input ? "bg-[#0072FF]" : "bg-[#E4E5F0]"
-              } rounded-full transition-colors`}
-              onClick={(e) => handleSubmit(e as unknown as FormEvent)}
-            >
-              <Send className="w-4 h-4 text-white hover:text-[#999]" />
-            </button>
+            {curChatEnd ? (
+              <button
+                className={`ml-1 p-1 ${
+                  input ? "bg-[#0072FF]" : "bg-[#E4E5F0]"
+                } rounded-full transition-colors`}
+                onClick={(e) => handleSubmit(e as unknown as FormEvent)}
+              >
+                <Send className="w-4 h-4 text-white hover:text-[#999]" />
+              </button>
+            ) : null}
+            {!curChatEnd ? (
+              <button
+                className={`ml-1 px-1 bg-[#0072FF] rounded-full transition-colors`}
+                type="submit"
+                onClick={() => disabledChange()}
+              >
+                <StopIcon
+                  size={16}
+                  className="w-4 h-4 text-white"
+                  aria-label="Stop message"
+                />
+              </button>
+            ) : null}
           </div>
         </div>
 
@@ -98,15 +114,6 @@ export function ChatInput({
               Upload
             </button>
           </div>
-
-          {/* Switch */}
-          <ChatSwitch
-            isChatMode={true}
-            onChange={(value) => {
-              changeMode(value);
-              setInput("");
-            }}
-          />
         </div>
       </div>
     </form>

@@ -1,7 +1,5 @@
 import { MessageSquare, Plus } from "lucide-react";
 import type { Chat } from "./types";
-import { useTheme } from "../ThemeProvider";
-
 interface SidebarProps {
   chats: Chat[];
   activeChat: Chat;
@@ -18,25 +16,14 @@ export function Sidebar({
   onSelectChat,
   className = "",
 }: SidebarProps) {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-
   return (
     <div className={`h-full flex flex-col ${className}`}>
       <div className="p-4">
         <button
           onClick={onNewChat}
-          className={`w-full flex items-center gap-3 px-4 py-3 text-sm rounded-lg transition-all ${
-            isDark
-              ? " text-white hover:bg-gray-600 active:bg-gray-500"
-              : " text-gray-700 hover:bg-gray-50 active:bg-gray-100 shadow-sm"
-          }`}
+          className={`w-full flex items-center gap-3 px-4 py-3 text-sm rounded-lg transition-all border border-[#E6E6E6] dark:border-[#272626] text-gray-700 hover:bg-gray-50 active:bg-gray-100 shadow-sm dark:text-white dark:hover:bg-gray-600 dark:active:bg-gray-500`}
         >
-          <Plus
-            className={`h-4 w-4 ${
-              isDark ? "text-indigo-400" : "text-indigo-600"
-            }`}
-          />
+          <Plus className={`h-4 w-4 text-indigo-600 dark:text-indigo-400`} />
           New Chat
         </button>
       </div>
@@ -44,30 +31,14 @@ export function Sidebar({
         {chats.map((chat) => (
           <div
             key={chat._id}
-            className={`group relative rounded-lg transition-all ${
-              activeChat._id === chat._id
-                ? isDark
-                  ? " text-white"
-                  : " text-gray-900 shadow-sm"
-                : isDark
-                ? "text-gray-300 hover:bg-gray-700/30"
-                : "text-gray-600 hover:bg-white/10"
-            }`}
+            className={`group relative rounded-lg transition-all hover:border border-[#E6E6E6] dark:border-[#272626] text-gray-900 shadow-sm dark:text-white`}
           >
             <button
               className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left"
               onClick={() => onSelectChat(chat)}
             >
               <MessageSquare
-                className={`h-4 w-4 flex-shrink-0 ${
-                  activeChat._id === chat._id
-                    ? isDark
-                      ? "text-indigo-400"
-                      : "text-indigo-600"
-                    : isDark
-                    ? "text-gray-400"
-                    : "text-gray-500"
-                }`}
+                className={`h-4 w-4 flex-shrink-0 text-indigo-600 dark:text-indigo-400`}
               />
               <span className="truncate">{chat.title || chat._id}</span>
             </button>
@@ -85,9 +56,7 @@ export function Sidebar({
             )} */}
             {activeChat._id === chat._id && (
               <div
-                className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-full ${
-                  isDark ? "bg-indigo-400" : "bg-indigo-600"
-                }`}
+                className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-full bg-indigo-600 dark:bg-indigo-400`}
               />
             )}
           </div>
