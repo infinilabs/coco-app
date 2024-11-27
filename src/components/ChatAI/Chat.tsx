@@ -30,7 +30,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
       init: init,
     }));
 
-    const { curChatEnd, setCurChatEnd } = useChatStore();
+    const { curChatEnd, setCurChatEnd, stopChat } = useChatStore();
 
     const [activeChat, setActiveChat] = useState<Chat>();
     const [isTyping, setIsTyping] = useState(false);
@@ -69,7 +69,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
 
     // websocket
     useEffect(() => {
-      if (messages.length === 0 || !activeChat?._id) return;
+      if (messages.length === 0 || !activeChat?._id || stopChat) return;
 
       const simulateAssistantResponse = () => {
         console.log("messages", messages);
@@ -94,7 +94,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
       if (curChatEnd) {
         simulateAssistantResponse();
       }
-    }, [messages, curChatEnd]);
+    }, [messages, curChatEnd, stopChat]);
 
     const scrollToBottom = () => {
       messagesEndRef.current?.scrollIntoView({

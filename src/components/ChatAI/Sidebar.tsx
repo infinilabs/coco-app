@@ -40,7 +40,7 @@ export function Sidebar({
           New Chat
         </button>
       </div>
-      <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-1">
+      <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-1 custom-scrollbar">
         {chats.map((chat) => (
           <div
             key={chat._id}
