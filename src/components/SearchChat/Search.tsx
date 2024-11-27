@@ -35,7 +35,7 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
       // } else {
       //   await getCurrentWebviewWindow().setSize(new LogicalSize(680, 90));
       // }
-      setSuggests([...data, ...data, ...data, ...data]);
+      setSuggests(data);
       setIsSearchComplete(true);
     } catch (error) {
       console.error("Failed to fetch user data:", error);
