@@ -7,6 +7,8 @@ import {
 export type IChatStore = {
   curChatEnd: boolean;
   setCurChatEnd: (value: boolean) => void;
+  stopChat: boolean;
+  setStopChat: (value: boolean) => void;
 };
 
 export const useChatStore = create<IChatStore>()(
@@ -14,6 +16,8 @@ export const useChatStore = create<IChatStore>()(
     (set) => ({
       curChatEnd: true,
       setCurChatEnd: (value: boolean) => set(() => ({ curChatEnd: value })),
+      stopChat: false,
+      setStopChat: (value: boolean) => set(() => ({ stopChat: value })),
     }),
     {
       name: "chat-state",

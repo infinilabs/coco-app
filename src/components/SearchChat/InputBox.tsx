@@ -33,10 +33,11 @@ export default function ChatInput({
 }: ChatInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { curChatEnd, setCurChatEnd } = useChatStore();
+  const { stopChat, setStopChat } = useChatStore();
 
   const handleSubmit = () => {
     if (inputValue.trim() && !disabled) {
+      setStopChat(false);
       onSend(inputValue.trim());
     }
   };
@@ -89,7 +90,7 @@ export default function ChatInput({
               <Mic className="w-4 h-4 text-[#999] dark:text-[#999]" />
             </button>
           ) : null}
-          {isChatMode && curChatEnd ? (
+          {isChatMode && stopChat ? (
             <button
               className={`ml-1 p-1 ${
                 inputValue ? "bg-[#0072FF]" : "bg-[#E4E5F0]"
@@ -100,11 +101,11 @@ export default function ChatInput({
               <Send className="w-4 h-4 text-white hover:text-[#999]" />
             </button>
           ) : null}
-          {isChatMode && !curChatEnd ? (
+          {isChatMode && !stopChat ? (
             <button
               className={`ml-1 p-1 bg-[#0072FF] rounded-full transition-colors`}
               type="submit"
-              onClick={() => setCurChatEnd(true)}
+              onClick={() => setStopChat(true)}
             >
               <CircleStop className="w-4 h-4 text-white hover:text-[#999]" />
             </button>
@@ -146,6 +147,7 @@ export default function ChatInput({
           <ChatSwitch
             isChatMode={isChatMode}
             onChange={(value) => {
+              setStopChat(!value);
               changeMode(value);
             }}
           />

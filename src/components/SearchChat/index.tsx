@@ -88,7 +88,7 @@ export default function SearchChat() {
         />
       </div>
 
-      {isChatMode ? null : (
+      {isChatMode || !input ? null : (
         <Search
           key="Search"
           input={input}
