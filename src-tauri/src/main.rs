@@ -17,7 +17,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             show_panel,
             hide_panel,
-            close_panel
+            close_panel,
+            change_window_height
         ])
         .setup(|app| {
             init(app.app_handle());
@@ -55,6 +56,16 @@ fn init(app_handle: &AppHandle) {
     }));
 
     panel.set_delegate(delegate);
+}
+
+
+#[tauri::command]
+fn change_window_height(handle: AppHandle,height: u32) {
+    let window: WebviewWindow = handle.get_webview_window("main").unwrap();
+
+    let mut size = window.outer_size().unwrap();
+    size.height = height;
+    window.set_size(size).unwrap();
 }
 
 #[tauri::command]
