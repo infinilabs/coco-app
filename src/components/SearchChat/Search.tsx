@@ -18,9 +18,9 @@ interface SearchProps {
 }
 
 function Search({ isTransitioned, isChatMode, input }: SearchProps) {
-  const [suggests, setSuggests] = useState<any[]>([]);
+  const [suggests, setSuggests] = useState<any[]>([{}, {}, {}]);
   const [isSearchComplete, setIsSearchComplete] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<any>();
 
   const getSuggest = async () => {
     try {
@@ -56,7 +56,7 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
     !isChatMode && debouncedSearch();
   }, [input]);
 
-  if (isChatMode || suggests.length === 0) return null;
+  // if (isChatMode || suggests.length === 0) return null;
 
   return (
     <div

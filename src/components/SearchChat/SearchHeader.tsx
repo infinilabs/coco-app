@@ -52,10 +52,10 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
 };
 
 const typeOptions: FilterOption[] = [
-  { id: "all", label: "全部类型" },
-  { id: "doc", label: "文档" },
-  { id: "image", label: "图片" },
-  { id: "code", label: "代码" },
+  { id: "all", label: "All" },
+  { id: "doc", label: "Doc" },
+  { id: "image", label: "Image" },
+  { id: "code", label: "Code" },
 ];
 
 const ownerOptions: FilterOption[] = [
@@ -77,22 +77,22 @@ export const SearchHeader: React.FC = () => {
   const [creatorFilter, setCreatorFilter] = useState("all");
 
   return (
-    <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+    <div className="flex items-center justify-between py-1">
       <div className="text-xs text-gray-600 dark:text-gray-400">
-        搜索到{" "}
-        <span className="font-medium text-gray-900 dark:text-gray-100">
+        Find
+        <span className="px-1 font-medium text-gray-900 dark:text-gray-100">
           200
-        </span>{" "}
-        条数据
+        </span>
+        results
       </div>
       <div className="flex gap-2">
         <FilterDropdown
-          label="类型"
+          label="Type"
           options={typeOptions}
           value={typeFilter}
           onChange={setTypeFilter}
         />
-        <FilterDropdown
+        {/* <FilterDropdown
           label="归属"
           options={ownerOptions}
           value={ownerFilter}
@@ -103,7 +103,7 @@ export const SearchHeader: React.FC = () => {
           options={creatorOptions}
           value={creatorFilter}
           onChange={setCreatorFilter}
-        />
+        /> */}
       </div>
     </div>
   );

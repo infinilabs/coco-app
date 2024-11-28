@@ -7,6 +7,7 @@ import { useEffect, useState, useRef } from "react";
 import InputBox from "./InputBox";
 import Search from "./Search";
 import ChatAI, { ChatAIRef } from "../ChatAI/Chat";
+import useAutoResizeWindow from "../../hooks/useAutoResizeWindow"; // Make sure to use the correct path
 
 // const appWindow = new Window("main");
 
@@ -43,6 +44,8 @@ import ChatAI, { ChatAIRef } from "../ChatAI/Chat";
 export default function SearchChat() {
   const chatAIRef = useRef<ChatAIRef>(null);
 
+  useAutoResizeWindow();
+  
   const [isChatMode, setIsChatMode] = useState(false);
   const [input, setInput] = useState("");
   const [isTransitioned, setIsTransitioned] = useState(false);
@@ -91,6 +94,8 @@ export default function SearchChat() {
   };
   const isTyping = false;
 
+  console.log(11111, isChatMode, input, !input);
+
   return (
     <div
       data-tauri-drag-region
@@ -113,7 +118,6 @@ export default function SearchChat() {
           changeInput={changeInput}
         />
       </div>
-
       <div
         className={`shadow-window-custom rounded-xl overflow-hidden bg-chat_bg_light dark:bg-chat_bg_dark bg-cover border border-[#E6E6E6] dark:border-[#272626] absolute w-full transition-all duration-500 ${
           isTransitioned
