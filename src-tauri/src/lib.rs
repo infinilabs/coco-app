@@ -55,6 +55,8 @@ pub fn run() {
         .setup(|app| {
             init(app.app_handle());
 
+            enable_autostart(app);
+
             Ok(())
         })
         .run(tauri::generate_context!())
@@ -88,4 +90,21 @@ fn init(app_handle: &AppHandle) {
     }));
 
     panel.set_delegate(delegate);
+}
+
+fn enable_autostart(app: &mut tauri::App) {
+    use tauri_plugin_autostart::MacosLauncher;
+    use tauri_plugin_autostart::ManagerExt;
+
+    app.handle()
+        .plugin(tauri_plugin_autostart::init(
+            MacosLauncher::LaunchAgent,
+            None,
+        ))
+        .unwrap();
+
+    // Get the autostart manager
+    let autostart_manager = app.autolaunch();
+    // Enable autostart
+    let _ = autostart_manager.enable();
 }
