@@ -6,10 +6,12 @@ import { LogicalSize } from "@tauri-apps/api/dpi";
 const useAutoResizeWindow = () => {
   // Function to resize the window to the content's size
   const resizeWindowToContent = async () => {
-    const contentHeight = document.body.scrollHeight;
+    const contentHeight = document.getElementById("main_window")?.scrollHeight || 0;
 
     try {
       // Resize the window to fit content size
+
+      console.log(121212, contentHeight)
       await getCurrentWebviewWindow()?.setSize(
         new LogicalSize(680, contentHeight)
       );
@@ -18,6 +20,7 @@ const useAutoResizeWindow = () => {
     } catch (error) {
       console.error("Error resizing window:", error);
     }
+    
   };
 
   useEffect(() => {

@@ -58,23 +58,8 @@ const typeOptions: FilterOption[] = [
   { id: "code", label: "Code" },
 ];
 
-const ownerOptions: FilterOption[] = [
-  { id: "all", label: "全部归属" },
-  { id: "personal", label: "个人" },
-  { id: "team", label: "团队" },
-  { id: "public", label: "公开" },
-];
-
-const creatorOptions: FilterOption[] = [
-  { id: "all", label: "全部创建者" },
-  { id: "me", label: "我创建的" },
-  { id: "shared", label: "共享给我的" },
-];
-
 export const SearchHeader: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState("all");
-  const [ownerFilter, setOwnerFilter] = useState("all");
-  const [creatorFilter, setCreatorFilter] = useState("all");
 
   return (
     <div className="flex items-center justify-between py-1">
@@ -92,18 +77,6 @@ export const SearchHeader: React.FC = () => {
           value={typeFilter}
           onChange={setTypeFilter}
         />
-        {/* <FilterDropdown
-          label="归属"
-          options={ownerOptions}
-          value={ownerFilter}
-          onChange={setOwnerFilter}
-        />
-        <FilterDropdown
-          label="创建者"
-          options={creatorOptions}
-          value={creatorFilter}
-          onChange={setCreatorFilter}
-        /> */}
       </div>
     </div>
   );

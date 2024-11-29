@@ -1,9 +1,6 @@
-import { useEffect, useState, useCallback } from "react";
-// import {
-//   WebviewWindow,
-//   getCurrentWebviewWindow,
-// } from "@tauri-apps/api/webviewWindow";
-// import { LogicalSize } from "@tauri-apps/api/dpi";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { LogicalSize } from "@tauri-apps/api/dpi";
 
 import DropdownList from "./DropdownList";
 import { Footer } from "./Footer";
@@ -18,9 +15,32 @@ interface SearchProps {
 }
 
 function Search({ isTransitioned, isChatMode, input }: SearchProps) {
-  const [suggests, setSuggests] = useState<any[]>([{}, {}, {}]);
+  const [suggests, setSuggests] = useState<any[]>([]);
   const [isSearchComplete, setIsSearchComplete] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>();
+
+  const mainWindowRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const element = mainWindowRef.current;
+    if (!element) return;
+
+    const resizeObserver = new ResizeObserver(async (entries) => {
+      for (let entry of entries) {
+        let newHeight = entry.contentRect.height;
+        newHeight = newHeight + 90 + (newHeight === 0 ? 0 : 46);
+        console.log("Height updated:", newHeight);
+        await getCurrentWebviewWindow()?.setSize(
+          new LogicalSize(680, newHeight)
+        );
+      }
+    });
+
+    resizeObserver.observe(element);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   const getSuggest = async () => {
     try {
@@ -30,11 +50,6 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
       });
       console.log("_suggest", input, response);
       const data = response.data?.hits?.hits || [];
-      // if (data.length > 0) {
-      //   await getCurrentWebviewWindow().setSize(new LogicalSize(680, 600));
-      // } else {
-      //   await getCurrentWebviewWindow().setSize(new LogicalSize(680, 90));
-      // }
       setSuggests(data);
       setIsSearchComplete(true);
     } catch (error) {
@@ -54,13 +69,14 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
 
   useEffect(() => {
     !isChatMode && debouncedSearch();
+    if (!input) setSuggests([]);
   }, [input]);
 
-  // if (isChatMode || suggests.length === 0) return null;
+  if (isChatMode || suggests.length === 0) return null;
 
   return (
     <div
-      className={`shadow-window-custom rounded-xl overflow-hidden bg-search_bg_light dark:bg-search_bg_dark bg-cover border border-[#E6E6E6] dark:border-[#272626] absolute w-full transition-opacity duration-500 ${
+      className={`rounded-xl overflow-hidden bg-search_bg_light dark:bg-search_bg_dark bg-cover border border-[#E6E6E6] dark:border-[#272626] absolute w-full transition-opacity duration-500 ${
         isTransitioned ? "opacity-0 pointer-events-none" : "opacity-100"
       } top-[96px]`}
       style={{
@@ -69,7 +85,10 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
       }}
     >
       {isChatMode ? null : (
-        <div className={`max-h-[498px] pb-10 w-full relative`}>
+        <div
+          ref={mainWindowRef}
+          className={`max-h-[498px] pb-10 w-full relative`}
+        >
           {/* Search Results Panel */}
           {suggests.length > 0 ? (
             <DropdownList
