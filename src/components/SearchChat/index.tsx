@@ -61,7 +61,7 @@ export default function SearchChat() {
     if (!isTransitioned) {
       setTimeout(async () => {
         await getCurrentWebviewWindow()?.setSize(new LogicalSize(680, 90));
-      }, 500);
+      }, 1000);
     }
   }
   useEffect(() => {
