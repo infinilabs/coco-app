@@ -27,8 +27,8 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
     const resizeObserver = new ResizeObserver(async (entries) => {
       for (let entry of entries) {
         let newHeight = entry.contentRect.height;
-        newHeight = newHeight + 90 + (newHeight === 0 ? 0 : 46);
         console.log("Height updated:", newHeight);
+        newHeight = newHeight + 90 + (newHeight === 0 ? 0 : 46);
         await getCurrentWebviewWindow()?.setSize(
           new LogicalSize(680, newHeight)
         );
@@ -40,7 +40,7 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
     return () => {
       resizeObserver.disconnect();
     };
-  }, []);
+  }, [suggests]);
 
   const getSuggest = async () => {
     try {
@@ -51,6 +51,13 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
       console.log("_suggest", input, response);
       const data = response.data?.hits?.hits || [];
       setSuggests(data);
+      //
+      // const list = [];
+      // for (let i = 0; i < input.length; i++) {
+      //   list.push({});
+      // }
+      // setSuggests(list);
+      //
       setIsSearchComplete(true);
     } catch (error) {
       console.error("Failed to fetch user data:", error);
@@ -72,7 +79,7 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
     if (!input) setSuggests([]);
   }, [input]);
 
-  if (isChatMode || suggests.length === 0) return null;
+  // if (isChatMode || suggests.length === 0) return null;
 
   return (
     <div

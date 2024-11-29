@@ -10,8 +10,6 @@ const useAutoResizeWindow = () => {
 
     try {
       // Resize the window to fit content size
-
-      console.log(121212, contentHeight)
       await getCurrentWebviewWindow()?.setSize(
         new LogicalSize(680, contentHeight)
       );

@@ -92,8 +92,6 @@ export default function SearchChat() {
   };
   const isTyping = false;
 
-  console.log(11111, isChatMode, input, !input);
-
   return (
     <div
       data-tauri-drag-region
@@ -132,7 +130,7 @@ export default function SearchChat() {
         />
       </div>
 
-      {isChatMode || !input ? null : (
+      {isChatMode ? null : (
         <Search
           key="Search"
           input={input}
