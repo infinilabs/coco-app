@@ -56,6 +56,7 @@ pub fn run() {
             init(app.app_handle());
 
             enable_autostart(app);
+            enable_shortcut(app);
 
             Ok(())
         })
@@ -107,4 +108,35 @@ fn enable_autostart(app: &mut tauri::App) {
     let autostart_manager = app.autolaunch();
     // Enable autostart
     let _ = autostart_manager.enable();
+}
+
+fn enable_shortcut(app: &mut tauri::App) {
+    use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
+
+    let window = app.get_webview_window("main").unwrap();
+
+    let command_shortcut: Shortcut = "command+shift+space".parse().unwrap();
+
+    app.handle()
+        .plugin(
+            tauri_plugin_global_shortcut::Builder::new()
+                .with_handler(move |_app, shortcut, event| {
+                    //println!("{:?}", shortcut);
+                    if shortcut == &command_shortcut {
+                        if let ShortcutState::Pressed = event.state() {
+                            println!("Command+B Pressed!");
+                            if window.is_focused().unwrap() {
+                                window.hide().unwrap();
+                            } else {
+                                window.show().unwrap();
+                                window.set_focus().unwrap();
+                            }
+                        }
+                    }
+                })
+                .build(),
+        )
+        .unwrap();
+
+    app.global_shortcut().register(command_shortcut).unwrap();
 }
