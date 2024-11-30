@@ -159,7 +159,7 @@ fn change_shortcut<R: Runtime>(
 
     remove_shortcut(&app)?;
 
-    let shortcut: Shortcut = key.parse().map_err(|_|"设置的快捷键格式错误".to_owned())?;
+    let shortcut: Shortcut = key.parse().map_err(|_| "设置的快捷键格式错误".to_owned())?;
     app.global_shortcut()
         .on_shortcut(shortcut, move |_app, scut, event| {
             if scut == &shortcut {
