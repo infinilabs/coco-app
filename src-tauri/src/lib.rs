@@ -63,6 +63,7 @@ pub fn run() {
 
             enable_autostart(app);
             enable_shortcut(app);
+            enable_tray(app);
 
             Ok(())
         })
@@ -217,4 +218,28 @@ fn remove_shortcut<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<(), String> 
     app.global_shortcut().unregister(short).unwrap();
 
     Ok(())
+}
+
+fn enable_tray(app: &mut tauri::App) {
+    use tauri::{
+        menu::{Menu, MenuItem},
+        tray::TrayIconBuilder,
+    };
+
+    let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>).unwrap();
+    let menu = Menu::with_items(app, &[&quit_i]).unwrap();
+    let _tray = TrayIconBuilder::new()
+        .icon(app.default_window_icon().unwrap().clone())
+        .menu(&menu)
+        .on_menu_event(|app, event| match event.id.as_ref() {
+            "quit" => {
+                println!("quit menu item was clicked");
+                app.exit(0);
+            }
+            _ => {
+                println!("menu item {:?} not handled", event.id);
+            }
+        })
+        .build(app)
+        .unwrap();
 }
