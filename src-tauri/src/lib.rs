@@ -1,7 +1,42 @@
+use tauri::{AppHandle, Manager, WebviewWindow};
+use tauri_nspanel::{panel_delegate, ManagerExt, WebviewWindowExt};
+
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
+}
+
+#[tauri::command]
+fn change_window_height(handle: AppHandle, height: u32) {
+    let window: WebviewWindow = handle.get_webview_window("main").unwrap();
+
+    let mut size = window.outer_size().unwrap();
+    size.height = height;
+    window.set_size(size).unwrap();
+}
+
+#[tauri::command]
+fn show_panel(handle: AppHandle) {
+    let panel = handle.get_webview_panel("main").unwrap();
+
+    panel.show();
+}
+
+#[tauri::command]
+fn hide_panel(handle: AppHandle) {
+    let panel = handle.get_webview_panel("main").unwrap();
+
+    panel.order_out(None);
+}
+
+#[tauri::command]
+fn close_panel(handle: AppHandle) {
+    let panel = handle.get_webview_panel("main").unwrap();
+
+    panel.released_when_closed(true);
+
+    panel.close();
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
