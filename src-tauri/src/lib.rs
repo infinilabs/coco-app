@@ -1,4 +1,4 @@
-use tauri::{AppHandle, Manager, WebviewWindow};
+use tauri::{AppHandle, Manager, Runtime, WebviewWindow};
 use tauri_nspanel::{panel_delegate, ManagerExt, WebviewWindowExt};
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -48,6 +48,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet,
             change_window_height,
+            change_shortcut,
             show_panel,
             hide_panel,
             close_panel,
@@ -139,4 +140,36 @@ fn enable_shortcut(app: &mut tauri::App) {
         .unwrap();
 
     app.global_shortcut().register(command_shortcut).unwrap();
+}
+
+
+#[tauri::command]
+fn change_shortcut<R: Runtime>(
+    app: tauri::AppHandle<R>,
+    window: tauri::Window<R>,
+) -> Result<(), String> {
+    use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
+
+    let old_shortcut: Shortcut = "command+shift+space".parse().unwrap();
+    app.global_shortcut()
+        .unregister(old_shortcut)
+        .map_err(|_| "删除之前的快捷键失败".to_owned())?;
+
+    let shortcut: Shortcut = "command+KeyB".parse().unwrap();
+    app.global_shortcut()
+        .on_shortcut(shortcut, move |_app, scut, event| {
+            if scut == &shortcut {
+                if let ShortcutState::Pressed = event.state() {
+                    println!("Command+B Pressed!");
+                    if window.is_focused().unwrap() {
+                        window.hide().unwrap();
+                    } else {
+                        window.show().unwrap();
+                        window.set_focus().unwrap();
+                    }
+                }
+            }
+        }).map_err(|_| "注册新的快捷键失败".to_owned())?;
+
+    Ok(())
 }
