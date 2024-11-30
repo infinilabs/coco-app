@@ -105,7 +105,7 @@ fn enable_autostart(app: &mut tauri::App) {
 
     app.handle()
         .plugin(tauri_plugin_autostart::init(
-            MacosLauncher::LaunchAgent,
+            MacosLauncher::AppleScript,
             None,
         ))
         .unwrap();
