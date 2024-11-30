@@ -1,5 +1,10 @@
+use std::{fs::create_dir, io::Read};
+
 use tauri::{AppHandle, Manager, Runtime, WebviewWindow};
 use tauri_nspanel::{panel_delegate, ManagerExt, WebviewWindowExt};
+use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
+
+const DEFAULT_SHORTCUT: &str = "command+shift+space";
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -116,7 +121,7 @@ fn enable_shortcut(app: &mut tauri::App) {
 
     let window = app.get_webview_window("main").unwrap();
 
-    let command_shortcut: Shortcut = "command+shift+space".parse().unwrap();
+    let command_shortcut: Shortcut = current_shortcut(app.app_handle()).unwrap();
 
     app.handle()
         .plugin(
@@ -142,20 +147,19 @@ fn enable_shortcut(app: &mut tauri::App) {
     app.global_shortcut().register(command_shortcut).unwrap();
 }
 
-
 #[tauri::command]
 fn change_shortcut<R: Runtime>(
     app: tauri::AppHandle<R>,
     window: tauri::Window<R>,
+    key: String,
 ) -> Result<(), String> {
-    use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
+    use std::fs::File;
+    use std::io::Write;
+    use tauri_plugin_global_shortcut::ShortcutState;
 
-    let old_shortcut: Shortcut = "command+shift+space".parse().unwrap();
-    app.global_shortcut()
-        .unregister(old_shortcut)
-        .map_err(|_| "删除之前的快捷键失败".to_owned())?;
+    remove_shortcut(&app)?;
 
-    let shortcut: Shortcut = "command+KeyB".parse().unwrap();
+    let shortcut: Shortcut = key.parse().unwrap();
     app.global_shortcut()
         .on_shortcut(shortcut, move |_app, scut, event| {
             if scut == &shortcut {
@@ -169,7 +173,48 @@ fn change_shortcut<R: Runtime>(
                     }
                 }
             }
-        }).map_err(|_| "注册新的快捷键失败".to_owned())?;
+        })
+        .map_err(|_| "注册新的快捷键失败".to_owned())?;
+
+    let path = app.path().app_config_dir().unwrap();
+    if path.exists() == false {
+        create_dir(&path).unwrap();
+    }
+
+    let file_path = path.join("shortcut.txt");
+    let mut file = File::create(file_path).unwrap();
+    file.write_all(key.as_bytes()).unwrap();
+
+    Ok(())
+}
+
+fn current_shortcut<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<Shortcut, String> {
+    use std::fs::File;
+
+    let path = app.path().app_config_dir().unwrap();
+    let old_value = if path.exists() == false {
+        DEFAULT_SHORTCUT.to_owned()
+    } else {
+        let file_path = path.join("shortcut.txt");
+        let mut file = File::open(file_path).unwrap();
+        let mut data = String::new();
+        file.read_to_string(&mut data).unwrap();
+
+        if data.is_empty() {
+            DEFAULT_SHORTCUT.to_owned()
+        } else {
+            data
+        }
+    };
+    let short: Shortcut = old_value.parse().unwrap();
+
+    Ok(short)
+}
+
+fn remove_shortcut<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<(), String> {
+    let short = current_shortcut(app)?;
+
+    app.global_shortcut().unregister(short).unwrap();
 
     Ok(())
 }
