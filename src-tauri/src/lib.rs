@@ -193,18 +193,18 @@ fn current_shortcut<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<Shortcut, S
     use std::fs::File;
 
     let path = app.path().app_config_dir().unwrap();
-    let old_value = if path.exists() == false {
-        DEFAULT_SHORTCUT.to_owned()
-    } else {
-        let file_path = path.join("shortcut.txt");
-        let mut file = File::open(file_path).unwrap();
-        let mut data = String::new();
-        file.read_to_string(&mut data).unwrap();
+    let mut old_value = DEFAULT_SHORTCUT.to_owned();
 
-        if data.is_empty() {
-            DEFAULT_SHORTCUT.to_owned()
-        } else {
-            data
+    if path.exists() {
+        let file_path = path.join("shortcut.txt");
+        if file_path.exists() {
+            let mut file = File::open(file_path).unwrap();
+            let mut data = String::new();
+            if let Ok(_) = file.read_to_string(&mut data) {
+                if data.is_empty() == false {
+                    old_value = data
+                }
+            }
         }
     };
     let short: Shortcut = old_value.parse().unwrap();
