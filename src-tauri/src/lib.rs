@@ -160,7 +160,7 @@ fn change_shortcut<R: Runtime>(
 
     remove_shortcut(&app)?;
 
-    let shortcut: Shortcut = key.parse().map_err(|_| "设置的快捷键格式错误".to_owned())?;
+    let shortcut: Shortcut = key.parse().map_err(|_| "The format of the shortcut key is incorrect".to_owned())?;
     app.global_shortcut()
         .on_shortcut(shortcut, move |_app, scut, event| {
             if scut == &shortcut {
@@ -175,7 +175,7 @@ fn change_shortcut<R: Runtime>(
                 }
             }
         })
-        .map_err(|_| "注册新的快捷键失败".to_owned())?;
+        .map_err(|_| "Failed to register new shortcut key".to_owned())?;
 
     let path = app.path().app_config_dir().unwrap();
     if path.exists() == false {
