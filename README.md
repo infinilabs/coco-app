@@ -23,6 +23,8 @@ At COCO AI, we aim to streamline workplace collaboration by centralizing access 
 
 ## Getting Started
 
+[![Coco AI in two minutes](http://img.youtube.com/vi/t-mgb5ZuDqY/1.jpg)](http://www.youtube.com/watch?v=t-mgb5ZuDqY "Getting started with Coco AI")
+
 ### Initial Setup
 
 **This version of pnpm requires at least Node.js v18.12**
