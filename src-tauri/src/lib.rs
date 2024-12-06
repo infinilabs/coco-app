@@ -222,14 +222,17 @@ fn remove_shortcut<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<(), String> 
 
 fn enable_tray(app: &mut tauri::App) {
     use tauri::{
+        image::Image,
         menu::{Menu, MenuItem},
         tray::TrayIconBuilder,
     };
 
+    let image = Image::from_path("icons/32x32.png").unwrap();
+
     let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>).unwrap();
     let menu = Menu::with_items(app, &[&quit_i]).unwrap();
     let _tray = TrayIconBuilder::new()
-        .icon(app.default_window_icon().unwrap().clone())
+        .icon(image)
         .menu(&menu)
         .on_menu_event(|app, event| match event.id.as_ref() {
             "quit" => {
