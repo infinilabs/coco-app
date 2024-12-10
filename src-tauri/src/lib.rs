@@ -160,7 +160,9 @@ fn change_shortcut<R: Runtime>(
 
     remove_shortcut(&app)?;
 
-    let shortcut: Shortcut = key.parse().map_err(|_| "The format of the shortcut key is incorrect".to_owned())?;
+    let shortcut: Shortcut = key
+        .parse()
+        .map_err(|_| "The format of the shortcut key is incorrect".to_owned())?;
     app.global_shortcut()
         .on_shortcut(shortcut, move |_app, scut, event| {
             if scut == &shortcut {
@@ -225,16 +227,41 @@ fn enable_tray(app: &mut tauri::App) {
         image::Image,
         menu::{Menu, MenuItem},
         tray::TrayIconBuilder,
+        webview::WebviewBuilder,
     };
 
     let image = Image::from_path("icons/32x32.png").unwrap();
 
     let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>).unwrap();
-    let menu = Menu::with_items(app, &[&quit_i]).unwrap();
+    let settings_i = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>).unwrap();
+    let menu = Menu::with_items(app, &[&quit_i, &settings_i]).unwrap();
     let _tray = TrayIconBuilder::new()
         .icon(image)
         .menu(&menu)
         .on_menu_event(|app, event| match event.id.as_ref() {
+            "settings" => {
+                println!("settings menu item was clicked");
+                let window = app.get_webview_window("settings");
+                if let Some(window) = window {
+                    window.show().unwrap();
+                    window.set_focus().unwrap();
+                } else {
+                    let window = tauri::window::WindowBuilder::new(app, "Settings")
+                        .build()
+                        .unwrap();
+                    let webview_builder = WebviewBuilder::new(
+                        "Settings",
+                        tauri::WebviewUrl::App("index.html".into()),
+                    );
+                    let webview = window
+                        .add_child(
+                            webview_builder,
+                            tauri::LogicalPosition::new(0, 0),
+                            window.inner_size().unwrap(),
+                        )
+                        .unwrap();
+                }
+            }
             "quit" => {
                 println!("quit menu item was clicked");
                 app.exit(0);
