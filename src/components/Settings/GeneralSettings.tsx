@@ -9,11 +9,13 @@ import {
   Sun,
 } from "lucide-react";
 import { isTauri, invoke } from "@tauri-apps/api/core";
+import { enable, isEnabled, disable } from "@tauri-apps/plugin-autostart";
 
 import SettingsItem from "./SettingsItem";
 import SettingsSelect from "./SettingsSelect";
 import SettingsToggle from "./SettingsToggle";
 import { ThemeOption } from "./index2";
+import { type Hotkey } from "../../utils/tauri";
 
 interface GeneralSettingsProps {
   theme: "light" | "dark" | "system";
@@ -30,7 +32,7 @@ export default function GeneralSettings({
     const fetchAutoStartStatus = async () => {
       if (isTauri()) {
         try {
-          const status = await invoke<boolean>("is_autostart_enabled");
+          const status = await isEnabled();
           setLaunchAtLogin(status);
         } catch (error) {
           console.error("Failed to fetch autostart status:", error);
@@ -44,27 +46,120 @@ export default function GeneralSettings({
   const enableAutoStart = async () => {
     if (isTauri()) {
       try {
-        await invoke("enable_autostart");
-        setLaunchAtLogin(true);
+        await enable();
       } catch (error) {
         console.error("Failed to enable autostart:", error);
       }
-    } else {
-      setLaunchAtLogin(true);
     }
+    setLaunchAtLogin(true);
   };
 
   const disableAutoStart = async () => {
     if (isTauri()) {
       try {
-        await invoke("disable_autostart");
-        setLaunchAtLogin(false);
+        await disable();
       } catch (error) {
         console.error("Failed to disable autostart:", error);
       }
-    } else {
-      setLaunchAtLogin(false);
     }
+    setLaunchAtLogin(false);
+  };
+
+  const [listening, setListening] = useState(false);
+  const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
+  const [hotkey, setHotkey] = useState<Hotkey | null>({
+    alt: false,
+    code: "",
+    ctrl: false,
+    meta: true,
+    shift: true,
+  });
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      e.preventDefault();
+      setPressedKeys((prev) => new Set(prev).add(e.code));
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      setPressedKeys((prev) => {
+        const next = new Set(prev);
+        next.delete(e.code);
+        return next;
+      });
+    };
+
+    if (listening) {
+      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keyup", handleKeyUp);
+    }
+
+    return () => {
+      if (listening) {
+        window.removeEventListener("keydown", handleKeyDown);
+        window.removeEventListener("keyup", handleKeyUp);
+      }
+    };
+  }, [listening]);
+
+  useEffect(() => {
+    if (pressedKeys.size === 0) return;
+
+    const currentHotkey: Hotkey = {
+      meta: pressedKeys.has("MetaLeft") || pressedKeys.has("MetaRight"),
+      ctrl: pressedKeys.has("ControlLeft") || pressedKeys.has("ControlRight"),
+      shift: pressedKeys.has("ShiftLeft") || pressedKeys.has("ShiftRight"),
+      alt: pressedKeys.has("AltLeft") || pressedKeys.has("AltRight"),
+      code:
+        Array.from(pressedKeys).find(
+          (key) =>
+            key.startsWith("Key") || key.startsWith("Digit") || key === "Space"
+        ) ?? "",
+    };
+
+    setHotkey(currentHotkey);
+
+    if (currentHotkey.code) {
+      setListening(false);
+    }
+  }, [pressedKeys]);
+
+  const convertShortcut = (shortcut: string): string => {
+    return shortcut
+      .replace(/⌘/g, "command")
+      .replace(/⇧/g, "shift")
+      .replace(/⎇/g, "alt")
+      .replace(/control/i, "ctrl")
+      .toLowerCase()
+      .replace(/\s+/g, "")
+      .trim();
+  };
+
+  const formatHotkey = (hotkey: Hotkey | null): string => {
+    if (!hotkey) return "None";
+    const parts: string[] = [];
+    if (hotkey.meta) parts.push("⌘");
+    if (hotkey.ctrl) parts.push("Ctrl");
+    if (hotkey.alt) parts.push("Alt");
+    if (hotkey.shift) parts.push("Shift");
+    if (hotkey.code === "Space" || hotkey.code === "") parts.push("Space");
+    else if (hotkey.code.startsWith("Key")) parts.push(hotkey.code.slice(3));
+    else if (hotkey.code.startsWith("Digit")) parts.push(hotkey.code.slice(5));
+
+    const shortcut = parts.join("+");
+
+    // Save the hotkey immediately
+    invoke("change_shortcut", { key: convertShortcut(shortcut) }).catch((err) =>
+      console.error("Failed to save hotkey:", err)
+    );
+
+    return parts.join(" + ");
+  };
+
+  const handleStartListening = () => {
+    setPressedKeys(new Set());
+    setHotkey(null);
+    setListening(true);
   };
 
   return (
@@ -93,8 +188,11 @@ export default function GeneralSettings({
             title="Coco Hotkey"
             description="Global shortcut to open Coco"
           >
-            <button className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
-              Command + Shift + Space
+            <button
+              onClick={handleStartListening}
+              className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200"
+            >
+              {listening ? "Listening..." : formatHotkey(hotkey)}
             </button>
           </SettingsItem>
 

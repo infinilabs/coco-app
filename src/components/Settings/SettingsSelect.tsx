@@ -15,7 +15,7 @@ export default function SettingsSelect({
     <Select
       value={value}
       onChange={(e) => onChange?.(e.target.value)}
-      className="rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+      className="rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-blue-500"
     >
       {options.map((option) => (
         <option key={option} value={option.toLowerCase()}>

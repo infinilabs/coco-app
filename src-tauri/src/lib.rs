@@ -3,8 +3,7 @@ use std::{fs::create_dir, io::Read};
 use tauri::{AppHandle, Manager, Runtime, WebviewWindow};
 use tauri_nspanel::{panel_delegate, ManagerExt, WebviewWindowExt};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
-use tauri::State;
-use tauri_plugin_autostart::{MacosLauncher, ManagerExt as AutoStartManagerExt};
+use tauri_plugin_autostart::MacosLauncher;
 
 const DEFAULT_SHORTCUT: &str = "command+shift+space";
 
@@ -46,21 +45,6 @@ fn close_panel(handle: AppHandle) {
     panel.close();
 }
 
-#[tauri::command]
-fn is_autostart_enabled(state: State<tauri::AppHandle>) -> Result<bool, String> {
-    let autostart_manager = state.autolaunch();
-    autostart_manager
-        .is_enabled()
-        .map_err(|e| format!("Failed to check autostart status: {}", e))
-}
-
-#[tauri::command]
-fn enable_autostart(state: State<tauri::AppHandle>) -> Result<(), String> {
-    let autostart_manager = state.autolaunch();
-    autostart_manager
-        .enable()
-        .map_err(|e| format!("Failed to enable autostart: {}", e))
-}
 // fn enable_autostart(app: &mut tauri::App) {
 //   use tauri_plugin_autostart::MacosLauncher;
 //   use tauri_plugin_autostart::ManagerExt;
@@ -90,14 +74,6 @@ fn enable_autostart(state: State<tauri::AppHandle>) -> Result<(), String> {
 //   }
 // }
 
-#[tauri::command]
-fn disable_autostart(state: State<tauri::AppHandle>) -> Result<(), String> {
-    let autostart_manager = state.autolaunch();
-    autostart_manager
-        .disable()
-        .map_err(|e| format!("Failed to disable autostart: {}", e))
-}
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -111,11 +87,7 @@ pub fn run() {
             change_shortcut,
             show_panel,
             hide_panel,
-            close_panel,
-            is_autostart_enabled,
-            enable_autostart,
-            disable_autostart
-            
+            close_panel,      
         ])
         .setup(|app| {
             init(app.app_handle());
