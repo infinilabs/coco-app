@@ -234,7 +234,7 @@ fn enable_tray(app: &mut tauri::App) {
 
     let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>).unwrap();
     let settings_i = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>).unwrap();
-    let menu = Menu::with_items(app, &[&quit_i, &settings_i]).unwrap();
+    let menu = Menu::with_items(app, &[&settings_i, &quit_i]).unwrap();
     let _tray = TrayIconBuilder::new()
         .icon(image)
         .menu(&menu)
@@ -260,6 +260,7 @@ fn enable_tray(app: &mut tauri::App) {
                             window.inner_size().unwrap(),
                         )
                         .unwrap();
+
                 }
             }
             "quit" => {

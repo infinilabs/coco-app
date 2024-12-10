@@ -31,7 +31,11 @@ export default defineConfig(async () => ({
       "/chat": {
         target: "http://localhost:2900",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/chat/, ""),
+        secure: false,
+      },
+      "/query": {
+        target: "http://localhost:2900",
+        changeOrigin: true,
         secure: false,
       },
     },

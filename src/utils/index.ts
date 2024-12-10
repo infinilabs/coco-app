@@ -50,3 +50,11 @@ export function useWindowSize() {
 
   return size;
 }
+
+export const IsTauri = () => {
+  return Boolean(
+    typeof window !== 'undefined' &&
+    window !== undefined &&
+    (window as any).__TAURI_INTERNALS__ !== undefined
+  );
+};
