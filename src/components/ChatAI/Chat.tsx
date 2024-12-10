@@ -6,12 +6,12 @@ import {
   useImperativeHandle,
 } from "react";
 import { MessageSquarePlus, PanelLeft } from "lucide-react";
+import { isTauri } from "@tauri-apps/api/core";
 
 import { ChatMessage } from "./ChatMessage";
 import type { Chat, Message } from "./types";
 import { tauriFetch } from "../../api/tauriFetchClient";
 import { useWebSocket } from "../../hooks/useWebSocket";
-import useWindows from "../../hooks/useWindows";
 import { useChatStore } from "../../stores/chatStore";
 
 interface ChatAIProps {
@@ -37,7 +37,6 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
     const [activeChat, setActiveChat] = useState<Chat>();
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const { createWin } = useWindows();
 
     const [websocketId, setWebsocketId] = useState("");
     const [curMessage, setCurMessage] = useState("");
@@ -201,19 +200,24 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
     };
 
     async function openChatAI() {
-      createWin({
-        label: "chat",
-        title: "Coco AI",
-        dragDropEnabled: true,
-        center: true,
-        width: 900,
-        height: 800,
-        alwaysOnTop: true,
-        skipTaskbar: true,
-        decorations: true,
-        closable: true,
-        url: "/ui/chat",
-      });
+      if (isTauri()) {
+        const { useWindows } = await import("../../hooks/useWindows");
+        const { createWin } = useWindows();
+
+        createWin({
+          label: "chat",
+          title: "Coco AI",
+          dragDropEnabled: true,
+          center: true,
+          width: 900,
+          height: 800,
+          alwaysOnTop: true,
+          skipTaskbar: true,
+          decorations: true,
+          closable: true,
+          url: "/ui/chat",
+        });
+      }
     }
 
     if (!isTransitioned) return null;

@@ -22,7 +22,7 @@ const defaultWindowConfig = {
   visible: true,
 };
 
-const useWindows = () => {
+export const useWindows = () => {
   const appWindow = getCurrentWindow();
 
   const createWin = useCallback(async (options: any) => {
@@ -111,5 +111,3 @@ const useWindows = () => {
     getAllWin,
   };
 };
-
-export default useWindows;

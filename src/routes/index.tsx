@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 
-// import App from "../App";
+import App from "../App";
 import ErrorPage from "../error-page";
 // import Settings from "../components/Settings";
 import Settings2 from "../components/Settings/index2";
@@ -9,6 +9,7 @@ import Transition from "../components/SearchChat/Transition";
 import ChatAI from "../components/ChatAI";
 import MySearch from "../components/MySearch";
 import Layout from "./Layout";
+import WebApp from "../pages/web";
 
 export const router = createBrowserRouter([
   {
@@ -21,6 +22,8 @@ export const router = createBrowserRouter([
       { path: "/ui/chat", element: <ChatAI /> },
       { path: "/ui/search", element: <MySearch /> },
       { path: "/ui/transition", element: <Transition /> },
+      { path: "/ui/app", element: <App /> },
+      { path: "/web", element: <WebApp /> },
     ],
   },
 ]);

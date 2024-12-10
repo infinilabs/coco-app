@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { getCurrentWindow } from "@tauri-apps/api/window";
+import { isTauri } from "@tauri-apps/api/core";
 
 type Theme = "dark" | "light" | "system";
 
@@ -65,30 +65,52 @@ export function ThemeProvider({
     root.classList.add(finalTheme);
   };
 
-  // Listen for system theme changes using Tauri APIs
   const listenForThemeChanges = async () => {
-    const currentWindow = getCurrentWindow();
+    if (isTauri()) {
+      const { getCurrentWindow } = await import("@tauri-apps/api/window");
 
-    // Initial system theme setup
-    const systemTheme = await currentWindow.theme();
-    console.log("Cur theme: " + theme);
-    if (theme === "system") {
-      applyTheme(systemTheme as Theme);
-    }
+      const currentWindow = getCurrentWindow();
 
-    // Listen for theme changes
-    const unlisten = await currentWindow.onThemeChanged(
-      ({ payload: newTheme }) => {
-        if (theme === "system") {
-          applyTheme(newTheme as Theme);
-          console.log("New theme: " + theme);
-        }
+      const systemTheme = await currentWindow.theme();
+      console.log("Current theme (Tauri):", systemTheme);
+      if (theme === "system") {
+        applyTheme(systemTheme as Theme);
       }
-    );
 
-    return () => {
-      unlisten();
-    };
+      const unlisten = await currentWindow.onThemeChanged(
+        ({ payload: newTheme }) => {
+          if (theme === "system") {
+            applyTheme(newTheme as Theme);
+            console.log("New theme (Tauri):", newTheme);
+          }
+        }
+      );
+
+      return () => {
+        unlisten();
+      };
+    } else {
+      const matchMediaDark = window.matchMedia("(prefers-color-scheme: dark)");
+
+      const systemTheme = matchMediaDark.matches ? "dark" : "light";
+      console.log("Current theme (Web):", systemTheme);
+      if (theme === "system") {
+        applyTheme(systemTheme as Theme);
+      }
+
+      const handleThemeChange = (e: MediaQueryListEvent) => {
+        if (theme === "system") {
+          applyTheme(e.matches ? "dark" : "light");
+          console.log("New theme (Web):", e.matches ? "dark" : "light");
+        }
+      };
+
+      matchMediaDark.addEventListener("change", handleThemeChange);
+
+      return () => {
+        matchMediaDark.removeEventListener("change", handleThemeChange);
+      };
+    }
   };
 
   const setTheme = (newTheme: Theme) => {

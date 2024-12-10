@@ -160,7 +160,9 @@ fn change_shortcut<R: Runtime>(
 
     remove_shortcut(&app)?;
 
-    let shortcut: Shortcut = key.parse().map_err(|_| "The format of the shortcut key is incorrect".to_owned())?;
+    let shortcut: Shortcut = key
+        .parse()
+        .map_err(|_| "The format of the shortcut key is incorrect".to_owned())?;
     app.global_shortcut()
         .on_shortcut(shortcut, move |_app, scut, event| {
             if scut == &shortcut {
@@ -230,11 +232,20 @@ fn enable_tray(app: &mut tauri::App) {
     let image = Image::from_path("icons/32x32.png").unwrap();
 
     let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>).unwrap();
-    let menu = Menu::with_items(app, &[&quit_i]).unwrap();
+    let settings_i = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>).unwrap();
+    let menu = Menu::with_items(app, &[&settings_i, &quit_i]).unwrap();
     let _tray = TrayIconBuilder::new()
         .icon(image)
         .menu(&menu)
         .on_menu_event(|app, event| match event.id.as_ref() {
+            "settings" => {
+                println!("settings menu item was clicked");
+                let app_handle = app.app_handle();
+                if let Some(window) = app_handle.get_webview_window("settings") {
+                  let _ = window.show();
+                  let _ = window.set_focus();
+                }
+            }
             "quit" => {
                 println!("quit menu item was clicked");
                 app.exit(0);

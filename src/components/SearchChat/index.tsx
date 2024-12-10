@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { LogicalSize } from "@tauri-apps/api/dpi";
+import { isTauri } from "@tauri-apps/api/core";
+
 // import { Window, LogicalPosition } from "@tauri-apps/api/window";
 // import { currentMonitor } from "@tauri-apps/plugin-window";
 
@@ -58,7 +58,10 @@ export default function SearchChat() {
   // }, []);
 
   async function setWindowSize() {
-    if (!isTransitioned) {
+    if (isTauri() && !isTransitioned) {
+      const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+      const { LogicalSize } = await import("@tauri-apps/api/dpi");
+
       setTimeout(async () => {
         await getCurrentWebviewWindow()?.setSize(new LogicalSize(680, 90));
       }, 1000);
@@ -82,7 +85,12 @@ export default function SearchChat() {
   const handleSendMessage = async (value: string) => {
     setInput(value);
     if (isChatMode) {
-      await getCurrentWebviewWindow()?.setSize(new LogicalSize(680, 596));
+      if (isTauri()) {
+        const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+        const { LogicalSize } = await import("@tauri-apps/api/dpi");
+        
+        await getCurrentWebviewWindow()?.setSize(new LogicalSize(680, 596));
+      }
       setIsTransitioned(true);
       chatAIRef.current?.init();
     }

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { PanelRightClose, PanelRightOpen, X } from "lucide-react";
+import { isTauri } from "@tauri-apps/api/core";
 
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
@@ -7,7 +8,6 @@ import { Sidebar } from "./Sidebar";
 import type { Chat, Message } from "./types";
 import { tauriFetch } from "../../api/tauriFetchClient";
 import { useWebSocket } from "../../hooks/useWebSocket";
-import useWindows from "../../hooks/useWindows";
 
 interface ChatAIProps {}
 
@@ -17,7 +17,6 @@ export default function ChatAI({}: ChatAIProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { closeWin } = useWindows();
 
   const [websocketId, setWebsocketId] = useState("");
   const [curMessage, setCurMessage] = useState("");
@@ -236,7 +235,12 @@ export default function ChatAI({}: ChatAIProps) {
   };
 
   async function closeWindow() {
-    await closeWin("chat");
+    if (isTauri()) {
+      const { useWindows } = await import("../../hooks/useWindows");
+      const { closeWin } = useWindows();
+
+      await closeWin("chat");
+    }
   }
 
   return (

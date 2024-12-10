@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { open } from "@tauri-apps/plugin-shell";
-
+import { isTauri } from "@tauri-apps/api/core";
 interface DropdownListProps {
   selected: (item: any) => void;
   suggests: any[];
@@ -16,8 +15,11 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
   const handleOpenURL = async (url: string) => {
     if (!url) return;
     try {
-      await open(url);
-      console.log("URL opened in default browser");
+      if (isTauri()) {
+        const { open } = await import("@tauri-apps/plugin-shell");
+        await open(url);
+        console.log("URL opened in default browser");
+      }
     } catch (error) {
       console.error("Failed to open URL:", error);
     }
@@ -106,9 +108,7 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
       className="max-h-[458px] w-full p-2 flex flex-col rounded-xl overflow-y-auto overflow-hidden custom-scrollbar focus:outline-none"
       tabIndex={0}
     >
-      <div className="p-2 text-xs text-[#999] dark:text-[#666]">
-        Results
-      </div>
+      <div className="p-2 text-xs text-[#999] dark:text-[#666]">Results</div>
       {suggests?.map((item, index) => {
         const isSelected = selectedItem === index;
         return (
