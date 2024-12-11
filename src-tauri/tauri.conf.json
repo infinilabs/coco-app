@@ -97,7 +97,8 @@
           "y": 140
         }
       }
-    }
+    },
+    "resources": ["icons"]
   },
   "plugins": {
     "window": {},

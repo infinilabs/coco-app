@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
-  Search,
   Settings,
   Calculator,
   Calendar,
@@ -21,7 +20,7 @@ interface CommandItem {
 
 export default function WebSearch() {
   const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const commands: CommandItem[] = [

@@ -2,8 +2,8 @@ use std::{fs::create_dir, io::Read};
 
 use tauri::{AppHandle, Manager, Runtime, WebviewWindow};
 use tauri_nspanel::{panel_delegate, ManagerExt, WebviewWindowExt};
-use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
 use tauri_plugin_autostart::MacosLauncher;
+use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
 
 const DEFAULT_SHORTCUT: &str = "command+shift+space";
 
@@ -80,14 +80,17 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_nspanel::init())
-        .plugin(tauri_plugin_autostart::init(MacosLauncher::AppleScript, None))
+        .plugin(tauri_plugin_autostart::init(
+            MacosLauncher::AppleScript,
+            None,
+        ))
         .invoke_handler(tauri::generate_handler![
             greet,
             change_window_height,
             change_shortcut,
             show_panel,
             hide_panel,
-            close_panel,      
+            close_panel,
         ])
         .setup(|app| {
             init(app.app_handle());
@@ -247,11 +250,24 @@ fn enable_tray(app: &mut tauri::App) {
 
     let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>).unwrap();
     let settings_i = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>).unwrap();
-    let menu = Menu::with_items(app, &[&settings_i, &quit_i]).unwrap();
+    let open_i = MenuItem::with_id(app, "open", "Open Coco", true, None::<&str>).unwrap();
+
+    let menu = Menu::with_items(app, &[&open_i, &settings_i, &quit_i]).unwrap();
     let _tray = TrayIconBuilder::new()
         .icon(image)
         .menu(&menu)
         .on_menu_event(|app, event| match event.id.as_ref() {
+            "show" => {
+                let win = app.get_webview_window("main").unwrap();
+                match win.is_visible() {
+                    Ok(visible) if !visible => {
+                        win.show().unwrap();
+                    }
+                    Err(e) => eprintln!("{}", e),
+                    _ => (),
+                };
+                win.set_focus().unwrap();
+            }
             "settings" => {
                 println!("settings menu item was clicked");
                 let window = app.get_webview_window("settings");
@@ -260,10 +276,10 @@ fn enable_tray(app: &mut tauri::App) {
                     window.set_focus().unwrap();
                 } else {
                     let window = tauri::window::WindowBuilder::new(app, "settings")
-                        .title("Settings Window") 
-                        .inner_size(800.0, 600.0) 
-                        .resizable(true) 
-                        .fullscreen(false) 
+                        .title("Settings Window")
+                        .inner_size(800.0, 600.0)
+                        .resizable(true)
+                        .fullscreen(false)
                         .build()
                         .unwrap();
                     let webview_builder = WebviewBuilder::new(
@@ -277,7 +293,6 @@ fn enable_tray(app: &mut tauri::App) {
                             window.inner_size().unwrap(),
                         )
                         .unwrap();
-
                 }
             }
             "quit" => {

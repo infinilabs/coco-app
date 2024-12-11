@@ -3,8 +3,6 @@ import {
   Command,
   Monitor,
   Palette,
-  Layout,
-  Star,
   Moon,
   Sun,
 } from "lucide-react";
