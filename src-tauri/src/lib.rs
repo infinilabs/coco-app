@@ -241,18 +241,25 @@ fn remove_shortcut<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<(), String> 
 fn enable_tray(app: &mut tauri::App) {
     use tauri::{
         image::Image,
-        menu::{Menu, MenuItem},
+        menu::{MenuBuilder, MenuItem},
         tray::TrayIconBuilder,
         webview::WebviewBuilder,
     };
 
     let image = Image::from_path("icons/32x32.png").unwrap();
 
-    let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>).unwrap();
+    let quit_i = MenuItem::with_id(app, "quit", "Quit Coco", true, None::<&str>).unwrap();
     let settings_i = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>).unwrap();
     let open_i = MenuItem::with_id(app, "open", "Open Coco", true, None::<&str>).unwrap();
 
-    let menu = Menu::with_items(app, &[&open_i, &settings_i, &quit_i]).unwrap();
+    let menu = MenuBuilder::new(app)
+        .item(&open_i)
+        .item(&settings_i)
+        .separator()
+        .item(&quit_i)
+        .build()
+        .unwrap();
+
     let _tray = TrayIconBuilder::new()
         .icon(image)
         .menu(&menu)
