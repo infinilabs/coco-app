@@ -98,7 +98,7 @@
         }
       }
     },
-    "resources": ["icons"]
+    "resources": ["assets", "icons"]
   },
   "plugins": {
     "window": {},

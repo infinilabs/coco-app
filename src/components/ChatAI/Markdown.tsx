@@ -15,7 +15,7 @@ import "./markdown.css";
 import "./highlight.css";
 
 // 8
-export function Mermaid(props: { code: string }) {
+function Mermaid(props: { code: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const [hasError, setHasError] = useState(false);
 
@@ -63,7 +63,7 @@ export function Mermaid(props: { code: string }) {
 }
 
 // 7
-export function PreCode(props: { children?: any }) {
+function PreCode(props: { children?: any }) {
   const ref = useRef<HTMLPreElement>(null);
   // const previewRef = useRef<HTMLPreviewHander>(null);
   const [mermaidCode, setMermaidCode] = useState("");
@@ -278,10 +278,10 @@ function _MarkDownContent(props: { content: string }) {
 }
 
 // 2
-export const MarkdownContent = React.memo(_MarkDownContent);
+const MarkdownContent = React.memo(_MarkDownContent);
 
 // 1
-export function Markdown(
+export default function Markdown(
   props: {
     content: string;
     loading?: boolean;

@@ -18,10 +18,10 @@ export default defineConfig(async () => ({
     host: host || false,
     hmr: host
       ? {
-          protocol: "ws",
-          host,
-          port: 1421,
-        }
+        protocol: "ws",
+        host,
+        port: 1421,
+      }
       : undefined,
     watch: {
       // 3. tell vite to ignore watching `src-tauri`
@@ -39,5 +39,19 @@ export default defineConfig(async () => ({
         secure: false,
       },
     },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          lodash: ['lodash'],
+          katex: ['rehype-katex'],
+          highlight: ['rehype-highlight'],
+          mermaid: ['mermaid'],
+        }
+      },
+    },
+    chunkSizeWarningLimit: 600,
   },
 }));

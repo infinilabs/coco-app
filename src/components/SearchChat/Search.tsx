@@ -20,12 +20,14 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
 
   const mainWindowRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if(!isTauri()) return;
+    if (!isTauri()) return;
     const element = mainWindowRef.current;
     if (!element) return;
 
     const resizeObserver = new ResizeObserver(async (entries) => {
-      const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+      const { getCurrentWebviewWindow } = await import(
+        "@tauri-apps/api/webviewWindow"
+      );
       const { LogicalSize } = await import("@tauri-apps/api/dpi");
 
       for (let entry of entries) {
@@ -82,7 +84,7 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
     if (!input) setSuggests([]);
   }, [input]);
 
-  // if (isChatMode || suggests.length === 0) return null;
+  if (isChatMode || suggests.length === 0) return null;
 
   return (
     <div
@@ -94,7 +96,7 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
         backgroundSize: "101% 100%",
       }}
     >
-      {isChatMode ? null : (
+      {!isChatMode ? (
         <div
           ref={mainWindowRef}
           className={`max-h-[498px] pb-10 w-full relative`}
@@ -114,7 +116,7 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
             <Footer isChat={false} name={selectedItem?.source} />
           ) : null}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
