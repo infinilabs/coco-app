@@ -227,6 +227,7 @@ fn enable_tray(app: &mut tauri::App) {
                 win.set_focus().unwrap();
             }
             "settings" => {
+                // windows failed to open second window, issue: https://github.com/tauri-apps/tauri/issues/11144
                 println!("settings menu item was clicked");
                 let window = app.get_webview_window("settings");
                 if let Some(window) = window {
