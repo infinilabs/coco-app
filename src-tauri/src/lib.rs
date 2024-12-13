@@ -167,14 +167,18 @@ fn enable_shortcut(app: &mut tauri::App) {
 #[tauri::command]
 fn change_shortcut<R: Runtime>(
     app: tauri::AppHandle<R>,
-    window: tauri::Window<R>,
+    _window: tauri::Window<R>,
     key: String,
 ) -> Result<(), String> {
     use std::fs::File;
     use std::io::Write;
     use tauri_plugin_global_shortcut::ShortcutState;
 
-    remove_shortcut(&app)?;
+    if let Err(e) = remove_shortcut(&app) {
+        eprintln!("Failed to remove old shortcut: {}", e);
+    }
+
+    let main_window = app.get_webview_window("main").unwrap();
 
     let shortcut: Shortcut = key
         .parse()
@@ -184,11 +188,11 @@ fn change_shortcut<R: Runtime>(
             if scut == &shortcut {
                 if let ShortcutState::Pressed = event.state() {
                     println!("Command+B Pressed!");
-                    if window.is_focused().unwrap() {
-                        window.hide().unwrap();
+                    if main_window.is_focused().unwrap() {
+                        main_window.hide().unwrap();
                     } else {
-                        window.show().unwrap();
-                        window.set_focus().unwrap();
+                        main_window.show().unwrap();
+                        main_window.set_focus().unwrap();
                     }
                 }
             }
@@ -240,13 +244,11 @@ fn remove_shortcut<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<(), String> 
 
 fn enable_tray(app: &mut tauri::App) {
     use tauri::{
-        image::Image,
+        // image::Image,
         menu::{MenuBuilder, MenuItem},
         tray::TrayIconBuilder,
         webview::WebviewBuilder,
     };
-
-    let image = Image::from_path("icons/32x32.png").unwrap();
 
     let quit_i = MenuItem::with_id(app, "quit", "Quit Coco", true, None::<&str>).unwrap();
     let settings_i = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>).unwrap();
@@ -261,7 +263,7 @@ fn enable_tray(app: &mut tauri::App) {
         .unwrap();
 
     let _tray = TrayIconBuilder::new()
-        .icon(image)
+        .icon(app.default_window_icon().unwrap().clone())
         .menu(&menu)
         .on_menu_event(|app, event| match event.id.as_ref() {
             "show" => {

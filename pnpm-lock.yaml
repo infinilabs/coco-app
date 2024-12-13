@@ -18,7 +18,7 @@ importers:
         specifier: ~2
         version: 2.0.0
       '@tauri-apps/plugin-global-shortcut':
-        specifier: ~2
+        specifier: ~2.0.0
         version: 2.0.0
       '@tauri-apps/plugin-http':
         specifier: ~2.0.1
