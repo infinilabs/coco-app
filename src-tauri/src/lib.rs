@@ -4,7 +4,11 @@ use tauri::{AppHandle, Manager, Runtime, WebviewWindow};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
 
+#[cfg(target_os = "macos")]
 const DEFAULT_SHORTCUT: &str = "command+shift+space";
+
+#[cfg(target_os = "windows")]
+const DEFAULT_SHORTCUT: &str = "ctrl+shift+space";
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -228,6 +232,9 @@ fn enable_tray(app: &mut tauri::App) {
                 if let Some(window) = window {
                     window.show().unwrap();
                     window.set_focus().unwrap();
+                    if !window.is_devtools_open() {
+                        window.open_devtools();
+                    }
                 } else {
                     let window = tauri::window::WindowBuilder::new(app, "settings")
                         .title("Settings Window")
@@ -236,6 +243,7 @@ fn enable_tray(app: &mut tauri::App) {
                         .fullscreen(false)
                         .build()
                         .unwrap();
+
                     let webview_builder = WebviewBuilder::new(
                         "settings",
                         tauri::WebviewUrl::App("/ui/settings".into()),
@@ -247,6 +255,10 @@ fn enable_tray(app: &mut tauri::App) {
                             window.inner_size().unwrap(),
                         )
                         .unwrap();
+
+                    if !_webview.is_devtools_open() {
+                        _webview.open_devtools();
+                    }
                 }
             }
             "quit" => {
