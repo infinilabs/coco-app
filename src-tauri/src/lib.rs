@@ -1,6 +1,6 @@
 use std::{fs::create_dir, io::Read};
 
-use tauri::{AppHandle, Manager, Runtime, WebviewWindow};
+use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
 
@@ -205,32 +205,11 @@ fn enable_tray(app: &mut tauri::App) {
             }
             "settings" => {
                 // windows failed to open second window, issue: https://github.com/tauri-apps/tauri/issues/11144
-                println!("settings menu item was clicked");
-                let window = app.get_webview_window("settings");
-                if let Some(window) = window {
-                    window.show().unwrap();
-                    window.set_focus().unwrap();
-                } else {
-                    let window = tauri::window::WindowBuilder::new(app, "settings")
-                        .title("Settings Window")
-                        .inner_size(800.0, 600.0)
-                        .resizable(true)
-                        .fullscreen(false)
-                        .build()
-                        .unwrap();
+                #[cfg(windows)]
+                app.emit("open_settings", "");
 
-                    let webview_builder = WebviewBuilder::new(
-                        "settings",
-                        tauri::WebviewUrl::App("/ui/settings".into()),
-                    );
-                    let _webview = window
-                        .add_child(
-                            webview_builder,
-                            tauri::LogicalPosition::new(0, 0),
-                            window.inner_size().unwrap(),
-                        )
-                        .unwrap();
-                }
+                #[cfg(not(windows))]
+                open_setting(&app);
             }
             "quit" => {
                 println!("quit menu item was clicked");
@@ -242,4 +221,31 @@ fn enable_tray(app: &mut tauri::App) {
         })
         .build(app)
         .unwrap();
+}
+
+fn open_setting(app: &tauri::App) {
+    println!("settings menu item was clicked");
+    let window = app.get_webview_window("settings");
+    if let Some(window) = window {
+        window.show().unwrap();
+        window.set_focus().unwrap();
+    } else {
+        let window = tauri::window::WindowBuilder::new(app, "settings")
+            .title("Settings Window")
+            .inner_size(800.0, 600.0)
+            .resizable(true)
+            .fullscreen(false)
+            .build()
+            .unwrap();
+
+        let webview_builder =
+            WebviewBuilder::new("settings", tauri::WebviewUrl::App("/ui/settings".into()));
+        let _webview = window
+            .add_child(
+                webview_builder,
+                tauri::LogicalPosition::new(0, 0),
+                window.inner_size().unwrap(),
+            )
+            .unwrap();
+    }
 }
