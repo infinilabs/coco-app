@@ -31,5 +31,9 @@
     "unminimize",
     "webviews",
     "zustand"
-  ]
+  ],
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+    "editor.formatOnSave": true
+  }
 }
