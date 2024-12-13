@@ -7,7 +7,7 @@ use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
 #[cfg(target_os = "macos")]
 const DEFAULT_SHORTCUT: &str = "command+shift+space";
 
-#[cfg(target_os = "windows")]
+#[cfg(any(target_os = "windows", target_os = "linux"))]
 const DEFAULT_SHORTCUT: &str = "ctrl+shift+space";
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
