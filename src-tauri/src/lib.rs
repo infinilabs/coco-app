@@ -205,11 +205,11 @@ fn enable_tray(app: &mut tauri::App) {
             }
             "settings" => {
                 // windows failed to open second window, issue: https://github.com/tauri-apps/tauri/issues/11144
-                #[cfg(windows)]
+                //#[cfg(windows)]
                 app.emit("open_settings", "");
 
-                #[cfg(not(windows))]
-                open_setting(&app);
+                // #[cfg(not(windows))]
+                // open_setting(&app);
             }
             "quit" => {
                 println!("quit menu item was clicked");
