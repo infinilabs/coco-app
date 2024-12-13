@@ -233,9 +233,6 @@ fn enable_tray(app: &mut tauri::App) {
                 if let Some(window) = window {
                     window.show().unwrap();
                     window.set_focus().unwrap();
-                    if !window.is_devtools_open() {
-                        window.open_devtools();
-                    }
                 } else {
                     let window = tauri::window::WindowBuilder::new(app, "settings")
                         .title("Settings Window")
@@ -256,10 +253,6 @@ fn enable_tray(app: &mut tauri::App) {
                             window.inner_size().unwrap(),
                         )
                         .unwrap();
-
-                    if !_webview.is_devtools_open() {
-                        _webview.open_devtools();
-                    }
                 }
             }
             "quit" => {
