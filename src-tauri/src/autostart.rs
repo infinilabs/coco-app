@@ -17,6 +17,10 @@ pub fn enable_autostart(app: &mut tauri::App) {
 
     let autostart_manager = app.autolaunch();
 
+    // close autostart
+    // autostart_manager.disable().unwrap();
+    // return;
+
     match (
         autostart_manager.is_enabled(),
         current_autostart(app.app_handle()),
