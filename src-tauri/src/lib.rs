@@ -4,6 +4,9 @@ use tauri::{AppHandle, Manager, Runtime, WebviewWindow};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
 
+mod autostart;
+use autostart::{change_autostart, enable_autostart};
+
 #[cfg(target_os = "macos")]
 const DEFAULT_SHORTCUT: &str = "command+shift+space";
 
@@ -25,35 +28,6 @@ fn change_window_height(handle: AppHandle, height: u32) {
     window.set_size(size).unwrap();
 }
 
-// fn enable_autostart(app: &mut tauri::App) {
-//   use tauri_plugin_autostart::MacosLauncher;
-//   use tauri_plugin_autostart::ManagerExt;
-
-//   app.handle()
-//       .plugin(tauri_plugin_autostart::init(
-//           MacosLauncher::AppleScript,
-//           None,
-//       ))
-//       .unwrap();
-
-//   let autostart_manager = app.autolaunch();
-
-//   match autostart_manager.is_enabled() {
-//       Ok(true) => {
-//           println!("Autostart is already enabled.");
-//       }
-//       Ok(false) => {
-//           match autostart_manager.enable() {
-//               Ok(_) => println!("Autostart enabled successfully."),
-//               Err(err) => eprintln!("Failed to enable autostart: {}", err),
-//           }
-//       }
-//       Err(err) => {
-//           eprintln!("Failed to check autostart status: {}", err);
-//       }
-//   }
-// }
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -66,13 +40,15 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet,
             change_window_height,
-            change_shortcut
+            change_shortcut,
+            change_autostart,
         ])
         .setup(|app| {
             init(app.app_handle());
 
             enable_shortcut(app);
             enable_tray(app);
+            enable_autostart(app);
 
             Ok(())
         })
