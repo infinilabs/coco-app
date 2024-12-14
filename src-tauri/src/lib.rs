@@ -159,6 +159,7 @@ fn current_shortcut<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<Shortcut, S
     Ok(short)
 }
 
+#[allow(dead_code)]
 fn remove_shortcut<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<(), String> {
     let short = current_shortcut(app)?;
 

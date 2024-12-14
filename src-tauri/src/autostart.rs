@@ -63,6 +63,7 @@ pub fn change_autostart<R: Runtime>(app: tauri::AppHandle<R>, open: bool) -> Res
     let autostart_manager = app.autolaunch();
 
     let change = |open: bool| -> Result<(), String> {
+        #[allow(unused_assignments)]
         let mut open_str = String::from("");
         if open {
             autostart_manager
