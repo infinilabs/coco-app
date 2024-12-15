@@ -3,7 +3,7 @@ use std::{fs::create_dir, io::Read};
 use tauri::{Manager, Runtime};
 use tauri_plugin_autostart::ManagerExt;
 
-/// Start or stop according to configuration
+// Start or stop according to configuration
 pub fn enable_autostart(app: &mut tauri::App) {
     use tauri_plugin_autostart::MacosLauncher;
     use tauri_plugin_autostart::ManagerExt;

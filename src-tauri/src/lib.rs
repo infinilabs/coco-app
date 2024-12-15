@@ -170,10 +170,8 @@ fn remove_shortcut<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<(), String> 
 
 fn enable_tray(app: &mut tauri::App) {
     use tauri::{
-        // image::Image,
         menu::{MenuBuilder, MenuItem},
         tray::TrayIconBuilder,
-        webview::WebviewBuilder,
     };
 
     let quit_i = MenuItem::with_id(app, "quit", "Quit Coco", true, None::<&str>).unwrap();
@@ -206,7 +204,7 @@ fn enable_tray(app: &mut tauri::App) {
             "settings" => {
                 // windows failed to open second window, issue: https://github.com/tauri-apps/tauri/issues/11144
                 //#[cfg(windows)]
-                app.emit("open_settings", "");
+                let _ = app.emit("open_settings", "");
 
                 // #[cfg(not(windows))]
                 // open_setting(&app);
@@ -223,7 +221,9 @@ fn enable_tray(app: &mut tauri::App) {
         .unwrap();
 }
 
-fn open_setting(app: &tauri::App) {
+#[allow(dead_code)]
+fn open_settings(app: &tauri::App) {
+    use tauri::webview::WebviewBuilder;
     println!("settings menu item was clicked");
     let window = app.get_webview_window("settings");
     if let Some(window) = window {
