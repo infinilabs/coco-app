@@ -64,20 +64,53 @@ export default function GeneralSettings({
 
   const [listening, setListening] = useState(false);
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
-  const [hotkey, setHotkey] = useState<Hotkey | null>({
-    alt: false,
-    code: "",
-    ctrl: false,
-    meta: true,
-    shift: true,
-  });
+  const [hotkey, setHotkey] = useState<Hotkey | null>(null);
 
-  useEffect(()=>{
-    console.log(231312313)
+  const parseHotkey = (hotkeyString: string): Hotkey | null => {
+    if (!hotkeyString || hotkeyString === "None") return null;
 
-    const res = invoke("current_shortcut")
-    console.log(1212121, res)
-  }, [])
+    const hotkey: Hotkey = {
+      meta: false,
+      ctrl: false,
+      alt: false,
+      shift: false,
+      code: "",
+    };
+
+    const parts = hotkeyString
+      .split("+")
+      .map(
+        (item: any) =>
+          item.charAt(0).toUpperCase() + item.slice(1).toLowerCase()
+      );
+
+    parts.forEach((part) => {
+      if (part === "⌘") hotkey.meta = true; // "⌘" -> meta
+      else if (part === "Super") hotkey.meta = true; // "Win" -> meta
+      else if (part === "Ctrl") hotkey.ctrl = true; // "Ctrl" -> ctrl
+      else if (part === "Alt") hotkey.alt = true; // "Alt" -> alt
+      else if (part === "Shift") hotkey.shift = true; // "Shift" -> shift
+      else if (part === "Space")
+        hotkey.code = "Space"; // "Space" -> code = "Space"
+      else if (part.startsWith("Key"))
+        hotkey.code = `Key${part.slice(3)}`; // "Key" -> "KeyA"
+      else if (part.startsWith("Digit"))
+        hotkey.code = `Digit${part.slice(5)}`; // "Digit" -> "Digit1"
+      else hotkey.code = `Key${part}`;
+    });
+
+    return hotkey;
+  };
+
+  async function getCurrentShortcut() {
+    const res: any = await invoke("get_current_shortcut");
+    const currentHotkey = parseHotkey(res);
+    setHotkey(currentHotkey);
+  }
+
+  useEffect(() => {
+    getCurrentShortcut()
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
