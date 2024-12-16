@@ -41,6 +41,7 @@ pub fn run() {
             greet,
             change_window_height,
             change_shortcut,
+            get_current_shortcut,
             change_autostart,
         ])
         .setup(|app| {
@@ -134,6 +135,13 @@ fn change_shortcut<R: Runtime>(
     file.write_all(key.as_bytes()).unwrap();
 
     Ok(())
+}
+
+#[tauri::command]
+fn get_current_shortcut<R: Runtime>(app: tauri::AppHandle<R>) -> Result<String, String> {
+    let res = current_shortcut(&app)?;
+
+    Ok(res.into_string())
 }
 
 fn current_shortcut<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<Shortcut, String> {
