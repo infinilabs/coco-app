@@ -4,15 +4,11 @@ import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { listen } from "@tauri-apps/api/event";
 
 const defaultWindowConfig = {
-  label: null,
+  label: "",
   title: "",
   url: "",
   width: 1000,
   height: 640,
-  minWidth: null,
-  minHeight: null,
-  x: null,
-  y: null,
   center: true,
   resizable: true,
   maximized: false,
@@ -29,6 +25,7 @@ export const useWindows = () => {
     const args = { ...defaultWindowConfig, ...options };
 
     const existWin = await getWin(args.label);
+
     if (existWin) {
       console.log("Window already exists>>", existWin);
       return;
@@ -38,9 +35,9 @@ export const useWindows = () => {
 
     win.once("tauri://created", async () => {
       console.log("tauri://created");
-      if (args.label.includes("main")) {
-        //
-      }
+      // if (args.label.includes("main")) {
+      //
+      // }
 
       if (args.maximized && args.resizable) {
         console.log("is-maximized");
@@ -97,6 +94,21 @@ export const useWindows = () => {
 
     listen("win-close", async () => {
       await appWindow.close();
+    });
+
+    listen("open_settings", (event) => {
+      console.log("open_settings", event);
+      createWin({
+        label: "settings",
+        title: "Settings Window",
+        dragDropEnabled: true,
+        center: true,
+        width: 800,
+        height: 600,
+        decorations: true,
+        closable: true,
+        url: "/ui/settings",
+      });
     });
   }, [appWindow, createWin]);
 

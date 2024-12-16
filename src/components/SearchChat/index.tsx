@@ -7,6 +7,7 @@ import { isTauri } from "@tauri-apps/api/core";
 import InputBox from "./InputBox";
 import Search from "./Search";
 import ChatAI, { ChatAIRef } from "../ChatAI/Chat";
+import { useWindows } from "../../hooks/useWindows";
 
 // const appWindow = new Window("main");
 
@@ -43,6 +44,8 @@ import ChatAI, { ChatAIRef } from "../ChatAI/Chat";
 export default function SearchChat() {
   const chatAIRef = useRef<ChatAIRef>(null);
 
+  const {} = useWindows()
+
   const [isChatMode, setIsChatMode] = useState(false);
   const [input, setInput] = useState("");
   const [isTransitioned, setIsTransitioned] = useState(false);
@@ -59,7 +62,9 @@ export default function SearchChat() {
 
   async function setWindowSize() {
     if (isTauri() && !isTransitioned) {
-      const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+      const { getCurrentWebviewWindow } = await import(
+        "@tauri-apps/api/webviewWindow"
+      );
       const { LogicalSize } = await import("@tauri-apps/api/dpi");
 
       setTimeout(async () => {
@@ -70,6 +75,7 @@ export default function SearchChat() {
   useEffect(() => {
     setWindowSize();
   }, [isTransitioned]);
+
 
   async function changeMode(value: boolean) {
     setIsChatMode(value);
@@ -86,9 +92,11 @@ export default function SearchChat() {
     setInput(value);
     if (isChatMode) {
       if (isTauri()) {
-        const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+        const { getCurrentWebviewWindow } = await import(
+          "@tauri-apps/api/webviewWindow"
+        );
         const { LogicalSize } = await import("@tauri-apps/api/dpi");
-        
+
         await getCurrentWebviewWindow()?.setSize(new LogicalSize(680, 596));
       }
       setIsTransitioned(true);

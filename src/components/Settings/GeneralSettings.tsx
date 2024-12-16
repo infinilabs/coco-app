@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
-import {
-  Command,
-  Monitor,
-  Palette,
-  Moon,
-  Sun,
-} from "lucide-react";
+import { Command, Monitor, Palette, Moon, Sun } from "lucide-react";
 import { isTauri, invoke } from "@tauri-apps/api/core";
-import { enable, isEnabled, disable } from "@tauri-apps/plugin-autostart";
+import {
+  isEnabled,
+  // enable, disable
+} from "@tauri-apps/plugin-autostart";
 
 import SettingsItem from "./SettingsItem";
 import SettingsSelect from "./SettingsSelect";
@@ -44,7 +41,8 @@ export default function GeneralSettings({
   const enableAutoStart = async () => {
     if (isTauri()) {
       try {
-        await enable();
+        // await enable();
+        invoke("change_autostart", { open: true });
       } catch (error) {
         console.error("Failed to enable autostart:", error);
       }
@@ -55,7 +53,8 @@ export default function GeneralSettings({
   const disableAutoStart = async () => {
     if (isTauri()) {
       try {
-        await disable();
+        // await disable();
+        invoke("change_autostart", { open: false });
       } catch (error) {
         console.error("Failed to disable autostart:", error);
       }
@@ -72,6 +71,13 @@ export default function GeneralSettings({
     meta: true,
     shift: true,
   });
+
+  useEffect(()=>{
+    console.log(231312313)
+
+    const res = invoke("current_shortcut")
+    console.log(1212121, res)
+  }, [])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
