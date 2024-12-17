@@ -1,6 +1,6 @@
 use std::{fs::create_dir, io::Read};
 
-use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow};
+use tauri::{ActivationPolicy, AppHandle, Emitter, Manager, Runtime, WebviewWindow};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
 
@@ -50,6 +50,9 @@ pub fn run() {
             enable_shortcut(app);
             enable_tray(app);
             enable_autostart(app);
+
+            #[cfg(target_os = "macos")]
+            app.set_activation_policy(ActivationPolicy::Accessory);
 
             Ok(())
         })
@@ -176,6 +179,17 @@ fn remove_shortcut<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<(), String> 
     Ok(())
 }
 
+fn handle_open_coco(app: &AppHandle) {
+    println!("Open Coco menu clicked!");
+
+    if let Some(window) = app.get_window("main") {
+        window.show().unwrap();
+        window.set_focus().unwrap();
+    } else {
+        eprintln!("Failed to get main window.");
+    }
+}
+
 fn enable_tray(app: &mut tauri::App) {
     use tauri::{
         menu::{MenuBuilder, MenuItem},
@@ -199,15 +213,16 @@ fn enable_tray(app: &mut tauri::App) {
         .menu(&menu)
         .on_menu_event(|app, event| match event.id.as_ref() {
             "show" => {
-                let win = app.get_webview_window("main").unwrap();
-                match win.is_visible() {
-                    Ok(visible) if !visible => {
-                        win.show().unwrap();
-                    }
-                    Err(e) => eprintln!("{}", e),
-                    _ => (),
-                };
-                win.set_focus().unwrap();
+                // let win = app.get_webview_window("main").unwrap();
+                // match win.is_visible() {
+                //     Ok(visible) if !visible => {
+                //         win.show().unwrap();
+                //     }
+                //     Err(e) => eprintln!("{}", e),
+                //     _ => (),
+                // };
+                // win.set_focus().unwrap();
+                handle_open_coco(app);
             }
             "settings" => {
                 // windows failed to open second window, issue: https://github.com/tauri-apps/tauri/issues/11144
