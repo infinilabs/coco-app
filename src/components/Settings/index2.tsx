@@ -1,9 +1,11 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { Settings, Puzzle, User, Users, Settings2, Info } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 import SettingsPanel from "./SettingsPanel";
 import GeneralSettings from "./GeneralSettings";
+import AboutView from "./AboutView";
 import Footer from "../Footer";
 
 export type Theme = "light" | "dark" | "system";
@@ -18,6 +20,14 @@ export const ThemeContext = createContext<{
 
 function SettingsPage() {
   const [theme, setTheme] = useState<Theme>("system");
+  const [defaultIndex, setDefaultIndex] = useState<number>(0);
+
+  const [searchParams] = useSearchParams();
+  const name = searchParams.get("tab");
+
+  useEffect(() => {
+    setDefaultIndex(name === "about" ? 5 : 0);
+  }, [name]);
 
   const tabs = [
     { name: "General", icon: Settings },
@@ -37,7 +47,12 @@ function SettingsPage() {
               <h1 className="text-xl font-bold">Coco Settings</h1>
             </div> */}
 
-            <TabGroup>
+            <TabGroup
+              selectedIndex={defaultIndex}
+              onChange={(index) => {
+                setDefaultIndex(index);
+              }}
+            >
               <TabList className="flex space-x-1 rounded-xl bg-gray-100 dark:bg-gray-800 p-1">
                 {tabs.map((tab) => (
                   <Tab
@@ -94,9 +109,7 @@ function SettingsPage() {
                 </TabPanel>
                 <TabPanel>
                   <SettingsPanel title="">
-                    <div className="text-gray-600 dark:text-gray-400">
-                      About settings content
-                    </div>
+                    <AboutView />
                   </SettingsPanel>
                 </TabPanel>
               </TabPanels>

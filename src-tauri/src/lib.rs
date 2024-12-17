@@ -197,11 +197,14 @@ fn enable_tray(app: &mut tauri::App) {
     };
 
     let quit_i = MenuItem::with_id(app, "quit", "Quit Coco", true, None::<&str>).unwrap();
-    let settings_i = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>).unwrap();
+    let settings_i = MenuItem::with_id(app, "settings", "Settings...", true, None::<&str>).unwrap();
     let open_i = MenuItem::with_id(app, "open", "Open Coco", true, None::<&str>).unwrap();
+    let about_i = MenuItem::with_id(app, "about", "About Coco", true, None::<&str>).unwrap();
 
     let menu = MenuBuilder::new(app)
         .item(&open_i)
+        .separator()
+        .item(&about_i)
         .item(&settings_i)
         .separator()
         .item(&quit_i)
@@ -212,17 +215,11 @@ fn enable_tray(app: &mut tauri::App) {
         .icon(app.default_window_icon().unwrap().clone())
         .menu(&menu)
         .on_menu_event(|app, event| match event.id.as_ref() {
-            "show" => {
-                // let win = app.get_webview_window("main").unwrap();
-                // match win.is_visible() {
-                //     Ok(visible) if !visible => {
-                //         win.show().unwrap();
-                //     }
-                //     Err(e) => eprintln!("{}", e),
-                //     _ => (),
-                // };
-                // win.set_focus().unwrap();
+            "open" => {
                 handle_open_coco(app);
+            }
+            "about" => {
+                let _ = app.emit("open_settings", "about");
             }
             "settings" => {
                 // windows failed to open second window, issue: https://github.com/tauri-apps/tauri/issues/11144
@@ -255,9 +252,11 @@ fn open_settings(app: &tauri::App) {
     } else {
         let window = tauri::window::WindowBuilder::new(app, "settings")
             .title("Settings Window")
-            .inner_size(800.0, 600.0)
-            .resizable(true)
             .fullscreen(false)
+            .resizable(false)
+            .minimizable(false)
+            .maximizable(false)
+            .inner_size(800.0, 600.0)
             .build()
             .unwrap();
 

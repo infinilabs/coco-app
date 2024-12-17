@@ -1,23 +1,30 @@
-import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/react";
-import { Settings, LogOut, User, ChevronUp, Home } from "lucide-react";
-import { Link } from "react-router-dom";
+import {
+  Menu,
+  MenuButton,
+  // MenuItems, MenuItem
+} from "@headlessui/react";
+// import { Settings, LogOut, User, ChevronUp, Home } from "lucide-react";
+// import { Link } from "react-router-dom";
 
-import logoImg from "../assets/32x32.png"
+import logoImg from "../assets/32x32.png";
 
 const Footer = () => {
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
       <div className="max-w-6xl mx-auto px-4 h-8 flex items-center justify-between">
         <Menu as="div" className="relative">
-          <MenuButton className="h-7 flex items-center space-x-2 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-            <img src={logoImg} className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          <MenuButton className="h-7 flex items-center space-x-2 px-1 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+            <img
+              src={logoImg}
+              className="w-5 h-5 text-gray-600 dark:text-gray-400"
+            />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Coco
             </span>
-            <ChevronUp className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+            {/* <ChevronUp className="w-4 h-4 text-gray-500 dark:text-gray-400" /> */}
           </MenuButton>
 
-          <MenuItems className="absolute bottom-full mb-2 left-0 w-64 rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+          {/* <MenuItems className="absolute bottom-full mb-2 left-0 w-64 rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
             <div className="p-1">
               <MenuItem>
                 {({ active }) => (
@@ -77,17 +84,17 @@ const Footer = () => {
                 )}
               </MenuItem>
             </div>
-          </MenuItems>
+          </MenuItems> */}
         </Menu>
 
         <div className="flex items-center space-x-4">
           <span className="text-xs text-gray-500 dark:text-gray-400">
             Version 1.0.0
           </span>
-          <div className="h-4 w-px bg-gray-200 dark:bg-gray-700" />
+          {/* <div className="h-4 w-px bg-gray-200 dark:bg-gray-700" />
           <button className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
             Check for Updates
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

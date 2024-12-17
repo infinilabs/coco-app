@@ -98,6 +98,10 @@ export const useWindows = () => {
 
     listen("open_settings", (event) => {
       console.log("open_settings", event);
+      let url =  "/ui/settings"
+      if (event.payload==="about") {
+        url = "/ui/settings?tab=about"
+      }
       createWin({
         label: "settings",
         title: "Settings Window",
@@ -107,7 +111,9 @@ export const useWindows = () => {
         height: 600,
         decorations: true,
         closable: true,
-        url: "/ui/settings",
+        minimizable: false,
+        maximizable: false,
+        url,
       });
     });
   }, [appWindow, createWin]);
