@@ -40,7 +40,6 @@
         "resizable": true,
         "shadow": true,
         "skipTaskbar": false,
-        "theme": null,
         "title": "Coco AI",
         "transparent": true,
         "url": "/ui",

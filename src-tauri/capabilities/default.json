@@ -43,6 +43,7 @@
     "global-shortcut:allow-register",
     "global-shortcut:allow-unregister",
     "global-shortcut:allow-unregister-all",
+    "theme:default",
     {
       "identifier": "http:default",
       "allow": [

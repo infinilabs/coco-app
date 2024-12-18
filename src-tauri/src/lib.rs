@@ -30,6 +30,8 @@ fn change_window_height(handle: AppHandle, height: u32) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let mut ctx = tauri::generate_context!();
+
     tauri::Builder::default()
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_shell::init())
@@ -37,6 +39,7 @@ pub fn run() {
             MacosLauncher::AppleScript,
             None,
         ))
+        .plugin(tauri_plugin_theme::init(ctx.config_mut()))
         .invoke_handler(tauri::generate_handler![
             greet,
             change_window_height,
@@ -56,7 +59,7 @@ pub fn run() {
 
             Ok(())
         })
-        .run(tauri::generate_context!())
+        .run(ctx)
         .expect("error while running tauri application");
 }
 
