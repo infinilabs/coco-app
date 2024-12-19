@@ -24,6 +24,7 @@ const AutoResizeTextarea: React.FC<AutoResizeTextareaProps> = ({
   return (
     <textarea
       ref={textareaRef}
+      autoFocus
       autoComplete="off"
       autoCapitalize="none"
       spellCheck="false"

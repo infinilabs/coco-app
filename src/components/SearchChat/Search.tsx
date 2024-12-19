@@ -88,7 +88,7 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
 
   return (
     <div
-      className={`rounded-xl overflow-hidden bg-search_bg_light dark:bg-search_bg_dark bg-cover border border-[#E6E6E6] dark:border-[#272626] absolute w-full transition-opacity duration-500 ${
+      className={`rounded-xl overflow-hidden bg-search_bg_light dark:bg-search_bg_dark bg-cover border border-[#E6E6E6] dark:border-[#272626] absolute w-full transition-opacity ${
         isTransitioned ? "opacity-0 pointer-events-none" : "opacity-100"
       } top-[96px]`}
       style={{

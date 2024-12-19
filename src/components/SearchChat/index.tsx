@@ -66,10 +66,7 @@ export default function SearchChat() {
         "@tauri-apps/api/webviewWindow"
       );
       const { LogicalSize } = await import("@tauri-apps/api/dpi");
-
-      setTimeout(async () => {
-        await getCurrentWebviewWindow()?.setSize(new LogicalSize(680, 90));
-      }, 1000);
+      await getCurrentWebviewWindow()?.setSize(new LogicalSize(680, 90));
     }
   }
   useEffect(() => {
@@ -114,7 +111,7 @@ export default function SearchChat() {
       className={`w-full h-full min-h-screen mx-auto overflow-hidden relative`}
     >
       <div
-        className={`rounded-xl overflow-hidden bg-inputbox_bg_light dark:bg-inputbox_bg_dark bg-cover border border-[#E6E6E6] dark:border-[#272626] absolute z-100 w-full flex items-center justify-center duration-500 ${
+        className={`rounded-xl overflow-hidden bg-inputbox_bg_light dark:bg-inputbox_bg_dark bg-cover border border-[#E6E6E6] dark:border-[#272626] absolute z-100 w-full flex items-center justify-center ${
           isTransitioned ? "top-[506px] h-[90px]" : "top-0 h-[90px]"
         }`}
       >
@@ -131,7 +128,7 @@ export default function SearchChat() {
         />
       </div>
       <div
-        className={`rounded-xl overflow-hidden bg-chat_bg_light dark:bg-chat_bg_dark bg-cover border border-[#E6E6E6] dark:border-[#272626] absolute w-full transition-all duration-500 ${
+        className={`rounded-xl overflow-hidden bg-chat_bg_light dark:bg-chat_bg_dark bg-cover border border-[#E6E6E6] dark:border-[#272626] absolute w-full transition-all ${
           isTransitioned
             ? "top-0 opacity-100 pointer-events-auto"
             : "-top-[506px] opacity-0 pointer-events-none"
