@@ -79,7 +79,6 @@ fn enable_shortcut(app: &mut tauri::App) {
                     //println!("{:?}", shortcut);
                     if shortcut == &command_shortcut {
                         if let ShortcutState::Pressed = event.state() {
-                            println!("Command+B Pressed!");
                             if window.is_focused().unwrap() {
                                 window.hide().unwrap();
                             } else {
@@ -119,7 +118,6 @@ fn change_shortcut<R: Runtime>(
         .on_shortcut(shortcut, move |_app, scut, event| {
             if scut == &shortcut {
                 if let ShortcutState::Pressed = event.state() {
-                    println!("Command+B Pressed!");
                     if main_window.is_focused().unwrap() {
                         main_window.hide().unwrap();
                     } else {
