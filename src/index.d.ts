@@ -1,6 +1,6 @@
 declare namespace I {
   export type AppConf = {
-    theme: "light" | "dark" | "system";
+    theme: "light" | "dark" | "auto";
     stay_on_top: boolean;
     ask_mode: boolean;
     mac_header_hidden: boolean;

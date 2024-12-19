@@ -11,16 +11,11 @@ import SettingsSelect from "./SettingsSelect";
 import SettingsToggle from "./SettingsToggle";
 import { ThemeOption } from "./index2";
 import { type Hotkey } from "../../utils/tauri";
+import { useTheme } from '../../contexts/ThemeContext';
 
-interface GeneralSettingsProps {
-  theme: "light" | "dark" | "system";
-  setTheme: (theme: "light" | "dark" | "system") => void;
-}
+export default function GeneralSettings() {
+  const { theme, changeTheme } = useTheme();
 
-export default function GeneralSettings({
-  theme,
-  setTheme,
-}: GeneralSettingsProps) {
   const [launchAtLogin, setLaunchAtLogin] = useState(true);
 
   useEffect(() => {
@@ -249,17 +244,15 @@ export default function GeneralSettings({
             description="Choose your preferred theme"
           >
             <SettingsSelect
-              options={["Light", "Dark", "system"]}
+              options={["light", "dark", "auto"]}
               value={theme}
-              onChange={(value) =>
-                setTheme(value as "light" | "dark" | "system")
-              }
+              onChange={(value: any) => changeTheme(value)}
             />
           </SettingsItem>
           <div className="grid grid-cols-3 gap-4">
             <ThemeOption icon={Sun} title="Light" theme="light" />
             <ThemeOption icon={Moon} title="Dark" theme="dark" />
-            <ThemeOption icon={Monitor} title="System" theme="system" />
+            <ThemeOption icon={Monitor} title="Auto" theme="auto" />
           </div>
 
           {/* <SettingsItem

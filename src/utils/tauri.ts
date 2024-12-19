@@ -212,7 +212,7 @@ export const events = __makeEvents__<{
 
 /** user-defined types **/
 
-export type AppTheme = "system" | "light" | "dark"
+export type AppTheme = "auto" | "light" | "dark"
 export type AspectRatio = "wide" | "vertical" | "square" | "classic" | "tall"
 export type Audio = { duration: number; sample_rate: number; channels: number }
 export type AudioConfiguration = { mute: boolean; improve: boolean }

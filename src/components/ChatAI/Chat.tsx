@@ -238,7 +238,6 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
             <PanelLeft className="h-4 w-4" />
           </button>
 
-          {/* <ThemeToggle /> */}
 
           <button
             onClick={() => {

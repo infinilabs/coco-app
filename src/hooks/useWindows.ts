@@ -13,9 +13,10 @@ const defaultWindowConfig = {
   resizable: true,
   maximized: false,
   decorations: false,
-  alwaysOnTop: true,
+  alwaysOnTop: false,
   dragDropEnabled: true,
   visible: true,
+  shadow: true,
 };
 
 export const useWindows = () => {
@@ -109,6 +110,7 @@ export const useWindows = () => {
         center: true,
         width: 800,
         height: 600,
+        shadow: true,
         decorations: true,
         closable: true,
         minimizable: false,

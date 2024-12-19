@@ -3,21 +3,20 @@ import {
   persist,
   // createJSONStorage
 } from "zustand/middleware";
-
-export type ITheme = "dark" | "light" | "system";
+import { AppTheme } from "../utils/tauri";
 
 export type IThemeStore = {
-  themes: ITheme[];
-  activeTheme: ITheme;
-  setTheme: (theme: ITheme) => void;
+  themes: AppTheme[];
+  activeTheme: AppTheme;
+  setTheme: (theme: AppTheme) => void;
 };
 
 export const useThemeStore = create<IThemeStore>()(
   persist(
     (set) => ({
-      themes: ["dark", "light", "system"],
-      activeTheme: "system",
-      setTheme: (activeTheme: ITheme) => set(() => ({ activeTheme })),
+      themes: ["dark", "light", "auto"],
+      activeTheme: "auto",
+      setTheme: (activeTheme: AppTheme) => set(() => ({ activeTheme })),
     }),
     {
       name: "active-theme",

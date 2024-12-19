@@ -1,6 +1,6 @@
 import SVGWrap from "./SVGWrap";
 
-export default function ThemeSystem(props: I.SVG) {
+export default function ThemeAuto(props: I.SVG) {
   return (
     <SVGWrap {...props} viewBox="0 0 24 24">
       <path
