@@ -59,7 +59,7 @@ function AppSettings() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 flex min-h-[500px]">
+        <div className="bg-white rounded-2xl border border-gray-200 flex min-h-[500px]">
           <div className="w-64 p-4 border-r border-gray-100">
             <div className="space-y-1">
               {sections.map((section) => (

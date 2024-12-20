@@ -32,7 +32,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const getAppTheme = async () => {
     const theme = await invoke("plugin:theme|get_theme");
-    console.log(33333, theme);
+    console.log("theme", theme);
   };
 
   const changeTheme = async (value: AppTheme) => {

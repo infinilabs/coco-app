@@ -33,7 +33,7 @@
   }
 
   .dark body,
-  .dark #root{
+  .dark #root {
     @apply text-gray-100 rounded-xl antialiased;
   }
 }

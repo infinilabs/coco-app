@@ -1,5 +1,5 @@
 import { Library, Mic, Send, Plus, AudioLines, Image } from "lucide-react";
-import { useRef, type KeyboardEvent } from "react";
+import { useRef, useState, useEffect } from "react";
 
 import ChatSwitch from "../SearchChat/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
@@ -26,19 +26,69 @@ export default function ChatInput({
   disabledChange,
 }: ChatInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<{ reset: () => void; focus: () => void }>(null);
 
   const { curChatEnd } = useChatStore();
+
+  const [isCommandPressed, setIsCommandPressed] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: any) => {
+      if (e.code === "MetaLeft" || e.code === "MetaRight") {
+        setIsCommandPressed(true);
+      }
+
+      if (e.metaKey) {
+        switch (e.code) {
+          case "KeyI":
+            if (isChatMode) {
+              textareaRef.current?.focus();
+            } else {
+              inputRef.current?.focus();
+            }
+            break;
+          case "KeyM":
+            console.log("KeyM");
+            break;
+          case "Enter":
+            isChatMode && handleSubmit();
+            break;
+          case "KeyO":
+            console.log("KeyO");
+            break;
+          case "KeyU":
+            console.log("KeyU");
+            break;
+          case "KeyN":
+            console.log("KeyN");
+            break;
+          case "KeyG":
+            console.log("KeyG");
+            break;
+          default:
+            break;
+        }
+      }
+    };
+
+    const handleKeyUp = (e: any) => {
+      if (e.code === "MetaLeft" || e.code === "MetaRight") {
+        setIsCommandPressed(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [isChatMode]);
 
   const handleSubmit = () => {
     if (inputValue.trim() && !disabled) {
       onSend(inputValue.trim());
-    }
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit();
     }
   };
 
@@ -47,15 +97,15 @@ export default function ChatInput({
   };
 
   return (
-    <div className="w-full rounded-xl overflow-hidden">
+    <div className="w-full rounded-xl overflow-hidden relative">
       <div className="rounded-xl">
-        <div className="p-[13px] flex items-center dark:text-[#D8D8D8] bg-white dark:bg-[#202126] rounded-xl transition-all">
-          <div className="flex flex-wrap gap-2 flex-1 items-center">
+        <div className="p-[13px] flex items-center dark:text-[#D8D8D8] bg-white dark:bg-[#202126] rounded-xl transition-all relative">
+          <div className="flex flex-wrap gap-2 flex-1 items-center relative">
             {isChatMode ? (
               <AutoResizeTextarea
+                ref={textareaRef}
                 input={inputValue}
                 setInput={changeInput}
-                handleKeyDown={handleKeyDown}
               />
             ) : (
               <input
@@ -73,6 +123,20 @@ export default function ChatInput({
                 }}
               />
             )}
+            {isCommandPressed ? (
+              <div
+                className={`absolute bg-black bg-opacity-70 text-white font-bold px-2.5 py-1 rounded-md text-xs transition-opacity duration-200`}
+              >
+                ⌘ + i
+              </div>
+            ) : null}
+            {isChatMode && isCommandPressed ? (
+              <div
+                className={`absolute right-0 bg-black bg-opacity-70 text-white font-bold px-2.5 py-1 rounded-md text-xs transition-opacity duration-200`}
+              >
+                ⌘ + m
+              </div>
+            ) : null}
           </div>
 
           {isChatMode ? (
@@ -83,10 +147,13 @@ export default function ChatInput({
               <Mic className="w-4 h-4 text-[#999] dark:text-[#999]" />
             </button>
           ) : null}
+
           {isChatMode && curChatEnd ? (
             <button
               className={`ml-1 p-1 ${
-                inputValue ? "bg-[#0072FF]" : "bg-[#E4E5F0] dark:bg-[#545454]"
+                inputValue
+                  ? "bg-[#0072FF]"
+                  : "bg-[#E4E5F0] dark:bg-[rgb(84,84,84)]"
               } rounded-full transition-colors`}
               type="submit"
               onClick={() => onSend(inputValue.trim())}
@@ -116,38 +183,75 @@ export default function ChatInput({
           {isChatMode ? (
             <div className="flex gap-1 text-xs text-[#333] dark:text-[#d8d8d8]">
               <button
-                className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors "
+                className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors relative"
                 onClick={openChatAI}
               >
                 <Library className="w-4 h-4 mr-1 text-[#000] dark:text-[#d8d8d8]" />
                 Coco
+                {isCommandPressed ? (
+                  <div
+                    className={`absolute left-0 bg-black bg-opacity-70 text-white font-bold px-2.5 py-1 rounded-md text-xs transition-opacity duration-200`}
+                  >
+                    ⌘ + o
+                  </div>
+                ) : null}
               </button>
-              <button className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color">
+              <button className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color relative">
                 <Plus className="w-4 h-4 mr-1 text-[#000] dark:text-[#d8d8d8]" />
                 Upload
+                {isCommandPressed ? (
+                  <div
+                    className={`absolute left-1 bg-black bg-opacity-70 text-white font-bold px-2.5 py-1 rounded-md text-xs transition-opacity duration-200`}
+                  >
+                    ⌘ + u
+                  </div>
+                ) : null}
               </button>
             </div>
           ) : (
-            <div className="flex gap-1">
+            <div className="w-28 flex gap-1 relative">
               <button
-                className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors "
+                className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors relative"
                 onClick={openChatAI}
               >
                 <AudioLines className="w-4 h-4 text-[#000] dark:text-[#d8d8d8]" />
               </button>
-              <button className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color">
+              <button className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color relative">
                 <Image className="w-4 h-4 text-[#000] dark:text-[#d8d8d8]" />
               </button>
+              {isCommandPressed ? (
+                <div
+                  className={`absolute left-0 bg-black bg-opacity-70 text-white font-bold px-2.5 py-1 rounded-md text-xs transition-opacity duration-200`}
+                >
+                  ⌘ + n
+                </div>
+              ) : null}
+              {isCommandPressed ? (
+                <div
+                  className={`absolute left-14 bg-black bg-opacity-70 text-white font-bold px-2.5 py-1 rounded-md text-xs transition-opacity duration-200`}
+                >
+                  ⌘ + g
+                </div>
+              ) : null}
             </div>
           )}
 
-          <ChatSwitch
-            isChatMode={isChatMode}
-            onChange={(value) => {
-              value && disabledChange();
-              changeMode(value);
-            }}
-          />
+          <div className="relative w-24 flex justify-end items-center">
+            {isCommandPressed ? (
+              <div
+                className={`absolute left-0 z-10 bg-black bg-opacity-70 text-white font-bold px-2.5 py-1 rounded-md text-xs transition-opacity duration-200`}
+              >
+                ⌘ + t
+              </div>
+            ) : null}
+            <ChatSwitch
+              isChatMode={isChatMode}
+              onChange={(value) => {
+                value && disabledChange();
+                changeMode(value);
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>

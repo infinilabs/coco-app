@@ -118,7 +118,7 @@ fn change_shortcut<R: Runtime>(
         .on_shortcut(shortcut, move |_app, scut, event| {
             if scut == &shortcut {
                 if let ShortcutState::Pressed = event.state() {
-                    if main_window.is_focused().unwrap() {
+                    if main_window.is_visible().unwrap() {
                         main_window.hide().unwrap();
                     } else {
                         main_window.show().unwrap();

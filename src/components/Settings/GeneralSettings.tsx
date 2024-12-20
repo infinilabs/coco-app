@@ -11,7 +11,7 @@ import SettingsSelect from "./SettingsSelect";
 import SettingsToggle from "./SettingsToggle";
 import { ThemeOption } from "./index2";
 import { type Hotkey } from "../../utils/tauri";
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from "../../contexts/ThemeContext";
 
 export default function GeneralSettings() {
   const { theme, changeTheme } = useTheme();
@@ -104,7 +104,7 @@ export default function GeneralSettings() {
   }
 
   useEffect(() => {
-    getCurrentShortcut()
+    getCurrentShortcut();
   }, []);
 
   useEffect(() => {
@@ -190,7 +190,7 @@ export default function GeneralSettings() {
 
   const handleStartListening = () => {
     setPressedKeys(new Set());
-    setHotkey(null);
+    // setHotkey(null);
     setListening(true);
   };
 
@@ -220,12 +220,15 @@ export default function GeneralSettings() {
             title="Coco Hotkey"
             description="Global shortcut to open Coco"
           >
-            <button
-              onClick={handleStartListening}
-              className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200"
-            >
-              {listening ? "Listening..." : formatHotkey(hotkey)}
-            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-blue-500">{listening ? "Listening..." : ""}</span>
+              <button
+                onClick={handleStartListening}
+                className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200"
+              >
+                {formatHotkey(hotkey)}
+              </button>
+            </div>
           </SettingsItem>
 
           {/* <SettingsItem

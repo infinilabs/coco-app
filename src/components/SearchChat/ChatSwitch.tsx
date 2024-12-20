@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React, { useEffect } from "react";
 import { Bot, Search } from "lucide-react";
 
 interface ChatSwitchProps {
@@ -7,13 +7,12 @@ interface ChatSwitchProps {
 }
 
 const ChatSwitch: React.FC<ChatSwitchProps> = ({ isChatMode, onChange }) => {
-
   useEffect(() => {
     const handleKeydown = (event: KeyboardEvent) => {
       if (event.metaKey && event.key === "t") {
         event.preventDefault();
         console.log("Switch mode triggered");
-        handleToggle()
+        handleToggle();
       }
     };
 

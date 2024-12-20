@@ -1,16 +1,15 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef, useImperativeHandle, forwardRef } from "react";
 
 interface AutoResizeTextareaProps {
   input: string;
   setInput: (value: string) => void;
-  handleKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 }
 
-const AutoResizeTextarea: React.FC<AutoResizeTextareaProps> = ({
-  input,
-  setInput,
-  handleKeyDown,
-}) => {
+// Forward ref to allow parent to interact with this component
+const AutoResizeTextarea = forwardRef<
+  { reset: () => void; focus: () => void },
+  AutoResizeTextareaProps
+>(({ input, setInput }, ref) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -20,6 +19,16 @@ const AutoResizeTextarea: React.FC<AutoResizeTextareaProps> = ({
       textarea.style.height = `${textarea.scrollHeight}px`; // Adjust based on content
     }
   }, [input]);
+
+  // Expose methods to the parent via ref
+  useImperativeHandle(ref, () => ({
+    reset: () => {
+      setInput("");
+    },
+    focus: () => {
+      textareaRef.current?.focus();
+    },
+  }));
 
   return (
     <textarea
@@ -32,7 +41,6 @@ const AutoResizeTextarea: React.FC<AutoResizeTextareaProps> = ({
       placeholder="Ask whatever you want ..."
       value={input}
       onChange={(e) => setInput(e.target.value)}
-      onKeyDown={handleKeyDown}
       rows={1}
       style={{
         resize: "none", // Prevent manual resize
@@ -42,6 +50,6 @@ const AutoResizeTextarea: React.FC<AutoResizeTextareaProps> = ({
       }}
     />
   );
-};
+});
 
 export default AutoResizeTextarea;
