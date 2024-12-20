@@ -1,11 +1,14 @@
 use std::{fs::create_dir, io::Read};
 
-use tauri::{ActivationPolicy, AppHandle, Emitter, Manager, Runtime, WebviewWindow};
+use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
 
 mod autostart;
 use autostart::{change_autostart, enable_autostart};
+
+#[cfg(target_os = "macos")]
+use tauri::ActivationPolicy;
 
 #[cfg(target_os = "macos")]
 const DEFAULT_SHORTCUT: &str = "command+shift+space";
