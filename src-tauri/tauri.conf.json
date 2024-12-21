@@ -13,45 +13,17 @@
     "macOSPrivateApi": true,
     "windows": [
       {
-        "acceptFirstMouse": true,
-        "alwaysOnBottom": false,
-        "alwaysOnTop": false,
-        "center": false,
-        "closable": true,
-        "contentProtected": false,
-        "create": true,
         "decorations": false,
-        "dragDropEnabled": true,
-        "focus": true,
-        "fullscreen": false,
         "height": 90,
-        "maxHeight": 596,
-        "minHeight": 90,
         "width": 680,
-        "maxWidth": 680,
-        "minWidth": 680,
-        "hiddenTitle": false,
-        "incognito": false,
-        "label": "main",
-        "maximizable": false,
         "minimizable": true,
-        "maximized": false,
-        "proxyUrl": "http://localhost:2900",
-        "resizable": true,
         "shadow": true,
-        "skipTaskbar": false,
         "title": "Coco AI",
-        "transparent": true,
         "url": "/ui",
-        "visible": true,
-        "visibleOnAllWorkspaces": true,
         "windowEffects": {
           "effects": [],
           "radius": 20
-        },
-        "x": null,
-        "y": null,
-        "zoomHotkeysEnabled": false
+        }
       }
     ],
     "security": {
