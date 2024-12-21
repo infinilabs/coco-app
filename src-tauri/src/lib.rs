@@ -231,7 +231,7 @@ fn enable_tray(app: &mut tauri::App) {
                 let _ = app.emit("open_settings", "");
 
                 // #[cfg(not(windows))]
-                // open_setting(&app);
+                // open_settings(&app);
             }
             "quit" => {
                 println!("quit menu item was clicked");
@@ -246,7 +246,7 @@ fn enable_tray(app: &mut tauri::App) {
 }
 
 #[allow(dead_code)]
-fn open_settings(app: &tauri::App) {
+fn open_settings(app: &tauri::AppHandle) {
     use tauri::webview::WebviewBuilder;
     println!("settings menu item was clicked");
     let window = app.get_webview_window("settings");
