@@ -226,7 +226,7 @@ fn enable_tray(app: &mut tauri::App) {
                 let _ = app.emit("open_settings", "about");
             }
             "settings" => {
-                // windows failed to open second window, issue: https://github.com/tauri-apps/tauri/issues/11144
+                // windows failed to open second window, issue: https://github.com/tauri-apps/tauri/issues/11144 https://github.com/tauri-apps/tauri/issues/8196
                 //#[cfg(windows)]
                 let _ = app.emit("open_settings", "");
 
