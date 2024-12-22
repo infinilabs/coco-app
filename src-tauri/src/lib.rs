@@ -82,7 +82,7 @@ fn enable_shortcut(app: &mut tauri::App) {
                     //println!("{:?}", shortcut);
                     if shortcut == &command_shortcut {
                         if let ShortcutState::Pressed = event.state() {
-                            if window.is_focused().unwrap() {
+                            if window.is_visible().unwrap() {
                                 window.hide().unwrap();
                             } else {
                                 window.show().unwrap();
