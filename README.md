@@ -49,6 +49,8 @@ pnpm tauri build --bundles app
 ## Build in every OS
 
 # Preposition
+- Rust (https://www.rust-lang.org/learn/get-started)
+- Tauri Preposition environment (https://tauri.app/start/prerequisites/)
 ```bash
 npm install -g pnpm && pnpm install
 ```
