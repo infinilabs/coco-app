@@ -45,3 +45,30 @@ pnpm tauri dev
 
 pnpm tauri build --bundles app
 ```
+
+## Build in every OS
+
+# Preposition
+```bash
+npm install -g pnpm && pnpm install
+```
+
+- Windows
+```
+pnpm tauri build
+# Or
+pnpm tauri build --bundles nsis
+# Or
+pnpm tauri build --bundles msi
+```
+
+- Linux
+```
+pnpm tauri build
+# Or
+pnpm tauri build --bundles deb
+# Or
+pnpm tauri build --bundles rpm
+# Or
+pnpm tauri build --bundles appimage
+```
