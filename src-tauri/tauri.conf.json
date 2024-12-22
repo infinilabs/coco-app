@@ -19,6 +19,7 @@
         "minimizable": true,
         "shadow": true,
         "title": "Coco AI",
+        "transparent": true,
         "url": "/ui",
         "windowEffects": {
           "effects": [],
