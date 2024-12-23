@@ -3,13 +3,14 @@ import { useEffect, useRef, useImperativeHandle, forwardRef } from "react";
 interface AutoResizeTextareaProps {
   input: string;
   setInput: (value: string) => void;
+  handleKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 }
 
 // Forward ref to allow parent to interact with this component
 const AutoResizeTextarea = forwardRef<
   { reset: () => void; focus: () => void },
   AutoResizeTextareaProps
->(({ input, setInput }, ref) => {
+>(({ input, setInput, handleKeyDown }, ref) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -41,6 +42,7 @@ const AutoResizeTextarea = forwardRef<
       placeholder="Ask whatever you want ..."
       value={input}
       onChange={(e) => setInput(e.target.value)}
+      onKeyDown={handleKeyDown}
       rows={1}
       style={{
         resize: "none", // Prevent manual resize

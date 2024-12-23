@@ -106,6 +106,12 @@ export default function ChatInput({
                 ref={textareaRef}
                 input={inputValue}
                 setInput={changeInput}
+                handleKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSubmit();
+                  }
+                }}
               />
             ) : (
               <input
