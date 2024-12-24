@@ -50,6 +50,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
     const { messages, setMessages } = useWebSocket(
       "ws://localhost:2900/ws",
       (msg) => {
+        console.log("msg", msg);
         if (msg.includes("websocket_session_id")) {
           const array = msg.split(" ");
           setWebsocketId(array[2]);
@@ -131,7 +132,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
         handleSendMessage(inputValue, newChat);
       } catch (error) {
         console.error("Failed to fetch user data:", error);
-      }
+      } 
     };
 
     const init = () => {
