@@ -60,6 +60,9 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             app.set_activation_policy(ActivationPolicy::Accessory);
 
+            let main_window = app.get_window("main").unwrap();
+            main_window.set_skip_taskbar(true).unwrap();
+
             Ok(())
         })
         .run(ctx)
