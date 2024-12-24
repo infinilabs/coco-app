@@ -1,5 +1,6 @@
 import { Library, Mic, Send, Plus, AudioLines, Image } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
+import { listen } from "@tauri-apps/api/event";
 
 import ChatSwitch from "../SearchChat/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
@@ -34,6 +35,21 @@ export default function ChatInput({
   const { curChatEnd } = useChatStore();
 
   const [isCommandPressed, setIsCommandPressed] = useState(false);
+
+  useEffect(() => {
+    const unlisten = listen("tauri://focus", () => {
+      console.log("Window focused!");
+      if (isChatMode) {
+        textareaRef.current?.focus();
+      } else {
+        inputRef.current?.focus();
+      }
+    });
+
+    return () => {
+      unlisten.then((unlistenFn) => unlistenFn());
+    };
+  }, [isChatMode]);
 
   useEffect(() => {
     const handleKeyDown = (e: any) => {

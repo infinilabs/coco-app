@@ -125,8 +125,8 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
             }}
             className={`w-full px-2 py-2.5 text-sm flex items-center justify-between rounded-lg transition-colors ${
               isSelected
-                ? "bg-[rgba(0,0,0,0.1)] dark:bg-[rgba(255,255,255,0.1)]"
-                : "hover:bg-[rgba(0,0,0,0.1)] dark:hover:bg-[rgba(255,255,255,0.1)]"
+                ? "bg-[rgba(0,0,0,0.1)] dark:bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(0,0,0,0.1)] dark:hover:bg-[rgba(255,255,255,0.1)]"
+                : ""
             }`}
           >
             <div className="flex gap-2 items-center">

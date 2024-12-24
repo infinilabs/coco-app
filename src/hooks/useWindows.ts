@@ -108,7 +108,7 @@ export const useWindows = () => {
         title: "Settings Window",
         dragDropEnabled: true,
         center: true,
-        width: 800,
+        width: 900,
         height: 600,
         alwaysOnTop: true,
         shadow: true,
