@@ -60,7 +60,9 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
       //
       // const list = [];
       // for (let i = 0; i < input.length; i++) {
-      //   list.push({});
+      //   list.push({
+      //     _source: { url: `https://www.google.com/search?q=${i}` },
+      //   });
       // }
       // setSuggests(list);
       //
@@ -103,7 +105,7 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
           className={`max-h-[498px] pb-10 w-full relative`}
         >
           {/* Search Results Panel */}
-          {suggests.length > 0 ? (
+          {suggests.length > 0 && !selectedItem ? (
             <DropdownList
               suggests={suggests}
               isSearchComplete={isSearchComplete}
