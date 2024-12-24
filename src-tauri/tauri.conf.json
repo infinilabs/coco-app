@@ -75,6 +75,7 @@
   "plugins": {
     "window": {},
     "websocket": {},
-    "shell": {}
+    "shell": {},
+    "globalShortcut": {}
   }
 }

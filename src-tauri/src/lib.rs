@@ -75,6 +75,8 @@ fn enable_shortcut(app: &mut tauri::App) {
 
     let command_shortcut: Shortcut = current_shortcut(app.app_handle()).unwrap();
 
+    let esc_shortcut: Shortcut = "esc".to_owned().parse().unwrap();
+
     app.handle()
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
@@ -90,12 +92,21 @@ fn enable_shortcut(app: &mut tauri::App) {
                             }
                         }
                     }
+
+                    if shortcut == &esc_shortcut {
+                        if let ShortcutState::Pressed = event.state() {
+                            if window.is_visible().unwrap() {
+                                window.hide().unwrap();
+                            }
+                        }
+                    }
                 })
                 .build(),
         )
         .unwrap();
 
     app.global_shortcut().register(command_shortcut).unwrap();
+    app.global_shortcut().register(esc_shortcut).unwrap();
 }
 
 #[tauri::command]
