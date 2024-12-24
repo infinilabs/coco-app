@@ -5,6 +5,7 @@ import ChatSwitch from "../SearchChat/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import { useChatStore } from "../../stores/chatStore";
 import StopIcon from "../../icons/Stop";
+import { useAppStore } from '../../stores/appStore';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -25,6 +26,8 @@ export default function ChatInput({
   changeInput,
   disabledChange,
 }: ChatInputProps) {
+  const showTooltip = useAppStore(state => state.showTooltip);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<{ reset: () => void; focus: () => void }>(null);
 
@@ -129,14 +132,14 @@ export default function ChatInput({
                 }}
               />
             )}
-            {isCommandPressed ? (
+            {showTooltip && isCommandPressed ? (
               <div
                 className={`absolute bg-black bg-opacity-70 text-white font-bold px-2.5 py-1 rounded-md text-xs transition-opacity duration-200`}
               >
                 ⌘ + i
               </div>
             ) : null}
-            {isChatMode && isCommandPressed ? (
+            {showTooltip && isChatMode && isCommandPressed ? (
               <div
                 className={`absolute right-0 bg-black bg-opacity-70 text-white font-bold px-2.5 py-1 rounded-md text-xs transition-opacity duration-200`}
               >
@@ -194,7 +197,7 @@ export default function ChatInput({
               >
                 <Library className="w-4 h-4 mr-1 text-[#000] dark:text-[#d8d8d8]" />
                 Coco
-                {isCommandPressed ? (
+                {showTooltip && isCommandPressed ? (
                   <div
                     className={`absolute left-0 bg-black bg-opacity-70 text-white font-bold px-2.5 py-1 rounded-md text-xs transition-opacity duration-200`}
                   >
@@ -205,7 +208,7 @@ export default function ChatInput({
               <button className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color relative">
                 <Plus className="w-4 h-4 mr-1 text-[#000] dark:text-[#d8d8d8]" />
                 Upload
-                {isCommandPressed ? (
+                {showTooltip && isCommandPressed ? (
                   <div
                     className={`absolute left-1 bg-black bg-opacity-70 text-white font-bold px-2.5 py-1 rounded-md text-xs transition-opacity duration-200`}
                   >
@@ -225,14 +228,14 @@ export default function ChatInput({
               <button className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color relative">
                 <Image className="w-4 h-4 text-[#000] dark:text-[#d8d8d8]" />
               </button>
-              {isCommandPressed ? (
+              {showTooltip && isCommandPressed ? (
                 <div
                   className={`absolute left-0 bg-black bg-opacity-70 text-white font-bold px-2.5 py-1 rounded-md text-xs transition-opacity duration-200`}
                 >
                   ⌘ + n
                 </div>
               ) : null}
-              {isCommandPressed ? (
+              {showTooltip && isCommandPressed ? (
                 <div
                   className={`absolute left-14 bg-black bg-opacity-70 text-white font-bold px-2.5 py-1 rounded-md text-xs transition-opacity duration-200`}
                 >
@@ -243,7 +246,7 @@ export default function ChatInput({
           )}
 
           <div className="relative w-24 flex justify-end items-center">
-            {isCommandPressed ? (
+            {showTooltip && isCommandPressed ? (
               <div
                 className={`absolute left-0 z-10 bg-black bg-opacity-70 text-white font-bold px-2.5 py-1 rounded-md text-xs transition-opacity duration-200`}
               >

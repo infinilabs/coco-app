@@ -48,6 +48,7 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
   }, [suggests]);
 
   const getSuggest = async () => {
+    if (!input) return
     try {
       const response = await tauriFetch({
         url: `/query/_search?query=${input}`,

@@ -86,4 +86,61 @@
   .bg-100 {
     background-size: 100% 100%;
   }
+
+  #error-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(to right, #f79c42, #f2d600);
+    font-family: "Arial", sans-serif;
+    color: #fff;
+    text-align: center;
+    padding: 0 20px;
+  }
+
+  .error-content {
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+    max-width: 500px;
+    width: 100%;
+    margin: 0 20px;
+  }
+
+  .error-title {
+    font-size: 60px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #f2d600;
+  }
+
+  .error-message {
+    font-size: 18px;
+    margin-bottom: 20px;
+    font-weight: 300;
+    color: #fff;
+  }
+
+  .error-details {
+    font-size: 16px;
+    color: #ffcc00;
+    font-style: italic;
+  }
+
+  .error-content button {
+    background-color: #f2d600;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #333;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .error-content button:hover {
+    background-color: #f79c42;
+  }
 }

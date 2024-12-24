@@ -6,11 +6,15 @@ export default function ErrorPage() {
 
   return (
     <div id="error-page">
-      <h1>Oops!</h1>
-      <p>Sorry, an unexpected error has occurred.</p>
-      <p>
-        <i>{error.statusText || error.message}</i>
-      </p>
+      <div className="error-content">
+        <h1 className="error-title">Oops!</h1>
+        <p className="error-message">
+          Sorry, there is an error in your Coco App. Please contact the administrator.
+        </p>
+        <p className="error-details">
+          <i>{error.statusText || error.message}</i>
+        </p>
+      </div>
     </div>
   );
 }

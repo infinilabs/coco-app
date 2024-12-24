@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Command, Monitor, Palette, Moon, Sun } from "lucide-react";
+import { Command, Monitor, Palette, Moon, Sun, Power, Tags } from "lucide-react";
 import { isTauri, invoke } from "@tauri-apps/api/core";
 import {
   isEnabled,
@@ -12,11 +12,15 @@ import SettingsToggle from "./SettingsToggle";
 import { ThemeOption } from "./index2";
 import { type Hotkey } from "../../utils/tauri";
 import { useTheme } from "../../contexts/ThemeContext";
+import { useAppStore } from '../../stores/appStore';
 
 export default function GeneralSettings() {
   const { theme, changeTheme } = useTheme();
 
   const [launchAtLogin, setLaunchAtLogin] = useState(true);
+
+  const showTooltip = useAppStore(state => state.showTooltip);
+  const setShowTooltip = useAppStore(state => state.setShowTooltip);
 
   useEffect(() => {
     const fetchAutoStartStatus = async () => {
@@ -202,7 +206,7 @@ export default function GeneralSettings() {
         </h2>
         <div className="space-y-6">
           <SettingsItem
-            icon={Command}
+            icon={Power}
             title="Startup"
             description="Automatically start Coco when you login"
           >
@@ -257,6 +261,20 @@ export default function GeneralSettings() {
             <ThemeOption icon={Moon} title="Dark" theme="dark" />
             <ThemeOption icon={Monitor} title="Auto" theme="auto" />
           </div>
+
+          <SettingsItem
+            icon={Tags}
+            title="Tooltip"
+            description="Tooltip display for shortcut keys"
+          >
+            <SettingsToggle
+              checked={showTooltip}
+              onChange={(value) =>
+                setShowTooltip(value)
+              }
+              label="Tooltip display"
+            />
+          </SettingsItem>
 
           {/* <SettingsItem
             icon={Layout}

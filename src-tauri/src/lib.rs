@@ -49,6 +49,7 @@ pub fn run() {
             change_shortcut,
             get_current_shortcut,
             change_autostart,
+            hide_coco,
         ])
         .setup(|app| {
             init(app.app_handle());
@@ -75,8 +76,6 @@ fn enable_shortcut(app: &mut tauri::App) {
 
     let command_shortcut: Shortcut = current_shortcut(app.app_handle()).unwrap();
 
-    let esc_shortcut: Shortcut = "esc".to_owned().parse().unwrap();
-
     app.handle()
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
@@ -92,21 +91,12 @@ fn enable_shortcut(app: &mut tauri::App) {
                             }
                         }
                     }
-
-                    if shortcut == &esc_shortcut {
-                        if let ShortcutState::Pressed = event.state() {
-                            if window.is_visible().unwrap() {
-                                window.hide().unwrap();
-                            }
-                        }
-                    }
                 })
                 .build(),
         )
         .unwrap();
 
     app.global_shortcut().register(command_shortcut).unwrap();
-    app.global_shortcut().register(esc_shortcut).unwrap();
 }
 
 #[tauri::command]
@@ -162,6 +152,29 @@ fn get_current_shortcut<R: Runtime>(app: tauri::AppHandle<R>) -> Result<String, 
     Ok(res.into_string())
 }
 
+#[tauri::command]
+fn hide_coco(app: tauri::AppHandle) {
+    if let Some(window) = app.get_window("main") {
+        match window.is_visible() {
+            Ok(true) => {
+                if let Err(err) = window.hide() {
+                    eprintln!("Failed to hide the window: {}", err);
+                } else {
+                    println!("Window successfully hidden.");
+                }
+            }
+            Ok(false) => {
+                println!("Window is already hidden.");
+            }
+            Err(err) => {
+                eprintln!("Failed to check window visibility: {}", err);
+            }
+        }
+    } else {
+        eprintln!("Main window not found.");
+    }
+}
+
 fn current_shortcut<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<Shortcut, String> {
     use std::fs::File;
 
@@ -205,6 +218,20 @@ fn handle_open_coco(app: &AppHandle) {
     }
 }
 
+fn handle_hide_coco(app: &AppHandle) {
+    println!("Hide Coco menu clicked!");
+
+    if let Some(window) = app.get_window("main") {
+        if let Err(err) = window.hide() {
+            eprintln!("Failed to hide the window: {}", err);
+        } else {
+            println!("Window successfully hidden.");
+        }
+    } else {
+        eprintln!("Main window not found.");
+    }
+}
+
 fn enable_tray(app: &mut tauri::App) {
     use tauri::{
         menu::{MenuBuilder, MenuItem},
@@ -215,10 +242,12 @@ fn enable_tray(app: &mut tauri::App) {
     let settings_i = MenuItem::with_id(app, "settings", "Settings...", true, None::<&str>).unwrap();
     let open_i = MenuItem::with_id(app, "open", "Open Coco", true, None::<&str>).unwrap();
     let about_i = MenuItem::with_id(app, "about", "About Coco", true, None::<&str>).unwrap();
+    let hide_i = MenuItem::with_id(app, "hide", "Hide Coco", true, None::<&str>).unwrap();
 
     let menu = MenuBuilder::new(app)
         .item(&open_i)
         .separator()
+        .item(&hide_i)
         .item(&about_i)
         .item(&settings_i)
         .separator()
@@ -232,6 +261,9 @@ fn enable_tray(app: &mut tauri::App) {
         .on_menu_event(|app, event| match event.id.as_ref() {
             "open" => {
                 handle_open_coco(app);
+            }
+            "hide" => {
+                handle_hide_coco(app);
             }
             "about" => {
                 let _ = app.emit("open_settings", "about");
