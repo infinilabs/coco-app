@@ -36,6 +36,31 @@ build-mac-dmg: install-dependencies
 	@echo "Building the desktop dmg package..."
 	pnpm tauri build --bundles dmg
 
+# Build nsis package for Windows
+build-win-nsis: install-dependencies
+	@echo "Building the desktop nsis package..."
+	pnpm tauri build --bundles nsis
+
+# Build msi package for Windows
+build-win-msi: install-dependencies
+	@echo "Building the desktop msi package..."
+	pnpm tauri build --bundles msi
+
+# Build deb package for Linux
+build-linux-deb: install-dependencies
+	@echo "Building the desktop deb package..."
+	pnpm tauri build --bundles deb
+
+# Build rpm package for Linux
+build-linux-rpm: install-dependencies
+	@echo "Building the desktop rpm package..."
+	pnpm tauri build --bundles rpm
+
+# Build appimage package for Linux
+build-linux-appimage: install-dependencies
+	@echo "Building the desktop appimage package..."
+	pnpm tauri build --bundles appimage
+
 # Combined: Install dependencies, start dev, and build app
 dev-build: install-dependencies start-dev build-app
 	@echo "Development and build process completed."
