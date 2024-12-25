@@ -27,12 +27,12 @@ start-dev: install-dependencies
 	pnpm tauri dev
 
 # Build desktop application for MacOS
-build-mac-app: install-dependencies
+build-mac-app: 
 	@echo "Building the desktop application..."
 	pnpm tauri build --bundles app
 
 # Build DMG package for MacOS
-build-mac-dmg: install-dependencies
+build-mac-dmg: 
 	@echo "Building the desktop dmg package..."
 	pnpm tauri build --bundles dmg
 
