@@ -47,7 +47,10 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
     } else if (e.key === "Meta") {
       e.preventDefault();
       setShowIndex(true);
-    } else if (e.key === "Enter" && selectedItem !== null) {
+    } 
+    
+    if (e.key === "Enter" && selectedItem !== null) {
+      console.log("Enter key pressed",  selectedItem);
       const item = suggests[selectedItem];
       if (item?._source?.url) {
         handleOpenURL(item?._source?.url);
@@ -84,7 +87,7 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [showIndex]);
+  }, [showIndex, selectedItem, suggests]);
 
   useEffect(() => {
     if (suggests.length > 0) {

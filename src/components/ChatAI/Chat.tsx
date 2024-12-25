@@ -13,6 +13,7 @@ import type { Chat, Message } from "./types";
 import { tauriFetch } from "../../api/tauriFetchClient";
 import { useWebSocket } from "../../hooks/useWebSocket";
 import { useChatStore } from "../../stores/chatStore";
+import { useWindows }  from "../../hooks/useWindows";
 
 interface ChatAIProps {
   inputValue: string;
@@ -31,6 +32,8 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
       init: init,
       cancelChat: cancelChat,
     }));
+
+    const { createWin } = useWindows();
 
     const { curChatEnd, setCurChatEnd } = useChatStore();
 
@@ -202,9 +205,6 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
 
     async function openChatAI() {
       if (isTauri()) {
-        const { useWindows } = await import("../../hooks/useWindows");
-        const { createWin } = useWindows();
-
         createWin({
           label: "chat",
           title: "Coco AI",
