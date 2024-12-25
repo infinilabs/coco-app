@@ -1,7 +1,5 @@
-import React from "react";
 import type { Message } from "./types";
-
-const Markdown = React.lazy(() => import('./Markdown'));
+import Markdown from "./Markdown";
 
 interface ChatMessageProps {
   message: Message;
