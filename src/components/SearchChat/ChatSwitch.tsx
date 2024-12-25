@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Bot, Search } from "lucide-react";
+import { listen } from "@tauri-apps/api/event";
 
 interface ChatSwitchProps {
   isChatMode: boolean;
@@ -7,17 +8,22 @@ interface ChatSwitchProps {
 }
 
 const ChatSwitch: React.FC<ChatSwitchProps> = ({ isChatMode, onChange }) => {
-  useEffect(() => {
-    const handleKeydown = (event: KeyboardEvent) => {
-      if (event.metaKey && event.key === "t") {
-        event.preventDefault();
-        console.log("Switch mode triggered");
-        handleToggle();
-      }
-    };
+  const handleKeydown = (event: KeyboardEvent) => {
+    if (event.metaKey && event.key === "t") {
+      event.preventDefault();
+      console.log("Switch mode triggered");
+      handleToggle();
+    }
+  };
 
-    window.addEventListener("keydown", handleKeydown);
+  useEffect(() => {
+    const unlisten = listen("tauri://focus", () => {
+      window.addEventListener("keydown", handleKeydown);
+    });
+
     return () => {
+      unlisten.then((unlistenFn) => unlistenFn());
+
       window.removeEventListener("keydown", handleKeydown);
     };
   }, [isChatMode]);

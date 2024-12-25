@@ -36,6 +36,50 @@ export default function ChatInput({
 
   const [isCommandPressed, setIsCommandPressed] = useState(false);
 
+  const handleKeyDown = (e: any) => {
+    if (e.code === "MetaLeft" || e.code === "MetaRight") {
+      setIsCommandPressed(true);
+    }
+
+    if (e.metaKey) {
+      switch (e.code) {
+        case "KeyI":
+          if (isChatMode) {
+            textareaRef.current?.focus();
+          } else {
+            inputRef.current?.focus();
+          }
+          break;
+        case "KeyM":
+          console.log("KeyM");
+          break;
+        case "Enter":
+          isChatMode && handleSubmit();
+          break;
+        case "KeyO":
+          console.log("KeyO");
+          break;
+        case "KeyU":
+          console.log("KeyU");
+          break;
+        case "KeyN":
+          console.log("KeyN");
+          break;
+        case "KeyG":
+          console.log("KeyG");
+          break;
+        default:
+          break;
+      }
+    }
+  };
+
+  const handleKeyUp = (e: any) => {
+    if (e.code === "MetaLeft" || e.code === "MetaRight") {
+      setIsCommandPressed(false);
+    }
+  };
+
   useEffect(() => {
     const unlisten = listen("tauri://focus", () => {
       console.log("Window focused!");
@@ -44,62 +88,14 @@ export default function ChatInput({
       } else {
         inputRef.current?.focus();
       }
+  
+      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keyup", handleKeyUp);
     });
 
     return () => {
       unlisten.then((unlistenFn) => unlistenFn());
-    };
-  }, [isChatMode]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: any) => {
-      if (e.code === "MetaLeft" || e.code === "MetaRight") {
-        setIsCommandPressed(true);
-      }
-
-      if (e.metaKey) {
-        switch (e.code) {
-          case "KeyI":
-            if (isChatMode) {
-              textareaRef.current?.focus();
-            } else {
-              inputRef.current?.focus();
-            }
-            break;
-          case "KeyM":
-            console.log("KeyM");
-            break;
-          case "Enter":
-            isChatMode && handleSubmit();
-            break;
-          case "KeyO":
-            console.log("KeyO");
-            break;
-          case "KeyU":
-            console.log("KeyU");
-            break;
-          case "KeyN":
-            console.log("KeyN");
-            break;
-          case "KeyG":
-            console.log("KeyG");
-            break;
-          default:
-            break;
-        }
-      }
-    };
-
-    const handleKeyUp = (e: any) => {
-      if (e.code === "MetaLeft" || e.code === "MetaRight") {
-        setIsCommandPressed(false);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-
-    return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };

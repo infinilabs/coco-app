@@ -5,6 +5,7 @@ import {
   isEnabled,
   // enable, disable
 } from "@tauri-apps/plugin-autostart";
+import { listen } from "@tauri-apps/api/event";
 
 import SettingsItem from "./SettingsItem";
 import SettingsSelect from "./SettingsSelect";
@@ -111,26 +112,30 @@ export default function GeneralSettings() {
     getCurrentShortcut();
   }, []);
 
+  const handleKeyDown = (e: KeyboardEvent) => {
+    e.preventDefault();
+    setPressedKeys((prev) => new Set(prev).add(e.code));
+  };
+
+  const handleKeyUp = (e: KeyboardEvent) => {
+    setPressedKeys((prev) => {
+      const next = new Set(prev);
+      next.delete(e.code);
+      return next;
+    });
+  };
+
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      e.preventDefault();
-      setPressedKeys((prev) => new Set(prev).add(e.code));
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      setPressedKeys((prev) => {
-        const next = new Set(prev);
-        next.delete(e.code);
-        return next;
-      });
-    };
-
-    if (listening) {
-      window.addEventListener("keydown", handleKeyDown);
-      window.addEventListener("keyup", handleKeyUp);
-    }
+    const unlisten = listen("tauri://focus", () => {
+      if (listening) {
+        window.addEventListener("keydown", handleKeyDown);
+        window.addEventListener("keyup", handleKeyUp);
+      }
+    });
 
     return () => {
+      unlisten.then((unlistenFn) => unlistenFn());
+
       if (listening) {
         window.removeEventListener("keydown", handleKeyDown);
         window.removeEventListener("keyup", handleKeyUp);

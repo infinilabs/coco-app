@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { isTauri } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 interface DropdownListProps {
   selected: (item: any) => void;
   suggests: any[];
@@ -47,10 +48,10 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
     } else if (e.key === "Meta") {
       e.preventDefault();
       setShowIndex(true);
-    } 
-    
+    }
+
     if (e.key === "Enter" && selectedItem !== null) {
-      console.log("Enter key pressed",  selectedItem);
+      console.log("Enter key pressed", selectedItem);
       const item = suggests[selectedItem];
       if (item?._source?.url) {
         handleOpenURL(item?._source?.url);
@@ -80,10 +81,14 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
   };
 
   useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
+    const unlisten = listen("tauri://focus", () => {
+      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keyup", handleKeyUp);
+    });
 
     return () => {
+      unlisten.then((unlistenFn) => unlistenFn());
+
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };

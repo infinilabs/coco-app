@@ -234,6 +234,7 @@ fn handle_hide_coco(app: &AppHandle) {
 
 fn enable_tray(app: &mut tauri::App) {
     use tauri::{
+        image::Image,
         menu::{MenuBuilder, MenuItem},
         tray::TrayIconBuilder,
     };
@@ -256,7 +257,8 @@ fn enable_tray(app: &mut tauri::App) {
         .unwrap();
 
     let _tray = TrayIconBuilder::new()
-        .icon(app.default_window_icon().unwrap().clone())
+        // .icon(app.default_window_icon().unwrap().clone())
+        .icon(Image::from_bytes(include_bytes!("../icons/light@2x.png")).expect("REASON"))
         .menu(&menu)
         .on_menu_event(|app, event| match event.id.as_ref() {
             "open" => {
