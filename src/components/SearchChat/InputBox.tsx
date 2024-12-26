@@ -1,12 +1,12 @@
 import { Library, Mic, Send, Plus, AudioLines, Image } from "lucide-react";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { listen } from "@tauri-apps/api/event";
 
 import ChatSwitch from "../SearchChat/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import { useChatStore } from "../../stores/chatStore";
 import StopIcon from "../../icons/Stop";
-import { useAppStore } from '../../stores/appStore';
+import { useAppStore } from "../../stores/appStore";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -27,7 +27,7 @@ export default function ChatInput({
   changeInput,
   disabledChange,
 }: ChatInputProps) {
-  const showTooltip = useAppStore(state => state.showTooltip);
+  const showTooltip = useAppStore((state) => state.showTooltip);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<{ reset: () => void; focus: () => void }>(null);
@@ -36,76 +36,98 @@ export default function ChatInput({
 
   const [isCommandPressed, setIsCommandPressed] = useState(false);
 
-  const handleKeyDown = (e: any) => {
-    if (e.code === "MetaLeft" || e.code === "MetaRight") {
-      setIsCommandPressed(true);
+  const handleToggleFocus = useCallback(() => {
+    if (isChatMode) {
+      textareaRef.current?.focus();
+    } else {
+      inputRef.current?.focus();
     }
+  }, [isChatMode, textareaRef, inputRef]);
 
-    if (e.metaKey) {
-      switch (e.code) {
-        case "KeyI":
-          if (isChatMode) {
-            textareaRef.current?.focus();
-          } else {
-            inputRef.current?.focus();
-          }
-          break;
-        case "KeyM":
-          console.log("KeyM");
-          break;
-        case "Enter":
-          isChatMode && handleSubmit();
-          break;
-        case "KeyO":
-          console.log("KeyO");
-          break;
-        case "KeyU":
-          console.log("KeyU");
-          break;
-        case "KeyN":
-          console.log("KeyN");
-          break;
-        case "KeyG":
-          console.log("KeyG");
-          break;
-        default:
-          break;
+  const handleSubmit = useCallback(() => {
+    const trimmedValue = inputValue.trim();
+    if (trimmedValue && !disabled) {
+      onSend(trimmedValue);
+    }
+  }, [inputValue, disabled, onSend]);
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.code === "MetaLeft" || e.code === "MetaRight") {
+        setIsCommandPressed(true);
       }
-    }
-  };
 
-  const handleKeyUp = (e: any) => {
+      if (e.metaKey) {
+        switch (e.code) {
+          case "KeyI":
+            handleToggleFocus();
+            break;
+          case "KeyM":
+            console.log("KeyM");
+            break;
+          case "Enter":
+            isChatMode && handleSubmit();
+            break;
+          case "KeyO":
+            console.log("KeyO");
+            break;
+          case "KeyU":
+            console.log("KeyU");
+            break;
+          case "KeyN":
+            console.log("KeyN");
+            break;
+          case "KeyG":
+            console.log("KeyG");
+            break;
+          default:
+            break;
+        }
+      }
+    },
+    [handleToggleFocus, isChatMode, handleSubmit]
+  );
+
+  const handleKeyUp = useCallback((e: KeyboardEvent) => {
     if (e.code === "MetaLeft" || e.code === "MetaRight") {
       setIsCommandPressed(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    const unlisten = listen("tauri://focus", () => {
-      console.log("Window focused!");
-      if (isChatMode) {
-        textareaRef.current?.focus();
-      } else {
-        inputRef.current?.focus();
-      }
-  
-      window.addEventListener("keydown", handleKeyDown);
-      window.addEventListener("keyup", handleKeyUp);
-    });
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
 
     return () => {
-      unlisten.then((unlistenFn) => unlistenFn());
-
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [isChatMode]);
+  }, [handleKeyDown, handleKeyUp]);
 
-  const handleSubmit = () => {
-    if (inputValue.trim() && !disabled) {
-      onSend(inputValue.trim());
-    }
-  };
+  useEffect(() => {
+    const setupListener = async () => {
+      const unlisten = await listen("tauri://focus", () => {
+        console.log("Window focused!");
+        if (isChatMode) {
+          textareaRef.current?.focus();
+        } else {
+          inputRef.current?.focus();
+        }
+      });
+
+      return unlisten;
+    };
+
+    let unlisten: (() => void) | undefined;
+
+    setupListener().then((unlistener) => {
+      unlisten = unlistener;
+    });
+
+    return () => {
+      unlisten?.();
+    };
+  }, [isChatMode]);
 
   const openChatAI = async () => {
     console.log("Chat AI opened.");
@@ -151,13 +173,6 @@ export default function ChatInput({
                 ⌘ + i
               </div>
             ) : null}
-            {showTooltip && isChatMode && isCommandPressed ? (
-              <div
-                className={`absolute right-0 bg-black bg-opacity-70 text-white font-bold px-2.5 py-1 rounded-md text-xs transition-opacity duration-200`}
-              >
-                ⌘ + m
-              </div>
-            ) : null}
           </div>
 
           {isChatMode ? (
@@ -194,6 +209,22 @@ export default function ChatInput({
                 aria-label="Stop message"
               />
             </button>
+          ) : null}
+
+          {showTooltip && isChatMode && isCommandPressed ? (
+            <div
+              className={`absolute right-16 bg-black bg-opacity-70 text-white font-bold px-2.5 py-1 rounded-md text-xs transition-opacity duration-200`}
+            >
+              ⌘ + m
+            </div>
+          ) : null}
+
+          {showTooltip && isChatMode && isCommandPressed ? (
+            <div
+              className={`absolute right-1 bg-black bg-opacity-70 text-white font-bold px-2.5 py-1 rounded-md text-xs transition-opacity duration-200`}
+            >
+              ⌘ + ↩︎
+            </div>
           ) : null}
         </div>
 

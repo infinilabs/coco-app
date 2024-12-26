@@ -1,6 +1,6 @@
 use std::{fs::create_dir, io::Read};
 
-use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow};
+use tauri::{AppHandle, Emitter, Listener, Manager, Runtime, WebviewWindow};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
 
@@ -29,6 +29,11 @@ fn change_window_height(handle: AppHandle, height: u32) {
     let mut size = window.outer_size().unwrap();
     size.height = height;
     window.set_size(size).unwrap();
+}
+
+#[derive(serde::Deserialize)]
+struct ThemeChangedPayload {
+    is_dark_mode: bool,
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -60,6 +65,13 @@ pub fn run() {
 
             #[cfg(target_os = "macos")]
             app.set_activation_policy(ActivationPolicy::Accessory);
+
+            app.listen("theme-changed", move |event| {
+                if let Ok(payload) = serde_json::from_str::<ThemeChangedPayload>(&event.payload()) {
+                    // switch_tray_icon(app.app_handle(), payload.is_dark_mode);
+                    println!("Theme changed: is_dark_mode = {}", payload.is_dark_mode);
+                }
+            });
 
             Ok(())
         })
@@ -232,6 +244,22 @@ fn handle_hide_coco(app: &AppHandle) {
     }
 }
 
+fn switch_tray_icon(app_handle: &AppHandle, is_dark_mode: bool) {
+    let icon_path: Vec<u8> = if is_dark_mode {
+        include_bytes!("../icons/dark@2x.png").to_vec()
+    } else {
+        include_bytes!("../icons/light@2x.png").to_vec()
+    };
+
+    let Some(tray) = app_handle.tray_by_id("tray") else {
+        return;
+    };
+    tray.set_icon(Some(
+        tauri::image::Image::from_bytes(&icon_path).expect("Failed to load icon"),
+    ))
+    .unwrap();
+}
+
 fn enable_tray(app: &mut tauri::App) {
     use tauri::{
         image::Image,
@@ -256,7 +284,7 @@ fn enable_tray(app: &mut tauri::App) {
         .build()
         .unwrap();
 
-    let _tray = TrayIconBuilder::new()
+    let _tray = TrayIconBuilder::with_id("tray")
         // .icon(app.default_window_icon().unwrap().clone())
         .icon(Image::from_bytes(include_bytes!("../icons/light@2x.png")).expect("REASON"))
         .menu(&menu)
@@ -288,6 +316,9 @@ fn enable_tray(app: &mut tauri::App) {
         })
         .build(app)
         .unwrap();
+
+    let app_handle = app.handle();
+    switch_tray_icon(&app_handle, false);
 }
 
 #[allow(dead_code)]

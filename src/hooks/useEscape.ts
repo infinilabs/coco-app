@@ -12,7 +12,6 @@ const useEscape = () => {
     }
   };
 
-
   useEffect(() => {
     const unlisten = listen("tauri://focus", () => {
       // Add event listener for keydown
