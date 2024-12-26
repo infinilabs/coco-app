@@ -58,13 +58,13 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
       const data = response.data?.hits?.hits || [];
       setSuggests(data);
       //
-      const list = [];
-      for (let i = 0; i < input.length; i++) {
-        list.push({
-          _source: { url: `https://www.google.com/search?q=${i}` },
-        });
-      }
-      setSuggests(list);
+      // const list = [];
+      // for (let i = 0; i < input.length; i++) {
+      //   list.push({
+      //     _source: { url: `https://www.google.com/search?q=${i}` },
+      //   });
+      // }
+      // setSuggests(list);
       //
       setIsSearchComplete(true);
     } catch (error) {
