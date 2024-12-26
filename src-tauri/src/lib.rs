@@ -55,6 +55,7 @@ pub fn run() {
             get_current_shortcut,
             change_autostart,
             hide_coco,
+            switch_tray_icon,
         ])
         .setup(|app| {
             init(app.app_handle());
@@ -244,20 +245,35 @@ fn handle_hide_coco(app: &AppHandle) {
     }
 }
 
-fn switch_tray_icon(app_handle: &AppHandle, is_dark_mode: bool) {
-    let icon_path: Vec<u8> = if is_dark_mode {
-        include_bytes!("../icons/dark@2x.png").to_vec()
+#[tauri::command]
+fn switch_tray_icon(app: tauri::AppHandle, is_dark_mode: bool) {
+    let app_handle = app.app_handle();
+
+    println!("is_dark_mode: {}", is_dark_mode);
+
+    const DARK_ICON_PATH: &[u8] = include_bytes!("../icons/dark@2x.png");
+    const LIGHT_ICON_PATH: &[u8] = include_bytes!("../icons/light@2x.png");
+
+    let icon_path: &[u8] = if is_dark_mode {
+        DARK_ICON_PATH
     } else {
-        include_bytes!("../icons/light@2x.png").to_vec()
+        LIGHT_ICON_PATH
     };
 
-    let Some(tray) = app_handle.tray_by_id("tray") else {
-        return;
+    let tray = match app_handle.tray_by_id("tray") {
+        Some(tray) => tray,
+        None => {
+            eprintln!("Tray with ID 'tray' not found");
+            return;
+        }
     };
-    tray.set_icon(Some(
-        tauri::image::Image::from_bytes(&icon_path).expect("Failed to load icon"),
-    ))
-    .unwrap();
+
+    if let Err(e) = tray.set_icon(Some(
+        tauri::image::Image::from_bytes(icon_path)
+            .unwrap_or_else(|e| panic!("Failed to load icon from bytes: {}", e)),
+    )) {
+        eprintln!("Failed to set tray icon: {}", e);
+    }
 }
 
 fn enable_tray(app: &mut tauri::App) {
@@ -316,9 +332,6 @@ fn enable_tray(app: &mut tauri::App) {
         })
         .build(app)
         .unwrap();
-
-    let app_handle = app.handle();
-    switch_tray_icon(&app_handle, false);
 }
 
 #[allow(dead_code)]

@@ -13,6 +13,10 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { activeTheme: theme, setTheme } = useThemeStore();
 
+  async function switchTrayIcon(value: "dark" | "light") {
+    await invoke("switch_tray_icon", { isDarkMode: value === "dark" });
+  }
+
   useEffect(() => {
     // Apply theme class to document
     const root = window.document.documentElement;
@@ -24,8 +28,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         ? "dark"
         : "light";
       root.classList.add(systemTheme);
+      switchTrayIcon(systemTheme);
     } else {
       root.classList.add(theme);
+      switchTrayIcon(theme);
     }
     if (isTauri()) getAppTheme();
   }, [theme]);
