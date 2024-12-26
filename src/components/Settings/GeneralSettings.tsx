@@ -5,7 +5,6 @@ import {
   isEnabled,
   // enable, disable
 } from "@tauri-apps/plugin-autostart";
-import { listen } from "@tauri-apps/api/event";
 
 import SettingsItem from "./SettingsItem";
 import SettingsSelect from "./SettingsSelect";
@@ -14,6 +13,16 @@ import { ThemeOption } from "./index2";
 import { type Hotkey } from "../../utils/tauri";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useAppStore } from '../../stores/appStore';
+
+const RESERVED_SHORTCUTS = [
+  "ctrl+c",
+  "ctrl+v",
+  "ctrl+x",
+  "ctrl+a",
+  "ctrl+z",
+  "ctrl+y",
+  "ctrl+s",
+];
 
 export default function GeneralSettings() {
   const { theme, changeTheme } = useTheme();
@@ -62,6 +71,7 @@ export default function GeneralSettings() {
     setLaunchAtLogin(false);
   };
 
+  const [errorInfo, setErrorInfo] = useState("");
   const [listening, setListening] = useState(false);
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
   const [hotkey, setHotkey] = useState<Hotkey | null>(null);
@@ -114,10 +124,25 @@ export default function GeneralSettings() {
 
   const handleKeyDown = (e: KeyboardEvent) => {
     e.preventDefault();
-    setPressedKeys((prev) => new Set(prev).add(e.code));
+    e.stopPropagation();
+    
+    if (
+      e.code === "MetaLeft" || e.code === "MetaRight" ||
+      e.code === "ControlLeft" || e.code === "ControlRight" ||
+      e.code === "AltLeft" || e.code === "AltRight" ||
+      e.code === "ShiftLeft" || e.code === "ShiftRight" ||
+      e.code.startsWith("Key") ||
+      e.code.startsWith("Digit") ||
+      e.code === "Space"
+    ) {
+      setPressedKeys((prev) => new Set(prev).add(e.code));
+    }
   };
 
   const handleKeyUp = (e: KeyboardEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     setPressedKeys((prev) => {
       const next = new Set(prev);
       next.delete(e.code);
@@ -126,22 +151,45 @@ export default function GeneralSettings() {
   };
 
   useEffect(() => {
-    const unlisten = listen("tauri://focus", () => {
-      if (listening) {
-        window.addEventListener("keydown", handleKeyDown);
-        window.addEventListener("keyup", handleKeyUp);
-      }
-    });
+    if (listening) {
+      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keyup", handleKeyUp);
+    } else {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    }
 
     return () => {
-      unlisten.then((unlistenFn) => unlistenFn());
-
-      if (listening) {
-        window.removeEventListener("keydown", handleKeyDown);
-        window.removeEventListener("keyup", handleKeyUp);
-      }
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
     };
   }, [listening]);
+
+  const isReservedShortcut = (hotkey: Hotkey): boolean => {
+    const hotkeyStr = formatHotkeyToString(hotkey).toLowerCase();
+    return RESERVED_SHORTCUTS.some(reserved => {
+      const normalizedReserved = reserved.replace(/\s+/g, '').toLowerCase();
+      return hotkeyStr === normalizedReserved;
+    });
+  };
+
+  const formatHotkeyToString = (hotkey: Hotkey): string => {
+    const parts: string[] = [];
+    if (hotkey.ctrl) parts.push('ctrl');
+    if (hotkey.alt) parts.push('alt');
+    if (hotkey.shift) parts.push('shift');
+    if (hotkey.meta) parts.push('meta');
+    
+    if (hotkey.code.startsWith('Key')) {
+      parts.push(hotkey.code.slice(3).toLowerCase());
+    } else if (hotkey.code.startsWith('Digit')) {
+      parts.push(hotkey.code.slice(5));
+    } else if (hotkey.code === 'Space') {
+      parts.push('space');
+    }
+    
+    return parts.join('+');
+  };
 
   useEffect(() => {
     if (pressedKeys.size === 0) return;
@@ -158,9 +206,26 @@ export default function GeneralSettings() {
         ) ?? "",
     };
 
-    setHotkey(currentHotkey);
+    const hasModifier = currentHotkey.meta || currentHotkey.ctrl || currentHotkey.alt || currentHotkey.shift;
+    const hasMainKey = currentHotkey.code !== "";
 
-    if (currentHotkey.code) {
+    if (hasModifier && hasMainKey) {
+      if (isReservedShortcut(currentHotkey)) {
+        setErrorInfo("This shortcut is reserved by system");
+        setPressedKeys(new Set());
+        setListening(false);
+        return;
+      }
+
+      const currentHotkeyStr = formatHotkeyToString(currentHotkey);
+      const existingHotkeyStr = hotkey ? formatHotkeyToString(hotkey) : '';
+      
+      if (currentHotkeyStr === existingHotkeyStr) {
+        setErrorInfo("Same as current shortcut");
+      }
+
+      setHotkey(currentHotkey);
+      setPressedKeys(new Set());
       setListening(false);
     }
   }, [pressedKeys]);
@@ -177,30 +242,37 @@ export default function GeneralSettings() {
   };
 
   const formatHotkey = (hotkey: Hotkey | null): string => {
-    if (!hotkey) return "None";
+    if (!hotkey) return "Press shortcut";
     const parts: string[] = [];
-    if (hotkey.meta) parts.push("⌘");
+    
+    if (hotkey.meta) parts.push(navigator.platform.includes('Mac') ? "⌘" : "Win");
     if (hotkey.ctrl) parts.push("Ctrl");
     if (hotkey.alt) parts.push("Alt");
     if (hotkey.shift) parts.push("Shift");
-    if (hotkey.code === "Space" || hotkey.code === "") parts.push("Space");
-    else if (hotkey.code.startsWith("Key")) parts.push(hotkey.code.slice(3));
-    else if (hotkey.code.startsWith("Digit")) parts.push(hotkey.code.slice(5));
+    
+    if (hotkey.code === "Space") {
+      parts.push("Space");
+    } else if (hotkey.code.startsWith("Key")) {
+      parts.push(hotkey.code.slice(3));
+    } else if (hotkey.code.startsWith("Digit")) {
+      parts.push(hotkey.code.slice(5));
+    }
 
     const shortcut = parts.join("+");
 
-    // Save the hotkey immediately
-    invoke("change_shortcut", { key: convertShortcut(shortcut) }).catch((err) =>
-      console.error("Failed to save hotkey:", err)
-    );
+    if (parts.length >= 2) {
+      invoke("change_shortcut", { key: convertShortcut(shortcut) }).catch((err) => {
+        console.error("Failed to save hotkey:", err);
+        setErrorInfo("Failed to save shortcut");
+      });
+    }
 
     return parts.join(" + ");
   };
 
   const handleStartListening = () => {
     setPressedKeys(new Set());
-    // setHotkey(null);
-    setListening(true);
+    setListening(listening?false:true);
   };
 
   return (
@@ -230,6 +302,7 @@ export default function GeneralSettings() {
             description="Global shortcut to open Coco"
           >
             <div className="flex items-center gap-2">
+              <span className="text-red-500">{errorInfo}</span>
               <span className="text-blue-500">{listening ? "Listening..." : ""}</span>
               <button
                 onClick={handleStartListening}
