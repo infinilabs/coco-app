@@ -2,6 +2,7 @@ import { useEffect, useCallback } from "react";
 import { getAllWindows, getCurrentWindow } from "@tauri-apps/api/window";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { listen } from "@tauri-apps/api/event";
+import { isTauri } from "@tauri-apps/api/core";
 
 const defaultWindowConfig = {
   label: "",
@@ -20,6 +21,7 @@ const defaultWindowConfig = {
 };
 
 export const useWindows = () => {
+  if (!isTauri()) return {}
   const appWindow = getCurrentWindow();
 
   const createWin = useCallback(async (options: any) => {

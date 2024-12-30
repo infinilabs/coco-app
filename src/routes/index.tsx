@@ -10,6 +10,7 @@ import ChatAI from "../components/ChatAI";
 import MySearch from "../components/MySearch";
 import Layout from "./Layout";
 import WebApp from "../pages/web";
+import DesktopApp from "../pages/app";
 
 export const router = createBrowserRouter([
   {
@@ -17,7 +18,8 @@ export const router = createBrowserRouter([
     element: <Layout />,
     errorElement: <ErrorPage />,
     children: [
-      { path: "/ui", element: <SearchChat /> },
+      { path: "/ui", element: <DesktopApp /> },
+      { path: "/ui/old", element: <SearchChat /> },
       { path: "/ui/settings", element: <Settings2 /> },
       { path: "/ui/chat", element: <ChatAI /> },
       { path: "/ui/search", element: <MySearch /> },

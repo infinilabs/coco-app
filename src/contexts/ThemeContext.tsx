@@ -14,6 +14,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { activeTheme: theme, setTheme } = useThemeStore();
 
   async function switchTrayIcon(value: "dark" | "light") {
+    if(!isTauri()) return;
     await invoke("switch_tray_icon", { isDarkMode: value === "dark" });
   }
 
@@ -33,23 +34,23 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       root.classList.add(theme);
       switchTrayIcon(theme);
     }
-    if (isTauri()) getAppTheme();
+    getAppTheme();
   }, [theme]);
 
   const getAppTheme = async () => {
+    if(!isTauri()) return;
     const theme = await invoke("plugin:theme|get_theme");
     console.log("theme", theme);
   };
 
   const changeTheme = async (value: AppTheme) => {
     setTheme(value);
-    if (isTauri()) {
-      await invoke("plugin:theme|set_theme", {
-        theme: value,
-      }).catch((err) => {
-        console.error(err);
-      });
-    }
+    if(!isTauri()) return;
+    await invoke("plugin:theme|set_theme", {
+      theme: value,
+    }).catch((err) => {
+      console.error(err);
+    });
   };
 
   return (

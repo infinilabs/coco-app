@@ -1,6 +1,7 @@
 use std::{fs::create_dir, io::Read};
 
 use tauri::{AppHandle, Emitter, Listener, Manager, Runtime, WebviewWindow};
+use tauri_nspanel::{panel_delegate, ManagerExt, WebviewWindowExt};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
 
@@ -31,6 +32,29 @@ fn change_window_height(handle: AppHandle, height: u32) {
     window.set_size(size).unwrap();
 }
 
+#[tauri::command]
+fn show_panel(handle: AppHandle) {
+    let panel = handle.get_webview_panel("main").unwrap();
+
+    panel.show();
+}
+
+#[tauri::command]
+fn hide_panel(handle: AppHandle) {
+    let panel = handle.get_webview_panel("main").unwrap();
+
+    panel.order_out(None);
+}
+
+#[tauri::command]
+fn close_panel(handle: AppHandle) {
+    let panel = handle.get_webview_panel("main").unwrap();
+
+    panel.released_when_closed(true);
+
+    panel.close();
+}
+
 #[derive(serde::Deserialize)]
 struct ThemeChangedPayload {
     is_dark_mode: bool,
@@ -41,6 +65,7 @@ pub fn run() {
     let mut ctx = tauri::generate_context!();
 
     tauri::Builder::default()
+        .plugin(tauri_nspanel::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_autostart::init(
@@ -56,6 +81,9 @@ pub fn run() {
             change_autostart,
             hide_coco,
             switch_tray_icon,
+            show_panel,
+            hide_panel,
+            close_panel
         ])
         .setup(|app| {
             init(app.app_handle());
@@ -80,7 +108,34 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-fn init(_app_handle: &AppHandle) {}
+fn init(app_handle: &AppHandle) {
+    let window: WebviewWindow = app_handle.get_webview_window("main").unwrap();
+
+    let panel = window.to_panel().unwrap();
+
+    let delegate = panel_delegate!(MyPanelDelegate {
+        window_did_become_key,
+        window_did_resign_key
+    });
+
+    let handle = app_handle.to_owned();
+
+    delegate.set_listener(Box::new(move |delegate_name: String| {
+        match delegate_name.as_str() {
+            "window_did_become_key" => {
+                let app_name = handle.package_info().name.to_owned();
+
+                println!("[info]: {:?} panel becomes key window!", app_name);
+            }
+            "window_did_resign_key" => {
+                println!("[info]: panel resigned from key window!");
+            }
+            _ => (),
+        }
+    }));
+
+    panel.set_delegate(delegate);
+}
 
 fn enable_shortcut(app: &mut tauri::App) {
     use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
