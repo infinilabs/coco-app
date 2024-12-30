@@ -30,6 +30,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [windowTheme, setWindowTheme] = useState<WindowTheme>("light");
 
   useEffect(() => {
+    // Initial theme setup
+    const initTheme = async () => {
+      const displayTheme = getDisplayTheme(theme);
+      await applyTheme(displayTheme);
+    };
+    initTheme();
+    //
     if (!isTauri()) return;
     // window theme
     let unlisten: (() => void) | undefined;
@@ -64,12 +71,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     [windowTheme]
   );
 
-  // Apply theme to UI and sync with Tauri
-  const applyTheme = async (displayTheme: WindowTheme) => {
-    // Update DOM
+  const changeClassTheme = (displayTheme: WindowTheme) => {
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
     root.classList.add(displayTheme);
+  }
+
+  // Apply theme to UI and sync with Tauri
+  const applyTheme = async (displayTheme: WindowTheme) => {
+    // Update DOM
+    changeClassTheme(displayTheme)
 
     // Sync with Tauri
     if (isTauri()) {
@@ -108,14 +119,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Add system theme change listener
     mediaQuery.addEventListener("change", handleSystemThemeChange);
 
-    // Initial theme setup
-    const initTheme = async () => {
-      const displayTheme = getDisplayTheme(theme);
-      await applyTheme(displayTheme);
-    };
-
-    initTheme();
-
     // Cleanup listener on unmount
     return () =>
       mediaQuery.removeEventListener("change", handleSystemThemeChange);
@@ -136,9 +139,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const setupListener = async () => {
       unlisten = await listen("theme-changed", (event: any) => {
         console.log("Theme updated to:", event.payload);
-        const root = window.document.documentElement;
-        root.classList.remove("light", "dark");
-        root.classList.add(event.payload.theme);
+        changeClassTheme(event.payload.theme)
       });
     };
 
