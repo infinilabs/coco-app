@@ -1,4 +1,4 @@
-import { useEffect, useRef, useImperativeHandle, forwardRef } from "react";
+import { useRef, useImperativeHandle, forwardRef } from "react";
 
 interface AutoResizeTextareaProps {
   input: string;
@@ -12,17 +12,6 @@ const AutoResizeTextarea = forwardRef<
   AutoResizeTextareaProps
 >(({ input, setInput, handleKeyDown }, ref) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      const prevHeight = textarea.style.height;
-      textarea.style.height = "auto"; // Reset height to recalculate
-      if (textarea.style.height !== prevHeight) {
-        textarea.style.height = `${textarea.scrollHeight}px`; // Adjust based on content
-      }
-    }
-  }, [input]);
 
   // Expose methods to the parent via ref
   useImperativeHandle(ref, () => ({

@@ -1,6 +1,15 @@
-import React, { createContext, useContext, useEffect } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { isTauri, invoke } from "@tauri-apps/api/core";
-import { AppTheme } from "../utils/tauri";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { emit, listen } from "@tauri-apps/api/event";
+
+import { AppTheme, WindowTheme } from "../utils/tauri";
 import { useThemeStore } from "../stores/themeStore";
 
 interface ThemeContextType {
@@ -8,86 +17,137 @@ interface ThemeContextType {
   changeTheme: (theme: AppTheme) => void;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextType>({
+  theme: "light",
+  changeTheme: () => {
+    throw new Error("changeTheme not implemented");
+  },
+});
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { activeTheme: theme, setTheme } = useThemeStore();
 
+  const [windowTheme, setWindowTheme] = useState<WindowTheme>("light");
+
+  useEffect(() => {
+    if (!isTauri()) return;
+    // window theme
+    let unlisten: (() => void) | undefined;
+    const setupThemeListener = async () => {
+      const currentWindow = getCurrentWindow();
+      unlisten = await currentWindow.onThemeChanged(({ payload: w_theme }) => {
+        console.log("window New theme:", w_theme);
+        setWindowTheme(w_theme);
+        if (theme === "auto") applyTheme(w_theme);
+      });
+    };
+    setupThemeListener();
+
+    return () => {
+      unlisten?.();
+    };
+  }, [theme]);
+
   async function switchTrayIcon(value: "dark" | "light") {
-    await invoke("switch_tray_icon", { isDarkMode: value === "dark" });
-  } 
-
-  // Get the effective theme (considering auto mode)
-  const getEffectiveTheme = (): "light" | "dark" => {
-    if (theme === "auto") {
-      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    try {
+      await invoke("switch_tray_icon", { isDarkMode: value === "dark" });
+    } catch (err) {
+      console.error("Failed to switch tray icon:", err);
     }
-    return theme as "light" | "dark";
-  };
+  }
 
-  // Unified theme update function
-  const updateTheme = async (newTheme: AppTheme) => {
+  // Get the actual theme to display based on user settings and system theme
+  const getDisplayTheme = useCallback(
+    (userTheme: AppTheme): WindowTheme => {
+      return userTheme === "auto" ? windowTheme : userTheme;
+    },
+    [windowTheme]
+  );
+
+  // Apply theme to UI and sync with Tauri
+  const applyTheme = async (displayTheme: WindowTheme) => {
+    // Update DOM
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
+    root.classList.add(displayTheme);
 
-    // Determine the actual theme to apply
-    const effectiveTheme = newTheme === "auto" ? getEffectiveTheme() : newTheme;
-    root.classList.add(effectiveTheme);
-
-    // Update tray icon
-    await switchTrayIcon(effectiveTheme);
-
+    // Sync with Tauri
     if (isTauri()) {
-      await invoke("plugin:theme|set_theme", {
-        theme: effectiveTheme,
-      }).catch((err) => {
-        console.error("Failed to update theme:", err);
-      });
+      // Update window theme
+      try {
+        await invoke("plugin:theme|set_theme", { theme: displayTheme });
+      } catch (err) {
+        console.error("Failed to update window theme:", err);
+      }
+
+      // Update tray icon
+      await switchTrayIcon(displayTheme);
+
+      // Notify other windows to update the theme
+      try {
+        console.log("theme-changed", displayTheme);
+        await emit("theme-changed", { theme: displayTheme });
+      } catch (err) {
+        console.error("Failed to emit theme-changed event:", err);
+      }
     }
   };
 
-  // Handle system theme changes
+  // Initialize theme and handle system theme changes
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    
-    const handleThemeChange = async (e: MediaQueryListEvent) => {
-      // Only follow system theme when set to auto
+
+    const handleSystemThemeChange = async () => {
+      // Only update if user setting is 'auto'
       if (theme === "auto") {
-        const systemTheme = e.matches ? "dark" : "light";
-        const root = window.document.documentElement;
-        root.classList.remove("light", "dark");
-        root.classList.add(systemTheme);
-        
-        // Update tray icon to match system theme
-        await switchTrayIcon(systemTheme);
+        const displayTheme = windowTheme;
+        await applyTheme(displayTheme);
       }
     };
 
     // Add system theme change listener
-    mediaQuery.addEventListener("change", handleThemeChange);
+    mediaQuery.addEventListener("change", handleSystemThemeChange);
 
-    // Initialize theme on component mount
+    // Initial theme setup
     const initTheme = async () => {
-      const effectiveTheme = getEffectiveTheme();
-      const root = window.document.documentElement;
-      root.classList.remove("light", "dark");
-      root.classList.add(effectiveTheme);
-      
-      // Initialize tray icon
-      await switchTrayIcon(effectiveTheme);
+      const displayTheme = getDisplayTheme(theme);
+      await applyTheme(displayTheme);
     };
 
     initTheme();
 
     // Cleanup listener on unmount
-    return () => mediaQuery.removeEventListener("change", handleThemeChange);
-  }, [theme]); // Re-run effect when theme changes
+    return () =>
+      mediaQuery.removeEventListener("change", handleSystemThemeChange);
+  }, [theme, windowTheme]); // Re-run when user theme setting changes
 
-  // Handle manual theme changes
+  // Handle theme changes from user interaction
   const changeTheme = async (newTheme: AppTheme) => {
     setTheme(newTheme);
-    await updateTheme(newTheme);
+    const displayTheme = getDisplayTheme(newTheme);
+    await applyTheme(displayTheme);
   };
+
+  useEffect(() => {
+    if (!isTauri()) return;
+
+    let unlisten: () => void;
+
+    const setupListener = async () => {
+      unlisten = await listen("theme-changed", (event: any) => {
+        console.log("Theme updated to:", event.payload);
+        const root = window.document.documentElement;
+        root.classList.remove("light", "dark");
+        root.classList.add(event.payload.theme);
+      });
+    };
+
+    setupListener();
+
+    return () => {
+      unlisten?.();
+    };
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ theme, changeTheme }}>
