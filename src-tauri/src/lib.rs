@@ -287,12 +287,12 @@ fn enable_tray(app: &mut tauri::App) {
     let settings_i = MenuItem::with_id(app, "settings", "Settings...", true, None::<&str>).unwrap();
     let open_i = MenuItem::with_id(app, "open", "Open Coco", true, None::<&str>).unwrap();
     let about_i = MenuItem::with_id(app, "about", "About Coco", true, None::<&str>).unwrap();
-    let hide_i = MenuItem::with_id(app, "hide", "Hide Coco", true, None::<&str>).unwrap();
+    // let hide_i = MenuItem::with_id(app, "hide", "Hide Coco", true, None::<&str>).unwrap();
 
     let menu = MenuBuilder::new(app)
         .item(&open_i)
         .separator()
-        .item(&hide_i)
+        // .item(&hide_i)
         .item(&about_i)
         .item(&settings_i)
         .separator()

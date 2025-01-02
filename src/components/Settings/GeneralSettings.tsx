@@ -1,5 +1,14 @@
 import { useState, useEffect } from "react";
-import { Command, Monitor, Palette, Moon, Sun, Power, Tags, CircleX } from "lucide-react";
+import {
+  Command,
+  Monitor,
+  Palette,
+  Moon,
+  Sun,
+  Power,
+  Tags,
+  CircleX,
+} from "lucide-react";
 import { isTauri, invoke } from "@tauri-apps/api/core";
 import {
   isEnabled,
@@ -7,12 +16,14 @@ import {
 } from "@tauri-apps/plugin-autostart";
 
 import SettingsItem from "./SettingsItem";
-import SettingsSelect from "./SettingsSelect";
 import SettingsToggle from "./SettingsToggle";
+import ShortcutItem from "./ShortcutItem";
+import { Shortcut } from "./shortcut";
+import { useShortcutEditor } from "../../hooks/useShortcutEditor";
+
 import { ThemeOption } from "./index2";
 import { type Hotkey } from "../../utils/tauri";
-import { useTheme } from "../../contexts/ThemeContext";
-import { useAppStore } from '../../stores/appStore';
+import { useAppStore } from "../../stores/appStore";
 
 const RESERVED_SHORTCUTS = [
   "ctrl+c",
@@ -25,12 +36,11 @@ const RESERVED_SHORTCUTS = [
 ];
 
 export default function GeneralSettings() {
-  const { theme, changeTheme } = useTheme();
 
   const [launchAtLogin, setLaunchAtLogin] = useState(true);
 
-  const showTooltip = useAppStore(state => state.showTooltip);
-  const setShowTooltip = useAppStore(state => state.setShowTooltip);
+  const showTooltip = useAppStore((state) => state.showTooltip);
+  const setShowTooltip = useAppStore((state) => state.setShowTooltip);
 
   useEffect(() => {
     const fetchAutoStartStatus = async () => {
@@ -125,12 +135,16 @@ export default function GeneralSettings() {
   const handleKeyDown = (e: KeyboardEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (
-      e.code === "MetaLeft" || e.code === "MetaRight" ||
-      e.code === "ControlLeft" || e.code === "ControlRight" ||
-      e.code === "AltLeft" || e.code === "AltRight" ||
-      e.code === "ShiftLeft" || e.code === "ShiftRight" ||
+      e.code === "MetaLeft" ||
+      e.code === "MetaRight" ||
+      e.code === "ControlLeft" ||
+      e.code === "ControlRight" ||
+      e.code === "AltLeft" ||
+      e.code === "AltRight" ||
+      e.code === "ShiftLeft" ||
+      e.code === "ShiftRight" ||
       e.code.startsWith("Key") ||
       e.code.startsWith("Digit") ||
       e.code === "Space"
@@ -142,7 +156,7 @@ export default function GeneralSettings() {
   const handleKeyUp = (e: KeyboardEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     setPressedKeys((prev) => {
       const next = new Set(prev);
       next.delete(e.code);
@@ -167,28 +181,28 @@ export default function GeneralSettings() {
 
   const isReservedShortcut = (hotkey: Hotkey): boolean => {
     const hotkeyStr = formatHotkeyToString(hotkey).toLowerCase();
-    return RESERVED_SHORTCUTS.some(reserved => {
-      const normalizedReserved = reserved.replace(/\s+/g, '').toLowerCase();
+    return RESERVED_SHORTCUTS.some((reserved) => {
+      const normalizedReserved = reserved.replace(/\s+/g, "").toLowerCase();
       return hotkeyStr === normalizedReserved;
     });
   };
 
   const formatHotkeyToString = (hotkey: Hotkey): string => {
     const parts: string[] = [];
-    if (hotkey.ctrl) parts.push('ctrl');
-    if (hotkey.alt) parts.push('alt');
-    if (hotkey.shift) parts.push('shift');
-    if (hotkey.meta) parts.push('meta');
-    
-    if (hotkey.code.startsWith('Key')) {
+    if (hotkey.ctrl) parts.push("ctrl");
+    if (hotkey.alt) parts.push("alt");
+    if (hotkey.shift) parts.push("shift");
+    if (hotkey.meta) parts.push("meta");
+
+    if (hotkey.code.startsWith("Key")) {
       parts.push(hotkey.code.slice(3).toLowerCase());
-    } else if (hotkey.code.startsWith('Digit')) {
+    } else if (hotkey.code.startsWith("Digit")) {
       parts.push(hotkey.code.slice(5));
-    } else if (hotkey.code === 'Space') {
-      parts.push('space');
+    } else if (hotkey.code === "Space") {
+      parts.push("space");
     }
-    
-    return parts.join('+');
+
+    return parts.join("+");
   };
 
   useEffect(() => {
@@ -206,7 +220,11 @@ export default function GeneralSettings() {
         ) ?? "",
     };
 
-    const hasModifier = currentHotkey.meta || currentHotkey.ctrl || currentHotkey.alt || currentHotkey.shift;
+    const hasModifier =
+      currentHotkey.meta ||
+      currentHotkey.ctrl ||
+      currentHotkey.alt ||
+      currentHotkey.shift;
     const hasMainKey = currentHotkey.code !== "";
 
     if (hasModifier && hasMainKey) {
@@ -218,8 +236,8 @@ export default function GeneralSettings() {
       }
 
       const currentHotkeyStr = formatHotkeyToString(currentHotkey);
-      const existingHotkeyStr = hotkey ? formatHotkeyToString(hotkey) : '';
-      
+      const existingHotkeyStr = hotkey ? formatHotkeyToString(hotkey) : "";
+
       if (currentHotkeyStr === existingHotkeyStr) {
         setErrorInfo("Same as current shortcut");
       }
@@ -244,12 +262,13 @@ export default function GeneralSettings() {
   const formatHotkey = (hotkey: Hotkey | null): string => {
     if (!hotkey) return "Press shortcut";
     const parts: string[] = [];
-    
-    if (hotkey.meta) parts.push(navigator.platform.includes('Mac') ? "⌘" : "Win");
+
+    if (hotkey.meta)
+      parts.push(navigator.platform.includes("Mac") ? "⌘" : "Win");
     if (hotkey.ctrl) parts.push("Ctrl");
     if (hotkey.alt) parts.push("Alt");
     if (hotkey.shift) parts.push("Shift");
-    
+
     if (hotkey.code === "Space") {
       parts.push("Space");
     } else if (hotkey.code.startsWith("Key")) {
@@ -261,10 +280,12 @@ export default function GeneralSettings() {
     const shortcut = parts.join("+");
 
     if (parts.length >= 2) {
-      invoke("change_shortcut", { key: convertShortcut(shortcut) }).catch((err) => {
-        console.error("Failed to save hotkey:", err);
-        setErrorInfo("Failed to save shortcut");
-      });
+      invoke("change_shortcut", { key: convertShortcut(shortcut) }).catch(
+        (err) => {
+          console.error("Failed to save hotkey:", err);
+          setErrorInfo("Failed to save shortcut");
+        }
+      );
     }
 
     return parts.join(" + ");
@@ -272,7 +293,7 @@ export default function GeneralSettings() {
 
   const handleStartListening = () => {
     setPressedKeys(new Set());
-    setListening(listening?false:true);
+    setListening(listening ? false : true);
   };
 
   const handleClearHotkey = (e: React.MouseEvent) => {
@@ -285,6 +306,22 @@ export default function GeneralSettings() {
     });
   };
 
+  const INITIAL_SHORTCUTS: Shortcut[] = [
+    { id: "1", shortcut: ["Control", "S"] },
+  ];
+
+  const [shortcuts, setShortcuts] = useState<Shortcut[]>(() => {
+    const saved = localStorage.getItem("shortcuts");
+    return saved ? JSON.parse(saved) : INITIAL_SHORTCUTS;
+  });
+
+  const { editingId, currentKeys, startEditing, saveShortcut } =
+    useShortcutEditor(shortcuts, setShortcuts);
+
+  useEffect(() => {
+    localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+  }, [shortcuts]);
+
   return (
     <div className="space-y-8">
       <div>
@@ -292,7 +329,7 @@ export default function GeneralSettings() {
           General Settings
         </h2>
         <div className="space-y-6">
-                <SettingsItem
+          <SettingsItem
             icon={Power}
             title="Startup"
             description="Automatically start Coco when you login"
@@ -313,7 +350,9 @@ export default function GeneralSettings() {
           >
             <div className="flex items-center gap-2">
               <span className="text-red-500">{errorInfo}</span>
-              <span className="text-blue-500">{listening ? "Listening..." : ""}</span>
+              <span className="text-blue-500">
+                {listening ? "Listening..." : ""}
+              </span>
               <div className="relative inline-flex items-center">
                 <button
                   onClick={handleStartListening}
@@ -331,6 +370,16 @@ export default function GeneralSettings() {
                   </button>
                 )}
               </div>
+              {shortcuts.map((shortcut) => (
+                <ShortcutItem
+                  key={shortcut.id}
+                  {...shortcut}
+                  editingId={editingId}
+                  currentKeys={currentKeys}
+                  onEdit={startEditing}
+                  onSave={saveShortcut}
+                />
+              ))}
             </div>
           </SettingsItem>
 
@@ -349,11 +398,7 @@ export default function GeneralSettings() {
             title="Appearance"
             description="Choose your preferred theme"
           >
-            <SettingsSelect
-              options={["light", "dark", "auto"]}
-              value={theme}
-              onChange={(value: any) => changeTheme(value)}
-            />
+            <div></div>
           </SettingsItem>
           <div className="grid grid-cols-3 gap-4">
             <ThemeOption icon={Sun} title="Light" theme="light" />
@@ -368,9 +413,7 @@ export default function GeneralSettings() {
           >
             <SettingsToggle
               checked={showTooltip}
-              onChange={(value) =>
-                setShowTooltip(value)
-              }
+              onChange={(value) => setShowTooltip(value)}
               label="Tooltip display"
             />
           </SettingsItem>
