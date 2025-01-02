@@ -106,7 +106,7 @@ export default function ChatInput({
   }, [handleKeyDown, handleKeyUp]);
 
   useEffect(() => {
-    if(!isTauri()) return
+    if (!isTauri()) return;
     const setupListener = async () => {
       const unlisten = await listen("tauri://focus", () => {
         console.log("Window focused!");
@@ -171,7 +171,7 @@ export default function ChatInput({
             <div
               className={`absolute bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
             >
-              ⌘ + i
+              ⌘ + I
             </div>
           ) : null}
         </div>
@@ -216,7 +216,7 @@ export default function ChatInput({
           <div
             className={`absolute right-16 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
           >
-            ⌘ + m
+            ⌘ + M
           </div>
         ) : null}
 
@@ -241,25 +241,25 @@ export default function ChatInput({
             >
               <Library className="w-4 h-4 mr-1 text-[#000] dark:text-[#d8d8d8]" />
               Coco
-              {showTooltip && isCommandPressed ? (
-                <div
-                  className={`absolute left-0 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
-                >
-                  ⌘ + o
-                </div>
-              ) : null}
             </button>
             <button className="inline-flex items-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color relative">
               <Plus className="w-4 h-4 mr-1 text-[#000] dark:text-[#d8d8d8]" />
               Upload
-              {showTooltip && isCommandPressed ? (
-                <div
-                  className={`absolute left-1 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
-                >
-                  ⌘ + u
-                </div>
-              ) : null}
             </button>
+            {showTooltip && isCommandPressed ? (
+              <div
+                className={`absolute left-2 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
+              >
+                ⌘ + O
+              </div>
+            ) : null}
+            {showTooltip && isCommandPressed ? (
+              <div
+                className={`absolute left-16 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
+              >
+                ⌘ + U
+              </div>
+            ) : null}
           </div>
         ) : (
           <div className="w-28 flex gap-2 relative">
@@ -276,14 +276,14 @@ export default function ChatInput({
               <div
                 className={`absolute left-0 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
               >
-                ⌘ + n
+                ⌘ + N
               </div>
             ) : null}
             {showTooltip && isCommandPressed ? (
               <div
                 className={`absolute left-14 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
               >
-                ⌘ + g
+                ⌘ + G
               </div>
             ) : null}
           </div>
@@ -294,7 +294,7 @@ export default function ChatInput({
             <div
               className={`absolute left-0 z-10 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
             >
-              ⌘ + t
+              ⌘ + T
             </div>
           ) : null}
           <ChatSwitch

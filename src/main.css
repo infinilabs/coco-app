@@ -23,7 +23,7 @@
 
   body,
   #root {
-    @apply text-gray-900 rounded-xl antialiased;
+    @apply text-gray-900 rounded-xl overflow-hidden antialiased;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;

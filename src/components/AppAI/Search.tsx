@@ -1,9 +1,12 @@
 import { useEffect, useState, useCallback, useRef } from "react";
+import { Command } from "lucide-react";
+
 // import { isTauri } from "@tauri-apps/api/core";
 
 import DropdownList from "./DropdownList";
 import Footer from "./Footer";
 import { tauriFetch } from "@/api/tauriFetchClient";
+import noDataImg from "@/assets/coconut-tree.png";
 
 interface SearchProps {
   changeInput: (val: string) => void;
@@ -48,14 +51,14 @@ function Search({ isChatMode, input }: SearchProps) {
   const getSuggest = async () => {
     if (!input) return;
     //
-    const list = [];
-    for (let i = 0; i < input.length; i++) {
-      list.push({
-        _source: { url: `https://www.google.com/search?q=${i}`, _id: i },
-      });
-    }
-    setSuggests(list);
-    return
+    // const list = [];
+    // for (let i = 0; i < input.length; i++) {
+    //   list.push({
+    //     _source: { url: `https://www.google.com/search?q=${i}`, _id: i },
+    //   });
+    // }
+    // setSuggests(list);
+    // return;
     //
     try {
       const response = await tauriFetch({
@@ -90,11 +93,32 @@ function Search({ isChatMode, input }: SearchProps) {
   return (
     <div ref={mainWindowRef} className={`h-[500px] pb-10 w-full relative`}>
       {/* Search Results Panel */}
-      <DropdownList
-        suggests={suggests}
-        isSearchComplete={isSearchComplete}
-        selected={(item) => setSelectedItem(item)}
-      />
+      {suggests.length > 0 ? (
+        <DropdownList
+          suggests={suggests}
+          isSearchComplete={isSearchComplete}
+          selected={(item) => setSelectedItem(item)}
+        />
+      ) : (
+        <div
+          data-tauri-drag-region
+          className="h-full w-full flex flex-col items-center"
+        >
+          <img src={noDataImg} alt="no-data" className="w-16 h-16 mt-24" />
+          <div className="mt-4 text-sm text-[#999] dark:text-[#666]">
+            No Results
+          </div>
+          <div className="mt-10 text-sm  text-[#333] dark:text-[#D8D8D8] flex">
+            Ask Coco AI
+            <span className="ml-3 w-5 h-5 rounded-[6px] border border-[#D8D8D8] flex justify-center items-center">
+              <Command className="w-3 h-3" />
+            </span>
+            <span className="ml-1 w-5 h-5 rounded-[6px] border border-[#D8D8D8]  flex justify-center items-center">
+              T
+            </span>
+          </div>
+        </div>
+      )}
 
       <Footer isChat={false} name={selectedItem?.source} />
     </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { isTauri } from "@tauri-apps/api/core";
 
 import InputBox from "@/components/AppAI/InputBox";
@@ -12,24 +12,9 @@ export default function DesktopApp() {
   const [input, setInput] = useState("");
   const [isTransitioned, setIsTransitioned] = useState(false);
 
-  // async function setWindowSize() {
-  //   if (isTauri() && !isTransitioned) {
-  //     const { getCurrentWebviewWindow } = await import(
-  //       "@tauri-apps/api/webviewWindow"
-  //     );
-  //     const { LogicalSize } = await import("@tauri-apps/api/dpi");
-  //     await getCurrentWebviewWindow()?.setSize(new LogicalSize(680, 90));
-  //   }
-  // }
-  // useEffect(() => {
-  //   setWindowSize();
-  // }, [isTransitioned]);
-
   async function changeMode(value: boolean) {
     setIsChatMode(value);
-    if (!value) {
-      setIsTransitioned(false);
-    }
+    setIsTransitioned(value);
   }
 
   async function changeInput(value: string) {
@@ -47,7 +32,6 @@ export default function DesktopApp() {
 
         await getCurrentWebviewWindow()?.setSize(new LogicalSize(680, 596));
       }
-      setIsTransitioned(true);
       chatAIRef.current?.init();
     }
   };
@@ -68,7 +52,9 @@ export default function DesktopApp() {
       <div
         data-tauri-drag-region
         className={`p-[7px] pb-0 absolute w-full flex items-center justify-center transition-all duration-500 ${
-          isTransitioned ? "top-[500px] h-[90px] border-t" : "top-0 h-[90px] border-b"
+          isTransitioned
+            ? "top-[500px] h-[90px] border-t"
+            : "top-0 h-[90px] border-b"
         } border-[#E6E6E6] dark:border-[#272626] `}
       >
         <InputBox
