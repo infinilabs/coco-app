@@ -30,7 +30,10 @@ export const useWindows = () => {
     const existWin = await getWin(args.label);
 
     if (existWin) {
-      console.log("Window already exists>>", existWin);
+      console.log("Window already exists>>", existWin, existWin.show);
+      await existWin.show();
+      await existWin.setFocus();
+      await existWin.center();
       return;
     }
 
@@ -98,34 +101,41 @@ export const useWindows = () => {
     listen("win-close", async () => {
       await appWindow.close();
     });
+  }, [appWindow, createWin]);
 
+  const listenSettingsEvents = useCallback(() => {
     listen("open_settings", (event) => {
       console.log("open_settings", event);
-      let url =  "/ui/settings"
-      if (event.payload==="about") {
+      let url = "/ui/settings"
+      if (event.payload === "about") {
         url = "/ui/settings?tab=about"
       }
       createWin({
         label: "settings",
         title: "Settings Window",
-        dragDropEnabled: true,
-        center: true,
-        width: 900,
+        width: 1000,
         height: 600,
-        alwaysOnTop: true,
+        alwaysOnTop: false,
         shadow: true,
         decorations: true,
+        transparent: false,
         closable: true,
         minimizable: false,
         maximizable: false,
+        dragDropEnabled: true,
+        center: true,
         url,
       });
     });
-  }, [appWindow, createWin]);
+  }, []);
 
   useEffect(() => {
     listenEvents();
   }, [listenEvents]);
+
+  useEffect(() => {
+    listenSettingsEvents();
+  }, [listenSettingsEvents]);
 
   return {
     createWin,

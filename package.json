@@ -37,6 +37,7 @@
     "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",
     "use-debounce": "^10.0.4",
+    "uuid": "^11.0.3",
     "zustand": "^5.0.0"
   },
   "devDependencies": {

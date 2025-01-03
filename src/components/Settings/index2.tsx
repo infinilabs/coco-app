@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import { Settings, Puzzle, User, Users, Settings2, Info } from "lucide-react";
+import { Settings, Puzzle, User, Settings2, Info } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import SettingsPanel from "./SettingsPanel";
 import GeneralSettings from "./GeneralSettings";
 import AboutView from "./AboutView";
+import Account from "./Account";
+import CocoCloud from "@/components/Auth/CocoCloud"
 import Footer from "../Footer";
 import { useTheme } from "../../contexts/ThemeContext";
 import { AppTheme } from "../../utils/tauri";
@@ -24,7 +26,6 @@ function SettingsPage() {
     { name: "General", icon: Settings },
     { name: "Extensions", icon: Puzzle },
     { name: "Account", icon: User },
-    { name: "Organizations", icon: Users },
     { name: "Advanced", icon: Settings2 },
     { name: "About", icon: Info },
   ];
@@ -77,18 +78,8 @@ function SettingsPage() {
                 </SettingsPanel>
               </TabPanel>
               <TabPanel>
-                <SettingsPanel title="">
-                  <div className="text-gray-600 dark:text-gray-400">
-                    Account settings content
-                  </div>
-                </SettingsPanel>
-              </TabPanel>
-              <TabPanel>
-                <SettingsPanel title="">
-                  <div className="text-gray-600 dark:text-gray-400">
-                    Organizations settings content
-                  </div>
-                </SettingsPanel>
+                <Account />
+                <CocoCloud />
               </TabPanel>
               <TabPanel>
                 <SettingsPanel title="">
