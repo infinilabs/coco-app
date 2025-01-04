@@ -8,10 +8,13 @@ import { Sidebar } from "./Sidebar";
 import type { Chat, Message } from "./types";
 import { tauriFetch } from "../../api/tauriFetchClient";
 import { useWebSocket } from "../../hooks/useWebSocket";
+import { useWindows }  from "../../hooks/useWindows";
 
 interface ChatAIProps {}
 
 export default function ChatAI({}: ChatAIProps) {
+  const { closeWin } = useWindows();
+
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChat, setActiveChat] = useState<Chat>();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -235,10 +238,7 @@ export default function ChatAI({}: ChatAIProps) {
   };
 
   async function closeWindow() {
-    if (isTauri()) {
-      const { useWindows } = await import("../../hooks/useWindows");
-      const { closeWin } = useWindows();
-
+    if (isTauri() && closeWin) {
       await closeWin("chat");
     }
   }
