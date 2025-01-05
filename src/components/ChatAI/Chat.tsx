@@ -155,7 +155,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
           url: `/chat/${newChat?._id}/_send`,
           method: "POST",
           headers: {
-            WEBSOCKET-SESSION-ID: websocketId,
+            "WEBSOCKET-SESSION-ID": websocketId,
           },
           body: JSON.stringify({ message: content }),
         });

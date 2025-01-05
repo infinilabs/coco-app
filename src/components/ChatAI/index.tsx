@@ -160,7 +160,7 @@ export default function ChatAI({}: ChatAIProps) {
         url: `/chat/${activeChat?._id}/_send`,
         method: "POST",
         headers: {
-          WEBSOCKET-SESSION-ID: websocketId,
+          "WEBSOCKET-SESSION-ID": websocketId,
         },
         body: JSON.stringify({ message: content }),
       });
