@@ -35,7 +35,7 @@ export default function ChatAI({}: ChatAIProps) {
   const { messages, setMessages } = useWebSocket(
     "ws://localhost:2900/ws",
     (msg) => {
-      if (msg.includes("WEBSOCKET-SESSION-ID")) {
+      if (msg.includes("websocket-session-id")) {
         const array = msg.split(" ");
         setWebsocketId(array[2]);
       }
