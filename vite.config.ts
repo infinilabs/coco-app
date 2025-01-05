@@ -35,11 +35,13 @@ export default defineConfig(async () => ({
     proxy: {
       "/chat": {
         target: "http://localhost:2900",
+        // target: "https://coco.infini.cloud",
         changeOrigin: true,
         secure: false,
       },
       "/query": {
         target: "http://localhost:2900",
+        // target: "https://coco.infini.cloud",
         changeOrigin: true,
         secure: false,
       },

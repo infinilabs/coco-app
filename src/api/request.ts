@@ -9,6 +9,7 @@ if (isTauri()) {
 }
 
 const baseURL = "http://localhost:2900";
+// const baseURL = "https://coco.infini.cloud";
 
 interface FetchRequestConfig {
   url: string;

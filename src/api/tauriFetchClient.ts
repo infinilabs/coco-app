@@ -1,6 +1,7 @@
 import { fetch } from "@tauri-apps/plugin-http";
 
 const baseURL = "http://localhost:2900";
+// const baseURL = "https://coco.infini.cloud";
 
 interface FetchRequestConfig {
   url: string;

@@ -4,7 +4,9 @@ import { listen } from "@tauri-apps/api/event";
 
 const useEscape = () => {
   const handleEscape = async (event: KeyboardEvent) => {
+    console.log(222222)
     if (event.key === "Escape") {
+      console.log(333333)
       event.preventDefault();
       // Hide the Tauri app window when 'Esc' is pressed
       await invoke("hide_coco");
@@ -14,8 +16,10 @@ const useEscape = () => {
 
   useEffect(() => {
     if(!isTauri()) return;
+    
     const unlisten = listen("tauri://focus", () => {
       // Add event listener for keydown
+      console.log(111111)
       window.addEventListener("keydown", handleEscape);
     });
 
