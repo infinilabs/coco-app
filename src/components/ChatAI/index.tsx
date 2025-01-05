@@ -35,7 +35,7 @@ export default function ChatAI({}: ChatAIProps) {
   const { messages, setMessages } = useWebSocket(
     "ws://localhost:2900/ws",
     (msg) => {
-      if (msg.includes("websocket_session_id")) {
+      if (msg.includes("WEBSOCKET-SESSION-ID")) {
         const array = msg.split(" ");
         setWebsocketId(array[2]);
       }
@@ -160,7 +160,7 @@ export default function ChatAI({}: ChatAIProps) {
         url: `/chat/${activeChat?._id}/_send`,
         method: "POST",
         headers: {
-          WEBSOCKET_SESSION_ID: websocketId,
+          "WEBSOCKET-SESSION-ID": websocketId,
         },
         body: JSON.stringify({ message: content }),
       });

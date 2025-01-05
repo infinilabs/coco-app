@@ -54,7 +54,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
       "ws://localhost:2900/ws",
       (msg) => {
         console.log("msg", msg);
-        if (msg.includes("websocket_session_id")) {
+        if (msg.includes("WEBSOCKET-SESSION-ID")) {
           const array = msg.split(" ");
           setWebsocketId(array[2]);
         }
@@ -155,7 +155,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
           url: `/chat/${newChat?._id}/_send`,
           method: "POST",
           headers: {
-            WEBSOCKET_SESSION_ID: websocketId,
+            "WEBSOCKET-SESSION-ID": websocketId,
           },
           body: JSON.stringify({ message: content }),
         });
