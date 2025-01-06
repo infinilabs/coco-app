@@ -89,11 +89,11 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
     };
   }, [showIndex, selectedItem, suggests]);
 
-  useEffect(() => {
-    if (suggests.length > 0) {
-      setSelectedItem(0);
-    }
-  }, [JSON.stringify(suggests)]);
+  // useEffect(() => {
+  //   if (suggests.length > 0) {
+  //     setSelectedItem(0);
+  //   }
+  // }, [JSON.stringify(suggests)]);
 
   useEffect(() => {
     if (selectedItem !== null && itemRefs.current[selectedItem]) {
