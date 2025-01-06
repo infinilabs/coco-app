@@ -38,12 +38,12 @@ export default defineConfig(async () => ({
     },
     proxy: {
       "/chat": {
-        target: process.env.VITE_SERVER_URL,
+        target: process.env.COCO_SERVER_URL,
         changeOrigin: true,
         secure: false,
       },
       "/query": {
-        target: process.env.VITE_SERVER_URL,
+        target: process.env.COCO_SERVER_URL,
         changeOrigin: true,
         secure: false,
       },

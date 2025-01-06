@@ -52,7 +52,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
     const curIdRef = useRef(curId);
     curIdRef.current = curId;
     const { messages, setMessages } = useWebSocket(
-      `${clientEnv.VITE_WEBSOCKET_URL}`,
+      `${clientEnv.COCO_WEBSOCKET_URL}`,
       (msg) => {
         console.log("msg", msg);
         if (msg.includes("websocket-session-id")) {

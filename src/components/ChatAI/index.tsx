@@ -34,7 +34,7 @@ export default function ChatAI({}: ChatAIProps) {
   const curIdRef = useRef(curId);
   curIdRef.current = curId;
   const { messages, setMessages } = useWebSocket(
-    `${clientEnv.VITE_WEBSOCKET_URL}`,
+    `${clientEnv.COCO_WEBSOCKET_URL}`,
     (msg) => {
       if (msg.includes("WEBSOCKET-SESSION-ID")) {
         const array = msg.split(" ");

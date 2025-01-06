@@ -2,7 +2,7 @@ import { fetch } from "@tauri-apps/plugin-http";
 
 import { clientEnv } from "@/utils/env";
 
-const baseURL = `${clientEnv.VITE_SERVER_URL}`
+const baseURL = `${clientEnv.COCO_SERVER_URL}`
 
 interface FetchRequestConfig {
   url: string;
