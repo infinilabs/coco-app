@@ -33,12 +33,10 @@
     "unlisten",
     "unlistener",
     "unminimize",
-<<<<<<< HEAD
     "uuidv",
-=======
     "VITE",
->>>>>>> main
     "webviews",
+    "yuque",
     "zustand"
   ],
   "[rust]": {
