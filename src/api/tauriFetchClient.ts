@@ -1,7 +1,8 @@
 import { fetch } from "@tauri-apps/plugin-http";
 
-const baseURL = "http://localhost:2900";
-// const baseURL = "https://coco.infini.cloud";
+import { clientEnv } from "@/utils/env";
+
+const baseURL = `${clientEnv.VITE_SERVER_URL}`
 
 interface FetchRequestConfig {
   url: string;

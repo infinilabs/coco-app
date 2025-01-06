@@ -9,6 +9,7 @@ import type { Chat, Message } from "./types";
 import { tauriFetch } from "../../api/tauriFetchClient";
 import { useWebSocket } from "../../hooks/useWebSocket";
 import { useWindows }  from "../../hooks/useWindows";
+import { clientEnv } from "@/utils/env";
 
 interface ChatAIProps {}
 
@@ -33,7 +34,7 @@ export default function ChatAI({}: ChatAIProps) {
   const curIdRef = useRef(curId);
   curIdRef.current = curId;
   const { messages, setMessages } = useWebSocket(
-    "ws://localhost:2900/ws",
+    `${clientEnv.VITE_WEBSOCKET_URL}`,
     (msg) => {
       if (msg.includes("WEBSOCKET-SESSION-ID")) {
         const array = msg.split(" ");

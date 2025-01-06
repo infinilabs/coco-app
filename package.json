@@ -21,6 +21,7 @@
     "@tauri-apps/plugin-window": "2.0.0-alpha.1",
     "axios": "^1.7.7",
     "clsx": "^2.1.1",
+    "dotenv": "^16.4.7",
     "i18next": "^23.16.2",
     "lodash": "^4.17.21",
     "lucide-react": "^0.453.0",
