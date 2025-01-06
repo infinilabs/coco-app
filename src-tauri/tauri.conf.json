@@ -20,6 +20,8 @@
         "decorations": false,
         "minimizable": false,
         "maximizable": false,
+        "skipTaskbar": true,
+        "resizable": false,
         "shadow": false,
         "transparent": true,
         "fullscreen": false,

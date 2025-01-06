@@ -33,7 +33,11 @@
     "unlisten",
     "unlistener",
     "unminimize",
+<<<<<<< HEAD
     "uuidv",
+=======
+    "VITE",
+>>>>>>> main
     "webviews",
     "zustand"
   ],
