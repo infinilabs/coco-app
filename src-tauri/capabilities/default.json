@@ -52,6 +52,9 @@
           "url": "http://localhost:2900"
         },
         {
+          "url": "http://localhost:9000"
+        },
+        {
           "url": "https://coco.infini.cloud"
         }
       ],
