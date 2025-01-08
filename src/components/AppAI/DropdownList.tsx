@@ -135,7 +135,7 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
             </div>
             <div className="flex gap-2 items-center relative">
               <span className="text-sm  text-[#666] dark:text-[#666] truncate w-52 text-right">
-                {item?._source?.source}
+                {item?._source?.source?.name}
               </span>
               {showIndex && index < 10 ? (
                 <div

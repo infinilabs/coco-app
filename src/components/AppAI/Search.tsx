@@ -120,7 +120,7 @@ function Search({ isChatMode, input }: SearchProps) {
         </div>
       )}
 
-      <Footer isChat={false} name={selectedItem?.source} />
+      <Footer isChat={false} name={selectedItem?.source?.name} />
     </div>
   );
 }
