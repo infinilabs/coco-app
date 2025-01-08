@@ -17,6 +17,7 @@ interface ChatInputProps {
   isChatMode: boolean;
   inputValue: string;
   changeInput: (val: string) => void;
+  reconnect: () => void;
 }
 
 export default function ChatInput({
@@ -27,13 +28,14 @@ export default function ChatInput({
   inputValue,
   changeInput,
   disabledChange,
+  reconnect,
 }: ChatInputProps) {
   const showTooltip = useAppStore((state) => state.showTooltip);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<{ reset: () => void; focus: () => void }>(null);
 
-  const { curChatEnd } = useChatStore();
+  const { curChatEnd, connected } = useChatStore();
 
   const [isCommandPressed, setIsCommandPressed] = useState(false);
 
@@ -135,6 +137,26 @@ export default function ChatInput({
     console.log("Chat AI opened.");
   };
 
+  const [countdown, setCountdown] = useState(5);
+  useEffect(() => {
+    if (connected) return
+    if (countdown <= 0) {
+      ReconnectClick();
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearTimeout(timer); // 清除定时器，避免内存泄漏
+  }, [countdown, connected]);
+
+  const ReconnectClick = () => {
+    setCountdown(5)
+    reconnect()
+  }
+
   return (
     <div className="w-full relative">
       <div className="p-[12px] flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded transition-all relative">
@@ -144,6 +166,7 @@ export default function ChatInput({
               ref={textareaRef}
               input={inputValue}
               setInput={changeInput}
+              connected={connected}
               handleKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -227,6 +250,15 @@ export default function ChatInput({
             ⌘ + ↩︎
           </div>
         ) : null}
+
+        {!connected && isChatMode ? (
+          <div className="absolute top-0 right-0 bottom-0 left-0 px-2 py-4 bg-red-500/10 rounded-md font-normal text-xs text-gray-400 flex items-center gap-4">
+            Unable to connect to the server
+            <div className="w-[96px] h-[24px] bg-[#0061FF] rounded-[12px] font-normal text-xs text-white flex items-center justify-center cursor-pointer" onClick={ReconnectClick}>
+              Reconnect ({countdown})
+            </div>
+          </div>
+        ): null}
       </div>
 
       <div

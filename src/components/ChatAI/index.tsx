@@ -33,6 +33,8 @@ export default function ChatAI({}: ChatAIProps) {
 
   const curIdRef = useRef(curId);
   curIdRef.current = curId;
+
+  console.log("index useWebSocket")
   const { messages, setMessages } = useWebSocket(
     `${clientEnv.COCO_WEBSOCKET_URL}`,
     (msg) => {
