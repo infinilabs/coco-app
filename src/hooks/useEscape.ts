@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { isTauri, invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
 const useEscape = () => {
@@ -13,6 +13,8 @@ const useEscape = () => {
   };
 
   useEffect(() => {
+    if(!isTauri()) return;
+    
     const unlisten = listen("tauri://focus", () => {
       // Add event listener for keydown
       window.addEventListener("keydown", handleEscape);

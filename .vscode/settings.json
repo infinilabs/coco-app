@@ -8,10 +8,12 @@
     "dyld",
     "fullscreen",
     "headlessui",
+    "Icdbb",
     "icns",
     "INFINI",
     "inputbox",
     "katex",
+    "khtml",
     "localstorage",
     "lucide",
     "maximizable",
@@ -32,7 +34,10 @@
     "unlisten",
     "unlistener",
     "unminimize",
+    "uuidv",
+    "VITE",
     "webviews",
+    "yuque",
     "zustand"
   ],
   "[rust]": {

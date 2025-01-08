@@ -14,6 +14,7 @@ import { tauriFetch } from "../../api/tauriFetchClient";
 import { useWebSocket } from "../../hooks/useWebSocket";
 import { useChatStore } from "../../stores/chatStore";
 import { useWindows }  from "../../hooks/useWindows";
+import { clientEnv } from "@/utils/env";
 
 interface ChatAIProps {
   inputValue: string;
@@ -24,6 +25,8 @@ interface ChatAIProps {
 export interface ChatAIRef {
   init: () => void;
   cancelChat: () => void;
+  connected: boolean;
+  reconnect: () => void;
 }
 
 const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
@@ -31,11 +34,13 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
     useImperativeHandle(ref, () => ({
       init: init,
       cancelChat: cancelChat,
+      connected: connected,
+      reconnect: reconnect
     }));
 
     const { createWin } = useWindows();
 
-    const { curChatEnd, setCurChatEnd } = useChatStore();
+    const { curChatEnd, setCurChatEnd, setConnected } = useChatStore();
 
     const [activeChat, setActiveChat] = useState<Chat>();
     const [isTyping, setIsTyping] = useState(false);
@@ -50,11 +55,13 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
 
     const curIdRef = useRef(curId);
     curIdRef.current = curId;
-    const { messages, setMessages } = useWebSocket(
-      "ws://localhost:2900/ws",
+
+    console.log("chat useWebSocket")
+    const { messages, setMessages, connected, reconnect } = useWebSocket(
+      `${clientEnv.COCO_WEBSOCKET_URL}`,
       (msg) => {
         console.log("msg", msg);
-        if (msg.includes("websocket_session_id")) {
+        if (msg.includes("websocket-session-id")) {
           const array = msg.split(" ");
           setWebsocketId(array[2]);
         }
@@ -80,6 +87,10 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
         }
       }
     );
+
+    useEffect(()=>{
+      setConnected(connected)
+    }, [connected])
 
     // websocket
     useEffect(() => {
@@ -155,7 +166,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
           url: `/chat/${newChat?._id}/_send`,
           method: "POST",
           headers: {
-            WEBSOCKET_SESSION_ID: websocketId,
+            "WEBSOCKET-SESSION-ID": websocketId,
           },
           body: JSON.stringify({ message: content }),
         });
@@ -205,7 +216,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
 
     async function openChatAI() {
       if (isTauri()) {
-        createWin({
+        createWin && createWin({
           label: "chat",
           title: "Coco AI",
           dragDropEnabled: true,

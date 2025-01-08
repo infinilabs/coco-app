@@ -13,17 +13,22 @@
     "macOSPrivateApi": true,
     "windows": [
       {
-        "decorations": false,
-        "height": 90,
-        "width": 680,
-        "minimizable": true,
-        "shadow": true,
         "title": "Coco AI",
-        "transparent": true,
         "url": "/ui",
+        "height": 590,
+        "width": 680,
+        "decorations": false,
+        "minimizable": false,
+        "maximizable": false,
+        "skipTaskbar": true,
+        "resizable": false,
+        "shadow": false,
+        "transparent": true,
+        "fullscreen": false,
+        "center": false,
         "windowEffects": {
           "effects": [],
-          "radius": 20
+          "radius": 12
         }
       }
     ],

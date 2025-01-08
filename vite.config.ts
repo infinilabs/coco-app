@@ -1,12 +1,21 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import path from 'path';
+import { config } from "dotenv";
+
+config();
 
 const host = process.env.TAURI_DEV_HOST;
+// console.log("process.env", process.env)
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
   plugins: [react()],
-
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
   // 1. prevent vite from obscuring rust errors
@@ -29,12 +38,12 @@ export default defineConfig(async () => ({
     },
     proxy: {
       "/chat": {
-        target: "http://localhost:2900",
+        target: process.env.COCO_SERVER_URL,
         changeOrigin: true,
         secure: false,
       },
       "/query": {
-        target: "http://localhost:2900",
+        target: process.env.COCO_SERVER_URL,
         changeOrigin: true,
         secure: false,
       },

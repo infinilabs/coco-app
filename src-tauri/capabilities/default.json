@@ -26,8 +26,9 @@
     "core:window:allow-start-dragging",
     "core:window:allow-set-size",
     "core:window:allow-get-all-windows",
+    "core:window:allow-set-focus",
     "core:app:allow-set-app-theme",
-    "shell:allow-open",
+    "shell:default",
     "http:default",
     "http:allow-fetch",
     "http:allow-fetch-cancel",
@@ -49,6 +50,12 @@
       "allow": [
         {
           "url": "http://localhost:2900"
+        },
+        {
+          "url": "http://localhost:9000"
+        },
+        {
+          "url": "https://coco.infini.cloud"
         }
       ],
       "deny": []

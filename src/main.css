@@ -23,7 +23,7 @@
 
   body,
   #root {
-    @apply text-gray-900 rounded-xl antialiased;
+    @apply text-gray-900 antialiased;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -34,7 +34,11 @@
 
   .dark body,
   .dark #root {
-    @apply text-gray-100 rounded-xl antialiased;
+    @apply text-gray-100;
+  }
+
+  .input-body {
+    @apply rounded-xl overflow-hidden
   }
 }
 

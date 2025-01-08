@@ -1,7 +1,8 @@
 import { useEffect, useCallback } from "react";
 import { getAllWindows, getCurrentWindow } from "@tauri-apps/api/window";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { listen } from "@tauri-apps/api/event";
+import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { isTauri } from "@tauri-apps/api/core";
 
 const defaultWindowConfig = {
   label: "",
@@ -20,6 +21,7 @@ const defaultWindowConfig = {
 };
 
 export const useWindows = () => {
+  if (!isTauri()) return {}
   const appWindow = getCurrentWindow();
 
   const createWin = useCallback(async (options: any) => {
@@ -28,7 +30,10 @@ export const useWindows = () => {
     const existWin = await getWin(args.label);
 
     if (existWin) {
-      console.log("Window already exists>>", existWin);
+      console.log("Window already exists>>", existWin, existWin.show);
+      await existWin.show();
+      await existWin.setFocus();
+      await existWin.center();
       return;
     }
 
@@ -76,54 +81,91 @@ export const useWindows = () => {
   }, []);
 
   const listenEvents = useCallback(() => {
-    listen("win-create", (event) => {
-      console.log(event);
-      createWin(event.payload);
-    });
+    let unlistenHandlers: { (): void; (): void; (): void; (): void; }[] = [];
 
-    listen("win-show", async () => {
-      if (!appWindow || appWindow.label.indexOf("main") === -1) return;
-      await appWindow.show();
-      await appWindow.unminimize();
-      await appWindow.setFocus();
-    });
-
-    listen("win-hide", async () => {
-      if (!appWindow || appWindow.label.indexOf("main") === -1) return;
-      await appWindow.hide();
-    });
-
-    listen("win-close", async () => {
-      await appWindow.close();
-    });
-
-    listen("open_settings", (event) => {
-      console.log("open_settings", event);
-      let url =  "/ui/settings"
-      if (event.payload==="about") {
-        url = "/ui/settings?tab=about"
-      }
-      createWin({
-        label: "settings",
-        title: "Settings Window",
-        dragDropEnabled: true,
-        center: true,
-        width: 900,
-        height: 600,
-        alwaysOnTop: true,
-        shadow: true,
-        decorations: true,
-        closable: true,
-        minimizable: false,
-        maximizable: false,
-        url,
+    const setupListeners = async () => {
+      const winCreateHandler = await listen("win-create", (event) => {
+        console.log(event);
+        createWin(event.payload);
       });
-    });
+      unlistenHandlers.push(winCreateHandler);
+
+      const winShowHandler = await listen("win-show", async () => {
+        if (!appWindow || !appWindow.label.includes("main")) return;
+        await appWindow.show();
+        await appWindow.unminimize();
+        await appWindow.setFocus();
+      });
+      unlistenHandlers.push(winShowHandler);
+
+      const winHideHandler = await listen("win-hide", async () => {
+        if (!appWindow || !appWindow.label.includes("main")) return;
+        await appWindow.hide();
+      });
+      unlistenHandlers.push(winHideHandler);
+
+      const winCloseHandler = await listen("win-close", async () => {
+        await appWindow.close();
+      });
+      unlistenHandlers.push(winCloseHandler);
+    };
+
+    setupListeners();
+
+    // Cleanup function to remove all listeners
+    return () => {
+      unlistenHandlers.forEach((unlistenHandler) => unlistenHandler());
+    };
   }, [appWindow, createWin]);
 
   useEffect(() => {
-    listenEvents();
+    const cleanup = listenEvents();
+    return cleanup; // Ensure cleanup on unmount
   }, [listenEvents]);
+
+  const listenSettingsEvents = useCallback(() => {
+    let unlistenHandler: UnlistenFn;
+
+    const setupListener = async () => {
+      unlistenHandler = await listen("open_settings", (event) => {
+        console.log("open_settings", event);
+        let url = "/ui/settings"
+        if (event.payload === "about") {
+          url = "/ui/settings?tab=about"
+        }
+        createWin({
+          label: "settings",
+          title: "Settings Window",
+          width: 1000,
+          height: 600,
+          alwaysOnTop: false,
+          shadow: true,
+          decorations: true,
+          transparent: false,
+          closable: true,
+          minimizable: false,
+          maximizable: false,
+          dragDropEnabled: true,
+          center: true,
+          url,
+        });
+      });
+    };
+
+    setupListener();
+
+    // Return the cleanup function to unlisten to the event
+    return () => {
+      if (unlistenHandler) {
+        unlistenHandler();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const cleanup = listenSettingsEvents();
+    return cleanup; // Ensure cleanup on unmount
+  }, [listenSettingsEvents]);
 
   return {
     createWin,

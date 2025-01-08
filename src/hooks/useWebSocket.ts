@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 export function useWebSocket(
   url: string,
@@ -7,18 +7,18 @@ export function useWebSocket(
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [messages, setMessages] = useState<string>("");
   const [connected, setConnected] = useState(false);
+  const [shouldReconnect, setShouldReconnect] = useState(true);
 
-  useEffect(() => {
-    // Create WebSocket
+  const createWebSocket = useCallback(() => {
+    console.log("createWebSocket li")
     const websocket = new WebSocket(url);
 
     websocket.onopen = () => {
-      console.log("WebSocket success");
+      console.log("WebSocket connected");
       setConnected(true);
     };
 
     websocket.onmessage = (event) => {
-      // console.log("data:", event.data);
       const data = filterMessages ? filterMessages(event.data) : event.data;
       if (data) {
         setMessages((prevMessages) => prevMessages + data);
@@ -26,8 +26,12 @@ export function useWebSocket(
     };
 
     websocket.onclose = () => {
-      console.log("WebSocket close");
+      console.log("WebSocket closed");
       setConnected(false);
+      if (shouldReconnect) {
+        console.log("Attempting to reconnect...");
+        setTimeout(() => createWebSocket(), 5000);
+      }
     };
 
     websocket.onerror = (error) => {
@@ -35,11 +39,25 @@ export function useWebSocket(
     };
 
     setWs(websocket);
+  }, [url, filterMessages, shouldReconnect]);
+
+  const reconnect = useCallback(() => {
+    console.log("Manually reconnecting WebSocket...");
+    if (ws) {
+      ws.close();
+    }
+    createWebSocket();
+  }, [ws]);
+
+  useEffect(() => {
+    console.log("useEffect init")
+    createWebSocket();
 
     return () => {
-      websocket.close();
+      setShouldReconnect(false);
+      ws?.close();
     };
-  }, [url]);
+  }, []);
 
   const sendMessage = (message: string) => {
     if (ws && connected) {
@@ -48,5 +66,12 @@ export function useWebSocket(
     }
   };
 
-  return { messages, connected, sendMessage, setMessages, setConnected };
+  return {
+    messages,
+    connected,
+    sendMessage,
+    setMessages,
+    setConnected,
+    reconnect,
+  };
 }

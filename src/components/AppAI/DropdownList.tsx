@@ -90,12 +90,6 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
     };
   }, [showIndex, selectedItem, suggests]);
 
-  // useEffect(() => {
-  //   if (suggests.length > 0) {
-  //     setSelectedItem(0);
-  //   }
-  // }, [JSON.stringify(suggests)]);
-
   useEffect(() => {
     if (selectedItem !== null && itemRefs.current[selectedItem]) {
       itemRefs.current[selectedItem]?.scrollIntoView({
@@ -109,7 +103,7 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
     <div
       ref={containerRef}
       data-tauri-drag-region
-      className="max-h-[458px] w-full p-2 flex flex-col rounded-xl overflow-y-auto overflow-hidden custom-scrollbar focus:outline-none"
+      className="h-[458px] w-full p-2 flex flex-col overflow-y-auto custom-scrollbar focus:outline-none"
       tabIndex={0}
     >
       <div className="p-2 text-xs text-[#999] dark:text-[#666]">Results</div>
@@ -141,7 +135,7 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
             </div>
             <div className="flex gap-2 items-center relative">
               <span className="text-sm  text-[#666] dark:text-[#666] truncate w-52 text-right">
-                {item?._source?.source}
+                {item?._source?.source?.name}
               </span>
               {showIndex && index < 10 ? (
                 <div

@@ -8,10 +8,14 @@ import { Sidebar } from "./Sidebar";
 import type { Chat, Message } from "./types";
 import { tauriFetch } from "../../api/tauriFetchClient";
 import { useWebSocket } from "../../hooks/useWebSocket";
+import { useWindows }  from "../../hooks/useWindows";
+import { clientEnv } from "@/utils/env";
 
 interface ChatAIProps {}
 
 export default function ChatAI({}: ChatAIProps) {
+  const { closeWin } = useWindows();
+
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChat, setActiveChat] = useState<Chat>();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -29,10 +33,12 @@ export default function ChatAI({}: ChatAIProps) {
 
   const curIdRef = useRef(curId);
   curIdRef.current = curId;
+
+  console.log("index useWebSocket")
   const { messages, setMessages } = useWebSocket(
-    "ws://localhost:2900/ws",
+    `${clientEnv.COCO_WEBSOCKET_URL}`,
     (msg) => {
-      if (msg.includes("websocket_session_id")) {
+      if (msg.includes("websocket-session-id")) {
         const array = msg.split(" ");
         setWebsocketId(array[2]);
       }
@@ -157,7 +163,7 @@ export default function ChatAI({}: ChatAIProps) {
         url: `/chat/${activeChat?._id}/_send`,
         method: "POST",
         headers: {
-          WEBSOCKET_SESSION_ID: websocketId,
+          "WEBSOCKET-SESSION-ID": websocketId,
         },
         body: JSON.stringify({ message: content }),
       });
@@ -235,10 +241,7 @@ export default function ChatAI({}: ChatAIProps) {
   };
 
   async function closeWindow() {
-    if (isTauri()) {
-      const { useWindows } = await import("../../hooks/useWindows");
-      const { closeWin } = useWindows();
-
+    if (isTauri() && closeWin) {
       await closeWin("chat");
     }
   }

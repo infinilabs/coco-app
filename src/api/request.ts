@@ -1,14 +1,16 @@
 import { isTauri } from "@tauri-apps/api/core";
 import { fetch as tauriFetchModule } from "@tauri-apps/plugin-http";
 
+import { clientEnv } from "@/utils/env";
+
+const baseURL = `${clientEnv.COCO_SERVER_URL}`
+
 // Use a conditional fetch depending on whether it's in a Tauri environment or web
 let customFetch: typeof window.fetch | typeof tauriFetchModule = window.fetch;
 
 if (isTauri()) {
   customFetch = tauriFetchModule;
 }
-
-const baseURL = "http://localhost:2900";
 
 interface FetchRequestConfig {
   url: string;
