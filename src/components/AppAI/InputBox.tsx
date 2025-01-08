@@ -149,7 +149,7 @@ export default function ChatInput({
       setCountdown((prev) => prev - 1);
     }, 1000);
 
-    return () => clearTimeout(timer); // 清除定时器，避免内存泄漏
+    return () => clearTimeout(timer);
   }, [countdown, connected]);
 
   const ReconnectClick = () => {
