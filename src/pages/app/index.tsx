@@ -38,12 +38,16 @@ export default function DesktopApp() {
   const cancelChat = () => {
     chatAIRef.current?.cancelChat();
   };
+  
+  const reconnect = () => {
+    chatAIRef.current?.reconnect();
+  };
   const isTyping = false;
 
   return (
     <div
       data-tauri-drag-region
-      className={`shadow-window-custom w-[680px] h-[590px] m-auto rounded-xl overflow-hidden relative border border-[#E6E6E6] dark:border-[#272626] ${
+      className={`w-[680px] h-[590px] m-auto rounded-xl overflow-hidden relative border border-[#E6E6E6] dark:border-[#272626] ${
         isTransitioned
           ? "bg-chat_bg_light dark:bg-chat_bg_dark"
           : "bg-search_bg_light dark:bg-search_bg_dark"
@@ -67,6 +71,7 @@ export default function DesktopApp() {
           }}
           changeMode={changeMode}
           changeInput={changeInput}
+          reconnect={reconnect}
         />
       </div>
 
@@ -92,13 +97,15 @@ export default function DesktopApp() {
             : "-top-[506px] opacity-0 pointer-events-none"
         } h-[500px]`}
       >
-        <ChatAI
-          ref={chatAIRef}
-          key="ChatAI"
-          inputValue={input}
-          isTransitioned={isTransitioned}
-          changeInput={changeInput}
-        />
+        {isTransitioned ? (
+          <ChatAI
+            ref={chatAIRef}
+            key="ChatAI"
+            inputValue={input}
+            isTransitioned={isTransitioned}
+            changeInput={changeInput}
+          />
+        ) : null}
       </div>
     </div>
   );

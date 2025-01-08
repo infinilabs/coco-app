@@ -25,6 +25,8 @@ interface ChatAIProps {
 export interface ChatAIRef {
   init: () => void;
   cancelChat: () => void;
+  connected: boolean;
+  reconnect: () => void;
 }
 
 const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
@@ -32,11 +34,13 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
     useImperativeHandle(ref, () => ({
       init: init,
       cancelChat: cancelChat,
+      connected: connected,
+      reconnect: reconnect
     }));
 
     const { createWin } = useWindows();
 
-    const { curChatEnd, setCurChatEnd } = useChatStore();
+    const { curChatEnd, setCurChatEnd, setConnected } = useChatStore();
 
     const [activeChat, setActiveChat] = useState<Chat>();
     const [isTyping, setIsTyping] = useState(false);
@@ -51,7 +55,9 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
 
     const curIdRef = useRef(curId);
     curIdRef.current = curId;
-    const { messages, setMessages } = useWebSocket(
+
+    console.log("chat useWebSocket")
+    const { messages, setMessages, connected, reconnect } = useWebSocket(
       `${clientEnv.COCO_WEBSOCKET_URL}`,
       (msg) => {
         console.log("msg", msg);
@@ -81,6 +87,10 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
         }
       }
     );
+
+    useEffect(()=>{
+      setConnected(connected)
+    }, [connected])
 
     // websocket
     useEffect(() => {
