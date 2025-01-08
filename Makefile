@@ -36,7 +36,7 @@ build-mac-dmg:
 	@echo "Building the desktop dmg package..."
 	pnpm tauri build --bundles dmg
 
-# Build Universal DMG package for MacOS
+# Build universal DMG package for MacOS
 build-mac-universal-dmg:
 	@echo "Building the desktop dmg package..."
 	pnpm tauri build --target universal-apple-darwin --bundles dmg
