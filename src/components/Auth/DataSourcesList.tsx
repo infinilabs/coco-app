@@ -7,8 +7,8 @@ export function DataSourcesList() {
       name: 'Google Drive',
       type: 'google',
       accounts: [
-        { email: 'an121245@gmail.com', lastSync: '2025年1月2日 09:50 AM' },
-        { email: '9paiii@gmail.com', lastSync: '2025年1月2日 09:50 AM' }
+        { email: 'an121245@gmail.com', lastSync: '2025-01-02 09:50 AM' },
+        { email: '9paiii@gmail.com', lastSync: '2025-01-02 09:50 AM' }
       ]
     },
     {
@@ -27,7 +27,7 @@ export function DataSourcesList() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-medium text-gray-900">数据源</h2>
+      <h2 className="text-xl font-medium text-gray-900">Data Source</h2>
       <div className="space-y-4">
         {dataSources.map(source => (
           <DataSourceItem key={source.id} {...source} />

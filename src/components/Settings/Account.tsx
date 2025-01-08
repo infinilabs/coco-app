@@ -31,7 +31,7 @@ export default function Account() {
       try {
         if (!auth) {
           // Replace the current route with signin
-          navigate("/signin", { replace: true });
+          // navigate("/signin", { replace: true });
         }
       } catch (error) {
         console.error("Failed to set up auth listener:", error);

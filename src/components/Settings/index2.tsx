@@ -25,7 +25,7 @@ function SettingsPage() {
   const tabs = [
     { name: "General", icon: Settings },
     { name: "Extensions", icon: Puzzle },
-    { name: "Account", icon: User },
+    { name: "Connect", icon: User },
     { name: "Advanced", icon: Settings2 },
     { name: "About", icon: Info },
   ];
