@@ -16,10 +16,79 @@ import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
 import callbackTemplate from "@/components/Auth/callback.template";
 import { tauriFetch } from "@/api/tauriFetchClient";
-import { onOpenUrl } from '@tauri-apps/plugin-deep-link'
+import {
+  onOpenUrl,
+  getCurrent as getCurrentDeepLinkUrls,
+  register
+} from "@tauri-apps/plugin-deep-link";
 
 export default function CocoCloud() {
   const appStore = useAppStore();
+
+  const [lastUrl, setLastUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleOAuthCallback = (code: string | null, state: string | null) => {
+    if (!code) {
+      setError("No authorization code received");
+      return;
+    }
+
+    console.log("Handling OAuth callback:", { code, state });
+  };
+
+  const handleUrl = (url: string) => {
+    try {
+      const urlObject = new URL(url);
+      console.error("1111111:", urlObject);
+
+      switch (urlObject.pathname) {
+        case "/oauth/callback":
+          const code = urlObject.searchParams.get("code");
+          const state = urlObject.searchParams.get("state");
+          handleOAuthCallback(code, state);
+          break;
+
+        default:
+          console.log("Unhandled deep link path:", urlObject.pathname);
+      }
+
+      setLastUrl(url);
+    } catch (err) {
+      console.error("Failed to parse URL:", err);
+      setError("Invalid URL format");
+    }
+  };
+
+  // Fetch the initial deep link intent
+  useEffect(() => {
+    register("coco").then((urls) => {
+      console.error("44444 URLs:", urls);
+    })
+    .catch((err) => {
+      console.error("666666:", err);
+    });
+
+    getCurrentDeepLinkUrls()
+      .then((urls) => {
+        console.error("22222 URLs:", urls);
+        if (urls && urls.length > 0) {
+          handleUrl(urls[0]);
+          console.error("URLs:", urls);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to get initial URLs:", err);
+        setError("Failed to get initial URLs");
+      });
+
+    const unlisten = onOpenUrl((urls) => handleUrl(urls[0]));
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
+  //
 
   const [isLogin] = useState(false);
   const [isConnect] = useState(true);
@@ -35,6 +104,10 @@ export default function CocoCloud() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    onOpenUrl((urls: any) => {
+      console.log("deep link:", urls);
+    });
+
     let unsubscribe: (() => void) | undefined;
 
     const setupAuthListener = async () => {
@@ -116,9 +189,9 @@ export default function CocoCloud() {
         `${endpoint_http}/sso/login?provider=coco-cloud&product=coco&request_id=${uid}&port=${port}`
       );
 
-      await onOpenUrl((urls:any) => {
-        console.log('deep link:', urls)
-      })
+      await onOpenUrl((urls: any) => {
+        console.log("deep link:", urls);
+      });
 
       const url = await new Promise<URL>((r) => {
         res = r;
@@ -196,6 +269,18 @@ export default function CocoCloud() {
       <Sidebar />
 
       <main className="flex-1">
+        <div>
+          {error && (
+            <div className="text-red-500 dark:text-red-400">Error: {error}</div>
+          )}
+
+          {lastUrl && (
+            <div className="text-gray-700 dark:text-gray-300">
+              Last opened URL: {lastUrl}
+            </div>
+          )}
+        </div>
+
         {isConnect ? (
           <div className="max-w-4xl mx-auto px-4 py-8">
             <div className="flex items-center justify-between mb-8">

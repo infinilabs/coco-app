@@ -42,6 +42,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-black flex justify-center">
+      <a href="coco://oauth_callback?code=ctvracbq50ke7o4qksj0&provider=coco-cloud">
+        In order to continue, please click here to launch Coco AI
+      </a>
+
       <div className="min-h-screen container py-[30px] relative overflow-hidden">
         {/* Background Image */}
         <div className="absolute top-[60px] inset-0 z-0">

@@ -8,6 +8,8 @@ use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
 mod autostart;
 use autostart::{change_autostart, enable_autostart};
 
+use tauri_plugin_deep_link::DeepLinkExt;
+
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
 
@@ -113,6 +115,13 @@ pub fn run() {
                     // switch_tray_icon(app.app_handle(), payload.is_dark_mode);
                     println!("Theme changed: is_dark_mode = {}", payload.is_dark_mode);
                 }
+            });
+
+            #[cfg(any(target_os = "linux", all(debug_assertions, windows)))]
+            app.deep_link().register_all()?;
+
+            app.deep_link().on_open_url(|event| {
+                dbg!(event.urls());
             });
 
             Ok(())
