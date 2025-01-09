@@ -19,11 +19,10 @@ import SettingsItem from "./SettingsItem";
 import SettingsToggle from "./SettingsToggle";
 import ShortcutItem from "./ShortcutItem";
 import { Shortcut } from "./shortcut";
-import { useShortcutEditor } from "../../hooks/useShortcutEditor";
-
+import { useShortcutEditor } from "@/hooks/useShortcutEditor";
 import { ThemeOption } from "./index2";
-import { type Hotkey } from "../../utils/tauri";
-import { useAppStore } from "../../stores/appStore";
+import { type Hotkey } from "@/utils/tauri";
+import { useAppStore } from "@/stores/appStore";
 
 const RESERVED_SHORTCUTS = [
   "ctrl+c",
@@ -124,6 +123,8 @@ export default function GeneralSettings() {
 
   async function getCurrentShortcut() {
     const res: any = await invoke("get_current_shortcut");
+    setShortcut(res?.split("+"))
+    //
     const currentHotkey = parseHotkey(res);
     setHotkey(currentHotkey);
   }
@@ -306,21 +307,19 @@ export default function GeneralSettings() {
     });
   };
 
-  const INITIAL_SHORTCUTS: Shortcut[] = [
-    { id: "1", shortcut: ["Control", "S"] },
-  ];
+  const DEFAULT_SHORTCUT: Shortcut = ['Control', 'S'];
 
-  const [shortcuts, setShortcuts] = useState<Shortcut[]>(() => {
-    const saved = localStorage.getItem("shortcuts");
-    return saved ? JSON.parse(saved) : INITIAL_SHORTCUTS;
-  });
+  const [shortcut, setShortcut] = useState<Shortcut>(DEFAULT_SHORTCUT);
 
-  const { editingId, currentKeys, startEditing, saveShortcut } =
-    useShortcutEditor(shortcuts, setShortcuts);
+  const { isEditing, currentKeys, startEditing, saveShortcut } = useShortcutEditor(shortcut, setShortcut);
 
   useEffect(() => {
-    localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
-  }, [shortcuts]);
+    invoke("change_shortcut", { key:  shortcut?.join("+")}).catch(
+      (err) => {
+        console.error("Failed to save hotkey:", err);
+      }
+    );
+  }, [shortcut]);
 
   return (
     <div className="space-y-8">
@@ -349,37 +348,13 @@ export default function GeneralSettings() {
             description="Global shortcut to open Coco"
           >
             <div className="flex items-center gap-2">
-              <span className="text-red-500">{errorInfo}</span>
-              <span className="text-blue-500">
-                {listening ? "Listening..." : ""}
-              </span>
-              <div className="relative inline-flex items-center">
-                <button
-                  onClick={handleStartListening}
-                  className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200"
-                >
-                  {formatHotkey(hotkey)}
-                </button>
-                {hotkey && (
-                  <button
-                    onClick={handleClearHotkey}
-                    className="ml-2 p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-200"
-                    title="Clear shortcut"
-                  >
-                    <CircleX className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-              {shortcuts.map((shortcut) => (
-                <ShortcutItem
-                  key={shortcut.id}
-                  {...shortcut}
-                  editingId={editingId}
-                  currentKeys={currentKeys}
-                  onEdit={startEditing}
-                  onSave={saveShortcut}
-                />
-              ))}
+              <ShortcutItem
+                shortcut={shortcut}
+                isEditing={isEditing}
+                currentKeys={currentKeys}
+                onEdit={startEditing}
+                onSave={saveShortcut}
+              />
             </div>
           </SettingsItem>
 

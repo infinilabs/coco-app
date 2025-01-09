@@ -1,24 +1,20 @@
-import { formatKey, sortKeys } from '../../utils/keyboardUtils.ts';
+import { formatKey, sortKeys } from "@/utils/keyboardUtils";
 
 interface ShortcutItemProps {
-  id: string;
   shortcut: string[];
-  editingId: string | null;
+  isEditing: boolean;
   currentKeys: string[];
-  onEdit: (id: string) => void;
+  onEdit: () => void;
   onSave: () => void;
 }
 
 export default function ShortcutItem({
-  id,
   shortcut,
-  editingId,
+  isEditing,
   currentKeys,
   onEdit,
-  onSave
+  onSave,
 }: ShortcutItemProps) {
-  const isEditing = editingId === id;
-  
   const renderKeys = (keys: string[]) => {
     const sortedKeys = sortKeys(keys);
     return sortedKeys.map((key, index) => (
@@ -53,11 +49,9 @@ export default function ShortcutItem({
           </>
         ) : (
           <>
-            <div className="flex gap-1">
-              {renderKeys(shortcut)}
-            </div>
+            <div className="flex gap-1">{renderKeys(shortcut)}</div>
             <button
-              onClick={() => onEdit(id)}
+              onClick={onEdit}
               className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
             >
               Edit

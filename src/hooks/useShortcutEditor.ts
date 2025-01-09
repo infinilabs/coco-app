@@ -1,54 +1,46 @@
 import { useState, useCallback } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { Shortcut } from '../components/Settings/shortcut';
-import { normalizeKey, isModifierKey } from '../utils/keyboardUtils';
+import { Shortcut } from '@/components/Settings/shortcut';
+import { normalizeKey, isModifierKey } from '@/utils/keyboardUtils';
 
-export function useShortcutEditor(shortcuts: Shortcut[], onChange: (shortcuts: Shortcut[]) => void) {
-  const [editingId, setEditingId] = useState<string | null>(null);
+export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Shortcut) => void) {
+  const [isEditing, setIsEditing] = useState(false);
   const [currentKeys, setCurrentKeys] = useState<string[]>([]);
 
-  const startEditing = useCallback((id: string) => {
-    setEditingId(id);
+  const startEditing = useCallback(() => {
+    setIsEditing(true);
     setCurrentKeys([]);
   }, []);
 
   const saveShortcut = useCallback(() => {
-    if (!editingId || currentKeys.length < 2) return;
+    if (!isEditing || currentKeys.length < 2) return;
     
     const hasModifier = currentKeys.some(isModifierKey);
     const hasNonModifier = currentKeys.some(key => !isModifierKey(key));
     
     if (!hasModifier || !hasNonModifier) return;
 
-    onChange(
-      shortcuts.map(shortcut =>
-        shortcut.id === editingId
-          ? { ...shortcut, shortcut: currentKeys }
-          : shortcut
-      )
-    );
-    setEditingId(null);
+    onChange(currentKeys);
+    setIsEditing(false);
     setCurrentKeys([]);
-  }, [editingId, currentKeys, shortcuts, onChange]);
+  }, [isEditing, currentKeys, onChange]);
 
-  // Register shortcuts for non-editing state
-  shortcuts.forEach(({ shortcut }) => {
-    useHotkeys(
-      shortcut.join('+').toLowerCase(),
-      (e) => {
-        e.preventDefault();
-        console.log(`Shortcut triggered: ${shortcut}`);
-      },
-      { enabled: !editingId },
-      [editingId]
-    );
-  });
+  // Register shortcut for non-editing state
+  useHotkeys(
+    shortcut.join('+').toLowerCase(),
+    (e) => {
+      e.preventDefault();
+      console.log('Shortcut triggered');
+    },
+    { enabled: !isEditing },
+    [isEditing]
+  );
 
   // Register key capture for editing state
   useHotkeys(
     '*',
     (e) => {
-      if (!editingId) return;
+      if (!isEditing) return;
       e.preventDefault();
 
       const key = normalizeKey(e.code);
@@ -70,12 +62,12 @@ export function useShortcutEditor(shortcuts: Shortcut[], onChange: (shortcuts: S
         return prev;
       });
     },
-    { enabled: !!editingId, keydown: true },
-    [editingId]
+    { enabled: isEditing, keydown: true },
+    [isEditing]
   );
 
   return {
-    editingId,
+    isEditing,
     currentKeys,
     startEditing,
     saveShortcut

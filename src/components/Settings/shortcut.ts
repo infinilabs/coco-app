@@ -1,4 +1,1 @@
-export interface Shortcut {
-  id: string;
-  shortcut: string[];
-}
+export type Shortcut = string[];
