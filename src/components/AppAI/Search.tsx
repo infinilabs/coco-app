@@ -7,6 +7,7 @@ import DropdownList from "./DropdownList";
 import Footer from "./Footer";
 import { tauriFetch } from "@/api/tauriFetchClient";
 import noDataImg from "@/assets/coconut-tree.png";
+import { useAppStore } from '@/stores/appStore';
 
 interface SearchProps {
   changeInput: (val: string) => void;
@@ -15,6 +16,8 @@ interface SearchProps {
 }
 
 function Search({ isChatMode, input }: SearchProps) {
+  const appStore = useAppStore();
+
   const [suggests, setSuggests] = useState<any[]>([]);
   const [isSearchComplete, setIsSearchComplete] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>();
@@ -64,6 +67,7 @@ function Search({ isChatMode, input }: SearchProps) {
       const response = await tauriFetch({
         url: `/query/_search?query=${input}`,
         method: "GET",
+        baseURL: appStore.endpoint_http,
       });
       console.log("_suggest", input, response);
       const data = response.data?.hits?.hits || [];

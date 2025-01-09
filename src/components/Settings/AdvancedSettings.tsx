@@ -11,13 +11,13 @@ const ENDPOINTS = [
 ];
 
 export default function AdvancedSettings() {
-  const endpoint = useAppStore((state) => state.endpoint);
-  const setEndpoint = useAppStore((state) => state.setEndpoint);
+  const endpoint = useAppStore(state => state.endpoint);
+  const setEndpoint = useAppStore(state => state.setEndpoint);
 
   useEffect(() => {}, [endpoint]);
 
-  const onChangeEndpoint = (value: AppEndpoint) => {
-    setEndpoint(value);
+  const onChangeEndpoint = async (newEndpoint: AppEndpoint) => {
+    await setEndpoint(newEndpoint);
   };
 
   return (
@@ -32,7 +32,7 @@ export default function AdvancedSettings() {
             title="API Endpoint"
             description="Domain name for interface and websocket"
           >
-            <div className={`p-4 rounded-lg bg-gray-50 dark:bg-gray-700`}>
+            <div className={`p-4 rounded-lg`}>
               <select
                 value={endpoint}
                 onChange={(e) =>

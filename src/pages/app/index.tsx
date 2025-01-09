@@ -1,11 +1,17 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { isTauri } from "@tauri-apps/api/core";
 
 import InputBox from "@/components/AppAI/InputBox";
 import Search from "@/components/AppAI/Search";
 import ChatAI, { ChatAIRef } from "@/components/ChatAI/Chat";
+import { useAppStore } from '@/stores/appStore';
 
 export default function DesktopApp() {
+  const initializeListeners = useAppStore(state => state.initializeListeners);
+  useEffect(() => {
+    initializeListeners();
+  }, []);
+
   const chatAIRef = useRef<ChatAIRef>(null);
 
   const [isChatMode, setIsChatMode] = useState(false);

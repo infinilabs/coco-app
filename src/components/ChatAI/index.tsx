@@ -10,11 +10,14 @@ import { tauriFetch } from "../../api/tauriFetchClient";
 import { useWebSocket } from "../../hooks/useWebSocket";
 import { useWindows }  from "../../hooks/useWindows";
 import { clientEnv } from "@/utils/env";
+import { useAppStore } from '@/stores/appStore';
 
 interface ChatAIProps {}
 
 export default function ChatAI({}: ChatAIProps) {
   const { closeWin } = useWindows();
+
+  const appStore = useAppStore();
 
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChat, setActiveChat] = useState<Chat>();
@@ -36,7 +39,7 @@ export default function ChatAI({}: ChatAIProps) {
 
   console.log("index useWebSocket")
   const { messages, setMessages } = useWebSocket(
-    `${clientEnv.COCO_WEBSOCKET_URL}`,
+    `${appStore.endpoint_websocket || clientEnv.COCO_WEBSOCKET_URL}`,
     (msg) => {
       if (msg.includes("websocket-session-id")) {
         const array = msg.split(" ");
@@ -104,6 +107,7 @@ export default function ChatAI({}: ChatAIProps) {
       const response = await tauriFetch({
         url: "/chat/_history",
         method: "GET",
+        baseURL: appStore.endpoint_http,
       });
       console.log("_history", response);
       const hits = response.data?.hits?.hits || [];

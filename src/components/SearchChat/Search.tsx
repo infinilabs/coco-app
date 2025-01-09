@@ -5,7 +5,7 @@ import DropdownList from "./DropdownList";
 import { Footer } from "./Footer";
 import { SearchResults } from "./SearchResults";
 import { tauriFetch } from "../../api/tauriFetchClient";
-
+import { useAppStore } from '@/stores/appStore';
 interface SearchProps {
   changeInput: (val: string) => void;
   isTransitioned: boolean;
@@ -14,6 +14,13 @@ interface SearchProps {
 }
 
 function Search({ isTransitioned, isChatMode, input }: SearchProps) {
+  const initializeListeners = useAppStore(state => state.initializeListeners);
+  useEffect(() => {
+    initializeListeners();
+  }, []);
+  
+  const appStore = useAppStore();
+
   const [suggests, setSuggests] = useState<any[]>([]);
   const [isSearchComplete, setIsSearchComplete] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>();
@@ -53,6 +60,7 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
       const response = await tauriFetch({
         url: `/query/_search?query=${input}`,
         method: "GET",
+        baseURL: appStore.endpoint_http,
       });
       console.log("_suggest", input, response);
       const data = response.data?.hits?.hits || [];

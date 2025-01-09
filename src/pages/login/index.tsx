@@ -8,8 +8,14 @@ import logoImg from "@/assets/images/coco-logo.png";
 import AppleImg from "@/assets/images/apple.png";
 import GithubImg from "@/assets/images/github.png";
 import GoogleImg from "@/assets/images/google.png";
+import { useAppStore } from "@/stores/appStore";
 
 export default function LoginPage() {
+  const initializeListeners = useAppStore((state) => state.initializeListeners);
+  useEffect(() => {
+    initializeListeners();
+  }, []);
+
   const handleGoogleSignIn = (response: any) => {
     console.log("Google Login Success:", response);
     // response.credential

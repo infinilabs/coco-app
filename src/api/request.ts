@@ -2,11 +2,6 @@ import { isTauri } from "@tauri-apps/api/core";
 import { fetch as tauriFetchModule } from "@tauri-apps/plugin-http";
 
 import { clientEnv } from "@/utils/env";
-import { useAppStore } from "@/stores/appStore";
-
-const endpoint_http = useAppStore((state) => state.endpoint_http);
-const baseURL = `${endpoint_http || clientEnv.COCO_SERVER_URL}`
-console.log(11111111, baseURL)
 
 // Use a conditional fetch depending on whether it's in a Tauri environment or web
 let customFetch: typeof window.fetch | typeof tauriFetchModule = window.fetch;
@@ -22,6 +17,7 @@ interface FetchRequestConfig {
   body?: any;
   timeout?: number;
   parseAs?: "json" | "text" | "binary";
+  baseURL?: string;
 }
 
 interface FetchResponse<T = any> {
@@ -46,6 +42,7 @@ export const tauriFetch = async <T = any>({
   body,
   timeout = 30,
   parseAs = "json",
+  baseURL = clientEnv.COCO_SERVER_URL
 }: FetchRequestConfig): Promise<FetchResponse<T>> => {
   try {
     url = baseURL + url;
