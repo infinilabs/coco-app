@@ -70,9 +70,9 @@ export default function CocoCloud() {
     let res: (url: URL) => void;
 
     try {
-      // coco://oauth_callback
       const stopListening = await listen(
-        "oauth://url",
+        // "oauth://url",
+        "coco://oauth_callback",
         (data: { payload: string }) => {
           console.log(111, data.payload);
 
