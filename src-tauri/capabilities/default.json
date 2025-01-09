@@ -46,6 +46,9 @@
     "global-shortcut:allow-unregister-all",
     "theme:default",
     "oauth:allow-start",
+    "deep-link:allow-get-current", 
+    "deep-link:default",
+    "deep-link:allow-register",
     {
       "identifier": "http:default",
       "allow": [
