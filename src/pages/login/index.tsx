@@ -22,13 +22,16 @@ export default function LoginPage() {
   };
 
   const [searchParams] = useSearchParams();
-  const uid = searchParams.get("uid");
+  const uid = searchParams.get("request_id");
+  const port = searchParams.get("port");
   const code = searchParams.get("code");
 
-  useEffect(() => {}, [code]);
+  useEffect(() => {
+    window.location.href = `http://localhost:${port}`;
+  }, [code]);
 
   function handleGithubSignIn() {
-    uid && authWitheGithub(uid);
+    uid && authWitheGithub(uid, port);
   }
 
   const clientId = "YOUR_APPLE_CLIENT_ID";
@@ -98,7 +101,7 @@ export default function LoginPage() {
 
             <button
               className="w-[60px] h-[60px] bg-white hover:bg-gray-100 text-black rounded-full py-3 px-4 flex items-center justify-center space-x-2 transition-colors"
-              onClick={handleGithubSignIn}
+              onClick={handleAppleSignIn}
             >
               <img
                 src={AppleImg}
@@ -109,7 +112,7 @@ export default function LoginPage() {
 
             <button
               className="w-[60px] h-[60px] bg-white hover:bg-gray-100 text-black rounded-full py-3 px-4 flex items-center justify-center space-x-2 transition-colors"
-              onClick={handleAppleSignIn}
+              onClick={handleGithubSignIn}
             >
               <img
                 src={GithubImg}

@@ -71,8 +71,8 @@ export default function CocoCloud() {
 
     try {
       const stopListening = await listen(
-        // "oauth://url",
-        "coco://oauth_callback",
+        "oauth://url",
+        // "coco://oauth_callback",
         (data: { payload: string }) => {
           console.log(111, data.payload);
 
@@ -111,8 +111,11 @@ export default function CocoCloud() {
         setAppUid(uid);
       }
 
+      // await shell.open(
+      //   `${endpoint_http}/sso/login?provider=coco-cloud&product=coco&request_id=${uid}&port=${port}`
+      // );
       await shell.open(
-        `${endpoint_http}/sso/login?provider=coco-cloud&product=coco&request_id=${uid}&port=${port}`
+        `http://localhost:1420/login?provider=coco-cloud&product=coco&request_id=${uid}&port=${port}`
       );
 
       const url = await new Promise<URL>((r) => {
