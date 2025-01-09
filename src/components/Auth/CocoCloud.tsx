@@ -112,7 +112,7 @@ export default function CocoCloud() {
       }
 
       await shell.open(
-        `${endpoint_http}/sso/login?provider=coco-cloud&product=coco&reques_id=${uid}&port=${port}`
+        `${endpoint_http}/sso/login?provider=coco-cloud&product=coco&request_id=${uid}&port=${port}`
       );
 
       const url = await new Promise<URL>((r) => {
@@ -128,7 +128,7 @@ export default function CocoCloud() {
       }
 
       const response: any = await tauriFetch({
-        url: `/auth/request_access_token?reques_id=${uid}`,
+        url: `/auth/request_access_token?request_id=${uid}`,
         method: "GET",
         baseURL: appStore.endpoint_http,
         headers: {
@@ -169,7 +169,7 @@ export default function CocoCloud() {
     // const { token } = await response.json();
     // localStorage.setItem("auth_token", token);
     // OpenBrowserURL(
-    //   `https://app.coco.rs/sso/login?provider=coco-cloud&reques_id=${uid}`
+    //   `https://app.coco.rs/sso/login?provider=coco-cloud&request_id=${uid}`
     // );
 
     setLoading(true);
