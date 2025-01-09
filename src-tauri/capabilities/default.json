@@ -45,6 +45,7 @@
     "global-shortcut:allow-unregister",
     "global-shortcut:allow-unregister-all",
     "theme:default",
+    "oauth:allow-start",
     {
       "identifier": "http:default",
       "allow": [

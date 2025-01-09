@@ -7,7 +7,6 @@ import SettingsPanel from "./SettingsPanel";
 import GeneralSettings from "./GeneralSettings";
 import AdvancedSettings from "./AdvancedSettings";
 import AboutView from "./AboutView";
-import Account from "./Account";
 import CocoCloud from "@/components/Auth/CocoCloud"
 import Footer from "../Footer";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -79,7 +78,6 @@ function SettingsPage() {
                 </SettingsPanel>
               </TabPanel>
               <TabPanel>
-                <Account />
                 <CocoCloud />
               </TabPanel>
               <TabPanel>

@@ -8,9 +8,9 @@ export type Plan = {
 
 export type AuthStore = {
   token: string;
-  user_id: string | null;
-  expires: number;
-  plan: Plan | null;
+  user_id?: string | null;
+  expires?: number;
+  plan?: Plan | null;
 };
 
 export type IAuthStore = {

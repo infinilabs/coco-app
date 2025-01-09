@@ -549,6 +549,7 @@ dependencies = [
  "tauri-plugin-autostart",
  "tauri-plugin-global-shortcut",
  "tauri-plugin-http",
+ "tauri-plugin-oauth",
  "tauri-plugin-shell",
  "tauri-plugin-theme",
  "tauri-plugin-websocket",
@@ -4089,6 +4090,20 @@ dependencies = [
  "tokio",
  "url",
  "urlpattern",
+]
+
+[[package]]
+name = "tauri-plugin-oauth"
+version = "2.0.0"
+source = "git+https://github.com/FabianLars/tauri-plugin-oauth?branch=v2#daf24f3b3f34fd471f561750a7cc00dc9930850b"
+dependencies = [
+ "httparse",
+ "log",
+ "serde",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 1.0.64",
+ "url",
 ]
 
 [[package]]
