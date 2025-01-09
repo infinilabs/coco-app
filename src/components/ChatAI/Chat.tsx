@@ -56,7 +56,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
     const curIdRef = useRef(curId);
     curIdRef.current = curId;
 
-    console.log("chat useWebSocket")
+    console.log("chat useWebSocket", clientEnv.COCO_WEBSOCKET_URL)
     const { messages, setMessages, connected, reconnect } = useWebSocket(
       `${clientEnv.COCO_WEBSOCKET_URL}`,
       (msg) => {

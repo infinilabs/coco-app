@@ -1,8 +1,11 @@
 import { fetch } from "@tauri-apps/plugin-http";
 
 import { clientEnv } from "@/utils/env";
+import { useAppStore } from "@/stores/appStore";
 
-const baseURL = `${clientEnv.COCO_SERVER_URL}`
+const endpoint_http = useAppStore((state) => state.endpoint_http);
+const baseURL = `${endpoint_http || clientEnv.COCO_SERVER_URL}`
+console.log(11111111, baseURL)
 
 interface FetchRequestConfig {
   url: string;
