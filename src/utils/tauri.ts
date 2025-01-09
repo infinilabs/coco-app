@@ -211,7 +211,7 @@ export const events = __makeEvents__<{
 
 
 /** user-defined types **/
-export type AppEndpoint = "coco.infini.cloud" | "localhost:2900"
+export type AppEndpoint = "coco.infini.cloud" | "localhost:2900" | "localhost:9000"
 export type AppTheme = "auto" | "light" | "dark"
 export type WindowTheme = "light" | "dark"
 export type AspectRatio = "wide" | "vertical" | "square" | "classic" | "tall"

@@ -29,12 +29,12 @@ export const useAppStore = create<IAppStore>()(
       endpoint_http: "https://coco.infini.cloud",
       endpoint_websocket: "wss://coco.infini.cloud/ws",
       setEndpoint: async (endpoint: AppEndpoint) => {
-        const endpoint_http = endpoint?.includes('localhost:2900') 
-          ? 'http://localhost:2900' 
-          : "https://coco.infini.cloud";
-        const endpoint_websocket = endpoint?.includes('localhost:2900') 
-          ? 'ws://localhost:2900/ws' 
-          : "wss://coco.infini.cloud/ws";
+        const endpoint_http = endpoint?.includes('localhost:') 
+          ? `http://${endpoint}`
+          : `https://${endpoint}`;
+        const endpoint_websocket = endpoint?.includes('localhost:') 
+          ? `ws://${endpoint}/ws` 
+          : `wss://${endpoint}/ws`;
 
         set({
           endpoint,

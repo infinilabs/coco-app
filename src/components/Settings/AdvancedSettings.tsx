@@ -8,6 +8,7 @@ import { AppEndpoint } from "@/utils/tauri";
 const ENDPOINTS = [
   { value: "coco.infini.cloud", label: "coco.infini.cloud" },
   { value: "localhost:2900", label: "localhost:2900" },
+  { value: "localhost:9000", label: "localhost:9000" },
 ];
 
 export default function AdvancedSettings() {
