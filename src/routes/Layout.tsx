@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 
-import useEscape from "../hooks/useEscape";
+import useEscape from "@/hooks/useEscape";
+import useSettingsWindow from "@/hooks/useSettingsWindow";
 
 export default function Layout() {
   const location = useLocation();
@@ -18,6 +19,8 @@ export default function Layout() {
   }, [location.pathname]);
 
   useEscape();
+
+  useSettingsWindow();
 
   return <Outlet />;
 }

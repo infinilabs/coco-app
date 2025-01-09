@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from "react";
 import { getAllWindows, getCurrentWindow } from "@tauri-apps/api/window";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { listen } from "@tauri-apps/api/event";
 import { isTauri } from "@tauri-apps/api/core";
 
 const defaultWindowConfig = {
@@ -122,50 +122,6 @@ export const useWindows = () => {
     const cleanup = listenEvents();
     return cleanup; // Ensure cleanup on unmount
   }, [listenEvents]);
-
-  const listenSettingsEvents = useCallback(() => {
-    let unlistenHandler: UnlistenFn;
-
-    const setupListener = async () => {
-      unlistenHandler = await listen("open_settings", (event) => {
-        console.log("open_settings", event);
-        let url = "/ui/settings"
-        if (event.payload === "about") {
-          url = "/ui/settings?tab=about"
-        }
-        createWin({
-          label: "settings",
-          title: "Settings Window",
-          width: 1000,
-          height: 600,
-          alwaysOnTop: false,
-          shadow: true,
-          decorations: true,
-          transparent: false,
-          closable: true,
-          minimizable: false,
-          maximizable: false,
-          dragDropEnabled: true,
-          center: true,
-          url,
-        });
-      });
-    };
-
-    setupListener();
-
-    // Return the cleanup function to unlisten to the event
-    return () => {
-      if (unlistenHandler) {
-        unlistenHandler();
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    const cleanup = listenSettingsEvents();
-    return cleanup; // Ensure cleanup on unmount
-  }, [listenSettingsEvents]);
 
   return {
     createWin,
