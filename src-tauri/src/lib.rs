@@ -60,6 +60,12 @@ struct ThemeChangedPayload {
     is_dark_mode: bool,
 }
 
+#[derive(Clone, serde::Serialize)]
+struct Payload {
+    args: Vec<String>,
+    cwd: String,
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let mut ctx = tauri::generate_context!();
