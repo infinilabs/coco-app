@@ -112,7 +112,7 @@ export default function CocoCloud() {
       }
 
       await shell.open(
-        `${endpoint_http}/sso/login?provider=coco-cloud&app=coco&reques_id=${uid}&port=${port}`
+        `${endpoint_http}/sso/login?provider=coco-cloud&product=coco&reques_id=${uid}&port=${port}`
       );
 
       const url = await new Promise<URL>((r) => {
@@ -123,7 +123,7 @@ export default function CocoCloud() {
       const code = url.searchParams.get("code");
       const provider = url.searchParams.get("provider");
 
-      if (!code || provider!== 'coco-cloud') {
+      if (!code || provider !== "coco-cloud") {
         throw new Error("Invalid token or expires");
       }
 
@@ -132,8 +132,8 @@ export default function CocoCloud() {
         method: "GET",
         baseURL: appStore.endpoint_http,
         headers: {
-          "X-API-TOKEN": code
-        }
+          "X-API-TOKEN": code,
+        },
       });
       // { "access_token":xxx, "expire_at": "unix_timestamp_in_s" }
 
