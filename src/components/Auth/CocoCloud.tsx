@@ -16,6 +16,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
 import callbackTemplate from "@/components/Auth/callback.template";
 import { tauriFetch } from "@/api/tauriFetchClient";
+import { onOpenUrl } from '@tauri-apps/plugin-deep-link'
 
 export default function CocoCloud() {
   const appStore = useAppStore();
@@ -114,6 +115,10 @@ export default function CocoCloud() {
       await shell.open(
         `${endpoint_http}/sso/login?provider=coco-cloud&product=coco&request_id=${uid}&port=${port}`
       );
+
+      await onOpenUrl((urls:any) => {
+        console.log('deep link:', urls)
+      })
 
       const url = await new Promise<URL>((r) => {
         res = r;

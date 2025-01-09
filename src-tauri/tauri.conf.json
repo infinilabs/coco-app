@@ -81,6 +81,15 @@
     "window": {},
     "websocket": {},
     "shell": {},
-    "globalShortcut": {}
+    "globalShortcut": {},
+    "deep-link": {
+      "mobile": [
+        { "host": "app.infini.cloud", "pathPrefix": ["/open"] },
+        { "host": "localhost:9000" }
+      ],
+      "desktop": {
+        "schemes": ["coco", "coco-app"]
+      }
+    }
   }
 }
