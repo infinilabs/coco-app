@@ -173,6 +173,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
             "WEBSOCKET-SESSION-ID": websocketId,
           },
           body: JSON.stringify({ message: content }),
+          baseURL: appStore.endpoint_http,
         });
         console.log("_send", response, websocketId);
         setCurId(response.data[0]?._id);
@@ -195,6 +196,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
         const response = await tauriFetch({
           url: `/chat/${activeChat._id}/_close`,
           method: "POST",
+          baseURL: appStore.endpoint_http,
         });
         console.log("_close", response);
       } catch (error) {
@@ -210,6 +212,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
         const response = await tauriFetch({
           url: `/chat/${activeChat._id}/_cancel`,
           method: "POST",
+          baseURL: appStore.endpoint_http,
         });
 
         console.log("_cancel", response);
