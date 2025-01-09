@@ -81,6 +81,11 @@
     "window": {},
     "websocket": {},
     "shell": {},
-    "globalShortcut": {}
+    "globalShortcut": {},
+    "deep-link": {
+      "desktop": {
+        "schemes": ["coco"]
+      }
+    }
   }
 }

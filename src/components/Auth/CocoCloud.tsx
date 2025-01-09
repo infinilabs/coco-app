@@ -123,8 +123,11 @@ export default function CocoCloud() {
       });
       stopListening();
 
+
       const code = url.searchParams.get("code");
       const provider = url.searchParams.get("provider");
+
+      console.log(22222, code, provider)
 
       if (!code || provider !== "coco-cloud") {
         throw new Error("Invalid token or expires");

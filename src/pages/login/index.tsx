@@ -27,7 +27,10 @@ export default function LoginPage() {
   const code = searchParams.get("code");
 
   useEffect(() => {
-    window.location.href = `http://localhost:${port}`;
+    console.log(3333, code);
+    setTimeout(() => {
+      window.location.href = `http://localhost:${port}/?code=${code}&provider=coco-cloud`;
+    }, 10000);
   }, [code]);
 
   function handleGithubSignIn() {
