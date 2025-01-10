@@ -34,9 +34,12 @@ export const tauriFetch = async <T = any>({
   parseAs = "json",
   baseURL = clientEnv.COCO_SERVER_URL
 }: FetchRequestConfig): Promise<FetchResponse<T>> => {
-  console.log(11111111, baseURL)
-  const { state } = JSON.parse(localStorage.getItem("auth-store") || "")
-  console.log(23333333333, state)
+  const { state: { endpoint_http } } = JSON.parse(localStorage.getItem("app-store") || "")
+  baseURL = endpoint_http || clientEnv.COCO_SERVER_URL
+  console.log("baseURL", baseURL)
+
+  const { state: { auth } } = JSON.parse(localStorage.getItem("auth-store") || "")
+  console.log("auth", auth)
 
   try {
     url = baseURL + url;
@@ -44,7 +47,7 @@ export const tauriFetch = async <T = any>({
       headers["Content-Type"] = "application/json";
     }
 
-    headers["X-API-TOKEN"] = state.auth?.token || ""; 
+    headers["X-API-TOKEN"] = auth?.token || "";
 
     const fetchPromise = fetch(url, {
       method,

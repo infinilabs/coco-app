@@ -1,13 +1,20 @@
 import { useEffect, useRef, useState } from "react";
+import { CircleAlert, Bolt, X } from "lucide-react";
+
 import { isTauri } from "@tauri-apps/api/core";
+import { useAppStore } from "@/stores/appStore";
 
 interface DropdownListProps {
   selected: (item: any) => void;
   suggests: any[];
+  IsError: boolean;
   isSearchComplete: boolean;
 }
 
-function DropdownList({ selected, suggests }: DropdownListProps) {
+function DropdownList({ selected, suggests, IsError }: DropdownListProps) {
+  const connector_data = useAppStore((state) => state.connector_data);
+
+  const [showError, setShowError] = useState<boolean>(IsError);
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
   const [showIndex, setShowIndex] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -99,6 +106,14 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
     }
   }, [selectedItem]);
 
+  function getIcon(_source: any) {
+    const name = _source?.source?.name || ""
+    const result = connector_data.find((item: any) => item._source.category === name);
+    const icons = result?._source?.assets?.icons || {};
+    console.log(11111, icons,name,  _source.icon, icons[_source.icon])
+    return icons[_source.icon] || _source.icon;
+  }
+
   return (
     <div
       ref={containerRef}
@@ -106,6 +121,18 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
       className="h-[458px] w-full p-2 flex flex-col overflow-y-auto custom-scrollbar focus:outline-none"
       tabIndex={0}
     >
+      {showError ? (
+        <div className="flex items-center gap-2 text-sm text-[#333] p-2">
+          <CircleAlert className="text-[#FF0000] w-[14px] h-[14px]" />
+          Coco server is unavailable, only local results and available services
+          are displayed.
+          <Bolt className="text-[#000] w-[14px] h-[14px] cursor-pointer" />
+          <X
+            className="text-[#666] w-[16px] h-[16px] cursor-pointer"
+            onClick={() => setShowError(false)}
+          />
+        </div>
+      ) : null}
       <div className="p-2 text-xs text-[#999] dark:text-[#666]">Results</div>
       {suggests?.map((item, index) => {
         const isSelected = selectedItem === index;
@@ -128,7 +155,11 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
             }`}
           >
             <div className="flex gap-2 items-center">
-              <img className="w-5 h-5" src={item?._source?.icon} alt="icon" />
+              <img
+                className="w-5 h-5"
+                src={getIcon(item?._source)}
+                alt="icon"
+              />
               <span className="text-[#333] dark:text-[#d8d8d8] truncate w-80 text-left">
                 {item?._source?.title}
               </span>

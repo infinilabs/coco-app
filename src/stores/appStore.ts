@@ -15,6 +15,8 @@ export type IAppStore = {
   endpoint_http: string,
   endpoint_websocket: string,
   setEndpoint: (endpoint: AppEndpoint) => void,
+  connector_data: any[],
+  setConnectorData: (connector_data: any[]) => void,
   initializeListeners: () => void;
 };
 
@@ -29,11 +31,11 @@ export const useAppStore = create<IAppStore>()(
       endpoint_http: "https://coco.infini.cloud",
       endpoint_websocket: "wss://coco.infini.cloud/ws",
       setEndpoint: async (endpoint: AppEndpoint) => {
-        const endpoint_http = endpoint?.includes('localhost:') 
+        const endpoint_http = endpoint?.includes('localhost:')
           ? `http://${endpoint}`
           : `https://${endpoint}`;
-        const endpoint_websocket = endpoint?.includes('localhost:') 
-          ? `ws://${endpoint}/ws` 
+        const endpoint_websocket = endpoint?.includes('localhost:')
+          ? `ws://${endpoint}/ws`
           : `wss://${endpoint}/ws`;
 
         set({
@@ -42,10 +44,16 @@ export const useAppStore = create<IAppStore>()(
           endpoint_websocket,
         });
 
-        await emit(ENDPOINT_CHANGE_EVENT, { 
-          endpoint, 
-          endpoint_http, 
-          endpoint_websocket 
+        await emit(ENDPOINT_CHANGE_EVENT, {
+          endpoint,
+          endpoint_http,
+          endpoint_websocket
+        });
+      },
+      connector_data: [],
+      setConnectorData: async (connector_data: any[]) => {
+        set({
+          connector_data
         });
       },
       initializeListeners: () => {
