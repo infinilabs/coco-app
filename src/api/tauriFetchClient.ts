@@ -1,7 +1,6 @@
 import { fetch } from "@tauri-apps/plugin-http";
 
 import { clientEnv } from "@/utils/env";
-import { useAuthStore } from "@/stores/authStore";
 
 interface FetchRequestConfig {
   url: string;
@@ -36,7 +35,8 @@ export const tauriFetch = async <T = any>({
   baseURL = clientEnv.COCO_SERVER_URL
 }: FetchRequestConfig): Promise<FetchResponse<T>> => {
   console.log(11111111, baseURL)
-  const { auth } = useAuthStore();
+  const { state } = JSON.parse(localStorage.getItem("auth-store") || "")
+  console.log(23333333333, state)
 
   try {
     url = baseURL + url;
@@ -44,7 +44,7 @@ export const tauriFetch = async <T = any>({
       headers["Content-Type"] = "application/json";
     }
 
-    headers["X-API-TOKEN"] = auth?.token || ""; 
+    headers["X-API-TOKEN"] = state.auth?.token || ""; 
 
     const fetchPromise = fetch(url, {
       method,
