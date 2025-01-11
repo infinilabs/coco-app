@@ -60,6 +60,9 @@
         },
         {
           "url": "https://coco.infini.cloud"
+        },
+        {
+          "url": "https://infini.tpddns.cn:27200"
         }
       ],
       "deny": []

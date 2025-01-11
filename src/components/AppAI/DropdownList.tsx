@@ -1,17 +1,25 @@
 import { useEffect, useRef, useState } from "react";
-import { CircleAlert, Bolt, X } from "lucide-react";
+import { CircleAlert, Bolt, X, Filter } from "lucide-react";
 
 import { isTauri } from "@tauri-apps/api/core";
 import { useAppStore } from "@/stores/appStore";
 
+type ISearchData = Record<string, any[]>;
+
 interface DropdownListProps {
   selected: (item: any) => void;
   suggests: any[];
+  SearchData: ISearchData;
   IsError: boolean;
   isSearchComplete: boolean;
 }
 
-function DropdownList({ selected, suggests, IsError }: DropdownListProps) {
+function DropdownList({
+  selected,
+  suggests,
+  SearchData,
+  IsError,
+}: DropdownListProps) {
   const connector_data = useAppStore((state) => state.connector_data);
 
   const [showError, setShowError] = useState<boolean>(IsError);
@@ -106,11 +114,22 @@ function DropdownList({ selected, suggests, IsError }: DropdownListProps) {
     }
   }, [selectedItem]);
 
-  function getIcon(_source: any) {
-    const name = _source?.source?.name || ""
-    const result = connector_data.find((item: any) => item._source.category === name);
+  function getTypeIcon(name: string) {
+    const result = connector_data.find(
+      (item: any) => item._source.category === name
+    );
     const icons = result?._source?.assets?.icons || {};
-    console.log(11111, icons,name,  _source.icon, icons[_source.icon])
+    console.log(2222, icons, name);
+    return icons[name];
+  }
+
+  function getIcon(_source: any) {
+    const name = _source?.source?.name || "";
+    const result = connector_data.find(
+      (item: any) => item._source.category === name
+    );
+    const icons = result?._source?.assets?.icons || {};
+    console.log(11111, icons, name, _source.icon, icons[_source.icon]);
     return icons[_source.icon] || _source.icon;
   }
 
@@ -133,52 +152,65 @@ function DropdownList({ selected, suggests, IsError }: DropdownListProps) {
           />
         </div>
       ) : null}
-      <div className="p-2 text-xs text-[#999] dark:text-[#666]">Results</div>
-      {suggests?.map((item, index) => {
-        const isSelected = selectedItem === index;
-        return (
-          <div
-            key={item._id}
-            ref={(el) => (itemRefs.current[index] = el)}
-            onMouseEnter={() => setSelectedItem(index)}
-            onClick={() => {
-              if (item?._source?.url) {
-                handleOpenURL(item?._source?.url);
-              } else {
-                selected(item);
-              }
-            }}
-            className={`w-full px-2 py-2.5 text-sm flex items-center justify-between rounded-lg transition-colors ${
-              isSelected
-                ? "bg-[rgba(0,0,0,0.1)] dark:bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(0,0,0,0.1)] dark:hover:bg-[rgba(255,255,255,0.1)]"
-                : ""
-            }`}
-          >
-            <div className="flex gap-2 items-center">
-              <img
-                className="w-5 h-5"
-                src={getIcon(item?._source)}
-                alt="icon"
-              />
-              <span className="text-[#333] dark:text-[#d8d8d8] truncate w-80 text-left">
-                {item?._source?.title}
-              </span>
-            </div>
-            <div className="flex gap-2 items-center relative">
-              <span className="text-sm  text-[#666] dark:text-[#666] truncate w-52 text-right">
-                {item?._source?.source?.name}
-              </span>
-              {showIndex && index < 10 ? (
-                <div
-                  className={`absolute right-0 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] shadow-[-6px_0px_6px_2px_#e6e6e6] dark:shadow-[-6px_0px_6px_2px_#000] rounded-md`}
-                >
-                  {index}
-                </div>
-              ) : null}
-            </div>
+      {Object.entries(SearchData).map(([sourceName, items]) => (
+        <div key={sourceName}>
+          <div className="p-2 text-xs text-[#999] dark:text-[#666] flex items-center gap-2.5">
+            <img
+              className="w-4 h-4"
+              src={getTypeIcon(sourceName)}
+              alt="icon"
+            />
+            {sourceName}
+            <div className="flex-1 border-b border-b-[#999] dark:border-b-[rgba(255,255,255,0.1)]"></div>
+            <Filter className="w-4 h-4"/>
           </div>
-        );
-      })}
+          {items.map((item: any, index: number) => {
+            const isSelected = selectedItem === index;
+            return (
+              <div
+                key={item._id}
+                ref={(el) => (itemRefs.current[index] = el)}
+                onMouseEnter={() => setSelectedItem(index)}
+                onClick={() => {
+                  if (item?._source?.url) {
+                    handleOpenURL(item?._source?.url);
+                  } else {
+                    selected(item);
+                  }
+                }}
+                className={`w-full px-2 py-2.5 text-sm flex items-center justify-between rounded-lg transition-colors ${
+                  isSelected
+                    ? "bg-[rgba(0,0,0,0.1)] dark:bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(0,0,0,0.1)] dark:hover:bg-[rgba(255,255,255,0.1)]"
+                    : ""
+                }`}
+              >
+                <div className="flex gap-2 items-center">
+                  <img
+                    className="w-5 h-5"
+                    src={getIcon(item?._source)}
+                    alt="icon"
+                  />
+                  <span className="text-[#333] dark:text-[#d8d8d8] truncate w-80 text-left">
+                    {item?._source?.title}
+                  </span>
+                </div>
+                <div className="flex gap-2 items-center relative">
+                  <span className="text-sm  text-[#666] dark:text-[#666] truncate w-52 text-right">
+                    {item?._source?.source?.name}
+                  </span>
+                  {showIndex && index < 10 ? (
+                    <div
+                      className={`absolute right-0 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] shadow-[-6px_0px_6px_2px_#e6e6e6] dark:shadow-[-6px_0px_6px_2px_#000] rounded-md`}
+                    >
+                      {index}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ))}
     </div>
   );
 }

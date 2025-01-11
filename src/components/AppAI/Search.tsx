@@ -8,6 +8,7 @@ import Footer from "./Footer";
 import { tauriFetch } from "@/api/tauriFetchClient";
 import noDataImg from "@/assets/coconut-tree.png";
 import { useAppStore } from "@/stores/appStore";
+import { res_search } from "@/mock/index"
 
 interface SearchProps {
   changeInput: (val: string) => void;
@@ -18,8 +19,9 @@ interface SearchProps {
 function Search({ isChatMode, input }: SearchProps) {
   const appStore = useAppStore();
 
-  const [IsError, setIsError] = useState<boolean>(false);
+  const [IsError, setIsError] = useState<boolean>(true);
   const [suggests, setSuggests] = useState<any[]>([]);
+  const [SearchData, setSearchData] = useState<any>({});
   const [isSearchComplete, setIsSearchComplete] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>();
 
@@ -55,13 +57,18 @@ function Search({ isChatMode, input }: SearchProps) {
   const getSuggest = async () => {
     if (!input) return;
     //
-    // const list = [];
-    // for (let i = 0; i < input.length; i++) {
-    //   list.push({
-    //     _source: { url: `https://www.google.com/search?q=${i}`, _id: i },
-    //   });
-    // }
+    // mock
+    // let list = res_search?.hits?.hits
     // setSuggests(list);
+    // const search_data = list.reduce((acc: any, item) => {
+    //   const name = item._source.source.name;
+    //   if (!acc[name]) {
+    //     acc[name] = [];
+    //   }
+    //   acc[name].push(item);
+    //   return acc;
+    // }, {});
+    // setSearchData(search_data)
     // return;
     //
     try {
@@ -71,10 +78,22 @@ function Search({ isChatMode, input }: SearchProps) {
         baseURL: appStore.endpoint_http,
       });
       console.log("_suggest", input, response);
-      const data = response.data?.hits?.hits || [];
+      let data = response.data?.hits?.hits || [];
+      data = data.map((item: any) => {
+        return item
+      })
       setSuggests(data);
-      setIsError(false);
+      const search_data = data.reduce((acc: any, item: any) => {
+        const name = item?._source?.source?.name;
+        if (!acc[name]) {
+          acc[name] = [];
+        }
+        acc[name].push(item);
+        return acc;
+      }, {});
+      setSearchData(search_data)
 
+      setIsError(false);
       setIsSearchComplete(true);
     } catch (error) {
       setSuggests([]);
@@ -104,6 +123,7 @@ function Search({ isChatMode, input }: SearchProps) {
       {suggests.length > 0 ? (
         <DropdownList
           suggests={suggests}
+          SearchData={SearchData}
           IsError={IsError}
           isSearchComplete={isSearchComplete}
           selected={(item) => setSelectedItem(item)}
