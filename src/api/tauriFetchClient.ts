@@ -2,8 +2,6 @@ import { fetch } from "@tauri-apps/plugin-http";
 
 import { clientEnv } from "@/utils/env";
 
-const baseURL = `${clientEnv.COCO_SERVER_URL}`
-
 interface FetchRequestConfig {
   url: string;
   method?: "GET" | "POST" | "PUT" | "DELETE";
@@ -11,6 +9,7 @@ interface FetchRequestConfig {
   body?: any;
   timeout?: number;
   parseAs?: "json" | "text" | "binary";
+  baseURL?: string;
 }
 
 interface FetchResponse<T = any> {
@@ -33,12 +32,22 @@ export const tauriFetch = async <T = any>({
   body,
   timeout = 30,
   parseAs = "json",
+  baseURL = clientEnv.COCO_SERVER_URL
 }: FetchRequestConfig): Promise<FetchResponse<T>> => {
+  const { state: { endpoint_http } } = JSON.parse(localStorage.getItem("app-store") || "")
+  baseURL = endpoint_http || clientEnv.COCO_SERVER_URL
+  console.log("baseURL", baseURL)
+
+  const { state: { auth } } = JSON.parse(localStorage.getItem("auth-store") || "")
+  console.log("auth", auth)
+
   try {
     url = baseURL + url;
     if (method !== "GET") {
       headers["Content-Type"] = "application/json";
     }
+
+    headers["X-API-TOKEN"] = auth?.token || "";
 
     const fetchPromise = fetch(url, {
       method,

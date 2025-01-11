@@ -78,9 +78,22 @@
     "resources": ["assets", "icons"]
   },
   "plugins": {
+    "features": {
+      "protocol": ["all"]
+    },
     "window": {},
     "websocket": {},
     "shell": {},
-    "globalShortcut": {}
+    "globalShortcut": {},
+    "deep-link": {
+      "schema": "coco",
+      "mobile": [
+        { "host": "app.infini.cloud", "pathPrefix": ["/open"] },
+        { "host": "localhost:9000" }
+      ],
+      "desktop": {
+        "schemes": ["coco"]
+      }
+    }
   }
 }

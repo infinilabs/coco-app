@@ -13,10 +13,10 @@ import logoImg from "@/assets/32x32.png";
 import callbackTemplate from "@/components/Auth/callback.template";
 import { clientEnv } from "@/utils/env";
 
-
 export default function Account() {
   const app_uid = useAppStore((state) => state.app_uid);
   const setAppUid = useAppStore((state) => state.setAppUid);
+  const endpoint_http = useAppStore((state) => state.endpoint_http);
 
   const { auth, setAuth } = useAuthStore();
 
@@ -94,7 +94,7 @@ export default function Account() {
       });
 
       await shell.open(
-        `${clientEnv.COCO_SERVER_URL}/api/desktop/session/request?port=${port}`
+        `${endpoint_http || clientEnv.COCO_SERVER_URL}/api/desktop/session/request?port=${port}`
       );
 
       const url = await new Promise<URL>((r) => {

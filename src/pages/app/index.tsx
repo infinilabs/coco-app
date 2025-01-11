@@ -1,11 +1,41 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { isTauri } from "@tauri-apps/api/core";
 
 import InputBox from "@/components/AppAI/InputBox";
 import Search from "@/components/AppAI/Search";
 import ChatAI, { ChatAIRef } from "@/components/ChatAI/Chat";
+import { useAppStore } from "@/stores/appStore";
+import { useAuthStore } from "@/stores/authStore";
+import { tauriFetch } from "@/api/tauriFetchClient";
 
 export default function DesktopApp() {
+  const initializeListeners = useAppStore((state) => state.initializeListeners);
+  const initializeListeners_auth = useAuthStore(
+    (state) => state.initializeListeners
+  );
+  const setConnectorData = useAppStore((state) => state.setConnectorData);
+
+  useEffect(() => {
+    initializeListeners();
+    initializeListeners_auth();
+
+    getConnectorData();
+  }, []);
+
+  async function getConnectorData() {
+    try {
+      const response = await tauriFetch({
+        url: `/connector/_search`,
+        method: "GET",
+      });
+      console.log("connector", response);
+      const data = response.data?.hits?.hits || [];
+      setConnectorData(data);
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+    }
+  }
+
   const chatAIRef = useRef<ChatAIRef>(null);
 
   const [isChatMode, setIsChatMode] = useState(false);
@@ -38,7 +68,7 @@ export default function DesktopApp() {
   const cancelChat = () => {
     chatAIRef.current?.cancelChat();
   };
-  
+
   const reconnect = () => {
     chatAIRef.current?.reconnect();
   };

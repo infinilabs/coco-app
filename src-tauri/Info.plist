@@ -6,5 +6,23 @@
   <string>Request camera access for WebRTC</string>
   <key>NSMicrophoneUsageDescription</key>
   <string>Request microphone access for WebRTC</string>
+  
+
+	<key>CFBundleIdentifier</key>
+	<string>rs.coco.app</string>
+
+	<key>NSPrefPaneIconLabel</key>
+	<string>coco-ai</string>
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleURLName</key>
+      <string>rs.coco.app</string>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>coco</string>
+      </array>
+    </dict>
+  </array>
 </dict>
 </plist>

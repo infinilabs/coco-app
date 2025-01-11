@@ -8,6 +8,8 @@ use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
 mod autostart;
 use autostart::{change_autostart, enable_autostart};
 
+use tauri_plugin_deep_link::DeepLinkExt;
+
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
 
@@ -60,12 +62,19 @@ struct ThemeChangedPayload {
     is_dark_mode: bool,
 }
 
+#[derive(Clone, serde::Serialize)]
+struct Payload {
+    args: Vec<String>,
+    cwd: String,
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let mut ctx = tauri::generate_context!();
 
     tauri::Builder::default()
         // .plugin(tauri_nspanel::init())
+        .plugin(tauri_plugin_oauth::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_autostart::init(
@@ -73,6 +82,12 @@ pub fn run() {
             None,
         ))
         .plugin(tauri_plugin_theme::init(ctx.config_mut()))
+        .plugin(tauri_plugin_deep_link::init())
+        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
+            // println!("{}, {argv:?}, {cwd}", app.package_info().name);
+            app.emit("single-instance", Payload { args: argv, cwd })
+                .unwrap();
+        }))
         .invoke_handler(tauri::generate_handler![
             greet,
             change_window_height,
@@ -100,6 +115,13 @@ pub fn run() {
                     // switch_tray_icon(app.app_handle(), payload.is_dark_mode);
                     println!("Theme changed: is_dark_mode = {}", payload.is_dark_mode);
                 }
+            });
+
+            #[cfg(any(target_os = "linux", all(debug_assertions, windows)))]
+            app.deep_link().register_all()?;
+
+            app.deep_link().on_open_url(|event| {
+                dbg!(event.urls());
             });
 
             Ok(())

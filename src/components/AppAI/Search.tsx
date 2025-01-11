@@ -7,6 +7,7 @@ import DropdownList from "./DropdownList";
 import Footer from "./Footer";
 import { tauriFetch } from "@/api/tauriFetchClient";
 import noDataImg from "@/assets/coconut-tree.png";
+import { useAppStore } from "@/stores/appStore";
 
 interface SearchProps {
   changeInput: (val: string) => void;
@@ -15,6 +16,9 @@ interface SearchProps {
 }
 
 function Search({ isChatMode, input }: SearchProps) {
+  const appStore = useAppStore();
+
+  const [IsError, setIsError] = useState<boolean>(false);
   const [suggests, setSuggests] = useState<any[]>([]);
   const [isSearchComplete, setIsSearchComplete] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>();
@@ -64,13 +68,17 @@ function Search({ isChatMode, input }: SearchProps) {
       const response = await tauriFetch({
         url: `/query/_search?query=${input}`,
         method: "GET",
+        baseURL: appStore.endpoint_http,
       });
       console.log("_suggest", input, response);
       const data = response.data?.hits?.hits || [];
       setSuggests(data);
+      setIsError(false);
 
       setIsSearchComplete(true);
     } catch (error) {
+      setSuggests([]);
+      setIsError(true);
       console.error("Failed to fetch user data:", error);
     }
   };
@@ -96,6 +104,7 @@ function Search({ isChatMode, input }: SearchProps) {
       {suggests.length > 0 ? (
         <DropdownList
           suggests={suggests}
+          IsError={IsError}
           isSearchComplete={isSearchComplete}
           selected={(item) => setSelectedItem(item)}
         />
