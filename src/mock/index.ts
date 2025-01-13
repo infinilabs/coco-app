@@ -32,6 +32,7 @@ export const res_search = {
           subcategory: "Metric",
           title: "Avg aggregation",
           content: "",
+          author: "liaosy",
           url: "https://pizza.rs/docs/references/aggregation/avg/",
           tags: [
             "avg",
@@ -54,6 +55,7 @@ export const res_search = {
           type: "web_page",
           title: "auto_generate_doc_id",
           content: "",
+          author: "liaosy",
           url: "https://infinilabs.cn/docs/latest/gateway/references/filters/auto_generate_doc_id/"
         }
       },
@@ -74,6 +76,7 @@ export const res_search = {
           subcategory: "Architecture",
           title: "Architecture",
           content: "",
+          author: "yangfan",
           url: "https://pizza.rs/docs/overview/architecture/",
           tags: [
             "architecture"
@@ -95,6 +98,7 @@ export const res_search = {
           type: "web_page",
           title: "Introducing Coco AI in Two Minutes - A Quick Start Video 🥥",
           content: "",
+          author: "yangfan",
           url: "https://blog.infinilabs.com/posts/2024/a-quick-start-viideo-to-introduce-coco-ai-in-two-minutes/",
           tags: [
             "Coco AI",
@@ -121,6 +125,7 @@ export const res_search = {
           subcategory: "Namespace",
           title: "Create a namespace",
           content: "",
+          author: "yangfan",
           url: "https://pizza.rs/docs/references/namespace/create/",
           tags: [
             "create",
@@ -145,6 +150,7 @@ export const res_search = {
           subcategory: "Index",
           title: "Create a document",
           content: "",
+          author: "zouwenan",
           url: "https://pizza.rs/docs/references/document/create/",
           tags: [
             "create",
@@ -169,6 +175,7 @@ export const res_search = {
           subcategory: "Collection",
           title: "Create a collection",
           content: " ",
+          author: "zouwenan",
           url: "https://pizza.rs/docs/references/collection/create/",
           tags: [
             "create",
@@ -193,6 +200,7 @@ export const res_search = {
           subcategory: "Index",
           title: "Delete a document",
           content: "",
+          author: "zouwenan",
           url: "https://pizza.rs/docs/references/document/delete/",
           tags: [
             "delete",
@@ -217,6 +225,7 @@ export const res_search = {
           subcategory: "Namespace",
           title: "Delete a namespace",
           content: "",
+          author: "zouwenan",
           url: "https://pizza.rs/docs/references/namespace/delete/",
           tags: [
             "delete",
@@ -241,6 +250,7 @@ export const res_search = {
           subcategory: "Index",
           title: "Replace a document",
           content: " ",
+          author: "medcl",
           url: "https://pizza.rs/docs/references/document/replace/",
           tags: [
             "replace",

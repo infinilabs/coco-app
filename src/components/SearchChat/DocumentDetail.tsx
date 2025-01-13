@@ -1,5 +1,5 @@
 import React from "react";
-import { Calendar, User, Clock } from "lucide-react";
+import HugoImg from "@/assets/hugo_site/icon.png";
 
 interface DocumentDetailProps {
   documentId?: string;
@@ -17,30 +17,9 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({
   }
 
   return (
-    <div className="p-8 space-y-8">
-      <div className="space-y-6">
-        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-          产品需求规划文档
-        </h2>
-
-        <div>
-          <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              <span>2024-02-20</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <User className="w-4 h-4" />
-              <span>张小明</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              <span>最近更新于 2小时前</span>
-            </div>
-          </div>
-        </div>
+    <div className="p-4">
+      <div className="font-normal text-xs text-[#666] dark:text-[#999] mb-2">
+        Details
       </div>
 
       <img
@@ -49,30 +28,48 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({
         className="w-full aspect-video object-cover rounded-xl shadow-md"
       />
 
-      <div className="prose prose-gray dark:prose-invert max-w-none">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-          文档概述
-        </h3>
-        <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-          本文档详细说明了2024年Q1的产品规划方向和具体功能需求。包含了用户研究结果、
-          竞品分析、功能优先级排序等重要内容。产品团队可以基于此文档进行后续的设计和开发工作。
-        </p>
-
-        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mt-6">
-          主要内容
-        </h3>
-        <ul className="list-disc pl-4 text-gray-600 dark:text-gray-300 space-y-2">
-          <li>用户痛点分析与解决方案</li>
-          <li>核心功能详细说明</li>
-          <li>交互流程设计</li>
-          <li>技术可行性评估</li>
-          <li>项目时间节点规划</li>
-        </ul>
-
-        <p className="text-gray-600 dark:text-gray-300 leading-relaxed mt-6">
-          通过实施本文档中规划的功能，我们期望能够提升用户体验，增强产品竞争力，
-          实现Q1的业务增长目标。
-        </p>
+      <div className="border-t border-t-[rgba(0,0,0,0.1)] dark:border-t-[rgba(255,255,255,0.1)] py-4 mt-4">
+        <div className="flex justify-between font-normal text-xs mb-2.5">
+          <div className="text-[#666]">Name</div>
+          <div className="text-[#333] dark:text-[#D8D8D8]">
+            极限科技 rust 大会展架
+          </div>
+        </div>
+        <div className="flex justify-between font-normal text-xs mb-2.5">
+          <div className="text-[#666]">Source</div>
+          <div className="text-[#333] dark:text-[#D8D8D8] flex">
+            <img className="w-4 h-4 mr-1" src={HugoImg} alt="icon" />
+            Hugo
+          </div>
+        </div>
+        <div className="flex justify-between font-normal text-xs mb-2.5">
+          <div className="text-[#666]">Where</div>
+          <div className="text-[#333] dark:text-[#D8D8D8]">
+            googledrive/news/2024/06
+          </div>
+        </div>
+        <div className="flex justify-between font-normal text-xs mb-2.5">
+          <div className="text-[#666]">Updated at</div>
+          <div className="text-[#333] dark:text-[#D8D8D8]">
+            2024-09-14 12:07
+          </div>
+        </div>
+        <div className="flex justify-between font-normal text-xs mb-2.5">
+          <div className="text-[#666]">Update by</div>
+          <div className="text-[#333] dark:text-[#D8D8D8]">Huatai</div>
+        </div>
+        <div className="flex justify-between font-normal text-xs mb-2.5">
+          <div className="text-[#666]">Update by</div>
+          <div className="text-[#333] dark:text-[#D8D8D8]">haochen li</div>
+        </div>
+        <div className="flex justify-between font-normal text-xs mb-2.5">
+          <div className="text-[#666]">Type</div>
+          <div className="text-[#333] dark:text-[#D8D8D8]">PDF</div>
+        </div>
+        <div className="flex justify-between font-normal text-xs mb-2.5">
+          <div className="text-[#666]">Size</div>
+          <div className="text-[#333] dark:text-[#D8D8D8]">8.12Mb</div>
+        </div>
       </div>
     </div>
   );

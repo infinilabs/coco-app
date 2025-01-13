@@ -8,7 +8,9 @@ import Footer from "./Footer";
 import { tauriFetch } from "@/api/tauriFetchClient";
 import noDataImg from "@/assets/coconut-tree.png";
 import { useAppStore } from "@/stores/appStore";
-import { res_search } from "@/mock/index"
+import { res_search } from "@/mock/index";
+import { SearchResults } from "../SearchChat/SearchResults";
+import { useSearchStore } from "@/stores/searchStore";
 
 interface SearchProps {
   changeInput: (val: string) => void;
@@ -18,6 +20,8 @@ interface SearchProps {
 
 function Search({ isChatMode, input }: SearchProps) {
   const appStore = useAppStore();
+
+  const sourceData = useSearchStore((state) => state.sourceData);
 
   const [IsError, setIsError] = useState<boolean>(true);
   const [suggests, setSuggests] = useState<any[]>([]);
@@ -58,18 +62,18 @@ function Search({ isChatMode, input }: SearchProps) {
     if (!input) return;
     //
     // mock
-    // let list = res_search?.hits?.hits
-    // setSuggests(list);
-    // const search_data = list.reduce((acc: any, item) => {
-    //   const name = item._source.source.name;
-    //   if (!acc[name]) {
-    //     acc[name] = [];
-    //   }
-    //   acc[name].push(item);
-    //   return acc;
-    // }, {});
-    // setSearchData(search_data)
-    // return;
+    let list = res_search?.hits?.hits;
+    setSuggests(list);
+    const search_data = list.reduce((acc: any, item) => {
+      const name = item._source.source.name;
+      if (!acc[name]) {
+        acc[name] = [];
+      }
+      acc[name].push(item);
+      return acc;
+    }, {});
+    setSearchData(search_data);
+    return;
     //
     try {
       const response = await tauriFetch({
@@ -80,8 +84,8 @@ function Search({ isChatMode, input }: SearchProps) {
       console.log("_suggest", input, response);
       let data = response.data?.hits?.hits || [];
       data = data.map((item: any) => {
-        return item
-      })
+        return item;
+      });
       setSuggests(data);
       const search_data = data.reduce((acc: any, item: any) => {
         const name = item?._source?.source?.name;
@@ -91,7 +95,7 @@ function Search({ isChatMode, input }: SearchProps) {
         acc[name].push(item);
         return acc;
       }, {});
-      setSearchData(search_data)
+      setSearchData(search_data);
 
       setIsError(false);
       setIsSearchComplete(true);
@@ -121,13 +125,17 @@ function Search({ isChatMode, input }: SearchProps) {
     <div ref={mainWindowRef} className={`h-[500px] pb-10 w-full relative`}>
       {/* Search Results Panel */}
       {suggests.length > 0 ? (
-        <DropdownList
-          suggests={suggests}
-          SearchData={SearchData}
-          IsError={IsError}
-          isSearchComplete={isSearchComplete}
-          selected={(item) => setSelectedItem(item)}
-        />
+        sourceData ? (
+          <SearchResults />
+        ) : (
+          <DropdownList
+            suggests={suggests}
+            SearchData={SearchData}
+            IsError={IsError}
+            isSearchComplete={isSearchComplete}
+            selected={(item) => setSelectedItem(item)}
+          />
+        )
       ) : (
         <div
           data-tauri-drag-region

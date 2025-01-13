@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 
 import logoImg from "@/assets/32x32.png";
+import { useSearchStore } from "@/stores/searchStore";
 
 interface FooterProps {
   isChat: boolean;
@@ -13,6 +14,8 @@ interface FooterProps {
 }
 
 export default function Footer({ name }: FooterProps) {
+    const sourceData = useSearchStore((state) => state.sourceData);
+  
   return (
     <div
       data-tauri-drag-region
@@ -22,7 +25,7 @@ export default function Footer({ name }: FooterProps) {
         <div className="flex items-center space-x-4">
           <img src={logoImg} className="w-5 h-5" />
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            Version 1.0.0
+            {sourceData?.name || 'Version 1.0.0'}
           </span>
         </div>
 

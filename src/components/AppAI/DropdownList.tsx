@@ -1,8 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { CircleAlert, Bolt, X, Filter } from "lucide-react";
+import {
+  CircleAlert,
+  Bolt,
+  X,
+  SquareArrowRight,
+  UserRoundPen,
+} from "lucide-react";
 
 import { isTauri } from "@tauri-apps/api/core";
 import { useAppStore } from "@/stores/appStore";
+import { useSearchStore } from "@/stores/searchStore";
+import HugoImg from "@/assets/hugo_site/icon.png";
+import WebImg from "@/assets/hugo_site/web.png";
 
 type ISearchData = Record<string, any[]>;
 
@@ -21,6 +30,7 @@ function DropdownList({
   IsError,
 }: DropdownListProps) {
   const connector_data = useAppStore((state) => state.connector_data);
+  const setSourceData = useSearchStore((state) => state.setSourceData);
 
   const [showError, setShowError] = useState<boolean>(IsError);
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
@@ -120,7 +130,7 @@ function DropdownList({
     );
     const icons = result?._source?.assets?.icons || {};
     console.log(2222, icons, name);
-    return icons[name];
+    return icons[name] || HugoImg;
   }
 
   function getIcon(_source: any) {
@@ -130,7 +140,16 @@ function DropdownList({
     );
     const icons = result?._source?.assets?.icons || {};
     console.log(11111, icons, name, _source.icon, icons[_source.icon]);
-    return icons[_source.icon] || _source.icon;
+    return icons[_source.icon] || WebImg;
+  }
+
+  function goToTwoPage(name: string) {
+    selected && selected({
+      name
+    });
+    setSourceData({
+      name
+    })
   }
 
   return (
@@ -155,14 +174,10 @@ function DropdownList({
       {Object.entries(SearchData).map(([sourceName, items]) => (
         <div key={sourceName}>
           <div className="p-2 text-xs text-[#999] dark:text-[#666] flex items-center gap-2.5">
-            <img
-              className="w-4 h-4"
-              src={getTypeIcon(sourceName)}
-              alt="icon"
-            />
+            <img className="w-4 h-4" src={getTypeIcon(sourceName)} alt="icon" />
             {sourceName}
             <div className="flex-1 border-b border-b-[#999] dark:border-b-[rgba(255,255,255,0.1)]"></div>
-            <Filter className="w-4 h-4"/>
+            <SquareArrowRight className="w-4 h-4 cursor-pointer" onClick={() => goToTwoPage(sourceName)}/>
           </div>
           {items.map((item: any, index: number) => {
             const isSelected = selectedItem === index;
@@ -194,9 +209,10 @@ function DropdownList({
                     {item?._source?.title}
                   </span>
                 </div>
-                <div className="flex gap-2 items-center relative">
-                  <span className="text-sm  text-[#666] dark:text-[#666] truncate w-52 text-right">
-                    {item?._source?.source?.name}
+                <div className="flex gap-2 items-center justify-end w-52 relative">
+                  <UserRoundPen className="w-4 h-4  text-[#666] dark:text-[#666]" />
+                  <span className="text-sm text-[#666] dark:text-[#666] truncate text-right">
+                    {item?._source?.author || item?._source?.source?.name}
                   </span>
                   {showIndex && index < 10 ? (
                     <div

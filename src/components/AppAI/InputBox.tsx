@@ -1,4 +1,12 @@
-import { Library, Mic, Send, Plus, AudioLines, Image } from "lucide-react";
+import {
+  Library,
+  Mic,
+  Send,
+  Plus,
+  AudioLines,
+  Image,
+  SquareArrowLeft,
+} from "lucide-react";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { isTauri } from "@tauri-apps/api/core";
@@ -8,6 +16,7 @@ import AutoResizeTextarea from "./AutoResizeTextarea";
 import { useChatStore } from "@/stores/chatStore";
 import StopIcon from "@/icons/Stop";
 import { useAppStore } from "@/stores/appStore";
+import { useSearchStore } from "@/stores/searchStore";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -31,6 +40,9 @@ export default function ChatInput({
   reconnect,
 }: ChatInputProps) {
   const showTooltip = useAppStore((state) => state.showTooltip);
+
+  const sourceData = useSearchStore((state) => state.sourceData);
+  const setSourceData = useSearchStore((state) => state.setSourceData);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<{ reset: () => void; focus: () => void }>(null);
@@ -64,6 +76,9 @@ export default function ChatInput({
         switch (e.code) {
           case "KeyI":
             handleToggleFocus();
+            break;
+          case "ArrowLeft":
+            setSourceData(undefined);
             break;
           case "KeyM":
             console.log("KeyM");
@@ -139,7 +154,7 @@ export default function ChatInput({
 
   const [countdown, setCountdown] = useState(5);
   useEffect(() => {
-    if (connected) return
+    if (connected) return;
     if (countdown <= 0) {
       ReconnectClick();
       return;
@@ -153,14 +168,21 @@ export default function ChatInput({
   }, [countdown, connected]);
 
   const ReconnectClick = () => {
-    setCountdown(5)
-    reconnect()
-  }
+    setCountdown(5);
+    reconnect();
+  };
 
   return (
     <div className="w-full relative">
       <div className="p-[12px] flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded transition-all relative">
         <div className="flex flex-wrap gap-2 flex-1 items-center relative">
+          {!isChatMode && sourceData ? (
+            <SquareArrowLeft
+              className="text-[#333] dark:text-[#d5d5d5] cursor-pointer"
+              onClick={() => setSourceData(undefined)}
+            />
+          ) : null}
+
           {isChatMode ? (
             <AutoResizeTextarea
               ref={textareaRef}
@@ -190,9 +212,18 @@ export default function ChatInput({
               }}
             />
           )}
-          {showTooltip && isCommandPressed ? (
+          {showTooltip && isCommandPressed && !isChatMode && sourceData ? (
             <div
               className={`absolute bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
+            >
+              ⌘ + ←
+            </div>
+          ) : null}
+          {showTooltip && isCommandPressed ? (
+            <div
+              className={`absolute ${
+                !isChatMode && sourceData ? "left-[58px]" : ""
+              } bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
             >
               ⌘ + I
             </div>
@@ -254,11 +285,14 @@ export default function ChatInput({
         {!connected && isChatMode ? (
           <div className="absolute top-0 right-0 bottom-0 left-0 px-2 py-4 bg-red-500/10 rounded-md font-normal text-xs text-gray-400 flex items-center gap-4">
             Unable to connect to the server
-            <div className="w-[96px] h-[24px] bg-[#0061FF] rounded-[12px] font-normal text-xs text-white flex items-center justify-center cursor-pointer" onClick={ReconnectClick}>
+            <div
+              className="w-[96px] h-[24px] bg-[#0061FF] rounded-[12px] font-normal text-xs text-white flex items-center justify-center cursor-pointer"
+              onClick={ReconnectClick}
+            >
               Reconnect ({countdown})
             </div>
           </div>
-        ): null}
+        ) : null}
       </div>
 
       <div
