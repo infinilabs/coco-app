@@ -144,12 +144,13 @@ function DropdownList({
   }
 
   function goToTwoPage(name: string) {
-    selected && selected({
-      name
-    });
+    selected &&
+      selected({
+        name,
+      });
     setSourceData({
-      name
-    })
+      name,
+    });
   }
 
   return (
@@ -177,7 +178,10 @@ function DropdownList({
             <img className="w-4 h-4" src={getTypeIcon(sourceName)} alt="icon" />
             {sourceName}
             <div className="flex-1 border-b border-b-[#999] dark:border-b-[rgba(255,255,255,0.1)]"></div>
-            <SquareArrowRight className="w-4 h-4 cursor-pointer" onClick={() => goToTwoPage(sourceName)}/>
+            <SquareArrowRight
+              className="w-4 h-4 cursor-pointer"
+              onClick={() => goToTwoPage(sourceName)}
+            />
           </div>
           {items.map((item: any, index: number) => {
             const isSelected = selectedItem === index;
@@ -199,19 +203,25 @@ function DropdownList({
                     : ""
                 }`}
               >
-                <div className="flex gap-2 items-center">
+                <div className="flex gap-2 items-center justify-start w-[400px]">
                   <img
                     className="w-5 h-5"
                     src={getIcon(item?._source)}
                     alt="icon"
                   />
-                  <span className="text-[#333] dark:text-[#d8d8d8] truncate w-80 text-left">
+                  <span className="text-sm text-[#333] dark:text-[#d8d8d8] truncate text-left">
                     {item?._source?.title}
+                  </span>
+                  <span className="text-[12px] text-[#999] dark:text-[#666] max-w-[120px] truncate">
+                    {(item?._source?.category || "") +
+                      (item?._source?.subcategory
+                        ? `/${item?._source?.subcategory}`
+                        : "")}
                   </span>
                 </div>
                 <div className="flex gap-2 items-center justify-end w-52 relative">
                   <UserRoundPen className="w-4 h-4  text-[#666] dark:text-[#666]" />
-                  <span className="text-sm text-[#666] dark:text-[#666] truncate text-right">
+                  <span className="text-sm text-[#666] dark:text-[#666] max-w-[100px] truncate text-right ">
                     {item?._source?.author || item?._source?.source?.name}
                   </span>
                   {showIndex && index < 10 ? (
