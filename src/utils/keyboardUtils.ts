@@ -5,9 +5,14 @@ export const isMac = navigator.platform.toLowerCase().includes('mac');
 export const KEY_SYMBOLS: Record<string, string> = {
   // Modifier keys
   Control: isMac ? '⌃' : 'Ctrl',
+  control: isMac ? '⌃' : 'Ctrl',
   Shift: isMac ? '⇧' : 'Shift',
+  shift: isMac ? '⇧' : 'Shift',
   Alt: isMac ? '⌥' : 'Alt',
+  alt: isMac ? '⌥' : 'Alt',
   Meta: isMac ? '⌘' : 'Win',
+  Command: isMac ? '⌘' : 'Win',
+  super: isMac ? '⌘' : 'Win',
   // Special keys
   Space: 'Space',
   Enter: '↵',
@@ -30,8 +35,9 @@ export const normalizeKey = (key: string): string => {
     'ShiftRight': 'Shift',
     'AltLeft': 'Alt',
     'AltRight': 'Alt',
-    'MetaLeft': 'Meta',
-    'MetaRight': 'Meta',
+    'MetaLeft': 'Command',
+    'MetaRight': 'Command',
+    'Space': 'Space'  // Add explicit mapping for Space
   };
   
   return keyMap[key] || key.replace('Key', '');
@@ -39,7 +45,7 @@ export const normalizeKey = (key: string): string => {
 
 // Format key for display
 export const formatKey = (key: string): string => {
-  return KEY_SYMBOLS[key] || key;
+  return KEY_SYMBOLS[key] || key.replace('Key', '') || key;
 };
 
 // Check if key is a modifier
