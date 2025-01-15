@@ -7,7 +7,6 @@ import {
   Sun,
   Power,
   Tags,
-  CircleX,
 } from "lucide-react";
 import { isTauri, invoke } from "@tauri-apps/api/core";
 import {
@@ -21,18 +20,7 @@ import { ShortcutItem } from "./ShortcutItem";
 import { Shortcut } from "./shortcut";
 import { useShortcutEditor } from "@/hooks/useShortcutEditor";
 import { ThemeOption } from "./index2";
-import { type Hotkey } from "@/utils/tauri";
 import { useAppStore } from "@/stores/appStore";
-
-const RESERVED_SHORTCUTS = [
-  "ctrl+c",
-  "ctrl+v",
-  "ctrl+x",
-  "ctrl+a",
-  "ctrl+z",
-  "ctrl+y",
-  "ctrl+s",
-];
 
 export default function GeneralSettings() {
   const [launchAtLogin, setLaunchAtLogin] = useState(true);

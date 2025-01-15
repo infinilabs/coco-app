@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { isTauri } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-shell";
 
 // 1
 export async function copyToClipboard(text: string) {
@@ -64,7 +65,6 @@ export const OpenBrowserURL = async (url: string) => {
   if (!url) return;
   if (isTauri()) {
     try {
-      const { open } = await import("@tauri-apps/plugin-shell");
       await open(url);
       console.log("URL opened in default browser");
     } catch (error) {

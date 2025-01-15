@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { isTauri } from "@tauri-apps/api/core";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { LogicalSize } from "@tauri-apps/api/dpi";
 
 import DropdownList from "./DropdownList";
 import { Footer } from "./Footer";
@@ -32,11 +34,6 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
     if (!element) return;
 
     const resizeObserver = new ResizeObserver(async (entries) => {
-      const { getCurrentWebviewWindow } = await import(
-        "@tauri-apps/api/webviewWindow"
-      );
-      const { LogicalSize } = await import("@tauri-apps/api/dpi");
-
       for (let entry of entries) {
         let newHeight = entry.contentRect.height;
         console.log("Height updated:", newHeight);

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { CircleAlert, Bolt, X } from "lucide-react";
-
 import { isTauri } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-shell";
+
 import { useAppStore } from "@/stores/appStore";
 
 interface DropdownListProps {
@@ -24,7 +25,6 @@ function DropdownList({ selected, suggests, IsError }: DropdownListProps) {
     if (!url) return;
     try {
       if (isTauri()) {
-        const { open } = await import("@tauri-apps/plugin-shell");
         await open(url);
         console.log("URL opened in default browser");
       }
@@ -107,8 +107,10 @@ function DropdownList({ selected, suggests, IsError }: DropdownListProps) {
   }, [selectedItem]);
 
   function getIcon(_source: any) {
-    const name = _source?.source?.name || ""
-    const result = connector_data.find((item: any) => item._source.category === name);
+    const name = _source?.source?.name || "";
+    const result = connector_data.find(
+      (item: any) => item._source.category === name
+    );
     const icons = result?._source?.assets?.icons || {};
     return icons[_source.icon] || _source.icon;
   }
