@@ -178,7 +178,7 @@ function DropdownList({
           <div className="p-2 text-xs text-[#999] dark:text-[#666] flex items-center gap-2.5">
             <img className="w-4 h-4" src={getTypeIcon(sourceName)} alt="icon" />
             {sourceName}
-            <div className="flex-1 border-b border-b-[#e6e6e6] dark:border-b-[rgba(255,255,255,0.1)]"></div>
+            <div className="flex-1 border-b border-b-[#e6e6e6] dark:border-b-[#272626]"></div>
             <SquareArrowRight
               className="w-4 h-4 cursor-pointer"
               onClick={() => goToTwoPage(sourceName)}
@@ -239,6 +239,16 @@ function DropdownList({
                   >
                     {item?._source?.author || item?._source?.source?.name}
                   </span>
+                  {isSelected ? (
+                    <div
+                      className={`absolute right-7 w-4 h-4 flex items-end justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md ${
+                        isSelected ? "shadow-[-6px_0px_6px_2px_#6000FF]" : "shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]"
+                      }`}
+                    >
+                      ↩︎
+                    </div>
+                  ) : null}
+                  
                   {showIndex && index < 10 ? (
                     <div
                       className={`absolute right-0 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md ${

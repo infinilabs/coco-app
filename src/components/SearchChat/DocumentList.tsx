@@ -37,8 +37,8 @@ export const DocumentList: React.FC<DocumentListProps> = ({}) => {
             onClick={() => {}}
             className={`w-full px-2 py-2.5 text-sm flex items-center justify-between rounded-lg transition-colors ${
               isSelected
-                ? "bg-[rgba(0,0,0,0.1)] dark:bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(0,0,0,0.1)] dark:hover:bg-[rgba(255,255,255,0.1)]"
-                : ""
+                ? "text-white bg-[#6000FF] hover:bg-[#6000FF]"
+                : "text-[#333] dark:text-[#d8d8d8]"
             }`}
           >
             <div className="flex gap-2 items-center">
@@ -47,7 +47,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({}) => {
                 src={getIcon(item?._source)}
                 alt="icon"
               />
-              <span className="text-[#333] dark:text-[#d8d8d8] truncate w-72 text-left">
+              <span className="text-sm font-medium truncate w-72 text-left">
                 {item?._source?.title}
               </span>
             </div>

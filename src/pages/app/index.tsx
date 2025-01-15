@@ -82,7 +82,7 @@ export default function DesktopApp() {
     >
       <div
         data-tauri-drag-region
-        className={`p-[7px] pb-0 absolute w-full flex items-center justify-center transition-all duration-500 ${
+        className={`p-2 pb-0 absolute w-full flex items-center justify-center transition-all duration-500 ${
           isTransitioned
             ? "top-[500px] h-[90px] border-t"
             : "top-0 h-[90px] border-b"

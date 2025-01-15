@@ -174,11 +174,11 @@ export default function ChatInput({
 
   return (
     <div className="w-full relative">
-      <div className="p-[12px] flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded transition-all relative">
+      <div className="p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded transition-all relative">
         <div className="flex flex-wrap gap-2 flex-1 items-center relative">
           {!isChatMode && sourceData ? (
             <SquareArrowLeft
-              className="text-[#333] dark:text-[#d5d5d5] cursor-pointer"
+              className="w-4 h-4 text-[#000] dark:text-[#d8d8d8] cursor-pointer"
               onClick={() => setSourceData(undefined)}
             />
           ) : null}
@@ -214,7 +214,7 @@ export default function ChatInput({
           )}
           {showTooltip && isCommandPressed && !isChatMode && sourceData ? (
             <div
-              className={`absolute bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
+              className={`absolute left-0 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#ededed] dark:shadow-[-6px_0px_6px_2px_#202126]`}
             >
               ←
             </div>
@@ -222,8 +222,8 @@ export default function ChatInput({
           {showTooltip && isCommandPressed ? (
             <div
               className={`absolute ${
-                !isChatMode && sourceData ? "left-[32px]" : ""
-              } bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
+                !isChatMode && sourceData ? "left-7" : ""
+              } w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#ededed] dark:shadow-[-6px_0px_6px_2px_#202126]`}
             >
               I
             </div>
@@ -268,7 +268,7 @@ export default function ChatInput({
 
         {showTooltip && isChatMode && isCommandPressed ? (
           <div
-            className={`absolute right-10 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
+            className={`absolute right-10 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
           >
             M
           </div>
@@ -276,7 +276,7 @@ export default function ChatInput({
 
         {showTooltip && isChatMode && isCommandPressed ? (
           <div
-            className={`absolute right-1 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
+            className={`absolute right-3 w-4 h-4 flex items-end justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
           >
             ↩︎
           </div>
@@ -314,14 +314,14 @@ export default function ChatInput({
             </button>
             {showTooltip && isCommandPressed ? (
               <div
-                className={`absolute left-2 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
+                className={`absolute left-2 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
               >
                 O
               </div>
             ) : null}
             {showTooltip && isCommandPressed ? (
               <div
-                className={`absolute left-16 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
+                className={`absolute left-16 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
               >
                 U
               </div>
@@ -340,14 +340,14 @@ export default function ChatInput({
             </button>
             {showTooltip && isCommandPressed ? (
               <div
-                className={`absolute left-0 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
+                className={`absolute left-0 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
               >
                 N
               </div>
             ) : null}
             {showTooltip && isCommandPressed ? (
               <div
-                className={`absolute left-[30px] bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
+                className={`absolute left-6 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
               >
                 G
               </div>
@@ -355,10 +355,10 @@ export default function ChatInput({
           </div>
         )}
 
-        <div className="relative w-[70px] flex justify-end items-center">
+        <div className="relative w-16 flex justify-end items-center">
           {showTooltip && isCommandPressed ? (
             <div
-              className={`absolute left-0 z-10 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
+              className={`absolute left-1 z-10 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
             >
               T
             </div>
