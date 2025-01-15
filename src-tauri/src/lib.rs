@@ -304,14 +304,17 @@ fn current_shortcut<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<Shortcut, S
 fn remove_shortcut<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<(), String> {
     let short = current_shortcut(app)?;
 
-    println!("short: {}", short);
+    println!("Attempting to remove shortcut: {}", short);
     if short.to_string().is_empty() {
         println!("Shortcut is empty, no action taken.");
         return Ok(());
     }
 
-    app.global_shortcut().unregister(short).unwrap();
+    app.global_shortcut()
+        .unregister(short)
+        .map_err(|e| format!("Failed to unregister shortcut: {}", e))?;
 
+    println!("Successfully removed shortcut");
     Ok(())
 }
 
