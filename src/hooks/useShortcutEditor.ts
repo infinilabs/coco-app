@@ -5,6 +5,8 @@ import { Shortcut } from '@/components/Settings/shortcut';
 import { normalizeKey, isModifierKey, sortKeys } from '@/utils/keyboardUtils';
 
 export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Shortcut) => void) {
+  console.log("shortcut", shortcut)
+
   const [isEditing, setIsEditing] = useState(false);
   const [currentKeys, setCurrentKeys] = useState<string[]>([]);
   const [pressedKeys] = useState(new Set<string>());
@@ -34,20 +36,6 @@ export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Short
     setCurrentKeys([]);
   }, []);
 
-  // Register shortcut for non-editing state
-  useHotkeys(
-    shortcut.join('+').toLowerCase(),
-    (e) => {
-      if (isEditing) {
-        return;
-      }
-      e.preventDefault();
-      console.log('Shortcut triggered:', shortcut.join('+'));
-    },
-    { preventDefault: true },
-    [shortcut, isEditing]
-  );
-
   // Register key capture for editing state
   useHotkeys(
     '*',
@@ -64,8 +52,18 @@ export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Short
 
       setCurrentKeys(() => {
         const keys = Array.from(pressedKeys);
-        const modifiers = keys.filter(isModifierKey);
-        const nonModifiers = keys.filter(k => !isModifierKey(k));
+        let modifiers = keys.filter(isModifierKey);
+        let nonModifiers = keys.filter(k => !isModifierKey(k));
+
+        if (modifiers.length > 2) {
+          modifiers = modifiers.slice(0, 2)
+        }
+
+        if (nonModifiers.length > 2) {
+          nonModifiers = nonModifiers.slice(0, 2)
+        }
+
+        console.log(11111, modifiers, nonModifiers)
 
         // Combine modifiers and non-modifiers
         return [...modifiers, ...nonModifiers];
@@ -73,9 +71,8 @@ export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Short
     },
     {
       enabled: isEditing,
-      enableOnFormTags: ["INPUT", "TEXTAREA", "SELECT"],
       keydown: true,
-      preventDefault: true
+      enableOnContentEditable: true
     },
     [isEditing, pressedKeys]
   );
@@ -91,24 +88,9 @@ export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Short
     {
       enabled: isEditing,
       keyup: true,
-      preventDefault: true
+      enableOnContentEditable: true
     },
     [isEditing, pressedKeys]
-  );
-
-  // Handle Escape key to cancel editing
-  useHotkeys(
-    'esc',
-    () => {
-      if (isEditing) {
-        cancelEditing();
-      }
-    },
-    {
-      enabled: isEditing,
-      preventDefault: true
-    },
-    [isEditing, cancelEditing]
   );
 
   // Clean up editing state when component unmounts
