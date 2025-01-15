@@ -26,6 +26,7 @@ export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Short
 
     // Sort keys to ensure consistent order (modifiers first)
     const sortedKeys = sortKeys(currentKeys);
+    
     onChange(sortedKeys);
     setIsEditing(false);
     setCurrentKeys([]);
@@ -62,8 +63,6 @@ export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Short
         if (nonModifiers.length > 2) {
           nonModifiers = nonModifiers.slice(0, 2)
         }
-
-        console.log(11111, modifiers, nonModifiers)
 
         // Combine modifiers and non-modifiers
         return [...modifiers, ...nonModifiers];

@@ -81,7 +81,6 @@ export default function GeneralSettings() {
 
   async function getCurrentShortcut() {
     const res: any = await invoke("get_current_shortcut");
-    console.log(111111111, res?.split("+"));
     setShortcut(res?.split("+"));
   }
 
@@ -95,7 +94,6 @@ export default function GeneralSettings() {
     useShortcutEditor(shortcut, setShortcut);
 
   useEffect(() => {
-    console.log(2222222222, shortcut?.join("+"));
     if (shortcut.length === 0) return;
     invoke("change_shortcut", { key: shortcut?.join("+") }).catch((err) => {
       console.error("Failed to save hotkey:", err);
@@ -115,7 +113,6 @@ export default function GeneralSettings() {
   const onCancelShortcut = async () => {
     cancelEditing();
     //
-    console.log(33333333, shortcut?.join("+"));
     invoke("change_shortcut", { key: shortcut?.join("+") }).catch((err) => {
       console.error("Failed to save hotkey:", err);
       startEditing();

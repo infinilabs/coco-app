@@ -110,7 +110,6 @@ function DropdownList({ selected, suggests, IsError }: DropdownListProps) {
     const name = _source?.source?.name || ""
     const result = connector_data.find((item: any) => item._source.category === name);
     const icons = result?._source?.assets?.icons || {};
-    console.log(11111, icons,name,  _source.icon, icons[_source.icon])
     return icons[_source.icon] || _source.icon;
   }
 

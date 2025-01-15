@@ -22,7 +22,7 @@
         "maximizable": false,
         "skipTaskbar": true,
         "resizable": false,
-        "shadow": false,
+        "shadow": true,
         "transparent": true,
         "fullscreen": false,
         "center": false,

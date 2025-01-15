@@ -77,7 +77,7 @@ export const OpenBrowserURL = async (url: string) => {
 
 export const authWitheGithub = (uid: string) => {
   const authorizeUrl = "https://github.com/login/oauth/authorize";
-  console.log(111, process.env.NODE_ENV, uid)
+  console.log("github", process.env.NODE_ENV, uid)
 
   location.href = `${authorizeUrl}?client_id=${"Ov23li4IcdbbWp2RgLTN"}&redirect_uri=${"http://localhost:1420/login"}`;
 };
