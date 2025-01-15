@@ -216,16 +216,16 @@ export default function ChatInput({
             <div
               className={`absolute bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
             >
-              ⌘ + ←
+              ←
             </div>
           ) : null}
           {showTooltip && isCommandPressed ? (
             <div
               className={`absolute ${
-                !isChatMode && sourceData ? "left-[58px]" : ""
+                !isChatMode && sourceData ? "left-[32px]" : ""
               } bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
             >
-              ⌘ + I
+              I
             </div>
           ) : null}
         </div>
@@ -268,9 +268,9 @@ export default function ChatInput({
 
         {showTooltip && isChatMode && isCommandPressed ? (
           <div
-            className={`absolute right-16 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
+            className={`absolute right-10 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
           >
-            ⌘ + M
+            M
           </div>
         ) : null}
 
@@ -278,7 +278,7 @@ export default function ChatInput({
           <div
             className={`absolute right-1 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
           >
-            ⌘ + ↩︎
+            ↩︎
           </div>
         ) : null}
 
@@ -316,14 +316,14 @@ export default function ChatInput({
               <div
                 className={`absolute left-2 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
               >
-                ⌘ + O
+                O
               </div>
             ) : null}
             {showTooltip && isCommandPressed ? (
               <div
                 className={`absolute left-16 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
               >
-                ⌘ + U
+                U
               </div>
             ) : null}
           </div>
@@ -342,25 +342,25 @@ export default function ChatInput({
               <div
                 className={`absolute left-0 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
               >
-                ⌘ + N
+                N
               </div>
             ) : null}
             {showTooltip && isCommandPressed ? (
               <div
-                className={`absolute left-14 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
+                className={`absolute left-[30px] bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
               >
-                ⌘ + G
+                G
               </div>
             ) : null}
           </div>
         )}
 
-        <div className="relative w-24 flex justify-end items-center">
+        <div className="relative w-[70px] flex justify-end items-center">
           {showTooltip && isCommandPressed ? (
             <div
               className={`absolute left-0 z-10 bg-black bg-opacity-70 text-white font-bold px-2 py-0.5 rounded-md text-xs transition-opacity duration-200`}
             >
-              ⌘ + T
+              T
             </div>
           ) : null}
           <ChatSwitch
