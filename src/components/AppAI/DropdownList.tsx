@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 
 import { isTauri } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-shell";
+
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import HugoImg from "@/assets/hugo_site/icon.png";
@@ -42,7 +44,6 @@ function DropdownList({
     if (!url) return;
     try {
       if (isTauri()) {
-        const { open } = await import("@tauri-apps/plugin-shell");
         await open(url);
         console.log("URL opened in default browser");
       }

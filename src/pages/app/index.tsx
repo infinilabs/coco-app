@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { isTauri } from "@tauri-apps/api/core";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { LogicalSize } from "@tauri-apps/api/dpi";
 
 import InputBox from "@/components/AppAI/InputBox";
 import Search from "@/components/AppAI/Search";
@@ -55,11 +57,6 @@ export default function DesktopApp() {
     setInput(value);
     if (isChatMode) {
       if (isTauri()) {
-        const { getCurrentWebviewWindow } = await import(
-          "@tauri-apps/api/webviewWindow"
-        );
-        const { LogicalSize } = await import("@tauri-apps/api/dpi");
-
         await getCurrentWebviewWindow()?.setSize(new LogicalSize(680, 596));
       }
       chatAIRef.current?.init();

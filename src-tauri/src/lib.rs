@@ -205,6 +205,18 @@ fn change_shortcut<R: Runtime>(
 
     let main_window = app.get_webview_window("main").unwrap();
 
+    if key.trim().is_empty() {
+        let path = app.path().app_config_dir().unwrap();
+        if !path.exists() {
+            create_dir(&path).unwrap();
+        }
+
+        let file_path = path.join("shortcut.txt");
+        let mut file = File::create(file_path).unwrap();
+        file.write_all(b"").unwrap();
+        return Ok(());
+    }
+
     let shortcut: Shortcut = key
         .parse()
         .map_err(|_| "The format of the shortcut key is incorrect".to_owned())?;
@@ -364,12 +376,12 @@ fn enable_tray(app: &mut tauri::App) {
     let settings_i = MenuItem::with_id(app, "settings", "Settings...", true, None::<&str>).unwrap();
     let open_i = MenuItem::with_id(app, "open", "Open Coco", true, None::<&str>).unwrap();
     let about_i = MenuItem::with_id(app, "about", "About Coco", true, None::<&str>).unwrap();
-    let hide_i = MenuItem::with_id(app, "hide", "Hide Coco", true, None::<&str>).unwrap();
+    // let hide_i = MenuItem::with_id(app, "hide", "Hide Coco", true, None::<&str>).unwrap();
 
     let menu = MenuBuilder::new(app)
         .item(&open_i)
         .separator()
-        .item(&hide_i)
+        // .item(&hide_i)
         .item(&about_i)
         .item(&settings_i)
         .separator()

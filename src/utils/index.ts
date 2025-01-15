@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { isTauri } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-shell";
 
 // 1
 export async function copyToClipboard(text: string) {
@@ -64,7 +65,6 @@ export const OpenBrowserURL = async (url: string) => {
   if (!url) return;
   if (isTauri()) {
     try {
-      const { open } = await import("@tauri-apps/plugin-shell");
       await open(url);
       console.log("URL opened in default browser");
     } catch (error) {
@@ -77,7 +77,7 @@ export const OpenBrowserURL = async (url: string) => {
 
 export const authWitheGithub = (uid: string) => {
   const authorizeUrl = "https://github.com/login/oauth/authorize";
-  console.log(111, process.env.NODE_ENV, uid)
+  console.log("github", process.env.NODE_ENV, uid)
 
   location.href = `${authorizeUrl}?client_id=${"Ov23li4IcdbbWp2RgLTN"}&redirect_uri=${"http://localhost:1420/login"}`;
 };
