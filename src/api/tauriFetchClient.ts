@@ -1,6 +1,7 @@
 import { fetch } from "@tauri-apps/plugin-http";
 
 import { clientEnv } from "@/utils/env";
+import { useLogStore } from "@/stores/logStore";
 
 interface FetchRequestConfig {
   url: string;
@@ -25,20 +26,6 @@ const timeoutPromise = (ms: number) => {
   );
 };
 
-// debug API
-export const FetchInfo: any = {
-  Request: {
-    url: "",
-    method: "",
-    headers: "",
-    body: "",
-    timeout: "",
-    parseAs: "json",
-  },
-  Response: {},
-  Error: ""
-}
-
 export const tauriFetch = async <T = any>({
   url,
   method = "GET",
@@ -55,9 +42,11 @@ export const tauriFetch = async <T = any>({
   const { state: { auth } } = JSON.parse(localStorage.getItem("auth-store") || "")
   console.log("auth", auth)
 
+  const addLog = useLogStore.getState().addLog;
+
   try {
     url = baseURL + url;
-    
+
     if (method !== "GET") {
       headers["Content-Type"] = "application/json";
     }
@@ -65,15 +54,15 @@ export const tauriFetch = async <T = any>({
     headers["X-API-TOKEN"] = auth?.token || "";
 
     // debug API
-    FetchInfo.Request = {
+    const requestInfo = {
       url,
       method,
       headers,
       body,
       timeout,
       parseAs,
-    }
-  
+    };
+
     const fetchPromise = fetch(url, {
       method,
       headers,
@@ -84,9 +73,6 @@ export const tauriFetch = async <T = any>({
       fetchPromise,
       timeoutPromise(timeout * 1000),
     ]);
-
-    // debug API
-    FetchInfo.Response = response
 
     const statusText = response.ok ? "OK" : "Error";
 
@@ -99,6 +85,13 @@ export const tauriFetch = async <T = any>({
       data = await response.arrayBuffer();
     }
 
+    // debug API
+    const log = {
+      request: requestInfo,
+      response: response,
+    };
+    addLog(log);
+
     return {
       data,
       status: response.status,
@@ -109,8 +102,19 @@ export const tauriFetch = async <T = any>({
     console.error("Request failed:", error);
 
     // debug API
-    FetchInfo.Error = error
-    
+    const log = {
+      request: {
+        url,
+        method,
+        headers,
+        body,
+        timeout,
+        parseAs,
+      },
+      error,
+    };
+    addLog(log);
+
     throw error;
   }
 };

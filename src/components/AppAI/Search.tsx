@@ -5,10 +5,9 @@ import { Command } from "lucide-react";
 
 import DropdownList from "./DropdownList";
 import Footer from "./Footer";
-import { tauriFetch, FetchInfo } from "@/api/tauriFetchClient";
+import { tauriFetch } from "@/api/tauriFetchClient";
 import noDataImg from "@/assets/coconut-tree.png";
 import { useAppStore } from "@/stores/appStore";
-import ApiDetails from "./ApiDetails";
 
 interface SearchProps {
   changeInput: (val: string) => void;
@@ -132,7 +131,6 @@ function Search({ isChatMode, input }: SearchProps) {
       )}
 
       <Footer isChat={false} name={selectedItem?.source?.name} />
-      <ApiDetails FetchInfo={FetchInfo} />
     </div>
   );
 }
