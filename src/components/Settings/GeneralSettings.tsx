@@ -69,6 +69,7 @@ export default function GeneralSettings() {
 
   async function getCurrentShortcut() {
     const res: any = await invoke("get_current_shortcut");
+    console.log("DBG: ", res);
     setShortcut(res?.split("+"));
   }
 
@@ -92,7 +93,7 @@ export default function GeneralSettings() {
   const onEditShortcut = async () => {
     startEditing();
     //
-    invoke("change_shortcut", { key: "" }).catch((err) => {
+    invoke("unregister_shortcut").catch((err) => {
       console.error("Failed to save hotkey:", err);
       startEditing();
     });
