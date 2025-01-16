@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { X } from "lucide-react";
 
 import { useLogStore } from "@/stores/logStore";
 
@@ -43,10 +44,11 @@ const ApiDetails: React.FC = () => {
     >
       {showAPIDetails && (
         <div className="p-6">
-          <h3 className="text-lg font-bold text-gray-800 border-b pb-2 cursor-pointer" onClick={toggleAPIDetails}>
+          <h3 className="text-lg font-bold text-gray-800 border-b pb-2 cursor-pointer flex justify-between" onClick={toggleAPIDetails}>
             API Logs (Latest 10)
+            <X />
           </h3>
-          <div className="space-y-4 mt-4">
+          <div className="space-y-4 mt-4 ">
             {logs.map((log, index) => (
               <div
                 key={index}
