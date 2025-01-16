@@ -9,6 +9,7 @@ const ENDPOINTS = [
   { value: "coco.infini.cloud", label: "coco.infini.cloud" },
   { value: "localhost:2900", label: "localhost:2900" },
   { value: "localhost:9000", label: "localhost:9000" },
+  { value: "infini.tpddns.cn:27200", label: "infini.tpddns.cn:27200" },
 ];
 
 export default function AdvancedSettings() {

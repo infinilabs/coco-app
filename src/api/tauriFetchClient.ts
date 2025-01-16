@@ -25,6 +25,20 @@ const timeoutPromise = (ms: number) => {
   );
 };
 
+// debug API
+export const FetchInfo: any = {
+  Request: {
+    url: "",
+    method: "",
+    headers: "",
+    body: "",
+    timeout: "",
+    parseAs: "json",
+  },
+  Response: {},
+  Error: ""
+}
+
 export const tauriFetch = async <T = any>({
   url,
   method = "GET",
@@ -43,12 +57,23 @@ export const tauriFetch = async <T = any>({
 
   try {
     url = baseURL + url;
+    
     if (method !== "GET") {
       headers["Content-Type"] = "application/json";
     }
 
     headers["X-API-TOKEN"] = auth?.token || "";
 
+    // debug API
+    FetchInfo.Request = {
+      url,
+      method,
+      headers,
+      body,
+      timeout,
+      parseAs,
+    }
+  
     const fetchPromise = fetch(url, {
       method,
       headers,
@@ -59,6 +84,9 @@ export const tauriFetch = async <T = any>({
       fetchPromise,
       timeoutPromise(timeout * 1000),
     ]);
+
+    // debug API
+    FetchInfo.Response = response
 
     const statusText = response.ok ? "OK" : "Error";
 
@@ -79,6 +107,10 @@ export const tauriFetch = async <T = any>({
     };
   } catch (error) {
     console.error("Request failed:", error);
+
+    // debug API
+    FetchInfo.Error = error
+    
     throw error;
   }
 };
