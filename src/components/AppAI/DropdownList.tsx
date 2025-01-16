@@ -200,7 +200,7 @@ function DropdownList({
                 }}
                 className={`w-full px-2 py-2.5 text-sm flex items-center justify-between rounded-lg transition-colors ${
                   isSelected
-                    ? "text-white bg-[#6000FF] hover:bg-[#6000FF]"
+                    ? "text-white bg-[#6000FF] hover:bg-[#6000FF] pl-3 transition-all duration-200 ease-linear"
                     : "text-[#333] dark:text-[#d8d8d8]"
                 }`}
               >
@@ -239,20 +239,27 @@ function DropdownList({
                   >
                     {item?._source?.author || item?._source?.source?.name}
                   </span>
+
                   {isSelected ? (
                     <div
-                      className={`absolute right-7 w-4 h-4 flex items-end justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md ${
-                        isSelected ? "shadow-[-6px_0px_6px_2px_#6000FF]" : "shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]"
+                      className={`absolute ${
+                        showIndex && index < 10 ? "right-7" : "right-0"
+                      } w-4 h-4 flex items-end justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md ${
+                        isSelected
+                          ? "shadow-[-6px_0px_6px_2px_#6000FF]"
+                          : "shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]"
                       }`}
                     >
                       ↩︎
                     </div>
                   ) : null}
-                  
+
                   {showIndex && index < 10 ? (
                     <div
                       className={`absolute right-0 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md ${
-                        isSelected ? "shadow-[-6px_0px_6px_2px_#6000FF]" : "shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]"
+                        isSelected
+                          ? "shadow-[-6px_0px_6px_2px_#6000FF]"
+                          : "shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]"
                       }`}
                     >
                       {index}
