@@ -37,6 +37,8 @@ export const tauriFetch = async <T = any>({
 }: FetchRequestConfig): Promise<FetchResponse<T>> => {
   const addLog = useLogStore.getState().addLog;
 
+  const addLog = useLogStore.getState().addLog;
+
   try {
     const appStore = JSON.parse(localStorage.getItem("app-store") || "{}")
     const endpoint_http = appStore?.state?.endpoint_http
