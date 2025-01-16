@@ -91,16 +91,16 @@ export const tauriFetch = async <T = any>({
     // debug API
     const log = {
       request: requestInfo,
-      response: response,
+      response: {
+        data,
+        status: response.status,
+        statusText,
+        headers: response.headers,
+      },
     };
     addLog(log);
 
-    return {
-      data,
-      status: response.status,
-      statusText,
-      headers: response.headers,
-    };
+    return log.response;
   } catch (error) {
     console.error("Request failed:", error);
 
