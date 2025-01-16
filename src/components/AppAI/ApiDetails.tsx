@@ -5,7 +5,7 @@ interface ApiDetailsProps {
 }
 
 const ApiDetails: React.FC<ApiDetailsProps> = ({ FetchInfo }) => {
-  const [showAPIDetails, setShowAPIDetails] = useState(true);
+  const [showAPIDetails, setShowAPIDetails] = useState(false);
 
   return (
     <div
