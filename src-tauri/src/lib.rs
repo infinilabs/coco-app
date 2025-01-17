@@ -1,19 +1,12 @@
 mod autostart;
 mod shortcut;
 
-use std::{fs::create_dir, io::Read};
-
-use tauri::{AppHandle, Emitter, Listener, Manager, Runtime, WebviewWindow};
-// use tauri_nspanel::{panel_delegate, ManagerExt, WebviewWindowExt};
-use tauri_plugin_autostart::MacosLauncher;
-use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
-
 use autostart::{change_autostart, enable_autostart};
-
-use tauri_plugin_deep_link::DeepLinkExt;
-
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
+use tauri::{AppHandle, Emitter, Listener, Manager, WebviewWindow};
+use tauri_plugin_autostart::MacosLauncher;
+use tauri_plugin_deep_link::DeepLinkExt;
 
 #[tauri::command]
 fn change_window_height(handle: AppHandle, height: u32) {
