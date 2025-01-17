@@ -4,6 +4,31 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { Shortcut } from '@/components/Settings/shortcut';
 import { normalizeKey, isModifierKey, sortKeys } from '@/utils/keyboardUtils';
 
+const RESERVED_SHORTCUTS = [
+  ["Command", "C"],
+  ["Command", "V"],
+  ["Command", "X"],
+  ["Command", "A"],
+  ["Command", "Z"],
+  ["Command", "Q"],
+  // Windows/Linux
+  ["Control", "C"],
+  ["Control", "V"],
+  ["Control", "X"],
+  ["Control", "A"],
+  ["Control", "Z"],
+  // Coco
+  ["Command", "I"],
+  ["Command", "T"],
+  ["Command", "N"],
+  ["Command", "G"],
+  ["Command", "O"],
+  ["Command", "U"],
+  ["Command", "M"],
+  ["Command", "Enter"],
+  ["Command", "ArrowLeft"],
+];
+
 export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Shortcut) => void) {
   console.log("shortcut", shortcut)
 
@@ -16,7 +41,7 @@ export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Short
     setCurrentKeys([]);
   }, []);
 
-  const saveShortcut = useCallback(() => {
+  const saveShortcut = async () => {
     if (!isEditing || currentKeys.length < 2) return;
 
     const hasModifier = currentKeys.some(isModifierKey);
@@ -24,13 +49,29 @@ export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Short
 
     if (!hasModifier || !hasNonModifier) return;
 
+    console.log(111111, currentKeys)
+
+    const isReserved = RESERVED_SHORTCUTS.some(reserved =>
+      reserved.length === currentKeys.length &&
+      reserved.every((key, index) => key.toLowerCase() === currentKeys[index].toLowerCase())
+    );
+
+    console.log(22222, isReserved)
+
+
+    if (isReserved) {
+      console.error("This is a system reserved shortcut");
+      return;
+    }
+
     // Sort keys to ensure consistent order (modifiers first)
     const sortedKeys = sortKeys(currentKeys);
-    
+
+
     onChange(sortedKeys);
     setIsEditing(false);
     setCurrentKeys([]);
-  }, [isEditing, currentKeys, onChange]);
+  };
 
   const cancelEditing = useCallback(() => {
     setIsEditing(false);

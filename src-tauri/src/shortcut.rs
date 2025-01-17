@@ -81,6 +81,7 @@ pub fn change_shortcut<R: Runtime>(
     _window: tauri::Window<R>,
     key: String,
 ) -> Result<(), String> {
+    println!("key {}:", key);
     let shortcut = match key.parse::<Shortcut>() {
         Ok(shortcut) => shortcut,
         Err(_) => return Err(format!("invalid shortcut {}", key)),
@@ -97,7 +98,6 @@ pub fn change_shortcut<R: Runtime>(
 
     Ok(())
 }
-
 
 /// Helper function to register a shortcut, used for shortcut updates.
 fn _register_shortcut<R: Runtime>(app: &AppHandle<R>, shortcut: Shortcut) {
@@ -143,7 +143,6 @@ fn _register_shortcut_upon_start(app: &App, shortcut: Shortcut) {
     app.global_shortcut().register(shortcut).unwrap();
 }
 
-
 /// Helper function to get the stored global shortcut, as a string.
 pub fn _get_shortcut<R: Runtime>(app: &AppHandle<R>) -> String {
     let store = app
@@ -160,4 +159,32 @@ pub fn _get_shortcut<R: Runtime>(app: &AppHandle<R>) -> String {
             unexpected_type
         ),
     }
+}
+
+#[tauri::command]
+pub async fn check_shortcut_available(key: String) -> bool {
+    // 这里可以实现系统级的快捷键检查
+    // 可以检查是否与其他应用的全局快捷键冲突
+    // 返回 true 表示可用，false 表示已被占用
+
+    // 简单实现示例：
+    !is_system_shortcut(&key)
+}
+
+fn is_system_shortcut(key: &str) -> bool {
+    let system_shortcuts = vec![
+        "Command+C",
+        "Command+V",
+        "Command+X",
+        "Command+A",
+        "Command+Z",
+        "Control+C",
+        "Control+V",
+        "Control+X",
+        "Control+A",
+        "Control+Z",
+        // 添加更多系统快捷键
+    ];
+
+    system_shortcuts.contains(&key)
 }

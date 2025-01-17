@@ -85,6 +85,7 @@ export default function GeneralSettings() {
 
   const changeShortcut =(key: Shortcut) => {
     setShortcut(key)
+    //
     if (key.length === 0) return;
     invoke("change_shortcut", { key: key?.join("+") }).catch((err) => {
       console.error("Failed to save hotkey:", err);
