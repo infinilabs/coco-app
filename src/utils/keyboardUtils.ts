@@ -11,10 +11,13 @@ export const KEY_SYMBOLS: Record<string, string> = {
   Alt: isMac ? '⌥' : 'Alt',
   alt: isMac ? '⌥' : 'Alt',
   Meta: isMac ? '⌘' : 'Win',
+  meta: isMac ? '⌘' : 'Win',
   Command: isMac ? '⌘' : 'Win',
+  command: isMac ? '⌘' : 'Win',
   super: isMac ? '⌘' : 'Win',
   // Special keys
   Space: 'Space',
+  space: 'Space',
   Enter: '↵',
   Backspace: '⌫',
   Delete: 'Del',
