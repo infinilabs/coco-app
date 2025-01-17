@@ -9,6 +9,7 @@ import ChatAI, { ChatAIRef } from "@/components/ChatAI/Chat";
 import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
 import { tauriFetch } from "@/api/tauriFetchClient";
+import ApiDetails from "@/components/AppAI/ApiDetails";
 
 export default function DesktopApp() {
   const initializeListeners = useAppStore((state) => state.initializeListeners);
@@ -16,12 +17,14 @@ export default function DesktopApp() {
     (state) => state.initializeListeners
   );
   const setConnectorData = useAppStore((state) => state.setConnectorData);
+  const setDatasourceData = useAppStore((state) => state.setDatasourceData);
 
   useEffect(() => {
     initializeListeners();
     initializeListeners_auth();
 
     getConnectorData();
+    getDatasourceData();
   }, []);
 
   async function getConnectorData() {
@@ -33,6 +36,20 @@ export default function DesktopApp() {
       console.log("connector", response);
       const data = response.data?.hits?.hits || [];
       setConnectorData(data);
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+    }
+  }
+  
+  async function getDatasourceData() {
+    try {
+      const response = await tauriFetch({
+        url: `/datasource/_search`,
+        method: "GET",
+      });
+      console.log("datasource", response);
+      const data = response.data?.hits?.hits || [];
+      setDatasourceData(data);
     } catch (error) {
       console.error("Failed to fetch user data:", error);
     }
@@ -86,7 +103,7 @@ export default function DesktopApp() {
           isTransitioned
             ? "top-[500px] h-[90px] border-t"
             : "top-0 h-[90px] border-b"
-        } border-[#E6E6E6] dark:border-[#272626] `}
+        } border-[#E6E6E6] dark:border-[#272626]`}
       >
         <InputBox
           isChatMode={isChatMode}
@@ -106,7 +123,7 @@ export default function DesktopApp() {
         data-tauri-drag-region
         className={`absolute w-full transition-opacity duration-500 ${
           isTransitioned ? "opacity-0 pointer-events-none" : "opacity-100"
-        } bottom-0 h-[500px]`}
+        } bottom-0 h-[500px] `}
       >
         <Search
           key="Search"
@@ -134,6 +151,8 @@ export default function DesktopApp() {
           />
         ) : null}
       </div>
+
+      <ApiDetails />
     </div>
   );
 }

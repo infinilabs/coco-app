@@ -33,6 +33,11 @@ export default {
       boxShadow: {
         "window-custom": "0px 16px 32px 0px rgba(0,0,0,0.3)",
       },
+      zIndex: {
+        100: '100',
+        1000: '1000',
+        2000: '2000',
+      },
     },
   },
   plugins: [],

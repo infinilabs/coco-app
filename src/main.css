@@ -65,12 +65,6 @@
   body,
   #root {
     @apply text-gray-900 antialiased;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
   }
 
   .dark body,
@@ -199,5 +193,14 @@
     background: var(--docsearch-key-gradient);
     box-shadow: var(--docsearch-key-shadow);
     color: var(--docsearch-muted-color);
+  }
+  
+  .user-select{
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
   }
 }

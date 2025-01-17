@@ -12,8 +12,6 @@ import { open } from "@tauri-apps/plugin-shell";
 
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
-import HugoImg from "@/assets/hugo_site/icon.png";
-import WebImg from "@/assets/hugo_site/web.png";
 
 type ISearchData = Record<string, any[]>;
 
@@ -31,7 +29,12 @@ function DropdownList({
   SearchData,
   IsError,
 }: DropdownListProps) {
+  let globalIndex = 0;
+  const globalItemIndexMap: any[] = [];
+
   const connector_data = useAppStore((state) => state.connector_data);
+  const datasourceData = useAppStore((state) => state.datasourceData);
+  const endpoint_http = useAppStore((state) => state.endpoint_http);
   const setSourceData = useSearchStore((state) => state.setSourceData);
 
   const [showError, setShowError] = useState<boolean>(IsError);
@@ -45,7 +48,7 @@ function DropdownList({
     try {
       if (isTauri()) {
         await open(url);
-        console.log("URL opened in default browser");
+        // console.log("URL opened in default browser");
       }
     } catch (error) {
       console.error("Failed to open URL:", error);
@@ -53,12 +56,12 @@ function DropdownList({
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    console.log(
-      "handleKeyDown",
-      e.key,
-      showIndex,
-      e.key >= "0" && e.key <= "9" && showIndex
-    );
+    // console.log(
+    //   "handleKeyDown",
+    //   e.key,
+    //   showIndex,
+    //   e.key >= "0" && e.key <= "9" && showIndex
+    // );
     if (!suggests.length) return;
 
     if (e.key === "ArrowUp") {
@@ -77,8 +80,8 @@ function DropdownList({
     }
 
     if (e.key === "Enter" && selectedItem !== null) {
-      console.log("Enter key pressed", selectedItem);
-      const item = suggests[selectedItem];
+      // console.log("Enter key pressed", selectedItem);
+      const item = globalItemIndexMap[selectedItem];
       if (item?._source?.url) {
         handleOpenURL(item?._source?.url);
       } else {
@@ -87,8 +90,8 @@ function DropdownList({
     }
 
     if (e.key >= "0" && e.key <= "9" && showIndex) {
-      console.log(`number ${e.key}`);
-      const item = suggests[parseInt(e.key, 10)];
+      // console.log(`number ${e.key}`);
+      const item = globalItemIndexMap[parseInt(e.key, 10)];
       if (item?._source?.url) {
         handleOpenURL(item?._source?.url);
       } else {
@@ -98,7 +101,7 @@ function DropdownList({
   };
 
   const handleKeyUp = (e: KeyboardEvent) => {
-    console.log("handleKeyUp", e.key);
+    // console.log("handleKeyUp", e.key);
     if (!suggests.length) return;
 
     if (!e.metaKey) {
@@ -125,26 +128,48 @@ function DropdownList({
     }
   }, [selectedItem]);
 
-  function getTypeIcon(name: string) {
-    const result = connector_data.find(
-      (item: any) => item._source.category === name
+  function findConnectorIcon(item: any) {
+    const id = item?._source?.source?.id || "";
+
+    const result_source = datasourceData.find(
+      (data: any) => data._source.id === id
     );
-    const icons = result?._source?.assets?.icons || {};
-    console.log(2222, icons, name);
-    return icons[name] || HugoImg;
+
+    const connector_id = result_source?._source?.connector?.id;
+
+    const result_connector = connector_data.find(
+      (data: any) => data._source.id === connector_id
+    );
+
+    return result_connector?._source;
   }
 
-  function getIcon(_source: any) {
-    const name = _source?.source?.name || "";
-    const result = connector_data.find(
-      (item: any) => item._source.category === name
-    );
-    const icons = result?._source?.assets?.icons || {};
-    console.log(11111, icons, name, _source.icon, icons[_source.icon]);
-    return icons[_source.icon] || WebImg;
+  function getTypeIcon(item: any) {
+    const connectorSource = findConnectorIcon(item);
+    const icons = connectorSource?.icon;
+
+    if (icons?.includes("http")) {
+      return icons;
+    } else {
+      return endpoint_http + icons;
+    }
+  }
+
+  function getIcon(item: any) {
+    const connectorSource = findConnectorIcon(item);
+    const icons = connectorSource?.assets?.icons || {};
+
+    const selectedIcon = icons[item?._source.icon];
+
+    if (selectedIcon?.includes("http")) {
+      return selectedIcon;
+    } else {
+      return endpoint_http + selectedIcon;
+    }
   }
 
   function goToTwoPage(name: string) {
+    return;
     selected &&
       selected({
         name,
@@ -176,7 +201,7 @@ function DropdownList({
       {Object.entries(SearchData).map(([sourceName, items]) => (
         <div key={sourceName}>
           <div className="p-2 text-xs text-[#999] dark:text-[#666] flex items-center gap-2.5">
-            <img className="w-4 h-4" src={getTypeIcon(sourceName)} alt="icon" />
+            <img className="w-4 h-4" src={getTypeIcon(items[0])} alt="icon" />
             {sourceName}
             <div className="flex-1 border-b border-b-[#e6e6e6] dark:border-b-[#272626]"></div>
             <SquareArrowRight
@@ -184,13 +209,16 @@ function DropdownList({
               onClick={() => goToTwoPage(sourceName)}
             />
           </div>
-          {items.map((item: any, index: number) => {
-            const isSelected = selectedItem === index;
+          {items.map((item: any) => {
+            const isSelected = selectedItem === globalIndex;
+            const currentIndex = globalIndex;
+            globalItemIndexMap.push(item);
+            globalIndex++;
             return (
               <div
                 key={item._id}
-                ref={(el) => (itemRefs.current[index] = el)}
-                onMouseEnter={() => setSelectedItem(index)}
+                ref={(el) => (itemRefs.current[currentIndex] = el)}
+                onMouseEnter={() => setSelectedItem(currentIndex)}
                 onClick={() => {
                   if (item?._source?.url) {
                     handleOpenURL(item?._source?.url);
@@ -200,17 +228,17 @@ function DropdownList({
                 }}
                 className={`w-full px-2 py-2.5 text-sm flex items-center justify-between rounded-lg transition-colors ${
                   isSelected
-                    ? "text-white bg-[#6000FF] hover:bg-[#6000FF] pl-3 transition-all duration-200 ease-linear"
+                    ? "text-white bg-[#950599] hover:bg-[#950599] pl-3 transition-all duration-200 ease-linear"
                     : "text-[#333] dark:text-[#d8d8d8]"
                 }`}
               >
                 <div className="flex gap-2 items-center justify-start w-[400px]">
-                  <img
-                    className="w-5 h-5"
-                    src={getIcon(item?._source)}
-                    alt="icon"
-                  />
-                  <span className="text-sm font-medium truncate text-left">
+                  <img className="w-5 h-5" src={getIcon(item)} alt="icon" />
+                  <span
+                    className={`text-sm  truncate text-left ${
+                      isSelected ? "font-medium" : ""
+                    }`}
+                  >
                     {item?._source?.title}
                   </span>
                   <span
@@ -226,16 +254,18 @@ function DropdownList({
                         : "")}
                   </span>
                 </div>
-                <div className="flex gap-2 items-center justify-end w-52 relative">
-                  <UserRoundPen
-                    className={`w-4 h-4 ${
-                      isSelected ? "text-[#C8C8C8]" : "text-[#666]"
-                    }`}
-                  />
+                <div className="text-[12px] flex gap-2 items-center justify-end w-52 relative">
+                  {item?._source?.author ? (
+                    <UserRoundPen
+                      className={`w-4 h-4 ${
+                        isSelected ? "text-[#C8C8C8]" : "text-[#666]"
+                      }`}
+                    />
+                  ) : null}
                   <span
-                    className={`text-sm ${
+                    className={`${
                       isSelected ? "text-[#C8C8C8]" : "text-[#666]"
-                    } max-w-[100px] truncate text-right`}
+                    } max-w-[180px] truncate text-right`}
                   >
                     {item?._source?.author || item?._source?.source?.name}
                   </span>
@@ -243,10 +273,10 @@ function DropdownList({
                   {isSelected ? (
                     <div
                       className={`absolute ${
-                        showIndex && index < 10 ? "right-7" : "right-0"
+                        showIndex && currentIndex < 10 ? "right-7" : "right-0"
                       } w-4 h-4 flex items-end justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md ${
                         isSelected
-                          ? "shadow-[-6px_0px_6px_2px_#6000FF]"
+                          ? "shadow-[-6px_0px_6px_2px_#950599]"
                           : "shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]"
                       }`}
                     >
@@ -254,15 +284,15 @@ function DropdownList({
                     </div>
                   ) : null}
 
-                  {showIndex && index < 10 ? (
+                  {showIndex && currentIndex < 10 ? (
                     <div
                       className={`absolute right-0 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md ${
                         isSelected
-                          ? "shadow-[-6px_0px_6px_2px_#6000FF]"
+                          ? "shadow-[-6px_0px_6px_2px_#950599]"
                           : "shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]"
                       }`}
                     >
-                      {index}
+                      {currentIndex}
                     </div>
                   ) : null}
                 </div>

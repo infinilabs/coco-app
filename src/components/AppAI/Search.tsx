@@ -8,7 +8,7 @@ import Footer from "./Footer";
 import { tauriFetch } from "@/api/tauriFetchClient";
 import noDataImg from "@/assets/coconut-tree.png";
 import { useAppStore } from "@/stores/appStore";
-import { res_search } from "@/mock/index";
+// import { res_search } from "@/mock/index";
 import { SearchResults } from "../SearchChat/SearchResults";
 import { useSearchStore } from "@/stores/searchStore";
 
@@ -23,7 +23,7 @@ function Search({ isChatMode, input }: SearchProps) {
 
   const sourceData = useSearchStore((state) => state.sourceData);
 
-  const [IsError, setIsError] = useState<boolean>(true);
+  const [IsError, setIsError] = useState<boolean>(false);
   const [suggests, setSuggests] = useState<any[]>([]);
   const [SearchData, setSearchData] = useState<any>({});
   const [isSearchComplete, setIsSearchComplete] = useState(false);
@@ -62,18 +62,18 @@ function Search({ isChatMode, input }: SearchProps) {
     if (!input) return;
     //
     // mock
-    let list = res_search?.hits?.hits;
-    setSuggests(list);
-    const search_data = list.reduce((acc: any, item) => {
-      const name = item._source.source.name;
-      if (!acc[name]) {
-        acc[name] = [];
-      }
-      acc[name].push(item);
-      return acc;
-    }, {});
-    setSearchData(search_data);
-    return;
+    // let list = res_search?.hits?.hits;
+    // setSuggests(list);
+    // const search_data = list.reduce((acc: any, item) => {
+    //   const name = item._source.source.name;
+    //   if (!acc[name]) {
+    //     acc[name] = [];
+    //   }
+    //   acc[name].push(item);
+    //   return acc;
+    // }, {});
+    // setSearchData(search_data);
+    // return;
     //
     try {
       const response = await tauriFetch({
@@ -81,6 +81,7 @@ function Search({ isChatMode, input }: SearchProps) {
         method: "GET",
         baseURL: appStore.endpoint_http,
       });
+
       console.log("_suggest", input, response);
       let data = response.data?.hits?.hits || [];
       data = data.map((item: any) => {
@@ -95,6 +96,7 @@ function Search({ isChatMode, input }: SearchProps) {
         acc[name].push(item);
         return acc;
       }, {});
+
       setSearchData(search_data);
 
       setIsError(false);

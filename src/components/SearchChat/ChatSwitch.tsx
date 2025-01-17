@@ -34,7 +34,7 @@ const ChatSwitch: React.FC<ChatSwitchProps> = ({ isChatMode, onChange }) => {
       role="switch"
       aria-checked={isChatMode}
       className={`relative flex items-center justify-between w-10 h-[18px] rounded-full cursor-pointer transition-colors duration-300 ${
-        isChatMode ? "bg-[#0072ff]" : "bg-[#6000FF]"
+        isChatMode ? "bg-[#0072ff]" : "bg-[#950599]"
       }`}
       onClick={handleToggle}
     >

@@ -17,6 +17,8 @@ export type IAppStore = {
   setEndpoint: (endpoint: AppEndpoint) => void,
   connector_data: any[],
   setConnectorData: (connector_data: any[]) => void,
+  datasourceData: any[],
+  setDatasourceData: (datasourceData: any[]) => void,
   initializeListeners: () => void;
 };
 
@@ -27,16 +29,17 @@ export const useAppStore = create<IAppStore>()(
       setShowTooltip: (showTooltip: boolean) => set({ showTooltip }),
       app_uid: "",
       setAppUid: (app_uid: string) => set({ app_uid }),
-      endpoint: "coco.infini.cloud",
+      endpoint: "https://coco.infini.cloud",
       endpoint_http: "https://coco.infini.cloud",
       endpoint_websocket: "wss://coco.infini.cloud/ws",
       setEndpoint: async (endpoint: AppEndpoint) => {
-        const endpoint_http = endpoint?.includes('localhost:')
-          ? `http://${endpoint}`
-          : `https://${endpoint}`;
-        const endpoint_websocket = endpoint?.includes('localhost:')
-          ? `ws://${endpoint}/ws`
-          : `wss://${endpoint}/ws`;
+        const endpoint_http = endpoint;
+
+        const withoutProtocol = endpoint.split("//")[1];
+
+        const endpoint_websocket = endpoint?.includes('https')
+          ? `wss://${withoutProtocol}/ws`
+          : `ws://${withoutProtocol}/ws`;
 
         set({
           endpoint,
@@ -54,6 +57,12 @@ export const useAppStore = create<IAppStore>()(
       setConnectorData: async (connector_data: any[]) => {
         set({
           connector_data
+        });
+      },
+      datasourceData: [],
+      setDatasourceData: async (datasourceData: any[]) => {
+        set({
+          datasourceData
         });
       },
       initializeListeners: () => {

@@ -22,7 +22,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({}) => {
       (item: any) => item._source.category === name
     );
     const icons = result?._source?.assets?.icons || {};
-    console.log(11111, icons, name, _source.icon, icons[_source.icon]);
     return icons[_source.icon] || WebImg;
   }
 
@@ -37,7 +36,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({}) => {
             onClick={() => {}}
             className={`w-full px-2 py-2.5 text-sm flex items-center justify-between rounded-lg transition-colors ${
               isSelected
-                ? "text-white bg-[#6000FF] hover:bg-[#6000FF]"
+                ? "text-white bg-[#950599] hover:bg-[#950599]"
                 : "text-[#333] dark:text-[#d8d8d8]"
             }`}
           >
