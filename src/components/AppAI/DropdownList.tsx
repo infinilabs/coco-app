@@ -4,7 +4,7 @@ import {
   Bolt,
   X,
   SquareArrowRight,
-  UserRoundPen,
+  // UserRoundPen,
 } from "lucide-react";
 
 import { isTauri } from "@tauri-apps/api/core";
@@ -12,6 +12,8 @@ import { open } from "@tauri-apps/plugin-shell";
 
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
+import source_default_img from "@/assets/images/source_default.png";
+import file_efault_img from "@/assets/images/file_efault.png";
 
 type ISearchData = Record<string, any[]>;
 
@@ -21,6 +23,7 @@ interface DropdownListProps {
   SearchData: ISearchData;
   IsError: boolean;
   isSearchComplete: boolean;
+  isChatMode: boolean;
 }
 
 function DropdownList({
@@ -28,6 +31,7 @@ function DropdownList({
   suggests,
   SearchData,
   IsError,
+  isChatMode,
 }: DropdownListProps) {
   let globalIndex = 0;
   const globalItemIndexMap: any[] = [];
@@ -42,6 +46,10 @@ function DropdownList({
   const [showIndex, setShowIndex] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    isChatMode && setSelectedItem(null);
+  }, [isChatMode]);
 
   const handleOpenURL = async (url: string) => {
     if (!url) return;
@@ -148,6 +156,10 @@ function DropdownList({
     const connectorSource = findConnectorIcon(item);
     const icons = connectorSource?.icon;
 
+    if (!icons) {
+      return source_default_img;
+    }
+
     if (icons?.includes("http")) {
       return icons;
     } else {
@@ -159,7 +171,11 @@ function DropdownList({
     const connectorSource = findConnectorIcon(item);
     const icons = connectorSource?.assets?.icons || {};
 
-    const selectedIcon = icons[item?._source.icon];
+    const selectedIcon = icons[item?._source?.icon];
+
+    if (!selectedIcon) {
+      return file_efault_img;
+    }
 
     if (selectedIcon?.includes("http")) {
       return selectedIcon;
@@ -168,15 +184,26 @@ function DropdownList({
     }
   }
 
-  function goToTwoPage(name: string) {
-    return;
-    selected &&
-      selected({
-        name,
-      });
-    setSourceData({
-      name,
-    });
+  function getRichIcon(item: any) {
+    const connectorSource = findConnectorIcon(item);
+    const icons = connectorSource?.assets?.icons || {};
+
+    const selectedIcon = icons[item?._source?.rich_categories?.[0]?.icon];
+
+    if (!selectedIcon) {
+      return source_default_img;
+    }
+
+    if (selectedIcon?.includes("http")) {
+      return selectedIcon;
+    } else {
+      return endpoint_http + selectedIcon;
+    }
+  }
+
+  function goToTwoPage(item: any) {
+    setSourceData(item);
+    selected && selected(item);
   }
 
   return (
@@ -206,7 +233,7 @@ function DropdownList({
             <div className="flex-1 border-b border-b-[#e6e6e6] dark:border-b-[#272626]"></div>
             <SquareArrowRight
               className="w-4 h-4 cursor-pointer"
-              onClick={() => goToTwoPage(sourceName)}
+              onClick={() => goToTwoPage(items[0])}
             />
           </div>
           {items.map((item: any) => {
@@ -228,7 +255,7 @@ function DropdownList({
                 }}
                 className={`w-full px-2 py-2.5 text-sm flex items-center justify-between rounded-lg transition-colors ${
                   isSelected
-                    ? "text-white bg-[#950599] hover:bg-[#950599] pl-3 transition-all duration-200 ease-linear"
+                    ? "text-white bg-[#950599] hover:bg-[#950599]"
                     : "text-[#333] dark:text-[#d8d8d8]"
                 }`}
               >
@@ -241,6 +268,8 @@ function DropdownList({
                   >
                     {item?._source?.title}
                   </span>
+                </div>
+                <div className="text-[12px] flex gap-2 items-center justify-end w-52 relative">
                   <span
                     className={`text-[12px] ${
                       isSelected
@@ -253,22 +282,41 @@ function DropdownList({
                         ? `/${item?._source?.subcategory}`
                         : "")}
                   </span>
-                </div>
-                <div className="text-[12px] flex gap-2 items-center justify-end w-52 relative">
-                  {item?._source?.author ? (
+                  {item?._source?.rich_categories ? (
+                    <img
+                      className="w-4 h-4 cursor-pointer"
+                      src={getRichIcon(item)}
+                      alt="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        goToTwoPage(item);
+                      }}
+                    />
+                  ) : null}
+                  {item?._source?.rich_categories ? (
+                    <span
+                      className={`${
+                        isSelected ? "text-[#C8C8C8]" : "text-[#666]"
+                      } max-w-[180px] truncate text-right`}
+                    >
+                      {item?._source?.rich_categories?.[0]?.label ||
+                        item?._source?.source?.name}
+                    </span>
+                  ) : null}
+                  {/* {item?._source?.author ? (
                     <UserRoundPen
                       className={`w-4 h-4 ${
                         isSelected ? "text-[#C8C8C8]" : "text-[#666]"
                       }`}
                     />
-                  ) : null}
-                  <span
+                  ) : null} */}
+                  {/* <span
                     className={`${
                       isSelected ? "text-[#C8C8C8]" : "text-[#666]"
                     } max-w-[180px] truncate text-right`}
                   >
                     {item?._source?.author || item?._source?.source?.name}
-                  </span>
+                  </span> */}
 
                   {isSelected ? (
                     <div

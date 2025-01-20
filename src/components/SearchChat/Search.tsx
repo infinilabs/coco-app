@@ -118,7 +118,7 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
             />
           ) : null}
 
-          {selectedItem ? <SearchResults /> : null}
+          {selectedItem ? <SearchResults input={input} isChatMode={isChatMode} /> : null}
 
           {suggests.length > 0 || selectedItem ? (
             <Footer isChat={false} name={selectedItem?.source} />

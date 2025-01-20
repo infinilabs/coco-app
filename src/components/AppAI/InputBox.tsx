@@ -44,6 +44,10 @@ export default function ChatInput({
   const sourceData = useSearchStore((state) => state.sourceData);
   const setSourceData = useSearchStore((state) => state.setSourceData);
 
+  useEffect(() => {
+    setSourceData(undefined);
+  }, []);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<{ reset: () => void; focus: () => void }>(null);
 
@@ -84,7 +88,7 @@ export default function ChatInput({
             console.log("KeyM");
             break;
           case "Enter":
-            isChatMode && handleSubmit();
+            isChatMode && (curChatEnd ? handleSubmit() : disabledChange());
             break;
           case "KeyO":
             console.log("KeyO");
@@ -368,6 +372,7 @@ export default function ChatInput({
             onChange={(value) => {
               value && disabledChange();
               changeMode(value);
+              setSourceData(undefined);
             }}
           />
         </div>

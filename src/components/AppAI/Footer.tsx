@@ -6,7 +6,9 @@ import {
 } from "lucide-react";
 
 import logoImg from "@/assets/32x32.png";
+import source_default_img from "@/assets/images/source_default.png";
 import { useSearchStore } from "@/stores/searchStore";
+import { useAppStore } from "@/stores/appStore";
 
 interface FooterProps {
   isChat: boolean;
@@ -14,8 +16,42 @@ interface FooterProps {
 }
 
 export default function Footer({ name }: FooterProps) {
-    const sourceData = useSearchStore((state) => state.sourceData);
-  
+  const sourceData = useSearchStore((state) => state.sourceData);
+  const connector_data = useAppStore((state) => state.connector_data);
+  const datasourceData = useAppStore((state) => state.datasourceData);
+  const endpoint_http = useAppStore((state) => state.endpoint_http);
+
+  function findConnectorIcon(item: any) {
+    const id = item?._source?.source?.id || "";
+
+    const result_source = datasourceData.find(
+      (data: any) => data._source.id === id
+    );
+
+    const connector_id = result_source?._source?.connector?.id;
+
+    const result_connector = connector_data.find(
+      (data: any) => data._source.id === connector_id
+    );
+
+    return result_connector?._source;
+  }
+
+  function getTypeIcon(item: any) {
+    const connectorSource = findConnectorIcon(item);
+    const icons = connectorSource?.icon;
+
+    if (!icons) {
+      return source_default_img;
+    }
+
+    if (icons?.includes("http")) {
+      return icons;
+    } else {
+      return endpoint_http + icons;
+    }
+  }
+
   return (
     <div
       data-tauri-drag-region
@@ -23,9 +59,13 @@ export default function Footer({ name }: FooterProps) {
     >
       <div className="flex items-center">
         <div className="flex items-center space-x-2">
-          <img src={logoImg} className="w-5 h-5" />
+          {sourceData?._source?.source?.name ? (
+            <img className="w-5 h-5" src={getTypeIcon(sourceData)} alt="icon" />
+          ) : (
+            <img src={logoImg} className="w-5 h-5" />
+          )}
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            {sourceData?.name || 'Version 1.0.0'}
+            {sourceData?._source?.source?.name || "Version 1.0.0"}
           </span>
         </div>
 

@@ -21,6 +21,7 @@
     "@tauri-apps/plugin-shell": ">=2.0.0",
     "@tauri-apps/plugin-websocket": "~2",
     "@tauri-apps/plugin-window": "2.0.0-alpha.1",
+    "ahooks": "^3.8.4",
     "axios": "^1.7.7",
     "clsx": "^2.1.1",
     "dotenv": "^16.4.7",

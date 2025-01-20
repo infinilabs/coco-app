@@ -141,7 +141,7 @@ export default function DesktopApp() {
             : "-top-[506px] opacity-0 pointer-events-none"
         } h-[500px]`}
       >
-        {isTransitioned ? (
+        {isTransitioned && isChatMode ? (
           <ChatAI
             ref={chatAIRef}
             key="ChatAI"

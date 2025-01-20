@@ -84,9 +84,6 @@ function Search({ isChatMode, input }: SearchProps) {
 
       console.log("_suggest", input, response);
       let data = response.data?.hits?.hits || [];
-      data = data.map((item: any) => {
-        return item;
-      });
       setSuggests(data);
       const search_data = data.reduce((acc: any, item: any) => {
         const name = item?._source?.source?.name;
@@ -128,13 +125,14 @@ function Search({ isChatMode, input }: SearchProps) {
       {/* Search Results Panel */}
       {suggests.length > 0 ? (
         sourceData ? (
-          <SearchResults />
+          <SearchResults input={input} isChatMode={isChatMode}/>
         ) : (
           <DropdownList
             suggests={suggests}
             SearchData={SearchData}
             IsError={IsError}
             isSearchComplete={isSearchComplete}
+            isChatMode={isChatMode}
             selected={(item) => setSelectedItem(item)}
           />
         )
