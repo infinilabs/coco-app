@@ -191,8 +191,12 @@ export const DocumentList: React.FC<DocumentListProps> = ({
               key={item._id}
               ref={(el) => (itemRefs.current[index] = el)}
               onMouseEnter={() => onMouseEnter(index, item)}
-              onClick={() => {}}
-              className={`w-full px-2 py-2.5 text-sm flex items-center gap-3 rounded-lg transition-colors ${
+              onClick={() => {
+                if (item?._source?.url) {
+                  handleOpenURL(item?._source?.url);
+                } 
+              }}
+              className={`w-full px-2 py-2.5 text-sm flex items-center gap-3 rounded-lg transition-colors cursor-pointer ${
                 isSelected
                   ? "text-white bg-[#950599] hover:bg-[#950599]"
                   : "text-[#333] dark:text-[#d8d8d8]"
