@@ -160,31 +160,3 @@ pub fn _get_shortcut<R: Runtime>(app: &AppHandle<R>) -> String {
         ),
     }
 }
-
-#[tauri::command]
-pub async fn check_shortcut_available(key: String) -> bool {
-    // 这里可以实现系统级的快捷键检查
-    // 可以检查是否与其他应用的全局快捷键冲突
-    // 返回 true 表示可用，false 表示已被占用
-
-    // 简单实现示例：
-    !is_system_shortcut(&key)
-}
-
-fn is_system_shortcut(key: &str) -> bool {
-    let system_shortcuts = vec![
-        "Command+C",
-        "Command+V",
-        "Command+X",
-        "Command+A",
-        "Command+Z",
-        "Control+C",
-        "Control+V",
-        "Control+X",
-        "Control+A",
-        "Control+Z",
-        // 添加更多系统快捷键
-    ];
-
-    system_shortcuts.contains(&key)
-}

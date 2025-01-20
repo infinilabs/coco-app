@@ -83,7 +83,6 @@ pub fn run() {
             // show_panel,
             // hide_panel,
             // close_panel
-            shortcut::check_shortcut_available,
         ])
         .setup(|app| {
             init(app.app_handle());
