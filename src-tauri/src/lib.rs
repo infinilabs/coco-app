@@ -1,29 +1,12 @@
-use std::{fs::create_dir, io::Read};
-
-use tauri::{AppHandle, Emitter, Listener, Manager, Runtime, WebviewWindow};
-// use tauri_nspanel::{panel_delegate, ManagerExt, WebviewWindowExt};
-use tauri_plugin_autostart::MacosLauncher;
-use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
-
 mod autostart;
+mod shortcut;
+
 use autostart::{change_autostart, enable_autostart};
-
-use tauri_plugin_deep_link::DeepLinkExt;
-
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
-
-#[cfg(target_os = "macos")]
-const DEFAULT_SHORTCUT: &str = "command+shift+space";
-
-#[cfg(any(target_os = "windows", target_os = "linux"))]
-const DEFAULT_SHORTCUT: &str = "ctrl+shift+space";
-
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
+use tauri::{AppHandle, Emitter, Listener, Manager, WebviewWindow};
+use tauri_plugin_autostart::MacosLauncher;
+use tauri_plugin_deep_link::DeepLinkExt;
 
 #[tauri::command]
 fn change_window_height(handle: AppHandle, height: u32) {
@@ -88,22 +71,24 @@ pub fn run() {
             app.emit("single-instance", Payload { args: argv, cwd })
                 .unwrap();
         }))
+        .plugin(tauri_plugin_store::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
-            greet,
             change_window_height,
-            change_shortcut,
-            get_current_shortcut,
+            shortcut::change_shortcut,
+            shortcut::unregister_shortcut,
+            shortcut::get_current_shortcut,
             change_autostart,
             hide_coco,
             switch_tray_icon,
             // show_panel,
             // hide_panel,
             // close_panel
+            shortcut::check_shortcut_available,
         ])
         .setup(|app| {
             init(app.app_handle());
 
-            enable_shortcut(app);
+            shortcut::enable_shortcut(app);
             enable_tray(app);
             enable_autostart(app);
 
@@ -111,7 +96,7 @@ pub fn run() {
             app.set_activation_policy(ActivationPolicy::Accessory);
 
             app.listen("theme-changed", move |event| {
-                if let Ok(payload) = serde_json::from_str::<ThemeChangedPayload>(&event.payload()) {
+                if let Ok(payload) = serde_json::from_str::<ThemeChangedPayload>(event.payload()) {
                     // switch_tray_icon(app.app_handle(), payload.is_dark_mode);
                     println!("Theme changed: is_dark_mode = {}", payload.is_dark_mode);
                 }
@@ -159,101 +144,6 @@ fn init(_app_handle: &AppHandle) {
     // panel.set_delegate(delegate);
 }
 
-fn enable_shortcut(app: &mut tauri::App) {
-    use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
-
-    let window = app.get_webview_window("main").unwrap();
-
-    let command_shortcut: Shortcut = current_shortcut(app.app_handle()).unwrap();
-
-    app.handle()
-        .plugin(
-            tauri_plugin_global_shortcut::Builder::new()
-                .with_handler(move |_app, shortcut, event| {
-                    //println!("{:?}", shortcut);
-                    if shortcut == &command_shortcut {
-                        if let ShortcutState::Pressed = event.state() {
-                            if window.is_visible().unwrap() {
-                                window.hide().unwrap();
-                            } else {
-                                window.show().unwrap();
-                                window.set_focus().unwrap();
-                            }
-                        }
-                    }
-                })
-                .build(),
-        )
-        .unwrap();
-
-    app.global_shortcut().register(command_shortcut).unwrap();
-}
-
-#[tauri::command]
-fn change_shortcut<R: Runtime>(
-    app: tauri::AppHandle<R>,
-    _window: tauri::Window<R>,
-    key: String,
-) -> Result<(), String> {
-    use std::fs::File;
-    use std::io::Write;
-    use tauri_plugin_global_shortcut::ShortcutState;
-
-    if let Err(e) = remove_shortcut(&app) {
-        eprintln!("Failed to remove old shortcut: {}", e);
-    }
-
-    let main_window = app.get_webview_window("main").unwrap();
-
-    if key.trim().is_empty() {
-        let path = app.path().app_config_dir().unwrap();
-        if !path.exists() {
-            create_dir(&path).unwrap();
-        }
-
-        let file_path = path.join("shortcut.txt");
-        let mut file = File::create(file_path).unwrap();
-        file.write_all(b"").unwrap();
-        return Ok(());
-    }
-
-    let shortcut: Shortcut = key
-        .parse()
-        .map_err(|_| "The format of the shortcut key is incorrect".to_owned())?;
-    app.global_shortcut()
-        .on_shortcut(shortcut, move |_app, scut, event| {
-            if scut == &shortcut {
-                if let ShortcutState::Pressed = event.state() {
-                    if main_window.is_visible().unwrap() {
-                        main_window.hide().unwrap();
-                    } else {
-                        main_window.show().unwrap();
-                        main_window.set_focus().unwrap();
-                    }
-                }
-            }
-        })
-        .map_err(|_| "Failed to register new shortcut key".to_owned())?;
-
-    let path = app.path().app_config_dir().unwrap();
-    if path.exists() == false {
-        create_dir(&path).unwrap();
-    }
-
-    let file_path = path.join("shortcut.txt");
-    let mut file = File::create(file_path).unwrap();
-    file.write_all(key.as_bytes()).unwrap();
-
-    Ok(())
-}
-
-#[tauri::command]
-fn get_current_shortcut<R: Runtime>(app: tauri::AppHandle<R>) -> Result<String, String> {
-    let res = current_shortcut(&app)?;
-
-    Ok(res.into_string())
-}
-
 #[tauri::command]
 fn hide_coco(app: tauri::AppHandle) {
     if let Some(window) = app.get_window("main") {
@@ -275,38 +165,6 @@ fn hide_coco(app: tauri::AppHandle) {
     } else {
         eprintln!("Main window not found.");
     }
-}
-
-fn current_shortcut<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<Shortcut, String> {
-    use std::fs::File;
-
-    let path = app.path().app_config_dir().unwrap();
-    let mut old_value = DEFAULT_SHORTCUT.to_owned();
-
-    if path.exists() {
-        let file_path = path.join("shortcut.txt");
-        if file_path.exists() {
-            let mut file = File::open(file_path).unwrap();
-            let mut data = String::new();
-            if let Ok(_) = file.read_to_string(&mut data) {
-                if data.is_empty() == false {
-                    old_value = data
-                }
-            }
-        }
-    };
-    let short: Shortcut = old_value.parse().unwrap();
-
-    Ok(short)
-}
-
-#[allow(dead_code)]
-fn remove_shortcut<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<(), String> {
-    let short = current_shortcut(app)?;
-
-    app.global_shortcut().unregister(short).unwrap();
-
-    Ok(())
 }
 
 fn handle_open_coco(app: &AppHandle) {

@@ -67,34 +67,39 @@ export default function GeneralSettings() {
     setLaunchAtLogin(false);
   };
 
+  const [shortcut, setShortcut] = useState<Shortcut>([]);
+
   async function getCurrentShortcut() {
-    const res: any = await invoke("get_current_shortcut");
-    setShortcut(res?.split("+"));
+    try {
+      const res: any = await invoke("get_current_shortcut");
+      console.log("DBG: ", res);
+      setShortcut(res?.split("+"));
+    } catch (err) {
+      console.error("Failed to fetch shortcut:", err);
+    }
   }
 
   useEffect(() => {
     getCurrentShortcut();
   }, []);
 
-  const [shortcut, setShortcut] = useState<Shortcut>([]);
+  const changeShortcut =(key: Shortcut) => {
+    setShortcut(key)
+    //
+    if (key.length === 0) return;
+    invoke("change_shortcut", { key: key?.join("+") }).catch((err) => {
+      console.error("Failed to save hotkey:", err);
+    });
+  }
 
   const { isEditing, currentKeys, startEditing, saveShortcut, cancelEditing } =
-    useShortcutEditor(shortcut, setShortcut);
-
-  useEffect(() => {
-    if (shortcut.length === 0) return;
-    invoke("change_shortcut", { key: shortcut?.join("+") }).catch((err) => {
-      console.error("Failed to save hotkey:", err);
-      startEditing();
-    });
-  }, [shortcut]);
+    useShortcutEditor(shortcut, changeShortcut);
 
   const onEditShortcut = async () => {
     startEditing();
     //
-    invoke("change_shortcut", { key: "" }).catch((err) => {
+    invoke("unregister_shortcut").catch((err) => {
       console.error("Failed to save hotkey:", err);
-      startEditing();
     });
   };
 
@@ -103,7 +108,6 @@ export default function GeneralSettings() {
     //
     invoke("change_shortcut", { key: shortcut?.join("+") }).catch((err) => {
       console.error("Failed to save hotkey:", err);
-      startEditing();
     });
   };
 

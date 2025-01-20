@@ -30,6 +30,7 @@ tauri-plugin-theme = "2.1.2"
 tauri-plugin-oauth = { git = "https://github.com/FabianLars/tauri-plugin-oauth", branch = "v2" }
 tauri-plugin-deep-link = "2.0.0"
 tauri-plugin-single-instance = "2.0.0"
+tauri-plugin-store = "2.2.0"
 
 # tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }
 
