@@ -116,7 +116,7 @@ function Search({ isChatMode, input }: SearchProps) {
   const debouncedSearch = useCallback(debounce(getSuggest, 300), [input]);
 
   useEffect(() => {
-    !isChatMode && debouncedSearch();
+    !isChatMode && !sourceData && debouncedSearch();
     if (!input) setSuggests([]);
   }, [input]);
 
@@ -125,7 +125,7 @@ function Search({ isChatMode, input }: SearchProps) {
       {/* Search Results Panel */}
       {suggests.length > 0 ? (
         sourceData ? (
-          <SearchResults input={input} isChatMode={isChatMode}/>
+          <SearchResults input={input} isChatMode={isChatMode} />
         ) : (
           <DropdownList
             suggests={suggests}

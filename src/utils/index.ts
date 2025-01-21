@@ -81,3 +81,19 @@ export const authWitheGithub = (uid: string) => {
 
   location.href = `${authorizeUrl}?client_id=${"Ov23li4IcdbbWp2RgLTN"}&redirect_uri=${"http://localhost:1420/login"}`;
 };
+
+const unitArr = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"] as const;
+
+export const formatter = {
+  bytes: (value: number): string => {
+    if (!Number.isFinite(value) || value <= 0) {
+      return "0B";
+    }
+
+    const index = Math.floor(Math.log(value) / Math.log(1024));
+    const size = (value / Math.pow(1024, index)).toFixed(1);
+
+    return size + (unitArr[index] ?? "B")
+  },
+};
+

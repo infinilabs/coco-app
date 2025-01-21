@@ -8,6 +8,7 @@ import { tauriFetch } from "@/api/tauriFetchClient";
 import { useSearchStore } from "@/stores/searchStore";
 import { SearchHeader } from "./SearchHeader";
 import file_efault_img from "@/assets/images/file_efault.png";
+import noDataImg from "@/assets/coconut-tree.png";
 
 interface DocumentListProps {
   onSelectDocument: (id: string) => void;
@@ -34,9 +35,10 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const { data, loading, noMore } = useInfiniteScroll(
+  const { data, loading } = useInfiniteScroll(
     async (d) => {
       const page = d ? Math.ceil(d.list.length / PAGE_SIZE) + 1 : 1;
+
       const from = (page - 1) * PAGE_SIZE;
 
       let url = `/query/_search?query=${input}&datasource=${sourceData?._source?.source?.id}&from=${from}&size=${PAGE_SIZE}`;
@@ -54,11 +56,10 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         const list = response.data?.hits?.hits || [];
         const total = response.data?.hits?.total?.value || 0;
 
-        if (page === 1) {
-          setTotal(total);
-        }
+        console.log("doc", url, response.data?.hits)
 
-        setSelectedItem(0)
+        setTotal(total);
+
         getDocDetail(list[0] || {});
 
         return {
@@ -77,8 +78,33 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       target: containerRef,
       isNoMore: (d) => (d?.list.length || 0) >= total,
       reloadDeps: [input, JSON.stringify(sourceData)],
+      onBefore: () => {
+        setTimeout(() => {
+          const parentRef = containerRef.current;
+          if (parentRef && parentRef.childElementCount > 10) {
+            const itemHeight = (parentRef.firstChild as HTMLElement)?.offsetHeight || 80;
+            parentRef.scrollTo({
+              top: (parentRef.lastChild as HTMLElement)?.offsetTop - itemHeight,
+              behavior: 'instant',
+            });
+          }
+        });
+      },
+      onFinally: (data) => onFinally(data, containerRef),
     }
   );
+
+  const onFinally = (data: any, ref: any) => {
+    if (data?.page === 1) return;
+    const parentRef = ref.current;
+    if (!parentRef) return;
+    const itemHeight = parentRef.firstChild?.offsetHeight || 80;
+    parentRef.scrollTo({
+      top:
+        parentRef.lastChild?.offsetTop - (data?.list?.length + 1) * itemHeight,
+      behavior: 'instant',
+    });
+  };
 
   function findConnectorIcon(item: any) {
     const id = item?._source?.source?.id || "";
@@ -119,8 +145,8 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   }
 
   useEffect(() => {
-    isChatMode && setSelectedItem(null);
-  }, [isChatMode]);
+    setSelectedItem(null);
+  }, [isChatMode, input]);
 
   const handleOpenURL = async (url: string) => {
     if (!url) return;
@@ -188,7 +214,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
           const isSelected = selectedItem === index;
           return (
             <div
-              key={item._id}
+              key={item._id + index}
               ref={(el) => (itemRefs.current[index] = el)}
               onMouseEnter={() => onMouseEnter(index, item)}
               onClick={() => {
@@ -226,16 +252,16 @@ export const DocumentList: React.FC<DocumentListProps> = ({
           </div>
         )}
 
-        {noMore && data?.list?.length !== 0 && (
-          <div className="flex justify-center py-4 text-gray-500">
-            No more items
-          </div>
-        )}
-
         {!loading && data?.list.length === 0 && (
-          <div className="flex justify-center py-4 text-gray-500">
-            No results found
+          <div
+          data-tauri-drag-region
+          className="h-full w-full flex flex-col items-center"
+        >
+          <img src={noDataImg} alt="no-data" className="w-16 h-16 mt-24" />
+          <div className="mt-4 text-sm text-[#999] dark:text-[#666]">
+            No Results
           </div>
+        </div>
         )}
       </div>
     </div>

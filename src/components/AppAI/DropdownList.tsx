@@ -13,7 +13,9 @@ import { open } from "@tauri-apps/plugin-shell";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import source_default_img from "@/assets/images/source_default.png";
+import source_default_dark_img from "@/assets/images/source_default_dark.png";
 import file_efault_img from "@/assets/images/file_efault.png";
+import { useTheme } from "@/contexts/ThemeContext";
 
 type ISearchData = Record<string, any[]>;
 
@@ -35,6 +37,14 @@ function DropdownList({
 }: DropdownListProps) {
   let globalIndex = 0;
   const globalItemIndexMap: any[] = [];
+  // const letterFirstIndex: any = {
+  //   a: 0,
+  //   s: 0,
+  //   d: 0,
+  //   f: 0,
+  // };
+
+  const { theme } = useTheme();
 
   const connector_data = useAppStore((state) => state.connector_data);
   const datasourceData = useAppStore((state) => state.datasourceData);
@@ -43,6 +53,7 @@ function DropdownList({
 
   const [showError, setShowError] = useState<boolean>(IsError);
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
+  const [selectedName, setSelectedName] = useState<string>("");
   const [showIndex, setShowIndex] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -74,9 +85,12 @@ function DropdownList({
 
     if (e.key === "ArrowUp") {
       e.preventDefault();
-      setSelectedItem((prev) =>
-        prev === null || prev === 0 ? suggests.length - 1 : prev - 1
-      );
+      setSelectedItem((prev) => {
+        const res =
+          prev === null || prev === 0 ? suggests.length - 1 : prev - 1;
+
+        return res;
+      });
     } else if (e.key === "ArrowDown") {
       e.preventDefault();
       setSelectedItem((prev) =>
@@ -84,7 +98,17 @@ function DropdownList({
       );
     } else if (e.key === "Meta") {
       e.preventDefault();
+      if (selectedItem !== null) {
+        const item = globalItemIndexMap[selectedItem];
+        setSelectedName(item?._source?.source?.name);
+      }
       setShowIndex(true);
+    }
+
+    if (e.key === "ArrowRight" && selectedItem !== null) {
+      e.preventDefault();
+      const item = globalItemIndexMap[selectedItem];
+      goToTwoPage(item);
     }
 
     if (e.key === "Enter" && selectedItem !== null) {
@@ -157,7 +181,7 @@ function DropdownList({
     const icons = connectorSource?.icon;
 
     if (!icons) {
-      return source_default_img;
+      return theme === "dark" ? source_default_dark_img : source_default_img;
     }
 
     if (icons?.includes("http")) {
@@ -191,7 +215,7 @@ function DropdownList({
     const selectedIcon = icons[item?._source?.rich_categories?.[0]?.icon];
 
     if (!selectedIcon) {
-      return source_default_img;
+      return theme === "dark" ? source_default_dark_img : source_default_img;
     }
 
     if (selectedIcon?.includes("http")) {
@@ -205,6 +229,17 @@ function DropdownList({
     setSourceData(item);
     selected && selected(item);
   }
+
+  // function numberToLetter(num: number): string {
+  //   const mapping = ["A", "S", "D", "F"];
+  //   if (num >= 0 && num < mapping.length) {
+  //     const letter = mapping[num];
+  //     letterFirstIndex[letter.toLocaleLowerCase()] = globalIndex
+  //     return letter
+  //   } else {
+  //     return "";
+  //   }
+  // }
 
   return (
     <div
@@ -227,15 +262,25 @@ function DropdownList({
       ) : null}
       {Object.entries(SearchData).map(([sourceName, items]) => (
         <div key={sourceName}>
-          <div className="p-2 text-xs text-[#999] dark:text-[#666] flex items-center gap-2.5">
-            <img className="w-4 h-4" src={getTypeIcon(items[0])} alt="icon" />
-            {sourceName}
-            <div className="flex-1 border-b border-b-[#e6e6e6] dark:border-b-[#272626]"></div>
-            <SquareArrowRight
-              className="w-4 h-4 cursor-pointer"
-              onClick={() => goToTwoPage(items[0])}
-            />
-          </div>
+          {items.length > 2 ? (
+            <div className="p-2 text-xs text-[#999] dark:text-[#666] flex items-center gap-2.5 relative">
+              <img className="w-4 h-4" src={getTypeIcon(items[0])} alt="icon" />
+              {sourceName}
+              <div className="flex-1 border-b border-b-[#e6e6e6] dark:border-b-[#272626]"></div>
+              <SquareArrowRight
+                className="w-4 h-4 cursor-pointer"
+                onClick={() => goToTwoPage(items[0])}
+              />
+              {showIndex && sourceName === selectedName ? (
+                <div
+                  className={`absolute right-2
+                      w-4 h-4 flex items-end justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
+                >
+                  →
+                </div>
+              ) : null}
+            </div>
+          ) : null}
           {items.map((item: any) => {
             const isSelected = selectedItem === globalIndex;
             const currentIndex = globalIndex;
@@ -259,7 +304,7 @@ function DropdownList({
                     : "text-[#333] dark:text-[#d8d8d8]"
                 }`}
               >
-                <div className="flex gap-2 items-center justify-start w-[400px]">
+                <div className="flex gap-2 items-center justify-start max-w-[450px]">
                   <img className="w-5 h-5" src={getIcon(item)} alt="icon" />
                   <span
                     className={`text-sm  truncate text-left ${
@@ -269,13 +314,13 @@ function DropdownList({
                     {item?._source?.title}
                   </span>
                 </div>
-                <div className="text-[12px] flex gap-2 items-center justify-end w-52 relative">
+                <div className="flex-1 min-w-[180px] h-full text-[12px] flex gap-2 items-center justify-end relative">
                   <span
-                    className={`text-[12px] ${
+                    className={`text-[12px] truncate ${
                       isSelected
                         ? "text-[#DCDCDC]"
                         : "text-[#999] dark:text-[#666]"
-                    }  max-w-[120px] truncate`}
+                    }`}
                   >
                     {(item?._source?.category || "") +
                       (item?._source?.subcategory
@@ -283,40 +328,27 @@ function DropdownList({
                         : "")}
                   </span>
                   {item?._source?.rich_categories ? (
-                    <img
-                      className="w-4 h-4 cursor-pointer"
-                      src={getRichIcon(item)}
-                      alt="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        goToTwoPage(item);
-                      }}
-                    />
+                    <div className="truncate flex gap-2">
+                      <img
+                        className="w-4 h-4 cursor-pointer"
+                        src={getRichIcon(item)}
+                        alt="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          goToTwoPage(item);
+                        }}
+                      />
+                      {item?._source?.rich_categories?.map((rich_item: any) => (
+                        <span
+                          className={`${
+                            isSelected ? "text-[#C8C8C8]" : "text-[#666]"
+                          } text-right mr-1`}
+                        >
+                          {rich_item?.label}
+                        </span>
+                      ))}
+                    </div>
                   ) : null}
-                  {item?._source?.rich_categories ? (
-                    <span
-                      className={`${
-                        isSelected ? "text-[#C8C8C8]" : "text-[#666]"
-                      } max-w-[180px] truncate text-right`}
-                    >
-                      {item?._source?.rich_categories?.[0]?.label ||
-                        item?._source?.source?.name}
-                    </span>
-                  ) : null}
-                  {/* {item?._source?.author ? (
-                    <UserRoundPen
-                      className={`w-4 h-4 ${
-                        isSelected ? "text-[#C8C8C8]" : "text-[#666]"
-                      }`}
-                    />
-                  ) : null} */}
-                  {/* <span
-                    className={`${
-                      isSelected ? "text-[#C8C8C8]" : "text-[#666]"
-                    } max-w-[180px] truncate text-right`}
-                  >
-                    {item?._source?.author || item?._source?.source?.name}
-                  </span> */}
 
                   {isSelected ? (
                     <div

@@ -27,6 +27,19 @@ const RESERVED_SHORTCUTS = [
   ["Command", "M"],
   ["Command", "Enter"],
   ["Command", "ArrowLeft"],
+  ["Command", "ArrowRight"],
+  ["Command", "ArrowUp"],
+  ["Command", "ArrowDown"],
+  ["Command", "0"],
+  ["Command", "1"],
+  ["Command", "2"],
+  ["Command", "3"],
+  ["Command", "4"],
+  ["Command", "5"],
+  ["Command", "6"],
+  ["Command", "7"],
+  ["Command", "8"],
+  ["Command", "9"],
 ];
 
 export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Shortcut) => void) {

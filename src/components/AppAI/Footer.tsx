@@ -5,10 +5,12 @@ import {
   CornerDownLeft,
 } from "lucide-react";
 
-import logoImg from "@/assets/32x32.png";
+import logoImg from "@/assets/app-icon.png";
 import source_default_img from "@/assets/images/source_default.png";
+import source_default_dark_img from "@/assets/images/source_default_dark.png";
 import { useSearchStore } from "@/stores/searchStore";
 import { useAppStore } from "@/stores/appStore";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface FooterProps {
   isChat: boolean;
@@ -20,6 +22,8 @@ export default function Footer({ name }: FooterProps) {
   const connector_data = useAppStore((state) => state.connector_data);
   const datasourceData = useAppStore((state) => state.datasourceData);
   const endpoint_http = useAppStore((state) => state.endpoint_http);
+
+  const { theme } = useTheme();
 
   function findConnectorIcon(item: any) {
     const id = item?._source?.source?.id || "";
@@ -42,7 +46,7 @@ export default function Footer({ name }: FooterProps) {
     const icons = connectorSource?.icon;
 
     if (!icons) {
-      return source_default_img;
+      return theme === "dark" ? source_default_dark_img : source_default_img;
     }
 
     if (icons?.includes("http")) {
@@ -80,16 +84,16 @@ export default function Footer({ name }: FooterProps) {
         <div className="gap-1 flex items-center text-[#666] dark:text-[#666] text-sm">
           <span className="mr-1.5 ">Quick open</span>
           <kbd className="docsearch-modal-footer-commands-key pr-1">
-            <Command className="w-4 h-4" />
+            <Command className="w-3 h-3" />
           </kbd>
           <kbd className="docsearch-modal-footer-commands-key pr-1">
-            <ArrowDown01 className="w-4 h-4" />
+            <ArrowDown01 className="w-3 h-3" />
           </kbd>
         </div>
         <div className="flex items-center text-[#666] dark:text-[#666] text-sm">
           <span className="mr-1.5 ">Open</span>
           <kbd className="docsearch-modal-footer-commands-key pr-1">
-            <CornerDownLeft className="w-4 h-4" />
+            <CornerDownLeft className="w-3 h-3" />
           </kbd>
         </div>
       </div>

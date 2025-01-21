@@ -191,7 +191,7 @@
     border: 0px;
     padding: 2px;
     background: var(--docsearch-key-gradient);
-    box-shadow: var(--docsearch-key-shadow);
+    /* box-shadow: var(--docsearch-key-shadow); */
     color: var(--docsearch-muted-color);
   }
   

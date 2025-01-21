@@ -6,7 +6,7 @@ import { config } from "dotenv";
 config();
 
 const host = process.env.TAURI_DEV_HOST;
-console.log("process.env", process.env)
+// console.log("process.env", process.env)
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
