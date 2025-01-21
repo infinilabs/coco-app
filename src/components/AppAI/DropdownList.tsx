@@ -328,7 +328,7 @@ function DropdownList({
                         : "")}
                   </span>
                   {item?._source?.rich_categories ? (
-                    <div className="flex items-center w-full whitespace-nowrap">
+                    <div className="flex items-center justify-end w-full whitespace-nowrap">
                       <img
                         className="w-4 h-4 mr-2 cursor-pointer"
                         src={getRichIcon(item)}
@@ -345,18 +345,28 @@ function DropdownList({
                       >
                         {item?._source?.rich_categories?.map(
                           (rich_item: any, index: number) => {
-                            if(index===item?._source?.rich_categories.length-1) return ""
-                            else return  (index !== 0 ? "/" : "") + rich_item?.label
+                            if (
+                              item?._source?.rich_categories.length > 2 &&
+                              index ===
+                                item?._source?.rich_categories.length - 1
+                            )
+                              return "";
+                            else
+                              return (
+                                (index !== 0 ? "/" : "") + rich_item?.label
+                              );
                           }
                         )}
                       </span>
-                      <span
-                        className={`${
-                          isSelected ? "text-[#C8C8C8]" : "text-[#666]"
-                        } text-right`}
-                      >
-                        {"/" + item?._source?.rich_categories?.at(-1)?.label}
-                      </span>
+                      {item?._source?.rich_categories.length > 2 ? (
+                        <span
+                          className={`${
+                            isSelected ? "text-[#C8C8C8]" : "text-[#666]"
+                          } text-right`}
+                        >
+                          {"/" + item?._source?.rich_categories?.at(-1)?.label}
+                        </span>
+                      ) : null}
                     </div>
                   ) : null}
 
