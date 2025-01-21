@@ -298,7 +298,7 @@ function DropdownList({
                     selected(item);
                   }
                 }}
-                className={`w-full px-2 py-2.5 text-sm flex items-center justify-between rounded-lg transition-colors ${
+                className={`w-full px-2 py-2.5 text-sm flex gap-5 items-center justify-between rounded-lg transition-colors ${
                   isSelected
                     ? "text-white bg-[#950599] hover:bg-[#950599]"
                     : "text-[#333] dark:text-[#d8d8d8]"
@@ -328,9 +328,9 @@ function DropdownList({
                         : "")}
                   </span>
                   {item?._source?.rich_categories ? (
-                    <div className="truncate flex gap-2">
+                    <div className="flex items-center w-full whitespace-nowrap">
                       <img
-                        className="w-4 h-4 cursor-pointer"
+                        className="w-4 h-4 mr-2 cursor-pointer"
                         src={getRichIcon(item)}
                         alt="icon"
                         onClick={(e) => {
@@ -338,15 +338,25 @@ function DropdownList({
                           goToTwoPage(item);
                         }}
                       />
-                      {item?._source?.rich_categories?.map((rich_item: any) => (
-                        <span
-                          className={`${
-                            isSelected ? "text-[#C8C8C8]" : "text-[#666]"
-                          } text-right mr-1`}
-                        >
-                          {rich_item?.label}
-                        </span>
-                      ))}
+                      <span
+                        className={`${
+                          isSelected ? "text-[#C8C8C8]" : "text-[#666]"
+                        } text-right truncate`}
+                      >
+                        {item?._source?.rich_categories?.map(
+                          (rich_item: any, index: number) => {
+                            if(index===item?._source?.rich_categories.length-1) return ""
+                            else return  (index !== 0 ? "/" : "") + rich_item?.label
+                          }
+                        )}
+                      </span>
+                      <span
+                        className={`${
+                          isSelected ? "text-[#C8C8C8]" : "text-[#666]"
+                        } text-right`}
+                      >
+                        {"/" + item?._source?.rich_categories?.at(-1)?.label}
+                      </span>
                     </div>
                   ) : null}
 
