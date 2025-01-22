@@ -262,7 +262,7 @@ function DropdownList({
       ) : null}
       {Object.entries(SearchData).map(([sourceName, items]) => (
         <div key={sourceName}>
-          {items.length > 2 ? (
+          {Object.entries(SearchData).length < 5 ? (
             <div className="p-2 text-xs text-[#999] dark:text-[#666] flex items-center gap-2.5 relative">
               <img className="w-4 h-4" src={getTypeIcon(items[0])} alt="icon" />
               {sourceName}
@@ -315,7 +315,7 @@ function DropdownList({
                   </span>
                 </div>
                 <div className="flex-1 text-right min-w-[160px] h-full pl-5 text-[12px] flex gap-2 items-center justify-end relative">
-                  {items.length > 2 ? null : (
+                  {Object.entries(SearchData).length < 5 ? null : (
                     <img
                       className="w-4 h-4 cursor-pointer"
                       src={getTypeIcon(item)}
@@ -329,7 +329,7 @@ function DropdownList({
 
                   {item?._source?.rich_categories ? (
                     <div className="flex items-center justify-end max-w-[calc(100%-20px)] whitespace-nowrap">
-                      {items.length > 2 ? (
+                      {Object.entries(SearchData).length < 5 ? (
                         <img
                           className="w-4 h-4 mr-2 cursor-pointer"
                           src={getRichIcon(item)}
@@ -364,7 +364,7 @@ function DropdownList({
                         <span
                           className={`${
                             isSelected ? "text-[#C8C8C8]" : "text-[#666]"
-                          } text-right`}
+                          } text-right truncate`}
                         >
                           {"/" + item?._source?.rich_categories?.at(-1)?.label}
                         </span>

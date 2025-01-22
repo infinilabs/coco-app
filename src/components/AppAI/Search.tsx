@@ -8,7 +8,7 @@ import Footer from "./Footer";
 import { tauriFetch } from "@/api/tauriFetchClient";
 import noDataImg from "@/assets/coconut-tree.png";
 import { useAppStore } from "@/stores/appStore";
-// import { res_search } from "@/mock/index";
+// import { res_search2 } from "@/mock/index";
 import { SearchResults } from "../SearchChat/SearchResults";
 import { useSearchStore } from "@/stores/searchStore";
 
@@ -62,7 +62,7 @@ function Search({ isChatMode, input }: SearchProps) {
     if (!input) return;
     //
     // mock
-    // let list = res_search?.hits?.hits;
+    // let list = res_search2?.hits?.hits;
     // setSuggests(list);
     // const search_data = list.reduce((acc: any, item) => {
     //   const name = item._source.source.name;
