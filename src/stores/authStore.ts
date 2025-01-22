@@ -18,6 +18,7 @@ export type AuthStore = {
 };
 
 export type IAuthStore = {
+  [x: string]: any;
   auth: AuthStore | undefined;
   userInfo: any;
   setAuth: (auth: AuthStore | undefined) => void;

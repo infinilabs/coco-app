@@ -29,7 +29,9 @@ export default function CocoCloud() {
   const setAppUid = useAppStore((state) => state.setAppUid);
   const endpoint_http = useAppStore((state) => state.endpoint_http);
 
-  const { auth, setAuth } = useAuthStore();
+  const { auth, setAuth  } = useAuthStore();
+  const userInfo = useAuthStore((state) => state.userInfo);
+  const setUserInfo = useAuthStore((state) => state.setUserInfo);
 
   const [loading, setLoading] = useState(false);
 
@@ -41,6 +43,7 @@ export default function CocoCloud() {
     console.log("getProfile", response);
     // {"data":{"username":"johndoe","email":"johndoe@example.com","avatar":"https://example.com/avatar.jpg","roles":["admin","editor"],"preferences":{"theme":"dark","language":"en"}},"status":200,"statusText":"OK","headers":{}}
 
+    setUserInfo(response.data || {})
     setInfo2(JSON.stringify(response))
   }
 
@@ -220,8 +223,8 @@ export default function CocoCloud() {
               <h2 className="text-lg font-medium text-gray-900 mb-4">
                 Account Information
               </h2>
-              {!auth ? (
-                <UserProfile name="Rain" email="an121245@gmail.com" />
+              {auth ? (
+                <UserProfile name={userInfo.username || "-"} email={userInfo.email || "-"} />
               ) : (
                 <button
                   className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"

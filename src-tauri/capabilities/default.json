@@ -53,16 +53,10 @@
       "identifier": "http:default",
       "allow": [
         {
-          "url": "http://localhost:2900"
-        },
-        {
           "url": "http://localhost:9000"
         },
         {
           "url": "https://coco.infini.cloud"
-        },
-        {
-          "url": "https://infini.tpddns.cn:27200"
         },
         {
           "url": "http://infini.tpddns.cn:27200"
