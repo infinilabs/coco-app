@@ -298,7 +298,7 @@ function DropdownList({
                     selected(item);
                   }
                 }}
-                className={`w-full px-2 py-2.5 text-sm flex gap-5 items-center justify-between rounded-lg transition-colors ${
+                className={`w-full px-2 py-2.5 text-sm flex gap-7 items-center justify-between rounded-lg transition-colors ${
                   isSelected
                     ? "text-white bg-[#950599] hover:bg-[#950599]"
                     : "text-[#333] dark:text-[#d8d8d8]"
@@ -314,30 +314,32 @@ function DropdownList({
                     {item?._source?.title}
                   </span>
                 </div>
-                <div className="flex-1 min-w-[180px] h-full text-[12px] flex gap-2 items-center justify-end relative">
-                  <span
-                    className={`text-[12px] truncate ${
-                      isSelected
-                        ? "text-[#DCDCDC]"
-                        : "text-[#999] dark:text-[#666]"
-                    }`}
-                  >
-                    {(item?._source?.category || "") +
-                      (item?._source?.subcategory
-                        ? `/${item?._source?.subcategory}`
-                        : "")}
-                  </span>
+                <div className="flex-1 text-right min-w-[160px] h-full pl-5 text-[12px] flex gap-2 items-center justify-end relative">
+                  {items.length > 2 ? null : (
+                    <img
+                      className="w-4 h-4 cursor-pointer"
+                      src={getTypeIcon(item)}
+                      alt="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        goToTwoPage(item);
+                      }}
+                    />
+                  )}
+
                   {item?._source?.rich_categories ? (
-                    <div className="flex items-center justify-end w-full whitespace-nowrap">
-                      <img
-                        className="w-4 h-4 mr-2 cursor-pointer"
-                        src={getRichIcon(item)}
-                        alt="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          goToTwoPage(item);
-                        }}
-                      />
+                    <div className="flex items-center justify-end max-w-[calc(100%-20px)] whitespace-nowrap">
+                      {items.length > 2 ? (
+                        <img
+                          className="w-4 h-4 mr-2 cursor-pointer"
+                          src={getRichIcon(item)}
+                          alt="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            goToTwoPage(item);
+                          }}
+                        />
+                      ) : null}
                       <span
                         className={`${
                           isSelected ? "text-[#C8C8C8]" : "text-[#666]"
@@ -368,7 +370,30 @@ function DropdownList({
                         </span>
                       ) : null}
                     </div>
-                  ) : null}
+                  ) : item?._source?.category || item?._source?.subcategory ? (
+                    <span
+                      className={`text-[12px] truncate ${
+                        isSelected
+                          ? "text-[#DCDCDC]"
+                          : "text-[#999] dark:text-[#666]"
+                      }`}
+                    >
+                      {(item?._source?.category || "") +
+                        (item?._source?.subcategory
+                          ? `/${item?._source?.subcategory}`
+                          : "")}
+                    </span>
+                  ) : (
+                    <span
+                      className={`text-[12px] truncate ${
+                        isSelected
+                          ? "text-[#DCDCDC]"
+                          : "text-[#999] dark:text-[#666]"
+                      }`}
+                    >
+                      {item?._source?.type || ""}
+                    </span>
+                  )}
 
                   {isSelected ? (
                     <div
