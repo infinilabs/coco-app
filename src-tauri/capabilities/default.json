@@ -63,6 +63,9 @@
         },
         {
           "url": "https://infini.tpddns.cn:27200"
+        },
+        {
+          "url": "http://infini.tpddns.cn:27200"
         }
       ],
       "deny": []

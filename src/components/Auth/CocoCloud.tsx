@@ -63,7 +63,6 @@ export default function CocoCloud() {
       const response: any = await tauriFetch({
         url: `/auth/request_access_token?request_id=${app_uid}`,
         method: "GET",
-        baseURL: appStore.endpoint_http,
         headers: {
           "X-API-TOKEN": code,
         },
@@ -94,11 +93,12 @@ export default function CocoCloud() {
 
   const handleUrl = (url: string) => {
     try {
+      // url = "coco:/oauth_callback?code=cu7n7r3g50k7ej0g10c0&provider=coco-cloud"
       const urlObject = new URL(url);
-      console.error("1111111:", urlObject);
+      console.log("urlObject:", urlObject);
 
       switch (urlObject.pathname) {
-        case "oauth_callback":
+        case "/oauth_callback":
           const code = urlObject.searchParams.get("code");
           const provider = urlObject.searchParams.get("provider");
           handleOAuthCallback(code, provider);
@@ -117,15 +117,13 @@ export default function CocoCloud() {
 
   // Fetch the initial deep link intent
   useEffect(() => {
-    // coco://oauth_calback?code=&provider=
-    // handleOAuthCallback("cu0bpu53q95r66at2010", "coco-cloud");
-    // 
+    // handleUrl("");
     getCurrentDeepLinkUrls()
       .then((urls) => {
-        console.error("22222 URLs:", urls);
+        console.log("22222 URLs:", urls);
         if (urls && urls.length > 0) {
           handleUrl(urls[0]);
-          console.error("URLs:", urls);
+          console.log("URLs:", urls);
         }
       })
       .catch((err) => {

@@ -10,6 +10,7 @@ const ENDPOINTS = [
   { value: "http://localhost:2900", label: "http://localhost:2900" },
   { value: "http://localhost:9000", label: "http://localhost:9000" },
   { value: "https://infini.tpddns.cn:27200", label: "https://infini.tpddns.cn:27200" },
+  { value: "http://infini.tpddns.cn:27200", label: "http://infini.tpddns.cn:27200" },
 ];
 
 export default function AdvancedSettings() {
