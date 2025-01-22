@@ -5,7 +5,6 @@ import { useSearchParams } from "react-router-dom";
 
 import SettingsPanel from "./SettingsPanel";
 import GeneralSettings from "./GeneralSettings";
-import AdvancedSettings from "./AdvancedSettings";
 import AboutView from "./AboutView";
 import CocoCloud from "@/components/Auth/CocoCloud"
 import Footer from "../Footer";
@@ -83,7 +82,9 @@ function SettingsPage() {
               </TabPanel>
               <TabPanel>
                 <SettingsPanel title="">
-                  <AdvancedSettings />
+                  <div className="text-gray-600 dark:text-gray-400">
+                    Advanced Settings content
+                  </div>
                 </SettingsPanel>
               </TabPanel>
               <TabPanel>

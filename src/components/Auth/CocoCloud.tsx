@@ -17,7 +17,6 @@ import {
 } from "@tauri-apps/plugin-deep-link";
 
 export default function CocoCloud() {
-  // const [lastUrl, setLastUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [isConnect] = useState(true);
@@ -74,7 +73,6 @@ export default function CocoCloud() {
         });
 
         getProfile();
-
       } else {
         setError("Sign in failed: " + response.data?.error?.reason);
       }
@@ -111,7 +109,6 @@ export default function CocoCloud() {
       //     console.log("Unhandled deep link path:", urlObject.pathname);
       // }
 
-      // setLastUrl(url);
     } catch (err) {
       console.error("Failed to parse URL:", err);
       setError("Invalid URL format");
@@ -145,7 +142,7 @@ export default function CocoCloud() {
     setAppUid(uid);
 
     OpenBrowserURL(
-      `${endpoint_http}/sso/login/github?provider=coco-cloud&product=coco&request_id=${uid}`
+      `${endpoint_http}/sso/login/?provider=coco-cloud&product=coco&request_id=${uid}`
     );
 
     setLoading(true);
@@ -158,14 +155,10 @@ export default function CocoCloud() {
       <main className="flex-1">
         <div>
           {error && (
-            <div className="text-red-500 dark:text-red-400">Error: {error}</div>
-          )}
-
-          {/* {lastUrl && (
-            <div className="text-gray-700 dark:text-gray-300">
-              Last opened URL: {lastUrl}
+            <div className="text-red-500 dark:text-red-400 p-4">
+              Error: {error}
             </div>
-          )} */}
+          )}
         </div>
 
         {isConnect ? (
