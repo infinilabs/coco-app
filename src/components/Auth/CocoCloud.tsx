@@ -17,11 +17,8 @@ import {
 } from "@tauri-apps/plugin-deep-link";
 
 export default function CocoCloud() {
-
-  const [lastUrl, setLastUrl] = useState<string | null>(null);
+  // const [lastUrl, setLastUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(null);
-  const [info2, setInfo2] = useState<string | null>(null);
 
   const [isConnect] = useState(true);
 
@@ -29,7 +26,7 @@ export default function CocoCloud() {
   const setAppUid = useAppStore((state) => state.setAppUid);
   const endpoint_http = useAppStore((state) => state.endpoint_http);
 
-  const { auth, setAuth  } = useAuthStore();
+  const { auth, setAuth } = useAuthStore();
   const userInfo = useAuthStore((state) => state.userInfo);
   const setUserInfo = useAuthStore((state) => state.setUserInfo);
 
@@ -41,11 +38,8 @@ export default function CocoCloud() {
       method: "GET",
     });
     console.log("getProfile", response);
-    // {"data":{"username":"johndoe","email":"johndoe@example.com","avatar":"https://example.com/avatar.jpg","roles":["admin","editor"],"preferences":{"theme":"dark","language":"en"}},"status":200,"statusText":"OK","headers":{}}
-
-    setUserInfo(response.data || {})
-    setInfo2(JSON.stringify(response))
-  }
+    setUserInfo(response.data || {});
+  };
 
   const handleOAuthCallback = async (
     code: string | null,
@@ -56,10 +50,6 @@ export default function CocoCloud() {
       return;
     }
 
-    // mock
-    // code = "d11feeab43f6c3e48a43"
-    // provider = "coco-cloud"
-
     try {
       console.log("Handling OAuth callback:", { code, provider });
       const response: any = await tauriFetch({
@@ -69,9 +59,12 @@ export default function CocoCloud() {
           "X-API-TOKEN": code,
         },
       });
-      // { "access_token":xxx, "expire_at": "unix_timestamp_in_s" }
-      console.log("response", `/auth/request_access_token?request_id=${app_uid}`, code, response); 
-      setInfo(JSON.stringify(response))
+      console.log(
+        "response",
+        `/auth/request_access_token?request_id=${app_uid}`,
+        code,
+        response
+      );
 
       if (response.data?.access_token) {
         await setAuth({
@@ -80,8 +73,10 @@ export default function CocoCloud() {
           plan: { upgraded: false, last_checked: 0 },
         });
 
-        getProfile()
+        getProfile();
 
+      } else {
+        setError("Sign in failed: " + response.data?.error?.reason);
       }
 
       getCurrentWindow()
@@ -89,6 +84,7 @@ export default function CocoCloud() {
         .catch(() => {});
     } catch (e) {
       console.error("Sign in failed:", error);
+      setError("Sign in failed: catch");
       await setAuth(undefined);
       throw error;
     } finally {
@@ -108,14 +104,14 @@ export default function CocoCloud() {
 
       // switch (urlObject.hostname) {
       //   case "/oauth_callback":
-          
+
       //     break;
 
       //   default:
       //     console.log("Unhandled deep link path:", urlObject.pathname);
       // }
 
-      setLastUrl(url);
+      // setLastUrl(url);
     } catch (err) {
       console.error("Failed to parse URL:", err);
       setError("Invalid URL format");
@@ -165,23 +161,11 @@ export default function CocoCloud() {
             <div className="text-red-500 dark:text-red-400">Error: {error}</div>
           )}
 
-          {lastUrl && (
+          {/* {lastUrl && (
             <div className="text-gray-700 dark:text-gray-300">
               Last opened URL: {lastUrl}
             </div>
-          )} 
-          
-          {info && (
-            <div className="text-gray-700 dark:text-gray-300">
-              Info : {info}
-            </div>
-          )}
-          
-          {info2 && (
-            <div className="text-gray-700 dark:text-gray-300">
-              info2 : {info2}
-            </div>
-          )}
+          )} */}
         </div>
 
         {isConnect ? (
@@ -224,7 +208,7 @@ export default function CocoCloud() {
                 Account Information
               </h2>
               {auth ? (
-                <UserProfile name={userInfo.username || "-"} email={userInfo.email || "-"} />
+                <UserProfile userInfo={userInfo} />
               ) : (
                 <button
                   className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
