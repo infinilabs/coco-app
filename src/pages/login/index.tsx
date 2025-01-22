@@ -102,7 +102,7 @@ export default function LoginPage() {
 
             <button
               className="w-[60px] h-[60px] bg-white hover:bg-gray-100 text-black rounded-full py-3 px-4 flex items-center justify-center space-x-2 transition-colors"
-              onClick={handleGithubSignIn}
+              onClick={handleAppleSignIn}
             >
               <img
                 src={AppleImg}
@@ -113,7 +113,7 @@ export default function LoginPage() {
 
             <button
               className="w-[60px] h-[60px] bg-white hover:bg-gray-100 text-black rounded-full py-3 px-4 flex items-center justify-center space-x-2 transition-colors"
-              onClick={handleAppleSignIn}
+              onClick={handleGithubSignIn}
             >
               <img
                 src={GithubImg}

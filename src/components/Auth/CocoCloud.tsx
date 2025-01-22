@@ -17,7 +17,6 @@ import {
 } from "@tauri-apps/plugin-deep-link";
 
 export default function CocoCloud() {
-  const appStore = useAppStore();
 
   const [lastUrl, setLastUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -36,11 +35,11 @@ export default function CocoCloud() {
 
   const getProfile = async () => {
     const response: any = await tauriFetch({
-      url: `/profile`,
+      url: `/provider/account/profile`,
       method: "GET",
-      baseURL: appStore.endpoint_http,
     });
     console.log("getProfile", response);
+    // {"data":{"username":"johndoe","email":"johndoe@example.com","avatar":"https://example.com/avatar.jpg","roles":["admin","editor"],"preferences":{"theme":"dark","language":"en"}},"status":200,"statusText":"OK","headers":{}}
 
     setInfo2(JSON.stringify(response))
   }
@@ -68,16 +67,19 @@ export default function CocoCloud() {
         },
       });
       // { "access_token":xxx, "expire_at": "unix_timestamp_in_s" }
-      console.log("response", response); 
+      console.log("response", `/auth/request_access_token?request_id=${app_uid}`, code, response); 
       setInfo(JSON.stringify(response))
 
-      getProfile()
+      if (response.data?.access_token) {
+        await setAuth({
+          token: response.data?.access_token,
+          expires: response.data?.expire_at,
+          plan: { upgraded: false, last_checked: 0 },
+        });
 
-      await setAuth({
-        token: response.data?.access_token,
-        expires: response.data?.expire_at,
-        plan: { upgraded: false, last_checked: 0 },
-      });
+        getProfile()
+
+      }
 
       getCurrentWindow()
         .setFocus()
@@ -93,20 +95,22 @@ export default function CocoCloud() {
 
   const handleUrl = (url: string) => {
     try {
-      // url = "coco:/oauth_callback?code=cu7n7r3g50k7ej0g10c0&provider=coco-cloud"
+      // url = "coco://oauth_callback?code=cu8ag982sdb06e0j6k3g&provider=coco-cloud"
       const urlObject = new URL(url);
       console.log("urlObject:", urlObject);
 
-      switch (urlObject.pathname) {
-        case "/oauth_callback":
-          const code = urlObject.searchParams.get("code");
-          const provider = urlObject.searchParams.get("provider");
-          handleOAuthCallback(code, provider);
-          break;
+      const code = urlObject.searchParams.get("code");
+      const provider = urlObject.searchParams.get("provider");
+      handleOAuthCallback(code, provider);
 
-        default:
-          console.log("Unhandled deep link path:", urlObject.pathname);
-      }
+      // switch (urlObject.hostname) {
+      //   case "/oauth_callback":
+          
+      //     break;
+
+      //   default:
+      //     console.log("Unhandled deep link path:", urlObject.pathname);
+      // }
 
       setLastUrl(url);
     } catch (err) {
@@ -139,11 +143,8 @@ export default function CocoCloud() {
   }, []);
 
   function LoginClick() {
-    let uid = app_uid;
-    if (!uid) {
-      uid = uuidv4();
-      setAppUid(uid);
-    }
+    let uid = uuidv4();
+    setAppUid(uid);
 
     // const response = await fetch("/api/register", {
     //   method: "POST",
@@ -228,7 +229,7 @@ export default function CocoCloud() {
               <h2 className="text-lg font-medium text-gray-900 mb-4">
                 Account Information
               </h2>
-              {auth ? (
+              {!auth ? (
                 <UserProfile name="Rain" email="an121245@gmail.com" />
               ) : (
                 <button
