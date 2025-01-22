@@ -19,9 +19,9 @@ export const useLogStore = create<ILogStore>()(
       logs: [],
       addLog: (log: ApiLog) =>
         set((state) => {
-          const newLogs = [...state.logs, log];
+          const newLogs = [log, ...state.logs];
           if (newLogs.length > 10) {
-            newLogs.shift();
+            newLogs.pop();
           }
           return { logs: newLogs };
         }),

@@ -11,6 +11,7 @@ import CocoCloud from "@/components/Auth/CocoCloud"
 import Footer from "../Footer";
 import { useTheme } from "../../contexts/ThemeContext";
 import { AppTheme } from "../../utils/tauri";
+import ApiDetails from "@/components/AppAI/ApiDetails";
 
 function SettingsPage() {
   const [defaultIndex, setDefaultIndex] = useState<number>(0);
@@ -95,6 +96,8 @@ function SettingsPage() {
         </div>
       </div>
       <Footer />
+
+      <ApiDetails />
     </div>
   );
 }

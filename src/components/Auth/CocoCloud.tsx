@@ -124,10 +124,9 @@ export default function CocoCloud() {
     // handleUrl("");
     getCurrentDeepLinkUrls()
       .then((urls) => {
-        console.log("22222 URLs:", urls);
+        console.log("URLs:", urls);
         if (urls && urls.length > 0) {
           handleUrl(urls[0]);
-          console.log("URLs:", urls);
         }
       })
       .catch((err) => {
@@ -145,14 +144,6 @@ export default function CocoCloud() {
   function LoginClick() {
     let uid = uuidv4();
     setAppUid(uid);
-
-    // const response = await fetch("/api/register", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ uid }),
-    // });
-    // const { token } = await response.json();
-    // localStorage.setItem("auth_token", token);
 
     OpenBrowserURL(
       `${endpoint_http}/sso/login/github?provider=coco-cloud&product=coco&request_id=${uid}`
