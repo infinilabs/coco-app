@@ -1,7 +1,17 @@
 import { useState, useEffect } from "react";
-import { Cloud } from "lucide-react";
+import {
+  RefreshCcw,
+  Globe,
+  PackageOpen,
+  GitFork,
+  CalendarSync,
+} from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import {
+  onOpenUrl,
+  getCurrent as getCurrentDeepLinkUrls,
+} from "@tauri-apps/plugin-deep-link";
 
 import { UserProfile } from "./UserProfile";
 import { DataSourcesList } from "./DataSourcesList";
@@ -11,25 +21,28 @@ import { OpenBrowserURL } from "@/utils/index";
 import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
 import { tauriFetch } from "@/api/tauriFetchClient";
-import {
-  onOpenUrl,
-  getCurrent as getCurrentDeepLinkUrls,
-} from "@tauri-apps/plugin-deep-link";
+import { useConnectStore } from "@/stores/connectStore";
+import bannerImg from "@/assets/images/coco-cloud-banner.jpeg";
 
 export default function CocoCloud() {
   const [error, setError] = useState<string | null>(null);
 
-  const [isConnect] = useState(true);
+  const [isConnect, setIsConnect] = useState(true);
 
   const app_uid = useAppStore((state) => state.app_uid);
   const setAppUid = useAppStore((state) => state.setAppUid);
-  const endpoint_http = useAppStore((state) => state.endpoint_http);
+  const setEndpoint = useAppStore((state) => state.setEndpoint);
 
   const { auth, setAuth } = useAuthStore();
   const userInfo = useAuthStore((state) => state.userInfo);
   const setUserInfo = useAuthStore((state) => state.setUserInfo);
+  const defaultService = useConnectStore((state) => state.defaultService);
+  const currentService = useConnectStore((state) => state.currentService);
+  const setDefaultService = useConnectStore((state) => state.setDefaultService);
+  const setCurrentService = useConnectStore((state) => state.setCurrentService);
 
   const [loading, setLoading] = useState(false);
+  const [refreshLoading, setRefreshLoading] = useState(false);
 
   const getProfile = async () => {
     const response: any = await tauriFetch({
@@ -108,7 +121,6 @@ export default function CocoCloud() {
       //   default:
       //     console.log("Unhandled deep link path:", urlObject.pathname);
       // }
-
     } catch (err) {
       console.error("Failed to parse URL:", err);
       setError("Invalid URL format");
@@ -142,80 +154,142 @@ export default function CocoCloud() {
     setAppUid(uid);
 
     OpenBrowserURL(
-      `${endpoint_http}/sso/login/?provider=coco-cloud&product=coco&request_id=${uid}`
+      `${currentService.auth_provider.sso.url}?provider=coco-cloud&product=coco&request_id=${uid}`
     );
 
     setLoading(true);
   }
 
+  function goToHref(url: string) {
+    OpenBrowserURL(url);
+  }
+
+  function refreshClick() {
+    setRefreshLoading(true);
+    tauriFetch({
+      url: `/provider/_info`,
+      method: "GET",
+    })
+      .then((res) => {
+        setEndpoint(res.data.endpoint);
+        setCurrentService(res.data || {});
+        if (res.data.endpoint === defaultService.endpoint) {
+          setDefaultService(res.data);
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+      })
+      .finally(() => {
+        setRefreshLoading(false);
+      });
+  }
+
+  function addService() {
+    setIsConnect(false);
+  }
+
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
+      <Sidebar addService={addService} />
 
-      <main className="flex-1">
+      <main className="flex-1 p-4 py-8">
         <div>
           {error && (
-            <div className="text-red-500 dark:text-red-400 p-4">
+            <div className="text-red-500 dark:text-red-400 mb-4">
               Error: {error}
             </div>
           )}
         </div>
 
         {isConnect ? (
-          <div className="max-w-4xl mx-auto px-4 py-8">
-            <div className="flex items-center justify-between mb-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="w-full rounded-[4px] bg-[rgba(229,229,229,1)] mb-6">
+              <img
+                src={currentService.provider.banner || bannerImg}
+                alt="banner"
+              />
+            </div>
+
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2 px-4 py-2 bg-white rounded-md border border-gray-200">
-                  <Cloud className="w-5 h-5 text-blue-500" />
-                  <span className="font-medium text-[#333]">Coco Cloud</span>
+                <div className="flex items-center text-[#333] font-medium">
+                  {currentService.name}
                 </div>
-                <span className="px-3 py-1 text-sm text-blue-600 bg-blue-50 rounded-md">
-                  Available
-                </span>
               </div>
-              <button className="p-2 text-gray-500 hover:text-gray-700">
-                <Cloud className="w-5 h-5" />
-              </button>
+              <div className="flex gap-2">
+                <button
+                  className="p-2 text-gray-500 hover:text-gray-700 rounded-[6px] bg-[rgba(255,255,255,1)] border border-[rgba(228,229,239,1)]"
+                  onClick={() => goToHref(currentService.provider.website)}
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  className="p-2 text-gray-500 hover:text-gray-700 rounded-[6px] bg-[rgba(255,255,255,1)] border border-[rgba(228,229,239,1)]"
+                  onClick={() => refreshClick()}
+                >
+                  <RefreshCcw
+                    className={`w-3.5 h-3.5 ${
+                      refreshLoading ? "animate-spin" : ""
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
 
             <div className="mb-8">
-              <div className="text-sm text-gray-500 mb-4">
-                <span>Service provision: INFINI Labs</span>
+              <div className="text-sm text-gray-500 mb-2 flex">
+                <span className="flex items-center gap-1">
+                  <PackageOpen className="w-4 h-4" />{" "}
+                  {currentService.provider.name}
+                </span>
                 <span className="mx-4">|</span>
-                <span>Version Number: v2.3.0</span>
+                <span className="flex items-center gap-1">
+                  <GitFork className="w-4 h-4" />{" "}
+                  {currentService.version.number}
+                </span>
                 <span className="mx-4">|</span>
-                <span>Update time: 2023-05-12</span>
+                <span className="flex items-center gap-1">
+                  <CalendarSync className="w-4 h-4" /> {currentService.updated}
+                </span>
               </div>
               <p className="text-gray-600 leading-relaxed">
-                Coco Cloud provides users with a cloud storage and data
-                integration platform that supports account registration and data
-                source management. Users can integrate multiple data sources
-                (such as Google Drive, yuque, GitHub, etc.), easily access and
-                search for files, documents and codes across platforms, and
-                achieve efficient data collaboration and management.
+                {currentService.provider.description}
               </p>
             </div>
 
-            <div className="mb-8">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                Account Information
-              </h2>
-              {auth ? (
-                <UserProfile userInfo={userInfo} />
-              ) : (
-                <button
-                  className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                  onClick={LoginClick}
-                >
-                  {loading ? "Login..." : "Login"}
-                </button>
-              )}
-            </div>
+            {currentService.auth_provider.sso.url ? (
+              <div className="mb-8">
+                <h2 className="text-lg font-medium text-gray-900 mb-4">
+                  Account Information
+                </h2>
+                {auth ? (
+                  <UserProfile userInfo={userInfo} />
+                ) : (
+                  <div>
+                    <button
+                      className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors mb-3"
+                      onClick={LoginClick}
+                    >
+                      {loading ? "Login..." : "Login"}
+                    </button>
+                    <button
+                      className="text-xs text-[#0096FB] block"
+                      onClick={() =>
+                        goToHref(currentService.provider.privacy_policy)
+                      }
+                    >
+                      EULA | Privacy Policy
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : null}
 
             {auth ? <DataSourcesList /> : null}
           </div>
         ) : (
-          <ConnectService />
+          <ConnectService setIsConnect={setIsConnect} />
         )}
       </main>
     </div>

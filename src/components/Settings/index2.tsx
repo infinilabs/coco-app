@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import { Settings, Puzzle, User, Settings2, Info } from "lucide-react";
+import { Settings, Puzzle, Settings2, Info, Server } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 import SettingsPanel from "./SettingsPanel";
@@ -25,7 +25,7 @@ function SettingsPage() {
   const tabs = [
     { name: "General", icon: Settings },
     { name: "Extensions", icon: Puzzle },
-    { name: "Connect", icon: User },
+    { name: "Connect", icon: Server },
     { name: "Advanced", icon: Settings2 },
     { name: "About", icon: Info },
   ];

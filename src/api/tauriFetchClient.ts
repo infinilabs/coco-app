@@ -47,8 +47,9 @@ export const tauriFetch = async <T = any>({
     const auth = authStore?.state?.auth
     console.log("auth", auth)
 
-
-    url = baseURL + url;
+    if (!url.includes('http')) {
+      url = baseURL + url;
+    }
 
     if (method !== "GET") {
       headers["Content-Type"] = "application/json";

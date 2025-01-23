@@ -1,4 +1,4 @@
-import { User, Edit, LogOut } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 
 import { useAuthStore } from "@/stores/authStore";
 
@@ -32,34 +32,26 @@ export function UserProfile({ userInfo }: UserProfileProps) {
       <div className="flex items-center space-x-4">
         <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
           {userInfo.avatar ? (
-            <img
-              src={userInfo.avatar}
-              alt=""
-              className="w-6 h-6"
-            />
+            <img src={userInfo.avatar} alt="" className="w-6 h-6" />
           ) : (
             <User className="w-6 h-6 text-gray-500" />
           )}
         </div>
         <div className="flex-1">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-4">
             <span className="font-medium text-gray-900">
               {userInfo.username || "-"}
             </span>
-            <button className="text-gray-400 hover:text-gray-600">
-              <Edit className="w-4 h-4" />
+            <button
+              onClick={handleLogout}
+              className="flex items-center p-1 text-red-500 hover:text-red-600 border border-[rgba(228,229,239,1)]"
+            >
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
           <span className="text-sm text-gray-500">{userInfo.email || "-"}</span>
         </div>
       </div>
-      <button
-        onClick={handleLogout}
-        className="flex items-center space-x-1 text-red-500 hover:text-red-600"
-      >
-        <LogOut className="w-4 h-4" />
-        <span>Logout</span>
-      </button>
     </div>
   );
 }
