@@ -1,6 +1,7 @@
 import { User, LogOut } from "lucide-react";
 
 import { useAuthStore } from "@/stores/authStore";
+import { useAppStore } from "@/stores/appStore";
 
 interface UserPreferences {
   theme: "dark" | "light";
@@ -21,18 +22,19 @@ interface UserProfileProps {
 export function UserProfile({ userInfo }: UserProfileProps) {
   const setAuth = useAuthStore((state) => state.setAuth);
   const setUserInfo = useAuthStore((state) => state.setUserInfo);
+  const endpoint = useAppStore((state) => state.endpoint);
 
   const handleLogout = () => {
-    setAuth(undefined);
-    setUserInfo({});
+    setAuth(undefined, endpoint);
+    setUserInfo({}, endpoint);
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
         <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-          {userInfo.avatar ? (
-            <img src={userInfo.avatar} alt="" className="w-6 h-6" />
+          {userInfo?.avatar ? (
+            <img src={userInfo?.avatar} alt="" className="w-6 h-6" />
           ) : (
             <User className="w-6 h-6 text-gray-500" />
           )}
@@ -40,7 +42,7 @@ export function UserProfile({ userInfo }: UserProfileProps) {
         <div className="flex-1">
           <div className="flex items-center space-x-4">
             <span className="font-medium text-gray-900">
-              {userInfo.username || "-"}
+              {userInfo?.username || "-"}
             </span>
             <button
               onClick={handleLogout}
@@ -49,7 +51,9 @@ export function UserProfile({ userInfo }: UserProfileProps) {
               <LogOut className="w-4 h-4" />
             </button>
           </div>
-          <span className="text-sm text-gray-500">{userInfo.email || "-"}</span>
+          <span className="text-sm text-gray-500">
+            {userInfo?.email || "-"}
+          </span>
         </div>
       </div>
     </div>

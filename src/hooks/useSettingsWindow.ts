@@ -20,7 +20,7 @@ export default function useSettingsWindow() {
       label: "settings",
       title: "Settings Window",
       width: 1000,
-      height: 600,
+      height: 700,
       alwaysOnTop: false,
       shadow: true,
       decorations: true,

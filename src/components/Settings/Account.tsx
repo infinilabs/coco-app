@@ -29,7 +29,7 @@ export default function Account() {
 
     const setupAuthListener = async () => {
       try {
-        if (!auth) {
+        if (!(auth && auth[endpoint_http])) {
           // Replace the current route with signin
           // navigate("/signin", { replace: true });
         }
@@ -55,7 +55,7 @@ export default function Account() {
 
       cleanup();
     };
-  }, [auth]);
+  }, [JSON.stringify(auth)]);
 
   async function signIn() {
     let res: (url: URL) => void;
@@ -114,7 +114,7 @@ export default function Account() {
         user_id,
         expires,
         plan: { upgraded: false, last_checked: 0 },
-      });
+      }, endpoint_http);
 
       getCurrentWindow()
         .setFocus()
@@ -123,7 +123,7 @@ export default function Account() {
       return navigate("/");
     } catch (error) {
       console.error("Sign in failed:", error);
-      await setAuth(undefined);
+      await setAuth(undefined, endpoint_http);
       throw error;
     }
   }

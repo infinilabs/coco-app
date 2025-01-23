@@ -32,6 +32,7 @@ export default function CocoCloud() {
   const app_uid = useAppStore((state) => state.app_uid);
   const setAppUid = useAppStore((state) => state.setAppUid);
   const setEndpoint = useAppStore((state) => state.setEndpoint);
+  const endpoint = useAppStore((state) => state.endpoint);
 
   const { auth, setAuth } = useAuthStore();
   const userInfo = useAuthStore((state) => state.userInfo);
@@ -83,10 +84,11 @@ export default function CocoCloud() {
           token: response.data?.access_token,
           expires: response.data?.expire_at,
           plan: { upgraded: false, last_checked: 0 },
-        });
+        }, endpoint);
 
         getProfile();
       } else {
+        await setAuth(undefined, endpoint);
         setError("Sign in failed: " + response.data?.error?.reason);
       }
 
@@ -96,7 +98,7 @@ export default function CocoCloud() {
     } catch (e) {
       console.error("Sign in failed:", error);
       setError("Sign in failed: catch");
-      await setAuth(undefined);
+      await setAuth(undefined, endpoint);
       throw error;
     } finally {
       setLoading(false);
@@ -263,8 +265,8 @@ export default function CocoCloud() {
                 <h2 className="text-lg font-medium text-gray-900 mb-4">
                   Account Information
                 </h2>
-                {auth ? (
-                  <UserProfile userInfo={userInfo} />
+                {auth && auth[endpoint] ? (
+                  <UserProfile userInfo={userInfo[endpoint]} />
                 ) : (
                   <div>
                     <button
@@ -286,7 +288,7 @@ export default function CocoCloud() {
               </div>
             ) : null}
 
-            {auth ? <DataSourcesList /> : null}
+            {auth && auth[endpoint] ? <DataSourcesList /> : null}
           </div>
         ) : (
           <ConnectService setIsConnect={setIsConnect} />

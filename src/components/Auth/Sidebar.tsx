@@ -10,8 +10,8 @@ interface SidebarProps {
   addService: () => void;
 }
 
-type NumericBooleanMap = {
-  [key: number]: boolean;
+type StringBooleanMap = {
+  [key: string]: boolean;
 };
 
 export function Sidebar({ addService }: SidebarProps) {
@@ -23,7 +23,7 @@ export function Sidebar({ addService }: SidebarProps) {
   const setEndpoint = useAppStore((state) => state.setEndpoint);
 
   const [defaultHealth, setDefaultHealth] = useState(false);
-  const [otherHealth, setOtherHealth] = useState<NumericBooleanMap>({});
+  const [otherHealth, setOtherHealth] = useState<StringBooleanMap>({});
 
   const addServiceClick = () => {
     addService();
@@ -31,7 +31,8 @@ export function Sidebar({ addService }: SidebarProps) {
 
   useEffect(() => {
     getDefaultHealth();
-    getOtherHealth();
+    getOtherHealth(currentService);
+    setEndpoint(currentService.endpoint);
   }, []);
 
   const getDefaultHealth = () => {
@@ -51,23 +52,22 @@ export function Sidebar({ addService }: SidebarProps) {
       });
   };
 
-  const getOtherHealth = () => {
-    otherServices?.map((item, index) => {
-      tauriFetch({
-        url: `${item.endpoint}/health`,
-        method: "GET",
+  const getOtherHealth = (item: any) => {
+    if (!item.endpoint) return;
+    tauriFetch({
+      url: `${item.endpoint}/health`,
+      method: "GET",
+    })
+      .then((res) => {
+        let obj = {
+          ...otherHealth,
+          [item.endpoint]: res.data?.status !== "red",
+        };
+        setOtherHealth(obj);
       })
-        .then((res) => {
-          let obj = {
-            ...otherHealth,
-            [index]: res.data?.status !== "red",
-          };
-          setOtherHealth(obj);
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    });
+      .catch((err) => {
+        console.error(err);
+      });
   };
 
   return (
@@ -82,6 +82,7 @@ export function Sidebar({ addService }: SidebarProps) {
           onClick={() => {
             setCurrentService(defaultService);
             setEndpoint(defaultService.endpoint);
+            getDefaultHealth();
           }}
         >
           <img
@@ -116,6 +117,7 @@ export function Sidebar({ addService }: SidebarProps) {
             onClick={() => {
               setEndpoint(item.endpoint);
               setCurrentService(item);
+              getOtherHealth(item);
             }}
           >
             <img
@@ -127,7 +129,7 @@ export function Sidebar({ addService }: SidebarProps) {
             <span className="font-medium">{item.name}</span>
             <div className="flex-1" />
             <button className="text-blue-600 hover:text-blue-700">
-              {otherHealth[index] ? (
+              {otherHealth[item.endpoint] ? (
                 <div className="w-3 h-3 rounded-full bg-[#00DB5E]"></div>
               ) : (
                 <div className="w-3 h-3 rounded-full bg-[#FF4747]"></div>

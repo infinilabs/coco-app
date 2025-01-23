@@ -55,7 +55,7 @@ export const tauriFetch = async <T = any>({
       headers["Content-Type"] = "application/json";
     }
 
-    headers["X-API-TOKEN"] = headers["X-API-TOKEN"] || auth?.token || "";
+    headers["X-API-TOKEN"] = headers["X-API-TOKEN"] || auth?.[endpoint_http]?.token || "";
 
     // debug API
     const requestInfo = {

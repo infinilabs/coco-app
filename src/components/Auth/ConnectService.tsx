@@ -8,6 +8,7 @@ import { useAppStore } from "@/stores/appStore"
 interface ConnectServiceProps {
   setIsConnect: (isConnect: boolean) => void;
 }
+
 export function ConnectService({ setIsConnect }: ConnectServiceProps) {
   const addOtherServices = useConnectStore((state) => state.addOtherServices);
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
@@ -91,7 +92,7 @@ export function ConnectService({ setIsConnect }: ConnectServiceProps) {
               className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
               onClick={addService}
             >
-              {refreshLoading ? "Connecting..." : "Connectivity Services"}
+              {refreshLoading ? "Connecting..." : "Connect"}
             </button>
           </div>
         </div>
