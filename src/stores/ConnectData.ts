@@ -17,7 +17,7 @@ export const connect_coco_cloud = {
   "public": true,
   "auth_provider": {
     "sso": {
-      "url": "http://localhost:9000/sso/login"
+      "url": "https://coco.infini.cloud/sso/login"
     }
   }
 }

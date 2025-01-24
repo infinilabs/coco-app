@@ -57,8 +57,8 @@ export default function ChatInput() {
         method: "GET",
       });
       setInfo(JSON.stringify(response));
-      console.log(response.status); // e.g. 200
-      console.log(response.statusText); // e.g. "OK"
+      // console.log(response.status); // e.g. 200
+      // console.log(response.statusText); // e.g. "OK"
     } catch (error) {
       console.error("Error sending message:", error);
       setInfo(JSON.stringify(error));

@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   RefreshCcw,
   Globe,
   PackageOpen,
   GitFork,
   CalendarSync,
+  Trash2,
 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -34,16 +35,27 @@ export default function CocoCloud() {
   const setEndpoint = useAppStore((state) => state.setEndpoint);
   const endpoint = useAppStore((state) => state.endpoint);
 
-  const { auth, setAuth } = useAuthStore();
+  const auth = useAuthStore((state) => state.auth);
+  const setAuth = useAuthStore((state) => state.setAuth);
   const userInfo = useAuthStore((state) => state.userInfo);
   const setUserInfo = useAuthStore((state) => state.setUserInfo);
   const defaultService = useConnectStore((state) => state.defaultService);
   const currentService = useConnectStore((state) => state.currentService);
   const setDefaultService = useConnectStore((state) => state.setDefaultService);
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
+  const deleteOtherService = useConnectStore(
+    (state) => state.deleteOtherService
+  );
 
   const [loading, setLoading] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
+
+  useEffect(() => {
+    console.log("currentService", currentService);
+    setLoading(false);
+    setRefreshLoading(false);
+    setError(null);
+  }, [JSON.stringify(currentService)]);
 
   const getProfile = async () => {
     const response: any = await tauriFetch({
@@ -51,10 +63,10 @@ export default function CocoCloud() {
       method: "GET",
     });
     console.log("getProfile", response);
-    setUserInfo(response.data || {});
+    setUserInfo(response.data || {}, endpoint);
   };
 
-  const handleOAuthCallback = async (
+  const handleOAuthCallback = useCallback(async (
     code: string | null,
     provider: string | null
   ) => {
@@ -80,11 +92,14 @@ export default function CocoCloud() {
       );
 
       if (response.data?.access_token) {
-        await setAuth({
-          token: response.data?.access_token,
-          expires: response.data?.expire_at,
-          plan: { upgraded: false, last_checked: 0 },
-        }, endpoint);
+        await setAuth(
+          {
+            token: response.data?.access_token,
+            expires: response.data?.expire_at,
+            plan: { upgraded: false, last_checked: 0 },
+          },
+          endpoint
+        );
 
         getProfile();
       } else {
@@ -103,7 +118,7 @@ export default function CocoCloud() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [app_uid, endpoint]);
 
   const handleUrl = (url: string) => {
     try {
@@ -149,14 +164,18 @@ export default function CocoCloud() {
     return () => {
       unlisten.then((fn) => fn());
     };
-  }, []);
+  }, [app_uid]);
 
   function LoginClick() {
+    if (loading) return;
+
     let uid = uuidv4();
     setAppUid(uid);
 
+    console.log("LoginClick", uid, currentService.auth_provider.sso.url);
+
     OpenBrowserURL(
-      `${currentService.auth_provider.sso.url}?provider=coco-cloud&product=coco&request_id=${uid}`
+      `${currentService.auth_provider.sso.url}/?provider=coco-cloud&product=coco&request_id=${uid}`
     );
 
     setLoading(true);
@@ -189,6 +208,10 @@ export default function CocoCloud() {
 
   function addService() {
     setIsConnect(false);
+  }
+
+  function deleteClick() {
+    deleteOtherService(currentService);
   }
 
   return (
@@ -236,6 +259,14 @@ export default function CocoCloud() {
                     }`}
                   />
                 </button>
+                {currentService.endpoint !== defaultService.endpoint ? (
+                  <button
+                    className="p-2 text-gray-500 hover:text-gray-700 rounded-[6px] bg-[rgba(255,255,255,1)] border border-[rgba(228,229,239,1)]"
+                    onClick={() => deleteClick()}
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-[#ff4747]" />
+                  </button>
+                ) : null}
               </div>
             </div>
 

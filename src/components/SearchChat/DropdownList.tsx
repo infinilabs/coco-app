@@ -19,7 +19,7 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
     try {
       if (isTauri()) {
         await open(url);
-        console.log("URL opened in default browser");
+        // console.log("URL opened in default browser");
       }
     } catch (error) {
       console.error("Failed to open URL:", error);
@@ -27,12 +27,12 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    console.log(
-      "handleKeyDown",
-      e.key,
-      showIndex,
-      e.key >= "0" && e.key <= "9" && showIndex
-    );
+    // console.log(
+    //   "handleKeyDown",
+    //   e.key,
+    //   showIndex,
+    //   e.key >= "0" && e.key <= "9" && showIndex
+    // );
     if (!suggests.length) return;
 
     if (e.key === "ArrowUp") {
@@ -51,7 +51,7 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
     }
 
     if (e.key === "Enter" && selectedItem !== null) {
-      console.log("Enter key pressed", selectedItem);
+      // console.log("Enter key pressed", selectedItem);
       const item = suggests[selectedItem];
       if (item?._source?.url) {
         handleOpenURL(item?._source?.url);
@@ -61,7 +61,7 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
     }
 
     if (e.key >= "0" && e.key <= "9" && showIndex) {
-      console.log(`number ${e.key}`);
+      // console.log(`number ${e.key}`);
       const item = suggests[parseInt(e.key, 10)];
       if (item?._source?.url) {
         handleOpenURL(item?._source?.url);
@@ -72,7 +72,7 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
   };
 
   const handleKeyUp = (e: KeyboardEvent) => {
-    console.log("handleKeyUp", e.key);
+    // console.log("handleKeyUp", e.key);
     if (!suggests.length) return;
 
     if (!e.metaKey) {

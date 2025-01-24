@@ -14,7 +14,7 @@ const ChatSwitch: React.FC<ChatSwitchProps> = ({ isChatMode, onChange }) => {
     (event: KeyboardEvent) => {
       if (event.metaKey && event.key === "t") {
         event.preventDefault();
-        console.log("Switch mode triggered");
+        // console.log("Switch mode triggered");
         handleToggle();
       }
     },

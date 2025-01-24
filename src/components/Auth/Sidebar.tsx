@@ -110,7 +110,7 @@ export function Sidebar({ addService }: SidebarProps) {
           <div
             key={item.name + index}
             className={`flex items-center space-x-2 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg mb-2 ${
-              currentService.name === item.name
+              currentService.endpoint === item.endpoint
                 ? "border border-[rgba(0,135,255,1)]"
                 : ""
             }`}

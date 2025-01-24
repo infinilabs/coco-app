@@ -106,7 +106,7 @@ importers:
         version: 11.0.3
       zustand:
         specifier: ^5.0.0
-        version: 5.0.0(@types/react@18.3.11)(react@18.3.1)
+        version: 5.0.0(@types/react@18.3.11)(immer@10.1.1)(react@18.3.1)
     devDependencies:
       '@tauri-apps/cli':
         specifier: '>=2.0.0'
@@ -138,6 +138,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.4.47)
+      immer:
+        specifier: ^10.1.1
+        version: 10.1.1
       postcss:
         specifier: ^8.4.47
         version: 8.4.47
@@ -1439,6 +1442,9 @@ packages:
   iconv-lite@0.6.3:
     resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
     engines: {node: '>=0.10.0'}
+
+  immer@10.1.1:
+    resolution: {integrity: sha512-s2MPrmjovJcoMaHtx6K11Ra7oD05NT97w1IC5zpMkT6Atjr7H8LjaDd81iIxUYpMKSRRNMJE703M1Fhr/TctHw==}
 
   inline-style-parser@0.2.4:
     resolution: {integrity: sha512-0aO8FkhNZlj/ZIbNi7Lxxr12obT7cL1moPfE4tg1LkX7LlLfC6DeX4l2ZEud1ukP9jNQyNnfzQVqwbwmAATY4Q==}
@@ -3616,6 +3622,8 @@ snapshots:
     dependencies:
       safer-buffer: 2.1.2
 
+  immer@10.1.1: {}
+
   inline-style-parser@0.2.4: {}
 
   internmap@1.0.1: {}
@@ -4708,9 +4716,10 @@ snapshots:
 
   yaml@2.6.0: {}
 
-  zustand@5.0.0(@types/react@18.3.11)(react@18.3.1):
+  zustand@5.0.0(@types/react@18.3.11)(immer@10.1.1)(react@18.3.1):
     optionalDependencies:
       '@types/react': 18.3.11
+      immer: 10.1.1
       react: 18.3.1
 
   zwitch@2.0.4: {}

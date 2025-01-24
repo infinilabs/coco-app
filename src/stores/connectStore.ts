@@ -26,12 +26,20 @@ export const useConnectStore = create<IConnectStore>()(
           return { otherServices: newOtherServices };
         })
       },
-      deleteOtherService: () => { },
+      deleteOtherService: (service: any) => {
+        set((state) => {
+          const newOtherServices = state.otherServices.filter(item => item.endpoint !== service.endpoint);
+
+          return {
+            otherServices: newOtherServices,
+            currentService: state.defaultService,
+          };
+        })
+      },
       currentService: connect_coco_cloud,
-      setCurrentService: (currentService: any) => {        
+      setCurrentService: (currentService: any) => {
         set({ currentService })
       },
-
     }),
     {
       name: "connect-store",

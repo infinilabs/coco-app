@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { listen, emit } from '@tauri-apps/api/event';
+import { produce } from 'immer'
 
 const AUTH_CHANGE_EVENT = 'auth-changed';
 const USERINFO_CHANGE_EVENT = 'userInfo-changed';
@@ -40,40 +41,43 @@ export const useAuthStore = create<IAuthStore>()(
       auth: undefined,
       userInfo: {},
       setAuth: async (auth, key) => {
-        set(async (state) => {
-          const newAuth = {
-            ...state.auth,
+        set(
+          produce((draft) => {
+            draft.auth[key] = auth
+          })
+        );
+
+        await emit(AUTH_CHANGE_EVENT, {
+          auth: {
             [key]: auth
           }
-          await emit(AUTH_CHANGE_EVENT, {
-            auth: newAuth
-          });
-          return newAuth
-        })
+        });
       },
       resetAuth: async (key: string) => {
-        set(async (state) => {
-          const newAuth = {
-            ...state.auth,
+        set(
+          produce((draft) => {
+            draft.auth[key] = undefined
+          })
+        );
+
+        await emit(AUTH_CHANGE_EVENT, {
+          auth: {
             [key]: undefined
           }
-          await emit(AUTH_CHANGE_EVENT, {
-            auth: newAuth
-          });
-          return newAuth
-        })
+        });
       },
       setUserInfo: async (userInfo: any, key: string) => {
-        set(async (state) => {
-          const newUserInfo = {
-            ...state.userInfo,
+        set(
+          produce((draft) => {
+            draft.userInfo[key] = userInfo
+          })
+        );
+
+        await emit(USERINFO_CHANGE_EVENT, {
+          userInfo: {
             [key]: userInfo
           }
-          await emit(USERINFO_CHANGE_EVENT, {
-            userInfo: newUserInfo
-          });
-          return newUserInfo
-        })
+        });
       },
       initializeListeners: () => {
         listen(AUTH_CHANGE_EVENT, (event: any) => {
