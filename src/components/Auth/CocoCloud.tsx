@@ -55,70 +55,71 @@ export default function CocoCloud() {
     setLoading(false);
     setRefreshLoading(false);
     setError(null);
+    setEndpoint(currentService.endpoint);
   }, [JSON.stringify(currentService)]);
 
   const getProfile = async () => {
     const response: any = await tauriFetch({
-      url: `/provider/account/profile`,
+      url: `/account/profile`,
       method: "GET",
     });
     console.log("getProfile", response);
     setUserInfo(response.data || {}, endpoint);
   };
 
-  const handleOAuthCallback = useCallback(async (
-    code: string | null,
-    provider: string | null
-  ) => {
-    if (!code) {
-      setError("No authorization code received");
-      return;
-    }
-
-    try {
-      console.log("Handling OAuth callback:", { code, provider });
-      const response: any = await tauriFetch({
-        url: `/auth/request_access_token?request_id=${app_uid}`,
-        method: "GET",
-        headers: {
-          "X-API-TOKEN": code,
-        },
-      });
-      console.log(
-        "response",
-        `/auth/request_access_token?request_id=${app_uid}`,
-        code,
-        response
-      );
-
-      if (response.data?.access_token) {
-        await setAuth(
-          {
-            token: response.data?.access_token,
-            expires: response.data?.expire_at,
-            plan: { upgraded: false, last_checked: 0 },
-          },
-          endpoint
-        );
-
-        getProfile();
-      } else {
-        await setAuth(undefined, endpoint);
-        setError("Sign in failed: " + response.data?.error?.reason);
+  const handleOAuthCallback = useCallback(
+    async (code: string | null, provider: string | null) => {
+      if (!code) {
+        setError("No authorization code received");
+        return;
       }
 
-      getCurrentWindow()
-        .setFocus()
-        .catch(() => {});
-    } catch (e) {
-      console.error("Sign in failed:", error);
-      setError("Sign in failed: catch");
-      await setAuth(undefined, endpoint);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, [app_uid, endpoint]);
+      try {
+        console.log("Handling OAuth callback:", { code, provider });
+        const response: any = await tauriFetch({
+          url: `/auth/request_access_token?request_id=${app_uid}`,
+          method: "GET",
+          headers: {
+            "X-API-TOKEN": code,
+          },
+        });
+        console.log(
+          "response",
+          `/auth/request_access_token?request_id=${app_uid}`,
+          code,
+          response
+        );
+
+        if (response.data?.access_token) {
+          await setAuth(
+            {
+              token: response.data?.access_token,
+              expires: response.data?.expire_at,
+              plan: { upgraded: false, last_checked: 0 },
+            },
+            endpoint
+          );
+
+          getProfile();
+        } else {
+          await setAuth(undefined, endpoint);
+          setError("Sign in failed: " + response.data?.error?.reason);
+        }
+
+        getCurrentWindow()
+          .setFocus()
+          .catch(() => {});
+      } catch (e) {
+        console.error("Sign in failed:", error);
+        setError("Sign in failed: catch");
+        await setAuth(undefined, endpoint);
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [app_uid, endpoint]
+  );
 
   const handleUrl = (url: string) => {
     try {
@@ -212,10 +213,12 @@ export default function CocoCloud() {
 
   function deleteClick() {
     deleteOtherService(currentService);
+    setAuth(undefined, endpoint);
+    setUserInfo({}, endpoint);
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex bg-gray-50 dark:bg-gray-900">
       <Sidebar addService={addService} />
 
       <main className="flex-1 p-4 py-8">
@@ -229,7 +232,7 @@ export default function CocoCloud() {
 
         {isConnect ? (
           <div className="max-w-4xl mx-auto">
-            <div className="w-full rounded-[4px] bg-[rgba(229,229,229,1)] mb-6">
+            <div className="w-full rounded-[4px] bg-[rgba(229,229,229,1)] dark:bg-gray-800 mb-6">
               <img
                 src={currentService.provider.banner || bannerImg}
                 alt="banner"
@@ -238,19 +241,19 @@ export default function CocoCloud() {
 
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <div className="flex items-center text-[#333] font-medium">
+                <div className="flex items-center text-gray-900 dark:text-white font-medium">
                   {currentService.name}
                 </div>
               </div>
               <div className="flex gap-2">
                 <button
-                  className="p-2 text-gray-500 hover:text-gray-700 rounded-[6px] bg-[rgba(255,255,255,1)] border border-[rgba(228,229,239,1)]"
+                  className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-[6px] bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
                   onClick={() => goToHref(currentService.provider.website)}
                 >
                   <Globe className="w-3.5 h-3.5" />
                 </button>
                 <button
-                  className="p-2 text-gray-500 hover:text-gray-700 rounded-[6px] bg-[rgba(255,255,255,1)] border border-[rgba(228,229,239,1)]"
+                  className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-[6px] bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
                   onClick={() => refreshClick()}
                 >
                   <RefreshCcw
@@ -261,7 +264,7 @@ export default function CocoCloud() {
                 </button>
                 {currentService.endpoint !== defaultService.endpoint ? (
                   <button
-                    className="p-2 text-gray-500 hover:text-gray-700 rounded-[6px] bg-[rgba(255,255,255,1)] border border-[rgba(228,229,239,1)]"
+                    className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-[6px] bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
                     onClick={() => deleteClick()}
                   >
                     <Trash2 className="w-3.5 h-3.5 text-[#ff4747]" />
@@ -271,7 +274,7 @@ export default function CocoCloud() {
             </div>
 
             <div className="mb-8">
-              <div className="text-sm text-gray-500 mb-2 flex">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mb-2 flex">
                 <span className="flex items-center gap-1">
                   <PackageOpen className="w-4 h-4" />{" "}
                   {currentService.provider.name}
@@ -286,14 +289,14 @@ export default function CocoCloud() {
                   <CalendarSync className="w-4 h-4" /> {currentService.updated}
                 </span>
               </div>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 {currentService.provider.description}
               </p>
             </div>
 
             {currentService.auth_provider.sso.url ? (
               <div className="mb-8">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">
+                <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                   Account Information
                 </h2>
                 {auth && auth[endpoint] ? (
@@ -307,7 +310,7 @@ export default function CocoCloud() {
                       {loading ? "Login..." : "Login"}
                     </button>
                     <button
-                      className="text-xs text-[#0096FB] block"
+                      className="text-xs text-[#0096FB] dark:text-blue-400 block"
                       onClick={() =>
                         goToHref(currentService.provider.privacy_policy)
                       }

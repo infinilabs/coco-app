@@ -27,7 +27,7 @@ export function DataSourcesList() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-medium text-gray-900">Data Source</h2>
+      <h2 className="text-xl font-medium text-gray-900 dark:text-white">Data Source</h2>
       <div className="space-y-4">
         {dataSources.map(source => (
           <DataSourceItem key={source.id} {...source} />
