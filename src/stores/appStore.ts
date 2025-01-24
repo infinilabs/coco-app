@@ -33,10 +33,6 @@ export const useAppStore = create<IAppStore>()(
       endpoint_http: "https://coco.infini.cloud",
       endpoint_websocket: "wss://coco.infini.cloud/ws",
       setEndpoint: async (endpoint: AppEndpoint) => {
-        if (endpoint.endsWith("/")) {
-          endpoint = endpoint.slice(0, -1);
-        }
-
         const endpoint_http = endpoint;
 
         const withoutProtocol = endpoint.split("//")[1];
