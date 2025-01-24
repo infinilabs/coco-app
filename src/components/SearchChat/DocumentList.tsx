@@ -132,7 +132,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       return file_efault_img;
     }
 
-    if (selectedIcon?.includes("http")) {
+    if (selectedIcon.startsWith("http://") || selectedIcon.startsWith("https://")) {
       return selectedIcon;
     } else {
       return endpoint_http + selectedIcon;

@@ -30,8 +30,13 @@ export function ConnectService({ setIsConnect }: ConnectServiceProps) {
   const addService = () => {
     if (!endpointLink) return
     setRefreshLoading(true);
+    //
+    let baseURL = endpointLink
+    if (baseURL.endsWith("/")) {
+      baseURL = baseURL.slice(0, -1);
+    }
     tauriFetch({
-      url: `${endpointLink}/provider/_info`,
+      url: `${baseURL}/provider/_info`,
       method: "GET",
     })
       .then((res) => {

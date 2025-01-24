@@ -49,10 +49,6 @@ export const tauriFetch = async <T = any>({
 
     if (!url.startsWith("http://") && !url.startsWith("https://")) {
       // If not, prepend the defaultPrefix
-      if (baseURL.endsWith("/")) {
-        baseURL = baseURL.slice(0, -1);
-      }
-
       url = baseURL + url;
     }
 

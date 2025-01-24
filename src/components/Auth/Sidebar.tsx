@@ -36,8 +36,12 @@ export function Sidebar({ addService }: SidebarProps) {
   }, []);
 
   const getDefaultHealth = () => {
+    let baseURL = defaultService.endpoint
+    if (baseURL.endsWith("/")) {
+      baseURL = baseURL.slice(0, -1);
+    }
     tauriFetch({
-      url: `${defaultService.endpoint}/health`,
+      url: `${baseURL}/health`,
       method: "GET",
     })
       .then((res) => {
@@ -54,8 +58,13 @@ export function Sidebar({ addService }: SidebarProps) {
 
   const getOtherHealth = (item: any) => {
     if (!item.endpoint) return;
+    //
+    let baseURL = item.endpoint
+    if (baseURL.endsWith("/")) {
+      baseURL = baseURL.slice(0, -1);
+    }
     tauriFetch({
-      url: `${item.endpoint}/health`,
+      url: `${baseURL}/health`,
       method: "GET",
     })
       .then((res) => {
