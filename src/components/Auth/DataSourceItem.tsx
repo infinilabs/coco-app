@@ -1,4 +1,9 @@
-import { Link2, Trash2 } from "lucide-react";
+import { Link2 } from "lucide-react";
+
+import { useAppStore } from "@/stores/appStore";
+import source_default_img from "@/assets/images/source_default.png";
+import source_default_dark_img from "@/assets/images/source_default_dark.png";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface Account {
   email: string;
@@ -7,19 +12,51 @@ interface Account {
 
 interface DataSourceItemProps {
   name: string;
-  type: string;
-  accounts: Account[];
+  connector: any;
+  accounts?: Account[];
 }
 
-export function DataSourceItem({ name, type, accounts }: DataSourceItemProps) {
-  const isConnected = accounts.length > 0;
+export function DataSourceItem({ name, connector }: DataSourceItemProps) {
+  const isConnected = true;
+
+  const { theme } = useTheme();
+
+  const connector_data = useAppStore((state) => state.connector_data);
+  const endpoint_http = useAppStore((state) => state.endpoint_http);
+
+  function findConnectorIcon() {
+    const connector_id = connector?.id;
+
+    const result_connector = connector_data.find(
+      (data: any) => data._source.id === connector_id
+    );
+
+    return result_connector?._source;
+  }
+
+  function getTypeIcon() {
+    const connectorSource = findConnectorIcon();
+    const icons = connectorSource?.icon;
+
+    if (!icons) {
+      return theme === "dark" ? source_default_dark_img : source_default_img;
+    }
+
+    if (icons?.startsWith("http://") || icons?.startsWith("https://")) {
+      return icons;
+    } else {
+      return endpoint_http + icons;
+    }
+  }
 
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <img src={`/icons/${type}.svg`} alt={name} className="w-6 h-6" />
-          <span className="font-medium text-gray-900 dark:text-white">{name}</span>
+          <img src={getTypeIcon()} alt={name} className="w-6 h-6" />
+          <span className="font-medium text-gray-900 dark:text-white">
+            {name}
+          </span>
         </div>
         <button className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 flex items-center space-x-1">
           <Link2 className="w-4 h-4" />
@@ -29,7 +66,7 @@ export function DataSourceItem({ name, type, accounts }: DataSourceItemProps) {
         {isConnected ? "Manage" : "Connect Accounts"}
       </div>
 
-      {accounts.map((account, index) => (
+      {/* {accounts.map((account, index) => (
         <div
           key={account.email}
           className="flex items-center justify-between py-2 border-t border-gray-100 dark:border-gray-700"
@@ -56,7 +93,7 @@ export function DataSourceItem({ name, type, accounts }: DataSourceItemProps) {
             </button>
           </div>
         </div>
-      ))}
+      ))} */}
     </div>
   );
 }

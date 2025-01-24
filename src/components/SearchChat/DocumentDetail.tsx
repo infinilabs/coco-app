@@ -41,7 +41,7 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
       return theme === "dark" ? source_default_dark_img : source_default_img;
     }
 
-    if (icons.startsWith("http://") || icons.startsWith("https://")) {
+    if (icons?.startsWith("http://") || icons?.startsWith("https://")) {
       return icons;
     } else {
       return endpoint_http + icons;

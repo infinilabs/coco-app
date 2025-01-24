@@ -184,7 +184,7 @@ function DropdownList({
       return theme === "dark" ? source_default_dark_img : source_default_img;
     }
 
-    if (icons.startsWith("http://") || icons.startsWith("https://")) {
+    if (icons?.startsWith("http://") || icons?.startsWith("https://")) {
       return icons;
     } else {
       return endpoint_http + icons;
@@ -201,7 +201,7 @@ function DropdownList({
       return file_efault_img;
     }
 
-    if (selectedIcon.startsWith("http://") || selectedIcon.startsWith("https://")) {
+    if (selectedIcon?.startsWith("http://") || selectedIcon?.startsWith("https://")) {
       return selectedIcon;
     } else {
       return endpoint_http + selectedIcon;
@@ -218,7 +218,7 @@ function DropdownList({
       return theme === "dark" ? source_default_dark_img : source_default_img;
     }
 
-    if (selectedIcon.startsWith("http://") || selectedIcon.startsWith("https://")) {
+    if (selectedIcon?.startsWith("http://") || selectedIcon?.startsWith("https://")) {
       return selectedIcon;
     } else {
       return endpoint_http + selectedIcon;

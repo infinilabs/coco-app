@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Command,
   Monitor,
@@ -7,6 +7,7 @@ import {
   Sun,
   Power,
   Tags,
+  Trash2,
 } from "lucide-react";
 import { isTauri, invoke } from "@tauri-apps/api/core";
 import {
@@ -21,12 +22,18 @@ import { Shortcut } from "./shortcut";
 import { useShortcutEditor } from "@/hooks/useShortcutEditor";
 import { ThemeOption } from "./index2";
 import { useAppStore } from "@/stores/appStore";
+import { useAuthStore } from "@/stores/authStore";
+import { useConnectStore } from "@/stores/connectStore";
 
 export default function GeneralSettings() {
   const [launchAtLogin, setLaunchAtLogin] = useState(true);
 
   const showTooltip = useAppStore((state) => state.showTooltip);
   const setShowTooltip = useAppStore((state) => state.setShowTooltip);
+
+  const setAuth = useAuthStore((state) => state.setAuth);
+  const setUserInfo = useAuthStore((state) => state.setUserInfo);
+  const endpoint = useAppStore((state) => state.endpoint);
 
   useEffect(() => {
     const fetchAutoStartStatus = async () => {
@@ -83,14 +90,14 @@ export default function GeneralSettings() {
     getCurrentShortcut();
   }, []);
 
-  const changeShortcut =(key: Shortcut) => {
-    setShortcut(key)
+  const changeShortcut = (key: Shortcut) => {
+    setShortcut(key);
     //
     if (key.length === 0) return;
     invoke("change_shortcut", { key: key?.join("+") }).catch((err) => {
       console.error("Failed to save hotkey:", err);
     });
-  }
+  };
 
   const { isEditing, currentKeys, startEditing, saveShortcut, cancelEditing } =
     useShortcutEditor(shortcut, changeShortcut);
@@ -114,6 +121,15 @@ export default function GeneralSettings() {
   const onSaveShortcut = async () => {
     saveShortcut();
   };
+
+  const clearAllCache = useCallback(() => {
+    setAuth(undefined, endpoint);
+    setUserInfo({}, endpoint);
+
+    useConnectStore.persist.clearStorage();
+
+    useAppStore.persist.clearStorage();
+  }, [endpoint]);
 
   return (
     <div className="space-y-8">
@@ -205,6 +221,23 @@ export default function GeneralSettings() {
               Manage Favorites
             </button>
           </SettingsItem> */}
+
+          <SettingsItem
+            icon={Trash2}
+            title="Clear Cache"
+            description="Clear cached data and settings"
+          >
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <button
+                  onClick={clearAllCache}
+                  className=" px-4 py-2 text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 border border-red-200 dark:border-red-800 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                >
+                  Clear All Cache
+                </button>
+              </div>
+            </div>
+          </SettingsItem>
         </div>
       </div>
     </div>

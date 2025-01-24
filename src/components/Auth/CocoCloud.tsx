@@ -56,16 +56,17 @@ export default function CocoCloud() {
     setRefreshLoading(false);
     setError(null);
     setEndpoint(currentService.endpoint);
+    setIsConnect(true);
   }, [JSON.stringify(currentService)]);
 
-  const getProfile = async () => {
+  const getProfile = useCallback(async () => {
     const response: any = await tauriFetch({
       url: `/account/profile`,
       method: "GET",
     });
     console.log("getProfile", response);
     setUserInfo(response.data || {}, endpoint);
-  };
+  }, [endpoint]);
 
   const handleOAuthCallback = useCallback(
     async (code: string | null, provider: string | null) => {
@@ -167,7 +168,7 @@ export default function CocoCloud() {
     };
   }, [app_uid]);
 
-  function LoginClick() {
+  const LoginClick = useCallback(() => {
     if (loading) return;
 
     let uid = uuidv4();
@@ -180,13 +181,13 @@ export default function CocoCloud() {
     );
 
     setLoading(true);
-  }
+  }, [JSON.stringify(currentService)]);
 
   function goToHref(url: string) {
     OpenBrowserURL(url);
   }
 
-  function refreshClick() {
+  const refreshClick = useCallback(() => {
     setRefreshLoading(true);
     tauriFetch({
       url: `/provider/_info`,
@@ -195,7 +196,7 @@ export default function CocoCloud() {
       .then((res) => {
         setEndpoint(res.data.endpoint);
         setCurrentService(res.data || {});
-        if (res.data.endpoint === defaultService.endpoint) {
+        if (res.data?.endpoint === "https://coco.infini.cloud/") {
           setDefaultService(res.data);
         }
       })
@@ -205,17 +206,17 @@ export default function CocoCloud() {
       .finally(() => {
         setRefreshLoading(false);
       });
-  }
+  }, [JSON.stringify(defaultService)]);
 
   function addService() {
     setIsConnect(false);
   }
 
-  function deleteClick() {
+  const deleteClick = useCallback(() => {
     deleteOtherService(currentService);
     setAuth(undefined, endpoint);
     setUserInfo({}, endpoint);
-  }
+  }, [JSON.stringify(currentService), endpoint]);
 
   return (
     <div className="flex bg-gray-50 dark:bg-gray-900">
@@ -238,7 +239,6 @@ export default function CocoCloud() {
                 alt="banner"
               />
             </div>
-
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <div className="flex items-center text-gray-900 dark:text-white font-medium">

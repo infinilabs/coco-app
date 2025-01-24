@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { ChevronLeft } from "lucide-react";
 
 import { useConnectStore } from "@/stores/connectStore";
 import { tauriFetch } from "@/api/tauriFetchClient";
-import { useAppStore } from "@/stores/appStore"
+import { useAppStore } from "@/stores/appStore";
 
 interface ConnectServiceProps {
   setIsConnect: (isConnect: boolean) => void;
@@ -12,8 +12,10 @@ interface ConnectServiceProps {
 export function ConnectService({ setIsConnect }: ConnectServiceProps) {
   const addOtherServices = useConnectStore((state) => state.addOtherServices);
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
+  const defaultService = useConnectStore((state) => state.defaultService);
+  const otherServices = useConnectStore((state) => state.otherServices);
 
-  const setEndpoint = useAppStore(state => state.setEndpoint);
+  const setEndpoint = useAppStore((state) => state.setEndpoint);
 
   const [endpointLink, setEndpointLink] = useState("");
   const [refreshLoading, setRefreshLoading] = useState(false);
@@ -27,23 +29,36 @@ export function ConnectService({ setIsConnect }: ConnectServiceProps) {
     setIsConnect(true);
   };
 
-  const addService = () => {
-    if (!endpointLink) return
+  const addService = useCallback(() => {
+    if (!endpointLink) return;
+    if (!endpointLink.startsWith("http://") && !endpointLink.startsWith("https://")) {
+      return
+    }
     setRefreshLoading(true);
     //
-    let baseURL = endpointLink
+    let baseURL = endpointLink;
     if (baseURL.endsWith("/")) {
       baseURL = baseURL.slice(0, -1);
     }
+
     tauriFetch({
       url: `${baseURL}/provider/_info`,
       method: "GET",
     })
       .then((res) => {
-        addOtherServices(res.data)
-        setCurrentService(res.data);
-        setEndpoint(res.data.endpoint);
-        setIsConnect(true);
+        if (
+          res.data?.endpoint === defaultService.endpoint ||
+          otherServices.some(
+            (item: any) => item.endpoint === res.data?.endpoint
+          )
+        ) {
+          console.error(`${res.data?.endpoint} Repeated`);
+        } else {
+          addOtherServices(res.data);
+          setCurrentService(res.data);
+          setEndpoint(res.data.endpoint);
+          setIsConnect(true);
+        }
       })
       .catch((err) => {
         console.error(err);
@@ -51,7 +66,7 @@ export function ConnectService({ setIsConnect }: ConnectServiceProps) {
       .finally(() => {
         setRefreshLoading(false);
       });
-  };
+  }, [endpointLink]);
 
   return (
     <div className="max-w-4xl">

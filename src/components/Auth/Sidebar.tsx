@@ -87,7 +87,7 @@ export function Sidebar({ addService }: SidebarProps) {
       <div className="p-4 py-8">
         <div
           className={`flex items-center space-x-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg mb-6 ${
-            currentService.name === defaultService.name
+            currentService.endpoint === defaultService.endpoint
               ? "border border-[rgba(0,135,255,1)]"
               : ""
           }`}

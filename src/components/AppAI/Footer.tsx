@@ -49,7 +49,7 @@ export default function Footer({ name }: FooterProps) {
       return theme === "dark" ? source_default_dark_img : source_default_img;
     }
 
-    if (icons.startsWith("http://") || icons.startsWith("https://")) {
+    if (icons?.startsWith("http://") || icons?.startsWith("https://")) {
       return icons;
     } else {
       return endpoint_http + icons;
