@@ -31,9 +31,12 @@ export function Sidebar({ addService }: SidebarProps) {
 
   useEffect(() => {
     getDefaultHealth();
+  }, []);
+
+  useEffect(() => {
     getOtherHealth(currentService);
     setEndpoint(currentService.endpoint);
-  }, []);
+  }, [currentService.endpoint]);
 
   const getDefaultHealth = () => {
     let baseURL = defaultService.endpoint
