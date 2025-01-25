@@ -62,7 +62,10 @@ fn get_public(provider_info: &JsonMap<String, Json>) -> bool {
 }
 
 #[tauri::command]
-async fn add_coco_server<R: Runtime>(app_handle: AppHandle<R>, endpoint: String) -> Result<(), ()> {
+pub async fn add_coco_server<R: Runtime>(
+    app_handle: AppHandle<R>,
+    endpoint: String,
+) -> Result<(), ()> {
     // Remove the tailing '/' or our `xxx_url()` functions won't work
     let endpoint = endpoint.trim_end_matches('/');
     let mut coco_servers = _list_coco_servers(&app_handle).await?;
@@ -92,7 +95,7 @@ async fn add_coco_server<R: Runtime>(app_handle: AppHandle<R>, endpoint: String)
 }
 
 #[tauri::command]
-async fn remove_coco_server<R: Runtime>(
+pub async fn remove_coco_server<R: Runtime>(
     app_handle: AppHandle<R>,
     endpoint: String,
 ) -> Result<(), ()> {
@@ -118,14 +121,14 @@ async fn remove_coco_server<R: Runtime>(
 }
 
 #[tauri::command]
-async fn list_coco_servers<R: Runtime>(
+pub async fn list_coco_servers<R: Runtime>(
     app_handle: AppHandle<R>,
 ) -> Result<Vec<JsonMap<String, Json>>, ()> {
     _list_coco_servers(&app_handle).await
 }
 
 #[tauri::command]
-async fn get_coco_server_health_info(endpoint: String) -> bool {
+pub async fn get_coco_server_health_info(endpoint: String) -> bool {
     let response = match HTTP_CLIENT
         .get(health_url(&endpoint))
         .send()
@@ -146,7 +149,7 @@ async fn get_coco_server_health_info(endpoint: String) -> bool {
 }
 
 #[tauri::command]
-async fn get_coco_servers_health_info<R: Runtime>(
+pub async fn get_coco_servers_health_info<R: Runtime>(
     app_handle: AppHandle<R>,
 ) -> Result<HashMap<String, bool>, ()> {
     let coco_server_endpoints = _list_coco_server_endpoints(&app_handle).await?;
@@ -218,14 +221,14 @@ impl DocumentsSizedCollector {
 }
 
 #[derive(Debug, Serialize)]
-struct QueryResponse {
+pub struct QueryResponse {
     failed_coco_servers: Vec<String>,
     documents: Vec<JsonMap<String, Json>>,
     total_hits: u64,
 }
 
 #[tauri::command]
-async fn query_coco_servers<R: Runtime>(
+pub async fn query_coco_servers<R: Runtime>(
     app_handle: AppHandle<R>,
     from: u64,
     size: u64,
@@ -242,6 +245,7 @@ async fn query_coco_servers<R: Runtime>(
     for server in coco_servers {
         let endpoint = get_endpoint(&server).to_string();
         let public = get_public(&server);
+        let name = get_name(&server).to_string();
 
         let mut request_builder = HTTP_CLIENT.get(search_url(&endpoint));
         if !public {
@@ -257,14 +261,14 @@ async fn query_coco_servers<R: Runtime>(
             .query(&query_strings)
             .send();
 
-        futures.push(future.map(|request_result| (endpoint, request_result)));
+        futures.push(future.map(|request_result| (name, request_result)));
     }
 
     let mut total_hits = 0;
     let mut failed_coco_servers = Vec::new();
     let mut docs_collector = DocumentsSizedCollector::new(size_for_each_request);
 
-    while let Some((endpoint, res_response)) = futures.next().await {
+    while let Some((name, res_response)) = futures.next().await {
         match res_response {
             Ok(response) => {
                 let mut body: JsonMap<String, Json> =
@@ -316,7 +320,7 @@ async fn query_coco_servers<R: Runtime>(
                     docs_collector.push(source, score);
                 }
             }
-            Err(_) => failed_coco_servers.push(endpoint),
+            Err(_) => failed_coco_servers.push(name),
         }
     }
 
@@ -330,7 +334,7 @@ async fn query_coco_servers<R: Runtime>(
 }
 
 #[tauri::command]
-async fn refresh_coco_server(
+pub async fn refresh_coco_server(
     app_handle: AppHandle,
     endpoint: String,
 ) -> Result<JsonMap<String, Json>, ()> {
@@ -364,21 +368,21 @@ async fn refresh_coco_server(
 }
 
 #[tauri::command]
-fn store_coco_server_token(app_handle: AppHandle, endpont: String, token: String) {
+pub fn store_coco_server_token(app_handle: AppHandle, endpoint: String, token: String) {
     let store = app_handle
         .store(COCO_TAURI_STORE)
         .expect("create or load a store should not fail");
     let tokens = match store.get(COCO_SERVER_TOKENS) {
         Some(tokens) => match tokens {
             Json::Object(mut map) => {
-                map.insert(endpont, Json::String(token));
+                map.insert(endpoint, Json::String(token));
                 map
             }
             _ => unreachable!("we store Coco server tokens in a map"),
         },
         None => {
             let mut new_map = JsonMap::new();
-            new_map.insert(endpont, Json::String(token));
+            new_map.insert(endpoint, Json::String(token));
             new_map
         }
     };
