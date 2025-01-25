@@ -84,9 +84,16 @@ pub fn run() {
             change_autostart,
             hide_coco,
             switch_tray_icon,
-            // show_panel,
-            // hide_panel,
-            // close_panel
+            coco_server::add_coco_server,
+            coco_server::remove_coco_server,
+            coco_server::list_coco_servers,
+            coco_server::get_coco_server_health_info,
+            coco_server::get_coco_servers_health_info,
+            coco_server::query_coco_servers,
+            coco_server::refresh_coco_server,
+            coco_server::store_coco_server_token // show_panel,
+                                                 // hide_panel,
+                                                 // close_panel
         ])
         .setup(|app| {
             init(app.app_handle());
