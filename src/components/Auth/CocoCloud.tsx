@@ -170,6 +170,7 @@ export default function CocoCloud() {
 
   const LoginClick = useCallback(() => {
     if (loading) return;
+    setAuth(undefined, endpoint);
 
     let uid = uuidv4();
     setAppUid(uid);

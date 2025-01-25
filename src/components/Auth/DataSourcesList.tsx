@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import { RefreshCcw } from "lucide-react";
 
 import { DataSourceItem } from "./DataSourceItem";
-import { useAppStore } from "@/stores/appStore";
+import { useConnectStore } from "@/stores/connectStore";
 import { tauriFetch } from "@/api/tauriFetchClient";
+import { useAppStore } from "@/stores/appStore";
 
 export function DataSourcesList() {
-  const datasourceData = useAppStore((state) => state.datasourceData);
-  const setDatasourceData = useAppStore((state) => state.setDatasourceData);
+  const datasourceData = useConnectStore((state) => state.datasourceData);
+  const setDatasourceData = useConnectStore((state) => state.setDatasourceData);
+
+  const endpoint_http = useAppStore((state) => state.endpoint_http);
 
   const [refreshLoading, setRefreshLoading] = useState(false);
 
@@ -20,7 +23,7 @@ export function DataSourcesList() {
       });
       console.log("datasource", response);
       const data = response.data?.hits?.hits || [];
-      setDatasourceData(data);
+      setDatasourceData(data, endpoint_http);
     } catch (error) {
       console.error("Failed to fetch user data:", error);
     }
@@ -45,7 +48,7 @@ export function DataSourcesList() {
         </button>
       </h2>
       <div className="space-y-4">
-        {datasourceData.map((source) => (
+        {datasourceData[endpoint_http]?.map((source) => (
           <DataSourceItem key={source._id} {...source._source} />
         ))}
       </div>

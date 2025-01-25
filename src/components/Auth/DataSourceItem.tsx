@@ -4,6 +4,7 @@ import { useAppStore } from "@/stores/appStore";
 import source_default_img from "@/assets/images/source_default.png";
 import source_default_dark_img from "@/assets/images/source_default_dark.png";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useConnectStore } from "@/stores/connectStore";
 
 interface Account {
   email: string;
@@ -17,17 +18,17 @@ interface DataSourceItemProps {
 }
 
 export function DataSourceItem({ name, connector }: DataSourceItemProps) {
-  const isConnected = true;
+  // const isConnected = true;
 
   const { theme } = useTheme();
 
-  const connector_data = useAppStore((state) => state.connector_data);
+  const connector_data = useConnectStore((state) => state.connector_data);
   const endpoint_http = useAppStore((state) => state.endpoint_http);
 
   function findConnectorIcon() {
     const connector_id = connector?.id;
 
-    const result_connector = connector_data.find(
+    const result_connector = connector_data[endpoint_http]?.find(
       (data: any) => data._source.id === connector_id
     );
 
@@ -62,9 +63,9 @@ export function DataSourceItem({ name, connector }: DataSourceItemProps) {
           <Link2 className="w-4 h-4" />
         </button>
       </div>
-      <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+      {/* <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
         {isConnected ? "Manage" : "Connect Accounts"}
-      </div>
+      </div> */}
 
       {/* {accounts.map((account, index) => (
         <div

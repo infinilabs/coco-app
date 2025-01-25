@@ -16,6 +16,7 @@ import source_default_img from "@/assets/images/source_default.png";
 import source_default_dark_img from "@/assets/images/source_default_dark.png";
 import file_efault_img from "@/assets/images/file_efault.png";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useConnectStore } from "@/stores/connectStore";
 
 type ISearchData = Record<string, any[]>;
 
@@ -46,8 +47,9 @@ function DropdownList({
 
   const { theme } = useTheme();
 
-  const connector_data = useAppStore((state) => state.connector_data);
-  const datasourceData = useAppStore((state) => state.datasourceData);
+  const connector_data = useConnectStore((state) => state.connector_data);
+  const datasourceData = useConnectStore((state) => state.datasourceData);
+
   const endpoint_http = useAppStore((state) => state.endpoint_http);
   const setSourceData = useSearchStore((state) => state.setSourceData);
 
@@ -163,13 +165,13 @@ function DropdownList({
   function findConnectorIcon(item: any) {
     const id = item?._source?.source?.id || "";
 
-    const result_source = datasourceData.find(
+    const result_source = datasourceData[endpoint_http]?.find(
       (data: any) => data._source.id === id
     );
 
     const connector_id = result_source?._source?.connector?.id;
 
-    const result_connector = connector_data.find(
+    const result_connector = connector_data[endpoint_http]?.find(
       (data: any) => data._source.id === connector_id
     );
 

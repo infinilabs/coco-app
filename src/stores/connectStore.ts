@@ -2,6 +2,10 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { produce } from 'immer'
 
+type keyArrayObject = {
+  [key: string]: any[];
+};
+
 export type IConnectStore = {
   defaultService: any;
   setDefaultService: (service: any) => void;
@@ -10,7 +14,10 @@ export type IConnectStore = {
   deleteOtherService: (service: any) => void;
   currentService: any;
   setCurrentService: (service: any) => void;
-
+  connector_data: keyArrayObject,
+  setConnectorData: (connector_data: any[], key: string) => void,
+  datasourceData: keyArrayObject,
+  setDatasourceData: (datasourceData: any[], key: string) => void,
 };
 
 export const useConnectStore = create<IConnectStore>()(
@@ -86,6 +93,22 @@ export const useConnectStore = create<IConnectStore>()(
           draft.currentService = currentService;
         }))
       },
+      connector_data: {},
+      setConnectorData: async (connector_data: any[], key: string) => {
+        set(
+          produce((draft) => {
+            draft.connector_data[key] = connector_data
+          })
+        );
+      },
+      datasourceData: {},
+      setDatasourceData: async (datasourceData: any[], key: string) => {
+        set(
+          produce((draft) => {
+            draft.datasourceData[key] = datasourceData
+          })
+        );
+      },
     }),
     {
       name: "connect-store",
@@ -93,6 +116,8 @@ export const useConnectStore = create<IConnectStore>()(
         defaultService: state.defaultService,
         otherServices: state.otherServices,
         currentService: state.currentService,
+        connector_data: state.connector_data,
+        datasourceData: state.datasourceData,
       }),
     }
   )
