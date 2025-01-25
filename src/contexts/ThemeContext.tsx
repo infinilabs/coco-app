@@ -95,12 +95,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       await switchTrayIcon(displayTheme);
 
       // Notify other windows to update the theme
-      try {
-        console.log("theme-changed", displayTheme);
-        await emit("theme-changed", { theme: displayTheme });
-      } catch (err) {
-        console.error("Failed to emit theme-changed event:", err);
-      }
+      // try {
+      //   console.log("theme-changed", displayTheme);
+      //   await emit("theme-changed", { theme: displayTheme });
+      // } catch (err) {
+      //   console.error("Failed to emit theme-changed event:", err);
+      // }
     }
   };
 
