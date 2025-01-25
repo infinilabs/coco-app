@@ -61,6 +61,19 @@ fn get_public(provider_info: &JsonMap<String, Json>) -> bool {
         .expect("field [public] should be a string")
 }
 
+// TODO: unit test for this
+fn trim_endpoint_last_forward_slash(provider_info: &mut JsonMap<String, Json>) {
+    let endpoint = match provider_info
+        .get_mut("endpoint")
+        .expect("provider info does not have a [endpoint] field")
+    {
+        Json::String(str) => str,
+        _ => panic!("field [endpoint] should be a string"),
+    };
+    let trimmed = endpoint.trim_end_matches('/');
+    endpoint.truncate(trimmed.len());
+}
+
 #[tauri::command]
 pub async fn add_coco_server<R: Runtime>(
     app_handle: AppHandle<R>,
@@ -82,12 +95,13 @@ pub async fn add_coco_server<R: Runtime>(
         .send()
         .await
         .map_err(|_client_err| ())?;
-    let new_coco_server: JsonMap<String, Json> = response
+    let mut new_coco_server: JsonMap<String, Json> = response
         .json()
         .await
         .expect("This provider returns invalid response");
 
     // TODO: do basic check to the provider info
+    trim_endpoint_last_forward_slash(&mut new_coco_server);
 
     coco_servers.push(new_coco_server);
 
@@ -447,10 +461,11 @@ async fn _list_coco_servers<R: Runtime>(
             .send()
             .await
             .map_err(|_client_err| ())?;
-        let default_coco_server: JsonMap<String, Json> = response
+        let mut default_coco_server: JsonMap<String, Json> = response
             .json()
             .await
             .expect("This provider returns invalid response");
+        trim_endpoint_last_forward_slash(&mut default_coco_server);
 
         empty_vec.push(default_coco_server);
 
