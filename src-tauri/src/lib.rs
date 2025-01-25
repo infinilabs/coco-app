@@ -92,7 +92,9 @@ pub fn run() {
             coco_server::query_coco_servers,
             coco_server::refresh_coco_server,
             coco_server::store_coco_server_token,
-            coco_server::get_user_profiles
+            coco_server::get_user_profiles,
+            coco_server::get_coco_server_datasources,
+            coco_server::get_coco_server_connectors
         ])
         .setup(|app| {
             init(app.app_handle());
