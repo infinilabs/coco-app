@@ -91,9 +91,8 @@ pub fn run() {
             coco_server::get_coco_servers_health_info,
             coco_server::query_coco_servers,
             coco_server::refresh_coco_server,
-            coco_server::store_coco_server_token // show_panel,
-                                                 // hide_panel,
-                                                 // close_panel
+            coco_server::store_coco_server_token,
+            coco_server::get_user_profiles
         ])
         .setup(|app| {
             init(app.app_handle());
