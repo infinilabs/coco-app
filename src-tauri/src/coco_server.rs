@@ -311,8 +311,10 @@ pub async fn query_coco_servers<R: Runtime>(
 
         let mut request_builder = HTTP_CLIENT.get(search_url(&endpoint));
         if !public {
-            let token = get_coco_server_token(&tokens, &endpoint)
-                .unwrap_or_else(|| panic!("token of Coco server [{endpoint}] not found"));
+            let Some(token) = get_coco_server_token(&tokens, &endpoint) else {
+                // skip non-public servers with no token
+                continue;
+            };
             request_builder = request_builder.header("X-API-TOKEN", token);
         }
         let future = request_builder
