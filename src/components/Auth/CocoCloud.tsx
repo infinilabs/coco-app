@@ -22,7 +22,6 @@ import { Sidebar } from "./Sidebar";
 import { ConnectService } from "./ConnectService";
 import { OpenBrowserURL } from "@/utils/index";
 import { useAppStore } from "@/stores/appStore";
-import { useAuthStore } from "@/stores/authStore";
 import { tauriFetch } from "@/api/tauriFetchClient";
 import { useConnectStore } from "@/stores/connectStore";
 import bannerImg from "@/assets/images/coco-cloud-banner.jpeg";
@@ -36,10 +35,6 @@ export default function CocoCloud() {
   const setEndpoint = useAppStore((state) => state.setEndpoint);
   const endpoint = useAppStore((state) => state.endpoint);
 
-  const auth = useAuthStore((state) => state.auth);
-  // const setAuth = useAuthStore((state) => state.setAuth);
-  const userInfo = useAuthStore((state) => state.userInfo);
-  const setUserInfo = useAuthStore((state) => state.setUserInfo);
   const defaultService = useConnectStore((state) => state.defaultService);
   const currentService = useConnectStore((state) => state.currentService);
   const setDefaultService = useConnectStore((state) => state.setDefaultService);
@@ -50,6 +45,8 @@ export default function CocoCloud() {
 
   const [loading, setLoading] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
+  const [_profiles, setProfiles] = useState<any>({});
+  const [userInfo, setUserInfo] = useState<any>({});
 
   useEffect(() => {
     console.log("currentService", currentService);
@@ -60,14 +57,22 @@ export default function CocoCloud() {
     setIsConnect(true);
   }, [JSON.stringify(currentService)]);
 
-  const getProfile = useCallback(async () => {
-    const response: any = await tauriFetch({
-      url: `/account/profile`,
-      method: "GET",
-    });
-    console.log("getProfile", response);
-    setUserInfo(response.data || {}, endpoint);
+  const get_user_profiles = useCallback(() => {
+    invoke("get_user_profiles")
+      .then((res: any) => {
+        console.log("get_user_profiles", res);
+        setProfiles(res);
+        console.log("setUserInfo", res[endpoint]);
+        setUserInfo(res[endpoint] || {})
+      })
+      .catch((err: any) => {
+        console.error(err);
+      });
   }, [endpoint]);
+
+  useEffect(()=> {
+    get_user_profiles()
+  }, [])
 
   const handleOAuthCallback = useCallback(
     async (code: string | null, provider: string | null) => {
@@ -104,7 +109,7 @@ export default function CocoCloud() {
 
           await invoke("store_coco_server_token", { endpoint, token: response.data?.access_token  });
 
-          getProfile();
+          get_user_profiles();
         } else {
           // setAuth(undefined, endpoint);
           setError("Sign in failed: " + response.data?.error?.reason);
@@ -127,7 +132,7 @@ export default function CocoCloud() {
 
   const handleUrl = (url: string) => {
     try {
-      url = "coco://oauth_callback?code=cuaan8k61mdv447c5o00aykubamogwujihmb9asksg9fge3hfrke8yem69g2grlaod5uw5nm2ipt9qji0iv1&provider=coco-cloud/"
+      // url = "coco://oauth_callback?code=cuaan8k61mdv447c5o00aykubamogwujihmb9asksg9fge3hfrke8yem69g2grlaod5uw5nm2ipt9qji0iv1&provider=coco-cloud/"
       const urlObject = new URL(url);
       console.log("urlObject:", urlObject);
 
@@ -151,7 +156,7 @@ export default function CocoCloud() {
 
   // Fetch the initial deep link intent
   useEffect(() => {
-    handleUrl("");
+    // handleUrl("");
     getCurrentDeepLinkUrls()
       .then((urls) => {
         console.log("URLs:", urls);
@@ -220,7 +225,7 @@ export default function CocoCloud() {
   const deleteClick = useCallback(() => {
     deleteOtherService(currentService);
     // setAuth(undefined, endpoint);
-    setUserInfo({}, endpoint);
+    setUserInfo({});
   }, [JSON.stringify(currentService), endpoint]);
 
   return (
@@ -304,8 +309,8 @@ export default function CocoCloud() {
                 <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                   Account Information
                 </h2>
-                {auth && auth[endpoint] ? (
-                  <UserProfile userInfo={userInfo[endpoint]} />
+                {userInfo?.name ? (
+                  <UserProfile userInfo={userInfo || {}} />
                 ) : (
                   <div>
                     <button
@@ -327,7 +332,7 @@ export default function CocoCloud() {
               </div>
             ) : null}
 
-            {auth && auth[endpoint] ? <DataSourcesList /> : null}
+            {userInfo?.name ? <DataSourcesList /> : null}
           </div>
         ) : (
           <ConnectService setIsConnect={setIsConnect} />

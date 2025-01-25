@@ -49,7 +49,7 @@ export function ConnectService({ setIsConnect }: ConnectServiceProps) {
     }
     setRefreshLoading(true);
     //
-    invoke("add_coco_server")
+    invoke("add_coco_server", {endpoint: endpointLink})
       .then((res: any) => {
         console.log("add_coco_server", res);
         list_coco_servers();
