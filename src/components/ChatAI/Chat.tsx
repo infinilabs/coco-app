@@ -225,7 +225,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
       if (isTauri()) {
         createWin && createWin({
           label: "chat",
-          title: "Coco AI",
+          title: "Coco Chat",
           dragDropEnabled: true,
           center: true,
           width: 900,
