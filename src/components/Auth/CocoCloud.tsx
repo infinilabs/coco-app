@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   RefreshCcw,
   Globe,
@@ -27,6 +27,8 @@ import { useConnectStore } from "@/stores/connectStore";
 import bannerImg from "@/assets/images/coco-cloud-banner.jpeg";
 
 export default function CocoCloud() {
+  const SidebarRef = useRef<{ refreshData: () => void; }>(null);
+
   const [error, setError] = useState<string | null>(null);
 
   const [isConnect, setIsConnect] = useState(true);
@@ -221,12 +223,12 @@ export default function CocoCloud() {
     setIsConnect(false);
   }
 
-  
   const remove_coco_server = useCallback(() => {
     invoke("remove_coco_server", {endpoint})
       .then((res: any) => {
         console.log("remove_coco_server", res);
         get_user_profiles();
+        SidebarRef.current?.refreshData()
       })
       .catch((err: any) => {
         console.error(err);
@@ -235,7 +237,7 @@ export default function CocoCloud() {
 
   return (
     <div className="flex bg-gray-50 dark:bg-gray-900">
-      <Sidebar addService={addService} serviceList={serviceList}/>
+      <Sidebar ref={SidebarRef} addService={addService} serviceList={serviceList}/>
 
       <main className="flex-1 p-4 py-8">
         <div>

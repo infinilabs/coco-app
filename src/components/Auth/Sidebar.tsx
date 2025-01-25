@@ -11,7 +11,10 @@ interface SidebarProps {
   serviceList: any[];
 }
 
-export function Sidebar({ addService, serviceList }: SidebarProps) {
+export const Sidebar = forwardRef<
+  { refreshData: () => void; },
+  SidebarProps
+>(({ addService, serviceList }, ref) => {
   const currentService = useConnectStore((state) => state.currentService);
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
 
@@ -58,6 +61,13 @@ export function Sidebar({ addService, serviceList }: SidebarProps) {
   useEffect(() => {
     setEndpoint(currentService.endpoint);
   }, [currentService.endpoint]);
+
+  useImperativeHandle(ref, () => ({
+    refreshData: () => {
+      list_coco_servers();
+      get_coco_servers_health_info();
+    }
+  }));
 
   return (
     <div className="w-64 min-h-[550px] border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
@@ -140,4 +150,4 @@ export function Sidebar({ addService, serviceList }: SidebarProps) {
       </div>
     </div>
   );
-}
+})
