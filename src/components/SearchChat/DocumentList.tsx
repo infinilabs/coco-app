@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useInfiniteScroll } from "ahooks";
-import { isTauri } from "@tauri-apps/api/core";
+import { isTauri, invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-shell";
 
 import { useAppStore } from "@/stores/appStore";
-import { tauriFetch } from "@/api/tauriFetchClient";
 import { useSearchStore } from "@/stores/searchStore";
 import { SearchHeader } from "./SearchHeader";
 import file_efault_img from "@/assets/images/file_efault.png";
@@ -39,26 +38,32 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
   const { data, loading } = useInfiniteScroll(
     async (d) => {
-      const page = d ? Math.ceil(d.list.length / PAGE_SIZE) + 1 : 1;
+      const from = d?.list.length || 0;
 
-      const from = (page - 1) * PAGE_SIZE;
+      console.log(11111, d?.list.length, from)
 
-      let url = `/query/_search?query=${input}&datasource=${sourceData?._source?.source?.id}&from=${from}&size=${PAGE_SIZE}`;
+      let queryStrings: any = {
+        query: input,
+        datasource: sourceData?.source?.id,
+      };
 
-      if (sourceData?._source?.rich_categories) {
-        url = `/query/_search?query=${input}&rich_category=${sourceData?._source?.rich_categories[0]?.key}&from=${from}&size=${PAGE_SIZE}`;
+      if (sourceData?.rich_categories) {
+        queryStrings = {
+          query: input,
+          rich_category: sourceData?.rich_categories[0]?.key,
+        };
       }
 
       try {
-        const response = await tauriFetch({
-          url,
-          method: "GET",
+        const response: any = await invoke("query_coco_servers", {
+          from: from,
+          size: PAGE_SIZE,
+          queryStrings,
         });
+        const list = response?.documents || [];
+        const total = response?.total_hits || 0;
 
-        const list = response.data?.hits?.hits || [];
-        const total = response.data?.hits?.total?.value || 0;
-
-        console.log("doc", url, response.data?.hits)
+        console.log("doc", response?.documents);
 
         setTotal(total);
 
@@ -84,10 +89,11 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         setTimeout(() => {
           const parentRef = containerRef.current;
           if (parentRef && parentRef.childElementCount > 10) {
-            const itemHeight = (parentRef.firstChild as HTMLElement)?.offsetHeight || 80;
+            const itemHeight =
+              (parentRef.firstChild as HTMLElement)?.offsetHeight || 80;
             parentRef.scrollTo({
               top: (parentRef.lastChild as HTMLElement)?.offsetTop - itemHeight,
-              behavior: 'instant',
+              behavior: "instant",
             });
           }
         });
@@ -104,37 +110,40 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     parentRef.scrollTo({
       top:
         parentRef.lastChild?.offsetTop - (data?.list?.length + 1) * itemHeight,
-      behavior: 'instant',
+      behavior: "instant",
     });
   };
 
   function findConnectorIcon(item: any) {
-    const id = item?._source?.source?.id || "";
+    const id = item?.source?.id || "";
 
     const result_source = datasourceData[endpoint_http]?.find(
-      (data: any) => data._source.id === id
+      (data: any) => data.id === id
     );
 
-    const connector_id = result_source?._source?.connector?.id;
+    const connector_id = result_source?.connector?.id;
 
     const result_connector = connector_data[endpoint_http]?.find(
-      (data: any) => data._source.id === connector_id
+      (data: any) => data.id === connector_id
     );
 
-    return result_connector?._source;
+    return result_connector;
   }
 
   function getIcon(item: any) {
     const connectorSource = findConnectorIcon(item);
     const icons = connectorSource?.assets?.icons || {};
 
-    const selectedIcon = icons[item?._source?.icon];
+    const selectedIcon = icons[item?.icon];
 
     if (!selectedIcon) {
       return file_efault_img;
     }
 
-    if (selectedIcon?.startsWith("http://") || selectedIcon?.startsWith("https://")) {
+    if (
+      selectedIcon?.startsWith("http://") ||
+      selectedIcon?.startsWith("https://")
+    ) {
       return selectedIcon;
     } else {
       return endpoint_http + selectedIcon;
@@ -179,8 +188,8 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
     if (e.key === "Enter" && selectedItem !== null) {
       const item = data?.list?.[selectedItem];
-      if (item?._source?.url) {
-        handleOpenURL(item?._source?.url);
+      if (item?.url) {
+        handleOpenURL(item?.url);
       }
     }
   };
@@ -216,13 +225,13 @@ export const DocumentList: React.FC<DocumentListProps> = ({
           const isSelected = selectedItem === index;
           return (
             <div
-              key={item._id + index}
+              key={item.id + index}
               ref={(el) => (itemRefs.current[index] = el)}
               onMouseEnter={() => onMouseEnter(index, item)}
               onClick={() => {
-                if (item?._source?.url) {
-                  handleOpenURL(item?._source?.url);
-                } 
+                if (item?.url) {
+                  handleOpenURL(item?.url);
+                }
               }}
               className={`w-full px-2 py-2.5 text-sm flex items-center gap-3 rounded-lg transition-colors cursor-pointer ${
                 isSelected
@@ -241,7 +250,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                     isSelected ? "font-medium" : ""
                   }`}
                 >
-                  {item?._source?.title}
+                  {item?.title}
                 </span>
               </div>
             </div>
@@ -256,14 +265,14 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
         {!loading && data?.list.length === 0 && (
           <div
-          data-tauri-drag-region
-          className="h-full w-full flex flex-col items-center"
-        >
-          <img src={noDataImg} alt="no-data" className="w-16 h-16 mt-24" />
-          <div className="mt-4 text-sm text-[#999] dark:text-[#666]">
-            No Results
+            data-tauri-drag-region
+            className="h-full w-full flex flex-col items-center"
+          >
+            <img src={noDataImg} alt="no-data" className="w-16 h-16 mt-24" />
+            <div className="mt-4 text-sm text-[#999] dark:text-[#666]">
+              No Results
+            </div>
           </div>
-        </div>
         )}
       </div>
     </div>

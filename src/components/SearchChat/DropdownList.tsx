@@ -53,8 +53,8 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
     if (e.key === "Enter" && selectedItem !== null) {
       // console.log("Enter key pressed", selectedItem);
       const item = suggests[selectedItem];
-      if (item?._source?.url) {
-        handleOpenURL(item?._source?.url);
+      if (item?.url) {
+        handleOpenURL(item?.url);
       } else {
         selected(item);
       }
@@ -63,8 +63,8 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
     if (e.key >= "0" && e.key <= "9" && showIndex) {
       // console.log(`number ${e.key}`);
       const item = suggests[parseInt(e.key, 10)];
-      if (item?._source?.url) {
-        handleOpenURL(item?._source?.url);
+      if (item?.url) {
+        handleOpenURL(item?.url);
       } else {
         selected(item);
       }
@@ -121,8 +121,8 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
             ref={(el) => (itemRefs.current[index] = el)}
             onMouseEnter={() => setSelectedItem(index)}
             onClick={() => {
-              if (item?._source?.url) {
-                handleOpenURL(item?._source?.url);
+              if (item?.url) {
+                handleOpenURL(item?.url);
               } else {
                 selected(item);
               }
@@ -134,14 +134,14 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
             }`}
           >
             <div className="flex gap-2 items-center">
-              <img className="w-5 h-5" src={item?._source?.icon} alt="icon" />
+              <img className="w-5 h-5" src={item?.icon} alt="icon" />
               <span className="text-[#333] dark:text-[#d8d8d8] truncate w-80 text-left">
-                {item?._source?.title}
+                {item?.title}
               </span>
             </div>
             <div className="flex gap-2 items-center relative">
               <span className="text-sm  text-[#666] dark:text-[#666] truncate w-52 text-right">
-                {item?._source?.source}
+                {item?.source}
               </span>
               {showIndex && index < 10 ? (
                 <div

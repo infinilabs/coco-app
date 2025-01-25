@@ -20,19 +20,19 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
   const { theme } = useTheme();
 
   function findConnectorIcon(item: any) {
-    const id = item?._source?.source?.id || "";
+    const id = item?.source?.id || "";
 
     const result_source = datasourceData[endpoint_http]?.find(
-      (data: any) => data._source.id === id
+      (data: any) => data.id === id
     );
 
-    const connector_id = result_source?._source?.connector?.id;
+    const connector_id = result_source?.connector?.id;
 
     const result_connector = connector_data[endpoint_http]?.find(
-      (data: any) => data._source.id === connector_id
+      (data: any) => data.id === connector_id
     );
 
-    return result_connector?._source;
+    return result_connector;
   }
 
   function getTypeIcon(item: any) {
@@ -58,7 +58,7 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
 
       {/* <div className="mb-4">
         <iframe
-          src={document?._source?.metadata?.web_view_link}
+          src={document?.metadata?.web_view_link}
           style={{ width: "100%", height: "500px" }}
           title="Text Preview"
         />
@@ -74,7 +74,7 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
         <div className="flex justify-between flex-wrap font-normal text-xs mb-2.5">
           <div className="text-[#666]">Name</div>
           <div className="text-[#333] dark:text-[#D8D8D8] text-right w-60 break-words">
-            {document?._source?.title || "-"}
+            {document?.title || "-"}
           </div>
         </div>
 
@@ -86,7 +86,7 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
               src={getTypeIcon(document)}
               alt="icon"
             />
-            {document?._source?.source?.name || "-"}
+            {document?.source?.name || "-"}
           </div>
         </div>
         {/* <div className="flex justify-between font-normal text-xs mb-2.5">
@@ -95,43 +95,43 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
             -
           </div>
         </div> */}
-        {document?._source?.updated ? (
+        {document?.updated ? (
           <div className="flex justify-between flex-wrap font-normal text-xs mb-2.5">
             <div className="text-[#666]">Updated at</div>
             <div className="text-[#333] dark:text-[#D8D8D8] text-right w-56 break-words">
-              {document?._source?.updated || "-"}
+              {document?.updated || "-"}
             </div>
           </div>
         ) : null}
-        {document?._source?.last_updated_by?.user?.username ? (
+        {document?.last_updated_by?.user?.username ? (
           <div className="flex justify-between flex-wrap font-normal text-xs mb-2.5">
             <div className="text-[#666]">Update by</div>
             <div className="text-[#333] dark:text-[#D8D8D8] text-right w-56 break-words">
-              {document?._source?.last_updated_by?.user?.username || "-"}
+              {document?.last_updated_by?.user?.username || "-"}
             </div>
           </div>
         ) : null}
-        {document?._source?.owner?.username ? (
+        {document?.owner?.username ? (
           <div className="flex justify-between flex-wrap font-normal text-xs mb-2.5">
             <div className="text-[#666]">Created by</div>
             <div className="text-[#333] dark:text-[#D8D8D8] text-right w-56 break-words">
-              {document?._source?.owner?.username || "-"}
+              {document?.owner?.username || "-"}
             </div>
           </div>
         ) : null}
-        {document?._source?.type ? (
+        {document?.type ? (
           <div className="flex justify-between flex-wrap font-normal text-xs mb-2.5">
             <div className="text-[#666]">Type</div>
             <div className="text-[#333] dark:text-[#D8D8D8] text-right w-56 break-words">
-              {document?._source?.type || "-"}
+              {document?.type || "-"}
             </div>
           </div>
         ) : null}
-        {document?._source?.size ? (
+        {document?.size ? (
           <div className="flex justify-between flex-wrap font-normal text-xs mb-2.5">
             <div className="text-[#666]">Size</div>
             <div className="text-[#333] dark:text-[#D8D8D8] text-right w-56 break-words">
-              {formatter.bytes(document?._source?.size || 0)}
+              {formatter.bytes(document?.size || 0)}
             </div>
           </div>
         ) : null}

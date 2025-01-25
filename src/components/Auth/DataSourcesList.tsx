@@ -49,7 +49,7 @@ export function DataSourcesList() {
       </h2>
       <div className="space-y-4">
         {datasourceData[endpoint_http]?.map((source) => (
-          <DataSourceItem key={source._id} {...source._source} />
+          <DataSourceItem key={source._id} {...source} />
         ))}
       </div>
     </div>

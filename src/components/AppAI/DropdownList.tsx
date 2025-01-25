@@ -102,7 +102,7 @@ function DropdownList({
       e.preventDefault();
       if (selectedItem !== null) {
         const item = globalItemIndexMap[selectedItem];
-        setSelectedName(item?._source?.source?.name);
+        setSelectedName(item?.source?.name);
       }
       setShowIndex(true);
     }
@@ -116,8 +116,8 @@ function DropdownList({
     if (e.key === "Enter" && selectedItem !== null) {
       // console.log("Enter key pressed", selectedItem);
       const item = globalItemIndexMap[selectedItem];
-      if (item?._source?.url) {
-        handleOpenURL(item?._source?.url);
+      if (item?.url) {
+        handleOpenURL(item?.url);
       } else {
         selected(item);
       }
@@ -126,8 +126,8 @@ function DropdownList({
     if (e.key >= "0" && e.key <= "9" && showIndex) {
       // console.log(`number ${e.key}`);
       const item = globalItemIndexMap[parseInt(e.key, 10)];
-      if (item?._source?.url) {
-        handleOpenURL(item?._source?.url);
+      if (item?.url) {
+        handleOpenURL(item?.url);
       } else {
         selected(item);
       }
@@ -163,19 +163,19 @@ function DropdownList({
   }, [selectedItem]);
 
   function findConnectorIcon(item: any) {
-    const id = item?._source?.source?.id || "";
+    const id = item?.source?.id || "";
 
     const result_source = datasourceData[endpoint_http]?.find(
-      (data: any) => data._source.id === id
+      (data: any) => data.id === id
     );
 
-    const connector_id = result_source?._source?.connector?.id;
+    const connector_id = result_source?.connector?.id;
 
     const result_connector = connector_data[endpoint_http]?.find(
-      (data: any) => data._source.id === connector_id
+      (data: any) => data.id === connector_id
     );
 
-    return result_connector?._source;
+    return result_connector;
   }
 
   function getTypeIcon(item: any) {
@@ -197,7 +197,7 @@ function DropdownList({
     const connectorSource = findConnectorIcon(item);
     const icons = connectorSource?.assets?.icons || {};
 
-    const selectedIcon = icons[item?._source?.icon];
+    const selectedIcon = icons[item?.icon];
 
     if (!selectedIcon) {
       return file_efault_img;
@@ -214,7 +214,7 @@ function DropdownList({
     const connectorSource = findConnectorIcon(item);
     const icons = connectorSource?.assets?.icons || {};
 
-    const selectedIcon = icons[item?._source?.rich_categories?.[0]?.icon];
+    const selectedIcon = icons[item?.rich_categories?.[0]?.icon];
 
     if (!selectedIcon) {
       return theme === "dark" ? source_default_dark_img : source_default_img;
@@ -228,6 +228,7 @@ function DropdownList({
   }
 
   function goToTwoPage(item: any) {
+    console.log(111111, item)
     setSourceData(item);
     selected && selected(item);
   }
@@ -294,8 +295,8 @@ function DropdownList({
                 ref={(el) => (itemRefs.current[currentIndex] = el)}
                 onMouseEnter={() => setSelectedItem(currentIndex)}
                 onClick={() => {
-                  if (item?._source?.url) {
-                    handleOpenURL(item?._source?.url);
+                  if (item?.url) {
+                    handleOpenURL(item?.url);
                   } else {
                     selected(item);
                   }
@@ -313,7 +314,7 @@ function DropdownList({
                       isSelected ? "font-medium" : ""
                     }`}
                   >
-                    {item?._source?.title}
+                    {item?.title}
                   </span>
                 </div>
                 <div className="flex-1 text-right min-w-[160px] h-full pl-5 text-[12px] flex gap-2 items-center justify-end relative">
@@ -329,7 +330,7 @@ function DropdownList({
                     />
                   )}
 
-                  {item?._source?.rich_categories ? (
+                  {item?.rich_categories ? (
                     <div className="flex items-center justify-end max-w-[calc(100%-20px)] whitespace-nowrap">
                       {Object.entries(SearchData).length < 5 ? (
                         <img
@@ -347,12 +348,12 @@ function DropdownList({
                           isSelected ? "text-[#C8C8C8]" : "text-[#666]"
                         } text-right truncate`}
                       >
-                        {item?._source?.rich_categories?.map(
+                        {item?.rich_categories?.map(
                           (rich_item: any, index: number) => {
                             if (
-                              item?._source?.rich_categories.length > 2 &&
+                              item?.rich_categories.length > 2 &&
                               index ===
-                                item?._source?.rich_categories.length - 1
+                                item?.rich_categories.length - 1
                             )
                               return "";
                             else
@@ -362,17 +363,17 @@ function DropdownList({
                           }
                         )}
                       </span>
-                      {item?._source?.rich_categories.length > 2 ? (
+                      {item?.rich_categories.length > 2 ? (
                         <span
                           className={`${
                             isSelected ? "text-[#C8C8C8]" : "text-[#666]"
                           } text-right truncate`}
                         >
-                          {"/" + item?._source?.rich_categories?.at(-1)?.label}
+                          {"/" + item?.rich_categories?.at(-1)?.label}
                         </span>
                       ) : null}
                     </div>
-                  ) : item?._source?.category || item?._source?.subcategory ? (
+                  ) : item?.category || item?.subcategory ? (
                     <span
                       className={`text-[12px] truncate ${
                         isSelected
@@ -380,9 +381,9 @@ function DropdownList({
                           : "text-[#999] dark:text-[#666]"
                       }`}
                     >
-                      {(item?._source?.category || "") +
-                        (item?._source?.subcategory
-                          ? `/${item?._source?.subcategory}`
+                      {(item?.category || "") +
+                        (item?.subcategory
+                          ? `/${item?.subcategory}`
                           : "")}
                     </span>
                   ) : (
@@ -393,7 +394,7 @@ function DropdownList({
                           : "text-[#999] dark:text-[#666]"
                       }`}
                     >
-                      {item?._source?.type || ""}
+                      {item?.type || ""}
                     </span>
                   )}
 

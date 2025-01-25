@@ -29,10 +29,10 @@ export function DataSourceItem({ name, connector }: DataSourceItemProps) {
     const connector_id = connector?.id;
 
     const result_connector = connector_data[endpoint_http]?.find(
-      (data: any) => data._source.id === connector_id
+      (data: any) => data.id === connector_id
     );
 
-    return result_connector?._source;
+    return result_connector;
   }
 
   function getTypeIcon() {

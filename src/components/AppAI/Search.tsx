@@ -5,9 +5,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 import DropdownList from "./DropdownList";
 import Footer from "./Footer";
-import { tauriFetch } from "@/api/tauriFetchClient";
 import noDataImg from "@/assets/coconut-tree.png";
-import { useAppStore } from "@/stores/appStore";
 // import { res_search2 } from "@/mock/index";
 import { SearchResults } from "../SearchChat/SearchResults";
 import { useSearchStore } from "@/stores/searchStore";
@@ -19,8 +17,6 @@ interface SearchProps {
 }
 
 function Search({ isChatMode, input }: SearchProps) {
-  const appStore = useAppStore();
-
   const sourceData = useSearchStore((state) => state.sourceData);
 
   const [IsError, setIsError] = useState<boolean>(false);
@@ -89,7 +85,7 @@ function Search({ isChatMode, input }: SearchProps) {
       let data = response?.documents || [];
       setSuggests(data);
       const search_data = data.reduce((acc: any, item: any) => {
-        const name = item?.name;
+        const name = item?.source?.name;
         if (!acc[name]) {
           acc[name] = [];
         }

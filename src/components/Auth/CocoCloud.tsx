@@ -131,7 +131,7 @@ export default function CocoCloud() {
 
   const handleUrl = (url: string) => {
     try {
-      // url = "coco://oauth_callback?code=cuaan8k61mdv447c5o00aykubamogwujihmb9asksg9fge3hfrke8yem69g2grlaod5uw5nm2ipt9qji0iv1&provider=coco-cloud/"
+      //url = "coco://oauth_callback?code=cuad40o2sdb0j4verf40qhglrve595ibv5ng4sqzk5b94sdan8fou9sj8ef9ioww8ur9mqclm2gickavkawm&provider=coco-cloud/"
       const urlObject = new URL(url);
       console.log("urlObject:", urlObject);
 
@@ -155,7 +155,7 @@ export default function CocoCloud() {
 
   // Fetch the initial deep link intent
   useEffect(() => {
-    // handleUrl("");
+    //handleUrl("");
     getCurrentDeepLinkUrls()
       .then((urls) => {
         console.log("URLs:", urls);
@@ -232,11 +232,6 @@ export default function CocoCloud() {
         console.error(err);
       });
   }, [endpoint]);
-
-  const deleteClick = useCallback(() => {
-    // setAuth(undefined, endpoint);
-    setUserInfo({});
-  }, [JSON.stringify(currentService), endpoint]);
 
   return (
     <div className="flex bg-gray-50 dark:bg-gray-900">

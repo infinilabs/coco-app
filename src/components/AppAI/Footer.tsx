@@ -1,7 +1,7 @@
 import {
   Command,
   ArrowDown01,
-  AppWindowMac,
+  // AppWindowMac,
   CornerDownLeft,
 } from "lucide-react";
 
@@ -18,7 +18,7 @@ interface FooterProps {
   name?: string;
 }
 
-export default function Footer({ name }: FooterProps) {
+export default function Footer({ }: FooterProps) {
   const sourceData = useSearchStore((state) => state.sourceData);
 
   const connector_data = useConnectStore((state) => state.connector_data);
@@ -29,19 +29,19 @@ export default function Footer({ name }: FooterProps) {
   const { theme } = useTheme();
 
   function findConnectorIcon(item: any) {
-    const id = item?._source?.source?.id || "";
+    const id = item?.source?.id || "";
 
     const result_source = datasourceData[endpoint_http]?.find(
-      (data: any) => data._source.id === id
+      (data: any) => data.id === id
     );
 
-    const connector_id = result_source?._source?.connector?.id;
+    const connector_id = result_source?.connector?.id;
 
     const result_connector = connector_data[endpoint_http]?.find(
-      (data: any) => data._source.id === connector_id
+      (data: any) => data.id === connector_id
     );
 
-    return result_connector?._source;
+    return result_connector;
   }
 
   function getTypeIcon(item: any) {
@@ -66,21 +66,21 @@ export default function Footer({ name }: FooterProps) {
     >
       <div className="flex items-center">
         <div className="flex items-center space-x-2">
-          {sourceData?._source?.source?.name ? (
+          {sourceData?.source?.name ? (
             <img className="w-5 h-5" src={getTypeIcon(sourceData)} alt="icon" />
           ) : (
             <img src={logoImg} className="w-5 h-5" />
           )}
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            {sourceData?._source?.source?.name || "Version 1.0.0"}
+            {sourceData?.source?.name || "Version 1.0.0"}
           </span>
         </div>
 
-        {name ? (
+        {/* {name ? (
           <div className="flex gap-2 items-center text-[#666] text-xs">
             <AppWindowMac className="w-5 h-5" /> {name}
           </div>
-        ) : null}
+        ) : null} */}
       </div>
 
       <div className="flex items-center gap-3">
