@@ -108,6 +108,11 @@ pub async fn add_coco_server<R: Runtime>(
     trim_endpoint_last_forward_slash(&mut new_coco_server);
 
     coco_servers.push(new_coco_server);
+    
+    app_handle
+        .store(COCO_TAURI_STORE)
+        .expect("create or load a store should never fail")
+        .set(COCO_SERVERS, coco_servers);
 
     Ok(())
 }
