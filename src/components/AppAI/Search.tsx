@@ -82,7 +82,7 @@ function Search({ isChatMode, input }: SearchProps) {
       //   baseURL: appStore.endpoint_http,
       // });
 
-      const response: any = await invoke("query_coco_servers", { from: 0, size: 10,  query_strings: { query: input }  });
+      const response: any = await invoke("query_coco_servers", { from: 0, size: 10,  queryStrings: { query: input }  });
       // failed_coco_servers documents
 
       console.log("_suggest", input, response);

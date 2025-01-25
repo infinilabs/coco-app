@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import { Plus } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 
@@ -8,9 +8,10 @@ import { useAppStore } from "@/stores/appStore";
 
 interface SidebarProps {
   addService: () => void;
+  serviceList: any[];
 }
 
-export function Sidebar({ addService }: SidebarProps) {
+export function Sidebar({ addService, serviceList }: SidebarProps) {
   const currentService = useConnectStore((state) => state.currentService);
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
 
@@ -18,6 +19,10 @@ export function Sidebar({ addService }: SidebarProps) {
 
   const [list, setList] = useState<any[]>([]);
   const [healths, setHealths] = useState<any>({});
+
+  useEffect(() => {
+    setList(serviceList)
+  }, [serviceList])
 
   const list_coco_servers = () => {
     invoke("list_coco_servers")

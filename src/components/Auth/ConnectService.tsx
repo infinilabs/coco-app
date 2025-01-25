@@ -7,9 +7,10 @@ import { useAppStore } from "@/stores/appStore";
 
 interface ConnectServiceProps {
   setIsConnect: (isConnect: boolean) => void;
+  setServiceList: (list: any[]) => void;
 }
 
-export function ConnectService({ setIsConnect }: ConnectServiceProps) {
+export function ConnectService({ setIsConnect, setServiceList }: ConnectServiceProps) {
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
 
   const setEndpoint = useAppStore((state) => state.setEndpoint);
@@ -30,6 +31,7 @@ export function ConnectService({ setIsConnect }: ConnectServiceProps) {
     invoke("list_coco_servers")
       .then((res: any) => {
         console.log("list_coco_servers", res);
+        setServiceList(res)
         const current = res[res.length-1]
         setCurrentService(current);
         setEndpoint(current?.endpoint);

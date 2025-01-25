@@ -39,14 +39,12 @@ export default function CocoCloud() {
   const currentService = useConnectStore((state) => state.currentService);
   const setDefaultService = useConnectStore((state) => state.setDefaultService);
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
-  const deleteOtherService = useConnectStore(
-    (state) => state.deleteOtherService
-  );
 
   const [loading, setLoading] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
-  const [_profiles, setProfiles] = useState<any>({});
+  const [profiles, setProfiles] = useState<any>({});
   const [userInfo, setUserInfo] = useState<any>({});
+  const [serviceList, setServiceList] = useState<any[]>([]);
 
   useEffect(() => {
     console.log("currentService", currentService);
@@ -55,6 +53,7 @@ export default function CocoCloud() {
     setError(null);
     setEndpoint(currentService.endpoint);
     setIsConnect(true);
+    setUserInfo(profiles[endpoint] || {})
   }, [JSON.stringify(currentService)]);
 
   const get_user_profiles = useCallback(() => {
@@ -222,15 +221,26 @@ export default function CocoCloud() {
     setIsConnect(false);
   }
 
+  
+  const remove_coco_server = useCallback(() => {
+    invoke("remove_coco_server", {endpoint})
+      .then((res: any) => {
+        console.log("remove_coco_server", res);
+        get_user_profiles();
+      })
+      .catch((err: any) => {
+        console.error(err);
+      });
+  }, [endpoint]);
+
   const deleteClick = useCallback(() => {
-    deleteOtherService(currentService);
     // setAuth(undefined, endpoint);
     setUserInfo({});
   }, [JSON.stringify(currentService), endpoint]);
 
   return (
     <div className="flex bg-gray-50 dark:bg-gray-900">
-      <Sidebar addService={addService} />
+      <Sidebar addService={addService} serviceList={serviceList}/>
 
       <main className="flex-1 p-4 py-8">
         <div>
@@ -275,7 +285,7 @@ export default function CocoCloud() {
                 {currentService.endpoint !== defaultService.endpoint ? (
                   <button
                     className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-[6px] bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
-                    onClick={() => deleteClick()}
+                    onClick={() => remove_coco_server()}
                   >
                     <Trash2 className="w-3.5 h-3.5 text-[#ff4747]" />
                   </button>
@@ -335,7 +345,7 @@ export default function CocoCloud() {
             {userInfo?.name ? <DataSourcesList /> : null}
           </div>
         ) : (
-          <ConnectService setIsConnect={setIsConnect} />
+          <ConnectService setIsConnect={setIsConnect} setServiceList={setServiceList}/>
         )}
       </main>
     </div>
