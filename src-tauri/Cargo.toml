@@ -31,6 +31,9 @@ tauri-plugin-oauth = { git = "https://github.com/FabianLars/tauri-plugin-oauth",
 tauri-plugin-deep-link = "2.0.0"
 tauri-plugin-single-instance = "2.0.0"
 tauri-plugin-store = "2.2.0"
+reqwest = "0.12.12"
+futures = "0.3.31"
+ordered-float = { version = "4.6.0", default-features = false } 
 
 # tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }
 

@@ -1,4 +1,5 @@
 mod autostart;
+mod coco_server;
 mod shortcut;
 
 use autostart::{change_autostart, enable_autostart};
@@ -7,6 +8,9 @@ use tauri::ActivationPolicy;
 use tauri::{AppHandle, Emitter, Listener, Manager, WebviewWindow};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_deep_link::DeepLinkExt;
+
+/// Tauri store name
+pub(crate) const COCO_TAURI_STORE: &str = "coco_tauri_store";
 
 #[tauri::command]
 fn change_window_height(handle: AppHandle, height: u32) {
