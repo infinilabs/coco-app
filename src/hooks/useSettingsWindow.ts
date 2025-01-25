@@ -29,6 +29,7 @@ export default function useSettingsWindow() {
       minimizable: false,
       maximizable: false,
       dragDropEnabled: true,
+      resizable: false,
       center: true,
       url,
     };
@@ -45,6 +46,21 @@ export default function useSettingsWindow() {
     });
   }, []);
 
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.metaKey) {
+        switch (e.code) {
+          case "Comma":
+            openSettingsWindow()
+            break;
+          default:
+            break;
+        }
+      }
+    },
+    [openSettingsWindow]
+  );
+
   useEffect(() => {
     const unlisten = listen("open_settings", (event) => {
       console.log("open_settings event received:", event);
@@ -52,11 +68,13 @@ export default function useSettingsWindow() {
 
       openSettingsWindow(tab);
     });
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
       unlisten.then((fn) => fn());
+      window.addEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [openSettingsWindow, handleKeyDown]);
 
   return { openSettingsWindow };
 }

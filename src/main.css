@@ -62,9 +62,13 @@
     @apply box-border border-[--border];
   }
 
+  html{
+    @apply h-full;
+  }
+
   body,
   #root {
-    @apply text-gray-900 antialiased;
+    @apply h-full text-gray-900 antialiased;
   }
 
   .dark body,

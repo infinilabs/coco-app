@@ -113,7 +113,7 @@ function Search({ isChatMode, input }: SearchProps) {
     };
   }
 
-  const debouncedSearch = useCallback(debounce(getSuggest, 300), [input]);
+  const debouncedSearch = useCallback(debounce(getSuggest, 500), [input]);
 
   useEffect(() => {
     !isChatMode && !sourceData && debouncedSearch();

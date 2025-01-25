@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   Command,
   Monitor,
@@ -7,7 +7,7 @@ import {
   Sun,
   Power,
   Tags,
-  Trash2,
+  // Trash2,
 } from "lucide-react";
 import { isTauri, invoke } from "@tauri-apps/api/core";
 import {
@@ -22,8 +22,8 @@ import { Shortcut } from "./shortcut";
 import { useShortcutEditor } from "@/hooks/useShortcutEditor";
 import { ThemeOption } from "./index2";
 import { useAppStore } from "@/stores/appStore";
-import { useAuthStore } from "@/stores/authStore";
-import { useConnectStore } from "@/stores/connectStore";
+// import { useAuthStore } from "@/stores/authStore";
+// import { useConnectStore } from "@/stores/connectStore";
 
 export default function GeneralSettings() {
   const [launchAtLogin, setLaunchAtLogin] = useState(true);
@@ -31,9 +31,9 @@ export default function GeneralSettings() {
   const showTooltip = useAppStore((state) => state.showTooltip);
   const setShowTooltip = useAppStore((state) => state.setShowTooltip);
 
-  const setAuth = useAuthStore((state) => state.setAuth);
-  const setUserInfo = useAuthStore((state) => state.setUserInfo);
-  const endpoint = useAppStore((state) => state.endpoint);
+  // const setAuth = useAuthStore((state) => state.setAuth);
+  // const setUserInfo = useAuthStore((state) => state.setUserInfo);
+  // const endpoint = useAppStore((state) => state.endpoint);
 
   useEffect(() => {
     const fetchAutoStartStatus = async () => {
@@ -122,14 +122,14 @@ export default function GeneralSettings() {
     saveShortcut();
   };
 
-  const clearAllCache = useCallback(() => {
-    setAuth(undefined, endpoint);
-    setUserInfo({}, endpoint);
+  // const clearAllCache = useCallback(() => {
+  //   setAuth(undefined, endpoint);
+  //   setUserInfo({}, endpoint);
 
-    useConnectStore.persist.clearStorage();
+  //   useConnectStore.persist.clearStorage();
 
-    useAppStore.persist.clearStorage();
-  }, [endpoint]);
+  //   useAppStore.persist.clearStorage();
+  // }, [endpoint]);
 
   return (
     <div className="space-y-8">
@@ -222,7 +222,7 @@ export default function GeneralSettings() {
             </button>
           </SettingsItem> */}
 
-          <SettingsItem
+          {/* <SettingsItem
             icon={Trash2}
             title="Clear Cache"
             description="Clear cached data and settings"
@@ -237,7 +237,7 @@ export default function GeneralSettings() {
                 </button>
               </div>
             </div>
-          </SettingsItem>
+          </SettingsItem> */}
         </div>
       </div>
     </div>

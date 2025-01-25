@@ -94,7 +94,7 @@ export default function DesktopApp() {
   return (
     <div
       data-tauri-drag-region
-      className={`w-[680px] h-[590px] m-auto rounded-xl overflow-hidden relative border border-[#E6E6E6] dark:border-[#272626] ${
+      className={`w-full h-full m-auto rounded-xl overflow-hidden relative border border-[#E6E6E6] dark:border-[#272626] ${
         isTransitioned
           ? "bg-chat_bg_light dark:bg-chat_bg_dark"
           : "bg-search_bg_light dark:bg-search_bg_dark"

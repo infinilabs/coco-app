@@ -70,14 +70,22 @@ export default function ChatInput({
     }
   }, [inputValue, disabled, onSend]);
 
+  const pressedKeys = new Set<string>();
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      pressedKeys.add(e.code);
+
       if (e.code === "MetaLeft" || e.code === "MetaRight") {
         setIsCommandPressed(true);
       }
 
-      if (e.metaKey) {
+      if (pressedKeys.has("MetaLeft") || pressedKeys.has("MetaRight")) {
+        e.preventDefault();
         switch (e.code) {
+          case "Comma":
+            setIsCommandPressed(false);
+            break;
           case "KeyI":
             handleToggleFocus();
             break;
@@ -88,7 +96,7 @@ export default function ChatInput({
             console.log("KeyM");
             break;
           case "Enter":
-            isChatMode && (curChatEnd ? handleSubmit() : disabledChange());
+            isChatMode && (curChatEnd ? handleSubmit() : disabledChange?.());
             break;
           case "KeyO":
             console.log("KeyO");
@@ -107,10 +115,19 @@ export default function ChatInput({
         }
       }
     },
-    [handleToggleFocus, isChatMode, handleSubmit]
+    [
+      handleToggleFocus,
+      isChatMode,
+      handleSubmit,
+      setSourceData,
+      setIsCommandPressed,
+      disabledChange,
+      curChatEnd,
+    ]
   );
 
   const handleKeyUp = useCallback((e: KeyboardEvent) => {
+    pressedKeys.delete(e.code);
     if (e.code === "MetaLeft" || e.code === "MetaRight") {
       setIsCommandPressed(false);
     }
