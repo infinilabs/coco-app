@@ -8,7 +8,6 @@ use futures::StreamExt;
 use futures::TryFutureExt;
 use ordered_float::OrderedFloat;
 use reqwest::Client;
-use reqwest::Response;
 use serde::Serialize;
 use serde_json::Map as JsonMap;
 use serde_json::Value as Json;
@@ -124,8 +123,6 @@ async fn list_coco_servers<R: Runtime>(
 ) -> Result<Vec<JsonMap<String, Json>>, ()> {
     _list_coco_servers(&app_handle).await
 }
-
-async fn _get_coco_server_health_info(endpoint: &str) -> Result<Response, ()> {}
 
 #[tauri::command]
 async fn get_coco_server_health_info(endpoint: String) -> bool {
