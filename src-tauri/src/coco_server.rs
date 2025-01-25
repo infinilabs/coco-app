@@ -234,6 +234,11 @@ pub async fn query_coco_servers<R: Runtime>(
     size: u64,
     query_strings: HashMap<String, String>,
 ) -> Result<QueryResponse, ()> {
+    println!(
+        "DBG: query_coco_servers, from: {} size: {} query_strings {:?}",
+        from, size, query_strings
+    );
+
     let coco_servers = _list_coco_servers(&app_handle).await?;
     let tokens = get_coco_server_tokens(&app_handle);
 
@@ -369,6 +374,11 @@ pub async fn refresh_coco_server(
 
 #[tauri::command]
 pub fn store_coco_server_token(app_handle: AppHandle, endpoint: String, token: String) {
+    println!(
+        "DBG: store_coco_server_token, endpoint: {} token: {}",
+        endpoint, token
+    );
+
     let store = app_handle
         .store(COCO_TAURI_STORE)
         .expect("create or load a store should not fail");

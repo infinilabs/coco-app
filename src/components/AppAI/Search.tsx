@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Command } from "lucide-react";
-
+import { invoke } from "@tauri-apps/api/core";
 // import { isTauri } from "@tauri-apps/api/core";
 
 import DropdownList from "./DropdownList";
@@ -76,17 +76,20 @@ function Search({ isChatMode, input }: SearchProps) {
     // return;
     //
     try {
-      const response = await tauriFetch({
-        url: `/query/_search?query=${input}`,
-        method: "GET",
-        baseURL: appStore.endpoint_http,
-      });
+      // const response = await tauriFetch({
+      //   url: `/query/_search?query=${input}`,
+      //   method: "GET",
+      //   baseURL: appStore.endpoint_http,
+      // });
+
+      const response: any = await invoke("query_coco_servers", { from: 0, size: 10,  query_strings: { query: input }  });
+      // failed_coco_servers documents
 
       console.log("_suggest", input, response);
-      let data = response.data?.hits?.hits || [];
+      let data = response?.documents || [];
       setSuggests(data);
       const search_data = data.reduce((acc: any, item: any) => {
-        const name = item?._source?.source?.name;
+        const name = item?.name;
         if (!acc[name]) {
           acc[name] = [];
         }

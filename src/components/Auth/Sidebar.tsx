@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
+import { invoke } from "@tauri-apps/api/core";
 
 import cocoLogoImg from "@/assets/app-icon.png";
-import { tauriFetch } from "@/api/tauriFetchClient";
 import { useConnectStore } from "@/stores/connectStore";
 import { useAppStore } from "@/stores/appStore";
 
@@ -10,103 +10,74 @@ interface SidebarProps {
   addService: () => void;
 }
 
-type StringBooleanMap = {
-  [key: string]: boolean;
-};
-
 export function Sidebar({ addService }: SidebarProps) {
-  const defaultService = useConnectStore((state) => state.defaultService);
   const currentService = useConnectStore((state) => state.currentService);
-  const otherServices = useConnectStore((state) => state.otherServices);
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
 
   const setEndpoint = useAppStore((state) => state.setEndpoint);
 
-  const [defaultHealth, setDefaultHealth] = useState(false);
-  const [otherHealth, setOtherHealth] = useState<StringBooleanMap>({});
+  const [list, setList] = useState<any[]>([]);
+  const [healths, setHealths] = useState<any>({});
+
+  const list_coco_servers = () => {
+    invoke("list_coco_servers")
+      .then((res: any) => {
+        console.log("list_coco_servers", res);
+        setList(res);
+      })
+      .catch((err: any) => {
+        console.error(err);
+      });
+  };
+  
+  const get_coco_servers_health_info = () => {
+    invoke("get_coco_servers_health_info")
+      .then((res: any) => {
+        console.log("get_coco_servers_health_info", res);
+        setHealths(res);
+      })
+      .catch((err: any) => {
+        console.error(err);
+      });
+  };
 
   const addServiceClick = () => {
     addService();
   };
 
   useEffect(() => {
-    getDefaultHealth();
+    list_coco_servers();
+    get_coco_servers_health_info();
   }, []);
 
   useEffect(() => {
-    getOtherHealth(currentService);
     setEndpoint(currentService.endpoint);
   }, [currentService.endpoint]);
-
-  const getDefaultHealth = () => {
-    let baseURL = defaultService.endpoint
-    if (baseURL.endsWith("/")) {
-      baseURL = baseURL.slice(0, -1);
-    }
-    tauriFetch({
-      url: `${baseURL}/health`,
-      method: "GET",
-    })
-      .then((res) => {
-        // "services": {
-        //   "system_cluster": "yellow"
-        // },
-        // "status": "yellow"
-        setDefaultHealth(res.data?.status !== "red");
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  };
-
-  const getOtherHealth = (item: any) => {
-    if (!item.endpoint) return;
-    //
-    let baseURL = item.endpoint
-    if (baseURL.endsWith("/")) {
-      baseURL = baseURL.slice(0, -1);
-    }
-    tauriFetch({
-      url: `${baseURL}/health`,
-      method: "GET",
-    })
-      .then((res) => {
-        let obj = {
-          ...otherHealth,
-          [item.endpoint]: res.data?.status !== "red",
-        };
-        setOtherHealth(obj);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  };
 
   return (
     <div className="w-64 min-h-[550px] border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
       <div className="p-4 py-8">
         <div
           className={`flex items-center space-x-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg mb-6 ${
-            currentService.endpoint === defaultService.endpoint
+            currentService.endpoint === list[0]?.endpoint
               ? "border border-[rgba(0,135,255,1)]"
               : ""
           }`}
           onClick={() => {
-            setCurrentService(defaultService);
-            setEndpoint(defaultService.endpoint);
-            getDefaultHealth();
+            setCurrentService(list[0]);
+            setEndpoint(list[0]?.endpoint);
           }}
         >
           <img
-            src={defaultService.provider.icon || cocoLogoImg}
+            src={list[0]?.provider.icon || cocoLogoImg}
             alt="cocoLogoImg"
             className="w-5 h-5"
           />
 
-          <span className="font-medium">{defaultService.name}</span>
+          <span className="font-medium">{list[0]?.name}</span>
           <div className="flex-1" />
           <button className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
-            {defaultHealth ? (
+            {list[0]?.endpoint && healths[list[0]?.endpoint as keyof typeof healths] ? (
               <div className="w-3 h-3 rounded-full bg-[#00DB5E]"></div>
             ) : (
               <div className="w-3 h-3 rounded-full bg-[#FF4747]"></div>
@@ -118,35 +89,38 @@ export function Sidebar({ addService }: SidebarProps) {
           Third-party services
         </div>
 
-        {otherServices?.map((item, index) => (
-          <div
-            key={item.name + index}
-            className={`flex items-center space-x-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg mb-2 ${
-              currentService.endpoint === item.endpoint
-                ? "border border-[rgba(0,135,255,1)]"
-                : ""
-            }`}
-            onClick={() => {
-              setEndpoint(item.endpoint);
-              setCurrentService(item);
-              getOtherHealth(item);
-            }}
-          >
-            <img
-              src={item.provider.icon || cocoLogoImg}
-              alt="LogoImg"
-              className="w-5 h-5"
-            />
+        {list?.map((item, index) => (
+          <div>
+            {index !== 0 ? (
+              <div
+                key={item.name + index}
+                className={`flex items-center space-x-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg mb-2 ${
+                  currentService.endpoint === item.endpoint
+                    ? "border border-[rgba(0,135,255,1)]"
+                    : ""
+                }`}
+                onClick={() => {
+                  setEndpoint(item.endpoint);
+                  setCurrentService(item);
+                }}
+              >
+                <img
+                  src={item.provider.icon || cocoLogoImg}
+                  alt="LogoImg"
+                  className="w-5 h-5"
+                />
 
-            <span className="font-medium">{item.name}</span>
-            <div className="flex-1" />
-            <button className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
-              {otherHealth[item.endpoint] ? (
-                <div className="w-3 h-3 rounded-full bg-[#00DB5E]"></div>
-              ) : (
-                <div className="w-3 h-3 rounded-full bg-[#FF4747]"></div>
-              )}
-            </button>
+                <span className="font-medium">{item.name}</span>
+                <div className="flex-1" />
+                <button className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
+                  {healths[item.endpoint as keyof typeof healths] ? (
+                    <div className="w-3 h-3 rounded-full bg-[#00DB5E]"></div>
+                  ) : (
+                    <div className="w-3 h-3 rounded-full bg-[#FF4747]"></div>
+                  )}
+                </button>
+              </div>
+            ) : null}
           </div>
         ))}
 

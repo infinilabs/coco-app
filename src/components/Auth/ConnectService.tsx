@@ -1,8 +1,8 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { ChevronLeft } from "lucide-react";
+import { invoke } from "@tauri-apps/api/core";
 
 import { useConnectStore } from "@/stores/connectStore";
-import { tauriFetch } from "@/api/tauriFetchClient";
 import { useAppStore } from "@/stores/appStore";
 
 interface ConnectServiceProps {
@@ -10,10 +10,7 @@ interface ConnectServiceProps {
 }
 
 export function ConnectService({ setIsConnect }: ConnectServiceProps) {
-  const addOtherServices = useConnectStore((state) => state.addOtherServices);
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
-  const defaultService = useConnectStore((state) => state.defaultService);
-  const otherServices = useConnectStore((state) => state.otherServices);
 
   const setEndpoint = useAppStore((state) => state.setEndpoint);
 
@@ -29,44 +26,38 @@ export function ConnectService({ setIsConnect }: ConnectServiceProps) {
     setIsConnect(true);
   };
 
-  const addService = useCallback(() => {
+  const list_coco_servers = () => {
+    invoke("list_coco_servers")
+      .then((res: any) => {
+        console.log("list_coco_servers", res);
+        const current = res[res.length-1]
+        setCurrentService(current);
+        setEndpoint(current?.endpoint);
+        setIsConnect(true);
+      })
+      .catch((err: any) => {
+        console.error(err);
+      }).finally(() => {
+        setRefreshLoading(false);
+      });
+  };
+
+  const add_coco_server = () => {
     if (!endpointLink) return;
     if (!endpointLink.startsWith("http://") && !endpointLink.startsWith("https://")) {
       return
     }
     setRefreshLoading(true);
     //
-    let baseURL = endpointLink;
-    if (baseURL.endsWith("/")) {
-      baseURL = baseURL.slice(0, -1);
-    }
-
-    tauriFetch({
-      url: `${baseURL}/provider/_info`,
-      method: "GET",
-    })
-      .then((res) => {
-        if (
-          res.data?.endpoint === defaultService.endpoint ||
-          otherServices.some(
-            (item: any) => item.endpoint === res.data?.endpoint
-          )
-        ) {
-          console.error(`${res.data?.endpoint} Repeated`);
-        } else {
-          addOtherServices(res.data);
-          setCurrentService(res.data);
-          setEndpoint(res.data.endpoint);
-          setIsConnect(true);
-        }
+    invoke("add_coco_server")
+      .then((res: any) => {
+        console.log("add_coco_server", res);
+        list_coco_servers();
       })
-      .catch((err) => {
+      .catch((err: any) => {
         console.error(err);
       })
-      .finally(() => {
-        setRefreshLoading(false);
-      });
-  }, [endpointLink]);
+  };
 
   return (
     <div className="max-w-4xl">
@@ -110,7 +101,7 @@ export function ConnectService({ setIsConnect }: ConnectServiceProps) {
             <button
               type="submit"
               className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-              onClick={addService}
+              onClick={() => add_coco_server()}
             >
               {refreshLoading ? "Connecting..." : "Connect"}
             </button>

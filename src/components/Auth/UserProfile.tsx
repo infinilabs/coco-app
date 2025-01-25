@@ -20,12 +20,12 @@ interface UserProfileProps {
 }
 
 export function UserProfile({ userInfo }: UserProfileProps) {
-  const setAuth = useAuthStore((state) => state.setAuth);
+  // const setAuth = useAuthStore((state) => state.setAuth);
   const setUserInfo = useAuthStore((state) => state.setUserInfo);
   const endpoint = useAppStore((state) => state.endpoint);
 
   const handleLogout = () => {
-    setAuth(undefined, endpoint);
+    // setAuth(undefined, endpoint);
     setUserInfo({}, endpoint);
   };
 
