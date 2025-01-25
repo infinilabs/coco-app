@@ -78,7 +78,7 @@ export default function CocoCloud() {
       try {
         console.log("Handling OAuth callback:", { code, provider });
         const response: any = await tauriFetch({
-          url: `/auth/request_access_token?request_id=${app_uid}`,
+          url: `/auth/request_access_token?request_id=${"b35518eb-498d-474b-8b12-635bcf152d66" || app_uid}`,
           method: "GET",
           headers: {
             "X-API-TOKEN": code,
@@ -124,7 +124,7 @@ export default function CocoCloud() {
 
   const handleUrl = (url: string) => {
     try {
-      // url = "coco://oauth_callback?code=cu8ag982sdb06e0j6k3g&provider=coco-cloud"
+      url = "coco://oauth_callback?code=cuaabp461mdv447c5kpg4p2fxo91hw3q0td9rxmqetbvmql2mjvpa5w5gpxfeeg2kpqczh3qgwrhxhbpnf1k&provider=coco-cloud/"
       const urlObject = new URL(url);
       console.log("urlObject:", urlObject);
 
@@ -148,7 +148,7 @@ export default function CocoCloud() {
 
   // Fetch the initial deep link intent
   useEffect(() => {
-    // handleUrl("");
+    handleUrl("");
     getCurrentDeepLinkUrls()
       .then((urls) => {
         console.log("URLs:", urls);
@@ -174,6 +174,7 @@ export default function CocoCloud() {
 
     let uid = uuidv4();
     setAppUid(uid);
+    // b35518eb-498d-474b-8b12-635bcf152d66
 
     console.log("LoginClick", uid, currentService.auth_provider.sso.url);
 
