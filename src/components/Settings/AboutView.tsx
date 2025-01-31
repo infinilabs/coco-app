@@ -20,8 +20,8 @@ export default function AboutView(){
         Search, Connect, Collaborate—All in one place
       </div>
       <div className="flex justify-center items-center mt-10">
-        <button onClick={() => OpenBrowserURL('https://github.com/infinilabs/coco-app')} className="w-6 h-6 mr-2.5 flex justify-center rounded-[6px] border-[1px] gray-200 dark:border-gray-700"><Globe className="w-3 text-blue-500"/></button>
-        <button onClick={() => OpenBrowserURL('https://coco.rs')} className="w-6 h-6 flex justify-center rounded-[6px] border-[1px] gray-200 dark:border-gray-700" ><Github className="w-3 text-blue-500"/></button>
+        <button onClick={() => OpenBrowserURL('https://coco.rs')} className="w-6 h-6 mr-2.5 flex justify-center rounded-[6px] border-[1px] gray-200 dark:border-gray-700"><Globe className="w-3 text-blue-500"/></button>
+        <button onClick={() => OpenBrowserURL('https://github.com/infinilabs/coco-app')} className="w-6 h-6 flex justify-center rounded-[6px] border-[1px] gray-200 dark:border-gray-700" ><Github className="w-3 text-blue-500"/></button>
       </div>
       <div className="mt-8 text-sm text-gray-500 dark:text-gray-400">
         Version 1.0.0
