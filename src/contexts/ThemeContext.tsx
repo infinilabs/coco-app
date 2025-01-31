@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { isTauri, invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { emit, listen } from "@tauri-apps/api/event";
+import { listen } from "@tauri-apps/api/event";
 
 import { AppTheme, WindowTheme } from "../utils/tauri";
 import { useThemeStore } from "../stores/themeStore";
@@ -95,12 +95,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       await switchTrayIcon(displayTheme);
 
       // Notify other windows to update the theme
-      try {
-        console.log("theme-changed", displayTheme);
-        await emit("theme-changed", { theme: displayTheme });
-      } catch (err) {
-        console.error("Failed to emit theme-changed event:", err);
-      }
+      // try {
+      //   console.log("theme-changed", displayTheme);
+      //   await emit("theme-changed", { theme: displayTheme });
+      // } catch (err) {
+      //   console.error("Failed to emit theme-changed event:", err);
+      // }
     }
   };
 
