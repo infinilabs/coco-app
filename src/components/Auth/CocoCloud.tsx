@@ -235,7 +235,8 @@ export default function CocoCloud() {
         {isConnect ? (
           <div className="max-w-4xl mx-auto">
             <div className="w-full rounded-[4px] bg-[rgba(229,229,229,1)] dark:bg-gray-800 mb-6">
-              <img
+              <img 
+                width="100%"
                 src={currentService.provider.banner || bannerImg}
                 alt="banner"
               />
