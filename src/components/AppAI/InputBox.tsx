@@ -81,7 +81,7 @@ export default function ChatInput({
       }
 
       if (pressedKeys.has("MetaLeft") || pressedKeys.has("MetaRight")) {
-        e.preventDefault();
+        // e.preventDefault();
         switch (e.code) {
           case "Comma":
             setIsCommandPressed(false);
