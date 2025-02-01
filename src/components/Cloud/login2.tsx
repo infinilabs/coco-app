@@ -2,9 +2,9 @@ import { useEffect } from 'react';
 import { Github, Mail, Apple } from 'lucide-react';
 import { useSearchParams } from "react-router-dom";
 
-import { LoginForm } from '@/components/CocoServer/LoginForm';
-import { SocialButton } from '@/components/CocoServer/SocialButton';
-import { Divider } from '@/components/CocoServer/Divider';
+import { LoginForm } from '@/components/Cloud/LoginForm';
+import { SocialButton } from '@/components/Cloud/SocialButton';
+import { Divider } from '@/components/Cloud/Divider';
 import { authWitheGithub } from '@/utils/index';
 
 export default function LoginPage() {

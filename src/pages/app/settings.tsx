@@ -6,9 +6,9 @@ import { useSearchParams } from "react-router-dom";
 import SettingsPanel from "@/components/Settings/SettingsPanel";
 import GeneralSettings from "@/components/Settings/GeneralSettings";
 import AboutView from "@/components/Settings/AboutView";
-import CocoCloud from "@/components/CocoServer/CocoCloud"
+import CocoCloud from "@/components/Cloud/CocoCloud"
 import Footer from "@/components/Footer";
-import ApiDetails from "@/components/AppAI/ApiDetails";
+import ApiDetails from "@/components/Search/ApiDetails";
 
 function SettingsPage() {
   const [defaultIndex, setDefaultIndex] = useState<number>(0);

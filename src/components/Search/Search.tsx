@@ -7,7 +7,7 @@ import DropdownList from "./DropdownList";
 import Footer from "./Footer";
 import noDataImg from "@/assets/coconut-tree.png";
 // import { res_search2 } from "@/mock/index";
-import { SearchResults } from "../SearchChat/SearchResults";
+import { SearchResults } from "@/components/Common/SearchResults";
 import { useSearchStore } from "@/stores/searchStore";
 
 interface SearchProps {

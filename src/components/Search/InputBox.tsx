@@ -11,7 +11,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { isTauri } from "@tauri-apps/api/core";
 
-import ChatSwitch from "../SearchChat/ChatSwitch";
+import ChatSwitch from "@/components/Common/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import { useChatStore } from "@/stores/chatStore";
 import StopIcon from "@/icons/Stop";

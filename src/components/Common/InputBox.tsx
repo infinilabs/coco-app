@@ -2,7 +2,7 @@ import { Library, Mic, Send, Plus, AudioLines, Image } from "lucide-react";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { listen } from "@tauri-apps/api/event";
 
-import ChatSwitch from "../SearchChat/ChatSwitch";
+import ChatSwitch from "@/components/Common/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import { useChatStore } from "../../stores/chatStore";
 import StopIcon from "../../icons/Stop";

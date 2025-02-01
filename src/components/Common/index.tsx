@@ -8,7 +8,7 @@ import { LogicalSize } from "@tauri-apps/api/dpi";
 
 import InputBox from "./InputBox";
 import Search from "./Search";
-import ChatAI, { ChatAIRef } from "../ChatAI/Chat";
+import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
 import { useWindows } from "../../hooks/useWindows";
 
 // const appWindow = new Window("main");

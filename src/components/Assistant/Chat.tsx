@@ -234,7 +234,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
           skipTaskbar: true,
           decorations: true,
           closable: true,
-          url: "/ui/chat",
+          url: "/ui/app/chat",
         });
       }
     }
