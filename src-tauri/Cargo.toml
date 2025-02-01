@@ -6,7 +6,6 @@ authors = ["INFINI Labs"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [lib]
 # The `_lib` suffix may seem redundant but it is necessary
 # to make the lib name unique and wouldn't conflict with the bin name.
@@ -18,6 +17,8 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2.0.0", features = [] }
 
 [dependencies]
+pizza-common = { git = "https://github.com/infinilabs/pizza-common", branch = "main"}
+
 tauri = { version = "2.0.6", features = ["macos-private-api", "tray-icon", "image-png", "unstable"] }
 tauri-plugin-shell = "2.0.0"
 serde = { version = "1", features = ["derive"] }
@@ -34,8 +35,9 @@ tauri-plugin-store = "2.2.0"
 reqwest = "0.12.12"
 futures = "0.3.31"
 ordered-float = { version = "4.6.0", default-features = false } 
+lazy_static = "1.5.0"
+log = "0.4.22"
 
-# tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }
 
 [profile.dev]
 incremental = true # Compile your binary in smaller steps.

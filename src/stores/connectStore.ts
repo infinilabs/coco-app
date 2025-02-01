@@ -66,33 +66,11 @@ export const useConnectStore = create<IConnectStore>()(
           draft.currentService = draft.defaultService;
         }))
       },
-      currentService: {
-        "name": "Coco Cloud",
-        "endpoint": "https://coco.infini.cloud/",
-        "provider": {
-          "name": "INFINI Labs",
-          "icon": "https://coco.infini.cloud/icon.png",
-          "website": "http://infinilabs.com",
-          "eula": "http://infinilabs.com/eula.txt",
-          "privacy_policy": "http://infinilabs.com/privacy_policy.txt",
-          "banner": "https://coco.infini.cloud/banner.jpg",
-          "description": "Coco AI Server - Search, Connect, Collaborate, AI-powered enterprise search, all in one space."
-        },
-        "version": {
-          "number": "1.0.0_SNAPSHOT"
-        },
-        "updated": "2025-01-24T12:12:17.326286927+08:00",
-        "builtin": true,
-        "public": false,
-        "auth_provider": {
-          "sso": {
-            "url": "https://coco.infini.cloud/sso/login/"
-          }
-        }
-      },
-      setCurrentService: (currentService: any) => {
+      currentService: "default_coco_server",
+      setCurrentService: (server: any) => {
+        console.log("set default server:",server)
         set(produce((draft) => {
-          draft.currentService = currentService;
+            draft.currentService = server;
         }))
       },
       connector_data: {},

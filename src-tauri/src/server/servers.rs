@@ -74,6 +74,37 @@ fn persist_servers<R: Runtime>(app_handle: &AppHandle<R>) -> Result<(), String> 
     Ok(())
 }
 
+// Function to get the default server if the request or parsing fails
+fn get_default_server() -> Server {
+    Server {
+        id: "default_coco_server".to_string(),
+        builtin: true,
+        name: "Coco Cloud".to_string(),
+        endpoint: "https://coco.infini.cloud".to_string(),
+        provider: Provider {
+            name: "INFINI Labs".to_string(),
+            icon: "https://coco.infini.cloud/icon.png".to_string(),
+            website: "http://infinilabs.com".to_string(),
+            eula: "http://infinilabs.com/eula.txt".to_string(),
+            privacy_policy: "http://infinilabs.com/privacy_policy.txt".to_string(),
+            banner: "https://coco.infini.cloud/banner.jpg".to_string(),
+            description: "Coco AI Server - Search, Connect, Collaborate, AI-powered enterprise search, all in one space.".to_string(),
+        },
+        version: Version {
+            number: "1.0.0_SNAPSHOT".to_string(),
+        },
+        updated: "2025-01-24T12:12:17.326286927+08:00".to_string(),
+        public: false,
+        available: true,
+        auth_provider: AuthProvider {
+            sso: Sso {
+                url: "https://coco.infini.cloud/sso/login/".to_string(),
+            },
+        },
+    }
+}
+
+
 /// Function to load servers or insert a default one if none exist
 pub async fn load_or_insert_default_server<R: Runtime>(app_handle: &AppHandle<R>) -> Result<Vec<Server>, String> {
     let store = app_handle
@@ -85,22 +116,25 @@ pub async fn load_or_insert_default_server<R: Runtime>(app_handle: &AppHandle<R>
         // No servers found, insert default
         let default_coco_server_endpoint = "https://coco.infini.cloud";
 
+        let default_coco_server_endpoint = "https://coco.infini.cloud";
+        let provider_info_url = |endpoint: &str| format!("{}/provider/info", endpoint);
+
+        // Try to get the response and ignore errors, falling back to default if it fails
         let response = HTTP_CLIENT
             .get(provider_info_url(default_coco_server_endpoint))
             .send()
-            .await
-            .map_err(|_client_err| "Failed to send request to provider info")?;
+            .await;
 
-        let mut default_coco_server: Server = response
-            .json()
-            .await
-            .map_err(|_json_err| "Failed to parse response as JSON")?;
-
-        // Ensure the endpoint is correctly formatted
-        trim_endpoint_last_forward_slash(&mut default_coco_server);
-
-        default_coco_server.id = "default_coco_server".to_string();
-        default_coco_server.builtin = true;
+        let default_coco_server = match response {
+            Ok(resp) => {
+                // If successful, attempt to parse the response as JSON
+                resp.json().await.unwrap_or_else(|_| get_default_server())
+            }
+            Err(_) => {
+                // If the request failed, return the default server data
+                get_default_server()
+            }
+        };
 
         // Persist the new server to the store
         save_server_to_cache(default_coco_server.clone());
@@ -134,7 +168,7 @@ pub async fn load_or_insert_default_server<R: Runtime>(app_handle: &AppHandle<R>
 
         dbg!(format!("load servers: {:?}", &deserialized_servers));
 
-        return Ok(deserialized_servers);
+        Ok(deserialized_servers)
     } else {
         Err("Failed to read servers from store: Invalid format".to_string())
     }
@@ -188,8 +222,10 @@ pub async fn add_coco_server<R: Runtime>(
     // Perform basic checks on the provider info if needed
     trim_endpoint_last_forward_slash(&mut new_coco_server);
 
-    // Generate a unique ID for the new server (using the endpoint for now, or TODO use UUID)
-    new_coco_server.id = endpoint.to_string(); // TODO: Use UUID for uniqueness
+    if new_coco_server.id==""{
+        new_coco_server.id=pizza_common::utils::uuid::Uuid::new().to_string();
+    }
+
     if new_coco_server.name==""{
         new_coco_server.name="Coco Cloud".to_string();
     }
@@ -312,6 +348,7 @@ fn test_trim_endpoint_last_forward_slash() {
         },
         updated: "".to_string(),
         public: false,
+        available: false,
         auth_provider: AuthProvider {
             sso: Sso {
                 url: "".to_string(),

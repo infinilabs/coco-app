@@ -3,24 +3,23 @@ import { ChevronLeft } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 
 import { useConnectStore } from "@/stores/connectStore";
-import { useAppStore } from "@/stores/appStore";
 
 interface ConnectServiceProps {
   setIsConnect: (isConnect: boolean) => void;
   setServiceList: (list: any[]) => void;
 }
 
-export function ConnectService({ setIsConnect, setServiceList }: ConnectServiceProps) {
+export function Connect({ setIsConnect, setServiceList }: ConnectServiceProps) {
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
 
-  const setEndpoint = useAppStore((state) => state.setEndpoint);
+  // const setEndpoint = useAppStore((state) => state.setEndpoint);
 
   const [endpointLink, setEndpointLink] = useState("");
   const [refreshLoading, setRefreshLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(''); // State to store the error message
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Connecting Google Drive with name:", endpointLink);
   };
 
   const goBack = () => {
@@ -33,11 +32,13 @@ export function ConnectService({ setIsConnect, setServiceList }: ConnectServiceP
         console.log("list_coco_servers", res);
         setServiceList(res)
         const current = res[res.length-1]
-        setCurrentService(current);
-        setEndpoint(current?.endpoint);
+        console.log("current:",current);
+        setCurrentService(current.id);
+        // setEndpoint(current?.id);
         setIsConnect(true);
       })
       .catch((err: any) => {
+        setErrorMessage(err || 'An unknown error occurred.');
         console.error(err);
       }).finally(() => {
         setRefreshLoading(false);
@@ -50,15 +51,22 @@ export function ConnectService({ setIsConnect, setServiceList }: ConnectServiceP
       return
     }
     setRefreshLoading(true);
-    //
     invoke("add_coco_server", {endpoint: endpointLink})
       .then((res: any) => {
         console.log("add_coco_server", res);
         list_coco_servers();
       })
       .catch((err: any) => {
-        console.error(err);
-      })
+        setErrorMessage(err || 'An unknown error occurred.');
+        console.error("add coco server:",err);
+      }).finally(() => {
+        setRefreshLoading(false);
+    });
+  };
+
+  // Function to close the error message
+  const closeError = () => {
+    setErrorMessage('');
   };
 
   return (
@@ -111,6 +119,33 @@ export function ConnectService({ setIsConnect, setServiceList }: ConnectServiceP
           </div>
         </div>
       </form>
+
+      {/* Show error message if any */}
+      {errorMessage && (
+          <div
+              className="mb-8"
+          >
+            <div   style={{
+              color: 'red',
+              marginTop: '10px',
+              display: 'block',  // Makes sure the error message starts on a new line
+              marginBottom: '10px',
+            }}>
+              <span>{errorMessage}</span>
+              <button
+                  onClick={closeError}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'red',
+                    cursor: 'pointer'
+                  }}
+              >
+              </button>
+            </div>
+          </div>
+      )}
+
     </div>
   );
 }

@@ -19,8 +19,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { UserProfile } from "./UserProfile";
 import { DataSourcesList } from "./DataSourcesList";
 import { Sidebar } from "./Sidebar";
-import { ConnectService } from "./ConnectService";
-import { OpenBrowserURL } from "@/utils/index";
+import { Connect } from "./Connect.tsx";
+import { OpenBrowserURL } from "@/utils";
 import { useAppStore } from "@/stores/appStore";
 import { tauriFetch } from "@/api/tauriFetchClient";
 import { useConnectStore } from "@/stores/connectStore";
@@ -34,12 +34,10 @@ export default function CocoCloud() {
   const [isConnect, setIsConnect] = useState(true);
   const [app_uid, setAppUid] = useState("");
 
-  const setEndpoint = useAppStore((state) => state.setEndpoint);
+  // const setEndpoint = useAppStore((state) => state.setEndpoint);
   const endpoint = useAppStore((state) => state.endpoint);
 
-  const defaultService = useConnectStore((state) => state.defaultService);
   const currentService = useConnectStore((state) => state.currentService);
-  const setDefaultService = useConnectStore((state) => state.setDefaultService);
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
 
   const [loading, setLoading] = useState(false);
@@ -53,7 +51,7 @@ export default function CocoCloud() {
     setLoading(false);
     setRefreshLoading(false);
     setError(null);
-    setEndpoint(currentService.endpoint);
+    // setEndpoint(currentService.endpoint);
     setIsConnect(true);
     setUserInfo(profiles[endpoint] || {})
   }, [JSON.stringify(currentService)]);
@@ -204,11 +202,11 @@ export default function CocoCloud() {
       method: "GET",
     })
       .then((res) => {
-        setEndpoint(res.data.endpoint);
+        // setEndpoint(res.data.endpoint);
         setCurrentService(res.data || {});
-        if (res.data?.endpoint === "https://coco.infini.cloud") {
-          setDefaultService(res.data);
-        }
+        // if (res.data?.id === "https://coco.infini.cloud") {
+        //   setDefaultService(res.data);
+        // }
       })
       .catch((err) => {
         console.error(err);
@@ -216,7 +214,7 @@ export default function CocoCloud() {
       .finally(() => {
         setRefreshLoading(false);
       });
-  }, [JSON.stringify(defaultService)]);
+  }, []);
 
   function addService() {
     setIsConnect(false);
@@ -350,7 +348,7 @@ export default function CocoCloud() {
             {userInfo?.name ? <DataSourcesList /> : null}
           </div>
         ) : (
-          <ConnectService setIsConnect={setIsConnect} setServiceList={setServiceList}/>
+          <Connect setIsConnect={setIsConnect} setServiceList={setServiceList}/>
         )}
       </main>
     </div>

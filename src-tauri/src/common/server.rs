@@ -40,6 +40,8 @@ pub struct Server {
     pub updated: String,
     #[serde(default = "default_bool_type")]
     pub public: bool,
+    #[serde(default = "default_available_type")]
+    pub available: bool,
     pub auth_provider: AuthProvider,
 }
 
@@ -87,11 +89,14 @@ impl Hash for ServerProfile {
     }
 }
 
-
 fn default_empty_string() -> String {
     "".to_string()  // Default to empty string if not provided
 }
 
 fn default_bool_type() -> bool {
     false  // Default to false if not provided
+}
+
+fn default_available_type() -> bool {
+    true
 }
