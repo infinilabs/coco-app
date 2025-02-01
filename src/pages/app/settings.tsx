@@ -3,13 +3,11 @@ import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { Settings, Puzzle, Settings2, Info, Server } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
-import SettingsPanel from "./SettingsPanel";
-import GeneralSettings from "./GeneralSettings";
-import AboutView from "./AboutView";
-import CocoCloud from "@/components/Auth/CocoCloud"
-import Footer from "../Footer";
-import { useTheme } from "../../contexts/ThemeContext";
-import { AppTheme } from "../../utils/tauri";
+import SettingsPanel from "@/components/Settings/SettingsPanel";
+import GeneralSettings from "@/components/Settings/GeneralSettings";
+import AboutView from "@/components/Settings/AboutView";
+import CocoCloud from "@/components/CocoServer/CocoCloud"
+import Footer from "@/components/Footer";
 import ApiDetails from "@/components/AppAI/ApiDetails";
 
 function SettingsPage() {
@@ -103,36 +101,5 @@ function SettingsPage() {
   );
 }
 
-export function ThemeOption({
-  icon: Icon,
-  title,
-  theme,
-}: {
-  icon: any;
-  title: string;
-  theme: AppTheme;
-}) {
-  const { theme: currentTheme, changeTheme } = useTheme();
-
-  const isSelected = currentTheme === theme;
-
-  return (
-    <button
-      onClick={() => changeTheme(theme)}
-      className={`p-4 rounded-lg border-2 ${
-        isSelected
-          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-      } flex flex-col items-center justify-center space-y-2 transition-all`}
-    >
-      <Icon className={`w-6 h-6 ${isSelected ? "text-blue-500" : ""}`} />
-      <span
-        className={`text-sm font-medium ${isSelected ? "text-blue-500" : ""}`}
-      >
-        {title}
-      </span>
-    </button>
-  );
-}
 
 export default SettingsPage;

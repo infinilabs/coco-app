@@ -10,7 +10,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
 import { OpenBrowserURL } from "@/utils/index";
 import logoImg from "@/assets/32x32.png";
-import callbackTemplate from "@/components/Auth/callback.template";
+import callbackTemplate from "@/components/CocoServer/callback.template";
 import { clientEnv } from "@/utils/env";
 
 export default function Account() {
