@@ -1,3 +1,4 @@
+use crate::COCO_TAURI_STORE;
 use tauri::App;
 use tauri::AppHandle;
 use tauri::Manager;
@@ -7,9 +8,6 @@ use tauri_plugin_global_shortcut::Shortcut;
 use tauri_plugin_global_shortcut::ShortcutState;
 use tauri_plugin_store::JsonValue;
 use tauri_plugin_store::StoreExt;
-
-/// Tauri store name
-const COCO_TAURI_STORE: &str = "coco_tauri_store";
 
 /// Tauri's store is a key-value database, we use it to store our registered
 /// global shortcut.

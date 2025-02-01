@@ -25,7 +25,7 @@ export const useAppStore = create<IAppStore>()(
       setShowTooltip: (showTooltip: boolean) => set({ showTooltip }),
       app_uid: "",
       setAppUid: (app_uid: string) => set({ app_uid }),
-      endpoint: "https://coco.infini.cloud",
+      endpoint: "https://coco.infini.cloud/",
       endpoint_http: "https://coco.infini.cloud",
       endpoint_websocket: "wss://coco.infini.cloud/ws",
       setEndpoint: async (endpoint: AppEndpoint) => {

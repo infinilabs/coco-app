@@ -3,13 +3,13 @@ import { isTauri } from "@tauri-apps/api/core";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { LogicalSize } from "@tauri-apps/api/dpi";
 
-import InputBox from "@/components/AppAI/InputBox";
-import Search from "@/components/AppAI/Search";
-import ChatAI, { ChatAIRef } from "@/components/ChatAI/Chat";
+import InputBox from "@/components/Search/InputBox";
+import Search from "@/components/Search/Search";
+import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
 import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
 import { tauriFetch } from "@/api/tauriFetchClient";
-import ApiDetails from "@/components/AppAI/ApiDetails";
+import ApiDetails from "@/components/Search/ApiDetails";
 import { useConnectStore } from "@/stores/connectStore";
 
 export default function DesktopApp() {

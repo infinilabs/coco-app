@@ -1,5 +1,8 @@
 mod autostart;
+mod common;
+mod server;
 mod shortcut;
+mod util;
 
 use autostart::{change_autostart, enable_autostart};
 #[cfg(target_os = "macos")]
@@ -7,6 +10,9 @@ use tauri::ActivationPolicy;
 use tauri::{AppHandle, Emitter, Listener, Manager, WebviewWindow};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_deep_link::DeepLinkExt;
+
+/// Tauri store name
+pub(crate) const COCO_TAURI_STORE: &str = "coco_tauri_store";
 
 #[tauri::command]
 fn change_window_height(handle: AppHandle, height: u32) {
@@ -80,9 +86,16 @@ pub fn run() {
             change_autostart,
             hide_coco,
             switch_tray_icon,
-            // show_panel,
-            // hide_panel,
-            // close_panel
+            server::servers::add_coco_server,
+            server::servers::remove_coco_server,
+            server::servers::list_coco_servers,
+            // server::get_coco_server_health_info,
+            // server::get_coco_servers_health_info,
+            // server::query_coco_servers,
+            // server::store_coco_server_token,
+            // server::get_user_profiles,
+            // server::get_coco_server_datasources,
+            // server::get_coco_server_connectors
         ])
         .setup(|app| {
             init(app.app_handle());
@@ -231,15 +244,15 @@ fn enable_tray(app: &mut tauri::App) {
 
     let quit_i = MenuItem::with_id(app, "quit", "Quit Coco", true, None::<&str>).unwrap();
     let settings_i = MenuItem::with_id(app, "settings", "Settings...", true, None::<&str>).unwrap();
-    let open_i = MenuItem::with_id(app, "open", "Open Coco", true, None::<&str>).unwrap();
-    let about_i = MenuItem::with_id(app, "about", "About Coco", true, None::<&str>).unwrap();
+    let open_i = MenuItem::with_id(app, "open", "Show Coco", true, None::<&str>).unwrap();
+    // let about_i = MenuItem::with_id(app, "about", "About Coco", true, None::<&str>).unwrap();
     // let hide_i = MenuItem::with_id(app, "hide", "Hide Coco", true, None::<&str>).unwrap();
 
     let menu = MenuBuilder::new(app)
         .item(&open_i)
         .separator()
         // .item(&hide_i)
-        .item(&about_i)
+        // .item(&about_i)
         .item(&settings_i)
         .separator()
         .item(&quit_i)
