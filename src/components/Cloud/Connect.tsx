@@ -11,9 +11,6 @@ interface ConnectServiceProps {
 
 export function Connect({ setIsConnect, setServiceList }: ConnectServiceProps) {
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
-
-  // const setEndpoint = useAppStore((state) => state.setEndpoint);
-
   const [endpointLink, setEndpointLink] = useState("");
   const [refreshLoading, setRefreshLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(''); // State to store the error message
@@ -33,8 +30,7 @@ export function Connect({ setIsConnect, setServiceList }: ConnectServiceProps) {
         setServiceList(res)
         const current = res[res.length-1]
         console.log("current:",current);
-        setCurrentService(current.id);
-        // setEndpoint(current?.id);
+        setCurrentService(current);
         setIsConnect(true);
       })
       .catch((err: any) => {
@@ -121,6 +117,7 @@ export function Connect({ setIsConnect, setServiceList }: ConnectServiceProps) {
       </form>
 
       {/* Show error message if any */}
+      //TODO move to outer container, move error state to global
       {errorMessage && (
           <div
               className="mb-8"

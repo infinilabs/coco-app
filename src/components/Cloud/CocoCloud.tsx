@@ -34,7 +34,6 @@ export default function CocoCloud() {
   const [isConnect, setIsConnect] = useState(true);
   const [app_uid, setAppUid] = useState("");
 
-  // const setEndpoint = useAppStore((state) => state.setEndpoint);
   const endpoint = useAppStore((state) => state.endpoint);
 
   const currentService = useConnectStore((state) => state.currentService);
@@ -178,12 +177,9 @@ export default function CocoCloud() {
   const LoginClick = useCallback(() => {
     if (loading) return;
     // setAuth(undefined, endpoint);
-
     let uid = uuidv4();
     setAppUid(uid);
-
     console.log("LoginClick", uid, currentService?.auth_provider.sso.url);
-
     OpenBrowserURL(
       `${currentService?.auth_provider?.sso?.url}/?provider=coco-cloud&product=coco&request_id=${uid}`
     );
@@ -202,11 +198,7 @@ export default function CocoCloud() {
       method: "GET",
     })
       .then((res) => {
-        // setEndpoint(res.data.endpoint);
         setCurrentService(res.data || {});
-        // if (res.data?.id === "https://coco.infini.cloud") {
-        //   setDefaultService(res.data);
-        // }
       })
       .catch((err) => {
         console.error(err);

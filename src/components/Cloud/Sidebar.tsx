@@ -12,14 +12,14 @@ interface SidebarProps {
 
 export const Sidebar = forwardRef<{ refreshData: () => void; }, SidebarProps>(
     ({ addService, serviceList }, ref) => {
-      const selectedServer = useConnectStore((state) => state.currentService);
-      const setSelectedServer = useConnectStore((state) => state.setCurrentService);
+      const currentService = useConnectStore((state) => state.currentService);
+      const setCurrentService = useConnectStore((state) => state.setCurrentService);
       const [list, setList] = useState<any[]>([]);
 
       useEffect(() => {
         setList(serviceList);
           if (serviceList.length > 0 && serviceList[serviceList.length - 1]?.id) {
-              setSelectedServer(serviceList[serviceList.length - 1]);
+              setCurrentService(serviceList[serviceList.length - 1]);
           } else {
               console.warn("Service list is empty or last item has no id");
           }
@@ -31,7 +31,7 @@ export const Sidebar = forwardRef<{ refreshData: () => void; }, SidebarProps>(
               console.log("list_coco_servers", res);
               setList(res);
                 if (serviceList.length > 0 && serviceList[serviceList.length - 1]?.id) {
-                    setSelectedServer(serviceList[serviceList.length - 1]);
+                    setCurrentService(serviceList[serviceList.length - 1]);
                 } else {
                     console.warn("Service list is empty or last item has no id");
                 }
@@ -59,10 +59,10 @@ export const Sidebar = forwardRef<{ refreshData: () => void; }, SidebarProps>(
             <div
                 key={item?.id}
                 className={`flex cursor-pointer items-center space-x-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg mb-2 ${
-                    selectedServer?.id === item?.id ? "dark:bg-blue-900/20 dark:bg-blue-900"  // Apply background color when selected
+                    currentService?.id === item?.id ? "dark:bg-blue-900/20 dark:bg-blue-900"  // Apply background color when selected
                         : "bg-gray-50 dark:bg-gray-900" // Default background color when not selected
                 }`}
-                onClick={() => setSelectedServer(item)}
+                onClick={() => setCurrentService(item)}
             >
               <img
                   src={item?.provider?.icon || cocoLogoImg}
