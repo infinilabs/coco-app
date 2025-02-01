@@ -1,6 +1,8 @@
 mod autostart;
-mod coco_server;
+mod common;
+mod server;
 mod shortcut;
+mod util;
 
 use autostart::{change_autostart, enable_autostart};
 #[cfg(target_os = "macos")]
@@ -84,17 +86,16 @@ pub fn run() {
             change_autostart,
             hide_coco,
             switch_tray_icon,
-            coco_server::add_coco_server,
-            coco_server::remove_coco_server,
-            coco_server::list_coco_servers,
-            coco_server::get_coco_server_health_info,
-            coco_server::get_coco_servers_health_info,
-            coco_server::query_coco_servers,
-            coco_server::refresh_coco_server,
-            coco_server::store_coco_server_token,
-            coco_server::get_user_profiles,
-            coco_server::get_coco_server_datasources,
-            coco_server::get_coco_server_connectors
+            server::servers::add_coco_server,
+            server::servers::remove_coco_server,
+            server::servers::list_coco_servers,
+            // server::get_coco_server_health_info,
+            // server::get_coco_servers_health_info,
+            // server::query_coco_servers,
+            // server::store_coco_server_token,
+            // server::get_user_profiles,
+            // server::get_coco_server_datasources,
+            // server::get_coco_server_connectors
         ])
         .setup(|app| {
             init(app.app_handle());
@@ -243,15 +244,15 @@ fn enable_tray(app: &mut tauri::App) {
 
     let quit_i = MenuItem::with_id(app, "quit", "Quit Coco", true, None::<&str>).unwrap();
     let settings_i = MenuItem::with_id(app, "settings", "Settings...", true, None::<&str>).unwrap();
-    let open_i = MenuItem::with_id(app, "open", "Open Coco", true, None::<&str>).unwrap();
-    let about_i = MenuItem::with_id(app, "about", "About Coco", true, None::<&str>).unwrap();
+    let open_i = MenuItem::with_id(app, "open", "Show Coco", true, None::<&str>).unwrap();
+    // let about_i = MenuItem::with_id(app, "about", "About Coco", true, None::<&str>).unwrap();
     // let hide_i = MenuItem::with_id(app, "hide", "Hide Coco", true, None::<&str>).unwrap();
 
     let menu = MenuBuilder::new(app)
         .item(&open_i)
         .separator()
         // .item(&hide_i)
-        .item(&about_i)
+        // .item(&about_i)
         .item(&settings_i)
         .separator()
         .item(&quit_i)

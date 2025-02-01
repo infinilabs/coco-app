@@ -39,6 +39,7 @@ export const useConnectStore = create<IConnectStore>()(
           "number": "1.0.0_SNAPSHOT"
         },
         "updated": "2025-01-24T12:12:17.326286927+08:00",
+        "builtin": true,
         "public": false,
         "auth_provider": {
           "sso": {
@@ -81,6 +82,7 @@ export const useConnectStore = create<IConnectStore>()(
           "number": "1.0.0_SNAPSHOT"
         },
         "updated": "2025-01-24T12:12:17.326286927+08:00",
+        "builtin": true,
         "public": false,
         "auth_provider": {
           "sso": {

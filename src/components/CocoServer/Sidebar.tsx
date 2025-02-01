@@ -53,10 +53,17 @@ export const Sidebar = forwardRef<
     addService();
   };
 
+  const [isFetching, setIsFetching] = useState(false); // to track if fetching is in progress
+
+
   useEffect(() => {
-    list_coco_servers();
-    get_coco_servers_health_info();
-  }, []);
+    // Initial data fetch only on mount
+    if (!isFetching) {
+      setIsFetching(true);
+      list_coco_servers();
+      get_coco_servers_health_info();
+    }
+  }, [isFetching]);
 
   useEffect(() => {
     setEndpoint(currentService.endpoint);
@@ -64,8 +71,11 @@ export const Sidebar = forwardRef<
 
   useImperativeHandle(ref, () => ({
     refreshData: () => {
-      list_coco_servers();
-      get_coco_servers_health_info();
+      if (!isFetching) {
+        setIsFetching(true);  // Mark as fetching
+        list_coco_servers();
+        get_coco_servers_health_info();
+      }
     }
   }));
 
@@ -101,7 +111,7 @@ export const Sidebar = forwardRef<
         </div>
 
         <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-          Third-party services
+          Your Coco-Servers
         </div>
 
         {list?.map((item, index) => (

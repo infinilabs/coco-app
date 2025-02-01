@@ -183,12 +183,11 @@ export default function CocoCloud() {
 
     let uid = uuidv4();
     setAppUid(uid);
-    // d00cf0c2-eb70-4fae-ad23-c8ab3db61309
 
-    console.log("LoginClick", uid, currentService.auth_provider.sso.url);
+    console.log("LoginClick", uid, currentService?.auth_provider.sso.url);
 
     OpenBrowserURL(
-      `${currentService.auth_provider.sso.url}/?provider=coco-cloud&product=coco&request_id=${uid}`
+      `${currentService?.auth_provider?.sso?.url}/?provider=coco-cloud&product=coco&request_id=${uid}`
     );
 
     setLoading(true);
@@ -207,7 +206,7 @@ export default function CocoCloud() {
       .then((res) => {
         setEndpoint(res.data.endpoint);
         setCurrentService(res.data || {});
-        if (res.data?.endpoint === "https://coco.infini.cloud/") {
+        if (res.data?.endpoint === "https://coco.infini.cloud") {
           setDefaultService(res.data);
         }
       })
@@ -223,17 +222,24 @@ export default function CocoCloud() {
     setIsConnect(false);
   }
 
-  const remove_coco_server = useCallback(() => {
-    invoke("remove_coco_server", {endpoint})
+  const remove_coco_server = (id: string) => {
+    invoke("remove_coco_server", {id})
       .then((res: any) => {
-        console.log("remove_coco_server", res);
-        get_user_profiles();
-        SidebarRef.current?.refreshData()
+        console.log("remove_coco_server", id,JSON.stringify(res));
+
+        //TODO remove the server id from local state, or the UI won't change
+
+        get_user_profiles(); //TODO remove
+        SidebarRef?.current?.refreshData() //TODO remove
+
+        //TODO, handle res, maybe contains error
+
       })
       .catch((err: any) => {
+        //TODO display the error message
         console.error(err);
       });
-  }, [endpoint]);
+  };
 
   return (
     <div className="flex bg-gray-50 dark:bg-gray-900">
@@ -253,20 +259,20 @@ export default function CocoCloud() {
             <div className="w-full rounded-[4px] bg-[rgba(229,229,229,1)] dark:bg-gray-800 mb-6">
               <img 
                 width="100%"
-                src={currentService.provider.banner || bannerImg}
+                src={currentService?.provider?.banner || bannerImg}
                 alt="banner"
               />
             </div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <div className="flex items-center text-gray-900 dark:text-white font-medium">
-                  {currentService.name}
+                  {currentService?.name}
                 </div>
               </div>
               <div className="flex gap-2">
                 <button
                   className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-[6px] bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
-                  onClick={() => goToHref(currentService.provider.website)}
+                  onClick={() => goToHref(currentService?.provider?.website)}
                 >
                   <Globe className="w-3.5 h-3.5" />
                 </button>
@@ -280,14 +286,15 @@ export default function CocoCloud() {
                     }`}
                   />
                 </button>
-                {currentService.endpoint !== defaultService.endpoint ? (
+
+                { !currentService?.builtin &&  (
                   <button
                     className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-[6px] bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
-                    onClick={() => remove_coco_server()}
+                    onClick={() => remove_coco_server(currentService?.id)}
                   >
                     <Trash2 className="w-3.5 h-3.5 text-[#ff4747]" />
                   </button>
-                ) : null}
+                )}
               </div>
             </div>
 
@@ -295,24 +302,24 @@ export default function CocoCloud() {
               <div className="text-sm text-gray-500 dark:text-gray-400 mb-2 flex">
                 <span className="flex items-center gap-1">
                   <PackageOpen className="w-4 h-4" />{" "}
-                  {currentService.provider.name}
+                  {currentService?.provider?.name}
                 </span>
                 <span className="mx-4">|</span>
                 <span className="flex items-center gap-1">
                   <GitFork className="w-4 h-4" />{" "}
-                  {currentService.version.number}
+                  {currentService?.version?.number}
                 </span>
                 <span className="mx-4">|</span>
                 <span className="flex items-center gap-1">
-                  <CalendarSync className="w-4 h-4" /> {currentService.updated}
+                  <CalendarSync className="w-4 h-4" /> {currentService?.updated}
                 </span>
               </div>
               <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                {currentService.provider.description}
+                {currentService?.provider?.description}
               </p>
             </div>
 
-            {currentService.auth_provider.sso.url ? (
+            {currentService?.auth_provider?.sso?.url ? (
               <div className="mb-8">
                 <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                   Account Information
@@ -330,7 +337,7 @@ export default function CocoCloud() {
                     <button
                       className="text-xs text-[#0096FB] dark:text-blue-400 block"
                       onClick={() =>
-                        goToHref(currentService.provider.privacy_policy)
+                        goToHref(currentService?.provider?.privacy_policy)
                       }
                     >
                       EULA | Privacy Policy

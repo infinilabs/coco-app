@@ -71,15 +71,16 @@ export function ConnectService({ setIsConnect, setServiceList }: ConnectServiceP
           <ChevronLeft className="w-4 h-4" />
         </button>
         <div className="text-xl text-[#101010] dark:text-white">
-          Connecting to third-party services
+          Connecting to Your Coco-Server
         </div>
       </div>
 
       <div className="mb-8">
         <p className="text-gray-600 dark:text-gray-400">
-          Third-party services are provided by other platforms or providers, and
-          users can integrate these services into Coco AI to expand the scope of
-          search data.
+          Running your own private instance of coco-server ensures complete control over
+          your data, keeping it secure and accessible only within your environment.
+          Enjoy enhanced privacy, better performance, and seamless integration with your
+          internal systems.
         </p>
       </div>
 
