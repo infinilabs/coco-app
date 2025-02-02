@@ -26,7 +26,7 @@ import {tauriFetch} from "@/api/tauriFetchClient";
 import {useConnectStore} from "@/stores/connectStore";
 import bannerImg from "@/assets/images/coco-cloud-banner.jpeg";
 
-export default function CocoCloud() {
+export default function Cloud() {
     const SidebarRef = useRef<{ refreshData: () => void; }>(null);
 
     const [error, setError] = useState<string | null>(null);

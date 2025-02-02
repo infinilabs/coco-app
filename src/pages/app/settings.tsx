@@ -6,7 +6,7 @@ import { useSearchParams } from "react-router-dom";
 import SettingsPanel from "@/components/Settings/SettingsPanel";
 import GeneralSettings from "@/components/Settings/GeneralSettings";
 import AboutView from "@/components/Settings/AboutView";
-import CocoCloud from "@/components/Cloud/CocoCloud"
+import Cloud from "@/components/Cloud/Cloud.tsx"
 import Footer from "@/components/Footer";
 import ApiDetails from "@/components/Search/ApiDetails";
 
