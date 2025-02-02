@@ -1,16 +1,13 @@
 import React, { useState } from "react";
 import { ChevronLeft } from "lucide-react";
-import { invoke } from "@tauri-apps/api/core";
 
-import { useConnectStore } from "@/stores/connectStore";
 
 interface ConnectServiceProps {
   setIsConnect: (isConnect: boolean) => void;
-  setServiceList: (list: any[]) => void;
+  onAddServer: (endpoint: string) => void;
 }
 
-export function Connect({ setIsConnect, setServiceList }: ConnectServiceProps) {
-  const setCurrentService = useConnectStore((state) => state.setCurrentService);
+export function Connect({ setIsConnect,  onAddServer }: ConnectServiceProps) {
   const [endpointLink, setEndpointLink] = useState("");
   const [refreshLoading, setRefreshLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(''); // State to store the error message
@@ -23,41 +20,19 @@ export function Connect({ setIsConnect, setServiceList }: ConnectServiceProps) {
     setIsConnect(true);
   };
 
-  const list_coco_servers = () => {
-    invoke("list_coco_servers")
-      .then((res: any) => {
-        console.log("list_coco_servers", res);
-        setServiceList(res)
-        const current = res[res.length-1]
-        console.log("current:",current);
-        setCurrentService(current);
-        setIsConnect(true);
-      })
-      .catch((err: any) => {
-        setErrorMessage(err || 'An unknown error occurred.');
-        console.error(err);
-      }).finally(() => {
-        setRefreshLoading(false);
-      });
-  };
-
-  const add_coco_server = () => {
-    if (!endpointLink) return;
-    if (!endpointLink.startsWith("http://") && !endpointLink.startsWith("https://")) {
-      return
+  // Asynchronous onAddServerClick
+  const onAddServerClick = async (endpoint: string) => {
+    console.log("onAddServer", endpoint);
+    try {
+      // Await the onAddServer call if it's a promise-based function
+      await onAddServer(endpoint);
+      setIsConnect(true);  // Only set as connected if the server is added successfully
+    } catch (err) {
+      // Handle the error if something goes wrong
+      const errorMessage = typeof err === 'string' ? err : err?.message || 'An unknown error occurred.';
+      setErrorMessage(errorMessage);
+      console.error('Error:', errorMessage);
     }
-    setRefreshLoading(true);
-    invoke("add_coco_server", {endpoint: endpointLink})
-      .then((res: any) => {
-        console.log("add_coco_server", res);
-        list_coco_servers();
-      })
-      .catch((err: any) => {
-        setErrorMessage(err || 'An unknown error occurred.');
-        console.error("add coco server:",err);
-      }).finally(() => {
-        setRefreshLoading(false);
-    });
   };
 
   // Function to close the error message
@@ -108,7 +83,7 @@ export function Connect({ setIsConnect, setServiceList }: ConnectServiceProps) {
             <button
               type="submit"
               className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-              onClick={() => add_coco_server()}
+              onClick={()=>onAddServerClick(endpointLink)}
             >
               {refreshLoading ? "Connecting..." : "Connect"}
             </button>

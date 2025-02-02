@@ -1,57 +1,22 @@
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import { Plus } from "lucide-react";
-import { invoke } from "@tauri-apps/api/core";
 
 import cocoLogoImg from "@/assets/app-icon.png";
 import { useConnectStore } from "@/stores/connectStore";
 
 interface SidebarProps {
-  addService: () => void;
-  serviceList: any[];
+  onAddServer: () => void;
+  serverList: any[];
 }
 
 export const Sidebar = forwardRef<{ refreshData: () => void; }, SidebarProps>(
-    ({ addService, serviceList }, ref) => {
+    ({ onAddServer, serverList }, ref) => {
       const currentService = useConnectStore((state) => state.currentService);
       const setCurrentService = useConnectStore((state) => state.setCurrentService);
-      const [list, setList] = useState<any[]>([]);
 
-      useEffect(() => {
-        setList(serviceList);
-          if (serviceList.length > 0 && serviceList[serviceList.length - 1]?.id) {
-              setCurrentService(serviceList[serviceList.length - 1]);
-          } else {
-              console.warn("Service list is empty or last item has no id");
-          }
-      }, [serviceList]);
-
-      const fetchServers = async () => {
-        invoke("list_coco_servers")
-            .then((res: any) => {
-              console.log("list_coco_servers", res);
-              setList(res);
-                if (serviceList.length > 0 && serviceList[serviceList.length - 1]?.id) {
-                    setCurrentService(serviceList[serviceList.length - 1]);
-                } else {
-                    console.warn("Service list is empty or last item has no id");
-                }
-            })
-            .catch((err: any) => {
-              console.error(err);
-            });
+      const onAddServerClick = () => {
+          onAddServer();
       };
-
-      const addServiceClick = () => {
-        addService();
-      };
-
-      useImperativeHandle(ref, () => ({
-        refreshData: fetchServers,
-      }));
-
-      useEffect(() => {
-        fetchServers();
-      }, []);
 
       // Extracted server item rendering
       const renderServerItem = (item: any) => {
@@ -87,7 +52,7 @@ export const Sidebar = forwardRef<{ refreshData: () => void; }, SidebarProps>(
             <div className="p-4 py-8">
               {/* Render Built-in Servers */}
               <div>
-                {list
+                {serverList
                     .filter((item) => item?.builtin)
                     .map((item) => renderServerItem(item))}
               </div>
@@ -98,7 +63,7 @@ export const Sidebar = forwardRef<{ refreshData: () => void; }, SidebarProps>(
 
               {/* Render Non-Built-in Servers */}
               <div>
-                {list
+                {serverList
                     .filter((item) => !item?.builtin)
                     .map((item) => renderServerItem(item))}
               </div>
@@ -106,7 +71,7 @@ export const Sidebar = forwardRef<{ refreshData: () => void; }, SidebarProps>(
               <div className="space-y-2">
                 <button
                     className="w-full flex items-center justify-center p-2 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
-                    onClick={addServiceClick}
+                    onClick={onAddServerClick}
                 >
                   <Plus className="w-5 h-5" />
                 </button>

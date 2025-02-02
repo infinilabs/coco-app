@@ -39,11 +39,19 @@ export default function CocoCloud() {
     const currentService = useConnectStore((state) => state.currentService);
     const setCurrentService = useConnectStore((state) => state.setCurrentService);
 
+    const serverList = useConnectStore((state) => state.serverList);
+    const setServerList = useConnectStore((state) => state.setServerList);
+
     const [loading, setLoading] = useState(false);
     const [refreshLoading, setRefreshLoading] = useState(false);
     const [profiles, setProfiles] = useState<any>({});
     const [userInfo, setUserInfo] = useState<any>({});
     const [serviceList, setServiceList] = useState<any[]>([]);
+
+    //fetch the servers
+    useEffect(() => {
+        fetchServers();
+    }, []);
 
     useEffect(() => {
         console.log("currentService", currentService);
@@ -71,6 +79,79 @@ export default function CocoCloud() {
     useEffect(() => {
         get_user_profiles()
     }, [])
+
+    const fetchServers = async () => {
+        invoke("list_coco_servers")
+            .then((res: any) => {
+                console.log("list_coco_servers", res);
+                setServerList(res);
+                if (serviceList.length > 0 && serviceList[serviceList.length - 1]?.id) {
+                    setCurrentService(serviceList[serviceList.length - 1]);
+                } else {
+                    console.warn("Service list is empty or last item has no id");
+                }
+            })
+            .catch((err: any) => {
+                console.error(err);
+            });
+    };
+
+    const add_coco_server = (endpointLink: string) => {
+        if (!endpointLink) {
+            throw new Error('Endpoint is required');
+        }
+        if (!endpointLink.startsWith("http://") && !endpointLink.startsWith("https://")) {
+            throw new Error('Invalid Endpoint');
+        }
+
+        setRefreshLoading(true);
+
+        return invoke("add_coco_server", { endpoint: endpointLink })
+            .then((res: any) => {
+                console.log("add_coco_server", res);
+                fetchServers()
+                    .then((r) => {
+                        console.log("fetchServers", r);
+                    })
+                    .catch((err: any) => {
+                        console.error("fetchServers failed:", err);
+                        throw err;  // Propagate error back up to outer promise chain
+                    });
+            })
+            .catch((err: any) => {
+                // Handle the invoke error
+                console.error("add coco server failed:", err);
+                throw err;  // Propagate error back up
+            })
+            .finally(() => {
+                setRefreshLoading(false);
+            });
+    };
+
+    // const add_coco_server = (endpointLink: string) => {
+    //     if (!endpointLink) {
+    //         throw new Error('Endpoint is required');
+    //     }
+    //     if (!endpointLink.startsWith("http://") && !endpointLink.startsWith("https://")) {
+    //         throw new Error('Invalid Endpoint');
+    //     }
+    //     setRefreshLoading(true);
+    //     invoke("add_coco_server", {endpoint: endpointLink})
+    //         .then((res: any) => {
+    //             console.log("add_coco_server", res);
+    //             // list_coco_servers();
+    //             fetchServers().then(r => {
+    //                 console.log("fetchServers", r);
+    //             });
+    //         })
+    //         .catch((err: any) => {
+    //             //TODO setErrorMessage(err || 'An unknown error occurred.');
+    //             console.error("add coco server:", err);
+    //             throw err;
+    //         }).finally(() => {
+    //         setRefreshLoading(false);
+    //     });
+    // };
 
     const handleOAuthCallback = useCallback(
         async (code: string | null, provider: string | null) => {
@@ -209,7 +290,7 @@ export default function CocoCloud() {
             });
     };
 
-    function addService() {
+    function onAddServer() {
         setIsConnect(false);
     }
 
@@ -231,7 +312,7 @@ export default function CocoCloud() {
 
     return (
         <div className="flex bg-gray-50 dark:bg-gray-900">
-            <Sidebar ref={SidebarRef} addService={addService} serviceList={serviceList}/>
+            <Sidebar ref={SidebarRef} onAddServer={onAddServer} serverList={serverList}/>
 
             <main className="flex-1 p-4 py-8">
                 {/* <div>
@@ -338,7 +419,7 @@ export default function CocoCloud() {
                         {userInfo?.name ? <DataSourcesList/> : null}
                     </div>
                 ) : (
-                    <Connect setIsConnect={setIsConnect} setServiceList={setServiceList}/>
+                    <Connect setIsConnect={setIsConnect} onAddServer={add_coco_server}/>
                 )}
             </main>
         </div>

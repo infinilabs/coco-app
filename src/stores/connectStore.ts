@@ -7,6 +7,8 @@ type keyArrayObject = {
 };
 
 export type IConnectStore = {
+  serverList: any[];
+  setServerList: (servers: []) => void;
   currentService: any;
   setCurrentService: (service: any) => void;
   connector_data: keyArrayObject,
@@ -18,7 +20,13 @@ export type IConnectStore = {
 export const useConnectStore = create<IConnectStore>()(
   persist(
     (set) => ({
-      otherServices: [],
+        serverList: [],
+        setServerList: (serverList: []) => {
+        console.log("set serverList:",serverList)
+        set(produce((draft) => {
+            draft.serverList = serverList;
+        }))
+      },
       currentService: "default_coco_server",
       setCurrentService: (server: any) => {
         console.log("set default server:",server)
