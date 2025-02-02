@@ -8,7 +8,7 @@ use futures::StreamExt;
 use futures::TryFutureExt;
 use lazy_static::lazy_static;
 use ordered_float::OrderedFloat;
-use reqwest::Client;
+use reqwest::{Client, StatusCode};
 use serde::Serialize;
 use serde_json::{from_value, Map as JsonMap};
 use serde_json::Value as Json;
@@ -194,7 +194,6 @@ pub async fn add_coco_server<R: Runtime>(
 
     load_or_insert_default_server(&app_handle).await.expect("failed to load default servers");
 
-    // Change the error type to String
     // Remove the trailing '/' or our `xxx_url()` functions won't work
     let endpoint = endpoint.trim_end_matches('/');
 
@@ -213,33 +212,51 @@ pub async fn add_coco_server<R: Runtime>(
 
     dbg!(format!("get provider info's response: {:?}", &response));
 
-    // Deserialize the response into the `Server` struct
-    let mut new_coco_server: Server = response
-        .json()
-        .await
-        .expect("Failed to deserialize the response.");
+    // Check if the response status is OK (200)
+    if response.status() == StatusCode::OK {
+        // Check if the response body is empty
+        if let Some(content_length) = response.content_length() {
+            if content_length > 0 {
+                // Deserialize the response into the `Server` struct
+                let new_coco_server: Result<Server, _> = response.json().await;
 
-    // Perform basic checks on the provider info if needed
-    trim_endpoint_last_forward_slash(&mut new_coco_server);
+                match new_coco_server {
+                    // Successfully deserialized the server data
+                    Ok(mut server) => {
+                        // Perform basic checks on the provider info if needed
+                        trim_endpoint_last_forward_slash(&mut server);
 
-    if new_coco_server.id==""{
-        new_coco_server.id=pizza_common::utils::uuid::Uuid::new().to_string();
+                        if server.id==""{
+                            server.id=pizza_common::utils::uuid::Uuid::new().to_string();
+                        }
+
+                        if server.name==""{
+                            server.name="Coco Cloud".to_string();
+                        }
+
+                        // Save the new server to the cache
+                        save_server_to_cache(server);
+
+                        // Persist the servers to the store
+                        persist_servers(&app_handle)
+                            .expect( "Failed to persist coco servers.");
+
+                        dbg!(format!("success to register server: {:?}", &endpoint));
+                        Ok(())
+                    }
+                    Err(e) => {
+                        Err(format!("Failed to deserialize the response: {}", e))
+                    }
+                }
+            } else {
+                Err("Received empty response body.".to_string())
+            }
+        } else {
+            Err("Could not determine the content length.".to_string())
+        }
+    } else {
+        Err(format!("Request failed with status: {}", response.status()))
     }
-
-    if new_coco_server.name==""{
-        new_coco_server.name="Coco Cloud".to_string();
-    }
-
-    // Save the new server to the cache
-    save_server_to_cache(new_coco_server);
-
-    // Persist the servers to the store
-    persist_servers(&app_handle)
-        .expect( "Failed to persist coco servers.");
-
-    dbg!(format!("success to register server: {:?}", &endpoint));
-
-    Ok(())
 }
 
 #[tauri::command]

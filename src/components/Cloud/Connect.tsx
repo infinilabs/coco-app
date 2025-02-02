@@ -116,8 +116,7 @@ export function Connect({ setIsConnect, setServiceList }: ConnectServiceProps) {
         </div>
       </form>
 
-      {/* Show error message if any */}
-      //TODO move to outer container, move error state to global
+      {/*//TODO move to outer container, move error state to global*/}
       {errorMessage && (
           <div
               className="mb-8"
