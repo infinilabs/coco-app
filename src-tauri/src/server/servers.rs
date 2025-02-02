@@ -218,6 +218,7 @@ pub async fn refresh_coco_server_info<R: Runtime>(
                             trim_endpoint_last_forward_slash(&mut server);
                             save_server_to_cache(&server);
                             persist_servers(&app_handle).expect("Failed to persist coco servers.");
+
                             Ok(server)
                         }
                         Err(e) => {
@@ -242,7 +243,7 @@ pub async fn refresh_coco_server_info<R: Runtime>(
 pub async fn add_coco_server<R: Runtime>(
     app_handle: AppHandle<R>,
     endpoint: String,
-) -> Result<(), String> {
+) -> Result<Server, String> {
 
     load_or_insert_default_server(&app_handle).await.expect("failed to load default servers");
 
@@ -294,7 +295,7 @@ pub async fn add_coco_server<R: Runtime>(
                             .expect( "Failed to persist coco servers.");
 
                         dbg!(format!("success to register server: {:?}", &endpoint));
-                        Ok(())
+                        Ok(server)
                     }
                     Err(e) => {
                         Err(format!("Failed to deserialize the response: {}", e))

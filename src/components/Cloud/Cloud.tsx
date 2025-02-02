@@ -84,9 +84,9 @@ export default function Cloud() {
             .then((res: any) => {
                 console.log("list_coco_servers", res);
                 setServerList(res);
-                if (resetSelection && serverList.length > 0) {
-                    console.log("setCurrentService", serverList[serverList.length - 1]);
-                    setCurrentService(serverList[serverList.length - 1]);
+                if (resetSelection && res.length > 0) {
+                    console.log("setCurrentService", res[res.length - 1]);
+                    setCurrentService(res[res.length - 1]);
                 } else {
                     console.warn("Service list is empty or last item has no id");
                 }
@@ -112,6 +112,7 @@ export default function Cloud() {
                 fetchServers(false)
                     .then((r) => {
                         console.log("fetchServers", r);
+                        setCurrentService(res);
                     })
                     .catch((err: any) => {
                         console.error("fetchServers failed:", err);
