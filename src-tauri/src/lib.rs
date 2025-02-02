@@ -89,6 +89,7 @@ pub fn run() {
             server::servers::add_coco_server,
             server::servers::remove_coco_server,
             server::servers::list_coco_servers,
+            server::servers::refresh_coco_server_info,
             // server::get_coco_server_health_info,
             // server::get_coco_servers_health_info,
             // server::query_coco_servers,

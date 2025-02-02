@@ -38,9 +38,9 @@ fn check_endpoint_exists(endpoint: &str) -> bool {
     cache.values().any(|server| server.endpoint == endpoint)
 }
 
-fn save_server_to_cache(server: Server) -> bool {
+fn save_server_to_cache(server: &Server) -> bool {
     let mut cache = SERVER_CACHE.write().unwrap();
-    cache.insert(server.id.clone(), server).is_none() // If the server id did not exist, `insert` will return `None`
+    cache.insert(server.id.clone(), server.clone()).is_none() // If the server id did not exist, `insert` will return `None`
 }
 
 fn remove_server_by_id(id: String) -> bool {
@@ -96,11 +96,13 @@ fn get_default_server() -> Server {
         updated: "2025-01-24T12:12:17.326286927+08:00".to_string(),
         public: false,
         available: true,
+        is_login: false,
         auth_provider: AuthProvider {
             sso: Sso {
                 url: "https://coco.infini.cloud/sso/login/".to_string(),
             },
         },
+        priority: 0,
     }
 }
 
@@ -137,7 +139,7 @@ pub async fn load_or_insert_default_server<R: Runtime>(app_handle: &AppHandle<R>
         };
 
         // Persist the new server to the store
-        save_server_to_cache(default_coco_server.clone());
+        save_server_to_cache(&default_coco_server);
 
         dbg!(&default_coco_server);
 
@@ -163,7 +165,7 @@ pub async fn load_or_insert_default_server<R: Runtime>(app_handle: &AppHandle<R>
         }
 
         for server in deserialized_servers.iter(){
-            save_server_to_cache(server.clone());
+            save_server_to_cache(&server);
         }
 
         dbg!(format!("load servers: {:?}", &deserialized_servers));
@@ -185,6 +187,56 @@ pub async fn list_coco_servers<R: Runtime>(
 pub const COCO_SERVERS: &str = "coco_servers";
 
 const COCO_SERVER_TOKENS: &str = "coco_server_tokens";
+
+#[tauri::command]
+pub async fn refresh_coco_server_info<R: Runtime>(
+    app_handle: AppHandle<R>,
+    id: String,
+) -> Result<Server, String> {
+    let server = {
+        let cache = SERVER_CACHE.read().unwrap();
+        cache.get(&id).cloned()
+    };
+
+    if let Some(server) = server {
+        let is_builtin = server.builtin;
+        let response = HTTP_CLIENT
+            .get(provider_info_url(&server.endpoint))
+            .send()
+            .await
+            .expect("Failed to send request to the server");
+
+        if response.status() == StatusCode::OK {
+            if let Some(content_length) = response.content_length() {
+                if content_length > 0 {
+                    let new_coco_server: Result<Server, _> = response.json().await;
+
+                    match new_coco_server {
+                        Ok(mut server) => {
+                            server.id = id;
+                            server.builtin = is_builtin;
+                            trim_endpoint_last_forward_slash(&mut server);
+                            save_server_to_cache(&server);
+                            persist_servers(&app_handle).expect("Failed to persist coco servers.");
+                            Ok(server)
+                        }
+                        Err(e) => {
+                            Err(format!("Failed to deserialize the response: {}", e))
+                        }
+                    }
+                } else {
+                    Err("Received empty response body.".to_string())
+                }
+            } else {
+                Err("Could not determine the content length.".to_string())
+            }
+        } else {
+            Err(format!("Request failed with status: {}", response.status()))
+        }
+    } else {
+        Err("Server not found.".to_string())
+    }
+}
 
 #[tauri::command]
 pub async fn add_coco_server<R: Runtime>(
@@ -235,7 +287,7 @@ pub async fn add_coco_server<R: Runtime>(
                         }
 
                         // Save the new server to the cache
-                        save_server_to_cache(server);
+                        save_server_to_cache(&server);
 
                         // Persist the servers to the store
                         persist_servers(&app_handle)
@@ -366,11 +418,13 @@ fn test_trim_endpoint_last_forward_slash() {
         updated: "".to_string(),
         public: false,
         available: false,
+        is_login: false,
         auth_provider: AuthProvider {
             sso: Sso {
                 url: "".to_string(),
             },
         },
+        priority: 0,
     };
 
     trim_endpoint_last_forward_slash(&mut server);

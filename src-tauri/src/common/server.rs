@@ -42,7 +42,11 @@ pub struct Server {
     pub public: bool,
     #[serde(default = "default_available_type")]
     pub available: bool,
+    #[serde(default = "default_bool_type")] // Custom default function for empty string
+    pub is_login: bool,
     pub auth_provider: AuthProvider,
+    #[serde(default = "default_priority_type")]
+    pub priority: u32,
 }
 
 impl PartialEq for Server {
@@ -61,29 +65,22 @@ impl Hash for Server {
 
 
 #[derive(Debug,Clone, Serialize, Deserialize)]
-pub struct ServerProfile {
+pub struct ServerAccessToken {
     #[serde(default = "default_empty_string")] // Custom default function for empty string
     pub id: String,
-    #[serde(default = "default_bool_type")] // Custom default function for empty string
-    pub available: bool,
-    #[serde(default = "default_bool_type")] // Custom default function for empty string
-    pub public: bool,
-    #[serde(default = "default_bool_type")] // Custom default function for empty string
-    pub is_login: bool,
     pub access_token: String,
     pub expired_at: u32, //unix timestamp in seconds
-    pub priority: u32,
 }
 
-impl PartialEq for ServerProfile {
+impl PartialEq for ServerAccessToken {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id
     }
 }
 
-impl Eq for ServerProfile {}
+impl Eq for ServerAccessToken {}
 
-impl Hash for ServerProfile {
+impl Hash for ServerAccessToken {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.id.hash(state);
     }
@@ -99,4 +96,7 @@ fn default_bool_type() -> bool {
 
 fn default_available_type() -> bool {
     true
+}
+fn default_priority_type() -> u32 {
+    0
 }
