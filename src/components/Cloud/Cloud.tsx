@@ -46,7 +46,6 @@ export default function Cloud() {
     const [refreshLoading, setRefreshLoading] = useState(false);
     const [profiles, setProfiles] = useState<any>({});
     const [userInfo, setUserInfo] = useState<any>({});
-    const [serviceList, setServiceList] = useState<any[]>([]);
 
     //fetch the servers
     useEffect(() => {
@@ -85,8 +84,9 @@ export default function Cloud() {
             .then((res: any) => {
                 console.log("list_coco_servers", res);
                 setServerList(res);
-                if (serviceList.length > 0 && serviceList[serviceList.length - 1]?.id) {
-                    setCurrentService(serviceList[serviceList.length - 1]);
+                if (serverList.length > 0) {
+                    console.log("setCurrentService", serverList[serverList.length - 1]);
+                    setCurrentService(serverList[serverList.length - 1]);
                 } else {
                     console.warn("Service list is empty or last item has no id");
                 }
@@ -127,31 +127,6 @@ export default function Cloud() {
                 setRefreshLoading(false);
             });
     };
-
-    // const add_coco_server = (endpointLink: string) => {
-    //     if (!endpointLink) {
-    //         throw new Error('Endpoint is required');
-    //     }
-    //     if (!endpointLink.startsWith("http://") && !endpointLink.startsWith("https://")) {
-    //         throw new Error('Invalid Endpoint');
-    //     }
-    //     setRefreshLoading(true);
-    //     invoke("add_coco_server", {endpoint: endpointLink})
-    //         .then((res: any) => {
-    //             console.log("add_coco_server", res);
-    //             // list_coco_servers();
-    //             fetchServers().then(r => {
-    //                 console.log("fetchServers", r);
-    //             });
-    //         })
-    //         .catch((err: any) => {
-    //             //TODO setErrorMessage(err || 'An unknown error occurred.');
-    //             console.error("add coco server:", err);
-    //             throw err;
-    //         }).finally(() => {
-    //         setRefreshLoading(false);
-    //     });
-    // };
 
     const handleOAuthCallback = useCallback(
         async (code: string | null, provider: string | null) => {
@@ -298,11 +273,9 @@ export default function Cloud() {
         invoke("remove_coco_server", {id})
             .then((res: any) => {
                 console.log("remove_coco_server", id, JSON.stringify(res));
-                //TODO remove the server id from local state, or the UI won't change
-                get_user_profiles(); //TODO remove
-                SidebarRef?.current?.refreshData() //TODO remove
-                //TODO, handle res, maybe contains error
-
+               fetchServers().then(r => {
+                     console.log("fetchServers", r);
+               })
             })
             .catch((err: any) => {
                 //TODO display the error message

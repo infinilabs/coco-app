@@ -76,7 +76,7 @@ function SettingsPage() {
                 </SettingsPanel>
               </TabPanel>
               <TabPanel>
-                <CocoCloud />
+                <Cloud />
               </TabPanel>
               <TabPanel>
                 <SettingsPanel title="">
