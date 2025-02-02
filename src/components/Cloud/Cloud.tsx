@@ -49,7 +49,7 @@ export default function Cloud() {
 
     //fetch the servers
     useEffect(() => {
-        fetchServers();
+        fetchServers(true);
     }, []);
 
     useEffect(() => {
@@ -79,12 +79,12 @@ export default function Cloud() {
         get_user_profiles()
     }, [])
 
-    const fetchServers = async () => {
+    const fetchServers = async (resetSelection :boolean) => {
         invoke("list_coco_servers")
             .then((res: any) => {
                 console.log("list_coco_servers", res);
                 setServerList(res);
-                if (serverList.length > 0) {
+                if (resetSelection && serverList.length > 0) {
                     console.log("setCurrentService", serverList[serverList.length - 1]);
                     setCurrentService(serverList[serverList.length - 1]);
                 } else {
@@ -109,7 +109,7 @@ export default function Cloud() {
         return invoke("add_coco_server", { endpoint: endpointLink })
             .then((res: any) => {
                 console.log("add_coco_server", res);
-                fetchServers()
+                fetchServers(false)
                     .then((r) => {
                         console.log("fetchServers", r);
                     })
@@ -253,11 +253,13 @@ export default function Cloud() {
         invoke("refresh_coco_server_info", {id})
             .then((res: any) => {
                 console.log("refresh_coco_server_info", id, JSON.stringify(res));
-                SidebarRef?.current?.refreshData() //TODO remove
-                //TODO refresh the UI
+                fetchServers(false).then(r => {
+                    console.log("fetchServers", r);
+                });
+                //update currentService
+                setCurrentService(res);
             })
             .catch((err: any) => {
-                //TODO display the error message
                 console.error(err);
             })
             .finally(() => {
@@ -273,7 +275,7 @@ export default function Cloud() {
         invoke("remove_coco_server", {id})
             .then((res: any) => {
                 console.log("remove_coco_server", id, JSON.stringify(res));
-               fetchServers().then(r => {
+               fetchServers(true).then(r => {
                      console.log("fetchServers", r);
                })
             })
