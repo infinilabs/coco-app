@@ -8,7 +8,7 @@ import * as shell from "@tauri-apps/plugin-shell";
 
 import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
-import { OpenBrowserURL } from "@/utils/index";
+import { OpenURLWithBrowser } from "@/utils/index";
 import logoImg from "@/assets/32x32.png";
 import callbackTemplate from "@/components/Cloud/callback.template";
 import { clientEnv } from "@/utils/env";
@@ -141,7 +141,7 @@ export default function Account() {
     // });
     // const { token } = await response.json();
     // localStorage.setItem("auth_token", token);
-    OpenBrowserURL(`http://localhost:1420/login?uid=${uid}`);
+    OpenURLWithBrowser(`http://localhost:1420/login?uid=${uid}`);
 
     setLoading(true);
     try {

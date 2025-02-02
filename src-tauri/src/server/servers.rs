@@ -96,7 +96,7 @@ fn get_default_server() -> Server {
         updated: "2025-01-24T12:12:17.326286927+08:00".to_string(),
         public: false,
         available: true,
-        is_login: false,
+        profile: None,
         auth_provider: AuthProvider {
             sso: Sso {
                 url: "https://coco.infini.cloud/sso/login/".to_string(),
@@ -419,7 +419,7 @@ fn test_trim_endpoint_last_forward_slash() {
         updated: "".to_string(),
         public: false,
         available: false,
-        is_login: false,
+        profile: None,
         auth_provider: AuthProvider {
             sso: Sso {
                 url: "".to_string(),

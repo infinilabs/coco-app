@@ -61,7 +61,7 @@ export const IsTauri = () => {
   );
 };
 
-export const OpenBrowserURL = async (url: string) => {
+export const OpenURLWithBrowser = async (url: string) => {
   if (!url) return;
   if (isTauri()) {
     try {
@@ -73,13 +73,6 @@ export const OpenBrowserURL = async (url: string) => {
   } else {
     window.open(url);
   }
-};
-
-export const authWitheGithub = (uid: string) => {
-  const authorizeUrl = "https://github.com/login/oauth/authorize";
-  console.log("github", process.env.NODE_ENV, uid)
-
-  location.href = `${authorizeUrl}?client_id=${"Ov23li4IcdbbWp2RgLTN"}&redirect_uri=${"http://localhost:1420/login"}`;
 };
 
 const unitArr = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"] as const;

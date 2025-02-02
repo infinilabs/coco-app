@@ -1,5 +1,6 @@
 use std::hash::{Hash, Hasher};
 use serde::{Deserialize, Serialize};
+use crate::common::profile::UserProfile;
 
 #[derive(Debug,Clone, Serialize, Deserialize)]
 pub struct Provider {
@@ -42,8 +43,8 @@ pub struct Server {
     pub public: bool,
     #[serde(default = "default_available_type")]
     pub available: bool,
-    #[serde(default = "default_bool_type")] // Custom default function for empty string
-    pub is_login: bool,
+    #[serde(default = "default_user_profile_type")] // Custom default function for empty string
+    pub profile: Option<UserProfile>,
     pub auth_provider: AuthProvider,
     #[serde(default = "default_priority_type")]
     pub priority: u32,
@@ -99,4 +100,7 @@ fn default_available_type() -> bool {
 }
 fn default_priority_type() -> u32 {
     0
+}
+fn default_user_profile_type() -> Option<UserProfile> {
+    None
 }

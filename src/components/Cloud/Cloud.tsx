@@ -15,12 +15,13 @@ import {
 } from "@tauri-apps/plugin-deep-link";
 import {invoke} from "@tauri-apps/api/core";
 
+import { Copy } from 'lucide-react';
 
 import {UserProfile} from "./UserProfile";
 import {DataSourcesList} from "./DataSourcesList";
 import {Sidebar} from "./Sidebar";
 import {Connect} from "./Connect.tsx";
-import {OpenBrowserURL} from "@/utils";
+import {OpenURLWithBrowser} from "@/utils";
 import {useAppStore} from "@/stores/appStore";
 import {tauriFetch} from "@/api/tauriFetchClient";
 import {useConnectStore} from "@/stores/connectStore";
@@ -233,21 +234,26 @@ export default function Cloud() {
     }, [app_uid]);
 
     const LoginClick = useCallback(() => {
-        if (loading) return;
-        // setAuth(undefined, endpoint);
-        let uid = uuidv4();
-        setAppUid(uid);
-        console.log("LoginClick", uid, currentService?.auth_provider.sso.url);
-        OpenBrowserURL(
-            `${currentService?.auth_provider?.sso?.url}/?provider=coco-cloud&product=coco&request_id=${uid}`
-        );
+        if (loading) return;  // Prevent multiple clicks if already loading
 
+        // If the appUid doesn't exist, generate one
+        if (!app_uid) {
+            let requestID = uuidv4();
+            setAppUid(requestID);
+        }
+
+        // Generate the login URL with the current appUid
+        const url = `${currentService?.auth_provider?.sso?.url}/?provider=${currentService?.id}&product=coco&request_id=${app_uid || uuidv4()}`;
+
+        console.log("Open SSO link, requestID:", app_uid, url);
+
+        // Open the URL in a browser
+        OpenURLWithBrowser(url);
+
+        // Start loading state
         setLoading(true);
-    }, [JSON.stringify(currentService)]);
 
-    function goToHref(url: string) {
-        OpenBrowserURL(url);
-    }
+    }, [app_uid, loading, currentService]);
 
     const refreshClick = (id: string) => {
         setRefreshLoading(true);
@@ -317,7 +323,7 @@ export default function Cloud() {
                             <div className="flex gap-2">
                                 <button
                                     className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-[6px] bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
-                                    onClick={() => goToHref(currentService?.provider?.website)}
+                                    onClick={() => OpenURLWithBrowser(currentService?.provider?.website)}
                                 >
                                     <Globe className="w-3.5 h-3.5"/>
                                 </button>
@@ -369,23 +375,50 @@ export default function Cloud() {
                                 <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                                     Account Information
                                 </h2>
-                                {userInfo?.name ? (
-                                    <UserProfile userInfo={userInfo || {}}/>
+                                { currentService?.profile ? (
+                                    <UserProfile userInfo={currentService?.profile}/>
                                 ) : (
                                     <div>
-                                        <button
-                                            className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors mb-3"
-                                            onClick={LoginClick}
-                                        >
-                                            {loading ? "Login..." : "Login"}
-                                        </button>
+                                        {/* Login Button (conditionally rendered when not loading) */}
+                                        {!loading && (
+                                            <button
+                                                className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors mb-3"
+                                                onClick={LoginClick}
+                                            >
+                                                Login
+                                            </button>
+                                        )}
+
+                                        {/* Cancel Button and Copy URL button while loading */}
+                                        {loading && (
+                                            <div className="flex items-center space-x-2">
+                                                <button
+                                                    className="px-6 py-2 text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors mb-3"
+                                                    onClick={() => setLoading(false)} // Reset loading state
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(
+                                                            `${currentService?.auth_provider?.sso?.url}/?provider=${currentService?.id}&product=coco&request_id=${app_uid}`
+                                                        );
+                                                    }}
+                                                    className="text-xl text-blue-500 hover:text-blue-600"
+                                                >
+                                                    <Copy className="inline mr-2"/> {/* Lucide Copy Icon */}
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {/* Privacy Policy Link */}
                                         <button
                                             className="text-xs text-[#0096FB] dark:text-blue-400 block"
                                             onClick={() =>
-                                                goToHref(currentService?.provider?.privacy_policy)
+                                                OpenURLWithBrowser(currentService?.provider?.privacy_policy)
                                             }
                                         >
-                                            EULA | Privacy Policy
+                                        EULA | Privacy Policy
                                         </button>
                                     </div>
                                 )}
