@@ -73,6 +73,16 @@ pub struct ServerAccessToken {
     pub expired_at: u32, //unix timestamp in seconds
 }
 
+impl ServerAccessToken{
+    pub fn new(id: String, access_token: String, expired_at: u32) -> Self {
+        Self {
+            id,
+            access_token,
+            expired_at: expired_at,
+        }
+    }
+}
+
 impl PartialEq for ServerAccessToken {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id

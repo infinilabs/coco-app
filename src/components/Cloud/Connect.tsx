@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ChevronLeft } from "lucide-react";
+import {useAppStore} from "@/stores/appStore";
 
 
 interface ConnectServiceProps {
@@ -9,8 +10,10 @@ interface ConnectServiceProps {
 
 export function Connect({ setIsConnect,  onAddServer }: ConnectServiceProps) {
   const [endpointLink, setEndpointLink] = useState("");
-  const [refreshLoading, setRefreshLoading] = useState(false);
+  const [refreshLoading, ] = useState(false);
   const [errorMessage, setErrorMessage] = useState(''); // State to store the error message
+
+  const setError = useAppStore((state) => state.setError);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,17 +23,16 @@ export function Connect({ setIsConnect,  onAddServer }: ConnectServiceProps) {
     setIsConnect(true);
   };
 
-  // Asynchronous onAddServerClick
   const onAddServerClick = async (endpoint: string) => {
     console.log("onAddServer", endpoint);
     try {
-      // Await the onAddServer call if it's a promise-based function
       await onAddServer(endpoint);
-      setIsConnect(true);  // Only set as connected if the server is added successfully
-    } catch (err) {
+      setIsConnect(true); // Only set as connected if the server is added successfully
+    } catch (err: any) {
       // Handle the error if something goes wrong
       const errorMessage = typeof err === 'string' ? err : err?.message || 'An unknown error occurred.';
-      setErrorMessage(errorMessage);
+      setErrorMessage("ERR:"+errorMessage);
+      setError(errorMessage);
       console.error('Error:', errorMessage);
     }
   };

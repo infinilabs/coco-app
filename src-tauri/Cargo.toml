@@ -37,6 +37,7 @@ futures = "0.3.31"
 ordered-float = { version = "4.6.0", default-features = false } 
 lazy_static = "1.5.0"
 log = "0.4.22"
+tokio = "1.40.0"
 
 
 [profile.dev]

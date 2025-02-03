@@ -622,6 +622,7 @@ dependencies = [
  "tauri-plugin-store",
  "tauri-plugin-theme",
  "tauri-plugin-websocket",
+ "tokio",
 ]
 
 [[package]]

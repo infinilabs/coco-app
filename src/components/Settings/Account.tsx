@@ -14,8 +14,8 @@ import callbackTemplate from "@/components/Cloud/callback.template";
 import { clientEnv } from "@/utils/env";
 
 export default function Account() {
-  const app_uid = useAppStore((state) => state.app_uid);
-  const setAppUid = useAppStore((state) => state.setAppUid);
+  const app_uid = useAppStore((state) => state.ssoRequestID);
+  const setAppUid = useAppStore((state) => state.setSSORequestID);
   const endpoint_http = useAppStore((state) => state.endpoint_http);
 
   const { auth, setAuth } = useAuthStore();

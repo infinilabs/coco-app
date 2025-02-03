@@ -7,9 +7,11 @@ mod util;
 use autostart::{change_autostart, enable_autostart};
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
-use tauri::{AppHandle, Emitter, Listener, Manager, WebviewWindow};
+use tauri::{AppHandle, Emitter, Listener, Manager, Runtime, WebviewWindow};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_deep_link::DeepLinkExt;
+use crate::server::servers::{load_or_insert_default_server, load_servers, load_servers_token};
+use tokio::runtime::Runtime as RT; // Add this import
 
 /// Tauri store name
 pub(crate) const COCO_TAURI_STORE: &str = "coco_tauri_store";
@@ -89,7 +91,10 @@ pub fn run() {
             server::servers::add_coco_server,
             server::servers::remove_coco_server,
             server::servers::list_coco_servers,
+            server::servers::logout_coco_server,
             server::servers::refresh_coco_server_info,
+            server::auth::handle_sso_callback,
+            server::profile::get_user_profiles,
             // server::get_coco_server_health_info,
             // server::get_coco_servers_health_info,
             // server::query_coco_servers,
@@ -99,7 +104,22 @@ pub fn run() {
             // server::get_coco_server_connectors
         ])
         .setup(|app| {
-            init(app.app_handle());
+
+
+            // Get app handle
+            let app_handle = app.handle().clone();
+
+            // Create a single Tokio runtime instance
+            let rt = RT::new().expect("Failed to create Tokio runtime");
+
+            // Use the runtime to spawn the async initialization tasks
+            rt.spawn(async move {
+                dbg!("Running async initialization tasks");
+                init(&app_handle).await; // Pass a reference to `app_handle`
+                dbg!("Async initialization tasks completed");
+            });
+
+
 
             shortcut::enable_shortcut(app);
             enable_tray(app);
@@ -122,13 +142,23 @@ pub fn run() {
                 dbg!(event.urls());
             });
 
+
             Ok(())
         })
         .run(ctx)
         .expect("error while running tauri application");
 }
 
-fn init(_app_handle: &AppHandle) {
+pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
+    // Await the async functions to load the servers and tokens
+    if let Err(err) = load_or_insert_default_server(app_handle).await {
+        eprintln!("Failed to load servers: {}", err);
+    }
+
+    if let Err(err) = load_servers_token(app_handle).await {
+        eprintln!("Failed to load server tokens: {}", err);
+    }
+
     // let window: WebviewWindow = app_handle.get_webview_window("main").unwrap();
 
     // let panel = window.to_panel().unwrap();

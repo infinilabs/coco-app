@@ -10,9 +10,10 @@ use tauri::Runtime;
 use tauri_plugin_store::StoreExt;
 
 pub mod servers;
+pub mod auth;
 // pub mod health;
 // pub mod datasource;
 // pub mod connector;
 // pub mod search;
-// pub mod profile;
+pub mod profile;
 

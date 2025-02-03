@@ -1,8 +1,5 @@
 import { User, LogOut } from "lucide-react";
 
-import { useAuthStore } from "@/stores/authStore";
-import { useAppStore } from "@/stores/appStore";
-
 interface UserPreferences {
   theme: "dark" | "light";
   language: string;
@@ -16,17 +13,15 @@ interface UserInfo {
 }
 
 interface UserProfileProps {
+  server: string; //server's id
   userInfo: UserInfo;
+  onLogout: (server: string) => void;
 }
 
-export function UserProfile({ userInfo }: UserProfileProps) {
-  // const setAuth = useAuthStore((state) => state.setAuth);
-  const setUserInfo = useAuthStore((state) => state.setUserInfo);
-  const endpoint = useAppStore((state) => state.endpoint);
-
+export function UserProfile({ server,userInfo,onLogout }: UserProfileProps) {
   const handleLogout = () => {
-    // setAuth(undefined, endpoint);
-    setUserInfo({}, endpoint);
+    onLogout(server);
+    console.log("Logout",server);
   };
 
   return (

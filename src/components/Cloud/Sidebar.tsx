@@ -1,4 +1,4 @@
-import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
+import { forwardRef } from "react";
 import { Plus } from "lucide-react";
 
 import cocoLogoImg from "@/assets/app-icon.png";
@@ -10,7 +10,7 @@ interface SidebarProps {
 }
 
 export const Sidebar = forwardRef<{ refreshData: () => void; }, SidebarProps>(
-    ({ onAddServer, serverList }, ref) => {
+    ({ onAddServer, serverList }) => {
       const currentService = useConnectStore((state) => state.currentService);
       const setCurrentService = useConnectStore((state) => state.setCurrentService);
 

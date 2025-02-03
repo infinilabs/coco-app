@@ -1,4 +1,4 @@
-import {useState, useEffect, useCallback, useRef} from "react";
+import {useState, useEffect, useCallback} from "react";
 import {
     RefreshCcw,
     Globe,
@@ -18,22 +18,28 @@ import {invoke} from "@tauri-apps/api/core";
 import { Copy } from 'lucide-react';
 
 import {UserProfile} from "./UserProfile";
-import {DataSourcesList} from "./DataSourcesList";
+// import {DataSourcesList} from "./DataSourcesList";
 import {Sidebar} from "./Sidebar";
 import {Connect} from "./Connect.tsx";
 import {OpenURLWithBrowser} from "@/utils";
 import {useAppStore} from "@/stores/appStore";
-import {tauriFetch} from "@/api/tauriFetchClient";
 import {useConnectStore} from "@/stores/connectStore";
 import bannerImg from "@/assets/images/coco-cloud-banner.jpeg";
 
 export default function Cloud() {
-    const SidebarRef = useRef<{ refreshData: () => void; }>(null);
+    // const SidebarRef = useRef<{ refreshData: () => void; }>(null);
 
-    const [error, setError] = useState<string | null>(null);
+    // const [error, setError] = useState<string | null>(null);
+    const error = useAppStore((state) => state.error);
+    const setError = useAppStore((state) => state.setError);
 
     const [isConnect, setIsConnect] = useState(true);
-    const [app_uid, setAppUid] = useState("");
+    // const [ssoRequestID, setSSORequestID] = useState("");
+    const ssoRequestID = useAppStore((state) => state.ssoRequestID);
+    const setSSORequestID = useAppStore((state) => state.setSSORequestID);
+
+    // const ssoServerID = useAppStore((state) => state.ssoServerID);
+    // const setSSOServerID = useAppStore((state) => state.setSSOServerID);
 
     const endpoint = useAppStore((state) => state.endpoint);
 
@@ -45,8 +51,10 @@ export default function Cloud() {
 
     const [loading, setLoading] = useState(false);
     const [refreshLoading, setRefreshLoading] = useState(false);
-    const [profiles, setProfiles] = useState<any>({});
-    const [userInfo, setUserInfo] = useState<any>({});
+    // const [profiles, setProfiles] = useState<any>({});
+    // const [userInfo, setUserInfo] = useState<any>({});
+
+
 
     //fetch the servers
     useEffect(() => {
@@ -57,27 +65,27 @@ export default function Cloud() {
         console.log("currentService", currentService);
         setLoading(false);
         setRefreshLoading(false);
-        setError(null);
+        setError("");
         // setEndpoint(currentService.endpoint);
         setIsConnect(true);
-        setUserInfo(profiles[endpoint] || {})
+        // setUserInfo(profiles[endpoint] || {})
     }, [JSON.stringify(currentService)]);
 
-    const get_user_profiles = useCallback(() => {
-        invoke("get_user_profiles")
-            .then((res: any) => {
-                console.log("get_user_profiles", res);
-                setProfiles(res);
-                console.log("setUserInfo", res[endpoint]);
-                setUserInfo(res[endpoint] || {})
-            })
-            .catch((err: any) => {
-                console.error(err);
-            });
-    }, [endpoint]);
+    // const get_user_profiles = useCallback(() => {
+    //     invoke("get_user_profiles")
+    //         .then((res: any) => {
+    //             console.log("get_user_profiles", res);
+    //             setProfiles(res);
+    //             console.log("setUserInfo", res[endpoint]);
+    //             setUserInfo(res[endpoint] || {})
+    //         })
+    //         .catch((err: any) => {
+    //             console.error(err);
+    //         });
+    // }, [endpoint]);
 
     useEffect(() => {
-        get_user_profiles()
+        // get_user_profiles()
     }, [])
 
     const fetchServers = async (resetSelection :boolean) => {
@@ -93,6 +101,7 @@ export default function Cloud() {
                 }
             })
             .catch((err: any) => {
+                setError(err);
                 console.error(err);
             });
     };
@@ -117,12 +126,14 @@ export default function Cloud() {
                     })
                     .catch((err: any) => {
                         console.error("fetchServers failed:", err);
+                        setError(err);
                         throw err;  // Propagate error back up to outer promise chain
                     });
             })
             .catch((err: any) => {
                 // Handle the invoke error
                 console.error("add coco server failed:", err);
+                setError(err);
                 throw err;  // Propagate error back up
             })
             .finally(() => {
@@ -131,71 +142,60 @@ export default function Cloud() {
     };
 
     const handleOAuthCallback = useCallback(
-        async (code: string | null, provider: string | null) => {
+        async (code: string | null, serverId: string | null) => {
+
             if (!code) {
                 setError("No authorization code received");
                 return;
             }
 
             try {
-                console.log("Handling OAuth callback:", {code, provider});
-                const response: any = await tauriFetch({
-                    url: `/auth/request_access_token?request_id=${app_uid}`,
-                    method: "GET",
-                    headers: {
-                        "X-API-TOKEN": code,
-                    },
+                console.log("Handling OAuth callback:", {code, serverId});
+                await invoke("handle_sso_callback", {
+                    serverId: serverId,  // Make sure 'server_id' is the correct argument
+                    requestId: ssoRequestID,  // Make sure 'request_id' is the correct argument
+                    code: code
                 });
-                console.log(
-                    "response",
-                    `/auth/request_access_token?request_id=${app_uid}`,
-                    code,
-                    response
-                );
 
-                if (response.data?.access_token) {
-                    // await setAuth(
-                    //   {
-                    //     token: response.data?.access_token,
-                    //     expires: response.data?.expire_at,
-                    //     plan: { upgraded: false, last_checked: 0 },
-                    //   },
-                    //   endpoint
-                    // );
-
-                    await invoke("store_coco_server_token", {endpoint, token: response.data?.access_token});
-
-                    get_user_profiles();
-                } else {
-                    // setAuth(undefined, endpoint);
-                    setError("Sign in failed: " + response.data?.error?.reason);
+                if (serverId != null) {
+                    refreshClick(serverId);
                 }
 
                 getCurrentWindow()
                     .setFocus()
-                    .catch(() => {
+                    .catch((err) => {
+                        setError(err);
                     });
+
             } catch (e) {
-                console.error("Sign in failed:", error);
-                setError("Sign in failed: catch");
+                console.error("Sign in failed:", e);
+                setError("SSO login failed: "+e);
                 // setAuth(undefined, endpoint);
                 throw error;
             } finally {
                 setLoading(false);
             }
         },
-        [app_uid, endpoint]
+        [ssoRequestID, endpoint]
     );
 
     const handleUrl = (url: string) => {
         try {
             //url = "coco://oauth_callback?code=cuad40o2sdb0j4verf40qhglrve595ibv5ng4sqzk5b94sdan8fou9sj8ef9ioww8ur9mqclm2gickavkawm&provider=coco-cloud/"
             const urlObject = new URL(url);
-            console.log("urlObject:", urlObject);
+            console.log("handle urlObject:", urlObject);
 
+            //TODO, pass request_id and check with local, if the request_id are same, then continue
+            const reqId = urlObject.searchParams.get("request_id");
             const code = urlObject.searchParams.get("code");
-            const provider = urlObject.searchParams.get("provider");
-            handleOAuthCallback(code, provider);
+            if (reqId != ssoRequestID) {
+                console.log("Request ID not matched, skip");
+                setError("Request ID not matched, skip");
+                return;
+            }
+
+            const serverId = currentService?.id;
+            handleOAuthCallback(code, serverId);
 
             // switch (urlObject.hostname) {
             //   case "/oauth_callback":
@@ -207,45 +207,77 @@ export default function Cloud() {
             // }
         } catch (err) {
             console.error("Failed to parse URL:", err);
-            setError("Invalid URL format");
+            setError("Invalid URL format: "+err);
         }
     };
 
+
     // Fetch the initial deep link intent
     useEffect(() => {
-        //handleUrl("");
+
+        // Function to handle pasted URL
+        const handlePaste = (event) => {
+            const pastedText = event.clipboardData.getData('text');
+            console.log("handle paste text:", pastedText);
+            if (isValidCallbackUrl(pastedText)) {
+                // Handle the URL as if it's a deep link
+                console.log("handle callback on paste:", pastedText);
+                handleUrl(pastedText);
+            }
+        };
+
+        // Function to check if the pasted URL is valid for our deep link scheme
+        const isValidCallbackUrl = (url) => {
+            return url && url.startsWith('coco://oauth_callback');
+        };
+
+        // Adding event listener for paste events
+        document.addEventListener('paste', handlePaste);
+
         getCurrentDeepLinkUrls()
             .then((urls) => {
                 console.log("URLs:", urls);
                 if (urls && urls.length > 0) {
-                    handleUrl(urls[0]);
+                    if (isValidCallbackUrl(urls[0])){
+                        handleUrl(urls[0]);
+                    }
                 }
             })
             .catch((err) => {
                 console.error("Failed to get initial URLs:", err);
-                setError("Failed to get initial URLs");
+                setError("Failed to get initial URLs: "+err);
             });
 
         const unlisten = onOpenUrl((urls) => handleUrl(urls[0]));
 
         return () => {
             unlisten.then((fn) => fn());
+            document.removeEventListener('paste', handlePaste);
         };
-    }, [app_uid]);
+    }, [ssoRequestID]);
+
+    // const generateLogin = () => {
+    //     const requestID = uuidv4();
+    //     setSSORequestID(requestID);
+    //     setSSOServerID(currentService?.id); // Set server ID
+    //
+    //     // The URL is now updated when ssoRequestID and ssoServerID are both set
+    // };
 
     const LoginClick = useCallback(() => {
         if (loading) return;  // Prevent multiple clicks if already loading
 
         // If the appUid doesn't exist, generate one
-        if (!app_uid) {
+        // if (!ssoRequestID) {
             let requestID = uuidv4();
-            setAppUid(requestID);
-        }
+            setSSORequestID(requestID);
+            // setSSOServerID(currentService?.id);
+        // }
 
         // Generate the login URL with the current appUid
-        const url = `${currentService?.auth_provider?.sso?.url}/?provider=${currentService?.id}&product=coco&request_id=${app_uid || uuidv4()}`;
+        const url = `${currentService?.auth_provider?.sso?.url}/?provider=${currentService?.id}&product=coco&request_id=${requestID}`;
 
-        console.log("Open SSO link, requestID:", app_uid, url);
+        console.log("Open SSO link, requestID:", ssoRequestID, url);
 
         // Open the URL in a browser
         OpenURLWithBrowser(url);
@@ -253,7 +285,7 @@ export default function Cloud() {
         // Start loading state
         setLoading(true);
 
-    }, [app_uid, loading, currentService]);
+    }, [ssoRequestID, loading, currentService]);
 
     const refreshClick = (id: string) => {
         setRefreshLoading(true);
@@ -267,6 +299,7 @@ export default function Cloud() {
                 setCurrentService(res);
             })
             .catch((err: any) => {
+                setError(err);
                 console.error(err);
             })
             .finally(() => {
@@ -276,6 +309,21 @@ export default function Cloud() {
 
     function onAddServer() {
         setIsConnect(false);
+    }
+    function onLogout(id: string) {
+        console.log("onLogout", id);
+        setRefreshLoading(true);
+        invoke("logout_coco_server", {id})
+            .then((res: any) => {
+                console.log("logout_coco_server", id, JSON.stringify(res));
+                refreshClick(id);
+            })
+            .catch((err: any) => {
+                setError(err);
+                console.error(err);
+            }).finally(() => {
+                setRefreshLoading(false);
+            });
     }
 
     const remove_coco_server = (id: string) => {
@@ -288,22 +336,16 @@ export default function Cloud() {
             })
             .catch((err: any) => {
                 //TODO display the error message
+                setError(err);
                 console.error(err);
             });
     };
 
     return (
         <div className="flex bg-gray-50 dark:bg-gray-900">
-            <Sidebar ref={SidebarRef} onAddServer={onAddServer} serverList={serverList}/>
+            <Sidebar onAddServer={onAddServer} serverList={serverList}/>
 
             <main className="flex-1 p-4 py-8">
-                {/* <div>
-          {error && (
-            <div className="text-red-500 dark:text-red-400 mb-4">
-              Error: {error}
-            </div>
-          )}
-        </div> */}
 
                 {isConnect ? (
                     <div className="max-w-4xl mx-auto">
@@ -376,7 +418,7 @@ export default function Cloud() {
                                     Account Information
                                 </h2>
                                 { currentService?.profile ? (
-                                    <UserProfile userInfo={currentService?.profile}/>
+                                    <UserProfile server={currentService?.id} userInfo={currentService?.profile} onLogout={onLogout} />
                                 ) : (
                                     <div>
                                         {/* Login Button (conditionally rendered when not loading) */}
@@ -401,7 +443,7 @@ export default function Cloud() {
                                                 <button
                                                     onClick={() => {
                                                         navigator.clipboard.writeText(
-                                                            `${currentService?.auth_provider?.sso?.url}/?provider=${currentService?.id}&product=coco&request_id=${app_uid}`
+                                                            `${currentService?.auth_provider?.sso?.url}/?provider=${currentService?.id}&product=coco&request_id=${ssoRequestID}`
                                                         );
                                                     }}
                                                     className="text-xl text-blue-500 hover:text-blue-600"
@@ -425,7 +467,7 @@ export default function Cloud() {
                             </div>
                         ) : null}
 
-                        {userInfo?.name ? <DataSourcesList/> : null}
+                        {/*{userInfo?.name ? <DataSourcesList/> : null}*/}
                     </div>
                 ) : (
                     <Connect setIsConnect={setIsConnect} onAddServer={add_coco_server}/>
