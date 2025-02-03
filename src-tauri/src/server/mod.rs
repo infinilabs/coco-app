@@ -16,4 +16,5 @@ pub mod auth;
 // pub mod connector;
 // pub mod search;
 pub mod profile;
+pub mod http_client;
 

@@ -1,27 +1,17 @@
 use crate::common::server::{AuthProvider, Provider, Server, ServerAccessToken, Sso, Version};
-use crate::util::http::HTTP_CLIENT;
-use crate::{util, COCO_TAURI_STORE};
-use core::panic;
-use futures::stream::FuturesUnordered;
-use futures::FutureExt;
-use futures::StreamExt;
+use crate::server::http_client::HttpClient;
+use crate::COCO_TAURI_STORE;
 use futures::TryFutureExt;
 use lazy_static::lazy_static;
-use ordered_float::OrderedFloat;
-use reqwest::{Client, StatusCode};
-use serde::Serialize;
-use serde_json::{from_value, Map as JsonMap};
-use serde_json::Value as Json;
-use serde_json::{json, Value as JsonValue};
-use std::collections::{HashMap, HashSet};
-use std::fs::exists;
-use std::sync::{Arc, Mutex};
-use std::sync::{LazyLock, RwLock};
+use reqwest::{Method, StatusCode};
+use serde_json::from_value;
+use serde_json::Value as JsonValue;
+use std::collections::HashMap;
+use std::sync::Arc;
+use std::sync::RwLock;
 use tauri::AppHandle;
 use tauri::Runtime;
-use tauri_plugin_oauth::cancel;
 use tauri_plugin_store::StoreExt;
-use log::debug;
 // Assuming you're using serde_json
 
 lazy_static! {
@@ -268,6 +258,7 @@ pub async fn refresh_coco_server_info<R: Runtime>(
     app_handle: AppHandle<R>,
     id: String,
 ) -> Result<Server, String> {
+    // Retrieve the server from the cache
     let server = {
         let cache = SERVER_CACHE.read().unwrap();
         cache.get(&id).cloned()
@@ -276,11 +267,11 @@ pub async fn refresh_coco_server_info<R: Runtime>(
     if let Some(server) = server {
         let is_builtin = server.builtin;
         let profile = server.profile;
-        let response = HTTP_CLIENT
-            .get(provider_info_url(&server.endpoint))
-            .send()
+
+        // Use the HttpClient to send the request
+        let response = HttpClient::get(&id, "/provider/_info") // Assuming "/provider-info" is the endpoint
             .await
-            .expect("Failed to send request to the server");
+            .map_err(|e| format!("Failed to send request to the server: {}", e))?;
 
         if response.status() == StatusCode::OK {
             if let Some(content_length) = response.content_length() {
@@ -322,45 +313,44 @@ pub async fn add_coco_server<R: Runtime>(
     app_handle: AppHandle<R>,
     endpoint: String,
 ) -> Result<Server, String> {
-    load_or_insert_default_server(&app_handle).await.expect("failed to load default servers");
+    load_or_insert_default_server(&app_handle)
+        .await
+        .expect("Failed to load default servers");
 
-    // Remove the trailing '/' or our `xxx_url()` functions won't work
+    // Remove the trailing '/' from the endpoint to ensure correct URL construction
     let endpoint = endpoint.trim_end_matches('/');
 
     // Check if the server with this endpoint already exists
     if check_endpoint_exists(endpoint) {
-        dbg!(format!("this Coco server has already been registered: {:?}", &endpoint));
+        dbg!(format!("This Coco server has already been registered: {:?}", &endpoint));
         return Err("This Coco server has already been registered.".into());
     }
 
-    // Try fetching the server information
-    let response = util::http::HTTP_CLIENT
-        .get(provider_info_url(&endpoint))
-        .send()
-        .await
-        .expect("Failed to send request to the server");
+    let url = provider_info_url(&endpoint);
 
-    dbg!(format!("get provider info's response: {:?}", &response));
+    // Use the HttpClient to fetch provider information
+    let response = HttpClient::send_raw_request(Method::GET, url.as_str(), None, None)
+        .await
+        .map_err(|e| format!("Failed to send request to the server: {}", e))?;
+
+    dbg!(format!("Get provider info response: {:?}", &response));
 
     // Check if the response status is OK (200)
     if response.status() == StatusCode::OK {
-        // Check if the response body is empty
         if let Some(content_length) = response.content_length() {
             if content_length > 0 {
-                // Deserialize the response into the `Server` struct
                 let new_coco_server: Result<Server, _> = response.json().await;
 
                 match new_coco_server {
-                    // Successfully deserialized the server data
                     Ok(mut server) => {
-                        // Perform basic checks on the provider info if needed
+                        // Perform necessary checks and adjustments on the server data
                         trim_endpoint_last_forward_slash(&mut server);
 
-                        if server.id == "" {
+                        if server.id.is_empty() {
                             server.id = pizza_common::utils::uuid::Uuid::new().to_string();
                         }
 
-                        if server.name == "" {
+                        if server.name.is_empty() {
                             server.name = "Coco Cloud".to_string();
                         }
 
@@ -369,9 +359,9 @@ pub async fn add_coco_server<R: Runtime>(
 
                         // Persist the servers to the store
                         persist_servers(&app_handle)
-                            .expect("Failed to persist coco servers.");
+                            .expect("Failed to persist Coco servers.");
 
-                        dbg!(format!("success to register server: {:?}", &endpoint));
+                        dbg!(format!("Successfully registered server: {:?}", &endpoint));
                         Ok(server)
                     }
                     Err(e) => {
@@ -424,7 +414,6 @@ pub async fn logout_coco_server<R: Runtime>(
     } else {
         // Log the case where server token is not found
         dbg!("No server token found for id: {}", &id);
-       // return Err(format!("No server token found for id: {}", id));
     }
 
     // Check if the server exists

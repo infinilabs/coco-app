@@ -3,67 +3,69 @@ use reqwest::StatusCode;
 use tauri::{AppHandle, Runtime};
 use crate::common::auth::RequestAccessTokenResponse;
 use crate::common::server::{Server, ServerAccessToken};
+use crate::server::http_client::HttpClient;
 use crate::server::profile::get_user_profiles;
 use crate::server::servers::{get_server_by_id, load_or_insert_default_server, persist_servers, save_access_token, save_server};
 use crate::util;
-
-fn request_access_token_url(endpoint: &str,request_id :&str) -> String {
-    format!("{endpoint}/auth/request_access_token?request_id={request_id}")
+fn request_access_token_url(request_id: &str) -> String {
+    // Remove the endpoint part and keep just the path for the request
+    format!("/auth/request_access_token?request_id={}", request_id)
 }
-
 
 #[tauri::command]
 pub async fn handle_sso_callback<R: Runtime>(
     app_handle: AppHandle<R>,
-    server_id: String, // Rename field
-    request_id: String, // Rename field
+    server_id: String,
+    request_id: String,
     code: String,
 ) -> Result<(), String> {
+    // Retrieve the server details using the server ID
+    let server = get_server_by_id(&server_id);
 
-    let server=get_server_by_id(server_id.as_str());
+    if let Some(mut server) = server {
+        // Prepare the URL for requesting the access token (endpoint is base URL, path is relative)
+        save_access_token(server_id.clone(), ServerAccessToken::new(server_id.clone(), code.clone(), 60*15));
+        let path = request_access_token_url( &request_id);
 
-    if let Some(s)=server{
-        let url=request_access_token_url(&s.endpoint,&request_id);
-        let response = util::http::HTTP_CLIENT
-            .get(url.clone())
-                        .header("X-API-TOKEN", code.clone())
-            .send()
+        // Send the request for the access token using the util::http::HttpClient::get method
+        let response = HttpClient::get(&server_id, &path)
             .await
-            .expect("Failed to send request to the server");
+            .map_err(|e| format!("Failed to send request to the server: {}", e))?;
 
         if response.status() == StatusCode::OK {
+            // Check if the response has a valid content length
             if let Some(content_length) = response.content_length() {
                 if content_length > 0 {
+                    // Deserialize the response body to get the access token
                     let token_result: Result<RequestAccessTokenResponse, _> = response.json().await;
+
                     match token_result {
                         Ok(token) => {
-
-                            //save the server's token,
-                            let access_token=ServerAccessToken::new(server_id.clone(),token.access_token.clone(),token.expire_at);
-                            dbg!(&server_id,&request_id,&code,&token);
+                            // Save the access token for the server
+                            let access_token = ServerAccessToken::new(
+                                server_id.clone(),
+                                token.access_token.clone(),
+                                token.expire_at,
+                            );
+                            dbg!(&server_id, &request_id, &code, &token);
                             save_access_token(server_id.clone(), access_token);
 
-                            // update server's user profile
-                            let profile =get_user_profiles(app_handle.clone(),server_id.clone()).await;
+                            // Update the server's profile using the util::http::HttpClient::get method
+                            let profile = get_user_profiles(app_handle.clone(), server_id.clone()).await;
                             dbg!(&profile);
+
                             match profile {
                                 Ok(p) => {
-                                    let mut s = s.clone();
-                                    s.profile = Some(p);
-                                    s.available = true;
-                                    save_server(&s);
+                                    server.profile = Some(p);
+                                    server.available = true;
+                                    save_server(&server);
                                     persist_servers(&app_handle)?;
+                                    Ok(())
                                 }
-                                Err(e) => {
-                                    return Err(format!("Failed to get user profile: {}", e));
-                                }
+                                Err(e) => Err(format!("Failed to get user profile: {}", e)),
                             }
-
-                            Ok(())
                         }
-                        Err(e) => {
-                            Err(format!("Failed to deserialize the response: {}", e))
-                        }
+                        Err(e) => Err(format!("Failed to deserialize the token response: {}", e)),
                     }
                 } else {
                     Err("Received empty response body.".to_string())
@@ -72,9 +74,18 @@ pub async fn handle_sso_callback<R: Runtime>(
                 Err("Could not determine the content length.".to_string())
             }
         } else {
-            Err(format!("Request failed with status: {}, {}, {:?}",url,code, response))
+            Err(format!(
+                "Request failed with status: {}, URL: {}, Code: {}, Response: {:?}",
+                response.status(),
+                path,
+                code,
+                response
+            ))
         }
     } else {
-        Err(format!("Server not found: {}, {}, {}", server_id, request_id, code))
+        Err(format!(
+            "Server not found for ID: {}, Request ID: {}, Code: {}",
+            server_id, request_id, code
+        ))
     }
 }

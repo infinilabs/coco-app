@@ -605,6 +605,7 @@ dependencies = [
  "futures",
  "lazy_static",
  "log",
+ "once_cell",
  "ordered-float",
  "pizza-common",
  "reqwest",
