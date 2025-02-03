@@ -1,44 +1,38 @@
-use std::collections::HashMap;
-use futures::stream::FuturesUnordered;
+use crate::common::datasource::DataSource;
+use crate::common::search_response::parse_search_results;
+use crate::server::http_client::HttpClient;
 use tauri::{AppHandle, Runtime};
-use serde_json::Map as JsonMap;
-use serde_json::Value as Json;
+
 fn datasource_url(endpoint: &str) -> String {
     format!("{endpoint}/datasource/_search")
 }
 
 #[tauri::command]
-pub async fn get_coco_server_datasources<R: Runtime>(
+pub async fn get_datasources_by_server<R: Runtime>(
     app_handle: AppHandle<R>,
-) -> Result<(), ()> {
-    // let coco_server_endpoints = _list_coco_server_endpoints(&app_handle).await?;
-    // let tokens = get_coco_server_tokens(&app_handle);
-    //
-    // let mut futures = FuturesUnordered::new();
-    // for coco_server_endpoint in coco_server_endpoints {
-    //     if let Some(token) = get_coco_server_token(&tokens, &coco_server_endpoint) {
-    //         let request_future = HTTP_CLIENT
-    //             .get(datasource_url(&coco_server_endpoint))
-    //             .header("X-API-TOKEN", token)
-    //             .send();
-    //         futures
-    //             .push(request_future.map(|request_result| (coco_server_endpoint, request_result)));
-    //     }
-    // }
-    //
-    // let mut profiles = HashMap::new();
-    //
-    // while let Some((endpoint, res_response)) = futures.next().await {
-    //     match res_response {
-    //         Ok(response) => {
-    //             let profile: Json = response.json().await.expect("invalid response");
-    //             assert!(profiles.insert(endpoint, profile).is_none());
-    //         }
-    //         Err(_) => { /* do nothing */ }
-    //     };
-    // }
-    //
-    // Ok(profiles)
+    id: String,
+) -> Result<Vec<DataSource>, String> {
+    dbg!("get_datasources_by_server: id =", &id);
 
-    Ok(())
+    // Use the generic GET method from HttpClient
+    let resp = HttpClient::get(&id, "/datasource/_search")
+        .await
+        .map_err(|e| {
+            dbg!("Error fetching datasource: {}", &e);
+            format!("Error fetching datasource: {}", e)
+        })?;
+
+    // Log the raw response status and headers
+    dbg!("Response status: {:?}", resp.status());
+    dbg!("Response headers: {:?}", resp.headers());
+
+    // Parse the search results directly from the response body
+    let datasources: Vec<DataSource> = parse_search_results(resp).await.map_err(|e| {
+        dbg!("Error parsing search results: {}", &e);
+        e.to_string()
+    })?;
+
+    dbg!("Parsed datasources: {:?}", &datasources);
+
+    return Ok(datasources);
 }

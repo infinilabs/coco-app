@@ -41,13 +41,15 @@ impl HttpClient {
             request_builder = request_builder.body(b);
         }
 
+        dbg!(&request_builder);
+
         // Send the request
         let response = request_builder
             .send()
             .await
             .map_err(|e| format!("Failed to send request: {}", e))?;
 
-        // Return the response
+        // Now return the original response
         Ok(response)
     }
 
@@ -63,14 +65,21 @@ impl HttpClient {
             // Construct the URL
             let url = HttpClient::join_url(&s.endpoint, path);
 
+            dbg!(&url);
+            dbg!(&server_id);
+
             // Retrieve the token for the server (token is optional)
             let token = get_server_token(server_id).map(|t| t.access_token.clone());
+
 
             // Create headers map (optional "X-API-TOKEN" header)
             let mut headers = reqwest::header::HeaderMap::new();
             if let Some(t) = token {
                 headers.insert("X-API-TOKEN", reqwest::header::HeaderValue::from_str(&t).unwrap());
             }
+
+            dbg!(&headers);
+
 
             // Send the raw request using the send_raw_request function
             Self::send_raw_request(method, &url, Some(headers), body).await

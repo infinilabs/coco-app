@@ -18,7 +18,7 @@ import {invoke} from "@tauri-apps/api/core";
 import { Copy } from 'lucide-react';
 
 import {UserProfile} from "./UserProfile";
-// import {DataSourcesList} from "./DataSourcesList";
+import {DataSourcesList} from "./DataSourcesList";
 import {Sidebar} from "./Sidebar";
 import {Connect} from "./Connect.tsx";
 import {OpenURLWithBrowser} from "@/utils";
@@ -467,7 +467,7 @@ export default function Cloud() {
                             </div>
                         ) : null}
 
-                        {/*{userInfo?.name ? <DataSourcesList/> : null}*/}
+                        {currentService?.profile? <DataSourcesList server={currentService?.id}  /> : null}
                     </div>
                 ) : (
                     <Connect setIsConnect={setIsConnect} onAddServer={add_coco_server}/>

@@ -5,7 +5,7 @@ use crate::common::auth::RequestAccessTokenResponse;
 use crate::common::server::{Server, ServerAccessToken};
 use crate::server::http_client::HttpClient;
 use crate::server::profile::get_user_profiles;
-use crate::server::servers::{get_server_by_id, load_or_insert_default_server, persist_servers, save_access_token, save_server};
+use crate::server::servers::{get_server_by_id, load_or_insert_default_server, persist_servers, persist_servers_token, save_access_token, save_server};
 use crate::util;
 fn request_access_token_url(request_id: &str) -> String {
     // Remove the endpoint part and keep just the path for the request
@@ -49,6 +49,7 @@ pub async fn handle_sso_callback<R: Runtime>(
                             );
                             dbg!(&server_id, &request_id, &code, &token);
                             save_access_token(server_id.clone(), access_token);
+                            persist_servers_token(&app_handle)?;
 
                             // Update the server's profile using the util::http::HttpClient::get method
                             let profile = get_user_profiles(app_handle.clone(), server_id.clone()).await;

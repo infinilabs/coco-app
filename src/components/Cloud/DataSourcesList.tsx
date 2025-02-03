@@ -5,28 +5,32 @@ import { DataSourceItem } from "./DataSourceItem";
 import { useConnectStore } from "@/stores/connectStore";
 import { tauriFetch } from "@/api/tauriFetchClient";
 import { useAppStore } from "@/stores/appStore";
+import {invoke} from "@tauri-apps/api/core";
 
-export function DataSourcesList() {
+export function DataSourcesList({ server }: { server: string }) {
   const datasourceData = useConnectStore((state) => state.datasourceData);
   const setDatasourceData = useConnectStore((state) => state.setDatasourceData);
 
-  const endpoint_http = useAppStore((state) => state.endpoint_http);
+  const setError = useAppStore((state) => state.setError);
 
   const [refreshLoading, setRefreshLoading] = useState(false);
 
   async function getDatasourceData() {
     setRefreshLoading(true);
-    try {
-      const response = await tauriFetch({
-        url: `/datasource/_search`,
-        method: "GET",
-      });
-      console.log("datasource", response);
-      const data = response.data?.hits?.hits || [];
-      setDatasourceData(data, endpoint_http);
-    } catch (error) {
-      console.error("Failed to fetch user data:", error);
-    }
+
+    //fetch datasource data
+    invoke("get_datasources_by_server", { id: server })
+        .then((res: any) => {
+          console.log("get_datasources_by_server", res);
+            setDatasourceData(res, server);
+        })
+        .catch((err: any) => {
+          setError(err);
+          throw err;  // Propagate error back up
+        })
+        .finally(() => {
+          setRefreshLoading(false);
+        });
     setRefreshLoading(false);
   }
 
@@ -48,8 +52,8 @@ export function DataSourcesList() {
         </button>
       </h2>
       <div className="space-y-4">
-        {datasourceData[endpoint_http]?.map((source) => (
-          <DataSourceItem key={source._id} {...source} />
+        {datasourceData[server]?.map((source) => (
+          <DataSourceItem key={source.id} {...source} />
         ))}
       </div>
     </div>

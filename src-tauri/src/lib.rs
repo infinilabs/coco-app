@@ -95,6 +95,7 @@ pub fn run() {
             server::servers::refresh_coco_server_info,
             server::auth::handle_sso_callback,
             server::profile::get_user_profiles,
+            server::datasource::get_datasources_by_server,
             // server::get_coco_server_health_info,
             // server::get_coco_servers_health_info,
             // server::query_coco_servers,
