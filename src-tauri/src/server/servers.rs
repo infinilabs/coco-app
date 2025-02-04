@@ -1,7 +1,6 @@
 use crate::common::server::{AuthProvider, Provider, Server, ServerAccessToken, Sso, Version};
 use crate::server::http_client::HttpClient;
 use crate::COCO_TAURI_STORE;
-use futures::TryFutureExt;
 use lazy_static::lazy_static;
 use reqwest::{Method, StatusCode};
 use serde_json::from_value;
@@ -12,6 +11,8 @@ use std::sync::RwLock;
 use tauri::AppHandle;
 use tauri::Runtime;
 use tauri_plugin_store::StoreExt;
+use crate::server::connector::refresh_all_connectors;
+use crate::server::datasource::refresh_all_datasources;
 // Assuming you're using serde_json
 
 lazy_static! {
@@ -69,7 +70,7 @@ pub fn persist_servers<R: Runtime>(app_handle: &AppHandle<R>) -> Result<(), Stri
         .map(|server| serde_json::to_value(server).expect("Failed to serialize server")) // Automatically serialize all fields
         .collect();
 
-    dbg!(format!("persist servers: {:?}", &json_servers));
+    // dbg!(format!("persist servers: {:?}", &json_servers));
 
     // Save the serialized servers to Tauri's store
     app_handle
@@ -176,7 +177,7 @@ pub async fn load_servers_token<R: Runtime>(app_handle: &AppHandle<R>) -> Result
             save_access_token(server.id.clone(), server.clone());
         }
 
-        dbg!(format!("load servers: {:?}", &deserialized_tokens));
+        dbg!(format!("loaded {:?} servers's token", &deserialized_tokens.len()));
 
         Ok(deserialized_tokens)
     } else {
@@ -216,7 +217,7 @@ pub async fn load_servers<R: Runtime>(app_handle: &AppHandle<R>) -> Result<Vec<S
             save_server(&server);
         }
 
-        dbg!(format!("load servers: {:?}", &deserialized_servers));
+        // dbg!(format!("load servers: {:?}", &deserialized_servers));
 
         Ok(deserialized_servers)
     } else {
@@ -231,11 +232,15 @@ pub async fn load_or_insert_default_server<R: Runtime>(app_handle: &AppHandle<R>
 
     let exists_servers = load_servers(&app_handle).await;
     if exists_servers.is_ok() && !exists_servers.as_ref()?.is_empty() {
+        dbg!(format!("loaded {} servers", &exists_servers.clone()?.len()));
         return exists_servers;
     }
 
     let default = get_default_server();
     save_server(&default);
+
+    dbg!("loaded default servers");
+
     Ok(vec![default])
 }
 
@@ -243,9 +248,13 @@ pub async fn load_or_insert_default_server<R: Runtime>(app_handle: &AppHandle<R>
 pub async fn list_coco_servers<R: Runtime>(
     app_handle: AppHandle<R>,
 ) -> Result<Vec<Server>, String> {
-    let cache = SERVER_CACHE.read().unwrap();
-    let servers: Vec<Server> = cache.values().cloned().collect();
+    let servers: Vec<Server> =get_all_servers();
     Ok(servers)
+}
+
+pub fn get_all_servers() -> Vec<Server> {
+    let cache = SERVER_CACHE.read().unwrap();
+    cache.values().cloned().collect()
 }
 
 /// We store added Coco servers in the Tauri store using this key.
@@ -288,6 +297,16 @@ pub async fn refresh_coco_server_info<R: Runtime>(
                             save_server(&server);
                             persist_servers(&app_handle).expect("Failed to persist coco servers.");
 
+
+                            //refresh connectors and datasources
+                            if let Err(err) = refresh_all_connectors(&app_handle).await {
+                                return Err(format!("Failed to load server connectors: {}", err))
+                            }
+
+                            if let Err(err) = refresh_all_datasources(&app_handle).await {
+                                return Err(format!("Failed to load server datasources: {}", err))
+                            }
+
                             Ok(server)
                         }
                         Err(e) => {
@@ -313,8 +332,7 @@ pub async fn add_coco_server<R: Runtime>(
     app_handle: AppHandle<R>,
     endpoint: String,
 ) -> Result<Server, String> {
-    load_or_insert_default_server(&app_handle)
-        .await
+    load_or_insert_default_server(&app_handle).await
         .expect("Failed to load default servers");
 
     // Remove the trailing '/' from the endpoint to ensure correct URL construction

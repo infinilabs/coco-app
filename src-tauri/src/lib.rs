@@ -4,14 +4,15 @@ mod server;
 mod shortcut;
 mod util;
 
+use crate::server::servers::{load_or_insert_default_server, load_servers_token};
 use autostart::{change_autostart, enable_autostart};
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
 use tauri::{AppHandle, Emitter, Listener, Manager, Runtime, WebviewWindow};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_deep_link::DeepLinkExt;
-use crate::server::servers::{load_or_insert_default_server, load_servers, load_servers_token};
 use tokio::runtime::Runtime as RT; // Add this import
+// Add this import
 
 /// Tauri store name
 pub(crate) const COCO_TAURI_STORE: &str = "coco_tauri_store";
@@ -96,6 +97,7 @@ pub fn run() {
             server::auth::handle_sso_callback,
             server::profile::get_user_profiles,
             server::datasource::get_datasources_by_server,
+            server::connector::get_connectors_by_server,
             // server::get_coco_server_health_info,
             // server::get_coco_servers_health_info,
             // server::query_coco_servers,
@@ -159,6 +161,7 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
     if let Err(err) = load_servers_token(app_handle).await {
         eprintln!("Failed to load server tokens: {}", err);
     }
+
 
     // let window: WebviewWindow = app_handle.get_webview_window("main").unwrap();
 

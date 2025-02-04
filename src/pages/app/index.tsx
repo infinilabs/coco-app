@@ -8,55 +8,18 @@ import Search from "@/components/Search/Search";
 import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
 import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
-import { tauriFetch } from "@/api/tauriFetchClient";
 import ApiDetails from "@/components/Search/ApiDetails";
-import { useConnectStore } from "@/stores/connectStore";
 
 export default function DesktopApp() {
   const initializeListeners = useAppStore((state) => state.initializeListeners);
   const initializeListeners_auth = useAuthStore(
     (state) => state.initializeListeners
   );
-  const setConnectorData = useConnectStore((state) => state.setConnectorData);
-  const setDatasourceData = useConnectStore((state) => state.setDatasourceData);
-
-  const endpoint_http = useAppStore((state) => state.endpoint_http);
 
   useEffect(() => {
     initializeListeners();
     initializeListeners_auth();
-
-    getConnectorData();
-    getDatasourceData();
   }, []);
-
-  async function getConnectorData() {
-    try {
-      const response = await tauriFetch({
-        url: `/connector/_search`,
-        method: "GET",
-      });
-      console.log("connector", response);
-      const data = response.data?.hits?.hits || [];
-      setConnectorData(data, endpoint_http);
-    } catch (error) {
-      console.error("Failed to fetch user data:", error);
-    }
-  }
-  
-  async function getDatasourceData() {
-    try {
-      const response = await tauriFetch({
-        url: `/datasource/_search`,
-        method: "GET",
-      });
-      console.log("datasource", response);
-      const data = response.data?.hits?.hits || [];
-      setDatasourceData(data, endpoint_http);
-    } catch (error) {
-      console.error("Failed to fetch user data:", error);
-    }
-  }
 
   const chatAIRef = useRef<ChatAIRef>(null);
 

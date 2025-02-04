@@ -1,3 +1,4 @@
+use std::time::Duration;
 use lazy_static::lazy_static;
 use tauri::AppHandle;
 use crate::server::servers::{get_server_by_id, get_server_token};
@@ -6,8 +7,16 @@ use once_cell::sync::Lazy;
 use tokio::sync::Mutex;
 use reqwest::{Client, Method, StatusCode};
 
-pub static HTTP_CLIENT: Lazy<Mutex<Client>> = Lazy::new(|| Mutex::new(Client::new()));
-
+pub static HTTP_CLIENT: Lazy<Mutex<Client>> = Lazy::new(|| {
+    let client = Client::builder()
+        .read_timeout(Duration::from_secs(3)) // Set a timeout of 3 second
+        .connect_timeout(Duration::from_secs(3)) // Set a timeout of 3 second
+        .timeout(Duration::from_secs(10))  // Set a timeout of 10 seconds
+        .danger_accept_invalid_certs(true) // example for self-signed certificates
+        .build()
+        .expect("Failed to build client");
+    Mutex::new(client)
+});
 
 pub struct HttpClient;
 
@@ -25,31 +34,33 @@ impl HttpClient {
         headers: Option<reqwest::header::HeaderMap>,
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
-        // Lock the client for usage (it’s a cached instance)
-        let client = HTTP_CLIENT.lock().await; // Use async lock here
+        let client = HTTP_CLIENT.lock().await; // Acquire the lock on HTTP_CLIENT
 
-        // Build the request based on the HTTP method
-        let mut request_builder = client.request(method, url);
+        // Build the request
+        let mut request_builder = client.request(method.clone(), url);
 
-        // Add headers if provided
+        // Add headers if present
         if let Some(h) = headers {
             request_builder = request_builder.headers(h);
         }
 
-        // Add the body if it exists
+        // Add body if present
         if let Some(b) = body {
             request_builder = request_builder.body(b);
         }
 
-        dbg!(&request_builder);
+        // dbg!("Sending request to: {}", url);
 
         // Send the request
-        let response = request_builder
-            .send()
-            .await
-            .map_err(|e| format!("Failed to send request: {}", e))?;
+        let response = match request_builder.send().await {
+            Ok(resp) => resp,
+            Err(e) => {
+                dbg!("Failed to send request: {}", &e);
+                return Err(format!("Failed to send request: {}", e));
+            }
+        };
 
-        // Now return the original response
+        // dbg!("Response status: {:?}", response.status());
         Ok(response)
     }
 
@@ -65,8 +76,8 @@ impl HttpClient {
             // Construct the URL
             let url = HttpClient::join_url(&s.endpoint, path);
 
-            dbg!(&url);
-            dbg!(&server_id);
+            // dbg!(&url);
+            // dbg!(&server_id);
 
             // Retrieve the token for the server (token is optional)
             let token = get_server_token(server_id).map(|t| t.access_token.clone());
@@ -78,7 +89,7 @@ impl HttpClient {
                 headers.insert("X-API-TOKEN", reqwest::header::HeaderValue::from_str(&t).unwrap());
             }
 
-            dbg!(&headers);
+            // dbg!(&headers);
 
 
             // Send the raw request using the send_raw_request function
