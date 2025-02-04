@@ -6,9 +6,9 @@ import { open } from "@tauri-apps/plugin-shell";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { SearchHeader } from "./SearchHeader";
-import file_efault_img from "@/assets/images/file_efault.png";
 import noDataImg from "@/assets/coconut-tree.png";
 import { useConnectStore } from "@/stores/connectStore";
+import { File } from 'lucide-react';
 
 interface DocumentListProps {
   onSelectDocument: (id: string) => void;
@@ -130,25 +130,60 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     return result_connector;
   }
 
+  const ThemedIcon = () => {
+    const [color, setColor] = useState("#000"); // Default to black
+
+    useEffect(() => {
+      const updateTheme = () => {
+        const theme = document.documentElement.getAttribute("data-theme");
+        setColor(theme === "dark" ? "#fff" : "#000"); // Adjust colors as needed
+      };
+
+      updateTheme();
+      const observer = new MutationObserver(updateTheme);
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+      return () => observer.disconnect();
+    }, []);
+
+    return <File className="w-5 h-5 flex-shrink-0" color={color} />;
+  };
+
   function getIcon(item: any) {
     const connectorSource = findConnectorIcon(item);
     const icons = connectorSource?.assets?.icons || {};
-
     const selectedIcon = icons[item?.icon];
 
     if (!selectedIcon) {
-      return file_efault_img;
+      return <ThemedIcon />;
     }
 
-    if (
-      selectedIcon?.startsWith("http://") ||
-      selectedIcon?.startsWith("https://")
-    ) {
-      return selectedIcon;
+    if (selectedIcon.startsWith("http://") || selectedIcon.startsWith("https://")) {
+      return <img className="w-5 h-5 flex-shrink-0" src={selectedIcon} alt="icon" />;
     } else {
-      return endpoint_http + selectedIcon;
+      return <img className="w-5 h-5 flex-shrink-0" src={`${endpoint_http}${selectedIcon}`} alt="icon" />;
     }
   }
+
+  // function getIcon(item: any) {
+  //   const connectorSource = findConnectorIcon(item);
+  //   const icons = connectorSource?.assets?.icons || {};
+  //
+  //   const selectedIcon = icons[item?.icon];
+  //
+  //   if (!selectedIcon) {
+  //     return file_img;
+  //   }
+  //
+  //   if (
+  //     selectedIcon?.startsWith("http://") ||
+  //     selectedIcon?.startsWith("https://")
+  //   ) {
+  //     return selectedIcon;
+  //   } else {
+  //     return endpoint_http + selectedIcon;
+  //   }
+  // }
 
   function onMouseEnter(index: number, item: any) {
     getDocDetail(item);
@@ -240,11 +275,14 @@ export const DocumentList: React.FC<DocumentListProps> = ({
               }`}
             >
               <div className="flex gap-2 items-center flex-1 min-w-0">
-                <img
-                  className="w-5 h-5 flex-shrink-0"
-                  src={getIcon(item)}
-                  alt="icon"
-                />
+
+                {getIcon(item)}
+
+                {/*<img*/}
+                {/*  className="w-5 h-5 flex-shrink-0"*/}
+                {/*  src={getIcon(item)}*/}
+                {/*  alt="icon"*/}
+                {/*/>*/}
                 <span
                   className={`text-sm truncate ${
                     isSelected ? "font-medium" : ""

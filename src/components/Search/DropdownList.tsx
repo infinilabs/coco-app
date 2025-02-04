@@ -12,11 +12,12 @@ import { open } from "@tauri-apps/plugin-shell";
 
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
-import source_default_img from "@/assets/images/source_default.png";
-import source_default_dark_img from "@/assets/images/source_default_dark.png";
-import file_efault_img from "@/assets/images/file_efault.png";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useConnectStore } from "@/stores/connectStore";
+import { File } from 'lucide-react';
+import { Folder } from 'lucide-react';
+import { Box } from 'lucide-react';
+import { ArrowBigRight } from 'lucide-react';
 
 type ISearchData = Record<string, any[]>;
 
@@ -178,57 +179,255 @@ function DropdownList({
     return result_connector;
   }
 
-  function getTypeIcon(item: any) {
+  function getTypeIcon(
+      item: any,
+      className: string = "w-5 h-5 flex-shrink-0", // Default className if not provided
+      onClick: React.MouseEventHandler<HTMLDivElement> = () => {} // Default no-op function
+  ) {
     const connectorSource = findConnectorIcon(item);
-    const icons = connectorSource?.icon;
+    const selectedIcon = connectorSource?.icon;
 
-    if (!icons) {
-      return theme === "dark" ? source_default_dark_img : source_default_img;
-    }
-
-    if (icons?.startsWith("http://") || icons?.startsWith("https://")) {
-      return icons;
-    } else {
-      return endpoint_http + icons;
-    }
-  }
-
-  function getIcon(item: any) {
-    const connectorSource = findConnectorIcon(item);
-    const icons = connectorSource?.assets?.icons || {};
-
-    const selectedIcon = icons[item?.icon];
-
+    // Default behavior when no icon is found
     if (!selectedIcon) {
-      return file_efault_img;
+      console.log("go default folder:");
+      return (
+          <IconWrapper className={className} onClick={onClick}>
+            <ThemedIcon component={Box} className={className} />
+          </IconWrapper>
+      );
     }
 
-    if (selectedIcon?.startsWith("http://") || selectedIcon?.startsWith("https://")) {
-      return selectedIcon;
+    // Handle remote URLs
+    if (selectedIcon.startsWith("http://") || selectedIcon.startsWith("https://")) {
+      return (
+          <IconWrapper className={className} onClick={onClick}>
+            <img className={className} src={selectedIcon} alt="icon" />
+          </IconWrapper>
+      );
     } else {
-      return endpoint_http + selectedIcon;
+      // Handle local image paths
+      return (
+          <IconWrapper className={className} onClick={onClick}>
+            <img className={className} src={`${endpoint_http}${selectedIcon}`} alt="icon" />
+          </IconWrapper>
+      );
     }
   }
 
-  function getRichIcon(item: any) {
+  const IconWrapper = ({ children,  className, onClick }: { children: React.ReactNode, className: string, onClick: React.MouseEventHandler<HTMLDivElement> }) => (
+      <div
+          className={className}  // Pass className to the wrapper
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick(e);  // Call passed onClick handler
+          }}
+      >
+        {children}
+      </div>
+  );
+
+  const ThemedIcon = ({ component: Component, className }: { component: React.ElementType, className: string }) => {
+    const [color, setColor] = useState("#000"); // Default to black
+
+    useEffect(() => {
+      const updateTheme = () => {
+        const isDark = document.body.classList.contains("dark");
+        setColor(isDark ? "#DCDCDC" : "#999"); // Adjust colors based on theme
+      };
+
+      updateTheme();
+      const observer = new MutationObserver(updateTheme);
+      observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+
+      return () => observer.disconnect();
+    }, []);
+
+    return <Component className={className} color={color} />;
+  };
+
+  // function getTypeIcon(item: any) {
+  //   const connectorSource = findConnectorIcon(item);
+  //   const icons = connectorSource?.icon;
+  //
+  //   if (!icons) {
+  //     return theme === "dark" ? source_default_dark_img : source_default_img;
+  //   }
+  //
+  //   if (icons?.startsWith("http://") || icons?.startsWith("https://")) {
+  //     return icons;
+  //   } else {
+  //     return endpoint_http + icons;
+  //   }
+  // }
+
+  // function getItemIcon(item: any) {
+  //   const connectorSource = findConnectorIcon(item);
+  //   const icons = connectorSource?.assets?.icons || {};
+  //   const selectedIcon = icons[item?.icon];
+  //
+  //   if (!selectedIcon) {
+  //     return <ThemedIcon component={File} />;
+  //   }
+  //
+  //   if (selectedIcon.startsWith("http://") || selectedIcon.startsWith("https://")) {
+  //     return <img className="w-5 h-5 flex-shrink-0" src={selectedIcon} alt="icon" />;
+  //   } else {
+  //     return <img className="w-5 h-5 flex-shrink-0" src={`${endpoint_http}${selectedIcon}`} alt="icon" />;
+  //   }
+  // }
+  //
+  // interface ThemedIconProps {
+  //   component: React.ElementType; // This makes it flexible to accept any component like File, FileType2, etc.
+  // }
+  //
+  // const ThemedIcon: React.FC<ThemedIconProps> = ({ component: IconComponent }) => {
+  //   const [color, setColor] = useState("#000"); // Default to black
+  //
+  //   useEffect(() => {
+  //     const updateTheme = () => {
+  //       const isDark = document.body.classList.contains("dark"); // Check for the "dark" class
+  //       setColor(isDark ? "#DCDCDC" : "#999"); // Adjust colors as needed
+  //     };
+  //
+  //     updateTheme();
+  //     const observer = new MutationObserver(updateTheme);
+  //     observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+  //
+  //     return () => observer.disconnect();
+  //   }, []);
+  //
+  //   return <IconComponent className="w-5 h-5 flex-shrink-0" color={color} />;
+  // };
+
+
+  // function getIcon(item: any) {
+  //   const connectorSource = findConnectorIcon(item);
+  //   const icons = connectorSource?.assets?.icons || {};
+  //   const selectedIcon = icons[item?.icon];
+  //
+  //   if (!selectedIcon) {
+  //     return <ThemedIcon />;
+  //   }
+  //
+  //   if (selectedIcon.startsWith("http://") || selectedIcon.startsWith("https://")) {
+  //     return <img className="w-5 h-5 flex-shrink-0" src={selectedIcon} alt="icon" />;
+  //   } else {
+  //     return <img className="w-5 h-5 flex-shrink-0" src={`${endpoint_http}${selectedIcon}`} alt="icon" />;
+  //   }
+  // }
+  //
+  // const ThemedIcon = () => {
+  //   const [color, setColor] = useState("#000"); // Default to black
+  //
+  //   useEffect(() => {
+  //     const updateTheme = () => {
+  //       const theme = document.documentElement.getAttribute("data-theme");
+  //       setColor(theme === "dark" ? "#fff" : "#000"); // Adjust colors as needed
+  //     };
+  //
+  //     updateTheme();
+  //     const observer = new MutationObserver(updateTheme);
+  //     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  //
+  //     return () => observer.disconnect();
+  //   }, []);
+  //
+  //   return <File className="w-5 h-5 flex-shrink-0" color={color} />;
+  // };
+
+
+  // function getIcon(item: any) {
+  //   const connectorSource = findConnectorIcon(item);
+  //   const icons = connectorSource?.assets?.icons || {};
+  //
+  //   const selectedIcon = icons[item?.icon];
+  //
+  //   if (!selectedIcon) {
+  //     return file_img;
+  //   }
+  //
+  //   if (selectedIcon?.startsWith("http://") || selectedIcon?.startsWith("https://")) {
+  //     return selectedIcon;
+  //   } else {
+  //     return endpoint_http + selectedIcon;
+  //   }
+  // }
+
+  function getRichIcon(item: any, className: string, onClick: (e: React.MouseEvent) => void) {
     const connectorSource = findConnectorIcon(item);
     const icons = connectorSource?.assets?.icons || {};
 
     const selectedIcon = icons[item?.rich_categories?.[0]?.icon];
 
     if (!selectedIcon) {
-      return theme === "dark" ? source_default_dark_img : source_default_img;
+      return (
+          <IconWrapper className={className} onClick={onClick}>
+            <ThemedIcon component={Folder} className={className} />
+          </IconWrapper>
+      );
     }
 
-    if (selectedIcon?.startsWith("http://") || selectedIcon?.startsWith("https://")) {
-      return selectedIcon;
+    if (selectedIcon.startsWith("http://") || selectedIcon.startsWith("https://")) {
+      return (
+          <IconWrapper className={className} onClick={onClick}>
+            <img className={className} src={selectedIcon} alt="icon" />
+          </IconWrapper>
+      );
     } else {
-      return endpoint_http + selectedIcon;
+      return (
+          <IconWrapper className={className} onClick={onClick}>
+            <img className={className} src={`${endpoint_http}${selectedIcon}`} alt="icon" />
+          </IconWrapper>
+      );
     }
   }
 
+  // function getItemIcon(item: any) {
+  //   const connectorSource = findConnectorIcon(item);
+  //   const icons = connectorSource?.assets?.icons || {};
+  //   const selectedIcon = icons[item?.icon];
+  //
+  //   if (!selectedIcon) {
+  //     return <ThemedIcon component={File} />;
+  //   }
+  //
+  //   if (selectedIcon.startsWith("http://") || selectedIcon.startsWith("https://")) {
+  //     return <img className="w-5 h-5 flex-shrink-0" src={selectedIcon} alt="icon" />;
+  //   } else {
+  //     return <img className="w-5 h-5 flex-shrink-0" src={`${endpoint_http}${selectedIcon}`} alt="icon" />;
+  //   }
+  // }
+
+  function getItemIcon(item: any, className: string = "w-5 h-5 flex-shrink-0", onClick: React.MouseEventHandler<HTMLDivElement> = () => {}) {
+    const connectorSource = findConnectorIcon(item);
+    const icons = connectorSource?.assets?.icons || {};
+    const selectedIcon = icons[item?.icon];
+
+    if (!selectedIcon) {
+      return (
+          <IconWrapper className={className} onClick={onClick}>
+            <ThemedIcon component={File} className={className} />
+          </IconWrapper>
+      );
+    }
+
+    if (selectedIcon.startsWith("http://") || selectedIcon.startsWith("https://")) {
+      return (
+          <IconWrapper className={className} onClick={onClick}>
+            <img className={className} src={selectedIcon} alt="icon" />
+          </IconWrapper>
+      );
+    } else {
+      return (
+          <IconWrapper className={className} onClick={onClick}>
+            <img className={className} src={`${endpoint_http}${selectedIcon}`} alt="icon" />
+          </IconWrapper>
+      );
+    }
+  }
+
+
   function goToTwoPage(item: any) {
-    console.log(111111, item)
     setSourceData(item);
     selected && selected(item);
   }
@@ -267,13 +466,26 @@ function DropdownList({
         <div key={sourceName}>
           {Object.entries(SearchData).length < 5 ? (
             <div className="p-2 text-xs text-[#999] dark:text-[#666] flex items-center gap-2.5 relative">
-              <img className="w-4 h-4" src={getTypeIcon(items[0])} alt="icon" />
+              {getTypeIcon(items[0], "w-4 h-4")}
+              {/*<img className="w-4 h-4" src={getTypeIcon(items[0])} alt="icon" />*/}
               {sourceName}
               <div className="flex-1 border-b border-b-[#e6e6e6] dark:border-b-[#272626]"></div>
-              <SquareArrowRight
-                className="w-4 h-4 cursor-pointer"
-                onClick={() => goToTwoPage(items[0])}
-              />
+
+              <IconWrapper
+                  className="w-4 h-4 cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToTwoPage(items[0]);
+                  }}
+              >
+                <ThemedIcon component={ArrowBigRight} className="w-4 h-4" />
+              </IconWrapper>
+
+              {/*<SquareArrowRight*/}
+              {/*  className="w-4 h-4 cursor-pointer"*/}
+              {/*  onClick={() => goToTwoPage(items[0])}*/}
+              {/*/>*/}
+
               {showIndex && sourceName === selectedName ? (
                 <div
                   className={`absolute right-2
@@ -308,7 +520,8 @@ function DropdownList({
                 }`}
               >
                 <div className="flex gap-2 items-center justify-start max-w-[450px]">
-                  <img className="w-5 h-5" src={getIcon(item)} alt="icon" />
+                  {getItemIcon(item)}
+                  {/*<img className="w-5 h-5" src={getIcon(item)} alt="icon" />*/}
                   <span
                     className={`text-sm  truncate text-left ${
                       isSelected ? "font-medium" : ""
@@ -319,29 +532,41 @@ function DropdownList({
                 </div>
                 <div className="flex-1 text-right min-w-[160px] h-full pl-5 text-[12px] flex gap-2 items-center justify-end relative">
                   {Object.entries(SearchData).length < 5 ? null : (
-                    <img
-                      className="w-4 h-4 cursor-pointer"
-                      src={getTypeIcon(item)}
-                      alt="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        goToTwoPage(item);
-                      }}
-                    />
-                  )}
-
-                  {item?.rich_categories ? (
-                    <div className="flex items-center justify-end max-w-[calc(100%-20px)] whitespace-nowrap">
-                      {Object.entries(SearchData).length < 5 ? (
-                        <img
-                          className="w-4 h-4 mr-2 cursor-pointer"
-                          src={getRichIcon(item)}
-                          alt="icon"
+                      <div
+                          className="w-4 h-4 cursor-pointer"
                           onClick={(e) => {
                             e.stopPropagation();
                             goToTwoPage(item);
                           }}
-                        />
+                      >
+                        {getTypeIcon(item, "w-4 h-4 cursor-pointer", (e) => {
+                          e.stopPropagation();
+                          goToTwoPage(item);
+                        })}
+                      </div>
+                  )}
+
+                  {/*{Object.entries(SearchData).length < 5 ? null : (*/}
+                  {/*  <img*/}
+                  {/*    className="w-4 h-4 cursor-pointer"*/}
+                  {/*    src={getTypeIcon(item)}*/}
+                  {/*    alt="icon"*/}
+                  {/*    onClick={(e) => {*/}
+                  {/*      e.stopPropagation();*/}
+                  {/*      goToTwoPage(item);*/}
+                  {/*    }}*/}
+                  {/*  />*/}
+                  {/*)}*/}
+
+                  {item?.rich_categories ? (
+                    <div className="flex items-center justify-end max-w-[calc(100%-20px)] whitespace-nowrap">
+                      {Object.entries(SearchData).length < 5 ? (
+                          <div>
+                            {getRichIcon(item, "w-4 h-4 mr-2 cursor-pointer", (e) => {
+                              e.stopPropagation();
+                              goToTwoPage(item);
+                            })}
+                          </div>
                       ) : null}
                       <span
                         className={`${
