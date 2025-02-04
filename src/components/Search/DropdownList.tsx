@@ -3,8 +3,6 @@ import {
   CircleAlert,
   Bolt,
   X,
-  SquareArrowRight,
-  // UserRoundPen,
 } from "lucide-react";
 
 import { isTauri } from "@tauri-apps/api/core";
@@ -12,7 +10,7 @@ import { open } from "@tauri-apps/plugin-shell";
 
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
-import { useTheme } from "@/contexts/ThemeContext";
+// import { useTheme } from "@/contexts/ThemeContext";
 import { useConnectStore } from "@/stores/connectStore";
 import { File } from 'lucide-react';
 import { Folder } from 'lucide-react';
@@ -46,7 +44,7 @@ function DropdownList({
   //   f: 0,
   // };
 
-  const { theme } = useTheme();
+  // const { theme } = useTheme();
 
   const connector_data = useConnectStore((state) => state.connector_data);
   const datasourceData = useConnectStore((state) => state.datasourceData);
