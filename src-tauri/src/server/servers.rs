@@ -252,6 +252,11 @@ pub async fn list_coco_servers<R: Runtime>(
     Ok(servers)
 }
 
+pub fn get_servers_as_hashmap() -> HashMap<String, Server> {
+    let cache = SERVER_CACHE.read().unwrap();
+    cache.clone()
+}
+
 pub fn get_all_servers() -> Vec<Server> {
     let cache = SERVER_CACHE.read().unwrap();
     cache.values().cloned().collect()

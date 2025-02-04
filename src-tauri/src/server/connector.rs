@@ -71,51 +71,6 @@ pub async fn refresh_all_connectors<R: Runtime>(
     Ok(())
 }
 
-// pub async fn refresh_all_connectors<R: Runtime>(
-//     app_handle: &AppHandle<R>,
-// ) -> Result<(), String> {
-//     dbg!("Attempting to refresh all connectors");
-//
-//
-//     let servers=list_coco_servers(app_handle.clone()).await?;
-//
-//     // dbg!("{} of servers found", &servers.len());
-//
-//     for server in servers {
-//         // dbg!("fetch connectors for server: ", &server.id);
-//
-//         // Attempt to get connectors by server, and continue even if it fails
-//         let connectors = match get_connectors_by_server(app_handle.clone(), server.id.clone()).await {
-//             Ok(connectors) => {
-//                 // dbg!("Found connectors for server: {}, {}", &server.id,&connectors);
-//                 // Convert Vec<Connector> to HashMap<String, Connector>
-//                 let connectors_map: HashMap<String, Connector> = connectors
-//                     .into_iter()
-//                     .map(|connector| (connector.id.clone(), connector))
-//                     .collect();
-//                 connectors_map
-//             }
-//             Err(e) => {
-//                 dbg!("Failed to get connectors for server {}: {}", &server.id, e);
-//                 HashMap::new()
-//             }
-//         };
-//
-//         {
-//             // Insert connectors into the map (even if it's empty)
-//             CONNECTOR_CACHE.write().unwrap().insert(server.id.clone(), connectors);
-//         }
-//     }
-//
-//     // Now after the loop, perform a read operation on the cache
-//     let cache_size = {
-//         let cache = CONNECTOR_CACHE.read().unwrap();
-//         cache.len()
-//     };
-//     dbg!("connectors_map size: {:?}", cache_size);
-//     return Ok(())
-// }
-
 pub async fn get_connectors_from_cache_or_remote(server_id: &str) -> Result<Vec<Connector>, String> {
     // Acquire the read lock and check cache for connectors
     let cache = CONNECTOR_CACHE.read().unwrap(); // Acquire read lock

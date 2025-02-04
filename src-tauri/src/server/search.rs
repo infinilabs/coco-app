@@ -1,14 +1,13 @@
 use std::collections::HashMap;
-use futures::stream::FuturesUnordered;
 use ordered_float::OrderedFloat;
+use reqwest::Method;
 use serde::Serialize;
-use tauri::{AppHandle, Runtime};
+use tauri::{ AppHandle, Runtime};
 use serde_json::Map as JsonMap;
 use serde_json::Value as Json;
-fn search_url(endpoint: &str) -> String {
-    format!("{endpoint}/query/_search")
-}
-
+use crate::server::http_client::{HttpClient, HTTP_CLIENT};
+use crate::server::servers::{get_all_servers, get_server_token, get_servers_as_hashmap};
+use futures::stream::{FuturesUnordered, StreamExt};
 
 struct DocumentsSizedCollector {
     size: u64,
@@ -71,8 +70,6 @@ fn get_public(provider_info: &JsonMap<String, Json>) -> bool {
         .as_bool()
         .expect("field [public] should be a string")
 }
-
-
 #[tauri::command]
 pub async fn query_coco_servers<R: Runtime>(
     app_handle: AppHandle<R>,
@@ -85,107 +82,76 @@ pub async fn query_coco_servers<R: Runtime>(
         from, size, query_strings
     );
 
-    // let coco_servers = _list_coco_servers(&app_handle).await?;
-    // let tokens = get_coco_server_tokens(&app_handle);
-    //
-    // let mut futures = FuturesUnordered::new();
-    //
-    // let from_for_each_request = "0";
-    // let size_for_each_request = from + size;
-    // let size_for_each_request_str = size_for_each_request.to_string();
-    // for server in coco_servers {
-    //     let endpoint = get_endpoint(&server).to_string();
-    //     let public = get_public(&server);
-    //     let name = get_name(&server).to_string();
-    //
-    //     let mut request_builder = HTTP_CLIENT.get(search_url(&endpoint));
-    //     if !public {
-    //         let Some(token) = get_coco_server_token(&tokens, &endpoint) else {
-    //             // skip non-public servers with no token
-    //             continue;
-    //         };
-    //         request_builder = request_builder.header("X-API-TOKEN", token);
-    //     }
-    //     let future = request_builder
-    //         .query(&[
-    //             ("from", from_for_each_request),
-    //             ("size", size_for_each_request_str.as_str()),
-    //         ])
-    //         .query(&query_strings)
-    //         .send();
-    //
-    //     futures.push(future.map(|request_result| (name, request_result)));
-    // }
-    //
-    // let mut total_hits = 0;
-    // let mut failed_coco_servers = Vec::new();
-    // let mut docs_collector = DocumentsSizedCollector::new(size_for_each_request);
-    //
-    // while let Some((name, res_response)) = futures.next().await {
-    //     match res_response {
-    //         Ok(response) => {
-    //             let mut body: JsonMap<String, Json> =
-    //                 response.json().await.expect("invalid response");
-    //             let mut hits = match body
-    //                 .remove("hits")
-    //                 .expect("invalid response, field [hits] not found")
-    //             {
-    //                 Json::Object(map) => map,
-    //                 _ => panic!("field [hits] is not an object"),
-    //             };
-    //             let hits_total_value = hits
-    //                 .get("total")
-    //                 .expect("invalid response, field [hits.total] not found")
-    //                 .get("value")
-    //                 .expect("invalid response, field [hits.total.value] not found")
-    //                 .as_u64()
-    //                 .expect("invalid response, field [hits.total.value] is not an integer");
-    //             total_hits += hits_total_value;
-    //
-    //             let hits_hits = match hits
-    //                 .remove("hits")
-    //                 .expect("invalid response, field [hits.hits] not found")
-    //             {
-    //                 Json::Array(vec) => vec,
-    //                 _ => panic!("invalid response, field [hits.hits] is not an array"),
-    //             };
-    //
-    //             for hit in hits_hits {
-    //                 let mut hit = match hit {
-    //                     Json::Object(map) => map,
-    //                     _ => panic!("invalid response, returned hit is not an object"),
-    //                 };
-    //
-    //                 let score = hit
-    //                     .get("_score")
-    //                     .expect("invalid response, returned hit does not have a [_score] field")
-    //                     .as_f64()
-    //                     .expect("invalid response, field [_score] is not a floating number");
-    //
-    //                 let source = match hit
-    //                     .remove("_source")
-    //                     .expect("invalid response, returned hit does not have a [_source] field")
-    //                 {
-    //                     Json::Object(map) => map,
-    //                     _ => panic!("invalid response, field [_source] is not an object"),
-    //                 };
-    //
-    //                 docs_collector.push(source, score);
-    //             }
-    //         }
-    //         Err(_) => failed_coco_servers.push(name),
-    //     }
-    // }
-    //
-    // let documents = docs_collector.documents().collect();
-    //
-    // Ok(QueryResponse {
-    //     failed_coco_servers,
-    //     total_hits,
-    //     documents,
-    // })
+    let coco_servers = get_servers_as_hashmap();
+    let mut futures = FuturesUnordered::new();
+    let size_for_each_request = (from + size).to_string();
 
-    Ok()
+    for (_,server) in coco_servers {
+        let url = HttpClient::join_url(&server.endpoint, "/query/_search");
+        let client = HTTP_CLIENT.lock().await; // Acquire the lock on HTTP_CLIENT
+        let mut request_builder = client.request(Method::GET, url);
+
+        if !server.public {
+            if let Some(token) = get_server_token(&server.id).map(|t| t.access_token) {
+                request_builder = request_builder.header("X-API-TOKEN", token);
+            }
+        }
+        let query_strings_cloned = query_strings.clone(); // Clone for each iteration
+
+        let size=size_for_each_request.clone();
+        let future = async move {
+            let response = request_builder
+                .query(&[("from", "0"), ("size", size.as_str())])
+                .query(&query_strings_cloned) // Use cloned instance
+                .send()
+                .await;
+            (server.id, response)
+        };
+
+        futures.push(future);
+    }
+
+    let mut total_hits = 0;
+    let mut failed_coco_servers = Vec::new();
+    let mut docs_collector = DocumentsSizedCollector::new(size);
+
+    while let Some((name, res_response)) = futures.next().await {
+        match res_response {
+            Ok(response) => {
+                if let Ok(mut body) = response.json::<JsonMap<String, Json>>().await {
+                    if let Some(Json::Object(mut hits)) = body.remove("hits") {
+                        if let Some(Json::Number(hits_total_value)) = hits.get("total").and_then(|t| t.get("value")) {
+                            if let Some(hits_total) = hits_total_value.as_u64() {
+                                total_hits += hits_total;
+                            }
+                        }
+                        if let Some(Json::Array(hits_hits)) = hits.remove("hits") {
+                            for hit in hits_hits.into_iter().filter_map(|h| h.as_object().cloned()) {
+                                if let (Some(Json::Number(score)), Some(Json::Object(source))) = (hit.get("_score"), hit.get("_source")) {
+                                    if let Some(score_value) = score.as_f64() {
+                                        docs_collector.push(source.clone(), score_value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            Err(_) => failed_coco_servers.push(name),
+        }
+    }
+
+    let docs=docs_collector.documents().collect();
+
+    // dbg!(&total_hits);
+    // dbg!(&failed_coco_servers);
+    // dbg!(&docs);
+
+    Ok(QueryResponse {
+        failed_coco_servers,
+        total_hits,
+        documents:docs ,
+    })
 }
 
 

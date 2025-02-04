@@ -98,10 +98,9 @@ pub fn run() {
             server::profile::get_user_profiles,
             server::datasource::get_datasources_by_server,
             server::connector::get_connectors_by_server,
+            server::search::query_coco_servers,
             // server::get_coco_server_health_info,
             // server::get_coco_servers_health_info,
-            // server::query_coco_servers,
-            // server::store_coco_server_token,
             // server::get_user_profiles,
             // server::get_coco_server_datasources,
             // server::get_coco_server_connectors
@@ -153,6 +152,7 @@ pub fn run() {
 }
 
 pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
+    dbg!("Initializing...");
     // Await the async functions to load the servers and tokens
     if let Err(err) = load_or_insert_default_server(app_handle).await {
         eprintln!("Failed to load servers: {}", err);
@@ -162,6 +162,7 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
         eprintln!("Failed to load server tokens: {}", err);
     }
 
+    dbg!("Initialization completed");
 
     // let window: WebviewWindow = app_handle.get_webview_window("main").unwrap();
 

@@ -1,3 +1,4 @@
+use std::future::Future;
 use std::time::Duration;
 use lazy_static::lazy_static;
 use tauri::AppHandle;
@@ -5,7 +6,7 @@ use crate::server::servers::{get_server_by_id, get_server_token};
 
 use once_cell::sync::Lazy;
 use tokio::sync::Mutex;
-use reqwest::{Client, Method, StatusCode};
+use reqwest::{Client, Method, RequestBuilder, Response, StatusCode};
 
 pub static HTTP_CLIENT: Lazy<Mutex<Client>> = Lazy::new(|| {
     let client = Client::builder()
@@ -34,6 +35,26 @@ impl HttpClient {
         headers: Option<reqwest::header::HeaderMap>,
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
+
+        let request_builder = Self::get_request_builder(method, url, headers, body).await;
+
+        // Send the request
+        let response = match request_builder.send().await {
+            Ok(resp) => resp,
+            Err(e) => {
+                dbg!("Failed to send request: {}", &e);
+                return Err(format!("Failed to send request: {}", e));
+            }
+        };
+        Ok(response)
+    }
+
+    pub async fn get_request_builder(
+        method: Method,
+        url: &str,
+        headers: Option<reqwest::header::HeaderMap>,
+        body: Option<reqwest::Body>,
+    ) -> RequestBuilder {
         let client = HTTP_CLIENT.lock().await; // Acquire the lock on HTTP_CLIENT
 
         // Build the request
@@ -49,19 +70,7 @@ impl HttpClient {
             request_builder = request_builder.body(b);
         }
 
-        // dbg!("Sending request to: {}", url);
-
-        // Send the request
-        let response = match request_builder.send().await {
-            Ok(resp) => resp,
-            Err(e) => {
-                dbg!("Failed to send request: {}", &e);
-                return Err(format!("Failed to send request: {}", e));
-            }
-        };
-
-        // dbg!("Response status: {:?}", response.status());
-        Ok(response)
+        request_builder
     }
 
     pub async fn send_request(
@@ -91,13 +100,13 @@ impl HttpClient {
 
             // dbg!(&headers);
 
-
-            // Send the raw request using the send_raw_request function
             Self::send_raw_request(method, &url, Some(headers), body).await
+
         } else {
             Err("Server not found".to_string())
         }
     }
+
 
     // Convenience method for GET requests (as it's the most common)
     pub async fn get(

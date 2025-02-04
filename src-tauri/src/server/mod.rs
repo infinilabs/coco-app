@@ -14,7 +14,7 @@ pub mod auth;
 // pub mod health;
 pub mod datasource;
 pub mod connector;
-// pub mod search;
+pub mod search;
 pub mod profile;
 pub mod http_client;
 
