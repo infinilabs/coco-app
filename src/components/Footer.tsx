@@ -10,7 +10,6 @@ import logoImg from "../assets/32x32.png";
 import {useAppStore} from "@/stores/appStore";
 import {OctagonAlert} from 'lucide-react';
 import { X } from 'lucide-react';
-import {cursorPosition} from "@tauri-apps/api/window";
 
 const Footer = () => {
 

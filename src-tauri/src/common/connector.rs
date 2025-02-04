@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug,Clone, Serialize, Deserialize)]
 pub struct Connector {
     pub id: String,
     pub created: Option<String>,
@@ -13,7 +13,7 @@ pub struct Connector {
     pub url: Option<String>,
     pub assets: Option<ConnectorAssets>,
 }
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug,Clone, Serialize, Deserialize)]
 pub struct ConnectorAssets {
     pub icons: Option<std::collections::HashMap<String, String>>,
 }

@@ -11,7 +11,7 @@ export type IAppStore = {
   setShowTooltip: (showTooltip: boolean) => void;
 
   error: string;
-  setError: (message: string) => void,
+  setError: (message: any) => void,
 
   ssoRequestID: string;
   setSSORequestID: (ssoRequestID: string) => void,
@@ -33,7 +33,7 @@ export const useAppStore = create<IAppStore>()(
       showTooltip: true,
       setShowTooltip: (showTooltip: boolean) => set({ showTooltip }),
       error: "",
-      setError: (message: string) => set({ error: message }),
+      setError: (message: any) => set({ error: message as string }),
       ssoRequestID: "",
       setSSORequestID: (ssoRequestID: string) => set({ ssoRequestID }),
       //  ssoServerID: "",

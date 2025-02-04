@@ -46,8 +46,8 @@ where
     T: for<'de> Deserialize<'de> + std::fmt::Debug,
 {
     // Log the response status and headers
-    dbg!(&response.status());
-    dbg!(&response.headers());
+    // dbg!(&response.status());
+    // dbg!(&response.headers());
 
     // Parse the response body to a serde::Value
     let body = response
@@ -56,14 +56,14 @@ where
         .map_err(|e| format!("Failed to parse JSON: {}", e))?;
 
     // Log the raw body before further processing
-    dbg!(&body);
+    // dbg!(&body);
 
     // Deserialize into the generic search response
     let search_response: SearchResponse<T> = serde_json::from_value(body)
         .map_err(|e| format!("Failed to deserialize search response: {}", e))?;
 
     // Log the deserialized search response
-    dbg!(&search_response);
+    // dbg!(&search_response);
 
     // Collect the _source part from all hits
     let results: Vec<T> = search_response
@@ -74,7 +74,7 @@ where
         .collect();
 
     // Log the final results before returning
-    dbg!(&results);
+    // dbg!(&results);
 
     Ok(results)
 }

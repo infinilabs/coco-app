@@ -216,7 +216,7 @@ export default function Cloud() {
     useEffect(() => {
 
         // Function to handle pasted URL
-        const handlePaste = (event) => {
+        const handlePaste = (event:any) => {
             const pastedText = event.clipboardData.getData('text');
             console.log("handle paste text:", pastedText);
             if (isValidCallbackUrl(pastedText)) {
@@ -227,7 +227,7 @@ export default function Cloud() {
         };
 
         // Function to check if the pasted URL is valid for our deep link scheme
-        const isValidCallbackUrl = (url) => {
+        const isValidCallbackUrl = (url: string) => {
             return url && url.startsWith('coco://oauth_callback');
         };
 

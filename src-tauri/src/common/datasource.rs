@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
+use crate::common::connector::Connector;
 
 // The DataSource struct representing a datasource, which includes the Connector
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug,Clone, Serialize, Deserialize)]
 pub struct DataSource {
     pub id: String,
     pub created: Option<String>,
@@ -9,10 +10,11 @@ pub struct DataSource {
     pub r#type: Option<String>, // Using 'r#type' to escape the reserved keyword 'type'
     pub name: Option<String>,
     pub connector: Option<ConnectorConfig>,
+    pub connector_info: Option<Connector>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug,Clone, Serialize, Deserialize)]
 pub struct ConnectorConfig {
-    pub connector_id: Option<String>,
+    pub id: Option<String>,
     pub config: Option<serde_json::Value>, // Using serde_json::Value to handle any type of config
 }
