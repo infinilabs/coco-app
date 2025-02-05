@@ -1,4 +1,4 @@
-import {useState, useEffect, useCallback} from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
     RefreshCcw,
     Globe,
@@ -6,28 +6,27 @@ import {
     GitFork,
     CalendarSync,
     Trash2,
+    Copy,
 } from "lucide-react";
-import {v4 as uuidv4} from "uuid";
-import {getCurrentWindow} from "@tauri-apps/api/window";
+import { v4 as uuidv4 } from "uuid";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
     onOpenUrl,
     getCurrent as getCurrentDeepLinkUrls,
 } from "@tauri-apps/plugin-deep-link";
-import {invoke} from "@tauri-apps/api/core";
+import { invoke } from "@tauri-apps/api/core";
 
-import { Copy } from 'lucide-react';
-
-import {UserProfile} from "./UserProfile";
-import {DataSourcesList} from "./DataSourcesList";
-import {Sidebar} from "./Sidebar";
-import {Connect} from "./Connect.tsx";
-import {OpenURLWithBrowser} from "@/utils";
-import {useAppStore} from "@/stores/appStore";
-import {useConnectStore} from "@/stores/connectStore";
+import { UserProfile } from "./UserProfile";
+import { DataSourcesList } from "./DataSourcesList";
+import { Sidebar } from "./Sidebar";
+import { Connect } from "./Connect.tsx";
+import { OpenURLWithBrowser } from "@/utils";
+import { useAppStore } from "@/stores/appStore";
+import { useConnectStore } from "@/stores/connectStore";
 import bannerImg from "@/assets/images/coco-cloud-banner.jpeg";
 
 export default function Cloud() {
-    // const SidebarRef = useRef<{ refreshData: () => void; }>(null);
+    const SidebarRef = useRef<{ refreshData: () => void; }>(null);
 
     // const [error, setError] = useState<string | null>(null);
     const error = useAppStore((state) => state.error);
@@ -88,7 +87,7 @@ export default function Cloud() {
         // get_user_profiles()
     }, [])
 
-    const fetchServers = async (resetSelection :boolean) => {
+    const fetchServers = async (resetSelection: boolean) => {
         invoke("list_coco_servers")
             .then((res: any) => {
                 console.log("list_coco_servers", res);
@@ -150,7 +149,7 @@ export default function Cloud() {
             }
 
             try {
-                console.log("Handling OAuth callback:", {code, serverId});
+                console.log("Handling OAuth callback:", { code, serverId });
                 await invoke("handle_sso_callback", {
                     serverId: serverId,  // Make sure 'server_id' is the correct argument
                     requestId: ssoRequestID,  // Make sure 'request_id' is the correct argument
@@ -169,7 +168,7 @@ export default function Cloud() {
 
             } catch (e) {
                 console.error("Sign in failed:", e);
-                setError("SSO login failed: "+e);
+                setError("SSO login failed: " + e);
                 // setAuth(undefined, endpoint);
                 throw error;
             } finally {
@@ -181,13 +180,14 @@ export default function Cloud() {
 
     const handleUrl = (url: string) => {
         try {
-            //url = "coco://oauth_callback?code=cuad40o2sdb0j4verf40qhglrve595ibv5ng4sqzk5b94sdan8fou9sj8ef9ioww8ur9mqclm2gickavkawm&provider=coco-cloud/"
+            // url = "coco://oauth_callback?code=cuhdcb461mdmiecckc0g5hzngnsrzspnz8ljgfk078j11bifi7cin1xd05u3m8f5hwhw97o5zphms6ld3ddt&request_id=fe112c62-6aea-49f1-8114-9997151e89df&provider=coco-cloud/"
             const urlObject = new URL(url);
             console.log("handle urlObject:", urlObject);
 
             //TODO, pass request_id and check with local, if the request_id are same, then continue
             const reqId = urlObject.searchParams.get("request_id");
             const code = urlObject.searchParams.get("code");
+
             if (reqId != ssoRequestID) {
                 console.log("Request ID not matched, skip");
                 setError("Request ID not matched, skip");
@@ -207,16 +207,15 @@ export default function Cloud() {
             // }
         } catch (err) {
             console.error("Failed to parse URL:", err);
-            setError("Invalid URL format: "+err);
+            setError("Invalid URL format: " + err);
         }
     };
 
 
     // Fetch the initial deep link intent
     useEffect(() => {
-
         // Function to handle pasted URL
-        const handlePaste = (event:any) => {
+        const handlePaste = (event: any) => {
             const pastedText = event.clipboardData.getData('text');
             console.log("handle paste text:", pastedText);
             if (isValidCallbackUrl(pastedText)) {
@@ -238,14 +237,14 @@ export default function Cloud() {
             .then((urls) => {
                 console.log("URLs:", urls);
                 if (urls && urls.length > 0) {
-                    if (isValidCallbackUrl(urls[0])){
+                    if (isValidCallbackUrl(urls[0])) {
                         handleUrl(urls[0]);
                     }
                 }
             })
             .catch((err) => {
                 console.error("Failed to get initial URLs:", err);
-                setError("Failed to get initial URLs: "+err);
+                setError("Failed to get initial URLs: " + err);
             });
 
         const unlisten = onOpenUrl((urls) => handleUrl(urls[0]));
@@ -269,9 +268,9 @@ export default function Cloud() {
 
         // If the appUid doesn't exist, generate one
         // if (!ssoRequestID) {
-            let requestID = uuidv4();
-            setSSORequestID(requestID);
-            // setSSOServerID(currentService?.id);
+        let requestID = uuidv4();
+        setSSORequestID(requestID);
+        // setSSOServerID(currentService?.id);
         // }
 
         // Generate the login URL with the current appUid
@@ -289,7 +288,7 @@ export default function Cloud() {
 
     const refreshClick = (id: string) => {
         setRefreshLoading(true);
-        invoke("refresh_coco_server_info", {id})
+        invoke("refresh_coco_server_info", { id })
             .then((res: any) => {
                 console.log("refresh_coco_server_info", id, JSON.stringify(res));
                 fetchServers(false).then(r => {
@@ -313,7 +312,7 @@ export default function Cloud() {
     function onLogout(id: string) {
         console.log("onLogout", id);
         setRefreshLoading(true);
-        invoke("logout_coco_server", {id})
+        invoke("logout_coco_server", { id })
             .then((res: any) => {
                 console.log("logout_coco_server", id, JSON.stringify(res));
                 refreshClick(id);
@@ -327,12 +326,12 @@ export default function Cloud() {
     }
 
     const remove_coco_server = (id: string) => {
-        invoke("remove_coco_server", {id})
+        invoke("remove_coco_server", { id })
             .then((res: any) => {
                 console.log("remove_coco_server", id, JSON.stringify(res));
-               fetchServers(true).then(r => {
-                     console.log("fetchServers", r);
-               })
+                fetchServers(true).then(r => {
+                    console.log("fetchServers", r);
+                })
             })
             .catch((err: any) => {
                 //TODO display the error message
@@ -343,7 +342,7 @@ export default function Cloud() {
 
     return (
         <div className="flex bg-gray-50 dark:bg-gray-900">
-            <Sidebar onAddServer={onAddServer} serverList={serverList}/>
+            <Sidebar ref={SidebarRef} onAddServer={onAddServer} serverList={serverList} />
 
             <main className="flex-1 p-4 py-8">
 
@@ -367,16 +366,15 @@ export default function Cloud() {
                                     className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-[6px] bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
                                     onClick={() => OpenURLWithBrowser(currentService?.provider?.website)}
                                 >
-                                    <Globe className="w-3.5 h-3.5"/>
+                                    <Globe className="w-3.5 h-3.5" />
                                 </button>
                                 <button
                                     className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-[6px] bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
                                     onClick={() => refreshClick(currentService?.id)}
                                 >
                                     <RefreshCcw
-                                        className={`w-3.5 h-3.5 ${
-                                            refreshLoading ? "animate-spin" : ""
-                                        }`}
+                                        className={`w-3.5 h-3.5 ${refreshLoading ? "animate-spin" : ""
+                                            }`}
                                     />
                                 </button>
 
@@ -385,7 +383,7 @@ export default function Cloud() {
                                         className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-[6px] bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
                                         onClick={() => remove_coco_server(currentService?.id)}
                                     >
-                                        <Trash2 className="w-3.5 h-3.5 text-[#ff4747]"/>
+                                        <Trash2 className="w-3.5 h-3.5 text-[#ff4747]" />
                                     </button>
                                 )}
                             </div>
@@ -393,19 +391,19 @@ export default function Cloud() {
 
                         <div className="mb-8">
                             <div className="text-sm text-gray-500 dark:text-gray-400 mb-2 flex">
-                <span className="flex items-center gap-1">
-                  <PackageOpen className="w-4 h-4"/>{" "}
-                    {currentService?.provider?.name}
-                </span>
+                                <span className="flex items-center gap-1">
+                                    <PackageOpen className="w-4 h-4" />{" "}
+                                    {currentService?.provider?.name}
+                                </span>
                                 <span className="mx-4">|</span>
                                 <span className="flex items-center gap-1">
-                  <GitFork className="w-4 h-4"/>{" "}
+                                    <GitFork className="w-4 h-4" />{" "}
                                     {currentService?.version?.number}
-                </span>
+                                </span>
                                 <span className="mx-4">|</span>
                                 <span className="flex items-center gap-1">
-                  <CalendarSync className="w-4 h-4"/> {currentService?.updated}
-                </span>
+                                    <CalendarSync className="w-4 h-4" /> {currentService?.updated}
+                                </span>
                             </div>
                             <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                                 {currentService?.provider?.description}
@@ -417,7 +415,7 @@ export default function Cloud() {
                                 <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                                     Account Information
                                 </h2>
-                                { currentService?.profile ? (
+                                {currentService?.profile ? (
                                     <UserProfile server={currentService?.id} userInfo={currentService?.profile} onLogout={onLogout} />
                                 ) : (
                                     <div>
@@ -448,7 +446,7 @@ export default function Cloud() {
                                                     }}
                                                     className="text-xl text-blue-500 hover:text-blue-600"
                                                 >
-                                                    <Copy className="inline mr-2"/> {/* Lucide Copy Icon */}
+                                                    <Copy className="inline mr-2" /> {/* Lucide Copy Icon */}
                                                 </button>
                                             </div>
                                         )}
@@ -460,17 +458,17 @@ export default function Cloud() {
                                                 OpenURLWithBrowser(currentService?.provider?.privacy_policy)
                                             }
                                         >
-                                        EULA | Privacy Policy
+                                            EULA | Privacy Policy
                                         </button>
                                     </div>
                                 )}
                             </div>
                         ) : null}
 
-                        {currentService?.profile? <DataSourcesList server={currentService?.id}  /> : null}
+                        {currentService?.profile ? <DataSourcesList server={currentService?.id} /> : null}
                     </div>
                 ) : (
-                    <Connect setIsConnect={setIsConnect} onAddServer={add_coco_server}/>
+                    <Connect setIsConnect={setIsConnect} onAddServer={add_coco_server} />
                 )}
             </main>
         </div>

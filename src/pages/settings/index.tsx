@@ -8,7 +8,7 @@ import GeneralSettings from "@/components/Settings/GeneralSettings";
 import AboutView from "@/components/Settings/AboutView";
 import Cloud from "@/components/Cloud/Cloud.tsx"
 import Footer from "@/components/Footer";
-import ApiDetails from "@/components/Search/ApiDetails";
+import ApiDetails from "@/components/Common/ApiDetails";
 
 function SettingsPage() {
   const [defaultIndex, setDefaultIndex] = useState<number>(0);

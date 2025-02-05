@@ -8,7 +8,7 @@ import Search from "@/components/Search/Search";
 import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
 import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
-import ApiDetails from "@/components/Search/ApiDetails";
+import ApiDetails from "@/components/Common/ApiDetails";
 
 export default function DesktopApp() {
   const initializeListeners = useAppStore((state) => state.initializeListeners);

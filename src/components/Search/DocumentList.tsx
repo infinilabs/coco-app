@@ -2,13 +2,13 @@ import React, { useState, useRef, useEffect } from "react";
 import { useInfiniteScroll } from "ahooks";
 import { isTauri, invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-shell";
+import { File } from 'lucide-react';
 
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { SearchHeader } from "./SearchHeader";
 import noDataImg from "@/assets/coconut-tree.png";
 import { useConnectStore } from "@/stores/connectStore";
-import { File } from 'lucide-react';
 
 interface DocumentListProps {
   onSelectDocument: (id: string) => void;
@@ -39,8 +39,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const { data, loading } = useInfiniteScroll(
     async (d) => {
       const from = d?.list.length || 0;
-
-      console.log(11111, d?.list.length, from)
 
       let queryStrings: any = {
         query: input,

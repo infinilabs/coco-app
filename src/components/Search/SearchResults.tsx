@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import { DocumentList } from "./DocumentList";
 import { DocumentDetail } from "./DocumentDetail";
 
@@ -21,16 +22,16 @@ export function SearchResults({ input, isChatMode }: SearchResultsProps) {
       <div className="h-full flex">
         {/* Left Panel */}
         <DocumentList
-            onSelectDocument={setSelectedDocumentId}
-            selectedId={selectedDocumentId}
-            input={input}
-            getDocDetail={getDocDetail}
-            isChatMode={isChatMode}
-          />
+          onSelectDocument={setSelectedDocumentId}
+          selectedId={selectedDocumentId}
+          input={input}
+          getDocDetail={getDocDetail}
+          isChatMode={isChatMode}
+        />
 
         {/* Right Panel */}
         <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <DocumentDetail document={detailData}/>
+          <DocumentDetail document={detailData} />
         </div>
       </div>
     </div>

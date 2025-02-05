@@ -5,7 +5,7 @@ import { LogicalSize } from "@tauri-apps/api/dpi";
 
 import DropdownList from "./DropdownList";
 import { Footer } from "./Footer";
-import { SearchResults } from "./SearchResults";
+import { SearchResults } from "../Search/SearchResults";
 import { tauriFetch } from "../../api/tauriFetchClient";
 import { useAppStore } from '@/stores/appStore';
 interface SearchProps {

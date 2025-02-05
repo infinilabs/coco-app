@@ -1,7 +1,7 @@
 import { useRouteError } from "react-router-dom";
 
 import errorImg from "./assets/error_page.png";
-import ApiDetails from "@/components/Search/ApiDetails";
+import ApiDetails from "@/components/Common/ApiDetails";
 
 export default function ErrorPage() {
   const error: any = useRouteError();

@@ -16,11 +16,11 @@ export type IAppStore = {
   ssoRequestID: string;
   setSSORequestID: (ssoRequestID: string) => void,
 
-    // ssoServerID: string;
-    // setSSOServerID: (ssoServerID: string) => void,
+  // ssoServerID: string;
+  // setSSOServerID: (ssoServerID: string) => void,
 
 
-    endpoint: AppEndpoint,
+  endpoint: AppEndpoint,
   endpoint_http: string,
   endpoint_websocket: string,
   setEndpoint: (endpoint: AppEndpoint) => void,

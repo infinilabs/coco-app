@@ -75,11 +75,11 @@ pub fn run() {
         ))
         .plugin(tauri_plugin_theme::init(ctx.config_mut()))
         .plugin(tauri_plugin_deep_link::init())
-        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
-            // println!("{}, {argv:?}, {cwd}", app.package_info().name);
-            app.emit("single-instance", Payload { args: argv, cwd })
-                .unwrap();
-        }))
+        // .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
+        //     // println!("{}, {argv:?}, {cwd}", app.package_info().name);
+        //     app.emit("single-instance", Payload { args: argv, cwd })
+        //         .unwrap();
+        // }))
         .plugin(tauri_plugin_store::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
             change_window_height,

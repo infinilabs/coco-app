@@ -5,7 +5,7 @@ import {
   Plus,
   AudioLines,
   Image,
-  SquareArrowLeft,
+  ArrowBigLeft,
 } from "lucide-react";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { listen } from "@tauri-apps/api/event";
@@ -198,7 +198,7 @@ export default function ChatInput({
       <div className="p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded transition-all relative">
         <div className="flex flex-wrap gap-2 flex-1 items-center relative">
           {!isChatMode && sourceData ? (
-            <SquareArrowLeft
+            <ArrowBigLeft
               className="w-4 h-4 text-[#000] dark:text-[#d8d8d8] cursor-pointer"
               onClick={() => setSourceData(undefined)}
             />

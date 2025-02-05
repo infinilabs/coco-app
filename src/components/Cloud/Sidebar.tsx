@@ -10,7 +10,7 @@ interface SidebarProps {
 }
 
 export const Sidebar = forwardRef<{ refreshData: () => void; }, SidebarProps>(
-    ({ onAddServer, serverList }) => {
+    ({ onAddServer, serverList }, _ref) => {
       const currentService = useConnectStore((state) => state.currentService);
       const setCurrentService = useConnectStore((state) => state.setCurrentService);
 
