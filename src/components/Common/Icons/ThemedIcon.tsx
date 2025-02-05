@@ -5,7 +5,7 @@ interface ThemedIconProps {
     className?: string;
 }
 
-function ThemedIcon({ component: Component, className }: ThemedIconProps) {
+function ThemedIcon({ component: Component, className = "" }: ThemedIconProps) {
     const [color, setColor] = useState("#000");
 
     useEffect(() => {

@@ -180,7 +180,7 @@ export default function Cloud() {
 
     const handleUrl = (url: string) => {
         try {
-            // url = "coco://oauth_callback?code=cuhdcb461mdmiecckc0g5hzngnsrzspnz8ljgfk078j11bifi7cin1xd05u3m8f5hwhw97o5zphms6ld3ddt&request_id=fe112c62-6aea-49f1-8114-9997151e89df&provider=coco-cloud/"
+            // url = "coco://oauth_callback?code=cuhhi8o2sdbbbcoe0g10ktmht6aky3jmd4xkwsgvzf748i4zdgr898bfeu3kze7ffdusdtbgtnpke8ng3fe6&provider=coco-cloud/"
             const urlObject = new URL(url);
             console.log("handle urlObject:", urlObject);
 

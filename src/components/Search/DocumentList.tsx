@@ -2,13 +2,11 @@ import React, { useState, useRef, useEffect } from "react";
 import { useInfiniteScroll } from "ahooks";
 import { isTauri, invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-shell";
-import { File } from 'lucide-react';
 
-import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { SearchHeader } from "./SearchHeader";
 import noDataImg from "@/assets/coconut-tree.png";
-import { useConnectStore } from "@/stores/connectStore";
+import ItemIcon from "@/components/Common/Icons/ItemIcon";
 
 interface DocumentListProps {
   onSelectDocument: (id: string) => void;
@@ -25,11 +23,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   getDocDetail,
   isChatMode,
 }) => {
-  const connector_data = useConnectStore((state) => state.connector_data);
-  const datasourceData = useConnectStore((state) => state.datasourceData);
-
   const sourceData = useSearchStore((state) => state.sourceData);
-  const endpoint_http = useAppStore((state) => state.endpoint_http);
 
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
   const [total, setTotal] = useState(0);
@@ -111,77 +105,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       behavior: "instant",
     });
   };
-
-  function findConnectorIcon(item: any) {
-    const id = item?.source?.id || "";
-
-    const result_source = datasourceData[endpoint_http]?.find(
-      (data: any) => data.id === id
-    );
-
-    const connector_id = result_source?.connector?.id;
-
-    const result_connector = connector_data[endpoint_http]?.find(
-      (data: any) => data.id === connector_id
-    );
-
-    return result_connector;
-  }
-
-  const ThemedIcon = () => {
-    const [color, setColor] = useState("#000"); // Default to black
-
-    useEffect(() => {
-      const updateTheme = () => {
-        const theme = document.documentElement.getAttribute("data-theme");
-        setColor(theme === "dark" ? "#fff" : "#000"); // Adjust colors as needed
-      };
-
-      updateTheme();
-      const observer = new MutationObserver(updateTheme);
-      observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-
-      return () => observer.disconnect();
-    }, []);
-
-    return <File className="w-5 h-5 flex-shrink-0" color={color} />;
-  };
-
-  function getIcon(item: any) {
-    const connectorSource = findConnectorIcon(item);
-    const icons = connectorSource?.assets?.icons || {};
-    const selectedIcon = icons[item?.icon];
-
-    if (!selectedIcon) {
-      return <ThemedIcon />;
-    }
-
-    if (selectedIcon.startsWith("http://") || selectedIcon.startsWith("https://")) {
-      return <img className="w-5 h-5 flex-shrink-0" src={selectedIcon} alt="icon" />;
-    } else {
-      return <img className="w-5 h-5 flex-shrink-0" src={`${endpoint_http}${selectedIcon}`} alt="icon" />;
-    }
-  }
-
-  // function getIcon(item: any) {
-  //   const connectorSource = findConnectorIcon(item);
-  //   const icons = connectorSource?.assets?.icons || {};
-  //
-  //   const selectedIcon = icons[item?.icon];
-  //
-  //   if (!selectedIcon) {
-  //     return file_img;
-  //   }
-  //
-  //   if (
-  //     selectedIcon?.startsWith("http://") ||
-  //     selectedIcon?.startsWith("https://")
-  //   ) {
-  //     return selectedIcon;
-  //   } else {
-  //     return endpoint_http + selectedIcon;
-  //   }
-  // }
 
   function onMouseEnter(index: number, item: any) {
     getDocDetail(item);
@@ -274,13 +197,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
             >
               <div className="flex gap-2 items-center flex-1 min-w-0">
 
-                {getIcon(item)}
-
-                {/*<img*/}
-                {/*  className="w-5 h-5 flex-shrink-0"*/}
-                {/*  src={getIcon(item)}*/}
-                {/*  alt="icon"*/}
-                {/*/>*/}
+                <ItemIcon item={item} />
                 <span
                   className={`text-sm truncate ${
                     isSelected ? "font-medium" : ""

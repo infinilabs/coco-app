@@ -22,7 +22,7 @@ function TypeIcon({
     const selectedIcon = connectorSource?.icon;
 
     if (!selectedIcon) {
-        console.log("go default folder:");
+        // console.log("go default folder:");
         return (
             <IconWrapper className={className} onClick={onClick}>
                 <ThemedIcon component={Box} className={className} />
