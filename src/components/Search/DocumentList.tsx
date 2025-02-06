@@ -53,10 +53,9 @@ export const DocumentList: React.FC<DocumentListProps> = ({
           size: PAGE_SIZE,
           queryStrings,
         });
-        const list = response?.documents || [];
+        const list = response?.hits || [];
         const total = response?.total_hits || 0;
 
-        console.log("doc", response?.documents);
 
         setTotal(total);
 
@@ -218,8 +217,9 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         ref={containerRef}
         className="flex-1 overflow-y-auto custom-scrollbar"
       >
-        {data?.list.map((item: any, index: number) => {
+        {data?.list.map((hit: any, index: number) => {
           const isSelected = selectedItem === index;
+          const item = hit.document;
           return (
             <div
               key={item.id + index}

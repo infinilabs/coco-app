@@ -40,41 +40,37 @@ pub struct SearchHit<T> {
     pub _score: Option<f32>,
     pub _source: T, // This will hold the type we pass in (e.g., DataSource)
 }
-
-pub async fn parse_search_results<T>(response: Response) -> Result<Vec<T>, Box<dyn Error>>
+pub async fn parse_search_hits<T>(
+    response: Response,
+) -> Result<Vec<SearchHit<T>>, Box<dyn Error>>
 where
     T: for<'de> Deserialize<'de> + std::fmt::Debug,
 {
-    // Log the response status and headers
-    // dbg!(&response.status());
-    // dbg!(&response.headers());
-
-    // Parse the response body to a serde::Value
     let body = response
         .json::<Value>()
         .await
         .map_err(|e| format!("Failed to parse JSON: {}", e))?;
 
-    // Log the raw body before further processing
-    // dbg!(&body);
-
-    // Deserialize into the generic search response
     let search_response: SearchResponse<T> = serde_json::from_value(body)
         .map_err(|e| format!("Failed to deserialize search response: {}", e))?;
 
-    // Log the deserialized search response
-    // dbg!(&search_response);
+    Ok(search_response.hits.hits)
+}
 
-    // Collect the _source part from all hits
-    let results: Vec<T> = search_response
-        .hits
-        .hits
-        .into_iter()
-        .map(|hit| hit._source)
-        .collect();
+pub async fn parse_search_results<T>(
+    response: Response,
+) -> Result<Vec<T>, Box<dyn Error>>
+where
+    T: for<'de> Deserialize<'de> + std::fmt::Debug,
+{
+    Ok(parse_search_hits(response).await?.into_iter().map(|hit| hit._source).collect())
+}
 
-    // Log the final results before returning
-    // dbg!(&results);
-
-    Ok(results)
+pub async fn parse_search_results_with_score<T>(
+    response: Response,
+) -> Result<Vec<(T, Option<f32>)>, Box<dyn Error>>
+where
+    T: for<'de> Deserialize<'de> + std::fmt::Debug,
+{
+    Ok(parse_search_hits(response).await?.into_iter().map(|hit| (hit._source, hit._score)).collect())
 }

@@ -177,15 +177,14 @@ function DropdownList({
         <div key={sourceName}>
           {Object.entries(SearchData).length < 5 ? (
             <div className="p-2 text-xs text-[#999] dark:text-[#666] flex items-center gap-2.5 relative">
-              <TypeIcon item={items[0]} className="w-4 h-4" />
-              {sourceName}
+              <TypeIcon item={items[0]?.document} className="w-4 h-4" />
+              {sourceName} - {items[0]?.source.name}
               <div className="flex-1 border-b border-b-[#e6e6e6] dark:border-b-[#272626]"></div>
-
               <IconWrapper
                 className="w-4 h-4 cursor-pointer"
                 onClick={(e: React.MouseEvent) => {
                   e.stopPropagation();
-                  goToTwoPage(items[0]);
+                  goToTwoPage(items[0]?.document);
                 }}
               >
                 <ThemedIcon component={ArrowBigRight} className="w-4 h-4" />
@@ -201,9 +200,10 @@ function DropdownList({
               ) : null}
             </div>
           ) : null}
-          {items.map((item: any, index: number) => {
+          {items.map((hit: any, index: number) => {
             const isSelected = selectedItem === globalIndex;
             const currentIndex = globalIndex;
+            const item=hit.document;
             globalItemIndexMap.push(item);
             globalIndex++;
             return (
