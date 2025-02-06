@@ -163,21 +163,36 @@ pub async fn query_coco_servers<R: Runtime>(
         match res_response {
             Ok(response) => {
                 let status_code = response.status().as_u16();
-                match parse_search_results_with_score(response).await {
-                    Ok(documents) => {
-                        total_hits += documents.len();  // No need for `&` here, as `len` is `usize`
-                        for (doc, score) in documents {
-                            let score = score.unwrap_or(0.0) as f64;
-                            docs_collector.push(server_id.clone(), doc, score);
+
+                // Check if the status code indicates a successful request (2xx)
+                if status_code >= 200 && status_code < 400 {
+                    // Parse the response only if the status code is success
+                    match parse_search_results_with_score(response).await {
+                        Ok(documents) => {
+                            total_hits += documents.len();  // No need for `&` here, as `len` is `usize`
+                            for (doc, score) in documents {
+                                let score = score.unwrap_or(0.0) as f64;
+                                docs_collector.push(server_id.clone(), doc, score);
+                            }
+                        }
+                        Err(err) => {
+                            failed_requests.push(create_failed_request(
+                                &server_id, &coco_servers, &err.to_string(), status_code,
+                            ));
                         }
                     }
-                    Err(err) => {
-                        failed_requests.push(create_failed_request(&server_id, &coco_servers, &err.to_string(), status_code));
-                    }
+                } else {
+                    // If status code is not successful, log the failure
+                    failed_requests.push(create_failed_request(
+                        &server_id, &coco_servers, "Unsuccessful response", status_code,
+                    ));
                 }
             }
             Err(err) => {
-                failed_requests.push(create_failed_request(&server_id,&coco_servers, &err.to_string(), 0));
+                // Handle the error from the future itself
+                failed_requests.push(create_failed_request(
+                    &server_id, &coco_servers, &err.to_string(), 0,
+                ));
             }
         }
     }

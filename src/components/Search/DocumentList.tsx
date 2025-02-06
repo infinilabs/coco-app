@@ -234,9 +234,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
               <div className="flex gap-2 items-center flex-1 min-w-0">
                 <ItemIcon item={item} />
                 <span
-                  className={`text-sm truncate ${
-                    isSelected ? "font-medium" : ""
-                  }`}
+                  className={`text-sm truncate`}
                 >
                   {item?.title}
                 </span>
