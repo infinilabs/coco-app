@@ -126,7 +126,7 @@ pub async fn fetch_connectors_by_server(id: &str) -> Result<Vec<Connector>, Stri
     })?;
 
     // Log the parsed results
-    dbg!("Parsed connectors: {:?}", &datasources);
+    // dbg!("Parsed connectors: {:?}", &datasources);
 
     // Save the connectors to the cache
     save_connectors_to_cache(&id, datasources.clone());

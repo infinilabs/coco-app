@@ -82,10 +82,13 @@ function Search({ isChatMode, input }: SearchProps) {
       // failed_coco_servers documents
 
       console.log("_suggest", input, response);
-      let data = response?.documents || [];
+      let data = response?.hits || [];
+
+
       setSuggests(data);
+
       const search_data = data.reduce((acc: any, item: any) => {
-        const name = item?.source?.name;
+        const name = item?.document?.source?.name;
         if (!acc[name]) {
           acc[name] = [];
         }

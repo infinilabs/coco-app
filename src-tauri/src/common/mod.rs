@@ -5,3 +5,4 @@ pub mod auth;
 pub mod datasource;
 pub mod connector;
 pub mod search_response;
+pub mod document;
