@@ -19,6 +19,7 @@ declare global {
   interface Window {
     __TAURI__: Record<string, unknown>;
     __TAURI_INTERNALS__?: any;
+    __TAURI_OS_PLUGIN_INTERNALS__?: any;
   }
 }
 

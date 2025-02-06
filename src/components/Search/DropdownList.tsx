@@ -36,7 +36,7 @@ function DropdownList({
   const globalIndex = useRef(0);
   const globalItemIndexMap = useRef<any[]>([]);
 
-  const setSourceData = useSearchStore((state) => state.setSourceData);
+  const setSourceData = useSearchStore((state: { setSourceData: any; }) => state.setSourceData);
 
   const [showError, setShowError] = useState<boolean>(IsError);
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
@@ -183,7 +183,7 @@ function DropdownList({
 
               <IconWrapper
                 className="w-4 h-4 cursor-pointer"
-                onClick={(e) => {
+                onClick={(e: React.MouseEvent) => {
                   e.stopPropagation();
                   goToTwoPage(items[0]);
                 }}

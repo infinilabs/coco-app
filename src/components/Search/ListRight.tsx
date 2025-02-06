@@ -30,7 +30,7 @@ export default function ListRight({
                     <TypeIcon
                         item={item}
                         className="w-4 h-4 cursor-pointer"
-                        onClick={(e) => {
+                        onClick={(e: React.MouseEvent) => {
                             e.stopPropagation();
                             goToTwoPage(item);
                         }}

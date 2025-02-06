@@ -17,6 +17,7 @@ import { useChatStore } from "@/stores/chatStore";
 import StopIcon from "@/icons/Stop";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
+import { isMac } from "@/utils/platform";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -39,10 +40,10 @@ export default function ChatInput({
   disabledChange,
   reconnect,
 }: ChatInputProps) {
-  const showTooltip = useAppStore((state) => state.showTooltip);
+  const showTooltip = useAppStore((state: { showTooltip: boolean }) => state.showTooltip);
 
-  const sourceData = useSearchStore((state) => state.sourceData);
-  const setSourceData = useSearchStore((state) => state.setSourceData);
+  const sourceData = useSearchStore((state: { sourceData: any; }) => state.sourceData);
+  const setSourceData = useSearchStore((state: { setSourceData: any; }) => state.setSourceData);
 
   useEffect(() => {
     setSourceData(undefined);
@@ -76,11 +77,13 @@ export default function ChatInput({
     (e: KeyboardEvent) => {
       pressedKeys.add(e.code);
 
-      if (e.code === "MetaLeft" || e.code === "MetaRight") {
+      if ((isMac && (e.code === "MetaLeft" || e.code === "MetaRight")) ||
+          (!isMac && (e.code === "ControlLeft" || e.code === "ControlRight")))  {
         setIsCommandPressed(true);
       }
 
-      if (pressedKeys.has("MetaLeft") || pressedKeys.has("MetaRight")) {
+      if ((isMac && (pressedKeys.has("MetaLeft") || pressedKeys.has("MetaRight"))) ||
+      (!isMac && (pressedKeys.has("ControlLeft") || pressedKeys.has("ControlRight")))) {
         // e.preventDefault();
         switch (e.code) {
           case "Comma":
@@ -128,7 +131,8 @@ export default function ChatInput({
 
   const handleKeyUp = useCallback((e: KeyboardEvent) => {
     pressedKeys.delete(e.code);
-    if (e.code === "MetaLeft" || e.code === "MetaRight") {
+    if ((isMac && (e.code === "MetaLeft" || e.code === "MetaRight")) ||
+        (!isMac && (e.code === "ControlLeft" || e.code === "ControlRight"))) {
       setIsCommandPressed(false);
     }
   }, []);
@@ -242,9 +246,8 @@ export default function ChatInput({
           ) : null}
           {showTooltip && isCommandPressed ? (
             <div
-              className={`absolute ${
-                !isChatMode && sourceData ? "left-7" : ""
-              } w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#ededed] dark:shadow-[-6px_0px_6px_2px_#202126]`}
+              className={`absolute ${!isChatMode && sourceData ? "left-7" : ""
+                } w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#ededed] dark:shadow-[-6px_0px_6px_2px_#202126]`}
             >
               I
             </div>
@@ -262,11 +265,10 @@ export default function ChatInput({
 
         {isChatMode && curChatEnd ? (
           <button
-            className={`ml-1 p-1 ${
-              inputValue
-                ? "bg-[#0072FF]"
-                : "bg-[#E4E5F0] dark:bg-[rgb(84,84,84)]"
-            } rounded-full transition-colors`}
+            className={`ml-1 p-1 ${inputValue
+              ? "bg-[#0072FF]"
+              : "bg-[#E4E5F0] dark:bg-[rgb(84,84,84)]"
+              } rounded-full transition-colors`}
             type="submit"
             onClick={() => onSend(inputValue.trim())}
           >
@@ -386,7 +388,7 @@ export default function ChatInput({
           ) : null}
           <ChatSwitch
             isChatMode={isChatMode}
-            onChange={(value) => {
+            onChange={(value: boolean) => {
               value && disabledChange();
               changeMode(value);
               setSourceData(undefined);
