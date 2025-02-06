@@ -86,16 +86,16 @@ export default function Footer({ }: FooterProps) {
       <div className="flex items-center gap-3">
         <div className="gap-1 flex items-center text-[#666] dark:text-[#666] text-sm">
           <span className="mr-1.5 ">Quick open</span>
-          <kbd className="docsearch-modal-footer-commands-key pr-1">
+          <kbd className="coco-modal-footer-commands-key pr-1">
             <Command className="w-3 h-3" />
           </kbd>
-          <kbd className="docsearch-modal-footer-commands-key pr-1">
+          <kbd className="coco-modal-footer-commands-key pr-1">
             <ArrowDown01 className="w-3 h-3" />
           </kbd>
         </div>
         <div className="flex items-center text-[#666] dark:text-[#666] text-sm">
           <span className="mr-1.5 ">Open</span>
-          <kbd className="docsearch-modal-footer-commands-key pr-1">
+          <kbd className="coco-modal-footer-commands-key pr-1">
             <CornerDownLeft className="w-3 h-3" />
           </kbd>
         </div>
