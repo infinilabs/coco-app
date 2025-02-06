@@ -29,11 +29,11 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const [total, setTotal] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  let isKeyboardNav: boolean = false;
+  const [isKeyboardMode, setIsKeyboardMode] = useState(false);
 
   const { data, loading } = useInfiniteScroll(
     async (d) => {
-      const from = d?.list.length || 0;
+      const from = d?.list?.length || 0;
 
       let queryStrings: any = {
         query: input,
@@ -56,26 +56,26 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         const list = response?.hits || [];
         const total = response?.total_hits || 0;
 
-
         setTotal(total);
-
-        getDocDetail(list[0] || {});
+        if (from === 0) {
+          getDocDetail(list[0]?.document || {});
+        }
 
         return {
-          list,
-          hasMore: from + list.length < total,
+          list: list,
+          hasMore: list.length === PAGE_SIZE,
         };
       } catch (error) {
         console.error("Failed to fetch documents:", error);
         return {
-          list: [],
+          list: d?.list || [],
           hasMore: false,
         };
       }
     },
     {
       target: containerRef,
-      isNoMore: (d) => (d?.list.length || 0) >= total,
+      isNoMore: (d) => !d?.hasMore,
       reloadDeps: [input, JSON.stringify(sourceData)],
       onBefore: () => {
         setTimeout(() => {
@@ -108,18 +108,16 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
   const onMouseEnter = useCallback(
     (index: number, item: any) => {
-      if (isKeyboardNav) {
-        isKeyboardNav = false;
-        return;
-      }
+      if (isKeyboardMode) return;
       getDocDetail(item);
       setSelectedItem(index);
     },
-    [isKeyboardNav]
+    [isKeyboardMode, getDocDetail]
   );
 
   useEffect(() => {
     setSelectedItem(null);
+    setIsKeyboardMode(false);
   }, [isChatMode, input]);
 
   const handleOpenURL = async (url: string) => {
@@ -139,13 +137,13 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       if (!data?.list?.length) return;
 
       if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-        isKeyboardNav = true;
         e.preventDefault();
+        setIsKeyboardMode(true);
 
         if (e.key === "ArrowUp") {
           setSelectedItem((prev) => {
             const newIndex = prev === null || prev === 0 ? 0 : prev - 1;
-            getDocDetail(data.list[newIndex]);
+            getDocDetail(data.list[newIndex]?.document);
             return newIndex;
           });
         } else {
@@ -156,7 +154,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                 : prev === data.list.length - 1
                 ? prev
                 : prev + 1;
-            getDocDetail(data.list[newIndex]);
+            getDocDetail(data.list[newIndex]?.document);
             return newIndex;
           });
         }
@@ -171,22 +169,19 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         }
       }
     },
-    [data, selectedItem]
+    [data, selectedItem, getDocDetail]
   );
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    const handleMouseMove = () => {
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        isKeyboardNav = false;
-      }, 150);
+    const handleMouseMove = (e: MouseEvent) => {
+      if (e.movementX !== 0 || e.movementY !== 0) {
+        setIsKeyboardMode(false);
+      }
     };
 
     window.addEventListener("mousemove", handleMouseMove);
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
-      clearTimeout(timer);
     };
   }, []);
 

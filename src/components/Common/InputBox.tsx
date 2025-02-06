@@ -107,7 +107,7 @@ export default function ChatInput({
   useEffect(() => {
     const setupListener = async () => {
       const unlisten = await listen("tauri://focus", () => {
-        console.log("Window focused!");
+        // console.log("Window focused!");
         if (isChatMode) {
           textareaRef.current?.focus();
         } else {

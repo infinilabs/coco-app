@@ -97,7 +97,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
       // Notify other windows to update the theme
       try {
-        console.log("theme-changed", displayTheme);
+        // console.log("theme-changed", displayTheme);
         await emit("theme-changed", { theme: displayTheme });
       } catch (err) {
         console.error("Failed to emit theme-changed event:", err);
@@ -138,7 +138,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const setupListener = async () => {
       unlisten = await listen("theme-changed", (event: any) => {
-        console.log("Theme updated to:", event.payload);
+        // console.log("Theme updated to:", event.payload);
         changeClassTheme(event.payload.theme)
       });
     };
