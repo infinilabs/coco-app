@@ -18,6 +18,7 @@ import StopIcon from "@/icons/Stop";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { isMac } from "@/utils/platform";
+import { Search } from 'lucide-react';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -201,12 +202,18 @@ export default function ChatInput({
     <div className="w-full relative">
       <div className="p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded transition-all relative">
         <div className="flex flex-wrap gap-2 flex-1 items-center relative">
-          {!isChatMode && sourceData ? (
-            <ArrowBigLeft
-              className="w-4 h-4 text-[#000] dark:text-[#d8d8d8] cursor-pointer"
-              onClick={() => setSourceData(undefined)}
-            />
-          ) : null}
+          {!isChatMode && !sourceData ? (
+              <Search
+                  className="w-4 h-4 text-[#ccc] dark:text-[#d8d8d8]"
+              />
+          ) : (
+              !isChatMode && sourceData ? (
+                  <ArrowBigLeft
+                      className="w-4 h-4 text-[#ccc] dark:text-[#d8d8d8] cursor-pointer"
+                      onClick={() => setSourceData(undefined)}
+                  />
+              ) : null
+          )}
 
           {isChatMode ? (
             <AutoResizeTextarea

@@ -193,8 +193,7 @@ function DropdownList({
 
               {showIndex && sourceName === selectedName ? (
                 <div
-                  className={`absolute right-2
-                      w-4 h-4 flex items-end justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
+                  className={`bg-[#ccc] dark:bg-[#6B6B6B] `}
                 >
                   →
                 </div>
@@ -226,9 +225,7 @@ function DropdownList({
                 <div className="flex gap-2 items-center justify-start max-w-[450px]">
                   <ItemIcon item={item} />
                   <span
-                    className={`text-sm  truncate text-left ${isSelected ? "font-medium" : ""
-                      }`}
-                  >
+                    className={`text-sm  truncate text-left`} >
                     {item?.title}
                   </span>
                 </div>
