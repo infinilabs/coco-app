@@ -3,6 +3,7 @@ mod common;
 mod server;
 mod shortcut;
 mod util;
+mod search;
 
 use crate::server::servers::{load_or_insert_default_server, load_servers_token};
 use autostart::{change_autostart, enable_autostart};
@@ -98,7 +99,7 @@ pub fn run() {
             server::profile::get_user_profiles,
             server::datasource::get_datasources_by_server,
             server::connector::get_connectors_by_server,
-            server::search::query_coco_servers,
+            search::query_coco_fusion,
             // server::get_coco_server_health_info,
             // server::get_coco_servers_health_info,
             // server::get_user_profiles,

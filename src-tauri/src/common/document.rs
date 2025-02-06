@@ -1,34 +1,34 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug,Clone, Serialize, Deserialize)]
 pub struct RichLabel {
     pub label: Option<String>,
     pub key: Option<String>,
     pub icon: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug,Clone, Serialize, Deserialize)]
 pub struct DataSourceReference {
     pub r#type: Option<String>,
     pub name: Option<String>,
     pub id: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug,Clone, Serialize, Deserialize)]
 pub struct UserInfo {
     pub avatar: Option<String>,
     pub username: Option<String>,
     pub userid: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug,Clone, Serialize, Deserialize)]
 pub struct EditorInfo {
     pub user: UserInfo,
     pub timestamp: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug,Clone, Serialize, Deserialize)]
 pub struct Document {
     pub id: String,
     pub created: Option<String>,

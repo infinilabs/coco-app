@@ -1,5 +1,5 @@
 use crate::common::datasource::DataSource;
-use crate::common::search_response::parse_search_results;
+use crate::common::search::parse_search_results;
 use crate::server::connector::{fetch_connectors_by_server, get_connector_by_id, get_connectors_by_server, get_connectors_from_cache_or_remote};
 use crate::server::http_client::HttpClient;
 use crate::server::servers::{get_all_servers, list_coco_servers};
@@ -38,7 +38,7 @@ pub async fn refresh_all_datasources<R: Runtime>(
 
     let servers = get_all_servers();
 
-    let mut serverMap = HashMap::new();
+    let mut server_map = HashMap::new();
 
     for server in servers {
         dbg!("fetch datasources for server: {}", &server.id);
@@ -74,14 +74,14 @@ pub async fn refresh_all_datasources<R: Runtime>(
             }
         }
 
-        serverMap.insert(server.id.clone(), new_map);
+        server_map.insert(server.id.clone(), new_map);
     }
 
     // Perform a read operation after all writes are done
     let cache_size = {
         let mut cache = DATASOURCE_CACHE.write().unwrap();
         cache.clear();
-        cache.extend(serverMap);
+        cache.extend(server_map);
         cache.len()
     };
     dbg!("datasource_map size: {:?}", cache_size);
@@ -129,7 +129,7 @@ pub async fn get_datasources_by_server<R: Runtime>(
     //     }
     // }
 
-    dbg!("Parsed datasources: {:?}", &datasources);
+    // dbg!("Parsed datasources: {:?}", &datasources);
 
     // Save the updated datasources to cache
     save_datasource_to_cache(&id, datasources.clone());

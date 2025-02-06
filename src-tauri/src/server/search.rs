@@ -1,42 +1,40 @@
+use crate::common::document::Document;
+use crate::common::server::Server;
+use crate::common::traits::{SearchError, SearchSource};
+use crate::server::http_client::HttpClient;
+use crate::server::servers::get_server_token;
+use async_trait::async_trait;
+use futures::stream::StreamExt;
+use ordered_float::OrderedFloat;
+use reqwest::{Client, Method, RequestBuilder};
 use std::collections::HashMap;
 use std::hash::Hash;
-use ordered_float::OrderedFloat;
-use reqwest::Method;
-use serde::Serialize;
-use tauri::{AppHandle, Runtime};
-use serde_json::Map as JsonMap;
-use serde_json::Value as Json;
-use crate::server::http_client::{HttpClient, HTTP_CLIENT};
-use crate::server::servers::{get_all_servers, get_server_token, get_servers_as_hashmap};
-use futures::stream::{FuturesUnordered, StreamExt};
-use crate::common::document::Document;
-use crate::common::search_response::parse_search_results_with_score;
-use crate::common::server::Server;
-
-struct DocumentsSizedCollector {
+use std::pin::Pin;
+use crate::common::search::{parse_search_response, QueryHits, QueryResponse, QuerySource, SearchQuery};
+pub(crate) struct DocumentsSizedCollector {
     size: u64,
     /// Documents and scores
     ///
     /// Sorted by score, in descending order. (Server ID, Document, Score)
-    docs: Vec<(String, Document, OrderedFloat<f64>)>,
+    docs: Vec<(Option<String>, Document, OrderedFloat<f64>)>,
 }
 
 impl DocumentsSizedCollector {
-    fn new(size: u64) -> Self {
+    pub(crate) fn new(size: u64) -> Self {
         // there will be size + 1 documents in docs at max
         let docs = Vec::with_capacity((size + 1) as usize);
 
         Self { size, docs }
     }
 
-    fn push(&mut self, server_id: String, item: Document, score: f64) {
+    pub(crate) fn push(&mut self, source: Option<String>, item: Document, score: f64) {
         let score = OrderedFloat(score);
         let insert_idx = match self.docs.binary_search_by(|(_, _, s)| score.cmp(s)) {
             Ok(idx) => idx,
             Err(idx) => idx,
         };
 
-        self.docs.insert(insert_idx, (server_id, item, score));
+        self.docs.insert(insert_idx, (source, item, score));
 
         // Ensure we do not exceed `size`
         if self.docs.len() as u64 > self.size {
@@ -49,16 +47,20 @@ impl DocumentsSizedCollector {
     }
 
     // New function to return documents grouped by server_id
-    fn documents_by_server_id(self, x: &HashMap<String, Server>) -> Vec<QueryHits> {
+    pub(crate) fn documents_with_sources(self, x: &HashMap<String, QuerySource>) -> Vec<QueryHits> {
         let mut grouped_docs: Vec<QueryHits> = Vec::new();
 
-        for (server_id, doc, _) in self.docs.into_iter() {
-            let source= QuerySource {
-                r#type: Some("coco-server".to_string()),
-                name: Some(x.get(&server_id).map(|s| s.name.clone()).unwrap_or_default()),
-                id: Some(server_id.clone()),
+        for (source_id, doc, _) in self.docs.into_iter() {
+            // Try to get the source from the hashmap
+            let source = if let Some(source) = source_id {
+                // Safely retrieve the source from the map
+                x.get(&source).cloned()
+            } else {
+                // Handle case when source_id is None
+                None
             };
 
+            // Push the document and source into the result
             grouped_docs.push(QueryHits {
                 source,
                 document: doc,
@@ -69,148 +71,96 @@ impl DocumentsSizedCollector {
     }
 }
 
-#[derive(Debug, Serialize)]
-pub struct QuerySource{
-    pub r#type: Option<String>, //coco-server/local/ etc.
-    pub name: Option<String>, //coco server's name, local computer name, etc.
-    pub id: Option<String>, //coco server's id
+const COCO_SERVERS: &str = "coco-servers";
+
+pub struct CocoSearchSource {
+    server: Server,
+    client: Client,
 }
 
-#[derive(Debug, Serialize)]
-pub struct QueryHits {
-    pub source: QuerySource,
-    pub document: Document,
-}
+impl CocoSearchSource {
+    pub fn new(server: Server, client: Client) -> Self {
+        CocoSearchSource { server, client }
+    }
 
-#[derive(Debug, Serialize)]
-pub struct FailedRequest{
-    pub source: QuerySource,
-    pub status: u16,
-    pub error: Option<String>,
-    pub reason: Option<String>,
-}
+    fn build_request_from_query(&self, query: &SearchQuery) -> RequestBuilder {
+        self.build_request(query.from, query.size, &query.query_strings)
+    }
 
-#[derive(Debug, Serialize)]
-pub struct QueryResponse {
-    failed: Vec<FailedRequest>,
-    hits: Vec<QueryHits>,
-    total_hits: usize,
-}
+    fn build_request(&self, from: u64, size: u64, query_strings: &HashMap<String, String>) -> RequestBuilder {
+        let url = HttpClient::join_url(&self.server.endpoint, "/query/_search");
+        let mut request_builder = self.client.request(Method::GET, url);
 
-
-#[tauri::command]
-pub async fn query_coco_servers<R: Runtime>(
-    app_handle: AppHandle<R>,
-    from: u64,
-    size: u64,
-    query_strings: HashMap<String, String>,
-) -> Result<QueryResponse, ()> {
-    println!(
-        "DBG: query_coco_servers, from: {} size: {} query_strings {:?}",
-        from, size, query_strings
-    );
-
-    let coco_servers = get_servers_as_hashmap();
-    let mut futures = FuturesUnordered::new();
-    let size_for_each_request = (from + size).to_string();
-
-    for (_, server) in &coco_servers {
-        let url = HttpClient::join_url(&server.endpoint, "/query/_search");
-        let client = HTTP_CLIENT.lock().await; // Acquire the lock on HTTP_CLIENT
-        let mut request_builder = client.request(Method::GET, url);
-
-        if !server.public {
-            if let Some(token) = get_server_token(&server.id).map(|t| t.access_token) {
+        if !self.server.public {
+            if let Some(token) = get_server_token(&self.server.id).map(|t| t.access_token) {
                 request_builder = request_builder.header("X-API-TOKEN", token);
             }
         }
-        let query_strings_cloned = query_strings.clone(); // Clone for each iteration
 
-        let from = from.to_string();
-        let size = size_for_each_request.clone();
-        let future = async move {
-            let response = request_builder
-                .query(&[("from", from.as_str()), ("size", size.as_str())])
-                .query(&query_strings_cloned) // Use cloned instance
-                .send()
-                .await;
-            (server.id.clone(), response)
-        };
-
-        futures.push(future);
+        request_builder.query(&[("from", &from.to_string()), ("size", &size.to_string())])
+            .query(query_strings)
     }
+}
 
-    let mut total_hits = 0;
-    let mut failed_requests:Vec<FailedRequest> = Vec::new();
-    let mut docs_collector = DocumentsSizedCollector::new(size);
+#[async_trait]
+impl SearchSource for CocoSearchSource {
+    fn search(
+        &self,
+        query: SearchQuery,
+    ) -> Pin<Box<dyn std::future::Future<Output = Result<QueryResponse, SearchError>> + Send>> {
+        let server_id = self.server.id.clone();
+        let server_name = self.server.name.clone();
+        let request_builder = self.build_request_from_query(&query);
 
-    // Helper function to create failed request
-    fn create_failed_request(server_id: &str, coco_servers: &HashMap<String,Server>, error: &str, status: u16) -> FailedRequest {
-        FailedRequest {
-            source: QuerySource {
-                r#type: Some("coco-server".to_string()),
-                name: Some(coco_servers.get(server_id).map(|s| s.name.clone()).unwrap_or_default()),
-                id: Some(server_id.to_string()),
-            },
-            status,
-            error: Some(error.to_string()),
-            reason: None,
-        }
-    }
+        Box::pin(async move {
+            // Send the HTTP request asynchronously
+            let response = request_builder.send().await;
 
-    // Iterate over the stream of futures
-    while let Some((server_id, res_response)) = futures.next().await {
-        match res_response {
-            Ok(response) => {
-                let status_code = response.status().as_u16();
+            match response {
+                Ok(response) => {
+                    let status_code = response.status().as_u16();
 
-                // Check if the status code indicates a successful request (2xx)
-                if status_code >= 200 && status_code < 400 {
-                    // Parse the response only if the status code is success
-                    match parse_search_results_with_score(response).await {
-                        Ok(documents) => {
-                            total_hits += documents.len();  // No need for `&` here, as `len` is `usize`
-                            for (doc, score) in documents {
-                                let score = score.unwrap_or(0.0) as f64;
-                                docs_collector.push(server_id.clone(), doc, score);
+                    if status_code >= 200 && status_code < 400 {
+                        // Parse the response only if the status code is successful
+                        match parse_search_response(response).await {
+                            Ok(response) => {
+                                let total_hits = response.hits.total.value as usize;
+                                let hits: Vec<(Document, f64)> = response.hits.hits.into_iter()
+                                    .map(|hit| {
+                                        // Handling Option<f64> in hit._score by defaulting to 0.0 if None
+                                        (hit._source, hit._score.unwrap_or(0.0))  // Use 0.0 if _score is None
+                                    })
+                                    .collect();
+
+                                // Return the QueryResponse with hits and total hits
+                                return Ok(QueryResponse {
+                                    source: QuerySource {
+                                        r#type: Some(COCO_SERVERS.into()),  // Ensure COCO_SERVERS is a valid constant or value
+                                        name: Some(server_name.clone()),
+                                        id: Some(server_id.clone()),
+                                    },
+                                    hits,
+                                    total_hits,
+                                });
+                            }
+                            Err(err) => {
+                                // Parse error when response parsing fails
+                                Err(SearchError::ParseError(err.to_string()))
                             }
                         }
-                        Err(err) => {
-                            failed_requests.push(create_failed_request(
-                                &server_id, &coco_servers, &err.to_string(), status_code,
-                            ));
-                        }
+                    } else {
+                        // Handle unsuccessful HTTP status codes (e.g., 4xx, 5xx)
+                        Err(SearchError::HttpError(format!(
+                            "Request failed with status code: {}",
+                            status_code
+                        )))
                     }
-                } else {
-                    // If status code is not successful, log the failure
-                    failed_requests.push(create_failed_request(
-                        &server_id, &coco_servers, "Unsuccessful response", status_code,
-                    ));
+                }
+                Err(err) => {
+                    // Handle error from the request itself
+                    Err(SearchError::HttpError(err.to_string()))
                 }
             }
-            Err(err) => {
-                // Handle the error from the future itself
-                failed_requests.push(create_failed_request(
-                    &server_id, &coco_servers, &err.to_string(), 0,
-                ));
-            }
-        }
+        })
     }
-
-    let docs = docs_collector.documents_by_server_id(&coco_servers);
-
-    // dbg!(&total_hits);
-    // dbg!(&failed_requests);
-    // dbg!(&docs);
-
-    let query_response = QueryResponse {
-        failed: failed_requests,
-        hits: docs,
-        total_hits,
-    };
-
-    //print to json
-    // println!("{}", serde_json::to_string_pretty(&query_response).unwrap());
-
-    Ok(query_response)
 }

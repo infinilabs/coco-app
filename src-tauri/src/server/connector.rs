@@ -1,5 +1,5 @@
 use crate::common::connector::Connector;
-use crate::common::search_response::parse_search_results;
+use crate::common::search::parse_search_results;
 use crate::server::http_client::HttpClient;
 use crate::server::servers::{get_all_servers, list_coco_servers};
 use lazy_static::lazy_static;
@@ -98,7 +98,7 @@ pub async fn get_connectors_from_cache_or_remote(server_id: &str) -> Result<Vec<
 }
 
 pub async fn fetch_connectors_by_server(id: &str) -> Result<Vec<Connector>, String> {
-    dbg!("start get_connectors_by_server: id =", &id);
+    // dbg!("start get_connectors_by_server: id =", &id);
 
     // Use the generic GET method from HttpClient
     let resp = HttpClient::get(&id, "/connector/_search")
@@ -108,9 +108,9 @@ pub async fn fetch_connectors_by_server(id: &str) -> Result<Vec<Connector>, Stri
             format!("Error fetching connector: {}", e)
         })?;
 
-    // Log the raw response status and headers
-    dbg!("Response status: {:?}", resp.status());
-    dbg!("Response headers: {:?}", resp.headers());
+    // // Log the raw response status and headers
+    // dbg!("Response status: {:?}", resp.status());
+    // dbg!("Response headers: {:?}", resp.headers());
 
     // Ensure the response body is not empty or invalid
     if resp.status().is_success() {
@@ -131,7 +131,7 @@ pub async fn fetch_connectors_by_server(id: &str) -> Result<Vec<Connector>, Stri
     // Save the connectors to the cache
     save_connectors_to_cache(&id, datasources.clone());
 
-    dbg!("end get_connectors_by_server: id =", &id);
+    // dbg!("end get_connectors_by_server: id =", &id);
     return Ok(datasources);
 }
 

@@ -47,7 +47,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       }
 
       try {
-        const response: any = await invoke("query_coco_servers", {
+        const response: any = await invoke("query_coco_fusion", {
           from: from,
           size: PAGE_SIZE,
           queryStrings,
