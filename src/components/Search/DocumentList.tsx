@@ -56,10 +56,9 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         const list = response?.hits || [];
         const total = response?.total_hits || 0;
 
+        // console.log("docs:", list, total);
+
         setTotal(total);
-        if (from === 0) {
-          getDocDetail(list[0]?.document || {});
-        }
 
         return {
           list: list,
@@ -77,19 +76,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       target: containerRef,
       isNoMore: (d) => !d?.hasMore,
       reloadDeps: [input, JSON.stringify(sourceData)],
-      onBefore: () => {
-        setTimeout(() => {
-          const parentRef = containerRef.current;
-          if (parentRef && parentRef.childElementCount > 10) {
-            const itemHeight =
-              (parentRef.firstChild as HTMLElement)?.offsetHeight || 80;
-            parentRef.scrollTo({
-              top: (parentRef.lastChild as HTMLElement)?.offsetTop - itemHeight,
-              behavior: "instant",
-            });
-          }
-        });
-      },
       onFinally: (data) => onFinally(data, containerRef),
     }
   );
@@ -97,12 +83,16 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const onFinally = (data: any, ref: any) => {
     if (data?.page === 1) return;
     const parentRef = ref.current;
-    if (!parentRef) return;
-    const itemHeight = parentRef.firstChild?.offsetHeight || 80;
-    parentRef.scrollTo({
-      top:
-        parentRef.lastChild?.offsetTop - (data?.list?.length + 1) * itemHeight,
-      behavior: "instant",
+    if (!parentRef || selectedItem === null) return;
+
+    const targetElement = itemRefs.current[selectedItem];
+    if (!targetElement) return;
+
+    requestAnimationFrame(() => {
+      targetElement.scrollIntoView({
+        behavior: "instant",
+        block: "nearest",
+      });
     });
   };
 
@@ -195,9 +185,11 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
   useEffect(() => {
     if (selectedItem !== null && itemRefs.current[selectedItem]) {
-      itemRefs.current[selectedItem]?.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
+      requestAnimationFrame(() => {
+        itemRefs.current[selectedItem]?.scrollIntoView({
+          behavior: "instant",
+          block: "nearest",
+        });
       });
     }
   }, [selectedItem]);
@@ -233,11 +225,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
             >
               <div className="flex gap-2 items-center flex-1 min-w-0">
                 <ItemIcon item={item} />
-                <span
-                  className={`text-sm truncate`}
-                >
-                  {item?.title}
-                </span>
+                <span className={`text-sm truncate`}>{item?.title}</span>
               </div>
             </div>
           );
