@@ -4,6 +4,7 @@ import {
   // AppWindowMac,
   CornerDownLeft,
 } from "lucide-react";
+import { emit } from "@tauri-apps/api/event";
 
 import logoImg from "@/assets/app-icon.png";
 import source_default_img from "@/assets/images/source_default.png";
@@ -59,6 +60,10 @@ export default function Footer({ }: FooterProps) {
     }
   }
 
+  function openSetting() {
+    emit("open_settings", "");
+  }
+
   return (
     <div
       data-tauri-drag-region
@@ -69,7 +74,7 @@ export default function Footer({ }: FooterProps) {
           {sourceData?.source?.name ? (
             <img className="w-5 h-5" src={getTypeIcon(sourceData)} alt="icon" />
           ) : (
-            <img src={logoImg} className="w-5 h-5" />
+            <img src={logoImg} className="w-5 h-5 cursor-pointer" onClick={openSetting}/>
           )}
           <span className="text-xs text-gray-500 dark:text-gray-400">
             {sourceData?.source?.name || "Version 1.0.0"}
