@@ -33,8 +33,8 @@ function DropdownList({
   IsError,
   isChatMode,
 }: DropdownListProps) {
-  const globalIndex = useRef(0);
-  const globalItemIndexMap = useRef<any[]>([]);
+  let globalIndex = 0;
+  const globalItemIndexMap: any[] = [];
 
   const setSourceData = useSearchStore((state: { setSourceData: any; }) => state.setSourceData);
 
@@ -88,7 +88,7 @@ function DropdownList({
     } else if (e.key === "Meta") {
       e.preventDefault();
       if (selectedItem !== null) {
-        const item = globalItemIndexMap.current[selectedItem];
+        const item = globalItemIndexMap[selectedItem];
         setSelectedName(item?.source?.name);
       }
       setShowIndex(true);
@@ -96,13 +96,13 @@ function DropdownList({
 
     if (e.key === "ArrowRight" && selectedItem !== null) {
       e.preventDefault();
-      const item = globalItemIndexMap.current[selectedItem];
+      const item = globalItemIndexMap[selectedItem];
       goToTwoPage(item);
     }
 
     if (e.key === "Enter" && selectedItem !== null) {
       // console.log("Enter key pressed", selectedItem);
-      const item = globalItemIndexMap.current[selectedItem];
+      const item = globalItemIndexMap[selectedItem];
       if (item?.url) {
         handleOpenURL(item?.url);
       } else {
@@ -112,7 +112,7 @@ function DropdownList({
 
     if (e.key >= "0" && e.key <= "9" && showIndex) {
       // console.log(`number ${e.key}`);
-      const item = globalItemIndexMap.current[parseInt(e.key, 10)];
+      const item = globalItemIndexMap[parseInt(e.key, 10)];
       if (item?.url) {
         handleOpenURL(item?.url);
       } else {
@@ -202,10 +202,10 @@ function DropdownList({
             </div>
           ) : null}
           {items.map((item: any, index: number) => {
-            const isSelected = selectedItem === globalIndex.current;
-            const currentIndex = globalIndex.current;
-            globalItemIndexMap.current.push(item);
-            globalIndex.current++;
+            const isSelected = selectedItem === globalIndex;
+            const currentIndex = globalIndex;
+            globalItemIndexMap.push(item);
+            globalIndex++;
             return (
               <div
                 key={item.id + index}
@@ -218,7 +218,7 @@ function DropdownList({
                     selected(item);
                   }
                 }}
-                className={`w-full px-2 py-2.5 text-sm flex gap-7 items-center justify-between rounded-lg transition-colors ${isSelected
+                className={`w-full px-2 py-2.5 text-sm flex gap-7 items-center justify-between rounded-lg transition-colors cursor-pointer ${isSelected
                   ? "text-white bg-[#950599] hover:bg-[#950599]"
                   : "text-[#333] dark:text-[#d8d8d8]"
                   }`}

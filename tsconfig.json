@@ -19,8 +19,7 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true
+    "allowSyntheticDefaultImports": true
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
