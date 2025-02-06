@@ -98,10 +98,11 @@ pub async fn query_coco_servers<R: Runtime>(
         }
         let query_strings_cloned = query_strings.clone(); // Clone for each iteration
 
+        let from = from.to_string();
         let size=size_for_each_request.clone();
         let future = async move {
             let response = request_builder
-                .query(&[("from", "0"), ("size", size.as_str())])
+                .query(&[("from", from.as_str()), ("size", size.as_str())])
                 .query(&query_strings_cloned) // Use cloned instance
                 .send()
                 .await;
