@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useInfiniteScroll } from "ahooks";
 import { isTauri, invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-shell";
@@ -29,6 +29,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const [total, setTotal] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  let isKeyboardNav: boolean = false;
 
   const { data, loading } = useInfiniteScroll(
     async (d) => {
@@ -106,10 +107,17 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     });
   };
 
-  function onMouseEnter(index: number, item: any) {
-    getDocDetail(item);
-    setSelectedItem(index);
-  }
+  const onMouseEnter = useCallback(
+    (index: number, item: any) => {
+      if (isKeyboardNav) {
+        isKeyboardNav = false;
+        return;
+      }
+      getDocDetail(item);
+      setSelectedItem(index);
+    },
+    [isKeyboardNav]
+  );
 
   useEffect(() => {
     setSelectedItem(null);
@@ -127,28 +135,61 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     }
   };
 
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (!data?.list?.length) return;
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (!data?.list?.length) return;
 
-    if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setSelectedItem((prev) => (prev === null || prev === 0 ? 0 : prev - 1));
-    } else if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setSelectedItem((prev) =>
-        prev === null ? 0 : prev === data?.list?.length - 1 ? prev : prev + 1
-      );
-    } else if (e.key === "Meta") {
-      e.preventDefault();
-    }
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        isKeyboardNav = true;
+        e.preventDefault();
 
-    if (e.key === "Enter" && selectedItem !== null) {
-      const item = data?.list?.[selectedItem];
-      if (item?.url) {
-        handleOpenURL(item?.url);
+        if (e.key === "ArrowUp") {
+          setSelectedItem((prev) => {
+            const newIndex = prev === null || prev === 0 ? 0 : prev - 1;
+            getDocDetail(data.list[newIndex]);
+            return newIndex;
+          });
+        } else {
+          setSelectedItem((prev) => {
+            const newIndex =
+              prev === null
+                ? 0
+                : prev === data.list.length - 1
+                ? prev
+                : prev + 1;
+            getDocDetail(data.list[newIndex]);
+            return newIndex;
+          });
+        }
+      } else if (e.key === "Meta") {
+        e.preventDefault();
       }
-    }
-  };
+
+      if (e.key === "Enter" && selectedItem !== null) {
+        const item = data?.list?.[selectedItem];
+        if (item?.url) {
+          handleOpenURL(item?.url);
+        }
+      }
+    },
+    [data, selectedItem]
+  );
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    const handleMouseMove = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        isKeyboardNav = false;
+      }, 150);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      clearTimeout(timer);
+    };
+  }, []);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -156,7 +197,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [selectedItem]);
+  }, [handleKeyDown]);
 
   useEffect(() => {
     if (selectedItem !== null && itemRefs.current[selectedItem]) {
@@ -196,7 +237,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
               }`}
             >
               <div className="flex gap-2 items-center flex-1 min-w-0">
-
                 <ItemIcon item={item} />
                 <span
                   className={`text-sm truncate ${
