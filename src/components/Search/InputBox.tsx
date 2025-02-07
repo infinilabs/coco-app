@@ -20,6 +20,8 @@ import { useSearchStore } from "@/stores/searchStore";
 import { isMac } from "@/utils/platform";
 import { Search } from 'lucide-react';
 
+console.log("isMac", isMac);
+
 interface ChatInputProps {
   onSend: (message: string) => void;
   disabled: boolean;

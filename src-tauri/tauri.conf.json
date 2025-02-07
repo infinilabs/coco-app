@@ -94,6 +94,7 @@
       "desktop": {
         "schemes": ["coco"]
       }
-    }
+    },
+    "os": {}
   }
 }

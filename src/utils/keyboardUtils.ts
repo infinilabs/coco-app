@@ -1,5 +1,6 @@
 // Platform detection
 export const isMac = navigator.platform.toLowerCase().includes('mac');
+console.log("isMac2", isMac, navigator.platform.toLowerCase());
 
 // Mapping of keys to their display symbols
 export const KEY_SYMBOLS: Record<string, string> = {

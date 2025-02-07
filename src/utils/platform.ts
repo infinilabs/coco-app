@@ -4,7 +4,8 @@ export const isWeb = !("__TAURI_OS_PLUGIN_INTERNALS__" in window);
 export const isMobile = isWeb ? navigator.userAgent.toLowerCase().includes("mobile") : platform() === "android";
 export const isDesktop = !isMobile;
 // debugger
-export const isMac = !(!isWeb && platform() === "macos");
+console.log("platform", platform());
+export const isMac = !isWeb && platform() === "macos";
 export const appScale = isMobile ? 0.5 : 1;
 
 export function family() {
