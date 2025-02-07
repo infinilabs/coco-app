@@ -13,6 +13,10 @@
 
 	<key>NSPrefPaneIconLabel</key>
 	<string>coco-ai</string>
+
+	<key>LSUIElement</key>
+    <true/>
+
   <key>CFBundleURLTypes</key>
   <array>
     <dict>

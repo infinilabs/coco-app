@@ -6,8 +6,11 @@ mod util;
 mod local;
 mod search;
 
+mod setup;
+
 use crate::common::register::SearchSourceRegistry;
 use crate::common::traits::SearchSource;
+use crate::common::{MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL};
 use crate::server::search::CocoSearchSource;
 use crate::server::servers::{load_or_insert_default_server, load_servers_token};
 use autostart::{change_autostart, enable_autostart};
@@ -19,15 +22,13 @@ use tauri::{AppHandle, Emitter, Listener, Manager, Runtime, WebviewWindow};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_deep_link::DeepLinkExt;
 use tokio::runtime::Runtime as RT;
-// Add this import
-// Add this import
 
 /// Tauri store name
 pub(crate) const COCO_TAURI_STORE: &str = "coco_tauri_store";
 
 #[tauri::command]
 fn change_window_height(handle: AppHandle, height: u32) {
-    let window: WebviewWindow = handle.get_webview_window("main").unwrap();
+    let window: WebviewWindow = handle.get_webview_window(MAIN_WINDOW_LABEL).unwrap();
 
     let mut size = window.outer_size().unwrap();
     size.height = height;
@@ -73,8 +74,7 @@ pub fn run() {
     let mut ctx = tauri::generate_context!();
 
     tauri::Builder::default()
-        // .plugin(tauri_nspanel::init())
-        .plugin(tauri_plugin_oauth::init())
+        .plugin(tauri_nspanel::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_autostart::init(
@@ -153,6 +153,9 @@ pub fn run() {
                 dbg!(event.urls());
             });
 
+            let main_window = app.get_webview_window(MAIN_WINDOW_LABEL).unwrap();
+            let settings_window = app.get_webview_window(SETTINGS_WINDOW_LABEL).unwrap();
+            setup::default(app, main_window.clone(), settings_window.clone());
 
             Ok(())
         })
@@ -226,7 +229,9 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
 
 #[tauri::command]
 fn hide_coco(app: tauri::AppHandle) {
-    if let Some(window) = app.get_window("main") {
+    dbg!("Hide Coco menu clicked!");
+
+    if let Some(window) = app.get_window(MAIN_WINDOW_LABEL) {
         match window.is_visible() {
             Ok(true) => {
                 if let Err(err) = window.hide() {
@@ -250,8 +255,10 @@ fn hide_coco(app: tauri::AppHandle) {
 fn handle_open_coco(app: &AppHandle) {
     // println!("Open Coco menu clicked!");
 
-    if let Some(window) = app.get_window("main") {
+    if let Some(window) = app.get_window(MAIN_WINDOW_LABEL) {
         window.show().unwrap();
+        window.set_visible_on_all_workspaces(true).unwrap();
+        window.set_always_on_top(true).unwrap();
         window.set_focus().unwrap();
     } else {
         eprintln!("Failed to get main window.");
@@ -261,7 +268,7 @@ fn handle_open_coco(app: &AppHandle) {
 fn handle_hide_coco(app: &AppHandle) {
     // println!("Hide Coco menu clicked!");
 
-    if let Some(window) = app.get_window("main") {
+    if let Some(window) = app.get_window(MAIN_WINDOW_LABEL) {
         if let Err(err) = window.hide() {
             eprintln!("Failed to hide the window: {}", err);
         } else {
