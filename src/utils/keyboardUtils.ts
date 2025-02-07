@@ -6,7 +6,7 @@ export const metaOrCtrlKey = (): string => {
   if (isMac) {
     return "Meta";
   } else {
-    return "Ctrl";
+    return "Control";
   }
 }
 
