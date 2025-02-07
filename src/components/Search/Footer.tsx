@@ -13,13 +13,14 @@ import { useSearchStore } from "@/stores/searchStore";
 import { useAppStore } from "@/stores/appStore";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useConnectStore } from "@/stores/connectStore";
+import { isMac } from "@/utils/keyboardUtils";
 
 interface FooterProps {
   isChat: boolean;
   name?: string;
 }
 
-export default function Footer({ }: FooterProps) {
+export default function Footer({}: FooterProps) {
   const sourceData = useSearchStore((state) => state.sourceData);
 
   const connector_data = useConnectStore((state) => state.connector_data);
@@ -74,7 +75,11 @@ export default function Footer({ }: FooterProps) {
           {sourceData?.source?.name ? (
             <img className="w-5 h-5" src={getTypeIcon(sourceData)} alt="icon" />
           ) : (
-            <img src={logoImg} className="w-5 h-5 cursor-pointer" onClick={openSetting}/>
+            <img
+              src={logoImg}
+              className="w-5 h-5 cursor-pointer"
+              onClick={openSetting}
+            />
           )}
           <span className="text-xs text-gray-500 dark:text-gray-400">
             {sourceData?.source?.name || "Version 1.0.0"}
@@ -92,7 +97,13 @@ export default function Footer({ }: FooterProps) {
         <div className="gap-1 flex items-center text-[#666] dark:text-[#666] text-sm">
           <span className="mr-1.5 ">Quick open</span>
           <kbd className="docsearch-modal-footer-commands-key pr-1">
-            <Command className="w-3 h-3" />
+            {isMac ? (
+              <Command className="w-3 h-3" />
+            ) : (
+              <span className="h-3 leading-3 inline-flex items-center text-xs">
+                Ctrl
+              </span>
+            )}
           </kbd>
           <kbd className="docsearch-modal-footer-commands-key pr-1">
             <ArrowDown01 className="w-3 h-3" />
