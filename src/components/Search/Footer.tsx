@@ -2,13 +2,10 @@ import { ArrowDown01, Command, CornerDownLeft } from "lucide-react";
 import { emit } from "@tauri-apps/api/event";
 
 import logoImg from "@/assets/icon.svg";
-import source_default_img from "@/assets/images/source_default.png";
-import source_default_dark_img from "@/assets/images/source_default_dark.png";
 import { useSearchStore } from "@/stores/searchStore";
-import { useAppStore } from "@/stores/appStore";
-import { useTheme } from "@/contexts/ThemeContext";
-import { useConnectStore } from "@/stores/connectStore";
 import { isMac } from "@/utils/keyboardUtils";
+import TypeIcon from "@/components/Common/Icons/TypeIcon";
+
 interface FooterProps {
   isChat: boolean;
   name?: string;
@@ -16,44 +13,6 @@ interface FooterProps {
 
 export default function Footer({}: FooterProps) {
   const sourceData = useSearchStore((state) => state.sourceData);
-
-  const connector_data = useConnectStore((state) => state.connector_data);
-  const datasourceData = useConnectStore((state) => state.datasourceData);
-
-  const endpoint_http = useAppStore((state) => state.endpoint_http);
-
-  const { theme } = useTheme();
-
-  function findConnectorIcon(item: any) {
-    const id = item?.source?.id || "";
-
-    const result_source = datasourceData[endpoint_http]?.find(
-      (data: any) => data.id === id
-    );
-
-    const connector_id = result_source?.connector?.id;
-
-    const result_connector = connector_data[endpoint_http]?.find(
-      (data: any) => data.id === connector_id
-    );
-
-    return result_connector;
-  }
-
-  function getTypeIcon(item: any) {
-    const connectorSource = findConnectorIcon(item);
-    const icons = connectorSource?.icon;
-
-    if (!icons) {
-      return theme === "dark" ? source_default_dark_img : source_default_img;
-    }
-
-    if (icons?.startsWith("http://") || icons?.startsWith("https://")) {
-      return icons;
-    } else {
-      return endpoint_http + icons;
-    }
-  }
 
   function openSetting() {
     emit("open_settings", "");
@@ -67,7 +26,7 @@ export default function Footer({}: FooterProps) {
       <div className="flex items-center">
         <div className="flex items-center space-x-2">
           {sourceData?.source?.name ? (
-            <img className="w-4 h-4" src={getTypeIcon(sourceData)} alt="icon" />
+            <TypeIcon item={sourceData} className="w-4 h-4" />
           ) : (
             <img
               src={logoImg}
