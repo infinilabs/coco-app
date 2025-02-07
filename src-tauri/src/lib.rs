@@ -3,16 +3,23 @@ mod common;
 mod server;
 mod shortcut;
 mod util;
+mod local;
 mod search;
 
+use crate::common::register::SearchSourceRegistry;
+use crate::common::traits::SearchSource;
+use crate::server::search::CocoSearchSource;
 use crate::server::servers::{load_or_insert_default_server, load_servers_token};
 use autostart::{change_autostart, enable_autostart};
+use reqwest::Client;
+use std::path::PathBuf;
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
 use tauri::{AppHandle, Emitter, Listener, Manager, Runtime, WebviewWindow};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_deep_link::DeepLinkExt;
-use tokio::runtime::Runtime as RT; // Add this import
+use tokio::runtime::Runtime as RT;
+// Add this import
 // Add this import
 
 /// Tauri store name
@@ -107,7 +114,9 @@ pub fn run() {
             // server::get_coco_server_connectors
         ])
         .setup(|app| {
+            let registry = SearchSourceRegistry::default();
 
+            app.manage(registry); // Store registry in Tauri's app state
 
             // Get app handle
             let app_handle = app.handle().clone();
@@ -121,7 +130,6 @@ pub fn run() {
                 init(&app_handle).await; // Pass a reference to `app_handle`
                 dbg!("Async initialization tasks completed");
             });
-
 
 
             shortcut::enable_shortcut(app);
@@ -162,6 +170,29 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
     if let Err(err) = load_servers_token(app_handle).await {
         eprintln!("Failed to load server tokens: {}", err);
     }
+
+    let coco_servers = server::servers::get_all_servers();
+
+    // Get the registry from Tauri's state
+    let registry = app_handle.state::<SearchSourceRegistry>();
+
+    for server in coco_servers {
+        let source = CocoSearchSource::new(server.clone(), Client::new());
+        registry.register_source(source).await;
+    }
+
+
+    let dir = vec![
+        dirs::home_dir().map(|home| home.join("Applications")), // Resolve `~/Applications`
+        Some(PathBuf::from("/Applications")),
+        Some(PathBuf::from("/System/Applications")),
+        Some(PathBuf::from("/System/Applications/Utilities")),
+    ];
+
+    // Remove any `None` values if `home_dir()` fails
+    let app_dirs: Vec<PathBuf> = dir.into_iter().flatten().collect();
+    let application_search = local::application::ApplicationSearchSource::new(1000f64, app_dirs);
+    registry.register_source(application_search).await;
 
     dbg!("Initialization completed");
 

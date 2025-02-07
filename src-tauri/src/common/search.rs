@@ -106,9 +106,9 @@ impl SearchQuery {
 
 #[derive(Debug,Clone, Serialize)]
 pub struct QuerySource{
-    pub r#type: Option<String>, //coco-server/local/ etc.
-    pub name: Option<String>, //coco server's name, local computer name, etc.
-    pub id: Option<String>, //coco server's id
+    pub r#type: String, //coco-server/local/ etc.
+    pub id: String, //coco server's id
+    pub name: String, //coco server's name, local computer name, etc.
 }
 
 #[derive(Debug,Clone, Serialize)]

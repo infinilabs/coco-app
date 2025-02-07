@@ -16,7 +16,7 @@ pub(crate) struct DocumentsSizedCollector {
     /// Documents and scores
     ///
     /// Sorted by score, in descending order. (Server ID, Document, Score)
-    docs: Vec<(Option<String>, Document, OrderedFloat<f64>)>,
+    docs: Vec<(String, Document, OrderedFloat<f64>)>,
 }
 
 impl DocumentsSizedCollector {
@@ -27,7 +27,7 @@ impl DocumentsSizedCollector {
         Self { size, docs }
     }
 
-    pub(crate) fn push(&mut self, source: Option<String>, item: Document, score: f64) {
+    pub(crate) fn push(&mut self, source: String, item: Document, score: f64) {
         let score = OrderedFloat(score);
         let insert_idx = match self.docs.binary_search_by(|(_, _, s)| score.cmp(s)) {
             Ok(idx) => idx,
@@ -52,13 +52,7 @@ impl DocumentsSizedCollector {
 
         for (source_id, doc, _) in self.docs.into_iter() {
             // Try to get the source from the hashmap
-            let source = if let Some(source) = source_id {
-                // Safely retrieve the source from the map
-                x.get(&source).cloned()
-            } else {
-                // Handle case when source_id is None
-                None
-            };
+            let source = x.get(&source_id).cloned();
 
             // Push the document and source into the result
             grouped_docs.push(QueryHits {
@@ -101,66 +95,71 @@ impl CocoSearchSource {
             .query(query_strings)
     }
 }
+use futures::future::join_all;
+use std::sync::Arc;
 
 #[async_trait]
 impl SearchSource for CocoSearchSource {
-    fn search(
+    fn get_type(&self) -> QuerySource {
+        QuerySource {
+            r#type: COCO_SERVERS.into(),
+            name: self.server.name.clone(),
+            id: self.server.id.clone(),
+        }
+    }
+
+    // Directly return Result<QueryResponse, SearchError> instead of Future
+    async fn search(
         &self,
         query: SearchQuery,
-    ) -> Pin<Box<dyn std::future::Future<Output = Result<QueryResponse, SearchError>> + Send>> {
+    ) -> Result<QueryResponse, SearchError> {
         let server_id = self.server.id.clone();
         let server_name = self.server.name.clone();
         let request_builder = self.build_request_from_query(&query);
 
-        Box::pin(async move {
-            // Send the HTTP request asynchronously
-            let response = request_builder.send().await;
+        // Send the HTTP request asynchronously
+        let response = request_builder.send().await;
 
-            match response {
-                Ok(response) => {
-                    let status_code = response.status().as_u16();
+        match response {
+            Ok(response) => {
+                let status_code = response.status().as_u16();
 
-                    if status_code >= 200 && status_code < 400 {
-                        // Parse the response only if the status code is successful
-                        match parse_search_response(response).await {
-                            Ok(response) => {
-                                let total_hits = response.hits.total.value as usize;
-                                let hits: Vec<(Document, f64)> = response.hits.hits.into_iter()
-                                    .map(|hit| {
-                                        // Handling Option<f64> in hit._score by defaulting to 0.0 if None
-                                        (hit._source, hit._score.unwrap_or(0.0))  // Use 0.0 if _score is None
-                                    })
-                                    .collect();
+                if status_code >= 200 && status_code < 400 {
+                    // Parse the response only if the status code is successful
+                    match parse_search_response(response).await {
+                        Ok(response) => {
+                            let total_hits = response.hits.total.value as usize;
+                            let hits: Vec<(Document, f64)> = response.hits.hits.into_iter()
+                                .map(|hit| {
+                                    // Handling Option<f64> in hit._score by defaulting to 0.0 if None
+                                    (hit._source, hit._score.unwrap_or(0.0))  // Use 0.0 if _score is None
+                                })
+                                .collect();
 
-                                // Return the QueryResponse with hits and total hits
-                                return Ok(QueryResponse {
-                                    source: QuerySource {
-                                        r#type: Some(COCO_SERVERS.into()),  // Ensure COCO_SERVERS is a valid constant or value
-                                        name: Some(server_name.clone()),
-                                        id: Some(server_id.clone()),
-                                    },
-                                    hits,
-                                    total_hits,
-                                });
-                            }
-                            Err(err) => {
-                                // Parse error when response parsing fails
-                                Err(SearchError::ParseError(err.to_string()))
-                            }
+                            // Return the QueryResponse with hits and total hits
+                            Ok(QueryResponse {
+                                source: self.get_type(),
+                                hits,
+                                total_hits,
+                            })
                         }
-                    } else {
-                        // Handle unsuccessful HTTP status codes (e.g., 4xx, 5xx)
-                        Err(SearchError::HttpError(format!(
-                            "Request failed with status code: {}",
-                            status_code
-                        )))
+                        Err(err) => {
+                            // Parse error when response parsing fails
+                            Err(SearchError::ParseError(err.to_string()))
+                        }
                     }
-                }
-                Err(err) => {
-                    // Handle error from the request itself
-                    Err(SearchError::HttpError(err.to_string()))
+                } else {
+                    // Handle unsuccessful HTTP status codes (e.g., 4xx, 5xx)
+                    Err(SearchError::HttpError(format!(
+                        "Request failed with status code: {}",
+                        status_code
+                    )))
                 }
             }
-        })
+            Err(err) => {
+                // Handle error from the request itself
+                Err(SearchError::HttpError(err.to_string()))
+            }
+        }
     }
 }

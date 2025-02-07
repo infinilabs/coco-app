@@ -1,20 +1,23 @@
-use crate::common::search::QueryResponse;
+use crate::common::search::{QueryResponse, QuerySource};
 use thiserror::Error;
 
 use async_trait::async_trait;
 use std::{future::Future, pin::Pin};
+use serde::Serialize;
 use crate::common::search::SearchQuery;
 
 #[async_trait]
 pub trait SearchSource: Send + Sync {
-    fn search(
+    fn get_type (&self) -> QuerySource;
+
+    async fn search(
         &self,
         query: SearchQuery,
-    ) -> Pin<Box<dyn Future<Output=Result<QueryResponse, SearchError>> + Send>>;
+    ) -> Result<QueryResponse, SearchError>;
 }
 
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error,Serialize)]
 pub enum SearchError {
     #[error("HTTP request failed: {0}")]
     HttpError(String),
@@ -27,6 +30,9 @@ pub enum SearchError {
 
     #[error("Unknown error: {0}")]
     Unknown(String),
+
+    #[error("InternalError error: {0}")]
+    InternalError(String),
 }
 
 impl From<reqwest::Error> for SearchError {

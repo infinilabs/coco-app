@@ -7,3 +7,4 @@ pub mod connector;
 pub mod search;
 pub mod document;
 pub mod traits;
+pub mod register;

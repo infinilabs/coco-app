@@ -1,7 +1,7 @@
 use crate::common::connector::Connector;
 use crate::common::search::parse_search_results;
 use crate::server::http_client::HttpClient;
-use crate::server::servers::{get_all_servers, list_coco_servers};
+use crate::server::servers::get_all_servers;
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -30,30 +30,30 @@ pub fn get_connector_by_id(server_id: &str, connector_id: &str) -> Option<Connec
 pub async fn refresh_all_connectors<R: Runtime>(
     app_handle: &AppHandle<R>,
 ) -> Result<(), String> {
-    dbg!("Attempting to refresh all connectors");
+    // dbg!("Attempting to refresh all connectors");
 
     let servers = get_all_servers();
 
     // Collect all the tasks for fetching and refreshing connectors
-    let mut serverMap = HashMap::new();
+    let mut server_map = HashMap::new();
     for server in servers {
-        dbg!("start fetch connectors for server: {}", &server.id);
-            let connectors = match get_connectors_by_server(app_handle.clone(), server.id.clone()).await {
-                Ok(connectors) => {
-                    let connectors_map: HashMap<String, Connector> = connectors
-                        .into_iter()
-                        .map(|connector| (connector.id.clone(), connector))
-                        .collect();
-                    connectors_map
-                }
-                Err(e) => {
-                    dbg!("Failed to get connectors for server {}: {}", &server.id, e);
-                    HashMap::new() // Return empty map on failure
-                }
-            };
+        // dbg!("start fetch connectors for server: {}", &server.id);
+        let connectors = match get_connectors_by_server(app_handle.clone(), server.id.clone()).await {
+            Ok(connectors) => {
+                let connectors_map: HashMap<String, Connector> = connectors
+                    .into_iter()
+                    .map(|connector| (connector.id.clone(), connector))
+                    .collect();
+                connectors_map
+            }
+            Err(e) => {
+                // dbg!("Failed to get connectors for server {}: {}", &server.id, e);
+                HashMap::new() // Return empty map on failure
+            }
+        };
 
-            serverMap.insert(server.id.clone(), connectors);
-        dbg!("end fetch connectors for server: {}", &server.id);
+        server_map.insert(server.id.clone(), connectors);
+        // dbg!("end fetch connectors for server: {}", &server.id);
     }
 
     // After all tasks have finished, perform a read operation on the cache
@@ -61,12 +61,12 @@ pub async fn refresh_all_connectors<R: Runtime>(
         // Insert connectors into the cache (async write lock)
         let mut cache = CONNECTOR_CACHE.write().unwrap(); // Async write lock
         cache.clear();
-        cache.extend(serverMap);
+        cache.extend(server_map);
         // let cache = CONNECTOR_CACHE.read().await; // Async read lock
         cache.len()
     };
 
-    dbg!("finished refresh connectors: {:?}", cache_size);
+    // dbg!("finished refresh connectors: {:?}", cache_size);
 
     Ok(())
 }
@@ -104,7 +104,7 @@ pub async fn fetch_connectors_by_server(id: &str) -> Result<Vec<Connector>, Stri
     let resp = HttpClient::get(&id, "/connector/_search")
         .await
         .map_err(|e| {
-            dbg!("Error fetching connector for id {}: {}", &id, &e);
+            // dbg!("Error fetching connector for id {}: {}", &id, &e);
             format!("Error fetching connector: {}", e)
         })?;
 
@@ -121,7 +121,7 @@ pub async fn fetch_connectors_by_server(id: &str) -> Result<Vec<Connector>, Stri
 
     // Parse the search results directly from the response body
     let datasources: Vec<Connector> = parse_search_results(resp).await.map_err(|e| {
-        dbg!("Error parsing search results for id {}: {}", &id, &e);
+        // dbg!("Error parsing search results for id {}: {}", &id, &e);
         e.to_string()
     })?;
 

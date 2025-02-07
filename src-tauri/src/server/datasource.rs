@@ -1,13 +1,12 @@
 use crate::common::datasource::DataSource;
 use crate::common::search::parse_search_results;
-use crate::server::connector::{fetch_connectors_by_server, get_connector_by_id, get_connectors_by_server, get_connectors_from_cache_or_remote};
+use crate::server::connector::get_connector_by_id;
 use crate::server::http_client::HttpClient;
-use crate::server::servers::{get_all_servers, list_coco_servers};
+use crate::server::servers::get_all_servers;
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use tauri::{AppHandle, Runtime};
-use crate::common::connector::Connector;
 
 lazy_static! {
     static ref DATASOURCE_CACHE: Arc<RwLock<HashMap<String,HashMap<String,DataSource>>>> = Arc::new(RwLock::new(HashMap::new()));
@@ -26,7 +25,7 @@ pub fn save_datasource_to_cache(server_id: &str, datasources: Vec<DataSource>) {
 
 pub fn get_datasources_from_cache(server_id: &str) -> Option<HashMap<String, DataSource>> {
     let cache = DATASOURCE_CACHE.read().unwrap(); // Acquire read lock
-    dbg!("cache: {:?}", &cache);
+    // dbg!("cache: {:?}", &cache);
     let server_cache = cache.get(server_id)?; // Get the server's cache
     Some(server_cache.clone())
 }
@@ -34,14 +33,14 @@ pub fn get_datasources_from_cache(server_id: &str) -> Option<HashMap<String, Dat
 pub async fn refresh_all_datasources<R: Runtime>(
     app_handle: &AppHandle<R>,
 ) -> Result<(), String> {
-    dbg!("Attempting to refresh all datasources");
+    // dbg!("Attempting to refresh all datasources");
 
     let servers = get_all_servers();
 
     let mut server_map = HashMap::new();
 
     for server in servers {
-        dbg!("fetch datasources for server: {}", &server.id);
+        // dbg!("fetch datasources for server: {}", &server.id);
 
         // Attempt to get datasources by server, and continue even if it fails
         let mut connectors = match get_datasources_by_server(app_handle.clone(), server.id.clone()).await {
@@ -53,21 +52,21 @@ pub async fn refresh_all_datasources<R: Runtime>(
                         (connector.id.clone(), connector)
                     })
                     .collect();
-                dbg!("connectors_map: {:?}", &connectors_map);
+                // dbg!("connectors_map: {:?}", &connectors_map);
                 connectors_map
             }
             Err(e) => {
-                dbg!("Failed to get dataSources for server {}: {}", &server.id, e);
+                // dbg!("Failed to get dataSources for server {}: {}", &server.id, e);
                 HashMap::new()
             }
         };
 
         let mut new_map = HashMap::new();
         for (id, mut datasource) in connectors.iter() {
-            dbg!("connector: {:?}", &datasource);
+            // dbg!("connector: {:?}", &datasource);
             if let Some(existing_connector) = get_connector_by_id(&server.id, &datasource.id) {
                 // If found in cache, update the connector's info
-                dbg!("Found connector in cache for {}: {:?}", &datasource.id, &existing_connector);
+                // dbg!("Found connector in cache for {}: {:?}", &datasource.id, &existing_connector);
                 let mut obj = datasource.clone();
                 obj.connector_info = Some(existing_connector);
                 new_map.insert(id.clone(), obj);
@@ -84,7 +83,7 @@ pub async fn refresh_all_datasources<R: Runtime>(
         cache.extend(server_map);
         cache.len()
     };
-    dbg!("datasource_map size: {:?}", cache_size);
+    // dbg!("datasource_map size: {:?}", cache_size);
 
     Ok(())
 }
@@ -94,19 +93,19 @@ pub async fn get_datasources_by_server<R: Runtime>(
     app_handle: AppHandle<R>,
     id: String,
 ) -> Result<Vec<DataSource>, String> {
-    dbg!("get_datasources_by_server: id = {}", &id);
+    // dbg!("get_datasources_by_server: id = {}", &id);
 
     // Perform the async HTTP request outside the cache lock
     let resp = HttpClient::get(&id, "/datasource/_search")
         .await
         .map_err(|e| {
-            dbg!("Error fetching datasource: {}", &e);
+            // dbg!("Error fetching datasource: {}", &e);
             format!("Error fetching datasource: {}", e)
         })?;
 
     // Parse the search results from the response
-    let mut datasources:Vec<DataSource> = parse_search_results(resp).await.map_err(|e| {
-        dbg!("Error parsing search results: {}", &e);
+    let mut datasources: Vec<DataSource> = parse_search_results(resp).await.map_err(|e| {
+        // dbg!("Error parsing search results: {}", &e);
         e.to_string()
     })?;
 
