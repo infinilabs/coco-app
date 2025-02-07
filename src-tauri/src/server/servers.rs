@@ -1,18 +1,20 @@
+use crate::common::register::SearchSourceRegistry;
 use crate::common::server::{AuthProvider, Provider, Server, ServerAccessToken, Sso, Version};
+use crate::server::connector::refresh_all_connectors;
+use crate::server::datasource::refresh_all_datasources;
 use crate::server::http_client::HttpClient;
+use crate::server::search::CocoSearchSource;
 use crate::COCO_TAURI_STORE;
 use lazy_static::lazy_static;
-use reqwest::{Method, StatusCode};
+use reqwest::{Client, Method, StatusCode};
 use serde_json::from_value;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::RwLock;
-use tauri::AppHandle;
 use tauri::Runtime;
+use tauri::{AppHandle, Manager};
 use tauri_plugin_store::StoreExt;
-use crate::server::connector::refresh_all_connectors;
-use crate::server::datasource::refresh_all_datasources;
 // Assuming you're using serde_json
 
 lazy_static! {
@@ -58,7 +60,7 @@ fn remove_server_by_id(id: String) -> bool {
 }
 
 
-pub fn persist_servers<R: Runtime>(app_handle: &AppHandle<R>) -> Result<(), String> {
+pub async fn persist_servers<R: Runtime>(app_handle: &AppHandle<R>) -> Result<(), String> {
     let cache = SERVER_CACHE.read().unwrap(); // Acquire a read lock, not a write lock, since you're not modifying the cache
 
     // Convert HashMap to Vec for serialization (iterating over values of HashMap)
@@ -69,8 +71,6 @@ pub fn persist_servers<R: Runtime>(app_handle: &AppHandle<R>) -> Result<(), Stri
         .into_iter()
         .map(|server| serde_json::to_value(server).expect("Failed to serialize server")) // Automatically serialize all fields
         .collect();
-
-    // dbg!(format!("persist servers: {:?}", &json_servers));
 
     // Save the serialized servers to Tauri's store
     app_handle
@@ -143,7 +143,6 @@ fn get_default_server() -> Server {
 }
 
 pub async fn load_servers_token<R: Runtime>(app_handle: &AppHandle<R>) -> Result<Vec<ServerAccessToken>, String> {
-
     dbg!("Attempting to load servers token");
 
     let store = app_handle
@@ -227,7 +226,6 @@ pub async fn load_servers<R: Runtime>(app_handle: &AppHandle<R>) -> Result<Vec<S
 
 /// Function to load servers or insert a default one if none exist
 pub async fn load_or_insert_default_server<R: Runtime>(app_handle: &AppHandle<R>) -> Result<Vec<Server>, String> {
-
     dbg!("Attempting to load or insert default server");
 
     let exists_servers = load_servers(&app_handle).await;
@@ -248,7 +246,7 @@ pub async fn load_or_insert_default_server<R: Runtime>(app_handle: &AppHandle<R>
 pub async fn list_coco_servers<R: Runtime>(
     app_handle: AppHandle<R>,
 ) -> Result<Vec<Server>, String> {
-    let servers: Vec<Server> =get_all_servers();
+    let servers: Vec<Server> = get_all_servers();
     Ok(servers)
 }
 
@@ -300,16 +298,16 @@ pub async fn refresh_coco_server_info<R: Runtime>(
                             server.profile = profile;
                             trim_endpoint_last_forward_slash(&mut server);
                             save_server(&server);
-                            persist_servers(&app_handle).expect("Failed to persist coco servers.");
+                            persist_servers(&app_handle).await.expect("Failed to persist coco servers.");
 
 
                             //refresh connectors and datasources
                             if let Err(err) = refresh_all_connectors(&app_handle).await {
-                                return Err(format!("Failed to load server connectors: {}", err))
+                                return Err(format!("Failed to load server connectors: {}", err));
                             }
 
                             if let Err(err) = refresh_all_datasources(&app_handle).await {
-                                return Err(format!("Failed to load server datasources: {}", err))
+                                return Err(format!("Failed to load server datasources: {}", err));
                             }
 
                             Ok(server)
@@ -380,8 +378,12 @@ pub async fn add_coco_server<R: Runtime>(
                         // Save the new server to the cache
                         save_server(&server);
 
+                        let registry = app_handle.state::<SearchSourceRegistry>();
+                        let source = CocoSearchSource::new(server.clone(), Client::new());
+                        registry.register_source(source).await;
+
                         // Persist the servers to the store
-                        persist_servers(&app_handle)
+                        persist_servers(&app_handle).await
                             .expect("Failed to persist Coco servers.");
 
                         dbg!(format!("Successfully registered server: {:?}", &endpoint));
@@ -407,9 +409,13 @@ pub async fn remove_coco_server<R: Runtime>(
     app_handle: AppHandle<R>,
     id: String,
 ) -> Result<(), ()> {
+    let registry = app_handle.state::<SearchSourceRegistry>();
+    registry.remove_source(id.clone()).await;
+
     remove_server_token(id.as_str());
     remove_server_by_id(id);
-    persist_servers(&app_handle).expect("failed to save servers");
+
+    persist_servers(&app_handle).await.expect("failed to save servers");
     persist_servers_token(&app_handle).expect("failed to save server tokens");
     Ok(())
 }
@@ -419,7 +425,6 @@ pub async fn logout_coco_server<R: Runtime>(
     app_handle: AppHandle<R>,
     id: String,
 ) -> Result<(), String> {
-
     dbg!("Attempting to log out server by id:", &id);
 
     // Check if server token exists
@@ -450,7 +455,7 @@ pub async fn logout_coco_server<R: Runtime>(
         save_server(&server);
 
         // Persist the updated server data
-        if let Err(e) = persist_servers(&app_handle) {
+        if let Err(e) = persist_servers(&app_handle).await {
             dbg!("Failed to save server for id: {}. Error: {:?}", &id, &e);
             return Err(format!("Failed to save server: {}", &e));
         }

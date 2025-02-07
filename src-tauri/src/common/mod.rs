@@ -4,5 +4,7 @@ pub mod server;
 pub mod auth;
 pub mod datasource;
 pub mod connector;
-pub mod search_response;
+pub mod search;
 pub mod document;
+pub mod traits;
+pub mod register;

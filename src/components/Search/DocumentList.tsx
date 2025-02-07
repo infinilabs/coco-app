@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useInfiniteScroll } from "ahooks";
 import { isTauri, invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-shell";
@@ -30,10 +30,11 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const [total, setTotal] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [isKeyboardMode, setIsKeyboardMode] = useState(false);
 
   const { data, loading } = useInfiniteScroll(
     async (d) => {
-      const from = d?.list.length || 0;
+      const from = d?.list?.length || 0;
 
       let queryStrings: any = {
         query: input,
@@ -48,7 +49,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       }
 
       try {
-        const response: any = await invoke("query_coco_servers", {
+        const response: any = await invoke("query_coco_fusion", {
           from: from,
           size: PAGE_SIZE,
           queryStrings,
@@ -56,40 +57,26 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         const list = response?.hits || [];
         const total = response?.total_hits || 0;
 
+        // console.log("docs:", list, total);
 
         setTotal(total);
 
-        getDocDetail(list[0] || {});
-
         return {
-          list,
-          hasMore: from + list.length < total,
+          list: list,
+          hasMore: list.length === PAGE_SIZE,
         };
       } catch (error) {
         console.error("Failed to fetch documents:", error);
         return {
-          list: [],
+          list: d?.list || [],
           hasMore: false,
         };
       }
     },
     {
       target: containerRef,
-      isNoMore: (d) => (d?.list.length || 0) >= total,
+      isNoMore: (d) => !d?.hasMore,
       reloadDeps: [input, JSON.stringify(sourceData)],
-      onBefore: () => {
-        setTimeout(() => {
-          const parentRef = containerRef.current;
-          if (parentRef && parentRef.childElementCount > 10) {
-            const itemHeight =
-              (parentRef.firstChild as HTMLElement)?.offsetHeight || 80;
-            parentRef.scrollTo({
-              top: (parentRef.lastChild as HTMLElement)?.offsetTop - itemHeight,
-              behavior: "instant",
-            });
-          }
-        });
-      },
       onFinally: (data) => onFinally(data, containerRef),
     }
   );
@@ -97,22 +84,31 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const onFinally = (data: any, ref: any) => {
     if (data?.page === 1) return;
     const parentRef = ref.current;
-    if (!parentRef) return;
-    const itemHeight = parentRef.firstChild?.offsetHeight || 80;
-    parentRef.scrollTo({
-      top:
-        parentRef.lastChild?.offsetTop - (data?.list?.length + 1) * itemHeight,
-      behavior: "instant",
+    if (!parentRef || selectedItem === null) return;
+
+    const targetElement = itemRefs.current[selectedItem];
+    if (!targetElement) return;
+
+    requestAnimationFrame(() => {
+      targetElement.scrollIntoView({
+        behavior: "instant",
+        block: "nearest",
+      });
     });
   };
 
-  function onMouseEnter(index: number, item: any) {
-    getDocDetail(item);
-    setSelectedItem(index);
-  }
+  const onMouseEnter = useCallback(
+    (index: number, item: any) => {
+      if (isKeyboardMode) return;
+      getDocDetail(item);
+      setSelectedItem(index);
+    },
+    [isKeyboardMode, getDocDetail]
+  );
 
   useEffect(() => {
     setSelectedItem(null);
+    setIsKeyboardMode(false);
   }, [isChatMode, input]);
 
   const handleOpenURL = async (url: string) => {
@@ -127,28 +123,58 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     }
   };
 
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (!data?.list?.length) return;
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (!data?.list?.length) return;
 
-    if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setSelectedItem((prev) => (prev === null || prev === 0 ? 0 : prev - 1));
-    } else if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setSelectedItem((prev) =>
-        prev === null ? 0 : prev === data?.list?.length - 1 ? prev : prev + 1
-      );
-    } else if (e.key === metaOrCtrlKey()) {
-      e.preventDefault();
-    }
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        e.preventDefault();
+        setIsKeyboardMode(true);
 
-    if (e.key === "Enter" && selectedItem !== null) {
-      const item = data?.list?.[selectedItem];
-      if (item?.url) {
-        handleOpenURL(item?.url);
+        if (e.key === "ArrowUp") {
+          setSelectedItem((prev) => {
+            const newIndex = prev === null || prev === 0 ? 0 : prev - 1;
+            getDocDetail(data.list[newIndex]?.document);
+            return newIndex;
+          });
+        } else {
+          setSelectedItem((prev) => {
+            const newIndex =
+              prev === null
+                ? 0
+                : prev === data.list.length - 1
+                ? prev
+                : prev + 1;
+            getDocDetail(data.list[newIndex]?.document);
+            return newIndex;
+          });
+        }
+      } else if (e.key === metaOrCtrlKey()) {
+        e.preventDefault();
       }
-    }
-  };
+
+      if (e.key === "Enter" && selectedItem !== null) {
+        const item = data?.list?.[selectedItem];
+        if (item?.url) {
+          handleOpenURL(item?.url);
+        }
+      }
+    },
+    [data, selectedItem, getDocDetail]
+  );
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (e.movementX !== 0 || e.movementY !== 0) {
+        setIsKeyboardMode(false);
+      }
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -156,13 +182,15 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [selectedItem]);
+  }, [handleKeyDown]);
 
   useEffect(() => {
     if (selectedItem !== null && itemRefs.current[selectedItem]) {
-      itemRefs.current[selectedItem]?.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
+      requestAnimationFrame(() => {
+        itemRefs.current[selectedItem]?.scrollIntoView({
+          behavior: "instant",
+          block: "nearest",
+        });
       });
     }
   }, [selectedItem]);
@@ -197,13 +225,8 @@ export const DocumentList: React.FC<DocumentListProps> = ({
               }`}
             >
               <div className="flex gap-2 items-center flex-1 min-w-0">
-
                 <ItemIcon item={item} />
-                <span
-                  className={`text-sm truncate`}
-                >
-                  {item?.title}
-                </span>
+                <span className={`text-sm truncate`}>{item?.title}</span>
               </div>
             </div>
           );

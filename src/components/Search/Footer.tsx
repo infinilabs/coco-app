@@ -1,12 +1,7 @@
-import {
-  Command,
-  ArrowDown01,
-  // AppWindowMac,
-  CornerDownLeft,
-} from "lucide-react";
+import { ArrowDown01, Command, CornerDownLeft } from "lucide-react";
 import { emit } from "@tauri-apps/api/event";
 
-import logoImg from "@/assets/app-icon.png";
+import logoImg from "@/assets/icon.svg";
 import source_default_img from "@/assets/images/source_default.png";
 import source_default_dark_img from "@/assets/images/source_default_dark.png";
 import { useSearchStore } from "@/stores/searchStore";
@@ -14,7 +9,6 @@ import { useAppStore } from "@/stores/appStore";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useConnectStore } from "@/stores/connectStore";
 import { isMac } from "@/utils/keyboardUtils";
-
 interface FooterProps {
   isChat: boolean;
   name?: string;
@@ -68,21 +62,21 @@ export default function Footer({}: FooterProps) {
   return (
     <div
       data-tauri-drag-region
-      className="px-4 z-999 mx-[1px] h-10 absolute bottom-0 left-0 right-0 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between rounded-xl rounded-t-none overflow-hidden"
+      className="px-4 z-999 mx-[1px] h-8 absolute bottom-0 left-0 right-0 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between rounded-xl rounded-t-none overflow-hidden"
     >
       <div className="flex items-center">
         <div className="flex items-center space-x-2">
           {sourceData?.source?.name ? (
-            <img className="w-5 h-5" src={getTypeIcon(sourceData)} alt="icon" />
+            <img className="w-4 h-4" src={getTypeIcon(sourceData)} alt="icon" />
           ) : (
             <img
               src={logoImg}
-              className="w-5 h-5 cursor-pointer"
+              className="w-4 h-4 cursor-pointer"
               onClick={openSetting}
             />
           )}
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            {sourceData?.source?.name || "Version 1.0.0"}
+            {sourceData?.source?.name || "v1.0.0"}
           </span>
         </div>
 
@@ -94,9 +88,9 @@ export default function Footer({}: FooterProps) {
       </div>
 
       <div className="flex items-center gap-3">
-        <div className="gap-1 flex items-center text-[#666] dark:text-[#666] text-sm">
-          <span className="mr-1.5 ">Quick open</span>
-          <kbd className="docsearch-modal-footer-commands-key pr-1">
+        <div className="gap-1 flex items-center text-[#666] dark:text-[#666] text-xs">
+          <span className="mr-1.5 ">Select:</span>
+          <kbd className="coco-modal-footer-commands-key pr-1">
             {isMac ? (
               <Command className="w-3 h-3" />
             ) : (
@@ -105,13 +99,14 @@ export default function Footer({}: FooterProps) {
               </span>
             )}
           </kbd>
-          <kbd className="docsearch-modal-footer-commands-key pr-1">
+          +
+          <kbd className="coco-modal-footer-commands-key pr-1">
             <ArrowDown01 className="w-3 h-3" />
           </kbd>
         </div>
-        <div className="flex items-center text-[#666] dark:text-[#666] text-sm">
-          <span className="mr-1.5 ">Open</span>
-          <kbd className="docsearch-modal-footer-commands-key pr-1">
+        <div className="flex items-center text-[#666] dark:text-[#666] text-xs">
+          <span className="mr-1.5 ">Open: </span>
+          <kbd className="coco-modal-footer-commands-key pr-1">
             <CornerDownLeft className="w-3 h-3" />
           </kbd>
         </div>

@@ -2,67 +2,70 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer {
-  :root {
-    --background: #ffffff;
-    --foreground: #09090b;
-    --border: #e3e3e7;
-    --docsearch-primary-color: rgb(149, 5, 153);
-    --docsearch-text-color: rgb(28, 30, 33);
-    --docsearch-spacing: 12px;
-    --docsearch-icon-stroke-width: 1.4;
-    --docsearch-highlight-color: var(--docsearch-primary-color);
-    --docsearch-muted-color: rgb(150, 159, 175);
-    --docsearch-modal-container-background: rgba(101, 108, 133, .8);
-    --docsearch-modal-width: 560px;
-    --docsearch-modal-height: 600px;
-    --docsearch-modal-background: rgb(245, 246, 247);
-    --docsearch-modal-shadow: inset 1px 1px 0 0 rgba(255, 255, 255, .5), 0 3px 8px 0 rgba(85, 90, 100, 1);
-    --docsearch-searchbox-height: 56px;
-    --docsearch-searchbox-background: rgb(235, 237, 240);
-    --docsearch-searchbox-focus-background: #fff;
-    --docsearch-searchbox-shadow: inset 0 0 0 2px var(--docsearch-primary-color);
-    --docsearch-hit-height: 56px;
-    --docsearch-hit-color: rgb(68, 73, 80);
-    --docsearch-hit-active-color: #fff;
-    --docsearch-hit-background: #fff;
-    --docsearch-hit-shadow: 0 1px 3px 0 rgb(212, 217, 225);
-    --docsearch-key-gradient: linear-gradient(-225deg, rgb(213, 219, 228) 0%, rgb(248, 248, 248) 100%);
-    --docsearch-key-shadow: inset 0 -2px 0 0 rgb(205, 205, 230), inset 0 0 1px 1px #fff, 0 1px 2px 1px rgba(30, 35, 90, .4);
-    --docsearch-footer-height: 44px;
-    --docsearch-footer-background: #fff;
-    --docsearch-footer-shadow: 0 -1px 0 0 rgb(224, 227, 232), 0 -3px 6px 0 rgba(69, 98, 155, .12);
-    --docsearch-icon-color: rgb(21, 21, 21);
-  }
-
-  .dark {
-    --background: #09090b;
-    --foreground: #f9f9f9;
-    --border: #27272a;
-    --docsearch-text-color: rgb(245, 246, 247);
-    --docsearch-modal-container-background: rgba(9, 10, 17, .8);
-    --docsearch-modal-background: rgb(21, 23, 42);
-    --docsearch-modal-shadow: inset 1px 1px 0 0 rgb(44, 46, 64), 0 3px 8px 0 rgb(0, 3, 9);
-    --docsearch-searchbox-background: rgb(9, 10, 17);
-    --docsearch-searchbox-focus-background: #000;
-    --docsearch-hit-color: rgb(190, 195, 201);
-    --docsearch-hit-shadow: none;
-    --docsearch-hit-background: rgb(9, 10, 17);
-    --docsearch-key-gradient: linear-gradient(-26.5deg, rgb(86, 88, 114) 0%, rgb(49, 53, 91) 100%);
-    --docsearch-key-shadow: inset 0 -2px 0 0 rgb(40, 45, 85), inset 0 0 1px 1px rgb(81, 87, 125), 0 2px 2px 0 rgba(3, 4, 9, .3);
-    --docsearch-footer-background: rgb(30, 33, 54);
-    --docsearch-footer-shadow: inset 0 1px 0 0 rgba(73, 76, 106, .5), 0 -4px 8px 0 rgba(0, 0, 0, .2);
-    --docsearch-muted-color: rgb(127, 132, 151);
-    --docsearch-icon-color: rgb(255, 255, 255);
-  }
+/* Base variables */
+:root {
+  --spacing-base: 12px;
+  --modal-width: 560px;
+  --modal-height: 600px;
+  --searchbox-height: 56px;
+  --hit-height: 56px;
+  --footer-height: 44px;
+  --icon-stroke-width: 1.4;
+  --background: #ffffff;
+  --foreground: #09090b;
+  --border: #e3e3e7;
 }
 
+/* Light theme */
+[data-theme="light"] {
+  --coco-primary-color: rgb(149, 5, 153);
+  --coco-text-color: rgb(28, 30, 33);
+  --coco-muted-color: rgb(150, 159, 175);
+  --coco-modal-container-background: rgba(101, 108, 133, .8);
+  --coco-modal-background: rgb(245, 246, 247);
+  --coco-modal-shadow: inset 1px 1px 0 0 rgba(255, 255, 255, .5), 0 3px 8px 0 rgba(85, 90, 100, 1);
+  --coco-searchbox-background: rgb(235, 237, 240);
+  --coco-searchbox-focus-background: #fff;
+  --coco-hit-color: rgb(68, 73, 80);
+  --coco-hit-active-color: #fff;
+  --coco-hit-background: #fff;
+  --coco-hit-shadow: 0 1px 3px 0 rgb(212, 217, 225);
+  --coco-key-gradient: linear-gradient(-225deg, rgb(213, 219, 228) 0%, rgb(248, 248, 248) 100%);
+  --coco-key-shadow: inset 0 -2px 0 0 rgb(205, 205, 230), inset 0 0 1px 1px #fff, 0 1px 2px 1px rgba(30, 35, 90, .4);
+  --coco-footer-background: #fff;
+  --coco-footer-shadow: 0 -1px 0 0 rgb(224, 227, 232), 0 -3px 6px 0 rgba(69, 98, 155, .12);
+  --coco-icon-color: rgb(21, 21, 21);
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --background: #09090b;
+  --foreground: #f9f9f9;
+  --border: #27272a;
+  --coco-text-color: rgb(245, 246, 247);
+  --coco-modal-container-background: rgba(9, 10, 17, .8);
+  --coco-modal-background: rgb(21, 23, 42);
+  --coco-modal-shadow: inset 1px 1px 0 0 rgb(44, 46, 64), 0 3px 8px 0 rgb(0, 3, 9);
+  --coco-searchbox-background: rgb(9, 10, 17);
+  --coco-searchbox-focus-background: #000;
+  --coco-hit-color: rgb(190, 195, 201);
+  --coco-hit-shadow: none;
+  --coco-hit-background: rgb(9, 10, 17);
+  --coco-key-gradient: linear-gradient(-26.5deg, rgb(86, 88, 114) 0%, rgb(49, 53, 91) 100%);
+  --coco-key-shadow: inset 0 -2px 0 0 rgb(40, 45, 85), inset 0 0 1px 1px rgb(81, 87, 125), 0 2px 2px 0 rgba(3, 4, 9, .3);
+  --coco-footer-background: rgb(30, 33, 54);
+  --coco-footer-shadow: inset 0 1px 0 0 rgba(73, 76, 106, .5), 0 -4px 8px 0 rgba(0, 0, 0, .2);
+  --coco-muted-color: rgb(127, 132, 151);
+  --coco-icon-color: rgb(255, 255, 255);
+}
+
+/* Base styles */
 @layer base {
   * {
     @apply box-border border-[--border];
   }
 
-  html{
+  html {
     @apply h-full;
   }
 
@@ -81,6 +84,7 @@
   }
 }
 
+/* Component styles */
 @layer components {
   .settings-input {
     @apply block w-full rounded-md border-gray-300 dark:border-gray-600 
@@ -99,7 +103,9 @@
   }
 }
 
+/* Utility styles */
 @layer utilities {
+  /* Scrollbar styles */
   .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 transparent;
@@ -126,10 +132,12 @@
     background-color: #475569;
   }
 
+  /* Background styles */
   .bg-100 {
     background-size: 100% 100%;
   }
 
+  /* Error page styles */
   #error-page {
     display: flex;
     justify-content: center;
@@ -187,19 +195,21 @@
     background-color: #f79c42;
   }
 
-  .docsearch-modal-footer-commands-key {
+  /* coco styles */
+  .coco-modal-footer-commands-key {
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 4px;
-    border: 0px;
+    border: 0;
     padding: 2px;
-    background: var(--docsearch-key-gradient);
-    box-shadow: var(--docsearch-key-shadow);
-    color: var(--docsearch-muted-color);
+    background: var(--coco-key-gradient);
+    box-shadow: var(--coco-key-shadow);
+    color: var(--coco-muted-color);
   }
-  
-  .user-select{
+
+  /* User selection styles */
+  .user-select {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;

@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { isTauri, invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { listen } from "@tauri-apps/api/event";
+import { listen, emit } from "@tauri-apps/api/event";
 
 import { AppTheme, WindowTheme } from "../utils/tauri";
 import { useThemeStore } from "../stores/themeStore";
@@ -45,6 +45,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       unlisten = await currentWindow.onThemeChanged(({ payload: w_theme }) => {
         console.log("window New theme:", w_theme);
         setWindowTheme(w_theme);
+        // Update tray icon
+        switchTrayIcon(w_theme);
         if (theme === "auto") applyTheme(w_theme);
       });
     };
@@ -75,6 +77,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
     root.classList.add(displayTheme);
+    //
+    root.setAttribute("data-theme", displayTheme);
   }
 
   // Apply theme to UI and sync with Tauri
@@ -91,16 +95,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         console.error("Failed to update window theme:", err);
       }
 
-      // Update tray icon
-      await switchTrayIcon(displayTheme);
-
       // Notify other windows to update the theme
-      // try {
-      //   console.log("theme-changed", displayTheme);
-      //   await emit("theme-changed", { theme: displayTheme });
-      // } catch (err) {
-      //   console.error("Failed to emit theme-changed event:", err);
-      // }
+      try {
+        // console.log("theme-changed", displayTheme);
+        await emit("theme-changed", { theme: displayTheme });
+      } catch (err) {
+        console.error("Failed to emit theme-changed event:", err);
+      }
     }
   };
 
@@ -126,19 +127,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Handle theme changes from user interaction
   const changeTheme = async (newTheme: AppTheme) => {
+    console.log("Theme changed to:", newTheme);
     setTheme(newTheme);
     const displayTheme = getDisplayTheme(newTheme);
     await applyTheme(displayTheme);
   };
 
   useEffect(() => {
-    if (!isTauri()) return;
-
     let unlisten: () => void;
 
     const setupListener = async () => {
       unlisten = await listen("theme-changed", (event: any) => {
-        console.log("Theme updated to:", event.payload);
+        // console.log("Theme updated to:", event.payload);
         changeClassTheme(event.payload.theme)
       });
     };

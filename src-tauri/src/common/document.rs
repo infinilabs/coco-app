@@ -1,34 +1,34 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RichLabel {
     pub label: Option<String>,
     pub key: Option<String>,
     pub icon: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DataSourceReference {
     pub r#type: Option<String>,
     pub name: Option<String>,
     pub id: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserInfo {
     pub avatar: Option<String>,
     pub username: Option<String>,
     pub userid: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EditorInfo {
     pub user: UserInfo,
     pub timestamp: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Document {
     pub id: String,
     pub created: Option<String>,
@@ -53,4 +53,33 @@ pub struct Document {
     pub payload: Option<HashMap<String, serde_json::Value>>,
     pub owner: Option<UserInfo>,
     pub last_updated_by: Option<EditorInfo>,
+}
+impl Document {
+    pub fn new(source: Option<DataSourceReference>, id: String, category: String, name: String, url: String) -> Self {
+        Self {
+            id,
+            created: None,
+            updated: None,
+            source,
+            r#type: None,
+            category: Some(category),
+            subcategory: None,
+            categories: None,
+            rich_categories: None,
+            title: Some(name),
+            summary: None,
+            lang: None,
+            content: None,
+            icon: None,
+            thumbnail: None,
+            cover: None,
+            tags: None,
+            url: Some(url),
+            size: None,
+            metadata: None,
+            payload: None,
+            owner: None,
+            last_updated_by: None,
+        }
+    }
 }
