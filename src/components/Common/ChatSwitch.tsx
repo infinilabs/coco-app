@@ -1,5 +1,8 @@
 import React, { useEffect, useCallback } from "react";
 import { Bot, Search } from "lucide-react";
+
+import { isMetaOrCtrlKey } from "@/utils/keyboardUtils";
+
 interface ChatSwitchProps {
   isChatMode: boolean;
   onChange: (isChatMode: boolean) => void;
@@ -12,7 +15,7 @@ const ChatSwitch: React.FC<ChatSwitchProps> = ({ isChatMode, onChange }) => {
 
   const handleKeydown = useCallback(
     (event: KeyboardEvent) => {
-      if (event.metaKey && event.key === "t") {
+      if (isMetaOrCtrlKey(event) && event.key === "t") {
         event.preventDefault();
         // console.log("Switch mode triggered");
         handleToggle();

@@ -14,6 +14,7 @@ import IconWrapper from "@/components/Common/Icons/IconWrapper";
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import ItemIcon from "@/components/Common/Icons/ItemIcon";
 import ListRight from "./ListRight";
+import { metaOrCtrlKey, isMetaOrCtrlKey } from "@/utils/keyboardUtils";
 
 type ISearchData = Record<string, any[]>;
 
@@ -85,7 +86,7 @@ function DropdownList({
       setSelectedItem((prev) =>
         prev === null || prev === suggests.length - 1 ? 0 : prev + 1
       );
-    } else if (e.key === "Meta") {
+    } else if (e.key === metaOrCtrlKey()) {
       e.preventDefault();
       if (selectedItem !== null) {
         const item = globalItemIndexMap[selectedItem];
@@ -125,7 +126,7 @@ function DropdownList({
     // console.log("handleKeyUp", e.key);
     if (!suggests.length) return;
 
-    if (!e.metaKey) {
+    if (!isMetaOrCtrlKey(e)) {
       setShowIndex(false);
     }
   }, []);

@@ -6,6 +6,7 @@ import {
   AudioLines,
   Image,
   ArrowBigLeft,
+  Search,
 } from "lucide-react";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { listen } from "@tauri-apps/api/event";
@@ -17,11 +18,7 @@ import { useChatStore } from "@/stores/chatStore";
 import StopIcon from "@/icons/Stop";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
-import { isMac } from "@/utils/platform";
-import { Search } from 'lucide-react';
-
-console.log("isMac", isMac);
-
+import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 interface ChatInputProps {
   onSend: (message: string) => void;
   disabled: boolean;
@@ -78,15 +75,14 @@ export default function ChatInput({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      pressedKeys.add(e.code);
+      console.log("handleKeyDown", e.code, e.key);
+      pressedKeys.add(e.key);
 
-      if ((isMac && (e.code === "MetaLeft" || e.code === "MetaRight")) ||
-          (!isMac && (e.code === "ControlLeft" || e.code === "ControlRight")))  {
+      if (e.key === metaOrCtrlKey())  {
         setIsCommandPressed(true);
       }
 
-      if ((isMac && (pressedKeys.has("MetaLeft") || pressedKeys.has("MetaRight"))) ||
-      (!isMac && (pressedKeys.has("ControlLeft") || pressedKeys.has("ControlRight")))) {
+      if (pressedKeys.has(metaOrCtrlKey())) {
         // e.preventDefault();
         switch (e.code) {
           case "Comma":
@@ -133,9 +129,8 @@ export default function ChatInput({
   );
 
   const handleKeyUp = useCallback((e: KeyboardEvent) => {
-    pressedKeys.delete(e.code);
-    if ((isMac && (e.code === "MetaLeft" || e.code === "MetaRight")) ||
-        (!isMac && (e.code === "ControlLeft" || e.code === "ControlRight"))) {
+    pressedKeys.delete(e.key);
+    if (e.key === metaOrCtrlKey()) {
       setIsCommandPressed(false);
     }
   }, []);
@@ -181,6 +176,7 @@ export default function ChatInput({
   };
 
   const [countdown, setCountdown] = useState(5);
+  
   useEffect(() => {
     if (connected) return;
     if (countdown <= 0) {

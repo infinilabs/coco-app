@@ -2,6 +2,22 @@
 export const isMac = navigator.platform.toLowerCase().includes('mac');
 console.log("isMac2", isMac, navigator.platform.toLowerCase());
 
+export const metaOrCtrlKey = (): string => {
+  if (isMac) {
+    return "Meta";
+  } else {
+    return "Ctrl";
+  }
+}
+
+export const isMetaOrCtrlKey = (event: KeyboardEvent): boolean => {
+  if (isMac) {
+    return event.metaKey;
+  } else {
+    return event.ctrlKey;
+  }
+}
+
 // Mapping of keys to their display symbols
 export const KEY_SYMBOLS: Record<string, string> = {
   // Modifier keys
