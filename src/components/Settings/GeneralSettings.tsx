@@ -21,17 +21,14 @@ import { ShortcutItem } from "./ShortcutItem";
 import { Shortcut } from "./shortcut";
 import { useShortcutEditor } from "@/hooks/useShortcutEditor";
 import { useAppStore } from "@/stores/appStore";
-import {AppTheme} from "@/utils/tauri.ts";
-import {useTheme} from "@/contexts/ThemeContext.tsx";
-// import { useAuthStore } from "@/stores/authStore";
-// import { useConnectStore } from "@/stores/connectStore";
-
+import { AppTheme } from "@/utils/tauri";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export function ThemeOption({
-                              icon: Icon,
-                              title,
-                              theme,
-                            }: {
+  icon: Icon,
+  title,
+  theme,
+}: {
   icon: any;
   title: string;
   theme: AppTheme;
@@ -41,21 +38,21 @@ export function ThemeOption({
   const isSelected = currentTheme === theme;
 
   return (
-      <button
-          onClick={() => changeTheme(theme)}
-          className={`p-4 rounded-lg border-2 ${
-              isSelected
-                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                  : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-          } flex flex-col items-center justify-center space-y-2 transition-all`}
+    <button
+      onClick={() => changeTheme(theme)}
+      className={`p-4 rounded-lg border-2 ${
+        isSelected
+          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+      } flex flex-col items-center justify-center space-y-2 transition-all`}
+    >
+      <Icon className={`w-6 h-6 ${isSelected ? "text-blue-500" : ""}`} />
+      <span
+        className={`text-sm font-medium ${isSelected ? "text-blue-500" : ""}`}
       >
-        <Icon className={`w-6 h-6 ${isSelected ? "text-blue-500" : ""}`} />
-        <span
-            className={`text-sm font-medium ${isSelected ? "text-blue-500" : ""}`}
-        >
         {title}
       </span>
-      </button>
+    </button>
   );
 }
 

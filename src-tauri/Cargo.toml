@@ -17,7 +17,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2.0.0", features = [] }
 
 [dependencies]
-pizza-common = { git = "https://github.com/infinilabs/pizza-common", branch = "main"}
+pizza-common = { git = "https://github.com/infinilabs/pizza-common", branch = "main" }
 
 tauri = { version = "2.0.6", features = ["macos-private-api", "tray-icon", "image-png", "unstable"] }
 tauri-plugin-shell = "2.0.0"
@@ -27,19 +27,24 @@ tauri-plugin-http = "2"
 
 tauri-plugin-websocket = "2"
 tauri-plugin-theme = "2.1.2"
-
-tauri-plugin-oauth = { git = "https://github.com/FabianLars/tauri-plugin-oauth", branch = "v2" }
+tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }
 tauri-plugin-deep-link = "2.0.0"
 tauri-plugin-single-instance = "2.0.0"
 tauri-plugin-store = "2.2.0"
 reqwest = "0.12.12"
 futures = "0.3.31"
-ordered-float = { version = "4.6.0", default-features = false } 
+ordered-float = { version = "4.6.0", default-features = false }
 lazy_static = "1.5.0"
 log = "0.4.22"
 tokio = "1.40.0"
 once_cell = "1.20.2"
-
+notify = "5.0"
+async-trait = "0.1.82"
+thiserror = "1.0.64"
+dirs = "5.0.1"
+hostname = "0.3"
+plist = "1.7"
+base64 = "0.13"
 
 [profile.dev]
 incremental = true # Compile your binary in smaller steps.

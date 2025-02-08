@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Maximize, X } from "lucide-react";
 
 import { useLogStore } from "@/stores/logStore";
+import { isMetaOrCtrlKey } from "@/utils/keyboardUtils";
 
 const ApiDetails: React.FC = () => {
   const logs = useLogStore((state) => state.logs);
@@ -20,9 +21,9 @@ const ApiDetails: React.FC = () => {
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      if (event.metaKey && event.key === "d") {
+      if (isMetaOrCtrlKey(event) && event.key === "d") {
         const handleKeyG = (e: KeyboardEvent) => {
-          if (e.metaKey && e.key === "g") {
+          if (isMetaOrCtrlKey(event) && e.key === "g") {
             console.log("Command + D + G Detected!");
             toggleAPIDetails();
           }

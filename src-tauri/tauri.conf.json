@@ -13,6 +13,7 @@
     "macOSPrivateApi": true,
     "windows": [
       {
+        "label": "main",
         "title": "Coco AI",
         "url": "/ui",
         "height": 590,
@@ -22,6 +23,8 @@
         "maximizable": false,
         "skipTaskbar": true,
         "resizable": false,
+        "alwaysOnTop": false,
+        "acceptFirstMouse": true,
         "shadow": true,
         "transparent": true,
         "fullscreen": false,
@@ -29,6 +32,24 @@
         "windowEffects": {
           "effects": [],
           "radius": 12
+        }
+      },
+      {
+        "label": "settings",
+        "url": "/ui/settings",
+        "width": 1000,
+        "height": 700,
+        "center": true,
+        "transparent": true,
+        "maximizable": false,
+        "skipTaskbar": false,
+        "dragDropEnabled": true,
+        "visible": false,
+        "windowEffects": {
+          "effects": [
+            "sidebar"
+          ],
+          "state": "active"
         }
       }
     ],
@@ -75,11 +96,16 @@
         }
       }
     },
-    "resources": ["assets", "icons"]
+    "resources": [
+      "assets",
+      "icons"
+    ]
   },
   "plugins": {
     "features": {
-      "protocol": ["all"]
+      "protocol": [
+        "all"
+      ]
     },
     "window": {},
     "websocket": {},
@@ -88,12 +114,22 @@
     "deep-link": {
       "schema": "coco",
       "mobile": [
-        { "host": "app.infini.cloud", "pathPrefix": ["/open"] },
-        { "host": "localhost:9000" }
+        {
+          "host": "app.infini.cloud",
+          "pathPrefix": [
+            "/open"
+          ]
+        },
+        {
+          "host": "localhost:9000"
+        }
       ],
       "desktop": {
-        "schemes": ["coco"]
+        "schemes": [
+          "coco"
+        ]
       }
-    }
+    },
+    "os": {}
   }
 }

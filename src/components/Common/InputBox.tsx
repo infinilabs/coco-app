@@ -7,6 +7,7 @@ import AutoResizeTextarea from "./AutoResizeTextarea";
 import { useChatStore } from "../../stores/chatStore";
 import StopIcon from "../../icons/Stop";
 import { useAppStore } from "../../stores/appStore";
+import { metaOrCtrlKey, isMetaOrCtrlKey } from "@/utils/keyboardUtils";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -53,11 +54,11 @@ export default function ChatInput({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.code === "MetaLeft" || e.code === "MetaRight") {
+      if (e.key === metaOrCtrlKey()) {
         setIsCommandPressed(true);
       }
 
-      if (e.metaKey) {
+      if (isMetaOrCtrlKey(e)) {
         switch (e.code) {
           case "KeyI":
             handleToggleFocus();
@@ -89,7 +90,7 @@ export default function ChatInput({
   );
 
   const handleKeyUp = useCallback((e: KeyboardEvent) => {
-    if (e.code === "MetaLeft" || e.code === "MetaRight") {
+    if (e.key === metaOrCtrlKey()) {
       setIsCommandPressed(false);
     }
   }, []);
@@ -107,7 +108,7 @@ export default function ChatInput({
   useEffect(() => {
     const setupListener = async () => {
       const unlisten = await listen("tauri://focus", () => {
-        console.log("Window focused!");
+        // console.log("Window focused!");
         if (isChatMode) {
           textareaRef.current?.focus();
         } else {

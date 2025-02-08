@@ -1,55 +1,13 @@
 import React from "react";
 
-import { useAppStore } from "@/stores/appStore";
 import {formatter} from "@/utils/index"
-import source_default_img from "@/assets/images/source_default.png";
-import source_default_dark_img from "@/assets/images/source_default_dark.png";
-import { useTheme } from "@/contexts/ThemeContext";
-import { useConnectStore } from "@/stores/connectStore";
+import TypeIcon from "@/components/Common/Icons/TypeIcon";
 
 interface DocumentDetailProps {
   document: any;
 }
 
 export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
-  const connector_data = useConnectStore((state) => state.connector_data);
-  const datasourceData = useConnectStore((state) => state.datasourceData);
-
-  const endpoint_http = useAppStore((state) => state.endpoint_http);
-
-  const { theme } = useTheme();
-
-  function findConnectorIcon(item: any) {
-    const id = item?.source?.id || "";
-
-    const result_source = datasourceData[endpoint_http]?.find(
-      (data: any) => data.id === id
-    );
-
-    const connector_id = result_source?.connector?.id;
-
-    const result_connector = connector_data[endpoint_http]?.find(
-      (data: any) => data.id === connector_id
-    );
-
-    return result_connector;
-  }
-
-  function getTypeIcon(item: any) {
-    const connectorSource = findConnectorIcon(item);
-    const icons = connectorSource?.icon;
-
-    if (!icons) {
-      return theme === "dark" ? source_default_dark_img : source_default_img;
-    }
-
-    if (icons?.startsWith("http://") || icons?.startsWith("https://")) {
-      return icons;
-    } else {
-      return endpoint_http + icons;
-    }
-  }
-
   return (
     <div className="p-4">
       <div className="font-normal text-xs text-[#666] dark:text-[#999] mb-2">
@@ -81,11 +39,7 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
         <div className="flex justify-between flex-wrap font-normal text-xs mb-2.5">
           <div className="text-[#666]">Source</div>
           <div className="text-[#333] dark:text-[#D8D8D8] flex justify-end text-right w-56 break-words">
-            <img
-              className="w-4 h-4 mr-1"
-              src={getTypeIcon(document)}
-              alt="icon"
-            />
+            <TypeIcon item={document} className="w-4 h-4 mr-1" />
             {document?.source?.name || "-"}
           </div>
         </div>

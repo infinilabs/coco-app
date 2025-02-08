@@ -2,6 +2,7 @@ import { useEffect, useCallback } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 
+import { isMetaOrCtrlKey } from "@/utils/keyboardUtils";
 interface CreateWindowOptions {
   label?: string;
   title?: string;
@@ -48,7 +49,7 @@ export default function useSettingsWindow() {
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.metaKey) {
+      if (isMetaOrCtrlKey(e)) {
         switch (e.code) {
           case "Comma":
             openSettingsWindow()

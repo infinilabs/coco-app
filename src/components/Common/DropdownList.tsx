@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { isTauri } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-shell";
 
+import { metaOrCtrlKey, isMetaOrCtrlKey } from "@/utils/keyboardUtils";
+
 interface DropdownListProps {
   selected: (item: any) => void;
   suggests: any[];
@@ -45,7 +47,7 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
       setSelectedItem((prev) =>
         prev === null || prev === suggests.length - 1 ? 0 : prev + 1
       );
-    } else if (e.key === "Meta") {
+    } else if (e.key === metaOrCtrlKey()) {
       e.preventDefault();
       setShowIndex(true);
     }
@@ -75,7 +77,7 @@ function DropdownList({ selected, suggests }: DropdownListProps) {
     // console.log("handleKeyUp", e.key);
     if (!suggests.length) return;
 
-    if (!e.metaKey) {
+    if (!isMetaOrCtrlKey(e)) {
       setShowIndex(false);
     }
   };

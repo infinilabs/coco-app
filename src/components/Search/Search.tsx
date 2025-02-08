@@ -9,6 +9,7 @@ import noDataImg from "@/assets/coconut-tree.png";
 // import { res_search2 } from "@/mock/index";
 import { SearchResults } from "@/components/Search/SearchResults";
 import { useSearchStore } from "@/stores/searchStore";
+import { isMac } from "@/utils/keyboardUtils";
 
 interface SearchProps {
   changeInput: (val: string) => void;
@@ -78,12 +79,15 @@ function Search({ isChatMode, input }: SearchProps) {
       //   baseURL: appStore.endpoint_http,
       // });
 
-      const response: any = await invoke("query_coco_servers", { from: 0, size: 10,  queryStrings: { query: input }  });
+      const response: any = await invoke("query_coco_fusion", {
+        from: 0,
+        size: 10,
+        queryStrings: { query: input },
+      });
       // failed_coco_servers documents
 
       console.log("_suggest", input, response);
       let data = response?.hits || [];
-
 
       setSuggests(data);
 
@@ -149,9 +153,17 @@ function Search({ isChatMode, input }: SearchProps) {
           </div>
           <div className="mt-10 text-sm  text-[#333] dark:text-[#D8D8D8] flex">
             Ask Coco AI
-            <span className="ml-3 w-5 h-5 rounded-[6px] border border-[#D8D8D8] flex justify-center items-center">
-              <Command className="w-3 h-3" />
-            </span>
+            {isMac ? (
+              <span className="ml-3 w-5 h-5 rounded-[6px] border border-[#D8D8D8] flex justify-center items-center">
+                <Command className="w-3 h-3" />
+              </span>
+            ) : (
+              <span className="ml-3 w-8 h-5 rounded-[6px] border border-[#D8D8D8] flex justify-center items-center">
+                <span className="h-3 leading-3 inline-flex items-center text-xs">
+                  Ctrl
+                </span>
+              </span>
+            )}
             <span className="ml-1 w-5 h-5 rounded-[6px] border border-[#D8D8D8]  flex justify-center items-center">
               T
             </span>

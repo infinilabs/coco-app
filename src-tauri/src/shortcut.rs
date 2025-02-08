@@ -108,6 +108,8 @@ fn _register_shortcut<R: Runtime>(app: &AppHandle<R>, shortcut: Shortcut) {
                         main_window.hide().unwrap();
                     } else {
                         main_window.show().unwrap();
+                        main_window.set_visible_on_all_workspaces(true).unwrap();
+                        main_window.set_always_on_top(true).unwrap();
                         main_window.set_focus().unwrap();
                     }
                 }
@@ -117,19 +119,24 @@ fn _register_shortcut<R: Runtime>(app: &AppHandle<R>, shortcut: Shortcut) {
         .unwrap();
 }
 
+use crate::common::MAIN_WINDOW_LABEL;
+
 /// Helper function to register a shortcut, used to set up the shortcut up App's first start.
 fn _register_shortcut_upon_start(app: &App, shortcut: Shortcut) {
-    let window = app.get_webview_window("main").unwrap();
+    let window = app.get_webview_window(MAIN_WINDOW_LABEL).unwrap();
     app.handle()
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
-                .with_handler(move |_app, scut, event| {
+                .with_handler(move |app, scut, event| {
                     if scut == &shortcut {
                         if let ShortcutState::Pressed = event.state() {
                             if window.is_visible().unwrap() {
                                 window.hide().unwrap();
                             } else {
+                                dbg!("showing window");
                                 window.show().unwrap();
+                                window.set_visible_on_all_workspaces(true).unwrap();
+                                window.set_always_on_top(true).unwrap();
                                 window.set_focus().unwrap();
                             }
                         }
