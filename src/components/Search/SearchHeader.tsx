@@ -1,74 +1,21 @@
-import React, { useState } from "react";
-// import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/react";
+import React from "react";
 import {
-  // ChevronDown,
   AlignLeft,
   Columns2,
 } from "lucide-react";
 
-// interface FilterOption {
-//   id: string;
-//   label: string;
-// }
-
-// interface FilterDropdownProps {
-//   label: string;
-//   options: FilterOption[];
-//   value?: string;
-//   onChange: (value: string) => void;
-// }
-
-// const FilterDropdown: React.FC<FilterDropdownProps> = ({
-//   label,
-//   options,
-//   value,
-//   onChange,
-// }) => {
-//   return (
-//     <Menu as="div" className="relative">
-//       <MenuButton className="inline-flex items-center px-2.5 py-1 text-xs bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 font-medium">
-//         {label}
-//         <ChevronDown className="w-3.5 h-3.5 ml-1 text-gray-500 dark:text-gray-400" />
-//       </MenuButton>
-
-//       <MenuItems className="absolute right-0 mt-1 w-44 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10 focus:outline-none">
-//         {options.map((option) => (
-//           <MenuItem key={option.id}>
-//             {({ active }) => (
-//               <button
-//                 onClick={() => onChange(option.id)}
-//                 className={`w-full text-left px-3 py-1.5 text-xs ${
-//                   active ? "bg-gray-50 dark:bg-gray-700" : ""
-//                 } ${
-//                   value === option.id
-//                     ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/50"
-//                     : "text-gray-700 dark:text-gray-300"
-//                 }`}
-//               >
-//                 {option.label}
-//               </button>
-//             )}
-//           </MenuItem>
-//         ))}
-//       </MenuItems>
-//     </Menu>
-//   );
-// };
-
-// const typeOptions: FilterOption[] = [
-//   { id: "all", label: "All" },
-//   { id: "doc", label: "Doc" },
-//   { id: "image", label: "Image" },
-//   { id: "code", label: "Code" },
-// ];
-
 interface SearchHeaderProps {
   total: number;
+  viewMode: "detail" | "list";
+  setViewMode: (mode: "detail" | "list") => void;
 }
 
-export const SearchHeader: React.FC<SearchHeaderProps> = ({ total }) => {
+export const SearchHeader: React.FC<SearchHeaderProps> = ({
+  total,
+  viewMode,
+  setViewMode,
+}) => {
   // const [typeFilter, setTypeFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState("all");
 
   return (
     <div className="flex items-center justify-between py-1">
@@ -86,9 +33,27 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ total }) => {
           value={typeFilter}
           onChange={setTypeFilter}
         /> */}
-        <div>
-          <AlignLeft />
-          <Columns2 />
+        <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
+          <button
+            onClick={() => setViewMode("list")}
+            className={`p-1 rounded ${
+              viewMode === "list"
+                ? "bg-white dark:bg-gray-700 shadow-sm text-[var(--coco-primary-color)]"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+            }`}
+          >
+            <AlignLeft className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setViewMode("detail")}
+            className={`p-1 rounded ${
+              viewMode === "detail"
+                ? "bg-white dark:bg-gray-700 shadow-sm text-[var(--coco-primary-color)]"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+            }`}
+          >
+            <Columns2 className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </div>

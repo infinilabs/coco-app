@@ -15,6 +15,8 @@ interface DocumentListProps {
   input: string;
   isChatMode: boolean;
   selectedId?: string;
+  viewMode: "detail" | "list";
+  setViewMode: (mode: "detail" | "list") => void;
 }
 
 const PAGE_SIZE = 20;
@@ -23,6 +25,8 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   input,
   getDocDetail,
   isChatMode,
+  viewMode,
+  setViewMode,
 }) => {
   const sourceData = useSearchStore((state) => state.sourceData);
 
@@ -196,9 +200,17 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   }, [selectedItem]);
 
   return (
-    <div className="w-[50%] border-r border-gray-200 dark:border-gray-700 flex flex-col h-full">
+    <div
+      className={`border-r border-gray-200 dark:border-gray-700 flex flex-col h-full ${
+        viewMode === "list" ? "w-[100%]" : "w-[50%]"
+      }`}
+    >
       <div className="px-2 flex-shrink-0">
-        <SearchHeader total={total} />
+        <SearchHeader
+          total={total}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+        />
       </div>
 
       <div
@@ -220,7 +232,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
               }}
               className={`w-full px-2 py-2.5 text-sm flex items-center gap-3 rounded-lg transition-colors cursor-pointer ${
                 isSelected
-                  ? "text-white bg-[#950599] hover:bg-[#950599]"
+                  ? "text-white bg-[var(--coco-primary-color)] hover:bg-[var(--coco-primary-color)]"
                   : "text-[#333] dark:text-[#d8d8d8]"
               }`}
             >
