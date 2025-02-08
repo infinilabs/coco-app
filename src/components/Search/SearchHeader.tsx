@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  AlignLeft,
-  Columns2,
-} from "lucide-react";
+import { AlignLeft, Columns2 } from "lucide-react";
 
 interface SearchHeaderProps {
   total: number;
@@ -15,8 +12,6 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({
   viewMode,
   setViewMode,
 }) => {
-  // const [typeFilter, setTypeFilter] = useState("all");
-
   return (
     <div className="flex items-center justify-between py-1">
       <div className="text-xs text-gray-600 dark:text-gray-400">
@@ -27,12 +22,6 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({
         results
       </div>
       <div className="flex gap-2">
-        {/* <FilterDropdown
-          label="Type"
-          options={typeOptions}
-          value={typeFilter}
-          onChange={setTypeFilter}
-        /> */}
         <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
           <button
             onClick={() => setViewMode("list")}

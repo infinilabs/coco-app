@@ -12,10 +12,10 @@ export function SearchResults({ input, isChatMode }: SearchResultsProps) {
   const [selectedDocumentId, setSelectedDocumentId] = useState("1");
 
   const [detailData, setDetailData] = useState<any>({});
-  const [viewMode, setViewMode] = useState<'detail' | 'list'>('detail');
+  const [viewMode, setViewMode] = useState<"detail" | "list">("detail");
 
   function getDocDetail(detail: any) {
-    setDetailData(detail)
+    setDetailData(detail);
   }
 
   return (
@@ -33,7 +33,7 @@ export function SearchResults({ input, isChatMode }: SearchResultsProps) {
         />
 
         {/* Right Panel */}
-        {viewMode === 'detail' && (
+        {viewMode === "detail" && (
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             <DocumentDetail document={detailData} />
           </div>

@@ -1,6 +1,6 @@
 import React from "react";
 
-import {formatter} from "@/utils/index"
+import { formatter } from "@/utils/index";
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
 
 interface DocumentDetailProps {
