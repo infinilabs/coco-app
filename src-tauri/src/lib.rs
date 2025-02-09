@@ -35,29 +35,6 @@ fn change_window_height(handle: AppHandle, height: u32) {
     window.set_size(size).unwrap();
 }
 
-// #[tauri::command]
-// fn show_panel(handle: AppHandle) {
-//     let panel = handle.get_webview_panel("main").unwrap();
-
-//     panel.show();
-// }
-
-// #[tauri::command]
-// fn hide_panel(handle: AppHandle) {
-//     let panel = handle.get_webview_panel("main").unwrap();
-
-//     panel.order_out(None);
-// }
-
-// #[tauri::command]
-// fn close_panel(handle: AppHandle) {
-//     let panel = handle.get_webview_panel("main").unwrap();
-
-//     panel.released_when_closed(true);
-
-//     panel.close();
-// }
-
 #[derive(serde::Deserialize)]
 struct ThemeChangedPayload {
     is_dark_mode: bool,
@@ -84,7 +61,6 @@ pub fn run() {
         .plugin(tauri_plugin_theme::init(ctx.config_mut()))
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
-            // println!("{}, {argv:?}, {cwd}", app.package_info().name);
             app.emit("single-instance", Payload { args: argv, cwd })
                 .unwrap();
         }))
@@ -96,7 +72,6 @@ pub fn run() {
             shortcut::get_current_shortcut,
             change_autostart,
             hide_coco,
-            // switch_tray_icon,
             server::servers::add_coco_server,
             server::servers::remove_coco_server,
             server::servers::list_coco_servers,
@@ -220,33 +195,6 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
     registry.register_source(application_search).await;
 
     dbg!("Initialization completed");
-
-    // let window: WebviewWindow = app_handle.get_webview_window("main").unwrap();
-
-    // let panel = window.to_panel().unwrap();
-
-    // let delegate = panel_delegate!(MyPanelDelegate {
-    //     window_did_become_key,
-    //     window_did_resign_key
-    // });
-
-    // let handle = app_handle.to_owned();
-
-    // delegate.set_listener(Box::new(move |delegate_name: String| {
-    //     match delegate_name.as_str() {
-    //         "window_did_become_key" => {
-    //             let app_name = handle.package_info().name.to_owned();
-
-    //             println!("[info]: {:?} panel becomes key window!", app_name);
-    //         }
-    //         "window_did_resign_key" => {
-    //             println!("[info]: panel resigned from key window!");
-    //         }
-    //         _ => (),
-    //     }
-    // }));
-
-    // panel.set_delegate(delegate);
 }
 
 #[tauri::command]
@@ -300,37 +248,6 @@ fn handle_hide_coco(app: &AppHandle) {
         eprintln!("Main window not found.");
     }
 }
-
-// #[tauri::command]
-// fn switch_tray_icon(app: tauri::AppHandle, is_dark_mode: bool) {
-//     let app_handle = app.app_handle();
-//
-//     // println!("is_dark_mode: {}", is_dark_mode);
-//
-//     const DARK_ICON_PATH: &[u8] = include_bytes!("../icons/dark@2x.png");
-//     const LIGHT_ICON_PATH: &[u8] = include_bytes!("../icons/light@2x.png");
-//
-//     let icon_path: &[u8] = if is_dark_mode {
-//         DARK_ICON_PATH
-//     } else {
-//         LIGHT_ICON_PATH
-//     };
-//
-//     let tray = match app_handle.tray_by_id("tray") {
-//         Some(tray) => tray,
-//         None => {
-//             eprintln!("Tray with ID 'tray' not found");
-//             return;
-//         }
-//     };
-//
-//     if let Err(e) = tray.set_icon(Some(
-//         tauri::image::Image::from_bytes(icon_path)
-//             .unwrap_or_else(|e| panic!("Failed to load icon from bytes: {}", e)),
-//     )) {
-//         eprintln!("Failed to set tray icon: {}", e);
-//     }
-// }
 
 fn enable_tray(app: &mut tauri::App) {
     use tauri::{

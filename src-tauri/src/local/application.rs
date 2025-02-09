@@ -6,35 +6,41 @@ use base64::encode;
 use dirs::data_dir;
 use hostname;
 use plist::Value;
-use std::collections::HashMap;
+use rust_search::SearchBuilder;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use walkdir::WalkDir;
 
-#[derive(Clone)]
 pub struct ApplicationSearchSource {
     base_score: f64,
     app_dirs: Vec<PathBuf>,
     icons: HashMap<String, PathBuf>, // Map app names to their icon paths
+    search_locations: Vec<String>, // Cached search locations
 }
 
 /// Extracts the app icon from the `.app` bundle or system icons and converts it to PNG format.
 fn extract_icon_from_app_bundle(app_dir: &Path, app_data_folder: &Path) -> Option<PathBuf> {
     // First, check if the icon is specified in the info.plist (e.g., CFBundleIconFile)
-    if let Some(icon_name) = get_icon_name_from_info_plist(app_dir) {
-        let icns_path = app_dir.join(format!("Contents/Resources/{}", icon_name));
+    if let Some(icon_names) = get_icon_names_from_info_plist(app_dir) {
+        for icon_name in icon_names {
+            // Attempt to find the icon in the Resources folder
+            let icns_path = app_dir.join(format!("Contents/Resources/{}", icon_name));
 
-        if icns_path.exists() {
-            if let Some(output_path) = convert_icns_to_png(&app_dir, &icns_path, app_data_folder) {
-                return Some(output_path);
-            }
-        } else {
-            if !icon_name.ends_with(".icns") {
+            if icns_path.exists() {
+                // If the icon exists, convert it to PNG
+                if let Some(output_path) = convert_icns_to_png(&app_dir, &icns_path, app_data_folder) {
+                    return Some(output_path);
+                }
+            } else {
                 // If the icon name doesn't end with .icns, try appending it
-                let icns_path = app_dir.join(format!("Contents/Resources/{}.icns", icon_name));
-                if icns_path.exists() {
-                    if let Some(output_path) = convert_icns_to_png(&app_dir, &icns_path, app_data_folder) {
-                        return Some(output_path);
+                if !icon_name.ends_with(".icns") {
+                    let icns_path_with_extension = app_dir.join(format!("Contents/Resources/{}.icns", icon_name));
+                    if icns_path_with_extension.exists() {
+                        if let Some(output_path) = convert_icns_to_png(&app_dir, &icns_path_with_extension, app_data_folder) {
+                            return Some(output_path);
+                        }
                     }
                 }
             }
@@ -57,14 +63,15 @@ fn extract_icon_from_app_bundle(app_dir: &Path, app_data_folder: &Path) -> Optio
 
     // Fallback: If no icon found, return a default system icon
     if let Some(system_icon_path) = get_system_icon(app_dir) {
-        return Some(system_icon_path);
+        if let Some(output_path) = convert_icns_to_png(&app_dir, &system_icon_path, app_data_folder) {
+            return Some(output_path);
+        }
     }
 
     None
 }
 
-/// Reads the info.plist and extracts the icon file name if specified (CFBundleIconFile).
-fn get_icon_name_from_info_plist(app_dir: &Path) -> Option<String> {
+fn get_icon_names_from_info_plist(app_dir: &Path) -> Option<Vec<String>> {
     let plist_path = app_dir.join("Contents/Info.plist");
 
     if plist_path.exists() {
@@ -72,12 +79,33 @@ fn get_icon_name_from_info_plist(app_dir: &Path) -> Option<String> {
         if let Ok(plist_value) = Value::from_file(plist_path) {
             // Check if the plist value is a dictionary
             if let Some(icon_value) = plist_value.as_dictionary() {
-                // Look for the CFBundleIconFile key in the dictionary
+                // Collect all icon-related keys
+                let mut icons = Vec::new();
+
+                // Check CFBundleIconFile
                 if let Some(icon_file) = icon_value.get("CFBundleIconFile") {
-                    // Ensure the value is a string and return it
                     if let Some(icon_name) = icon_file.as_string() {
-                        return Some(icon_name.to_string());
+                        icons.push(icon_name.to_string());
                     }
+                }
+
+                // Check CFBundleIconName (for default icon)
+                if let Some(icon_name) = icon_value.get("CFBundleIconName") {
+                    if let Some(name) = icon_name.as_string() {
+                        icons.push(name.to_string());
+                    }
+                }
+
+                // Check CFBundleTypeIconFile
+                if let Some(type_icon_file) = icon_value.get("CFBundleTypeIconFile") {
+                    if let Some(icon_name) = type_icon_file.as_string() {
+                        icons.push(icon_name.to_string());
+                    }
+                }
+
+                // If there are any icons found, return them
+                if !icons.is_empty() {
+                    return Some(icons);
                 }
             }
         }
@@ -133,6 +161,8 @@ fn convert_icns_to_png(app_dir: &Path, icns_path: &Path, app_data_folder: &Path)
             if status.success() {
                 return Some(output_png_path);
             }
+        } else {
+            dbg!("Failed to convert ICNS to PNG:", &output_png_path);
         }
     }
     None
@@ -173,24 +203,25 @@ impl ApplicationSearchSource {
     pub fn new(base_score: f64, app_dirs: Vec<PathBuf>) -> Self {
         let mut icons = HashMap::new();
 
+        // Collect search locations as strings
+        let search_locations: Vec<String> = app_dirs
+            .iter()
+            .map(|dir| dir.to_string_lossy().to_string())
+            .collect();
+
         // Iterate over the directories to find .app files and extract icons
         for app_dir in &app_dirs {
-            if let Ok(entries) = fs::read_dir(app_dir) {
-                for entry in entries.filter_map(Result::ok) {
-                    let file_path = entry.path();
-                    // Only process .app directories
-                    if file_path.is_dir() && file_path.extension() == Some("app".as_ref()) {
-                        if let Some(app_data_folder) = data_dir() {
-                            if let Some(icon_path) = extract_icon_from_app_bundle(&file_path, &app_data_folder) {
-                                // dbg!("Icon path:", &file_path, &icon_path);
-                                if let Some(app_name) = file_path.file_name().and_then(|name| name.to_str()) {
-                                    // dbg!("Save Icon path:", &file_path, &icon_path);
-                                    icons.insert(file_path.to_string_lossy().to_string(), icon_path);
-                                }
-                            } else {
-                                // dbg!("Icon not found for:");
-                                // dbg!("Icon not found for:", &file_path);
-                            }
+            // Use WalkDir to recursively get all files in app_dir
+            for entry in WalkDir::new(app_dir).into_iter().filter_map(Result::ok) {
+                let file_path = entry.path();
+                if file_path.is_dir() && file_path.extension() == Some("app".as_ref()) {
+                    if let Some(app_data_folder) = data_dir() {
+                        // dbg!(&file_path);
+                        if let Some(icon_path) = extract_icon_from_app_bundle(&file_path, &app_data_folder) {
+                            // dbg!("Icon found for:", &file_path,&icon_path);
+                            icons.insert(file_path.to_string_lossy().to_string(), icon_path);
+                        } else {
+                            dbg!("No icon found for:", &file_path);
                         }
                     }
                 }
@@ -201,6 +232,7 @@ impl ApplicationSearchSource {
             base_score,
             app_dirs,
             icons,
+            search_locations, // Cached search locations
         }
     }
 }
@@ -223,80 +255,71 @@ impl SearchSource for ApplicationSearchSource {
         }
     }
 
-    // Implement the search method to return a Future
-    async fn search(
-        &self,
-        query: SearchQuery,
-    ) -> Result<QueryResponse, SearchError> {
-        let mut total_hits = 0;
-        let mut hits: Vec<(Document, f64)> = Vec::new();
+    async fn search(&self, query: SearchQuery) -> Result<QueryResponse, SearchError> {
+        let query_string = query
+            .query_strings
+            .get("query")
+            .unwrap_or(&"".to_string())
+            .to_lowercase();
 
-        // Extract query string from query
-        let query_string = query.query_strings.get("query").unwrap_or(&"".to_string()).to_lowercase().clone();
-
-        // If query string is empty, return default response
         if query_string.is_empty() {
             return Ok(QueryResponse {
                 source: self.get_type(),
-                hits,
-                total_hits,
+                hits: Vec::new(),
+                total_hits: 0,
             });
         }
 
-        // Iterate over app directories asynchronously
-        for app_dir in &self.app_dirs {
-            if let Ok(entries) = fs::read_dir(app_dir) {
-                // Use async iterator to process entries
-                for entry in entries.filter_map(Result::ok) {
-                    let full_path = entry.path().to_string_lossy().to_string();
-                    let file_name_str = clean_app_name(&entry.path()).unwrap();
+        // Use cached search locations directly
+        if self.search_locations.is_empty() {
+            return Ok(QueryResponse {
+                source: self.get_type(),
+                hits: Vec::new(),
+                total_hits: 0,
+            });
+        }
+        let more_locations = self.search_locations[1..].to_vec();
 
-                    if file_name_str.starts_with('.') || !full_path.ends_with(".app") {
-                        // dbg!("Skipping:", &file_name_str);
-                        continue;
-                    }
+        // Use rust_search to find matching .app files
+        let results = SearchBuilder::default()
+            .search_input(&query_string)
+            .location(&self.search_locations[0]) // First location
+            .more_locations(more_locations) // Remaining locations
+            .depth(3) // Set search depth
+            .ext("app") // Only look for .app files
+            .limit(query.size as usize) // Limit results
+            .ignore_case()
+            .build()
+            .collect::<HashSet<String>>();
 
-                    // Check if the file name contains the query string
-                    if file_name_str.to_lowercase().contains(&query_string) {
-                        total_hits += 1;
-                        let path = entry.path().to_string_lossy().to_string();
+        let mut total_hits = results.len();
+        let mut hits = Vec::new();
 
-                        let mut doc = Document::new(
-                            Some(DataSourceReference {
-                                r#type: Some("Local".into()),
-                                name: Some(app_dir.to_string_lossy().to_string().into()),
-                                id: Some(file_name_str.clone()), // Using the app name as ID
-                            }),
-                            path.clone(),
-                            "Application".to_string(),
-                            file_name_str.clone(),
-                            path.clone(),
-                        );
-                        match self.icons.get(&path) {
-                            Some(icon_path) => {
-                                // dbg!("Icon path:", &path, &icon_path);
-                                if let Ok(icon_data) = read_icon_and_encode(icon_path) {
-                                    // Update doc.icon with the base64 encoded icon data
-                                    doc.icon = Some(format!("data:image/png;base64,{}", icon_data));
-                                    // dbg!("doc:",&doc.clone());
-                                } else {
-                                    dbg!("Failed to read or encode icon:", &icon_path);
-                                }
-                            }
-                            None => {
-                                // Log a warning if the icon path is not found for the given path
-                                dbg!("Icon not found for:", &path);
-                            }
-                        };
+        for path in results {
+            let file_name_str = clean_app_name(Path::new(&path)).unwrap_or_else(|| path.clone());
 
-                        // dbg!("Found hit:", &file_name_str);
-                        hits.push((doc, self.base_score));
-                    }
+            let mut doc = Document::new(
+                Some(DataSourceReference {
+                    r#type: Some("Local".into()),
+                    name: Some(path.clone()),
+                    id: Some(file_name_str.clone()),
+                }),
+                path.clone(),
+                "Application".to_string(),
+                file_name_str.clone(),
+                path.clone(),
+            );
+
+            // Attach icon if available
+            if let Some(icon_path) = self.icons.get(&path) {
+                if let Ok(icon_data) = read_icon_and_encode(icon_path) {
+                    doc.icon = Some(format!("data:image/png;base64,{}", icon_data));
                 }
             }
+
+            hits.push((doc, self.base_score));
         }
 
-        // Return the results in the QueryResponse format
         Ok(QueryResponse {
             source: self.get_type(),
             hits,
