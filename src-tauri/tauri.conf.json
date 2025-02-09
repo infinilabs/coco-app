@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2.0.0",
   "productName": "Coco AI",
-  "version": "0.1.0",
+  "version": "../package.json",
   "identifier": "rs.coco.app",
   "build": {
     "beforeDevCommand": "pnpm dev",
@@ -23,12 +23,13 @@
         "maximizable": false,
         "skipTaskbar": true,
         "resizable": false,
-        "alwaysOnTop": false,
+        "alwaysOnTop": true,
         "acceptFirstMouse": true,
         "shadow": true,
         "transparent": true,
         "fullscreen": false,
         "center": false,
+        "visible": false,
         "windowEffects": {
           "effects": [],
           "radius": 12
@@ -43,7 +44,8 @@
         "transparent": true,
         "maximizable": false,
         "skipTaskbar": false,
-        "dragDropEnabled": true,
+        "dragDropEnabled": false,
+        "hiddenTitle": true,
         "visible": false,
         "windowEffects": {
           "effects": [
@@ -54,17 +56,30 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "dangerousDisableAssetCspModification": true,
+      "assetProtocol": {
+        "enable": true,
+        "scope": {
+          "allow": [
+            "**/*"
+          ],
+          "requireLiteralLeadingDot": false
+        }
+      }
     }
   },
   "bundle": {
     "active": true,
-    "targets": "all",
-    "windows": {
-      "certificateThumbprint": null,
-      "digestAlgorithm": "sha256",
-      "timestampUrl": ""
-    },
+    "targets": [
+      "nsis",
+      "dmg",
+      "app",
+      "appimage",
+      "deb",
+      "rpm"
+    ],
+    "shortDescription": "Coco AI",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -108,6 +123,12 @@
       ]
     },
     "window": {},
+    "updater": {
+      "pubkey": "",
+      "endpoints": [
+        "https://api.coco.rs/update"
+      ]
+    },
     "websocket": {},
     "shell": {},
     "globalShortcut": {},

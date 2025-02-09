@@ -18,7 +18,7 @@ use reqwest::Client;
 use std::path::PathBuf;
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
-use tauri::{AppHandle, Emitter, Listener, Manager, Runtime, WebviewWindow};
+use tauri::{AppHandle, Emitter, Listener, Manager, Runtime, WebviewWindow, WindowEvent};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_deep_link::DeepLinkExt;
 use tokio::runtime::Runtime as RT;
@@ -73,7 +73,7 @@ struct Payload {
 pub fn run() {
     let mut ctx = tauri::generate_context!();
 
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
         .plugin(tauri_nspanel::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_shell::init())
@@ -96,7 +96,7 @@ pub fn run() {
             shortcut::get_current_shortcut,
             change_autostart,
             hide_coco,
-            switch_tray_icon,
+            // switch_tray_icon,
             server::servers::add_coco_server,
             server::servers::remove_coco_server,
             server::servers::list_coco_servers,
@@ -158,9 +158,31 @@ pub fn run() {
             setup::default(app, main_window.clone(), settings_window.clone());
 
             Ok(())
-        })
-        .run(ctx)
+        }).on_window_event(|window, event| match event {
+        WindowEvent::CloseRequested { api, .. } => {
+            dbg!("Close requested event received");
+            window.hide().unwrap();
+            api.prevent_close();
+        }
+        _ => {}
+    }).build(ctx)
         .expect("error while running tauri application");
+
+    app.run(|app_handle, event| match event {
+        #[cfg(target_os = "macos")]
+        tauri::RunEvent::Reopen {
+            has_visible_windows,
+            ..
+        } => {
+            dbg!("Reopen event received: has_visible_windows = {}", has_visible_windows);
+            if has_visible_windows {
+                return;
+            }
+        }
+        _ => {
+            let _ = app_handle;
+        }
+    });
 }
 
 pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
@@ -253,7 +275,7 @@ fn hide_coco(app: tauri::AppHandle) {
 }
 
 fn handle_open_coco(app: &AppHandle) {
-    // println!("Open Coco menu clicked!");
+    println!("Open Coco menu clicked!");
 
     if let Some(window) = app.get_window(MAIN_WINDOW_LABEL) {
         window.show().unwrap();
@@ -279,36 +301,36 @@ fn handle_hide_coco(app: &AppHandle) {
     }
 }
 
-#[tauri::command]
-fn switch_tray_icon(app: tauri::AppHandle, is_dark_mode: bool) {
-    let app_handle = app.app_handle();
-
-    // println!("is_dark_mode: {}", is_dark_mode);
-
-    const DARK_ICON_PATH: &[u8] = include_bytes!("../icons/dark@2x.png");
-    const LIGHT_ICON_PATH: &[u8] = include_bytes!("../icons/light@2x.png");
-
-    let icon_path: &[u8] = if is_dark_mode {
-        DARK_ICON_PATH
-    } else {
-        LIGHT_ICON_PATH
-    };
-
-    let tray = match app_handle.tray_by_id("tray") {
-        Some(tray) => tray,
-        None => {
-            eprintln!("Tray with ID 'tray' not found");
-            return;
-        }
-    };
-
-    if let Err(e) = tray.set_icon(Some(
-        tauri::image::Image::from_bytes(icon_path)
-            .unwrap_or_else(|e| panic!("Failed to load icon from bytes: {}", e)),
-    )) {
-        eprintln!("Failed to set tray icon: {}", e);
-    }
-}
+// #[tauri::command]
+// fn switch_tray_icon(app: tauri::AppHandle, is_dark_mode: bool) {
+//     let app_handle = app.app_handle();
+//
+//     // println!("is_dark_mode: {}", is_dark_mode);
+//
+//     const DARK_ICON_PATH: &[u8] = include_bytes!("../icons/dark@2x.png");
+//     const LIGHT_ICON_PATH: &[u8] = include_bytes!("../icons/light@2x.png");
+//
+//     let icon_path: &[u8] = if is_dark_mode {
+//         DARK_ICON_PATH
+//     } else {
+//         LIGHT_ICON_PATH
+//     };
+//
+//     let tray = match app_handle.tray_by_id("tray") {
+//         Some(tray) => tray,
+//         None => {
+//             eprintln!("Tray with ID 'tray' not found");
+//             return;
+//         }
+//     };
+//
+//     if let Err(e) = tray.set_icon(Some(
+//         tauri::image::Image::from_bytes(icon_path)
+//             .unwrap_or_else(|e| panic!("Failed to load icon from bytes: {}", e)),
+//     )) {
+//         eprintln!("Failed to set tray icon: {}", e);
+//     }
+// }
 
 fn enable_tray(app: &mut tauri::App) {
     use tauri::{
@@ -335,8 +357,9 @@ fn enable_tray(app: &mut tauri::App) {
         .unwrap();
 
     let _tray = TrayIconBuilder::with_id("tray")
+        .icon_as_template(true)
         // .icon(app.default_window_icon().unwrap().clone())
-        .icon(Image::from_bytes(include_bytes!("../icons/light@2x.png")).expect("REASON"))
+        .icon(Image::from_bytes(include_bytes!("../assets/tray-mac.ico")).expect("Failed to load icon"))
         .menu(&menu)
         .on_menu_event(|app, event| match event.id.as_ref() {
             "open" => {
@@ -351,7 +374,7 @@ fn enable_tray(app: &mut tauri::App) {
             "settings" => {
                 // windows failed to open second window, issue: https://github.com/tauri-apps/tauri/issues/11144 https://github.com/tauri-apps/tauri/issues/8196
                 //#[cfg(windows)]
-                let _ = app.emit("open_settings", "");
+                let _ = app.emit("open_settings", "settings");
 
                 // #[cfg(not(windows))]
                 // open_settings(&app);

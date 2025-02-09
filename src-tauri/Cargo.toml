@@ -14,23 +14,31 @@ name = "coco_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.0.0", features = [] }
+tauri-build = { version = "2", features = [] }
 
 [dependencies]
 pizza-common = { git = "https://github.com/infinilabs/pizza-common", branch = "main" }
 
-tauri = { version = "2.0.6", features = ["macos-private-api", "tray-icon", "image-png", "unstable"] }
-tauri-plugin-shell = "2.0.0"
+tauri = { version = "2", features = ["protocol-asset", "macos-private-api", "tray-icon", "image-ico", "image-png", "unstable"] }
+tauri-plugin-shell = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tauri-plugin-http = "2"
-
 tauri-plugin-websocket = "2"
 tauri-plugin-theme = "2.1.2"
-tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }
 tauri-plugin-deep-link = "2.0.0"
 tauri-plugin-single-instance = "2.0.0"
 tauri-plugin-store = "2.2.0"
+tauri-plugin-os = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
+tauri-plugin-drag = "2"
+
+[target."cfg(target_os = \"macos\")".dependencies]
+tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }
+
 reqwest = "0.12.12"
 futures = "0.3.31"
 ordered-float = { version = "4.6.0", default-features = false }

@@ -1,0 +1,15 @@
+{
+  "identifier": "rs.coco.app",
+  "bundle": {
+    "externalBin": [
+    ],
+    "windows": {
+      "digestAlgorithm": "sha256",
+      "nsis": {
+        "languages": [
+        ],
+        "installMode": "both"
+      }
+    }
+  }
+}

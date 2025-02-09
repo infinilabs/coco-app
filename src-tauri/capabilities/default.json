@@ -56,9 +56,6 @@
       "identifier": "http:default",
       "allow": [
         {
-          "url": "http://localhost:9000"
-        },
-        {
           "url": "https://coco.infini.cloud"
         }
       ],

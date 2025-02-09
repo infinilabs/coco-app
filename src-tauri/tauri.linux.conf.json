@@ -1,0 +1,15 @@
+{
+  "identifier": "rs.coco.app",
+  "bundle": {
+    "linux": {
+      "deb": {
+        "depends": [],
+        "desktopTemplate": "./Coco.desktop"
+      },
+      "rpm": {
+        "depends": [],
+        "desktopTemplate": "./Coco.desktop"
+      }
+    }
+  }
+}
