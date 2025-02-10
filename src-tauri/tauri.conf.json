@@ -124,9 +124,11 @@
     },
     "window": {},
     "updater": {
-      "pubkey": "",
+      "dialog": true,
+      "active": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM5RjNFQUM3NDdGMjgzNUIKUldSYmcvSkh4K3J6eWFrYlRGTjFPZTJXQWIyMGJtWjdLVUplZm9kcHcvdWQ0aTZjMUYvOUJ5K08K",
       "endpoints": [
-        "https://api.coco.rs/update"
+        "https://api.coco.rs/update/{{target}}/{{current_version}}"
       ]
     },
     "websocket": {},
@@ -140,9 +142,6 @@
           "pathPrefix": [
             "/open"
           ]
-        },
-        {
-          "host": "localhost:9000"
         }
       ],
       "desktop": {
