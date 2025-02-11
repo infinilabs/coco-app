@@ -1,4 +1,4 @@
-use crate::COCO_TAURI_STORE;
+use crate::{move_window_to_active_monitor, COCO_TAURI_STORE};
 use tauri::App;
 use tauri::AppHandle;
 use tauri::Manager;
@@ -99,18 +99,22 @@ pub fn change_shortcut<R: Runtime>(
 
 /// Helper function to register a shortcut, used for shortcut updates.
 fn _register_shortcut<R: Runtime>(app: &AppHandle<R>, shortcut: Shortcut) {
-    let main_window = app.get_webview_window("main").unwrap();
     app.global_shortcut()
-        .on_shortcut(shortcut, move |_app, scut, event| {
+        .on_shortcut(shortcut, move |app, scut, event| {
             if scut == &shortcut {
+                dbg!("shortcut pressed");
+                let main_window = app.get_window(MAIN_WINDOW_LABEL).unwrap();
                 if let ShortcutState::Pressed = event.state() {
                     if main_window.is_visible().unwrap() {
+                        dbg!("hiding window");
                         main_window.hide().unwrap();
                     } else {
-                        main_window.show().unwrap();
+                        dbg!("showing window");
+                        move_window_to_active_monitor(&main_window);
                         main_window.set_visible_on_all_workspaces(true).unwrap();
                         main_window.set_always_on_top(true).unwrap();
                         main_window.set_focus().unwrap();
+                        main_window.show().unwrap();
                     }
                 }
             }
@@ -123,21 +127,23 @@ use crate::common::MAIN_WINDOW_LABEL;
 
 /// Helper function to register a shortcut, used to set up the shortcut up App's first start.
 fn _register_shortcut_upon_start(app: &App, shortcut: Shortcut) {
-    let window = app.get_webview_window(MAIN_WINDOW_LABEL).unwrap();
-    app.handle()
+    let handler = app.app_handle();
+    handler
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(move |app, scut, event| {
                     if scut == &shortcut {
+                        let window = app.get_window(MAIN_WINDOW_LABEL).unwrap();
                         if let ShortcutState::Pressed = event.state() {
                             if window.is_visible().unwrap() {
                                 window.hide().unwrap();
                             } else {
                                 dbg!("showing window");
-                                window.show().unwrap();
+                                move_window_to_active_monitor(&window);
                                 window.set_visible_on_all_workspaces(true).unwrap();
                                 window.set_always_on_top(true).unwrap();
                                 window.set_focus().unwrap();
+                                window.show().unwrap();
                             }
                         }
                     }
