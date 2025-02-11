@@ -1,4 +1,5 @@
 use crate::common::document::Document;
+use crate::common::search::{parse_search_response, QueryHits, QueryResponse, QuerySource, SearchQuery};
 use crate::common::server::Server;
 use crate::common::traits::{SearchError, SearchSource};
 use crate::server::http_client::HttpClient;
@@ -9,8 +10,6 @@ use ordered_float::OrderedFloat;
 use reqwest::{Client, Method, RequestBuilder};
 use std::collections::HashMap;
 use std::hash::Hash;
-use std::pin::Pin;
-use crate::common::search::{parse_search_response, QueryHits, QueryResponse, QuerySource, SearchQuery};
 pub(crate) struct DocumentsSizedCollector {
     size: u64,
     /// Documents and scores
@@ -50,13 +49,14 @@ impl DocumentsSizedCollector {
     pub(crate) fn documents_with_sources(self, x: &HashMap<String, QuerySource>) -> Vec<QueryHits> {
         let mut grouped_docs: Vec<QueryHits> = Vec::new();
 
-        for (source_id, doc, _) in self.docs.into_iter() {
+        for (source_id, doc, score) in self.docs.into_iter() {
             // Try to get the source from the hashmap
             let source = x.get(&source_id).cloned();
 
             // Push the document and source into the result
             grouped_docs.push(QueryHits {
                 source,
+                score: score.into_inner(),
                 document: doc,
             });
         }
@@ -95,8 +95,6 @@ impl CocoSearchSource {
             .query(query_strings)
     }
 }
-use futures::future::join_all;
-use std::sync::Arc;
 
 #[async_trait]
 impl SearchSource for CocoSearchSource {

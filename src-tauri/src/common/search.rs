@@ -1,9 +1,9 @@
-use std::collections::HashMap;
-use std::error::Error;
+use crate::common::document::Document;
 use reqwest::Response;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use crate::common::document::Document;
+use std::collections::HashMap;
+use std::error::Error;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SearchResponse<T> {
     pub took: u64,
@@ -64,7 +64,7 @@ pub async fn parse_search_hits<T>(
 where
     T: for<'de> Deserialize<'de> + std::fmt::Debug,
 {
-    let response=parse_search_response(response).await?;
+    let response = parse_search_response(response).await?;
 
     Ok(response.hits.hits)
 }
@@ -87,7 +87,7 @@ where
     Ok(parse_search_hits(response).await?.into_iter().map(|hit| (hit._source, hit._score)).collect())
 }
 
-#[derive(Debug,Clone,Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct SearchQuery {
     pub from: u64,
     pub size: u64,
@@ -104,35 +104,36 @@ impl SearchQuery {
     }
 }
 
-#[derive(Debug,Clone, Serialize)]
-pub struct QuerySource{
+#[derive(Debug, Clone, Serialize)]
+pub struct QuerySource {
     pub r#type: String, //coco-server/local/ etc.
     pub id: String, //coco server's id
     pub name: String, //coco server's name, local computer name, etc.
 }
 
-#[derive(Debug,Clone, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct QueryHits {
     pub source: Option<QuerySource>,
+    pub score: f64,
     pub document: Document,
 }
 
-#[derive(Debug,Clone, Serialize)]
-pub struct FailedRequest{
+#[derive(Debug, Clone, Serialize)]
+pub struct FailedRequest {
     pub source: QuerySource,
     pub status: u16,
     pub error: Option<String>,
     pub reason: Option<String>,
 }
 
-#[derive(Debug,Clone, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct QueryResponse {
     pub source: QuerySource,
-    pub hits: Vec<(Document,f64)>,
+    pub hits: Vec<(Document, f64)>,
     pub total_hits: usize,
 }
 
-#[derive(Debug,Clone, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct MultiSourceQueryResponse {
     pub failed: Vec<FailedRequest>,
     pub hits: Vec<QueryHits>,

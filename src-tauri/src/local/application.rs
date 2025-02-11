@@ -1,13 +1,14 @@
 use crate::common::document::{DataSourceReference, Document};
 use crate::common::search::{QueryResponse, QuerySource, SearchQuery};
 use crate::common::traits::{SearchError, SearchSource};
+use crate::local::LOCAL_QUERY_SOURCE_TYPE;
 use async_trait::async_trait;
 use base64::encode;
 use dirs::data_dir;
+use fuzzy_prefix_search::Trie;
 use hostname;
 use plist::Value;
-use rust_search::SearchBuilder;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -17,7 +18,7 @@ pub struct ApplicationSearchSource {
     base_score: f64,
     app_dirs: Vec<PathBuf>,
     icons: HashMap<String, PathBuf>, // Map app names to their icon paths
-    search_locations: Vec<String>, // Cached search locations
+    application_paths: fuzzy_prefix_search::Trie<String>, // Cached search locations
 }
 
 /// Extracts the app icon from the `.app` bundle or system icons and converts it to PNG format.
@@ -139,9 +140,11 @@ fn convert_icns_to_png(app_dir: &Path, icns_path: &Path, app_data_folder: &Path)
         let icon_storage_dir = app_data_folder.join("coco-appIcons");
         fs::create_dir_all(&icon_storage_dir).ok();
 
-        // dbg!("app_name:", &app_name);
-
         let output_png_path = icon_storage_dir.join(format!("{}.png", app_name));
+
+        if output_png_path.exists() {
+            return Some(output_png_path);
+        }
 
         // dbg!("Converting ICNS to PNG:", &output_png_path);
 
@@ -204,10 +207,7 @@ impl ApplicationSearchSource {
         let mut icons = HashMap::new();
 
         // Collect search locations as strings
-        let search_locations: Vec<String> = app_dirs
-            .iter()
-            .map(|dir| dir.to_string_lossy().to_string())
-            .collect();
+        let mut applications = Trie::new();
 
         // Iterate over the directories to find .app files and extract icons
         for app_dir in &app_dirs {
@@ -216,10 +216,21 @@ impl ApplicationSearchSource {
                 let file_path = entry.path();
                 if file_path.is_dir() && file_path.extension() == Some("app".as_ref()) {
                     if let Some(app_data_folder) = data_dir() {
-                        // dbg!(&file_path);
+                        let file_path_str = file_path.to_string_lossy().to_string(); // Convert to owned String if needed
+                        if file_path.parent().unwrap().to_str().unwrap().contains(".app/Contents/") {
+                            continue;
+                        }
+                        let search_word = file_path.file_name()
+                            .unwrap()               // unwrap() might panic if there's no file name
+                            .to_str()
+                            .unwrap()               // unwrap() might panic if it's not valid UTF-8
+                            .trim_end_matches(".app")
+                            .to_lowercase();        // to_lowercase returns a String, which is owned
+
+                        let search_word_ref = search_word.as_str(); // Get a reference to the string slice
+                        applications.insert(search_word_ref, file_path_str.clone());
                         if let Some(icon_path) = extract_icon_from_app_bundle(&file_path, &app_data_folder) {
-                            // dbg!("Icon found for:", &file_path,&icon_path);
-                            icons.insert(file_path.to_string_lossy().to_string(), icon_path);
+                            icons.insert(file_path_str, icon_path);
                         } else {
                             dbg!("No icon found for:", &file_path);
                         }
@@ -232,7 +243,7 @@ impl ApplicationSearchSource {
             base_score,
             app_dirs,
             icons,
-            search_locations, // Cached search locations
+            application_paths: applications,
         }
     }
 }
@@ -249,9 +260,9 @@ fn clean_app_name(path: &Path) -> Option<String> {
 impl SearchSource for ApplicationSearchSource {
     fn get_type(&self) -> QuerySource {
         QuerySource {
-            r#type: "Local".into(),
+            r#type: LOCAL_QUERY_SOURCE_TYPE.into(),
             name: hostname::get().unwrap_or("My Computer".into()).to_string_lossy().into(),
-            id: "local_app_1".into(),
+            id: "local_applications".into(),
         }
     }
 
@@ -270,54 +281,50 @@ impl SearchSource for ApplicationSearchSource {
             });
         }
 
-        // Use cached search locations directly
-        if self.search_locations.is_empty() {
-            return Ok(QueryResponse {
-                source: self.get_type(),
-                hits: Vec::new(),
-                total_hits: 0,
-            });
-        }
-        let more_locations = self.search_locations[1..].to_vec();
-
-        // Use rust_search to find matching .app files
-        let results = SearchBuilder::default()
-            .search_input(&query_string)
-            .location(&self.search_locations[0]) // First location
-            .more_locations(more_locations) // Remaining locations
-            .depth(3) // Set search depth
-            .ext("app") // Only look for .app files
-            .limit(query.size as usize) // Limit results
-            .ignore_case()
-            .build()
-            .collect::<HashSet<String>>();
-
-        let mut total_hits = results.len();
+        let mut total_hits = 0;
         let mut hits = Vec::new();
 
-        for path in results {
-            let file_name_str = clean_app_name(Path::new(&path)).unwrap_or_else(|| path.clone());
+        let mut results = self.application_paths.search_within_distance_scored(&query_string, 3);
 
-            let mut doc = Document::new(
-                Some(DataSourceReference {
-                    r#type: Some("Local".into()),
-                    name: Some(path.clone()),
-                    id: Some(file_name_str.clone()),
-                }),
-                path.clone(),
-                "Application".to_string(),
-                file_name_str.clone(),
-                path.clone(),
-            );
-
-            // Attach icon if available
-            if let Some(icon_path) = self.icons.get(&path) {
-                if let Ok(icon_data) = read_icon_and_encode(icon_path) {
-                    doc.icon = Some(format!("data:image/png;base64,{}", icon_data));
-                }
+        // Check for NaN or extreme score values and handle them properly
+        results.sort_by(|a, b| {
+            // If either score is NaN, consider them equal (you can customize this logic as needed)
+            if a.score.is_nan() || b.score.is_nan() {
+                std::cmp::Ordering::Equal
+            } else {
+                // Otherwise, compare the scores as usual
+                b.score.partial_cmp(&a.score).unwrap_or(std::cmp::Ordering::Equal)
             }
+        });
 
-            hits.push((doc, self.base_score));
+        if !results.is_empty() {
+            for result in results {
+                let file_name_str = result.word;
+                let file_path_str = result.data.get(0).unwrap().to_string();
+                let file_path = PathBuf::from(file_path_str.clone());
+                let cleaned_file_name = clean_app_name(&file_path).unwrap();
+                total_hits += 1;
+                let mut doc = Document::new(
+                    Some(DataSourceReference {
+                        r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
+                        name: Some("Applications".into()),
+                        id: Some(file_name_str.clone()),
+                    }),
+                    file_path_str.clone(),
+                    "Application".to_string(),
+                    cleaned_file_name,
+                    file_path_str.clone(),
+                );
+
+                // Attach icon if available
+                if let Some(icon_path) = self.icons.get(file_path_str.as_str()) {
+                    if let Ok(icon_data) = read_icon_and_encode(icon_path) {
+                        doc.icon = Some(format!("data:image/png;base64,{}", icon_data));
+                    }
+                }
+
+                hits.push((doc, self.base_score + result.score as f64));
+            }
         }
 
         Ok(QueryResponse {
