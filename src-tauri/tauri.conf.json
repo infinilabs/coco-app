@@ -71,14 +71,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": [
-      "nsis",
-      "dmg",
-      "app",
-      "appimage",
-      "deb",
-      "rpm"
-    ],
+    "targets": "all",
     "shortDescription": "Coco AI",
     "icon": [
       "icons/32x32.png",
@@ -103,11 +96,11 @@
       "dmg": {
         "appPosition": {
           "x": 180,
-          "y": 140
+          "y": 180
         },
         "applicationFolderPosition": {
           "x": 480,
-          "y": 140
+          "y": 180
         }
       }
     },
