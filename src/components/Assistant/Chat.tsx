@@ -15,7 +15,7 @@ import { useWebSocket } from "../../hooks/useWebSocket";
 import { useChatStore } from "../../stores/chatStore";
 import { useWindows }  from "../../hooks/useWindows";
 import { clientEnv } from "@/utils/env";
-import { useAppStore } from '@/stores/appStore';
+// import { useAppStore } from '@/stores/appStore';
 
 interface ChatAIProps {
   inputValue: string;
@@ -39,7 +39,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
       reconnect: reconnect
     }));
 
-    const appStore = useAppStore();
+    // const appStore = useAppStore();
 
     const { createWin } = useWindows();
 

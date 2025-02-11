@@ -9,15 +9,15 @@ import type { Chat, Message } from "./types";
 import { tauriFetch } from "../../api/tauriFetchClient";
 import { useWebSocket } from "../../hooks/useWebSocket";
 import { useWindows }  from "../../hooks/useWindows";
-import { clientEnv } from "@/utils/env";
-import { useAppStore } from '@/stores/appStore';
+// import { clientEnv } from "@/utils/env";
+// import { useAppStore } from '@/stores/appStore';
 
 interface ChatAIProps {}
 
 export default function ChatAI({}: ChatAIProps) {
   const { closeWin } = useWindows();
 
-  const appStore = useAppStore();
+  // const appStore = useAppStore();
 
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChat, setActiveChat] = useState<Chat>();
