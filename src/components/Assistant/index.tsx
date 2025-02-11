@@ -39,7 +39,7 @@ export default function ChatAI({}: ChatAIProps) {
 
   console.log("index useWebSocket")
   const { messages, setMessages } = useWebSocket(
-    `${appStore.endpoint_websocket || clientEnv.COCO_WEBSOCKET_URL}`,
+    "wss://coco.infini.cloud/ws",
     (msg) => {
       if (msg.includes("websocket-session-id")) {
         const array = msg.split(" ");

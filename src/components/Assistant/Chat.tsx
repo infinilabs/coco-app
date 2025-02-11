@@ -61,7 +61,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
 
     console.log("chat useWebSocket", clientEnv.COCO_WEBSOCKET_URL)
     const { messages, setMessages, connected, reconnect } = useWebSocket(
-      `${appStore.endpoint_websocket || clientEnv.COCO_WEBSOCKET_URL}`,
+      "wss://coco.infini.cloud/ws",
       (msg) => {
         console.log("msg", msg);
         if (msg.includes("websocket-session-id")) {
