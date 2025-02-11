@@ -18,7 +18,7 @@ use reqwest::Client;
 use std::path::PathBuf;
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
-use tauri::{AppHandle, Emitter, Listener, Manager, Runtime, WebviewWindow, WindowEvent};
+use tauri::{AppHandle, Emitter, Listener, Manager, PhysicalPosition, Runtime, WebviewWindow, Window, WindowEvent};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_deep_link::DeepLinkExt;
 use tokio::runtime::Runtime as RT;
@@ -106,8 +106,7 @@ pub fn run() {
                 dbg!("Async initialization tasks completed");
             });
 
-
-            shortcut::enable_shortcut(app);
+            shortcut::enable_shortcut(&app);
             enable_tray(app);
             enable_autostart(app);
 
@@ -181,18 +180,30 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
         registry.register_source(source).await;
     }
 
+    // Clone app_handle to move it into the background task
+    let app_handle_clone = app_handle.clone();
 
-    let dir = vec![
-        dirs::home_dir().map(|home| home.join("Applications")), // Resolve `~/Applications`
-        Some(PathBuf::from("/Applications")),
-        Some(PathBuf::from("/System/Applications")),
-        Some(PathBuf::from("/System/Applications/Utilities")),
-    ];
+    // Run the slow application directory search in the background
+    tokio::spawn(async move {
+        dbg!("Initializing application search source in background");
+        let dir = vec![
+            dirs::home_dir().map(|home| home.join("Applications")), // Resolve `~/Applications`
+            Some(PathBuf::from("/Applications")),
+            Some(PathBuf::from("/System/Applications")),
+            Some(PathBuf::from("/System/Applications/Utilities")),
+        ];
 
-    // Remove any `None` values if `home_dir()` fails
-    let app_dirs: Vec<PathBuf> = dir.into_iter().flatten().collect();
-    let application_search = local::application::ApplicationSearchSource::new(1000f64, app_dirs);
-    registry.register_source(application_search).await;
+        // Remove any `None` values if `home_dir()` fails
+        let app_dirs: Vec<PathBuf> = dir.into_iter().flatten().collect();
+
+        let application_search = local::application::ApplicationSearchSource::new(1000f64, app_dirs);
+
+        // Register the application search source
+        let registry = app_handle_clone.state::<SearchSourceRegistry>();
+        registry.register_source(application_search).await;
+
+        dbg!("Application search source initialized in background");
+    });
 
     dbg!("Initialization completed");
 }
@@ -226,6 +237,8 @@ fn handle_open_coco(app: &AppHandle) {
     println!("Open Coco menu clicked!");
 
     if let Some(window) = app.get_window(MAIN_WINDOW_LABEL) {
+        move_window_to_active_monitor(&window);
+
         window.show().unwrap();
         window.set_visible_on_all_workspaces(true).unwrap();
         window.set_always_on_top(true).unwrap();
@@ -234,6 +247,81 @@ fn handle_open_coco(app: &AppHandle) {
         eprintln!("Failed to get main window.");
     }
 }
+
+fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
+    dbg!("Moving window to active monitor");
+    // Try to get the available monitors, handle failure gracefully
+    let available_monitors = match window.available_monitors() {
+        Ok(monitors) => monitors,
+        Err(e) => {
+            eprintln!("Failed to get monitors: {}", e);
+            return;
+        }
+    };
+
+    // Attempt to get the cursor position, handle failure gracefully
+    let cursor_position = match window.cursor_position() {
+        Ok(pos) => Some(pos),
+        Err(e) => {
+            eprintln!("Failed to get cursor position: {}", e);
+            None
+        }
+    };
+
+    // Find the monitor that contains the cursor or default to the primary monitor
+    let target_monitor = if let Some(cursor_position) = cursor_position {
+        // Convert cursor position to integers
+        let cursor_x = cursor_position.x.round() as i32;
+        let cursor_y = cursor_position.y.round() as i32;
+
+        // Find the monitor that contains the cursor
+        available_monitors.into_iter().find(|monitor| {
+            let monitor_position = monitor.position();
+            let monitor_size = monitor.size();
+
+            cursor_x >= monitor_position.x
+                && cursor_x <= monitor_position.x + monitor_size.width as i32
+                && cursor_y >= monitor_position.y
+                && cursor_y <= monitor_position.y + monitor_size.height as i32
+        })
+    } else {
+        None
+    };
+
+    // Use the target monitor or default to the primary monitor
+    let monitor = match target_monitor.or_else(|| window.primary_monitor().ok().flatten()) {
+        Some(monitor) => monitor,
+        None => {
+            eprintln!("No monitor found!");
+            return;
+        }
+    };
+
+    let monitor_position = monitor.position();
+    let monitor_size = monitor.size();
+
+    // Get the current size of the window
+    let window_size = match window.inner_size() {
+        Ok(size) => size,
+        Err(e) => {
+            eprintln!("Failed to get window size: {}", e);
+            return;
+        }
+    };
+
+    let window_width = window_size.width as i32;
+    let window_height = window_size.height as i32;
+
+    // Calculate the new position to center the window on the monitor
+    let window_x = monitor_position.x + (monitor_size.width as i32 - window_width) / 2;
+    let window_y = monitor_position.y + (monitor_size.height as i32 - window_height) / 2;
+
+    // Move the window to the new position
+    if let Err(e) = window.set_position(PhysicalPosition::new(window_x, window_y)) {
+        eprintln!("Failed to move window: {}", e);
+    }
+}
+
 
 fn handle_hide_coco(app: &AppHandle) {
     // println!("Hide Coco menu clicked!");
