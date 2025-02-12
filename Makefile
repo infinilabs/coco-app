@@ -40,6 +40,7 @@ build-mac-dmg:
 build-mac-universal-dmg:
 	@echo "Building the desktop dmg package..."
 	pnpm tauri build --target universal-apple-darwin --bundles dmg
+        #pnpm tauri build --target x86_64-apple-darwin --bundles dmg
 
 # Build nsis package for Windows
 build-win-nsis: install-dependencies

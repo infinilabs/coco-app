@@ -1,0 +1,10 @@
+{
+  "bundle": {
+    "macOS": {
+      "entitlements": "./Entitlements.plist",
+      "files": {
+        "embedded.provisionprofile": "/Users/medcl/Coco_AI.provisionprofile"
+      }
+    }
+  }
+}

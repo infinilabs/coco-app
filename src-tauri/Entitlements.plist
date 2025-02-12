@@ -26,5 +26,12 @@
     <true/>
     <key>com.apple.security.inherit</key>
     <true/>
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+    <key>com.apple.application-identifier</key>
+    <string>6GVZT94974.rs.coco.app</string>
+    <key>com.apple.developer.team-identifier</key>
+    <string>6GVZT94974</string>
+
 </dict>
 </plist>

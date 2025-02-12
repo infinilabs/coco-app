@@ -6,16 +6,19 @@
   <string>Request camera access for WebRTC</string>
   <key>NSMicrophoneUsageDescription</key>
   <string>Request microphone access for WebRTC</string>
-  
 
 	<key>CFBundleIdentifier</key>
 	<string>rs.coco.app</string>
-
+	<key>CFBundleExecutable</key>
+    <string>coco</string>
 	<key>NSPrefPaneIconLabel</key>
 	<string>coco-ai</string>
 
 	<key>LSUIElement</key>
     <true/>
+
+      <key>ITSAppUsesNonExemptEncryption</key>
+      <false/>
 
   <key>CFBundleURLTypes</key>
   <array>
