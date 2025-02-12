@@ -18,8 +18,10 @@ use tauri_plugin_store::StoreExt;
 // Assuming you're using serde_json
 
 lazy_static! {
-    static ref SERVER_CACHE: Arc<RwLock<HashMap<String,Server>>> = Arc::new(RwLock::new(HashMap::new()));
-    static ref SERVER_TOKEN: Arc<RwLock<HashMap<String,ServerAccessToken>>> = Arc::new(RwLock::new(HashMap::new()));
+    static ref SERVER_CACHE: Arc<RwLock<HashMap<String, Server>>> =
+        Arc::new(RwLock::new(HashMap::new()));
+    static ref SERVER_TOKEN: Arc<RwLock<HashMap<String, ServerAccessToken>>> =
+        Arc::new(RwLock::new(HashMap::new()));
 }
 
 fn check_server_exists(id: &str) -> bool {
@@ -32,6 +34,7 @@ pub fn get_server_by_id(id: &str) -> Option<Server> {
     cache.get(id).cloned()
 }
 
+#[tauri::command]
 pub fn get_server_token(id: &str) -> Option<ServerAccessToken> {
     let cache = SERVER_TOKEN.read().unwrap(); // Acquire read lock
     cache.get(id).cloned()
@@ -58,7 +61,6 @@ fn remove_server_by_id(id: String) -> bool {
     let deleted = cache.remove(id.as_str());
     deleted.is_some()
 }
-
 
 pub async fn persist_servers<R: Runtime>(app_handle: &AppHandle<R>) -> Result<(), String> {
     let cache = SERVER_CACHE.read().unwrap(); // Acquire a read lock, not a write lock, since you're not modifying the cache
@@ -142,7 +144,9 @@ fn get_default_server() -> Server {
     }
 }
 
-pub async fn load_servers_token<R: Runtime>(app_handle: &AppHandle<R>) -> Result<Vec<ServerAccessToken>, String> {
+pub async fn load_servers_token<R: Runtime>(
+    app_handle: &AppHandle<R>,
+) -> Result<Vec<ServerAccessToken>, String> {
     dbg!("Attempting to load servers token");
 
     let store = app_handle
@@ -158,7 +162,8 @@ pub async fn load_servers_token<R: Runtime>(app_handle: &AppHandle<R>) -> Result
     let servers: Option<JsonValue> = store.get(COCO_SERVER_TOKENS);
 
     // Handle the None case
-    let servers = servers.ok_or_else(|| "Failed to read servers from store: No servers found".to_string())?;
+    let servers =
+        servers.ok_or_else(|| "Failed to read servers from store: No servers found".to_string())?;
 
     // Convert each item in the JsonValue array to a Server
     if let JsonValue::Array(servers_array) = servers {
@@ -176,7 +181,10 @@ pub async fn load_servers_token<R: Runtime>(app_handle: &AppHandle<R>) -> Result
             save_access_token(server.id.clone(), server.clone());
         }
 
-        dbg!(format!("loaded {:?} servers's token", &deserialized_tokens.len()));
+        dbg!(format!(
+            "loaded {:?} servers's token",
+            &deserialized_tokens.len()
+        ));
 
         Ok(deserialized_tokens)
     } else {
@@ -198,7 +206,8 @@ pub async fn load_servers<R: Runtime>(app_handle: &AppHandle<R>) -> Result<Vec<S
     let servers: Option<JsonValue> = store.get(COCO_SERVERS);
 
     // Handle the None case
-    let servers = servers.ok_or_else(|| "Failed to read servers from store: No servers found".to_string())?;
+    let servers =
+        servers.ok_or_else(|| "Failed to read servers from store: No servers found".to_string())?;
 
     // Convert each item in the JsonValue array to a Server
     if let JsonValue::Array(servers_array) = servers {
@@ -225,7 +234,9 @@ pub async fn load_servers<R: Runtime>(app_handle: &AppHandle<R>) -> Result<Vec<S
 }
 
 /// Function to load servers or insert a default one if none exist
-pub async fn load_or_insert_default_server<R: Runtime>(app_handle: &AppHandle<R>) -> Result<Vec<Server>, String> {
+pub async fn load_or_insert_default_server<R: Runtime>(
+    app_handle: &AppHandle<R>,
+) -> Result<Vec<Server>, String> {
     dbg!("Attempting to load or insert default server");
 
     let exists_servers = load_servers(&app_handle).await;
@@ -298,8 +309,9 @@ pub async fn refresh_coco_server_info<R: Runtime>(
                             server.profile = profile;
                             trim_endpoint_last_forward_slash(&mut server);
                             save_server(&server);
-                            persist_servers(&app_handle).await.expect("Failed to persist coco servers.");
-
+                            persist_servers(&app_handle)
+                                .await
+                                .expect("Failed to persist coco servers.");
 
                             //refresh connectors and datasources
                             if let Err(err) = refresh_all_connectors(&app_handle).await {
@@ -312,9 +324,7 @@ pub async fn refresh_coco_server_info<R: Runtime>(
 
                             Ok(server)
                         }
-                        Err(e) => {
-                            Err(format!("Failed to deserialize the response: {}", e))
-                        }
+                        Err(e) => Err(format!("Failed to deserialize the response: {}", e)),
                     }
                 } else {
                     Err("Received empty response body.".to_string())
@@ -335,7 +345,8 @@ pub async fn add_coco_server<R: Runtime>(
     app_handle: AppHandle<R>,
     endpoint: String,
 ) -> Result<Server, String> {
-    load_or_insert_default_server(&app_handle).await
+    load_or_insert_default_server(&app_handle)
+        .await
         .expect("Failed to load default servers");
 
     // Remove the trailing '/' from the endpoint to ensure correct URL construction
@@ -343,7 +354,10 @@ pub async fn add_coco_server<R: Runtime>(
 
     // Check if the server with this endpoint already exists
     if check_endpoint_exists(endpoint) {
-        dbg!(format!("This Coco server has already been registered: {:?}", &endpoint));
+        dbg!(format!(
+            "This Coco server has already been registered: {:?}",
+            &endpoint
+        ));
         return Err("This Coco server has already been registered.".into());
     }
 
@@ -383,15 +397,14 @@ pub async fn add_coco_server<R: Runtime>(
                         registry.register_source(source).await;
 
                         // Persist the servers to the store
-                        persist_servers(&app_handle).await
+                        persist_servers(&app_handle)
+                            .await
                             .expect("Failed to persist Coco servers.");
 
                         dbg!(format!("Successfully registered server: {:?}", &endpoint));
                         Ok(server)
                     }
-                    Err(e) => {
-                        Err(format!("Failed to deserialize the response: {}", e))
-                    }
+                    Err(e) => Err(format!("Failed to deserialize the response: {}", e)),
                 }
             } else {
                 Err("Received empty response body.".to_string())
@@ -415,7 +428,9 @@ pub async fn remove_coco_server<R: Runtime>(
     remove_server_token(id.as_str());
     remove_server_by_id(id);
 
-    persist_servers(&app_handle).await.expect("failed to save servers");
+    persist_servers(&app_handle)
+        .await
+        .expect("failed to save servers");
     persist_servers_token(&app_handle).expect("failed to save server tokens");
     Ok(())
 }

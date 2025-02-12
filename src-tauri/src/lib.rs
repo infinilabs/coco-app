@@ -1,10 +1,10 @@
 mod autostart;
 mod common;
+mod local;
+mod search;
 mod server;
 mod shortcut;
 mod util;
-mod local;
-mod search;
 
 mod setup;
 
@@ -18,7 +18,10 @@ use reqwest::Client;
 use std::path::PathBuf;
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
-use tauri::{AppHandle, Emitter, Listener, Manager, PhysicalPosition, Runtime, WebviewWindow, Window, WindowEvent};
+use tauri::{
+    AppHandle, Emitter, Listener, Manager, PhysicalPosition, Runtime, WebviewWindow, Window,
+    WindowEvent,
+};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_deep_link::DeepLinkExt;
 use tokio::runtime::Runtime as RT;
@@ -72,6 +75,7 @@ pub fn run() {
             shortcut::get_current_shortcut,
             change_autostart,
             hide_coco,
+            server::servers::get_server_token,
             server::servers::add_coco_server,
             server::servers::remove_coco_server,
             server::servers::list_coco_servers,
@@ -132,14 +136,16 @@ pub fn run() {
             setup::default(app, main_window.clone(), settings_window.clone());
 
             Ok(())
-        }).on_window_event(|window, event| match event {
-        WindowEvent::CloseRequested { api, .. } => {
-            dbg!("Close requested event received");
-            window.hide().unwrap();
-            api.prevent_close();
-        }
-        _ => {}
-    }).build(ctx)
+        })
+        .on_window_event(|window, event| match event {
+            WindowEvent::CloseRequested { api, .. } => {
+                dbg!("Close requested event received");
+                window.hide().unwrap();
+                api.prevent_close();
+            }
+            _ => {}
+        })
+        .build(ctx)
         .expect("error while running tauri application");
 
     app.run(|app_handle, event| match event {
@@ -148,7 +154,10 @@ pub fn run() {
             has_visible_windows,
             ..
         } => {
-            dbg!("Reopen event received: has_visible_windows = {}", has_visible_windows);
+            dbg!(
+                "Reopen event received: has_visible_windows = {}",
+                has_visible_windows
+            );
             if has_visible_windows {
                 return;
             }
@@ -196,7 +205,8 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
         // Remove any `None` values if `home_dir()` fails
         let app_dirs: Vec<PathBuf> = dir.into_iter().flatten().collect();
 
-        let application_search = local::application::ApplicationSearchSource::new(1000f64, app_dirs);
+        let application_search =
+            local::application::ApplicationSearchSource::new(1000f64, app_dirs);
 
         // Register the application search source
         let registry = app_handle_clone.state::<SearchSourceRegistry>();
@@ -322,7 +332,6 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
     }
 }
 
-
 fn handle_hide_coco(app: &AppHandle) {
     // println!("Hide Coco menu clicked!");
 
@@ -364,7 +373,10 @@ fn enable_tray(app: &mut tauri::App) {
     let _tray = TrayIconBuilder::with_id("tray")
         .icon_as_template(true)
         // .icon(app.default_window_icon().unwrap().clone())
-        .icon(Image::from_bytes(include_bytes!("../assets/tray-mac.ico")).expect("Failed to load icon"))
+        .icon(
+            Image::from_bytes(include_bytes!("../assets/tray-mac.ico"))
+                .expect("Failed to load icon"),
+        )
         .menu(&menu)
         .on_menu_event(|app, event| match event.id.as_ref() {
             "open" => {

@@ -177,7 +177,7 @@ export default function Cloud() {
   // Fetch the initial deep link intent
   useEffect(() => {
     // Test the handleUrl function
-    // handleUrl("coco://oauth_callback?code=cui88lg2sdb4dnu97jpgypcugrskkt1i3venntth7gk52exnq8hxufxvqn8hhegoaw369s394bcyb6ehtnhz&request_id=642a985c-6baa-4ec8-be41-d8c6ddbc0e60&provider=coco-cloud/");
+    // handleUrl("coco://oauth_callback?code=cum3td461mdmieceeq30xcqeuho0zctxm7cul837ywiu4p573bgwkkzh2lz88o66r9jpolfnez8tr2y6ronn&request_id=94bcb5b9-a26a-4ee9-87c6-ecfc81d5cfca&provider=coco-cloud/");
     // Function to handle pasted URL
     const handlePaste = (event: any) => {
       const pastedText = event.clipboardData.getData("text");
