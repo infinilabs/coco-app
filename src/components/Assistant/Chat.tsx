@@ -21,6 +21,7 @@ interface ChatAIProps {
   inputValue: string;
   isTransitioned: boolean;
   changeInput: (val: string) => void;
+  isSearchActive?: boolean;
 }
 
 export interface ChatAIRef {
@@ -31,7 +32,7 @@ export interface ChatAIRef {
 }
 
 const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
-  ({ inputValue, isTransitioned, changeInput }, ref) => {
+  ({ inputValue, isTransitioned, changeInput, isSearchActive }, ref) => {
     useImperativeHandle(ref, () => ({
       init: init,
       cancelChat: cancelChat,
@@ -167,7 +168,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
       if (!newChat?._id || !content) return;
       try {
         const response = await tauriFetch({
-          url: `/chat/${newChat?._id}/_send`,
+          url: `/chat/${newChat?._id}/_send?search=${isSearchActive}`,
           method: "POST",
           headers: {
             "WEBSOCKET-SESSION-ID": websocketId,

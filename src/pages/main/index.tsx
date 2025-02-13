@@ -52,6 +52,8 @@ export default function DesktopApp() {
     const [input, setInput] = useState("");
     const [isTransitioned, setIsTransitioned] = useState(false);
 
+    const [isSearchActive, setIsSearchActive] = useState(false);
+
     async function changeMode(value: boolean) {
         setIsChatMode(value);
         setIsTransitioned(value);
@@ -107,6 +109,8 @@ export default function DesktopApp() {
                     changeMode={changeMode}
                     changeInput={changeInput}
                     reconnect={reconnect}
+                    isSearchActive={isSearchActive}
+                    setIsSearchActive={() => setIsSearchActive((prev) => !prev)}
                 />
             </div>
 
@@ -139,6 +143,7 @@ export default function DesktopApp() {
                         inputValue={input}
                         isTransitioned={isTransitioned}
                         changeInput={changeInput}
+                        isSearchActive={isSearchActive}
                     />
                 ) : null}
             </div>

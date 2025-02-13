@@ -1,4 +1,4 @@
-import { Brain, ChevronDown, ChevronUp, Clock } from "lucide-react";
+import { Brain, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
 import type { Message } from "./types";
@@ -11,7 +11,7 @@ interface ChatMessageProps {
 }
 
 export function ChatMessage({ message, isTyping }: ChatMessageProps) {
-  const [isThinkingExpanded, setIsThinkingExpanded] = useState(false);
+  const [isThinkingExpanded, setIsThinkingExpanded] = useState(true);
   const [responseTime, setResponseTime] = useState(0);
   const startTimeRef = useRef<number | null>(null);
   const hasStartedRef = useRef(false);
@@ -53,7 +53,7 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
                   {segments.map((segment, index) => (
                     <span key={index}>
                       {segment.isThinking || segment.thinkContent ? (
-                        <div className="space-y-2">
+                        <div className="space-y-2 mb-3">
                           <button 
                             onClick={() => setIsThinkingExpanded(prev => !prev)}
                             className="inline-flex items-center gap-2 px-2 py-1 bg-gray-100/50 dark:bg-gray-800/50 rounded hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors"
@@ -61,15 +61,15 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
                             {isTyping ? (
                               <>
                                 <Brain className="w-4 h-4 animate-pulse text-gray-500" />
-                                <span className="text-gray-500 dark:text-gray-400 italic">
+                                <span className="text-xs text-gray-500 dark:text-gray-400 italic">
                                   AI is thinking...
                                 </span>
                               </>
                             ) : (
                               <>
-                                <Clock className="w-4 h-4 text-gray-500" />
-                                <span className="text-gray-500 dark:text-gray-400">
-                                  回答用时: {responseTime.toFixed(1)}s
+                                <Brain className="w-4 h-4 text-gray-500" />
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  Time to answer: {responseTime.toFixed(1)}s
                                 </span>
                               </>
                             )}
@@ -80,9 +80,15 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
                             )}
                           </button>
                           {isThinkingExpanded && segment.thinkContent && (
-                            <div className="ml-4 pl-2 border-l-2 border-gray-200 dark:border-gray-700">
-                              <div className="text-gray-500 dark:text-gray-400">
-                                {segment.thinkContent}
+                            <div className="pl-2 border-l-2 border-[e5e5e5]">
+                              <div className="text-[#8b8b8b] dark:text-[#a6a6a6] space-y-2">
+                                {segment.thinkContent.split('\n').map((paragraph, idx) => (
+                                  paragraph.trim() && (
+                                    <p key={idx} className="text-sm">
+                                      {paragraph}
+                                    </p>
+                                  )
+                                ))}
                               </div>
                             </div>
                           )}

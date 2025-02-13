@@ -11,6 +11,7 @@ import { useWebSocket } from "../../hooks/useWebSocket";
 import { useWindows }  from "../../hooks/useWindows";
 import { clientEnv } from "@/utils/env";
 // import { useAppStore } from '@/stores/appStore';
+import ApiDetails from "@/components/Common/ApiDetails";
 
 interface ChatAIProps {}
 
@@ -30,6 +31,8 @@ export default function ChatAI({}: ChatAIProps) {
   const [curChatEnd, setCurChatEnd] = useState(true);
 
   const [curId, setCurId] = useState("");
+
+  const [isSearchActive, setIsSearchActive] = useState(false);
 
   const curChatEndRef = useRef(curChatEnd);
   curChatEndRef.current = curChatEnd;
@@ -165,7 +168,7 @@ export default function ChatAI({}: ChatAIProps) {
     if (!activeChat?._id) return;
     try {
       const response = await tauriFetch({
-        url: `/chat/${activeChat?._id}/_send`,
+        url: `/chat/${activeChat?._id}/_send?search=${isSearchActive}`,
         method: "POST",
         headers: {
           "WEBSOCKET-SESSION-ID": websocketId,
@@ -332,10 +335,14 @@ export default function ChatAI({}: ChatAIProps) {
                 setCurChatEnd(true);
                 setIsTyping(false);
               }}
+              isSearchActive={isSearchActive}
+              setIsSearchActive={() => setIsSearchActive((prev) => !prev)}
             />
           </div>
         </div>
       </div>
+
+      <ApiDetails/>
     </div>
   );
 }
