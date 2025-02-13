@@ -32,7 +32,7 @@ export default function DesktopApp() {
 
         const handleFocus = () => {
             // Optionally, show the window if needed when focus is regained
-            console.log("Window focused");
+            // console.log("Window focused");
         };
 
         window.addEventListener('blur', handleBlur);

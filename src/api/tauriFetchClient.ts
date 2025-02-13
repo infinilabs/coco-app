@@ -39,9 +39,6 @@ export const tauriFetch = async <T = any>({
   const addLog = useLogStore.getState().addLog;
 
   try {
-    const appStore = JSON.parse(localStorage.getItem("app-store") || "{}")
-    const endpoint_http = appStore?.state?.endpoint_http
-    baseURL = endpoint_http || clientEnv.COCO_SERVER_URL
     console.log("baseURL", baseURL)
 
     const authStore = JSON.parse(localStorage.getItem("auth-store") || "{}")

@@ -1,5 +1,9 @@
+import { Brain, ChevronDown, ChevronUp, Clock } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+
 import type { Message } from "./types";
 import Markdown from "./Markdown";
+import { formatThinkingMessage } from "@/utils/index";
 
 interface ChatMessageProps {
   message: Message;
@@ -7,7 +11,23 @@ interface ChatMessageProps {
 }
 
 export function ChatMessage({ message, isTyping }: ChatMessageProps) {
+  const [isThinkingExpanded, setIsThinkingExpanded] = useState(false);
+  const [responseTime, setResponseTime] = useState(0);
+  const startTimeRef = useRef<number | null>(null);
+  const hasStartedRef = useRef(false);
   const isAssistant = message._source?.type === "assistant";
+  const segments = formatThinkingMessage(message._source.message);
+
+  useEffect(() => {
+    if (isTyping && !hasStartedRef.current) {
+      startTimeRef.current = Date.now();
+      hasStartedRef.current = true;
+    } else if (!isTyping && hasStartedRef.current && startTimeRef.current) {
+      const duration = (Date.now() - startTimeRef.current) / 1000;
+      setResponseTime(duration);
+      hasStartedRef.current = false;
+    }
+  }, [isTyping]);
 
   return (
     <div
@@ -18,20 +38,6 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
           isAssistant ? "" : "flex-row-reverse"
         }`}
       >
-        {/* <div
-          className={`flex-shrink-0 h-8 w-8 rounded-lg flex items-center justify-center ${
-            isAssistant
-              ? "bg-gradient-to-br from-green-400 to-emerald-500"
-              : "bg-gradient-to-br from-indigo-500 to-purple-500"
-          }`}
-        >
-          {isAssistant ? (
-            <Bot className="h-5 w-5 text-white" />
-          ) : (
-            <User className="h-5 w-5 text-white" />
-          )}
-        </div> */}
-
         <div
           className={`flex-1 space-y-2 ${
             isAssistant ? "text-left" : "text-right"
@@ -44,12 +50,55 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
             <div className="text-[#333] dark:text-[#d8d8d8] leading-relaxed">
               {isAssistant ? (
                 <>
-                  <Markdown
-                    key={isTyping ? "loading" : "done"}
-                    content={message._source?.message || ""}
-                    loading={isTyping}
-                    onDoubleClickCapture={() => {}}
-                  />
+                  {segments.map((segment, index) => (
+                    <span key={index}>
+                      {segment.isThinking || segment.thinkContent ? (
+                        <div className="space-y-2">
+                          <button 
+                            onClick={() => setIsThinkingExpanded(prev => !prev)}
+                            className="inline-flex items-center gap-2 px-2 py-1 bg-gray-100/50 dark:bg-gray-800/50 rounded hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors"
+                          >
+                            {isTyping ? (
+                              <>
+                                <Brain className="w-4 h-4 animate-pulse text-gray-500" />
+                                <span className="text-gray-500 dark:text-gray-400 italic">
+                                  AI is thinking...
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <Clock className="w-4 h-4 text-gray-500" />
+                                <span className="text-gray-500 dark:text-gray-400">
+                                  回答用时: {responseTime.toFixed(1)}s
+                                </span>
+                              </>
+                            )}
+                            {segment.thinkContent && (
+                              isThinkingExpanded ? 
+                                <ChevronUp className="w-4 h-4" /> : 
+                                <ChevronDown className="w-4 h-4" />
+                            )}
+                          </button>
+                          {isThinkingExpanded && segment.thinkContent && (
+                            <div className="ml-4 pl-2 border-l-2 border-gray-200 dark:border-gray-700">
+                              <div className="text-gray-500 dark:text-gray-400">
+                                {segment.thinkContent}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ) : segment.text ? (
+                        <div className="space-y-4">
+                          <Markdown
+                            key={`${index}-${isTyping ? "loading" : "done"}`}
+                            content={segment.text}
+                            loading={isTyping}
+                            onDoubleClickCapture={() => {}}
+                          />
+                        </div>
+                      ) : null}
+                    </span>
+                  ))}
                   {isTyping && (
                     <span className="inline-block w-1.5 h-4 ml-0.5 -mb-0.5 bg-current animate-pulse" />
                   )}

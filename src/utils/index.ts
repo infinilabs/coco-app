@@ -90,3 +90,43 @@ export const formatter = {
   },
 };
 
+export const formatThinkingMessage = (message: string) => {
+  const segments: Array<{
+    text: string;
+    isThinking: boolean;
+    thinkContent: string;
+  }> = [];
+  const parts = message.split(/<\/?think>/);
+  let hasThinkingSegment = false;
+
+  const thinkContents = parts.filter((text, index) => index % 2 === 1);
+  
+  const targetThink = thinkContents.find(text => text.trim()) || thinkContents[0];
+
+  parts.forEach((text, index) => {
+    if (index % 2 === 0) {
+      if (text.trim()) {
+        segments.push({
+          text: text.trim(),
+          isThinking: false,
+          thinkContent: ''
+        });
+      }
+    } else if (!hasThinkingSegment && text === targetThink) {
+      hasThinkingSegment = true;
+      if (segments.length > 0) {
+        segments[0].thinkContent = text;
+        segments[0].isThinking = true;
+      } else {
+        segments.push({
+          text: '',
+          isThinking: true,
+          thinkContent: text
+        });
+      }
+    }
+  });
+  
+  return segments;
+};
+
