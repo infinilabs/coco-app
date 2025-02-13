@@ -26,6 +26,7 @@ export function ChatInput({
   isSearchActive,
   setIsSearchActive,
 }: ChatInputProps) {
+
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -108,12 +109,9 @@ export function ChatInput({
         {/* Controls */}
         <div className="flex justify-between items-center p-2 rounded-xl overflow-hidden">
           <div className="flex gap-1 text-xs text-[#333] dark:text-[#d8d8d8]">
-          <button
-              className={`inline-flex items-center rounded-lg transition-colors relative px-2 py-1 ${
-                isSearchActive
-                  ? "bg-blue-50 dark:bg-blue-900/30"
-                  : "hover:bg-gray-50 dark:hover:bg-gray-700"
-              }`}
+            <button
+              type="button"
+              className={`inline-flex items-center rounded-lg transition-colors relative py-1 px-[5px]`}
               onClick={SearchClick}
             >
               <Globe
@@ -128,13 +126,16 @@ export function ChatInput({
               </span>
             </button>
             {/* <button
+              type="button"
               className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors "
               onClick={openChatAI}
             >
               <Library className="w-4 h-4 mr-1 text-[#000] dark:text-[#d8d8d8]" />
               Coco
             </button>
-            <button className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color">
+            <button 
+              type="button"
+              className="inline-flex items-center p-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color">
               <Plus className="w-4 h-4 mr-1 text-[#000] dark:text-[#d8d8d8]" />
               Upload
             </button> */}

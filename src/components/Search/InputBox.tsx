@@ -348,11 +348,7 @@ export default function ChatInput({
         {isChatMode ? (
           <div className="flex gap-2 text-xs text-[#333] dark:text-[#d8d8d8]">
             <button
-              className={`inline-flex items-center rounded-lg transition-colors relative px-2 py-1 ${
-                isSearchActive
-                  ? "bg-blue-50 dark:bg-blue-900/30"
-                  : "hover:bg-gray-50 dark:hover:bg-gray-700"
-              }`}
+              className={`inline-flex items-center rounded-lg transition-colors relative py-1`}
               onClick={SearchClick}
             >
               <Globe

@@ -1,4 +1,4 @@
-import { Brain, ChevronDown, ChevronUp, Search } from "lucide-react";
+import { Brain, ChevronDown, ChevronUp, Search, SquareArrowOutUpRight } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
 import type { Message } from "./types";
@@ -109,6 +109,7 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
                                               </div>
                                               <div className="flex items-center gap-2 flex-shrink-0 text-xs text-gray-500 dark:text-[#8B8B8B]">
                                                 <span>{item.source?.name}</span>
+                                                <SquareArrowOutUpRight className="w-3 h-3"/>
                                               </div>
                                             </div>
                                           </div>
@@ -143,7 +144,7 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
                               <>
                                 <Brain className="w-4 h-4 text-gray-500" />
                                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                                  Time to answer: {responseTime.toFixed(1)}s
+                                  Thought for {responseTime.toFixed(1)} seconds
                                 </span>
                               </>
                             )}
