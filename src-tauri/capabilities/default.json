@@ -57,6 +57,9 @@
       "allow": [
         {
           "url": "https://coco.infini.cloud"
+        },
+        {
+          "url": "http://localhost:9000"
         }
       ],
       "deny": []
