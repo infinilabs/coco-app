@@ -227,6 +227,11 @@ impl ApplicationSearchSource {
                             .trim_end_matches(".app")
                             .to_lowercase();        // to_lowercase returns a String, which is owned
 
+                        //TODO, replace this hard-coded name to actual local app name in case it may change
+                        if search_word.is_empty() || search_word.eq("coco ai") {
+                            continue;
+                        }
+
                         let search_word_ref = search_word.as_str(); // Get a reference to the string slice
                         applications.insert(search_word_ref, file_path_str.clone());
                         if let Some(icon_path) = extract_icon_from_app_bundle(&file_path, &app_data_folder) {
