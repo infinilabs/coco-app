@@ -1,4 +1,4 @@
-import {ArrowBigLeft, AudioLines, Image, Library, Mic, Plus, Search, Send,} from "lucide-react";
+import {ArrowBigLeft, Mic, Search, Send,} from "lucide-react";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {listen} from "@tauri-apps/api/event";
 import {invoke, isTauri} from "@tauri-apps/api/core";
@@ -340,59 +340,59 @@ export default function ChatInput({
             >
                 {isChatMode ? (
                     <div className="flex gap-2 text-xs text-[#333] dark:text-[#d8d8d8]">
-                        <button
-                            className="inline-flex items-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors relative"
-                            onClick={openChatAI}
-                        >
-                            <Library className="w-4 h-4 mr-1 text-[#000] dark:text-[#d8d8d8]"/>
-                            Coco
-                        </button>
-                        <button
-                            className="inline-flex items-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color relative">
-                            <Plus className="w-4 h-4 mr-1 text-[#000] dark:text-[#d8d8d8]"/>
-                            Upload
-                        </button>
-                        {showTooltip && isCommandPressed ? (
-                            <div
-                                className={`absolute left-2 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
-                            >
-                                O
-                            </div>
-                        ) : null}
-                        {showTooltip && isCommandPressed ? (
-                            <div
-                                className={`absolute left-16 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
-                            >
-                                U
-                            </div>
-                        ) : null}
+                        {/*<button*/}
+                        {/*    className="inline-flex items-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors relative"*/}
+                        {/*    onClick={openChatAI}*/}
+                        {/*>*/}
+                        {/*    <Library className="w-4 h-4 mr-1 text-[#000] dark:text-[#d8d8d8]"/>*/}
+                        {/*    Coco*/}
+                        {/*</button>*/}
+                        {/*<button*/}
+                        {/*    className="inline-flex items-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color relative">*/}
+                        {/*    <Plus className="w-4 h-4 mr-1 text-[#000] dark:text-[#d8d8d8]"/>*/}
+                        {/*    Upload*/}
+                        {/*</button>*/}
+                        {/*{showTooltip && isCommandPressed ? (*/}
+                        {/*    <div*/}
+                        {/*        className={`absolute left-2 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}*/}
+                        {/*    >*/}
+                        {/*        O*/}
+                        {/*    </div>*/}
+                        {/*) : null}*/}
+                        {/*{showTooltip && isCommandPressed ? (*/}
+                        {/*    <div*/}
+                        {/*        className={`absolute left-16 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}*/}
+                        {/*    >*/}
+                        {/*        U*/}
+                        {/*    </div>*/}
+                        {/*) : null}*/}
                     </div>
                 ) : (
                     <div className="w-28 flex gap-2 relative">
-                        <button
-                            className="inline-flex items-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors relative"
-                            onClick={openChatAI}
-                        >
-                            <AudioLines className="w-4 h-4 text-[#000] dark:text-[#d8d8d8]"/>
-                        </button>
-                        <button
-                            className="inline-flex items-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color relative">
-                            <Image className="w-4 h-4 text-[#000] dark:text-[#d8d8d8]"/>
-                        </button>
-                        {showTooltip && isCommandPressed ? (
-                            <div
-                                className={`absolute left-0 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
-                            >
-                                N
-                            </div>
-                        ) : null}
-                        {showTooltip && isCommandPressed ? (
-                            <div
-                                className={`absolute left-6 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
-                            >
-                                G
-                            </div>
-                        ) : null}
+                        {/*<button*/}
+                        {/*    className="inline-flex items-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors relative"*/}
+                        {/*    onClick={openChatAI}*/}
+                        {/*>*/}
+                        {/*    <AudioLines className="w-4 h-4 text-[#000] dark:text-[#d8d8d8]"/>*/}
+                        {/*</button>*/}
+                        {/*<button*/}
+                        {/*    className="inline-flex items-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color relative">*/}
+                        {/*    <Image className="w-4 h-4 text-[#000] dark:text-[#d8d8d8]"/>*/}
+                        {/*</button>*/}
+                        {/*{showTooltip && isCommandPressed ? (*/}
+                        {/*    <div*/}
+                        {/*        className={`absolute left-0 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}*/}
+                        {/*    >*/}
+                        {/*        N*/}
+                        {/*    </div>*/}
+                        {/*) : null}*/}
+                        {/*{showTooltip && isCommandPressed ? (*/}
+                        {/*    <div*/}
+                        {/*        className={`absolute left-6 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}*/}
+                        {/*    >*/}
+                        {/*        G*/}
+                        {/*    </div>*/}
+                        {/*) : null}*/}
                     </div>
                 )}
 
