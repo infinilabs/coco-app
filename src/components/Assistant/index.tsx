@@ -9,7 +9,7 @@ import type { Chat, Message } from "./types";
 import { tauriFetch } from "../../api/tauriFetchClient";
 import { useWebSocket } from "../../hooks/useWebSocket";
 import { useWindows }  from "../../hooks/useWindows";
-// import { clientEnv } from "@/utils/env";
+import { clientEnv } from "@/utils/env";
 // import { useAppStore } from '@/stores/appStore';
 
 interface ChatAIProps {}
@@ -37,9 +37,9 @@ export default function ChatAI({}: ChatAIProps) {
   const curIdRef = useRef(curId);
   curIdRef.current = curId;
 
-  console.log("index useWebSocket")
+  console.log("index useWebSocket", clientEnv.COCO_WEBSOCKET_URL,)
   const { messages, setMessages } = useWebSocket(
-    "wss://coco.infini.cloud/ws",
+    clientEnv.COCO_WEBSOCKET_URL,
     (msg) => {
       msg = msg.replace(/<think>/g, "AI is thinking...").replace(/<\/think>/g, "");
 

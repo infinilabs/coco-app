@@ -14,7 +14,7 @@ import { tauriFetch } from "../../api/tauriFetchClient";
 import { useWebSocket } from "../../hooks/useWebSocket";
 import { useChatStore } from "../../stores/chatStore";
 import { useWindows }  from "../../hooks/useWindows";
-// import { clientEnv } from "@/utils/env";
+import { clientEnv } from "@/utils/env";
 // import { useAppStore } from '@/stores/appStore';
 
 interface ChatAIProps {
@@ -59,11 +59,11 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
     const curIdRef = useRef(curId);
     curIdRef.current = curId;
 
-    // console.log("chat useWebSocket", clientEnv.COCO_WEBSOCKET_URL)
+    console.log("chat useWebSocket", clientEnv.COCO_WEBSOCKET_URL)
     const { messages, setMessages, connected, reconnect } = useWebSocket(
-      "wss://coco.infini.cloud/ws",
+      clientEnv.COCO_WEBSOCKET_URL,
       (msg) => {
-        console.log("msg", msg);
+        // console.log("msg", msg);
 
         if (msg.includes("websocket-session-id")) {
           const array = msg.split(" ");
