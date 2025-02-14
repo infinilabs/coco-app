@@ -1,4 +1,4 @@
-import { Mic, Send, Globe } from "lucide-react";
+import { Mic, Send, Globe, Brain } from "lucide-react";
 import {
   useState,
   type FormEvent,
@@ -6,8 +6,9 @@ import {
   useRef,
   useEffect,
 } from "react";
+
 import AutoResizeTextarea from "./AutoResizeTextarea";
-import StopIcon from "../../icons/Stop";
+import StopIcon from "@/icons/Stop";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -16,6 +17,8 @@ interface ChatInputProps {
   disabledChange: () => void;
   isSearchActive: boolean;
   setIsSearchActive: () => void;
+  isDeepThinkActive: boolean;
+  setIsDeepThinkActive: () => void;
 }
 
 export function ChatInput({
@@ -25,8 +28,9 @@ export function ChatInput({
   disabledChange,
   isSearchActive,
   setIsSearchActive,
+  isDeepThinkActive,
+  setIsDeepThinkActive,
 }: ChatInputProps) {
-
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -62,6 +66,10 @@ export function ChatInput({
 
   const SearchClick = () => {
     setIsSearchActive();
+  };
+
+  const DeepThinkClick = () => {
+    setIsDeepThinkActive();
   };
 
   return (
@@ -109,6 +117,22 @@ export function ChatInput({
         {/* Controls */}
         <div className="flex justify-between items-center p-2 rounded-xl overflow-hidden">
           <div className="flex gap-1 text-xs text-[#333] dark:text-[#d8d8d8]">
+            <button
+              type="button"
+              className={`inline-flex items-center rounded-lg transition-colors relative py-1 px-[5px]`}
+              onClick={DeepThinkClick}
+            >
+              <Brain
+                className={`w-4 h-4 mr-1 ${
+                  isDeepThinkActive
+                    ? "text-[#0072FF] dark:text-[#0072FF]"
+                    : "text-[#000] dark:text-[#d8d8d8]"
+                }`}
+              />
+              <span className={isDeepThinkActive ? "text-[#0072FF]" : ""}>
+                Deep Think
+              </span>
+            </button>
             <button
               type="button"
               className={`inline-flex items-center rounded-lg transition-colors relative py-1 px-[5px]`}

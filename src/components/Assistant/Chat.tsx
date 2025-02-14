@@ -5,6 +5,7 @@ import {
   forwardRef,
   useImperativeHandle,
   useCallback,
+  memo,
 } from "react";
 import { MessageSquarePlus, PanelLeft } from "lucide-react";
 import { isTauri } from "@tauri-apps/api/core";
@@ -19,21 +20,21 @@ import { clientEnv } from "@/utils/env";
 // import { useAppStore } from '@/stores/appStore';
 
 interface ChatAIProps {
-  inputValue: string;
   isTransitioned: boolean;
   changeInput: (val: string) => void;
   isSearchActive?: boolean;
+  isDeepThinkActive?: boolean;
 }
 
 export interface ChatAIRef {
-  init: () => void;
+  init: (value: string) => void;
   cancelChat: () => void;
   connected: boolean;
   reconnect: () => void;
 }
 
-const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
-  ({ inputValue, isTransitioned, changeInput, isSearchActive }, ref) => {
+const ChatAI = memo(forwardRef<ChatAIRef, ChatAIProps>(
+  ({ isTransitioned, changeInput, isSearchActive, isDeepThinkActive }, ref) => {
     useImperativeHandle(ref, () => ({
       init: init,
       cancelChat: cancelChat,
@@ -65,7 +66,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
       setCurMessage(prev => prev + chunk);
     }, []);
 
-    console.log("chat useWebSocket", clientEnv.COCO_WEBSOCKET_URL)
+    // console.log("chat useWebSocket", clientEnv.COCO_WEBSOCKET_URL)
     const { messages, setMessages, connected, reconnect } = useWebSocket(
       clientEnv.COCO_WEBSOCKET_URL,
       (msg) => {
@@ -121,6 +122,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
       };
       setMessages("");
       setCurMessage("");
+      console.log("updatedChat", updatedChat);
       setActiveChat(updatedChat);
 
       const timer = setTimeout(() => setIsTyping(false), 1000);
@@ -156,7 +158,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
       };
     }, []);
 
-    const createNewChat = async () => {
+    const createNewChat = useCallback(async (value: string = "") => {
       chatClose();
       try {
         const response = await tauriFetch({
@@ -167,18 +169,18 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
         const newChat: Chat = response.data;
 
         setActiveChat(newChat);
-        handleSendMessage(inputValue, newChat);
+        handleSendMessage(value, newChat);
       } catch (error) {
         console.error("Failed to fetch user data:", error);
       } 
-    };
+    }, []);
 
-    const init = () => {
+    const init = (value: string) => {
       if (!curChatEnd) return;
       if (!activeChat?._id) {
-        createNewChat();
+        createNewChat(value);
       } else {
-        handleSendMessage(inputValue);
+        handleSendMessage(value);
       }
     };
 
@@ -187,7 +189,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
       if (!newChat?._id || !content) return;
       try {
         const response = await tauriFetch({
-          url: `/chat/${newChat?._id}/_send?search=${isSearchActive}`,
+          url: `/chat/${newChat?._id}/_send?search=${isSearchActive}&deep_thinking=${isDeepThinkActive}`,
           method: "POST",
           headers: {
             "WEBSOCKET-SESSION-ID": websocketId,
@@ -201,6 +203,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
           messages: [...(newChat?.messages || []), ...(response.data || [])],
         };
         changeInput("");
+        console.log("updatedChat2", updatedChat);
         setActiveChat(updatedChat);
         setIsTyping(true);
         setCurChatEnd(false);
@@ -245,13 +248,13 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
           title: "Coco Chat",
           dragDropEnabled: true,
           center: true,
-          width: 900,
+          width: 1000,
           height: 800,
           alwaysOnTop: true,
           skipTaskbar: true,
           decorations: true,
           closable: true,
-          url: "/ui/app/chat",
+          url: "/ui/chat",
         });
       }
     }
@@ -286,7 +289,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
         </header>
 
         {/* Chat messages */}
-        <div className="overflow-y-auto border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.15)] custom-scrollbar">
+        <div className="w-full overflow-x-hidden overflow-y-auto border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.15)] custom-scrollbar">
           {activeChat?.messages?.map((message, index) => (
             <ChatMessage
               key={message._id + index}
@@ -316,6 +319,6 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
       </div>
     );
   }
-);
+));
 
 export default ChatAI;

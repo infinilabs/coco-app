@@ -1,4 +1,4 @@
-import { ArrowBigLeft, Mic, Search, Send, Globe } from "lucide-react";
+import { ArrowBigLeft, Mic, Search, Send, Globe, Brain } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke, isTauri } from "@tauri-apps/api/core";
@@ -22,6 +22,8 @@ interface ChatInputProps {
   reconnect: () => void;
   isSearchActive: boolean;
   setIsSearchActive: () => void;
+  isDeepThinkActive: boolean;
+  setIsDeepThinkActive: () => void;
 }
 
 export default function ChatInput({
@@ -35,6 +37,9 @@ export default function ChatInput({
   reconnect,
   isSearchActive,
   setIsSearchActive,
+  isDeepThinkActive,
+  setIsDeepThinkActive,
+
 }: ChatInputProps) {
   const showTooltip = useAppStore(
     (state: { showTooltip: boolean }) => state.showTooltip
@@ -214,6 +219,10 @@ export default function ChatInput({
 
   const SearchClick = () => {
     setIsSearchActive();
+  };  
+  
+  const DeepThinkClick = () => {
+    setIsDeepThinkActive();
   };
 
   return (
@@ -347,6 +356,21 @@ export default function ChatInput({
       >
         {isChatMode ? (
           <div className="flex gap-2 text-xs text-[#333] dark:text-[#d8d8d8]">
+            <button
+              className={`inline-flex items-center rounded-lg transition-colors relative py-1`}
+              onClick={DeepThinkClick}
+            >
+              <Brain
+                className={`w-4 h-4 mr-1 ${
+                  isDeepThinkActive
+                    ? "text-[#0072FF] dark:text-[#0072FF]"
+                    : "text-[#000] dark:text-[#d8d8d8]"
+                }`}
+              />
+              <span className={isDeepThinkActive ? "text-[#0072FF]" : ""}>
+                Deep Think
+              </span>
+            </button>
             <button
               className={`inline-flex items-center rounded-lg transition-colors relative py-1`}
               onClick={SearchClick}
