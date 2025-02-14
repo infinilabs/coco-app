@@ -4,6 +4,7 @@ import {
   useEffect,
   forwardRef,
   useImperativeHandle,
+  useCallback,
 } from "react";
 import { MessageSquarePlus, PanelLeft } from "lucide-react";
 import { isTauri } from "@tauri-apps/api/core";
@@ -60,7 +61,11 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
     const curIdRef = useRef(curId);
     curIdRef.current = curId;
 
-    // console.log("chat useWebSocket", clientEnv.COCO_WEBSOCKET_URL)
+    const handleMessageChunk = useCallback((chunk: string) => {
+      setCurMessage(prev => prev + chunk);
+    }, []);
+
+    console.log("chat useWebSocket", clientEnv.COCO_WEBSOCKET_URL)
     const { messages, setMessages, connected, reconnect } = useWebSocket(
       clientEnv.COCO_WEBSOCKET_URL,
       (msg) => {
@@ -82,7 +87,7 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
             try {
               const chunkData = JSON.parse(cleanedData);
               if (chunkData.reply_to_message === curIdRef.current) {
-                setCurMessage((prev) => prev + chunkData.message_chunk);
+                handleMessageChunk(chunkData.message_chunk)
                 return chunkData.message_chunk;
               }
             } catch (error) {
@@ -97,30 +102,33 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
       setConnected(connected)
     }, [connected])
 
-    // websocket
-    useEffect(() => {
+    const simulateAssistantResponse = useCallback(() => {
       if (messages.length === 0 || !activeChat?._id) return;
 
-      const simulateAssistantResponse = () => {
-        console.log("messages", messages);
+      console.log("messages", messages);
 
-        const assistantMessage: Message = {
-          _id: activeChat._id,
-          _source: {
-            type: "assistant",
-            message: messages,
-          },
-        };
-
-        const updatedChat = {
-          ...activeChat,
-          messages: [...(activeChat.messages || []), assistantMessage],
-        };
-        setMessages("");
-        setCurMessage("");
-        setActiveChat(updatedChat);
-        setTimeout(() => setIsTyping(false), 1000);
+      const assistantMessage: Message = {
+        _id: activeChat._id,
+        _source: {
+          type: "assistant",
+          message: messages,
+        },
       };
+
+      const updatedChat = {
+        ...activeChat,
+        messages: [...(activeChat.messages || []), assistantMessage],
+      };
+      setMessages("");
+      setCurMessage("");
+      setActiveChat(updatedChat);
+
+      const timer = setTimeout(() => setIsTyping(false), 1000);
+      return () => clearTimeout(timer);
+    }, [activeChat?._id]);
+
+    // websocket
+    useEffect(() => {
       if (curChatEnd) {
         simulateAssistantResponse();
       }
@@ -136,6 +144,17 @@ const ChatAI = forwardRef<ChatAIRef, ChatAIProps>(
     useEffect(() => {
       scrollToBottom();
     }, [activeChat?.messages, isTyping, curMessage]);
+
+    useEffect(() => {
+      return () => {
+        chatClose();
+        setMessages("");
+        setCurMessage("");
+        setActiveChat(undefined);
+        setIsTyping(false);
+        setCurChatEnd(true);
+      };
+    }, []);
 
     const createNewChat = async () => {
       chatClose();
