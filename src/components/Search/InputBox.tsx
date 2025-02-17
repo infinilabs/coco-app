@@ -224,7 +224,7 @@ export default function ChatInput({
     setIsDeepThinkActive();
   };
 
-  const [isListening, setIsListening] = useState(false);
+  const [isListening] = useState(false);
 
   return (
     <div className="w-full relative">
