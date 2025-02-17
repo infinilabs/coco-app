@@ -39,7 +39,6 @@ export default function ChatInput({
   setIsSearchActive,
   isDeepThinkActive,
   setIsDeepThinkActive,
-
 }: ChatInputProps) {
   const showTooltip = useAppStore(
     (state: { showTooltip: boolean }) => state.showTooltip
@@ -219,11 +218,13 @@ export default function ChatInput({
 
   const SearchClick = () => {
     setIsSearchActive();
-  };  
-  
+  };
+
   const DeepThinkClick = () => {
     setIsDeepThinkActive();
   };
+
+  const [isListening, setIsListening] = useState(false);
 
   return (
     <div className="w-full relative">
@@ -287,10 +288,19 @@ export default function ChatInput({
 
         {isChatMode ? (
           <button
-            className="p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-colors"
+            className={`p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-colors ${
+              isListening ? "bg-blue-100 dark:bg-blue-900" : ""
+            }`}
             type="button"
+            onClick={() => {}}
           >
-            <Mic className="w-4 h-4 text-[#999] dark:text-[#999]" />
+            <Mic
+              className={`w-4 h-4 ${
+                isListening
+                  ? "text-blue-500 animate-pulse"
+                  : "text-[#999] dark:text-[#999]"
+              }`}
+            />
           </button>
         ) : null}
 

@@ -116,36 +116,40 @@ export function ChatInput({
 
         {/* Controls */}
         <div className="flex justify-between items-center p-2 rounded-xl overflow-hidden">
-          <div className="flex gap-1 text-xs text-[#333] dark:text-[#d8d8d8]">
+          <div className="flex gap-1 px-[5px] text-xs text-[#333] dark:text-[#fff]">
             <button
               type="button"
-              className={`inline-flex items-center rounded-lg transition-colors relative py-1 px-[5px]`}
+              className={`h-5 px-2 inline-flex items-center border  rounded-[10px] transition-colors relative ${
+                isDeepThinkActive ? "bg-[rgba(0,114,255,0.3)] border-[rgba(0,114,255,0.3)]" : "border-[#262727]"
+              }`}
               onClick={DeepThinkClick}
             >
               <Brain
-                className={`w-4 h-4 mr-1 ${
+                className={`w-3 h-3 mr-1 ${
                   isDeepThinkActive
                     ? "text-[#0072FF] dark:text-[#0072FF]"
-                    : "text-[#000] dark:text-[#d8d8d8]"
+                    : "text-[#333] dark:text-white"
                 }`}
               />
-              <span className={isDeepThinkActive ? "text-[#0072FF]" : ""}>
+              <span className={isDeepThinkActive ? "text-[#0072FF]" : "dark:text-white"}>
                 Deep Think
               </span>
             </button>
             <button
               type="button"
-              className={`inline-flex items-center rounded-lg transition-colors relative py-1 px-[5px]`}
+              className={`h-5 px-2 inline-flex items-center border  rounded-[10px] transition-colors relative ${
+                isSearchActive ? "bg-[rgba(0,114,255,0.3)] border-[rgba(0,114,255,0.3)]" : "border-[#262727]"
+              }`}
               onClick={SearchClick}
             >
               <Globe
-                className={`w-4 h-4 mr-1 ${
+                className={`w-3 h-3 mr-1 ${
                   isSearchActive
                     ? "text-[#0072FF] dark:text-[#0072FF]"
-                    : "text-[#000] dark:text-[#d8d8d8]"
+                    : "text-[#333] dark:text-white"
                 }`}
               />
-              <span className={isSearchActive ? "text-[#0072FF]" : ""}>
+              <span className={isSearchActive ? "text-[#0072FF]" : "dark:text-white"}>
                 Search
               </span>
             </button>
