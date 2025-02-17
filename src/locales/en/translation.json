@@ -47,6 +47,15 @@
         "title": "API Endpoint",
         "description": "Domain name for interface and websocket"
       }
+    },
+    "tabs": {
+      "general": "General",
+      "extensions": "Extensions",
+      "connect": "Connect",
+      "advanced": "Advanced",
+      "about": "About",
+      "extensionsContent": "Extensions settings content",
+      "advancedContent": "Advanced Settings content"
     }
   },
   "search": {
@@ -74,6 +83,83 @@
       "version": "{{version}}",
       "select": "Select",
       "open": "Open"
+    },
+    "input": {
+      "searchPlaceholder": "Search whatever you want ...",
+      "connectionError": "Unable to connect to the server",
+      "reconnect": "Reconnect",
+      "deepThink": "Deep Think",
+      "search": "Search"
+    },
+    "main": {
+      "noDataAlt": "No data image",
+      "noResults": "No Results",
+      "askCoco": "Ask Coco AI"
+    },
+    "header": {
+      "found": "Found",
+      "results": "results"
+    }
+  },
+  "assistant": {
+    "chat": {
+      "openChat": "Open Chat Window",
+      "newChat": "New Chat",
+      "connectionError": "Unable to connect to the server",
+      "reconnect": "Reconnect"
+    },
+    "input": {
+      "stopMessage": "Stop message",
+      "deepThink": "Deep Think",
+      "deepThinkTooltip": "Enable deep thinking mode",
+      "search": "Search",
+      "searchTooltip": "Enable search mode"
+    },
+    "message": {
+      "logo": "Coco AI Logo",
+      "aiName": "Coco AI",
+      "thinking": "AI is thinking...",
+      "thoughtTime": "Thought for {{time}} seconds",
+      "thinkingButton": "View thinking process"
+    },
+    "sidebar": {
+      "newChat": "New Chat",
+      "newChatTooltip": "Create a new chat",
+      "selectChat": "Select this chat",
+      "untitledChat": "Untitled Chat"
+    },
+    "source": {
+      "foundResults": "Found {{count}} results"
+    }
+  },
+  "cloud": {
+    "banner": "Banner Image",
+    "accountInfo": "Account Information",
+    "login": "Login",
+    "cancel": "Cancel",
+    "copyUrl": "Copy URL",
+    "privacyPolicy": "EULA | Privacy Policy",
+    "connect": {
+      "back": "Back",
+      "title": "Connecting to Your Coco-Server",
+      "description": "Running your own private instance of coco-server ensures complete control over your data, keeping it secure and accessible only within your environment. Enjoy enhanced privacy, better performance, and seamless integration with your internal systems.",
+      "serverAddress": "Server address",
+      "serverPlaceholder": "For example: https://coco.infini.cloud/",
+      "connecting": "Connecting...",
+      "connect": "Connect",
+      "closeError": "Close error message"
+    },
+    "dataSource": {
+      "title": "Data Source",
+      "refresh": "Refresh data source list"
+    },
+    "sidebar": {
+      "selectServer": "Select Server",
+      "serverLogo": "Server Logo",
+      "serverOnline": "Server Online",
+      "serverOffline": "Server Offline",
+      "yourServers": "Your Coco-Servers",
+      "addServer": "Add New Server"
     }
   }
 }

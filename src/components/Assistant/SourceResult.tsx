@@ -5,6 +5,8 @@ import {
   SquareArrowOutUpRight,
 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+
 import { OpenURLWithBrowser } from "@/utils/index";
 
 interface SourceResultProps {
@@ -21,6 +23,7 @@ interface SourceItem {
 }
 
 export function SourceResult({ text }: SourceResultProps) {
+  const { t } = useTranslation();
   const [isSourceExpanded, setIsSourceExpanded] = useState(false);
 
   if (!text?.includes("<Source")) {
@@ -42,13 +45,11 @@ export function SourceResult({ text }: SourceResultProps) {
   const sourceData = getSourceData();
 
   return (
-    <div
-      className={`mt-2 ${
-        isSourceExpanded
-          ? "rounded-lg overflow-hidden border border-[#E6E6E6] dark:border-[#272626]"
-          : ""
-      }`}
-    >
+    <div className={`mt-2 ${
+      isSourceExpanded
+        ? "rounded-lg overflow-hidden border border-[#E6E6E6] dark:border-[#272626]"
+        : ""
+    }`}>
       <button
         onClick={() => setIsSourceExpanded((prev) => !prev)}
         className={`inline-flex justify-between items-center gap-2 px-2 py-1 rounded-xl transition-colors ${
@@ -58,7 +59,7 @@ export function SourceResult({ text }: SourceResultProps) {
         <div className="flex gap-2">
           <Search className="w-4 h-4 text-[#999999] dark:text-[#999999]" />
           <span className="text-xs text-[#999999] dark:text-[#999999]">
-            Found {totalResults} results
+            {t('assistant.source.foundResults', { count: Number(totalResults) })}
           </span>
         </div>
         {isSourceExpanded ? (

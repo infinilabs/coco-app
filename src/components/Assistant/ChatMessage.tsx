@@ -6,6 +6,7 @@ import Markdown from "./Markdown";
 import { formatThinkingMessage } from "@/utils/index";
 import logoImg from "@/assets/icon.svg";
 import { SourceResult } from "./SourceResult";
+import { useTranslation } from "react-i18next";
 
 interface ChatMessageProps {
   message: Message;
@@ -13,6 +14,7 @@ interface ChatMessageProps {
 }
 
 export function ChatMessage({ message, isTyping }: ChatMessageProps) {
+  const { t } = useTranslation();
   const [isThinkingExpanded, setIsThinkingExpanded] = useState(true);
   const [responseTime, setResponseTime] = useState(0);
   const startTimeRef = useRef<number | null>(null);
@@ -46,8 +48,14 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
           }`}
         >
           <p className="flex items-center gap-4 font-semibold text-sm text-[#333] dark:text-[#d8d8d8]">
-            {isAssistant ? <img src={logoImg} className="w-6 h-6" /> : null}
-            {isAssistant ? "Coco AI" : ""}
+            {isAssistant ? (
+              <img
+                src={logoImg}
+                className="w-6 h-6"
+                alt={t("assistant.message.logo")}
+              />
+            ) : null}
+            {isAssistant ? t("assistant.message.aiName") : ""}
           </p>
           <div className="prose dark:prose-invert prose-sm max-w-none">
             <div className="text-[#333] dark:text-[#d8d8d8] leading-relaxed">
@@ -70,14 +78,16 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
                               <>
                                 <Brain className="w-4 h-4 animate-pulse text-[#999999]" />
                                 <span className="text-xs text-[#999999] italic">
-                                  AI is thinking...
+                                  {t("assistant.message.thinking")}
                                 </span>
                               </>
                             ) : (
                               <>
                                 <Brain className="w-4 h-4 text-[#999999]" />
                                 <span className="text-xs text-[#999999]">
-                                  Thought for {responseTime.toFixed(1)} seconds
+                                  {t("assistant.message.thoughtTime", {
+                                    time: responseTime.toFixed(1),
+                                  })}
                                 </span>
                               </>
                             )}

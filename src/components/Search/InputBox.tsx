@@ -2,6 +2,7 @@ import { ArrowBigLeft, Search, Send, Globe, Brain } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke, isTauri } from "@tauri-apps/api/core";
+import { useTranslation } from "react-i18next";
 
 import ChatSwitch from "@/components/Common/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
@@ -40,6 +41,9 @@ export default function ChatInput({
   isDeepThinkActive,
   setIsDeepThinkActive,
 }: ChatInputProps) {
+
+  const { t } = useTranslation();
+
   const showTooltip = useAppStore(
     (state: { showTooltip: boolean }) => state.showTooltip
   );
@@ -259,7 +263,7 @@ export default function ChatInput({
               autoCapitalize="none"
               spellCheck="false"
               className="text-base font-normal flex-1 outline-none min-w-[200px] text-[#333] dark:text-[#d8d8d8] placeholder-text-xs placeholder-[#999] dark:placeholder-gray-500 bg-transparent"
-              placeholder="Search whatever you want ..."
+              placeholder={t('search.input.searchPlaceholder')}
               value={inputValue}
               onChange={(e) => {
                 onSend(e.target.value);
@@ -347,12 +351,12 @@ export default function ChatInput({
 
         {!connected && isChatMode ? (
           <div className="absolute top-0 right-0 bottom-0 left-0 px-2 py-4 bg-red-500/10 rounded-md font-normal text-xs text-gray-400 flex items-center gap-4">
-            Unable to connect to the server
+            {t('search.input.connectionError')}
             <div
               className="w-[96px] h-[24px] bg-[#0061FF] rounded-[12px] font-normal text-xs text-white flex items-center justify-center cursor-pointer"
               onClick={ReconnectClick}
             >
-              Reconnect ({countdown})
+              {t('search.input.reconnect')} ({countdown})
             </div>
           </div>
         ) : null}
@@ -376,7 +380,7 @@ export default function ChatInput({
                 }`}
               />
               <span className={isDeepThinkActive ? "text-[#0072FF]" : ""}>
-                Deep Think
+                {t('search.input.deepThink')}
               </span>
             </button>
             <button
@@ -391,7 +395,7 @@ export default function ChatInput({
                 }`}
               />
               <span className={isSearchActive ? "text-[#0072FF]" : ""}>
-                Search
+                {t('search.input.search')}
               </span>
             </button>
             {/*<button*/}

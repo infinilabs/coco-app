@@ -15,6 +15,7 @@ import {
   getCurrent as getCurrentDeepLinkUrls,
 } from "@tauri-apps/plugin-deep-link";
 import { invoke } from "@tauri-apps/api/core";
+import { useTranslation } from "react-i18next";
 
 import { UserProfile } from "./UserProfile";
 import { DataSourcesList } from "./DataSourcesList";
@@ -26,6 +27,8 @@ import { useConnectStore } from "@/stores/connectStore";
 import bannerImg from "@/assets/images/coco-cloud-banner.jpeg";
 
 export default function Cloud() {
+  const { t } = useTranslation();
+
   const SidebarRef = useRef<{ refreshData: () => void }>(null);
 
   const error = useAppStore((state) => state.error);
@@ -371,7 +374,7 @@ export default function Cloud() {
             {currentService?.auth_provider?.sso?.url ? (
               <div className="mb-8">
                 <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                  Account Information
+                  {t('cloud.accountInfo')}
                 </h2>
                 {currentService?.profile ? (
                   <UserProfile
@@ -387,7 +390,7 @@ export default function Cloud() {
                         className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors mb-3"
                         onClick={LoginClick}
                       >
-                        Login
+                        {t('cloud.login')}
                       </button>
                     )}
 
@@ -398,7 +401,7 @@ export default function Cloud() {
                           className="px-6 py-2 text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors mb-3"
                           onClick={() => setLoading(false)} // Reset loading state
                         >
-                          Cancel
+                          {t('cloud.cancel')}
                         </button>
                         <button
                           onClick={() => {
@@ -423,7 +426,7 @@ export default function Cloud() {
                         )
                       }
                     >
-                      EULA | Privacy Policy
+                      {t('cloud.privacyPolicy')}
                     </button>
                   </div>
                 )}

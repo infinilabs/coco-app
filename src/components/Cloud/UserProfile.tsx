@@ -18,10 +18,10 @@ interface UserProfileProps {
   onLogout: (server: string) => void;
 }
 
-export function UserProfile({ server,userInfo,onLogout }: UserProfileProps) {
+export function UserProfile({ server, userInfo, onLogout }: UserProfileProps) {
   const handleLogout = () => {
     onLogout(server);
-    console.log("Logout",server);
+    console.log("Logout", server);
   };
 
   return (

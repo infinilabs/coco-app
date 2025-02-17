@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 interface AutoResizeTextareaProps {
   input: string;
@@ -11,6 +12,7 @@ const AutoResizeTextarea: React.FC<AutoResizeTextareaProps> = ({
   setInput,
   handleKeyDown,
 }) => {
+  const { t } = useTranslation();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -25,7 +27,7 @@ const AutoResizeTextarea: React.FC<AutoResizeTextareaProps> = ({
     <textarea
       ref={textareaRef}
       className="text-xs flex-1 outline-none min-w-[200px] text-[#333] dark:text-[#d8d8d8] placeholder-text-xs placeholder-[#999] dark:placeholder-gray-500 bg-transparent"
-      placeholder="Ask whatever you want ..."
+      placeholder={t('search.textarea.placeholder')}
       value={input}
       onChange={(e) => setInput(e.target.value)}
       onKeyDown={handleKeyDown}

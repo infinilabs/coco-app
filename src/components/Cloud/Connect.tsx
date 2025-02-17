@@ -1,17 +1,19 @@
 import React, { useState } from "react";
 import { ChevronLeft } from "lucide-react";
-import {useAppStore} from "@/stores/appStore";
+import { useTranslation } from "react-i18next";
 
+import { useAppStore } from "@/stores/appStore";
 
 interface ConnectServiceProps {
   setIsConnect: (isConnect: boolean) => void;
   onAddServer: (endpoint: string) => void;
 }
 
-export function Connect({ setIsConnect,  onAddServer }: ConnectServiceProps) {
+export function Connect({ setIsConnect, onAddServer }: ConnectServiceProps) {
+  const { t } = useTranslation();
   const [endpointLink, setEndpointLink] = useState("");
-  const [refreshLoading, ] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(''); // State to store the error message
+  const [refreshLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(""); // State to store the error message
 
   const setError = useAppStore((state) => state.setError);
 
@@ -30,16 +32,19 @@ export function Connect({ setIsConnect,  onAddServer }: ConnectServiceProps) {
       setIsConnect(true); // Only set as connected if the server is added successfully
     } catch (err: any) {
       // Handle the error if something goes wrong
-      const errorMessage = typeof err === 'string' ? err : err?.message || 'An unknown error occurred.';
-      setErrorMessage("ERR:"+errorMessage);
+      const errorMessage =
+        typeof err === "string"
+          ? err
+          : err?.message || "An unknown error occurred.";
+      setErrorMessage("ERR:" + errorMessage);
       setError(errorMessage);
-      console.error('Error:', errorMessage);
+      console.error("Error:", errorMessage);
     }
   };
 
   // Function to close the error message
   const closeError = () => {
-    setErrorMessage('');
+    setErrorMessage("");
   };
 
   return (
@@ -52,16 +57,13 @@ export function Connect({ setIsConnect,  onAddServer }: ConnectServiceProps) {
           <ChevronLeft className="w-4 h-4" />
         </button>
         <div className="text-xl text-[#101010] dark:text-white">
-          Connecting to Your Coco-Server
+          {t("cloud.connect.title")}
         </div>
       </div>
 
       <div className="mb-8">
         <p className="text-gray-600 dark:text-gray-400">
-          Running your own private instance of coco-server ensures complete control over
-          your data, keeping it secure and accessible only within your environment.
-          Enjoy enhanced privacy, better performance, and seamless integration with your
-          internal systems.
+          {t("cloud.connect.description")}
         </p>
       </div>
 
@@ -71,23 +73,25 @@ export function Connect({ setIsConnect,  onAddServer }: ConnectServiceProps) {
             htmlFor="endpoint"
             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2.5"
           >
-            Server address
+            {t("cloud.connect.serverAddress")}
           </label>
           <div className="flex gap-2">
             <input
               type="text"
               id="endpoint"
               value={endpointLink}
-              placeholder="For example: https://coco.infini.cloud/"
+              placeholder={t("cloud.connect.serverPlaceholder")}
               onChange={(e) => setEndpointLink(e.target.value)}
               className="text-[#101010] dark:text-white flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800"
             />
             <button
               type="submit"
               className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-              onClick={()=>onAddServerClick(endpointLink)}
+              onClick={() => onAddServerClick(endpointLink)}
             >
-              {refreshLoading ? "Connecting..." : "Connect"}
+              {refreshLoading
+                ? t("cloud.connect.connecting")
+                : t("cloud.connect.connect")}
             </button>
           </div>
         </div>
@@ -95,30 +99,28 @@ export function Connect({ setIsConnect,  onAddServer }: ConnectServiceProps) {
 
       {/*//TODO move to outer container, move error state to global*/}
       {errorMessage && (
+        <div className="mb-8">
           <div
-              className="mb-8"
+            style={{
+              color: "red",
+              marginTop: "10px",
+              display: "block", // Makes sure the error message starts on a new line
+              marginBottom: "10px",
+            }}
           >
-            <div   style={{
-              color: 'red',
-              marginTop: '10px',
-              display: 'block',  // Makes sure the error message starts on a new line
-              marginBottom: '10px',
-            }}>
-              <span>{errorMessage}</span>
-              <button
-                  onClick={closeError}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: 'red',
-                    cursor: 'pointer'
-                  }}
-              >
-              </button>
-            </div>
+            <span>{errorMessage}</span>
+            <button
+              onClick={closeError}
+              style={{
+                background: "none",
+                border: "none",
+                color: "red",
+                cursor: "pointer",
+              }}
+            ></button>
           </div>
+        </div>
       )}
-
     </div>
   );
 }

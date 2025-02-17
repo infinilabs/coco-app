@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { Command } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 // import { isTauri } from "@tauri-apps/api/core";
+import { useTranslation } from "react-i18next";
 
 import DropdownList from "./DropdownList";
 import Footer from "./Footer";
@@ -18,6 +19,7 @@ interface SearchProps {
 }
 
 function Search({ isChatMode, input }: SearchProps) {
+  const { t } = useTranslation();
   const sourceData = useSearchStore((state) => state.sourceData);
 
   const [IsError, setIsError] = useState<boolean>(false);
@@ -149,10 +151,10 @@ function Search({ isChatMode, input }: SearchProps) {
         >
           <img src={noDataImg} alt="no-data" className="w-16 h-16 mt-24" />
           <div className="mt-4 text-sm text-[#999] dark:text-[#666]">
-            No Results
+            {t('search.main.noResults')}
           </div>
           <div className="mt-10 text-sm  text-[#333] dark:text-[#D8D8D8] flex">
-            Ask Coco AI
+            {t('search.main.askCoco')}
             {isMac ? (
               <span className="ml-3 w-5 h-5 rounded-[6px] border border-[#D8D8D8] flex justify-center items-center">
                 <Command className="w-3 h-3" />

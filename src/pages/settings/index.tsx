@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { Settings, Puzzle, Settings2, Info, Server } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import SettingsPanel from "@/components/Settings/SettingsPanel";
 import GeneralSettings from "@/components/Settings/GeneralSettings";
@@ -11,6 +12,7 @@ import Footer from "@/components/Footer";
 import ApiDetails from "@/components/Common/ApiDetails";
 
 function SettingsPage() {
+  const { t } = useTranslation();
   const [defaultIndex, setDefaultIndex] = useState<number>(0);
 
   const [searchParams] = useSearchParams();
@@ -21,11 +23,11 @@ function SettingsPage() {
   }, [name]);
 
   const tabs = [
-    { name: "General", icon: Settings },
-    { name: "Extensions", icon: Puzzle },
-    { name: "Connect", icon: Server },
-    { name: "Advanced", icon: Settings2 },
-    { name: "About", icon: Info },
+    { name: t('settings.tabs.general'), icon: Settings },
+    { name: t('settings.tabs.extensions'), icon: Puzzle },
+    { name: t('settings.tabs.connect'), icon: Server },
+    { name: t('settings.tabs.advanced'), icon: Settings2 },
+    { name: t('settings.tabs.about'), icon: Info },
   ];
 
   return (
@@ -71,7 +73,7 @@ function SettingsPage() {
               <TabPanel>
                 <SettingsPanel title="">
                   <div className="text-gray-600 dark:text-gray-400">
-                    Extensions settings content
+                    {t('settings.tabs.extensionsContent')}
                   </div>
                 </SettingsPanel>
               </TabPanel>
@@ -81,7 +83,7 @@ function SettingsPage() {
               <TabPanel>
                 <SettingsPanel title="">
                   <div className="text-gray-600 dark:text-gray-400">
-                    Advanced Settings content
+                    {t('settings.tabs.advancedContent')}
                   </div>
                 </SettingsPanel>
               </TabPanel>

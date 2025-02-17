@@ -1,5 +1,6 @@
 import React from "react";
 import { AlignLeft, Columns2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface SearchHeaderProps {
   total: number;
@@ -12,14 +13,16 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({
   viewMode,
   setViewMode,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="flex items-center justify-between py-1">
       <div className="text-xs text-gray-600 dark:text-gray-400">
-        Found
+        {t('search.header.found')}
         <span className="px-1 font-medium text-gray-900 dark:text-gray-100">
           {total}
         </span>
-        results
+        {t('search.header.results')}
       </div>
       <div className="flex gap-2">
         <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">

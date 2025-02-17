@@ -47,6 +47,15 @@
         "title": "API 接口",
         "description": "接口和 WebSocket 的域名"
       }
+    },
+    "tabs": {
+      "general": "通用",
+      "extensions": "扩展",
+      "connect": "连接",
+      "advanced": "高级",
+      "about": "关于",
+      "extensionsContent": "扩展设置内容",
+      "advancedContent": "高级设置内容"
     }
   },
   "search": {
@@ -74,6 +83,83 @@
       "version": "{{version}}",
       "select": "选择",
       "open": "打开"
+    },
+    "input": {
+      "searchPlaceholder": "搜索任何内容...",
+      "connectionError": "无法连接到服务器",
+      "reconnect": "重新连接",
+      "deepThink": "深度思考",
+      "search": "搜索"
+    },
+    "main": {
+      "noDataAlt": "无数据图片",
+      "noResults": "暂无结果",
+      "askCoco": "询问 Coco AI"
+    },
+    "header": {
+      "found": "找到",
+      "results": "个结果"
+    }
+  },
+  "assistant": {
+    "chat": {
+      "openChat": "打开聊天窗口",
+      "newChat": "新建对话",
+      "connectionError": "无法连接到服务器",
+      "reconnect": "重新连接"
+    },
+    "input": {
+      "stopMessage": "停止生成",
+      "deepThink": "深度思考",
+      "deepThinkTooltip": "启用深度思考模式",
+      "search": "搜索",
+      "searchTooltip": "启用搜索模式"
+    },
+    "message": {
+      "logo": "Coco AI 图标",
+      "aiName": "Coco AI",
+      "thinking": "AI 正在思考...",
+      "thoughtTime": "思考了 {{time}} 秒",
+      "thinkingButton": "查看思考过程"
+    },
+    "sidebar": {
+      "newChat": "新建对话",
+      "newChatTooltip": "创建新的对话",
+      "selectChat": "选择此对话",
+      "untitledChat": "未命名对话"
+    },
+    "source": {
+      "foundResults": "找到 {{count}} 个结果"
+    }
+  },
+  "cloud": {
+    "banner": "横幅图片",
+    "accountInfo": "账户信息",
+    "login": "登录",
+    "cancel": "取消",
+    "copyUrl": "复制链接",
+    "privacyPolicy": "用户协议 | 隐私政策",
+    "connect": {
+      "back": "返回",
+      "title": "连接到您的 Coco-Server",
+      "description": "运行您自己的私有 coco-server 实例可以确保对数据的完全控制，使其在您的环境中保持安全且仅可访问。享受增强的隐私保护、更好的性能和与内部系统的无缝集成。",
+      "serverAddress": "服务器地址",
+      "serverPlaceholder": "例如：https://coco.infini.cloud/",
+      "connecting": "连接中...",
+      "connect": "连接",
+      "closeError": "关闭错误提示"
+    },
+    "dataSource": {
+      "title": "数据源",
+      "refresh": "刷新数据源列表"
+    },
+    "sidebar": {
+      "selectServer": "选择服务器",
+      "serverLogo": "服务器图标",
+      "serverOnline": "服务器在线",
+      "serverOffline": "服务器离线",
+      "yourServers": "您的 Coco-Servers",
+      "addServer": "添加新服务器"
     }
   }
 }

@@ -6,6 +6,7 @@ import {
   useRef,
   useEffect,
 } from "react";
+import { useTranslation } from "react-i18next";
 
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import StopIcon from "@/icons/Stop";
@@ -31,6 +32,7 @@ export function ChatInput({
   isDeepThinkActive,
   setIsDeepThinkActive,
 }: ChatInputProps) {
+  const { t } = useTranslation();
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -120,7 +122,9 @@ export function ChatInput({
             <button
               type="button"
               className={`h-5 px-2 inline-flex items-center border  rounded-[10px] transition-colors relative ${
-                isDeepThinkActive ? "bg-[rgba(0,114,255,0.3)] border-[rgba(0,114,255,0.3)]" : "border-[#262727]"
+                isDeepThinkActive
+                  ? "bg-[rgba(0,114,255,0.3)] border-[rgba(0,114,255,0.3)]"
+                  : "border-[#262727]"
               }`}
               onClick={DeepThinkClick}
             >
@@ -131,14 +135,20 @@ export function ChatInput({
                     : "text-[#333] dark:text-white"
                 }`}
               />
-              <span className={isDeepThinkActive ? "text-[#0072FF]" : "dark:text-white"}>
-                Deep Think
+              <span
+                className={
+                  isDeepThinkActive ? "text-[#0072FF]" : "dark:text-white"
+                }
+              >
+                {t("assistant.input.deepThink")}
               </span>
             </button>
             <button
               type="button"
               className={`h-5 px-2 inline-flex items-center border  rounded-[10px] transition-colors relative ${
-                isSearchActive ? "bg-[rgba(0,114,255,0.3)] border-[rgba(0,114,255,0.3)]" : "border-[#262727]"
+                isSearchActive
+                  ? "bg-[rgba(0,114,255,0.3)] border-[rgba(0,114,255,0.3)]"
+                  : "border-[#262727]"
               }`}
               onClick={SearchClick}
             >
@@ -149,8 +159,12 @@ export function ChatInput({
                     : "text-[#333] dark:text-white"
                 }`}
               />
-              <span className={isSearchActive ? "text-[#0072FF]" : "dark:text-white"}>
-                Search
+              <span
+                className={
+                  isSearchActive ? "text-[#0072FF]" : "dark:text-white"
+                }
+              >
+                {t("assistant.input.search")}
               </span>
             </button>
             {/* <button
