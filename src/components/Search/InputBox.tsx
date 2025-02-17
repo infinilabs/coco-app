@@ -1,4 +1,4 @@
-import { ArrowBigLeft, Mic, Search, Send, Globe } from "lucide-react";
+import { ArrowBigLeft, Search, Send, Globe, Brain } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke, isTauri } from "@tauri-apps/api/core";
@@ -22,6 +22,8 @@ interface ChatInputProps {
   reconnect: () => void;
   isSearchActive: boolean;
   setIsSearchActive: () => void;
+  isDeepThinkActive: boolean;
+  setIsDeepThinkActive: () => void;
 }
 
 export default function ChatInput({
@@ -35,6 +37,8 @@ export default function ChatInput({
   reconnect,
   isSearchActive,
   setIsSearchActive,
+  isDeepThinkActive,
+  setIsDeepThinkActive,
 }: ChatInputProps) {
   const showTooltip = useAppStore(
     (state: { showTooltip: boolean }) => state.showTooltip
@@ -216,6 +220,10 @@ export default function ChatInput({
     setIsSearchActive();
   };
 
+  const DeepThinkClick = () => {
+    setIsDeepThinkActive();
+  };
+
   return (
     <div className="w-full relative">
       <div className="p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded transition-all relative">
@@ -276,14 +284,23 @@ export default function ChatInput({
           ) : null}
         </div>
 
-        {isChatMode ? (
+        {/* {isChatMode ? (
           <button
-            className="p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-colors"
+            className={`p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-colors ${
+              isListening ? "bg-blue-100 dark:bg-blue-900" : ""
+            }`}
             type="button"
+            onClick={() => {}}
           >
-            <Mic className="w-4 h-4 text-[#999] dark:text-[#999]" />
+            <Mic
+              className={`w-4 h-4 ${
+                isListening
+                  ? "text-blue-500 animate-pulse"
+                  : "text-[#999] dark:text-[#999]"
+              }`}
+            />
           </button>
-        ) : null}
+        ) : null} */}
 
         {isChatMode && curChatEnd ? (
           <button
@@ -347,6 +364,21 @@ export default function ChatInput({
       >
         {isChatMode ? (
           <div className="flex gap-2 text-xs text-[#333] dark:text-[#d8d8d8]">
+            <button
+              className={`inline-flex items-center rounded-lg transition-colors relative py-1`}
+              onClick={DeepThinkClick}
+            >
+              <Brain
+                className={`w-4 h-4 mr-1 ${
+                  isDeepThinkActive
+                    ? "text-[#0072FF] dark:text-[#0072FF]"
+                    : "text-[#000] dark:text-[#d8d8d8]"
+                }`}
+              />
+              <span className={isDeepThinkActive ? "text-[#0072FF]" : ""}>
+                Deep Think
+              </span>
+            </button>
             <button
               className={`inline-flex items-center rounded-lg transition-colors relative py-1`}
               onClick={SearchClick}

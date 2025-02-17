@@ -1,4 +1,4 @@
-import { Mic, Send, Globe } from "lucide-react";
+import { Send, Globe, Brain } from "lucide-react";
 import {
   useState,
   type FormEvent,
@@ -6,8 +6,9 @@ import {
   useRef,
   useEffect,
 } from "react";
+
 import AutoResizeTextarea from "./AutoResizeTextarea";
-import StopIcon from "../../icons/Stop";
+import StopIcon from "@/icons/Stop";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -16,6 +17,8 @@ interface ChatInputProps {
   disabledChange: () => void;
   isSearchActive: boolean;
   setIsSearchActive: () => void;
+  isDeepThinkActive: boolean;
+  setIsDeepThinkActive: () => void;
 }
 
 export function ChatInput({
@@ -25,8 +28,9 @@ export function ChatInput({
   disabledChange,
   isSearchActive,
   setIsSearchActive,
+  isDeepThinkActive,
+  setIsDeepThinkActive,
 }: ChatInputProps) {
-
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -64,6 +68,10 @@ export function ChatInput({
     setIsSearchActive();
   };
 
+  const DeepThinkClick = () => {
+    setIsDeepThinkActive();
+  };
+
   return (
     <form onSubmit={handleSubmit} className="w-full rounded-xl overflow-hidden">
       <div className="bg-inputbox_bg_light dark:bg-inputbox_bg_dark bg-cover rounded-xl border border-[#E6E6E6] dark:border-[#272626]">
@@ -77,9 +85,9 @@ export function ChatInput({
                 handleKeyDown={handleKeyDown}
               />
             </div>
-            <button className="p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-colors">
+            {/* <button className="p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-colors">
               <Mic className="w-4 h-4 text-[#999] dark:text-[#999]" />
-            </button>
+            </button> */}
             {curChatEnd ? (
               <button
                 className={`ml-1 p-1 ${
@@ -108,20 +116,40 @@ export function ChatInput({
 
         {/* Controls */}
         <div className="flex justify-between items-center p-2 rounded-xl overflow-hidden">
-          <div className="flex gap-1 text-xs text-[#333] dark:text-[#d8d8d8]">
+          <div className="flex gap-1 px-[5px] text-xs text-[#333] dark:text-[#fff]">
             <button
               type="button"
-              className={`inline-flex items-center rounded-lg transition-colors relative py-1 px-[5px]`}
+              className={`h-5 px-2 inline-flex items-center border  rounded-[10px] transition-colors relative ${
+                isDeepThinkActive ? "bg-[rgba(0,114,255,0.3)] border-[rgba(0,114,255,0.3)]" : "border-[#262727]"
+              }`}
+              onClick={DeepThinkClick}
+            >
+              <Brain
+                className={`w-3 h-3 mr-1 ${
+                  isDeepThinkActive
+                    ? "text-[#0072FF] dark:text-[#0072FF]"
+                    : "text-[#333] dark:text-white"
+                }`}
+              />
+              <span className={isDeepThinkActive ? "text-[#0072FF]" : "dark:text-white"}>
+                Deep Think
+              </span>
+            </button>
+            <button
+              type="button"
+              className={`h-5 px-2 inline-flex items-center border  rounded-[10px] transition-colors relative ${
+                isSearchActive ? "bg-[rgba(0,114,255,0.3)] border-[rgba(0,114,255,0.3)]" : "border-[#262727]"
+              }`}
               onClick={SearchClick}
             >
               <Globe
-                className={`w-4 h-4 mr-1 ${
+                className={`w-3 h-3 mr-1 ${
                   isSearchActive
                     ? "text-[#0072FF] dark:text-[#0072FF]"
-                    : "text-[#000] dark:text-[#d8d8d8]"
+                    : "text-[#333] dark:text-white"
                 }`}
               />
-              <span className={isSearchActive ? "text-[#0072FF]" : ""}>
+              <span className={isSearchActive ? "text-[#0072FF]" : "dark:text-white"}>
                 Search
               </span>
             </button>

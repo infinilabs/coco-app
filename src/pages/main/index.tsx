@@ -53,6 +53,7 @@ export default function DesktopApp() {
     const [isTransitioned, setIsTransitioned] = useState(false);
 
     const [isSearchActive, setIsSearchActive] = useState(false);
+    const [isDeepThinkActive, setIsDeepThinkActive] = useState(false);
 
     async function changeMode(value: boolean) {
         setIsChatMode(value);
@@ -69,7 +70,7 @@ export default function DesktopApp() {
             if (isTauri()) {
                 await getCurrentWebviewWindow()?.setSize(new LogicalSize(680, 596));
             }
-            chatAIRef.current?.init();
+            chatAIRef.current?.init(value);
         }
     };
     const cancelChat = () => {
@@ -110,7 +111,9 @@ export default function DesktopApp() {
                     changeInput={changeInput}
                     reconnect={reconnect}
                     isSearchActive={isSearchActive}
-                    setIsSearchActive={() => setIsSearchActive((prev) => !prev)}
+                    setIsSearchActive={() => setIsSearchActive((prev) => !prev)} 
+                    isDeepThinkActive={isDeepThinkActive}
+                    setIsDeepThinkActive={() => setIsDeepThinkActive((prev) => !prev)}
                 />
             </div>
 
@@ -140,10 +143,10 @@ export default function DesktopApp() {
                     <ChatAI
                         ref={chatAIRef}
                         key="ChatAI"
-                        inputValue={input}
                         isTransitioned={isTransitioned}
                         changeInput={changeInput}
                         isSearchActive={isSearchActive}
+                        isDeepThinkActive={isDeepThinkActive}
                     />
                 ) : null}
             </div>

@@ -2,13 +2,13 @@ import { useState, useRef, useEffect } from "react";
 import { PanelRightClose, PanelRightOpen, X } from "lucide-react";
 import { isTauri } from "@tauri-apps/api/core";
 
-import { ChatMessage } from "./ChatMessage";
-import { ChatInput } from "./ChatInput";
-import { Sidebar } from "./Sidebar";
-import type { Chat, Message } from "./types";
-import { tauriFetch } from "../../api/tauriFetchClient";
-import { useWebSocket } from "../../hooks/useWebSocket";
-import { useWindows }  from "../../hooks/useWindows";
+import { ChatMessage } from "@/components/Assistant/ChatMessage";
+import { ChatInput } from "@/components/Assistant/ChatInput";
+import { Sidebar } from "@/components/Assistant/Sidebar";
+import type { Chat, Message } from "@/components/Assistant/types";
+import { tauriFetch } from "@/api/tauriFetchClient";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { useWindows }  from "@/hooks/useWindows";
 import { clientEnv } from "@/utils/env";
 // import { useAppStore } from '@/stores/appStore';
 import ApiDetails from "@/components/Common/ApiDetails";
@@ -33,6 +33,7 @@ export default function ChatAI({}: ChatAIProps) {
   const [curId, setCurId] = useState("");
 
   const [isSearchActive, setIsSearchActive] = useState(false);
+  const [isDeepThinkActive, setIsDeepThinkActive] = useState(false);
 
   const curChatEndRef = useRef(curChatEnd);
   curChatEndRef.current = curChatEnd;
@@ -168,7 +169,7 @@ export default function ChatAI({}: ChatAIProps) {
     if (!activeChat?._id) return;
     try {
       const response = await tauriFetch({
-        url: `/chat/${activeChat?._id}/_send?search=${isSearchActive}`,
+        url: `/chat/${activeChat?._id}/_send?search=${isSearchActive}&deep_thinking=${isDeepThinkActive}`,
         method: "POST",
         headers: {
           "WEBSOCKET-SESSION-ID": websocketId,
@@ -286,9 +287,9 @@ export default function ChatAI({}: ChatAIProps) {
               className={`rounded-lg transition-colors hover:bg-gray-100 text-gray-600 dark:hover:bg-gray-800 dark:text-gray-300`}
             >
               {isSidebarOpen ? (
-                <PanelRightClose className="h-6 w-6" />
-              ) : (
                 <PanelRightOpen className="h-6 w-6" />
+              ) : (
+                <PanelRightClose className="h-6 w-6" />
               )}
             </button>
 
@@ -337,6 +338,8 @@ export default function ChatAI({}: ChatAIProps) {
               }}
               isSearchActive={isSearchActive}
               setIsSearchActive={() => setIsSearchActive((prev) => !prev)}
+              isDeepThinkActive={isDeepThinkActive}
+              setIsDeepThinkActive={() => setIsDeepThinkActive((prev) => !prev)}
             />
           </div>
         </div>

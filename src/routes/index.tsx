@@ -1,10 +1,10 @@
 import { createBrowserRouter } from "react-router-dom";
 
-import Layout from "./layout.tsx";
+import Layout from "./layout";
 import ErrorPage from "@/error-page";
-import DesktopApp from "@/pages/main/index.tsx";
-import SettingsPage from "@/pages/settings/index.tsx";
-import ChatAI from "@/components/Assistant";
+import DesktopApp from "@/pages/main/index";
+import SettingsPage from "@/pages/settings/index";
+import ChatAI from "@/pages/chat/index";
 
 export const router = createBrowserRouter([
   {
@@ -14,7 +14,7 @@ export const router = createBrowserRouter([
     children: [
       { path: "/ui", element: <DesktopApp /> },
       { path: "/ui/settings", element: <SettingsPage /> },
-      { path: "/ui/app/chat", element: <ChatAI /> },
+      { path: "/ui/chat", element: <ChatAI /> },
     ],
   },
 ]);

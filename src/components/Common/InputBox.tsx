@@ -1,4 +1,4 @@
-import { Library, Mic, Send, Plus, AudioLines, Image } from "lucide-react";
+import { Library, Send, Plus, AudioLines, Image } from "lucide-react";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { listen } from "@tauri-apps/api/event";
 
@@ -176,14 +176,14 @@ export default function ChatInput({
             ) : null}
           </div>
 
-          {isChatMode ? (
+          {/* {isChatMode ? (
             <button
               className="p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-colors"
               type="button"
             >
               <Mic className="w-4 h-4 text-[#999] dark:text-[#999]" />
             </button>
-          ) : null}
+          ) : null} */}
 
           {isChatMode && curChatEnd ? (
             <button
