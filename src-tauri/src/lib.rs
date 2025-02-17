@@ -18,10 +18,7 @@ use reqwest::Client;
 use std::path::PathBuf;
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
-use tauri::{
-    AppHandle, Emitter, Listener, Manager, PhysicalPosition, Runtime, WebviewWindow, Window,
-    WindowEvent,
-};
+use tauri::{AppHandle, Emitter, Listener, Manager, PhysicalPosition, Runtime, State, WebviewWindow, Window, WindowEvent};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_deep_link::DeepLinkExt;
 use tokio::runtime::Runtime as RT;
@@ -53,8 +50,8 @@ struct Payload {
 pub fn run() {
     let mut ctx = tauri::generate_context!();
 
-    let app = tauri::Builder::default()
-        .plugin(tauri_nspanel::init())
+    let mut app_builder = tauri::Builder::default()
+        // .plugin(tauri_nspanel::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_autostart::init(
@@ -68,6 +65,14 @@ pub fn run() {
                 .unwrap();
         }))
         .plugin(tauri_plugin_store::Builder::default().build())
+
+    // Conditional compilation for macOS
+    #[cfg(target_os = "macos")]
+    {
+        app_builder = app_builder.plugin(tauri_nspanel::init());
+    }
+
+    let app = app_builder
         .invoke_handler(tauri::generate_handler![
             change_window_height,
             shortcut::change_shortcut,
@@ -182,7 +187,7 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
     let coco_servers = server::servers::get_all_servers();
 
     // Get the registry from Tauri's state
-    let registry = app_handle.state::<SearchSourceRegistry>();
+    let registry:State<SearchSourceRegistry> = app_handle.state::<SearchSourceRegistry>();
 
     for server in coco_servers {
         let source = CocoSearchSource::new(server.clone(), Client::new());
