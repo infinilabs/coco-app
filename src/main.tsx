@@ -4,6 +4,7 @@ import { RouterProvider } from "react-router-dom";
 
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { router } from "./routes/index";
+import './i18n';
 
 import "./main.css";
 

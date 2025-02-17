@@ -1,5 +1,6 @@
 import { ArrowDown01, Command, CornerDownLeft } from "lucide-react";
 import { emit } from "@tauri-apps/api/event";
+import { useTranslation } from "react-i18next";
 
 import logoImg from "@/assets/icon.svg";
 import { useSearchStore } from "@/stores/searchStore";
@@ -12,6 +13,7 @@ interface FooterProps {
 }
 
 export default function Footer({}: FooterProps) {
+  const { t } = useTranslation();
   const sourceData = useSearchStore((state) => state.sourceData);
 
   function openSetting() {
@@ -32,23 +34,18 @@ export default function Footer({}: FooterProps) {
               src={logoImg}
               className="w-4 h-4 cursor-pointer"
               onClick={openSetting}
+              alt={t('search.footer.logoAlt')}
             />
           )}
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            {sourceData?.source?.name || "v1.0.0"}
+            {sourceData?.source?.name || t('search.footer.version', { version: 'v1.0.0' })}
           </span>
         </div>
-
-        {/* {name ? (
-          <div className="flex gap-2 items-center text-[#666] text-xs">
-            <AppWindowMac className="w-5 h-5" /> {name}
-          </div>
-        ) : null} */}
       </div>
 
       <div className="flex items-center gap-3">
         <div className="gap-1 flex items-center text-[#666] dark:text-[#666] text-xs">
-          <span className="mr-1.5 ">Select:</span>
+          <span className="mr-1.5">{t('search.footer.select')}:</span>
           <kbd className="coco-modal-footer-commands-key pr-1">
             {isMac ? (
               <Command className="w-3 h-3" />
@@ -64,7 +61,7 @@ export default function Footer({}: FooterProps) {
           </kbd>
         </div>
         <div className="flex items-center text-[#666] dark:text-[#666] text-xs">
-          <span className="mr-1.5 ">Open: </span>
+          <span className="mr-1.5">{t('search.footer.open')}: </span>
           <kbd className="coco-modal-footer-commands-key pr-1">
             <CornerDownLeft className="w-3 h-3" />
           </kbd>

@@ -1,7 +1,79 @@
 {
-  "welcome": "欢迎使用 Coco App",
-  "home": "主页",
-  "settings": "设置",
-  "activeTheme": "当前主题：",
-  "InputMessage": "在此输入您的消息..."
+  "settings": {
+    "general": "通用设置",
+    "startup": {
+      "title": "启动项",
+      "description": "登录时自动启动 Coco",
+      "toggle": "开机自启"
+    },
+    "hotkey": {
+      "title": "快捷键",
+      "description": "打开 Coco 的全局快捷键"
+    },
+    "appearance": {
+      "title": "外观",
+      "description": "选择您喜欢的主题",
+      "light": "浅色",
+      "dark": "深色",
+      "auto": "自动"
+    },
+    "language": {
+      "title": "语言",
+      "description": "选择您的首选语言",
+      "english": "English",
+      "chinese": "中文"
+    },
+    "tooltip": {
+      "title": "提示",
+      "description": "快捷键提示显示",
+      "toggle": "显示提示"
+    },
+    "shortcut": {
+      "pressKeys": "请按键...",
+      "save": "保存",
+      "edit": "编辑"
+    },
+    "about": {
+      "logo": "Coco 标志",
+      "slogan": "搜索、连接、协作 — 一站式解决方案",
+      "website": "访问官网",
+      "github": "访问 GitHub",
+      "version": "版本 {{version}}",
+      "copyright": "©{{year}} INFINI Labs，保留所有权利。"
+    },
+    "advanced": {
+      "title": "高级设置",
+      "endpoint": {
+        "title": "API 接口",
+        "description": "接口和 WebSocket 的域名"
+      }
+    }
+  },
+  "search": {
+    "textarea": {
+      "placeholder": "问我任何问题...",
+      "ariaLabel": "输入你想问的问题"
+    },
+    "document": {
+      "details": "详细信息",
+      "name": "名称",
+      "source": "来源",
+      "updatedAt": "更新时间",
+      "updatedBy": "更新者",
+      "createdBy": "创建者",
+      "type": "类型",
+      "size": "大小"
+    },
+    "list": {
+      "loading": "加载中...",
+      "noResults": "暂无结果",
+      "noDataAlt": "无数据图片"
+    },
+    "footer": {
+      "logoAlt": "Coco 图标",
+      "version": "{{version}}",
+      "select": "选择",
+      "open": "打开"
+    }
+  }
 }

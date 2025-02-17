@@ -8,7 +8,9 @@ import {
   Power,
   Tags,
   // Trash2,
+  Globe,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { isTauri, invoke } from "@tauri-apps/api/core";
 import {
   isEnabled,
@@ -34,6 +36,7 @@ export function ThemeOption({
   theme: AppTheme;
 }) {
   const { theme: currentTheme, changeTheme } = useTheme();
+  const { t } = useTranslation();
 
   const isSelected = currentTheme === theme;
 
@@ -47,10 +50,8 @@ export function ThemeOption({
       } flex flex-col items-center justify-center space-y-2 transition-all`}
     >
       <Icon className={`w-6 h-6 ${isSelected ? "text-blue-500" : ""}`} />
-      <span
-        className={`text-sm font-medium ${isSelected ? "text-blue-500" : ""}`}
-      >
-        {title}
+      <span className={`text-sm font-medium ${isSelected ? "text-blue-500" : ""}`}>
+        {t(`settings.appearance.${theme}`)}
       </span>
     </button>
   );
@@ -162,31 +163,37 @@ export default function GeneralSettings() {
   //   useAppStore.persist.clearStorage();
   // }, [endpoint]);
 
+  const { t, i18n } = useTranslation();
+  const currentLanguage = i18n.language;
+
+  const changeLanguage = (lang: string) => {
+    i18n.changeLanguage(lang);
+    localStorage.setItem('preferred-language', lang);
+  };
+
   return (
     <div className="space-y-8">
       <div>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          General Settings
+          {t('settings.general')}
         </h2>
         <div className="space-y-6">
           <SettingsItem
             icon={Power}
-            title="Startup"
-            description="Automatically start Coco when you login"
+            title={t('settings.startup.title')}
+            description={t('settings.startup.description')}
           >
             <SettingsToggle
               checked={launchAtLogin}
-              onChange={(value) =>
-                value ? enableAutoStart() : disableAutoStart()
-              }
-              label="Launch at login"
+              onChange={(value) => value ? enableAutoStart() : disableAutoStart()}
+              label={t('settings.startup.toggle')}
             />
           </SettingsItem>
 
           <SettingsItem
             icon={Command}
-            title="Coco Hotkey"
-            description="Global shortcut to open Coco"
+            title={t('settings.hotkey.title')}
+            description={t('settings.hotkey.description')}
           >
             <div className="flex items-center gap-2">
               <ShortcutItem
@@ -200,75 +207,47 @@ export default function GeneralSettings() {
             </div>
           </SettingsItem>
 
-          {/* <SettingsItem
-            icon={Monitor}
-            title="Window Mode"
-            description="Choose how Coco appears on your screen"
-          >
-            <SettingsSelect
-              options={["Standard Window", "Compact Mode", "Full Screen"]}
-            />
-          </SettingsItem> */}
-
           <SettingsItem
             icon={Palette}
-            title="Appearance"
-            description="Choose your preferred theme"
+            title={t('settings.appearance.title')}
+            description={t('settings.appearance.description')}
           >
             <div></div>
           </SettingsItem>
           <div className="grid grid-cols-3 gap-4">
-            <ThemeOption icon={Sun} title="Light" theme="light" />
-            <ThemeOption icon={Moon} title="Dark" theme="dark" />
-            <ThemeOption icon={Monitor} title="Auto" theme="auto" />
+            <ThemeOption icon={Sun} title={t('settings.appearance.light')} theme="light" />
+            <ThemeOption icon={Moon} title={t('settings.appearance.dark')} theme="dark" />
+            <ThemeOption icon={Monitor} title={t('settings.appearance.auto')} theme="auto" />
           </div>
+          
+          <SettingsItem
+            icon={Globe}
+            title={t('settings.language.title')}
+            description={t('settings.language.description')}
+          >
+            <div className="flex items-center gap-2">
+              <select
+                value={currentLanguage}
+                onChange={(e) => changeLanguage(e.target.value)}
+                className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="en">{t('settings.language.english')}</option>
+                <option value="zh">{t('settings.language.chinese')}</option>
+              </select>
+            </div>
+          </SettingsItem>
 
           <SettingsItem
             icon={Tags}
-            title="Tooltip"
-            description="Tooltip display for shortcut keys"
+            title={t('settings.tooltip.title')}
+            description={t('settings.tooltip.description')}
           >
             <SettingsToggle
               checked={showTooltip}
               onChange={(value) => setShowTooltip(value)}
-              label="Tooltip display"
+              label={t('settings.tooltip.toggle')}
             />
           </SettingsItem>
-
-          {/* <SettingsItem
-            icon={Layout}
-            title="Text Size"
-            description="Adjust the application text size"
-          >
-            <SettingsSelect options={["Small", "Medium", "Large"]} />
-          </SettingsItem> */}
-
-          {/* <SettingsItem
-            icon={Star}
-            title="Favorites"
-            description="Manage your favorite commands"
-          >
-            <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors duration-200">
-              Manage Favorites
-            </button>
-          </SettingsItem> */}
-
-          {/* <SettingsItem
-            icon={Trash2}
-            title="Clear Cache"
-            description="Clear cached data and settings"
-          >
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <button
-                  onClick={clearAllCache}
-                  className=" px-4 py-2 text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 border border-red-200 dark:border-red-800 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                >
-                  Clear All Cache
-                </button>
-              </div>
-            </div>
-          </SettingsItem> */}
         </div>
       </div>
     </div>

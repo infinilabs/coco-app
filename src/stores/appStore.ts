@@ -19,11 +19,12 @@ export type IAppStore = {
   // ssoServerID: string;
   // setSSOServerID: (ssoServerID: string) => void,
 
-
   endpoint: AppEndpoint,
   endpoint_http: string,
   endpoint_websocket: string,
   setEndpoint: (endpoint: AppEndpoint) => void,
+  language: string;
+  setLanguage: (language: string) => void;
   initializeListeners: () => void;
 };
 
@@ -62,6 +63,8 @@ export const useAppStore = create<IAppStore>()(
           endpoint_websocket
         });
       },
+      language: "en",
+      setLanguage: (language: string) => set({ language }),
       initializeListeners: () => {
         listen(ENDPOINT_CHANGE_EVENT, (event: any) => {
           const { endpoint, endpoint_http, endpoint_websocket } = event.payload;

@@ -1,7 +1,79 @@
 {
-  "welcome": "Welcome to Coco App",
-  "home": "Home",
-  "settings": "Settings",
-  "activeTheme": "Current theme:",
-  "InputMessage": "Input your message here..."
+  "settings": {
+    "general": "General Settings",
+    "startup": {
+      "title": "Startup",
+      "description": "Automatically start Coco when you login",
+      "toggle": "Launch at login"
+    },
+    "hotkey": {
+      "title": "Coco Hotkey",
+      "description": "Global shortcut to open Coco"
+    },
+    "appearance": {
+      "title": "Appearance",
+      "description": "Choose your preferred theme",
+      "light": "Light",
+      "dark": "Dark",
+      "auto": "Auto"
+    },
+    "language": {
+      "title": "Language",
+      "description": "Choose your preferred language",
+      "english": "English",
+      "chinese": "中文"
+    },
+    "tooltip": {
+      "title": "Tooltip",
+      "description": "Tooltip display for shortcut keys",
+      "toggle": "Tooltip display"
+    },
+    "shortcut": {
+      "pressKeys": "Press keys...",
+      "save": "Save",
+      "edit": "Edit"
+    },
+    "about": {
+      "logo": "Coco Logo",
+      "slogan": "Search, Connect, Collaborate—All in one place",
+      "website": "Visit Website",
+      "github": "Visit GitHub",
+      "version": "Version {{version}}",
+      "copyright": "©{{year}} INFINI Labs, All Rights Reserved."
+    },
+    "advanced": {
+      "title": "Advanced Settings",
+      "endpoint": {
+        "title": "API Endpoint",
+        "description": "Domain name for interface and websocket"
+      }
+    }
+  },
+  "search": {
+    "textarea": {
+      "placeholder": "Ask whatever you want ...",
+      "ariaLabel": "Ask whatever you want"
+    },
+    "document": {
+      "details": "Details",
+      "name": "Name",
+      "source": "Source",
+      "updatedAt": "Updated at",
+      "updatedBy": "Updated by",
+      "createdBy": "Created by",
+      "type": "Type",
+      "size": "Size"
+    },
+    "list": {
+      "loading": "Loading...",
+      "noResults": "No Results",
+      "noDataAlt": "No data image"
+    },
+    "footer": {
+      "logoAlt": "Coco Logo",
+      "version": "{{version}}",
+      "select": "Select",
+      "open": "Open"
+    }
+  }
 }

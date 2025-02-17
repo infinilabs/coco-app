@@ -1,4 +1,5 @@
 import { useEffect, useRef, useImperativeHandle, forwardRef } from "react";
+import { useTranslation } from "react-i18next";
 
 interface AutoResizeTextareaProps {
   input: string;
@@ -12,6 +13,7 @@ const AutoResizeTextarea = forwardRef<
   { reset: () => void; focus: () => void },
   AutoResizeTextareaProps
 >(({ input, setInput, handleKeyDown, connected }, ref) => {
+  const { t } = useTranslation();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -47,8 +49,8 @@ const AutoResizeTextarea = forwardRef<
       autoCapitalize="none"
       spellCheck="false"
       className="text-base flex-1 outline-none min-w-[200px] text-[#333] dark:text-[#d8d8d8] placeholder-text-xs placeholder-[#999] dark:placeholder-gray-500 bg-transparent"
-      placeholder={connected ? "Ask whatever you want ..." : ""}
-      aria-label="Ask whatever you want ..."
+      placeholder={connected ? t('search.textarea.placeholder') : ""}
+      aria-label={t('search.textarea.ariaLabel')}
       value={input}
       onChange={(e) => setInput(e.target.value)}
       onKeyDown={(e) => handleKeyDown?.(e)}

@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 import { formatter } from "@/utils/index";
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
@@ -8,10 +9,12 @@ interface DocumentDetailProps {
 }
 
 export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="p-4">
       <div className="font-normal text-xs text-[#666] dark:text-[#999] mb-2">
-        Details
+        {t('search.document.details')}
       </div>
 
       {/* <div className="mb-4">
@@ -30,65 +33,64 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
 
       <div className="py-4 mt-4">
         <div className="flex justify-between flex-wrap font-normal text-xs mb-2.5">
-          <div className="text-[#666]">Name</div>
+          <div className="text-[#666]">{t('search.document.name')}</div>
           <div className="text-[#333] dark:text-[#D8D8D8] text-right w-60 break-words">
             {document?.title || "-"}
           </div>
         </div>
 
         <div className="flex justify-between flex-wrap font-normal text-xs mb-2.5">
-          <div className="text-[#666]">Source</div>
+          <div className="text-[#666]">{t('search.document.source')}</div>
           <div className="text-[#333] dark:text-[#D8D8D8] flex justify-end text-right w-56 break-words">
             <TypeIcon item={document} className="w-4 h-4 mr-1" />
             {document?.source?.name || "-"}
           </div>
         </div>
-        {/* <div className="flex justify-between font-normal text-xs mb-2.5">
-          <div className="text-[#666]">Where</div>
-          <div className="text-[#333] dark:text-[#D8D8D8] text-right w-56 break-words">
-            -
-          </div>
-        </div> */}
-        {document?.updated ? (
+
+        {document?.updated && (
           <div className="flex justify-between flex-wrap font-normal text-xs mb-2.5">
-            <div className="text-[#666]">Updated at</div>
+            <div className="text-[#666]">{t('search.document.updatedAt')}</div>
             <div className="text-[#333] dark:text-[#D8D8D8] text-right w-56 break-words">
               {document?.updated || "-"}
             </div>
           </div>
-        ) : null}
-        {document?.last_updated_by?.user?.username ? (
+        )}
+
+        {document?.last_updated_by?.user?.username && (
           <div className="flex justify-between flex-wrap font-normal text-xs mb-2.5">
-            <div className="text-[#666]">Update by</div>
+            <div className="text-[#666]">{t('search.document.updatedBy')}</div>
             <div className="text-[#333] dark:text-[#D8D8D8] text-right w-56 break-words">
               {document?.last_updated_by?.user?.username || "-"}
             </div>
           </div>
-        ) : null}
-        {document?.owner?.username ? (
+        )}
+
+        {document?.owner?.username && (
           <div className="flex justify-between flex-wrap font-normal text-xs mb-2.5">
-            <div className="text-[#666]">Created by</div>
+            <div className="text-[#666]">{t('search.document.createdBy')}</div>
             <div className="text-[#333] dark:text-[#D8D8D8] text-right w-56 break-words">
               {document?.owner?.username || "-"}
             </div>
           </div>
-        ) : null}
-        {document?.type ? (
+        )}
+
+        {document?.type && (
           <div className="flex justify-between flex-wrap font-normal text-xs mb-2.5">
-            <div className="text-[#666]">Type</div>
+            <div className="text-[#666]">{t('search.document.type')}</div>
             <div className="text-[#333] dark:text-[#D8D8D8] text-right w-56 break-words">
               {document?.type || "-"}
             </div>
           </div>
-        ) : null}
-        {document?.size ? (
+        )}
+
+        {document?.size && (
           <div className="flex justify-between flex-wrap font-normal text-xs mb-2.5">
-            <div className="text-[#666]">Size</div>
+            <div className="text-[#666]">{t('search.document.size')}</div>
             <div className="text-[#333] dark:text-[#D8D8D8] text-right w-56 break-words">
               {formatter.bytes(document?.size || 0)}
             </div>
           </div>
-        ) : null}
+        )}
       </div>
     </div>
   );

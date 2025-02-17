@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useInfiniteScroll } from "ahooks";
 import { isTauri, invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-shell";
+import { useTranslation } from "react-i18next";
 
 import { useSearchStore } from "@/stores/searchStore";
 import { SearchHeader } from "./SearchHeader";
@@ -28,6 +29,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   viewMode,
   setViewMode,
 }) => {
+  const { t } = useTranslation();
   const sourceData = useSearchStore((state) => state.sourceData);
 
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
@@ -200,11 +202,9 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   }, [selectedItem]);
 
   return (
-    <div
-      className={`border-r border-gray-200 dark:border-gray-700 flex flex-col h-full ${
-        viewMode === "list" ? "w-[100%]" : "w-[50%]"
-      }`}
-    >
+    <div className={`border-r border-gray-200 dark:border-gray-700 flex flex-col h-full ${
+      viewMode === "list" ? "w-[100%]" : "w-[50%]"
+    }`}>
       <div className="px-2 flex-shrink-0">
         <SearchHeader
           total={total}
@@ -213,10 +213,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         />
       </div>
 
-      <div
-        ref={containerRef}
-        className="flex-1 overflow-y-auto custom-scrollbar"
-      >
+      <div ref={containerRef} className="flex-1 overflow-y-auto custom-scrollbar">
         {data?.list.map((hit: any, index: number) => {
           const isSelected = selectedItem === index;
           const item = hit.document;
@@ -246,7 +243,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
         {loading && (
           <div className="flex justify-center py-4">
-            <span>Loading...</span>
+            <span>{t('search.list.loading')}</span>
           </div>
         )}
 
@@ -255,9 +252,13 @@ export const DocumentList: React.FC<DocumentListProps> = ({
             data-tauri-drag-region
             className="h-full w-full flex flex-col items-center"
           >
-            <img src={noDataImg} alt="no-data" className="w-16 h-16 mt-24" />
+            <img 
+              src={noDataImg} 
+              alt={t('search.list.noDataAlt')} 
+              className="w-16 h-16 mt-24" 
+            />
             <div className="mt-4 text-sm text-[#999] dark:text-[#666]">
-              No Results
+              {t('search.list.noResults')}
             </div>
           </div>
         )}
