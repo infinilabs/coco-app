@@ -1,4 +1,4 @@
-import { ArrowBigLeft, Mic, Search, Send, Globe, Brain } from "lucide-react";
+import { ArrowBigLeft, Search, Send, Globe, Brain } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke, isTauri } from "@tauri-apps/api/core";
@@ -224,8 +224,6 @@ export default function ChatInput({
     setIsDeepThinkActive();
   };
 
-  const [isListening] = useState(false);
-
   return (
     <div className="w-full relative">
       <div className="p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded transition-all relative">
@@ -286,7 +284,7 @@ export default function ChatInput({
           ) : null}
         </div>
 
-        {isChatMode ? (
+        {/* {isChatMode ? (
           <button
             className={`p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-colors ${
               isListening ? "bg-blue-100 dark:bg-blue-900" : ""
@@ -302,7 +300,7 @@ export default function ChatInput({
               }`}
             />
           </button>
-        ) : null}
+        ) : null} */}
 
         {isChatMode && curChatEnd ? (
           <button
