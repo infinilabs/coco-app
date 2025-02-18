@@ -10,12 +10,12 @@ asciinema: true
 
 Goto [https://coco.rs/](https://coco.rs/)
 
-![](/img/download-mac-app.png)
+{{% load-img "/img/download-mac-app.png" "" %}}
 
 ## Unzip DMG file
 
-![](/img/unzip-dmg-file.png)
+{{% load-img "/img/unzip-dmg-file.png" "" %}}
 
 ## Drag to Application Folder
 
-![](/img/drag-to-application-folder.png)
+{{% load-img "/img/drag-to-application-folder.png" "" %}}

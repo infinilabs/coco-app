@@ -7,7 +7,8 @@ type: docs
 
 Coco AI is a fully open-source, cross-platform unified search and productivity tool that connects and searches across various data sources, including applications, files, Google Drive, Notion, Yuque, Hugo, and more, both local and cloud-based. By integrating with large models like DeepSeek, Coco AI enables intelligent personal knowledge management, emphasizing privacy and supporting private deployment, helping users quickly and intelligently access their information.
 
-![](/img/screenshot/coco-chat.png)
+{{% load-img "/img/screenshot/fusion-search-across-datasources.png" "" %}}
+{{% load-img "/img/screenshot/coco-chat.png" "" %}}
 
 For more details on Coco Server, visit: [https://docs.infinilabs.com/coco-app/](https://docs.infinilabs.com/coco-app/).
 

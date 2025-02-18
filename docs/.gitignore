@@ -2,3 +2,4 @@
 resources/_gen/
 /themes/
 /config.bak
+.hugo_build.lock
