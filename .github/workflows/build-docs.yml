@@ -1,0 +1,119 @@
+name: Build and Deploy Docs
+
+on:
+  push:
+    branches:
+      - main
+      - 'v*'
+    tags:
+      - 'v*'
+
+jobs:
+  build-deploy-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Product Repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set Variables Based on Ref
+        id: vars
+        run: |
+          PRODUCT_NAME=$(basename $(pwd))  # Get the directory name as the product name
+          echo "PRODUCT_NAME=$PRODUCT_NAME" >> $GITHUB_ENV
+          CURRENT_REF=${GITHUB_REF##*/}
+          IS_SEMVER=false
+          SEMVER_REGEX="^v([0-9]+)\.([0-9]+)\.([0-9]+)$"
+
+          if [[ "${GITHUB_REF_TYPE}" == "branch" ]]; then
+            if [[ "$CURRENT_REF" == "main" ]]; then
+              echo "VERSION=main" >> $GITHUB_ENV
+              echo "BRANCH=main" >> $GITHUB_ENV
+            elif [[ "$CURRENT_REF" =~ $SEMVER_REGEX ]]; then
+              IS_SEMVER=true
+              echo "VERSION=$CURRENT_REF" >> $GITHUB_ENV
+              echo "BRANCH=$CURRENT_REF" >> $GITHUB_ENV
+            else
+              echo "Branch '$CURRENT_REF' is not a valid semantic version. Skipping build."
+              exit 0
+            fi
+          elif [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            if [[ "$CURRENT_REF" =~ $SEMVER_REGEX ]]; then
+              IS_SEMVER=true
+              echo "VERSION=$CURRENT_REF" >> $GITHUB_ENV
+              echo "BRANCH=main" >> $GITHUB_ENV  # Set BRANCH to 'main' for tags
+            else
+              echo "Tag '$CURRENT_REF' is not a valid semantic version. Skipping build."
+              exit 0
+            fi
+          fi
+
+          # Gather branches and tags, filter for semantic versions, sort, remove duplicates
+          VERSIONS=$(git for-each-ref refs/remotes/origin refs/tags --format="%(refname:short)" | \
+            grep -E "^v[0-9]+\.[0-9]+\.[0-9]+$" | sort -Vr | uniq | tr '\n' ',' | sed 's/,$//')
+          echo "VERSIONS=main,$VERSIONS" >> $GITHUB_ENV
+
+      - name: Install Hugo
+        run: |
+          wget https://github.com/gohugoio/hugo/releases/download/v0.79.1/hugo_extended_0.79.1_Linux-64bit.tar.gz
+          tar -xzvf hugo_extended_0.79.1_Linux-64bit.tar.gz
+          sudo mv hugo /usr/local/bin/
+
+      - name: Checkout Docs Repo
+        uses: actions/checkout@v2
+        with:
+          repository: infinilabs/docs
+          path: docs-output
+          token: ${{ secrets.DOCS_DEPLOYMENT_TOKEN }}
+
+      - name: Build Documentation
+        run: |
+          (cd docs && OUTPUT=$(pwd)/../docs-output make docs-build docs-place-redirect)
+
+      - name: Commit and Push Changes to Docs Repo
+        working-directory: docs-output
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          
+          if [[ -n $(git status --porcelain) ]]; then
+            git add .
+            git commit -m "Rebuild $PRODUCT_NAME docs for version $VERSION"
+            git push origin main
+          else
+            echo "No changes to commit."
+          fi
+
+      - name: Rebuild Docs for Latest Version (main), if not already on main
+        run: |
+          # Only rebuild the main branch docs if the current ref is not "main"
+          if [[ "$CURRENT_REF" != "main" ]]; then
+            echo "Switching to main branch and rebuilding docs for 'latest'"
+
+            # Checkout the main branch of the product repo to rebuild docs for "latest"
+            git checkout main
+
+            # Ensure the latest changes are pulled
+            git pull origin main
+            
+            # Build Docs for Main Branch (latest)
+            (cd docs && OUTPUT=$(pwd)/../docs-output VERSION="main" BRANCH="main" make docs-build docs-place-redirect)
+
+            # Commit and Push Latest Docs to Main
+            cd docs-output
+            git config user.name "GitHub Actions"
+            git config user.email "actions@github.com"
+            
+            if [[ -n $(git status --porcelain) ]]; then
+              git add .
+              git commit -m "Rebuild $PRODUCT_NAME docs for main branch with latest version"
+              git push origin main
+            else
+              echo "No changes to commit for main."
+            fi
+          else
+            echo "Current ref is 'main', skipping rebuild for 'latest'."
+          fi
+        working-directory: ./  # Working in the product repo
