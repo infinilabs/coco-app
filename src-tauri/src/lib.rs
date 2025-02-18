@@ -53,9 +53,17 @@ struct Payload {
 pub fn run() {
     let mut ctx = tauri::generate_context!();
 
-    let mut app_builder = tauri::Builder::default()
-        // .plugin(tauri_nspanel::init())
-        .plugin(tauri_plugin_http::init())
+    let mut app_builder = tauri::Builder::default();
+
+    #[cfg(desktop)]
+    {
+        app_builder = app_builder.plugin(tauri_plugin_single_instance::init(|_app, argv, _cwd| {
+            println!("a new app instance was opened with {argv:?} and the deep link event was already triggered");
+            // when defining deep link schemes at runtime, you must also check `argv` here
+        }));
+    }
+
+    app_builder = app_builder.plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_autostart::init(
             MacosLauncher::AppleScript,
@@ -63,10 +71,6 @@ pub fn run() {
         ))
         .plugin(tauri_plugin_theme::init(ctx.config_mut()))
         .plugin(tauri_plugin_deep_link::init())
-        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
-            app.emit("single-instance", Payload { args: argv, cwd })
-                .unwrap();
-        }))
         .plugin(tauri_plugin_store::Builder::default().build());
 
     // Conditional compilation for macOS
@@ -132,8 +136,15 @@ pub fn run() {
                 }
             });
 
-            #[cfg(any(target_os = "linux", all(debug_assertions, windows)))]
-            app.deep_link().register_all()?;
+            #[cfg(desktop)]
+            {
+                #[cfg(any(windows, target_os = "linux"))]
+                {
+                    app.deep_link().register("coco")?;
+                    use tauri_plugin_deep_link::DeepLinkExt;
+                    app.deep_link().register_all()?;
+                }
+            }
 
             app.deep_link().on_open_url(|event| {
                 dbg!(event.urls());
