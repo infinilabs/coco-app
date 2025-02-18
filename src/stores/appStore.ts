@@ -82,6 +82,7 @@ export const useAppStore = create<IAppStore>()(
         endpoint: state.endpoint,
         endpoint_http: state.endpoint_http,
         endpoint_websocket: state.endpoint_websocket,
+        language: state.language,
       }),
     }
   )

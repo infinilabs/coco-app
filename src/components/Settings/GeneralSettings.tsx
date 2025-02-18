@@ -16,6 +16,7 @@ import {
   isEnabled,
   // enable, disable
 } from "@tauri-apps/plugin-autostart";
+import { emit } from '@tauri-apps/api/event';
 
 import SettingsItem from "./SettingsItem";
 import SettingsToggle from "./SettingsToggle";
@@ -59,29 +60,25 @@ export function ThemeOption({
 }
 
 export default function GeneralSettings() {
+  const { t, i18n } = useTranslation();
+
   const [launchAtLogin, setLaunchAtLogin] = useState(true);
 
   const showTooltip = useAppStore((state) => state.showTooltip);
   const setShowTooltip = useAppStore((state) => state.setShowTooltip);
+  const language = useAppStore((state) => state.language);
+  const setLanguage = useAppStore((state) => state.setLanguage);
 
-  // const setAuth = useAuthStore((state) => state.setAuth);
-  // const setUserInfo = useAuthStore((state) => state.setUserInfo);
-  // const endpoint = useAppStore((state) => state.endpoint);
-
-  useEffect(() => {
-    const fetchAutoStartStatus = async () => {
-      if (isTauri()) {
-        try {
-          const status = await isEnabled();
-          setLaunchAtLogin(status);
-        } catch (error) {
-          console.error("Failed to fetch autostart status:", error);
-        }
+  const fetchAutoStartStatus = async () => {
+    if (isTauri()) {
+      try {
+        const status = await isEnabled();
+        setLaunchAtLogin(status);
+      } catch (error) {
+        console.error("Failed to fetch autostart status:", error);
       }
-    };
-
-    fetchAutoStartStatus();
-  }, []);
+    }
+  };
 
   const enableAutoStart = async () => {
     if (isTauri()) {
@@ -120,7 +117,11 @@ export default function GeneralSettings() {
   }
 
   useEffect(() => {
+    fetchAutoStartStatus();
     getCurrentShortcut();
+    if (language) {
+      i18n.changeLanguage(language);
+    }
   }, []);
 
   const changeShortcut = (key: Shortcut) => {
@@ -164,12 +165,17 @@ export default function GeneralSettings() {
   //   useAppStore.persist.clearStorage();
   // }, [endpoint]);
 
-  const { t, i18n } = useTranslation();
-  const currentLanguage = i18n.language;
+  const currentLanguage = language || i18n.language;
 
-  const changeLanguage = (lang: string) => {
+  const changeLanguage = async (lang: string) => {
     i18n.changeLanguage(lang);
-    localStorage.setItem('preferred-language', lang);
+    setLanguage(lang);
+    //
+    try {
+      await emit('language-changed', { language: lang });
+    } catch (error) {
+      console.error('Failed to emit language change event:', error);
+    }
   };
 
   return (
