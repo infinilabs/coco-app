@@ -9,7 +9,7 @@ mod util;
 mod setup;
 
 use crate::common::register::SearchSourceRegistry;
-use crate::common::traits::SearchSource;
+// use crate::common::traits::SearchSource;
 use crate::common::{MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL};
 use crate::server::search::CocoSearchSource;
 use crate::server::servers::{load_or_insert_default_server, load_servers_token};
@@ -18,7 +18,10 @@ use reqwest::Client;
 use std::path::PathBuf;
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
-use tauri::{AppHandle, Emitter, Listener, Manager, PhysicalPosition, Runtime, State, WebviewWindow, Window, WindowEvent};
+use tauri::{
+    AppHandle, Emitter, Listener, Manager, PhysicalPosition, Runtime, State, WebviewWindow, Window,
+    WindowEvent,
+};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_deep_link::DeepLinkExt;
 use tokio::runtime::Runtime as RT;
@@ -64,7 +67,7 @@ pub fn run() {
             app.emit("single-instance", Payload { args: argv, cwd })
                 .unwrap();
         }))
-        .plugin(tauri_plugin_store::Builder::default().build())
+        .plugin(tauri_plugin_store::Builder::default().build());
 
     // Conditional compilation for macOS
     #[cfg(target_os = "macos")]
@@ -187,7 +190,7 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
     let coco_servers = server::servers::get_all_servers();
 
     // Get the registry from Tauri's state
-    let registry:State<SearchSourceRegistry> = app_handle.state::<SearchSourceRegistry>();
+    let registry: State<SearchSourceRegistry> = app_handle.state::<SearchSourceRegistry>();
 
     for server in coco_servers {
         let source = CocoSearchSource::new(server.clone(), Client::new());

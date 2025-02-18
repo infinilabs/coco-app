@@ -8,7 +8,8 @@ use std::sync::{Arc, RwLock};
 use tauri::{AppHandle, Runtime};
 
 lazy_static! {
-    static ref CONNECTOR_CACHE: Arc<RwLock<HashMap<String, HashMap<String, Connector>>>> = Arc::new(RwLock::new(HashMap::new()));
+    static ref CONNECTOR_CACHE: Arc<RwLock<HashMap<String, HashMap<String, Connector>>>> =
+        Arc::new(RwLock::new(HashMap::new()));
 }
 
 pub fn save_connectors_to_cache(server_id: &str, connectors: Vec<Connector>) {
@@ -21,15 +22,13 @@ pub fn save_connectors_to_cache(server_id: &str, connectors: Vec<Connector>) {
 }
 
 pub fn get_connector_by_id(server_id: &str, connector_id: &str) -> Option<Connector> {
-    let cache = CONNECTOR_CACHE.read().unwrap();  // Async read lock
+    let cache = CONNECTOR_CACHE.read().unwrap(); // Async read lock
     let server_cache = cache.get(server_id)?;
     let connector = server_cache.get(connector_id)?;
     Some(connector.clone())
 }
 
-pub async fn refresh_all_connectors<R: Runtime>(
-    app_handle: &AppHandle<R>,
-) -> Result<(), String> {
+pub async fn refresh_all_connectors<R: Runtime>(app_handle: &AppHandle<R>) -> Result<(), String> {
     // dbg!("Attempting to refresh all connectors");
 
     let servers = get_all_servers();
@@ -38,7 +37,8 @@ pub async fn refresh_all_connectors<R: Runtime>(
     let mut server_map = HashMap::new();
     for server in servers {
         // dbg!("start fetch connectors for server: {}", &server.id);
-        let connectors = match get_connectors_by_server(app_handle.clone(), server.id.clone()).await {
+        let connectors = match get_connectors_by_server(app_handle.clone(), server.id.clone()).await
+        {
             Ok(connectors) => {
                 let connectors_map: HashMap<String, Connector> = connectors
                     .into_iter()
@@ -46,7 +46,7 @@ pub async fn refresh_all_connectors<R: Runtime>(
                     .collect();
                 connectors_map
             }
-            Err(e) => {
+            Err(_e) => {
                 // dbg!("Failed to get connectors for server {}: {}", &server.id, e);
                 HashMap::new() // Return empty map on failure
             }
@@ -57,7 +57,7 @@ pub async fn refresh_all_connectors<R: Runtime>(
     }
 
     // After all tasks have finished, perform a read operation on the cache
-    let cache_size = {
+    let _cache_size = {
         // Insert connectors into the cache (async write lock)
         let mut cache = CONNECTOR_CACHE.write().unwrap(); // Async write lock
         cache.clear();
@@ -71,7 +71,9 @@ pub async fn refresh_all_connectors<R: Runtime>(
     Ok(())
 }
 
-pub async fn get_connectors_from_cache_or_remote(server_id: &str) -> Result<Vec<Connector>, String> {
+pub async fn get_connectors_from_cache_or_remote(
+    server_id: &str,
+) -> Result<Vec<Connector>, String> {
     // Acquire the read lock and check cache for connectors
     let cache = CONNECTOR_CACHE.read().unwrap(); // Acquire read lock
     if let Some(connectors) = cache.get(server_id).cloned() {
@@ -85,9 +87,10 @@ pub async fn get_connectors_from_cache_or_remote(server_id: &str) -> Result<Vec<
     let connectors = fetch_connectors_by_server(server_id).await?;
 
     // Convert the Vec<Connector> into HashMap<String, Connector>
-    let connectors_map: HashMap<String, Connector> = connectors.clone()
+    let connectors_map: HashMap<String, Connector> = connectors
+        .clone()
         .into_iter()
-        .map(|connector| (connector.id.clone(), connector))  // Assuming Connector has an `id` field
+        .map(|connector| (connector.id.clone(), connector)) // Assuming Connector has an `id` field
         .collect();
 
     // Optionally, update the cache after fetching data from remote
@@ -116,7 +119,10 @@ pub async fn fetch_connectors_by_server(id: &str) -> Result<Vec<Connector>, Stri
     if resp.status().is_success() {
         dbg!("Received successful response for id: {}", &id);
     } else {
-        dbg!("Failed to fetch connectors. Response status: {}", resp.status());
+        dbg!(
+            "Failed to fetch connectors. Response status: {}",
+            resp.status()
+        );
     }
 
     // Parse the search results directly from the response body
@@ -137,7 +143,7 @@ pub async fn fetch_connectors_by_server(id: &str) -> Result<Vec<Connector>, Stri
 
 #[tauri::command]
 pub async fn get_connectors_by_server<R: Runtime>(
-    app_handle: AppHandle<R>,
+    _app_handle: AppHandle<R>,
     id: String,
 ) -> Result<Vec<Connector>, String> {
     //fetch_connectors_by_server

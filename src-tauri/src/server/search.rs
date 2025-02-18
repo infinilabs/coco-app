@@ -1,15 +1,17 @@
 use crate::common::document::Document;
-use crate::common::search::{parse_search_response, QueryHits, QueryResponse, QuerySource, SearchQuery};
+use crate::common::search::{
+    parse_search_response, QueryHits, QueryResponse, QuerySource, SearchQuery,
+};
 use crate::common::server::Server;
 use crate::common::traits::{SearchError, SearchSource};
 use crate::server::http_client::HttpClient;
 use crate::server::servers::get_server_token;
 use async_trait::async_trait;
-use futures::stream::StreamExt;
+// use futures::stream::StreamExt;
 use ordered_float::OrderedFloat;
 use reqwest::{Client, Method, RequestBuilder};
 use std::collections::HashMap;
-use std::hash::Hash;
+// use std::hash::Hash;
 pub(crate) struct DocumentsSizedCollector {
     size: u64,
     /// Documents and scores
@@ -41,7 +43,7 @@ impl DocumentsSizedCollector {
         }
     }
 
-    fn documents(self) -> impl ExactSizeIterator<Item=Document> {
+    fn documents(self) -> impl ExactSizeIterator<Item = Document> {
         self.docs.into_iter().map(|(_, doc, _)| doc)
     }
 
@@ -81,7 +83,12 @@ impl CocoSearchSource {
         self.build_request(query.from, query.size, &query.query_strings)
     }
 
-    fn build_request(&self, from: u64, size: u64, query_strings: &HashMap<String, String>) -> RequestBuilder {
+    fn build_request(
+        &self,
+        from: u64,
+        size: u64,
+        query_strings: &HashMap<String, String>,
+    ) -> RequestBuilder {
         let url = HttpClient::join_url(&self.server.endpoint, "/query/_search");
         let mut request_builder = self.client.request(Method::GET, url);
 
@@ -91,7 +98,8 @@ impl CocoSearchSource {
             }
         }
 
-        request_builder.query(&[("from", &from.to_string()), ("size", &size.to_string())])
+        request_builder
+            .query(&[("from", &from.to_string()), ("size", &size.to_string())])
             .query(query_strings)
     }
 }
@@ -107,12 +115,9 @@ impl SearchSource for CocoSearchSource {
     }
 
     // Directly return Result<QueryResponse, SearchError> instead of Future
-    async fn search(
-        &self,
-        query: SearchQuery,
-    ) -> Result<QueryResponse, SearchError> {
-        let server_id = self.server.id.clone();
-        let server_name = self.server.name.clone();
+    async fn search(&self, query: SearchQuery) -> Result<QueryResponse, SearchError> {
+        let _server_id = self.server.id.clone();
+        let _server_name = self.server.name.clone();
         let request_builder = self.build_request_from_query(&query);
 
         // Send the HTTP request asynchronously
@@ -127,10 +132,13 @@ impl SearchSource for CocoSearchSource {
                     match parse_search_response(response).await {
                         Ok(response) => {
                             let total_hits = response.hits.total.value as usize;
-                            let hits: Vec<(Document, f64)> = response.hits.hits.into_iter()
+                            let hits: Vec<(Document, f64)> = response
+                                .hits
+                                .hits
+                                .into_iter()
                                 .map(|hit| {
                                     // Handling Option<f64> in hit._score by defaulting to 0.0 if None
-                                    (hit._source, hit._score.unwrap_or(0.0))  // Use 0.0 if _score is None
+                                    (hit._source, hit._score.unwrap_or(0.0)) // Use 0.0 if _score is None
                                 })
                                 .collect();
 

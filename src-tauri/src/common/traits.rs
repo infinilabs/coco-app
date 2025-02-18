@@ -2,22 +2,18 @@ use crate::common::search::{QueryResponse, QuerySource};
 use thiserror::Error;
 
 use async_trait::async_trait;
-use std::{future::Future, pin::Pin};
-use serde::Serialize;
+// use std::{future::Future, pin::Pin};
 use crate::common::search::SearchQuery;
+use serde::Serialize;
 
 #[async_trait]
 pub trait SearchSource: Send + Sync {
-    fn get_type (&self) -> QuerySource;
+    fn get_type(&self) -> QuerySource;
 
-    async fn search(
-        &self,
-        query: SearchQuery,
-    ) -> Result<QueryResponse, SearchError>;
+    async fn search(&self, query: SearchQuery) -> Result<QueryResponse, SearchError>;
 }
 
-
-#[derive(Debug, Error,Serialize)]
+#[derive(Debug, Error, Serialize)]
 pub enum SearchError {
     #[error("HTTP request failed: {0}")]
     HttpError(String),

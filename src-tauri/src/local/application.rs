@@ -31,15 +31,22 @@ fn extract_icon_from_app_bundle(app_dir: &Path, app_data_folder: &Path) -> Optio
 
             if icns_path.exists() {
                 // If the icon exists, convert it to PNG
-                if let Some(output_path) = convert_icns_to_png(&app_dir, &icns_path, app_data_folder) {
+                if let Some(output_path) =
+                    convert_icns_to_png(&app_dir, &icns_path, app_data_folder)
+                {
                     return Some(output_path);
                 }
             } else {
                 // If the icon name doesn't end with .icns, try appending it
                 if !icon_name.ends_with(".icns") {
-                    let icns_path_with_extension = app_dir.join(format!("Contents/Resources/{}.icns", icon_name));
+                    let icns_path_with_extension =
+                        app_dir.join(format!("Contents/Resources/{}.icns", icon_name));
                     if icns_path_with_extension.exists() {
-                        if let Some(output_path) = convert_icns_to_png(&app_dir, &icns_path_with_extension, app_data_folder) {
+                        if let Some(output_path) = convert_icns_to_png(
+                            &app_dir,
+                            &icns_path_with_extension,
+                            app_data_folder,
+                        ) {
                             return Some(output_path);
                         }
                     }
@@ -64,7 +71,8 @@ fn extract_icon_from_app_bundle(app_dir: &Path, app_data_folder: &Path) -> Optio
 
     // Fallback: If no icon found, return a default system icon
     if let Some(system_icon_path) = get_system_icon(app_dir) {
-        if let Some(output_path) = convert_icns_to_png(&app_dir, &system_icon_path, app_data_folder) {
+        if let Some(output_path) = convert_icns_to_png(&app_dir, &system_icon_path, app_data_folder)
+        {
             return Some(output_path);
         }
     }
@@ -135,7 +143,11 @@ fn get_png_from_resources(app_dir: &Path) -> Option<PathBuf> {
 }
 
 /// Converts an ICNS file to PNG using macOS's `sips` command.
-fn convert_icns_to_png(app_dir: &Path, icns_path: &Path, app_data_folder: &Path) -> Option<PathBuf> {
+fn convert_icns_to_png(
+    app_dir: &Path,
+    icns_path: &Path,
+    app_data_folder: &Path,
+) -> Option<PathBuf> {
     if let Some(app_name) = app_dir.file_name().and_then(|name| name.to_str()) {
         let icon_storage_dir = app_data_folder.join("coco-appIcons");
         fs::create_dir_all(&icon_storage_dir).ok();
@@ -156,8 +168,8 @@ fn convert_icns_to_png(app_dir: &Path, icns_path: &Path, app_data_folder: &Path)
             .arg(icns_path)
             .arg("--out")
             .arg(&output_png_path)
-            .stdout(Stdio::null())  // Redirect stdout to null
-            .stderr(Stdio::null())  // Redirect stderr to null
+            .stdout(Stdio::null()) // Redirect stdout to null
+            .stderr(Stdio::null()) // Redirect stderr to null
             .status();
 
         if let Ok(status) = status {
@@ -173,14 +185,18 @@ fn convert_icns_to_png(app_dir: &Path, icns_path: &Path, app_data_folder: &Path)
 
 /// Converts a PNG file to PNG (essentially just copying it to a new location).
 fn convert_png_to_png(png_path: &Path, app_data_folder: &Path) -> Option<PathBuf> {
-    if let Some(app_name) = png_path.parent().and_then(|p| p.file_name()).and_then(|name| name.to_str()) {
+    if let Some(app_name) = png_path
+        .parent()
+        .and_then(|p| p.file_name())
+        .and_then(|name| name.to_str())
+    {
         let icon_storage_dir = app_data_folder.join("coco-appIcons");
         fs::create_dir_all(&icon_storage_dir).ok();
 
         let output_png_path = icon_storage_dir.join(format!("{}.png", app_name));
 
         // Copy the PNG file to the output directory
-        if let Err(e) = fs::copy(png_path, &output_png_path) {
+        if let Err(_e) = fs::copy(png_path, &output_png_path) {
             return None;
         }
 
@@ -190,7 +206,7 @@ fn convert_png_to_png(png_path: &Path, app_data_folder: &Path) -> Option<PathBuf
 }
 
 /// Fallback function to fetch a system icon if the app doesn't have its own.
-fn get_system_icon(app_dir: &Path) -> Option<PathBuf> {
+fn get_system_icon(_app_dir: &Path) -> Option<PathBuf> {
     // Just a placeholder for getting a default icon if no app-specific icon is found
     let default_icon_path = Path::new("/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/GenericApplicationIcon.icns");
 
@@ -201,13 +217,12 @@ fn get_system_icon(app_dir: &Path) -> Option<PathBuf> {
     }
 }
 
-
 impl ApplicationSearchSource {
     pub fn new(base_score: f64, app_dirs: Vec<PathBuf>) -> Self {
         let mut icons = HashMap::new();
 
         // Collect search locations as strings
-        let mut applications = Trie::new();
+        let applications = Trie::new();
 
         // Iterate over the directories to find .app files and extract icons
         for app_dir in &app_dirs {
@@ -217,15 +232,22 @@ impl ApplicationSearchSource {
                 if file_path.is_dir() && file_path.extension() == Some("app".as_ref()) {
                     if let Some(app_data_folder) = data_dir() {
                         let file_path_str = file_path.to_string_lossy().to_string(); // Convert to owned String if needed
-                        if file_path.parent().unwrap().to_str().unwrap().contains(".app/Contents/") {
+                        if file_path
+                            .parent()
+                            .unwrap()
+                            .to_str()
+                            .unwrap()
+                            .contains(".app/Contents/")
+                        {
                             continue;
                         }
-                        let search_word = file_path.file_name()
-                            .unwrap()               // unwrap() might panic if there's no file name
+                        let search_word = file_path
+                            .file_name()
+                            .unwrap() // unwrap() might panic if there's no file name
                             .to_str()
-                            .unwrap()               // unwrap() might panic if it's not valid UTF-8
+                            .unwrap() // unwrap() might panic if it's not valid UTF-8
                             .trim_end_matches(".app")
-                            .to_lowercase();        // to_lowercase returns a String, which is owned
+                            .to_lowercase(); // to_lowercase returns a String, which is owned
 
                         //TODO, replace this hard-coded name to actual local app name in case it may change
                         if search_word.is_empty() || search_word.eq("coco ai") {
@@ -234,7 +256,9 @@ impl ApplicationSearchSource {
 
                         let search_word_ref = search_word.as_str(); // Get a reference to the string slice
                         applications.insert(search_word_ref, file_path_str.clone());
-                        if let Some(icon_path) = extract_icon_from_app_bundle(&file_path, &app_data_folder) {
+                        if let Some(icon_path) =
+                            extract_icon_from_app_bundle(&file_path, &app_data_folder)
+                        {
                             icons.insert(file_path_str, icon_path);
                         } else {
                             dbg!("No icon found for:", &file_path);
@@ -253,7 +277,6 @@ impl ApplicationSearchSource {
     }
 }
 
-
 /// Extracts the clean app name by removing `.app`
 fn clean_app_name(path: &Path) -> Option<String> {
     path.file_name()?
@@ -266,7 +289,10 @@ impl SearchSource for ApplicationSearchSource {
     fn get_type(&self) -> QuerySource {
         QuerySource {
             r#type: LOCAL_QUERY_SOURCE_TYPE.into(),
-            name: hostname::get().unwrap_or("My Computer".into()).to_string_lossy().into(),
+            name: hostname::get()
+                .unwrap_or("My Computer".into())
+                .to_string_lossy()
+                .into(),
             id: "local_applications".into(),
         }
     }
@@ -289,7 +315,9 @@ impl SearchSource for ApplicationSearchSource {
         let mut total_hits = 0;
         let mut hits = Vec::new();
 
-        let mut results = self.application_paths.search_within_distance_scored(&query_string, 3);
+        let mut results = self
+            .application_paths
+            .search_within_distance_scored(&query_string, 3);
 
         // Check for NaN or extreme score values and handle them properly
         results.sort_by(|a, b| {
@@ -298,7 +326,9 @@ impl SearchSource for ApplicationSearchSource {
                 std::cmp::Ordering::Equal
             } else {
                 // Otherwise, compare the scores as usual
-                b.score.partial_cmp(&a.score).unwrap_or(std::cmp::Ordering::Equal)
+                b.score
+                    .partial_cmp(&a.score)
+                    .unwrap_or(std::cmp::Ordering::Equal)
             }
         });
 

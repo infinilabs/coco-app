@@ -1,18 +1,18 @@
-use std::future::Future;
+// use std::future::Future;
 use std::time::Duration;
-use lazy_static::lazy_static;
-use tauri::AppHandle;
+// use lazy_static::lazy_static;
+// use tauri::AppHandle;
 use crate::server::servers::{get_server_by_id, get_server_token};
 
 use once_cell::sync::Lazy;
+use reqwest::{Client, Method, RequestBuilder};
 use tokio::sync::Mutex;
-use reqwest::{Client, Method, RequestBuilder, Response, StatusCode};
 
 pub static HTTP_CLIENT: Lazy<Mutex<Client>> = Lazy::new(|| {
     let client = Client::builder()
         .read_timeout(Duration::from_secs(3)) // Set a timeout of 3 second
         .connect_timeout(Duration::from_secs(3)) // Set a timeout of 3 second
-        .timeout(Duration::from_secs(10))  // Set a timeout of 10 seconds
+        .timeout(Duration::from_secs(10)) // Set a timeout of 10 seconds
         .danger_accept_invalid_certs(true) // example for self-signed certificates
         .build()
         .expect("Failed to build client");
@@ -35,7 +35,6 @@ impl HttpClient {
         headers: Option<reqwest::header::HeaderMap>,
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
-
         let request_builder = Self::get_request_builder(method, url, headers, body).await;
 
         // Send the request
@@ -91,28 +90,25 @@ impl HttpClient {
             // Retrieve the token for the server (token is optional)
             let token = get_server_token(server_id).map(|t| t.access_token.clone());
 
-
             // Create headers map (optional "X-API-TOKEN" header)
             let mut headers = reqwest::header::HeaderMap::new();
             if let Some(t) = token {
-                headers.insert("X-API-TOKEN", reqwest::header::HeaderValue::from_str(&t).unwrap());
+                headers.insert(
+                    "X-API-TOKEN",
+                    reqwest::header::HeaderValue::from_str(&t).unwrap(),
+                );
             }
 
             // dbg!(&headers);
 
             Self::send_raw_request(method, &url, Some(headers), body).await
-
         } else {
             Err("Server not found".to_string())
         }
     }
 
-
     // Convenience method for GET requests (as it's the most common)
-    pub async fn get(
-        server_id: &str,
-        path: &str,
-    ) -> Result<reqwest::Response, String> {
+    pub async fn get(server_id: &str, path: &str) -> Result<reqwest::Response, String> {
         HttpClient::send_request(server_id, Method::GET, path, None).await
     }
 
@@ -122,7 +118,7 @@ impl HttpClient {
         path: &str,
         body: reqwest::Body,
     ) -> Result<reqwest::Response, String> {
-        HttpClient::send_request( server_id, Method::POST, path, Some(body)).await
+        HttpClient::send_request(server_id, Method::POST, path, Some(body)).await
     }
 
     // Convenience method for PUT requests
@@ -131,14 +127,11 @@ impl HttpClient {
         path: &str,
         body: reqwest::Body,
     ) -> Result<reqwest::Response, String> {
-        HttpClient::send_request( server_id, Method::PUT, path, Some(body)).await
+        HttpClient::send_request(server_id, Method::PUT, path, Some(body)).await
     }
 
     // Convenience method for DELETE requests
-    pub async fn delete(
-        server_id: &str,
-        path: &str,
-    ) -> Result<reqwest::Response, String> {
+    pub async fn delete(server_id: &str, path: &str) -> Result<reqwest::Response, String> {
         HttpClient::send_request(server_id, Method::DELETE, path, None).await
     }
 }

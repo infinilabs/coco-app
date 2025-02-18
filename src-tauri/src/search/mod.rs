@@ -1,6 +1,8 @@
 use crate::common::register::SearchSourceRegistry;
-use crate::common::search::{FailedRequest, MultiSourceQueryResponse, QueryHits, QuerySource, SearchQuery};
-use crate::common::traits::{SearchError, SearchSource};
+use crate::common::search::{
+    FailedRequest, MultiSourceQueryResponse, QueryHits, QuerySource, SearchQuery,
+};
+use crate::common::traits::SearchError;
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
 use std::collections::HashMap;
@@ -52,7 +54,8 @@ pub async fn query_coco_fusion<R: Runtime>(
 
                     all_hits.push((source_id.clone(), query_hit.clone(), score));
 
-                    hits_per_source.entry(source_id.clone())
+                    hits_per_source
+                        .entry(source_id.clone())
                         .or_insert_with(Vec::new)
                         .push((query_hit, score));
                 }
@@ -90,7 +93,11 @@ pub async fn query_coco_fusion<R: Runtime>(
     }
 
     let total_sources = hits_per_source.len();
-    let max_hits_per_source = if total_sources > 0 { size as usize / total_sources } else { size as usize };
+    let max_hits_per_source = if total_sources > 0 {
+        size as usize / total_sources
+    } else {
+        size as usize
+    };
 
     let mut final_hits = Vec::new();
     let mut seen_docs = std::collections::HashSet::new(); // To track documents we've already added
@@ -113,7 +120,8 @@ pub async fn query_coco_fusion<R: Runtime>(
         // Sort all hits by score descending, removing duplicates by document ID
         all_hits.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap_or(std::cmp::Ordering::Equal));
 
-        let extra_hits = all_hits.into_iter()
+        let extra_hits = all_hits
+            .into_iter()
             .filter(|(source_id, _, _)| hits_per_source.contains_key(source_id)) // Only take from known sources
             .filter_map(|(_, doc, _)| {
                 if !seen_docs.contains(&doc.document.id) {
@@ -130,7 +138,11 @@ pub async fn query_coco_fusion<R: Runtime>(
     }
 
     // **Sort final hits by score descending**
-    final_hits.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap_or(std::cmp::Ordering::Equal));
+    final_hits.sort_by(|a, b| {
+        b.score
+            .partial_cmp(&a.score)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
 
     Ok(MultiSourceQueryResponse {
         failed: failed_requests,

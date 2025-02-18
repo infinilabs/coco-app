@@ -255,7 +255,7 @@ pub async fn load_or_insert_default_server<R: Runtime>(
 
 #[tauri::command]
 pub async fn list_coco_servers<R: Runtime>(
-    app_handle: AppHandle<R>,
+    _app_handle: AppHandle<R>,
 ) -> Result<Vec<Server>, String> {
     let servers: Vec<Server> = get_all_servers();
     Ok(servers)
@@ -443,7 +443,7 @@ pub async fn logout_coco_server<R: Runtime>(
     dbg!("Attempting to log out server by id:", &id);
 
     // Check if server token exists
-    if let Some(token) = get_server_token(id.as_str()) {
+    if let Some(_token) = get_server_token(id.as_str()) {
         dbg!("Found server token for id:", &id);
 
         // Remove the server token from cache

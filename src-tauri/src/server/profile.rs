@@ -4,11 +4,11 @@ use tauri::{AppHandle, Runtime};
 
 #[tauri::command]
 pub async fn get_user_profiles<R: Runtime>(
-    app_handle: AppHandle<R>,
+    _app_handle: AppHandle<R>,
     server_id: String,
 ) -> Result<UserProfile, String> {
     // Use the generic GET method from HttpClient
-    let response = HttpClient::get( &server_id, "/account/profile")
+    let response = HttpClient::get(&server_id, "/account/profile")
         .await
         .map_err(|e| format!("Error fetching profile: {}", e))?;
 
