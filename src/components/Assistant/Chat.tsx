@@ -10,6 +10,7 @@ import {
 import { MessageSquarePlus, PanelLeft } from "lucide-react";
 import { isTauri } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
+import { debounce } from "lodash-es";
 
 import { ChatMessage } from "./ChatMessage";
 import type { Chat, Message } from "./types";
@@ -72,53 +73,49 @@ const ChatAI = memo(
         setCurMessage((prev) => prev + chunk);
       }, []);
 
-      // console.log("chat useWebSocket", clientEnv.COCO_WEBSOCKET_URL)
       const { messages, setMessages, connected, reconnect } = useWebSocket(
         clientEnv.COCO_WEBSOCKET_URL,
         (msg) => {
-          // console.log("msg", msg);
+          // console.log("msg:", msg);
 
           if (msg.includes("websocket-session-id")) {
             const array = msg.split(" ");
             setWebsocketId(array[2]);
           }
-
+          
           if (msg.includes("PRIVATE")) {
-            if (
-              msg.includes("assistant finished output") ||
-              curChatEndRef.current
-            ) {
+            if (msg.includes("assistant finished output")) {
+              // console.log("AI finished output");
+              simulateAssistantResponse();
               setCurChatEnd(true);
             } else {
               const cleanedData = msg.replace(/^PRIVATE /, "");
               try {
+                console.log("cleanedData", cleanedData);
                 const chunkData = JSON.parse(cleanedData);
                 if (chunkData.reply_to_message === curIdRef.current) {
                   handleMessageChunk(chunkData.message_chunk);
+                  setMessages((prev) => prev + chunkData.message_chunk);
                   return chunkData.message_chunk;
                 }
               } catch (error) {
-                console.error("JSON Parse error:", error);
+                console.error("parse error:", error);
               }
             }
           }
         }
       );
 
-      useEffect(() => {
-        setConnected(connected);
-      }, [connected]);
-
       const simulateAssistantResponse = useCallback(() => {
-        if (messages.length === 0 || !activeChat?._id) return;
+        if (!activeChat?._id) return;
 
-        console.log("messages", messages);
+        // console.log("curMessage", curMessage);
 
         const assistantMessage: Message = {
           _id: activeChat._id,
           _source: {
             type: "assistant",
-            message: messages,
+            message: curMessage || messages,
           },
         };
 
@@ -126,43 +123,38 @@ const ChatAI = memo(
           ...activeChat,
           messages: [...(activeChat.messages || []), assistantMessage],
         };
+
+        // console.log("updatedChat:", updatedChat);
+        setActiveChat(updatedChat);
         setMessages("");
         setCurMessage("");
-        console.log("updatedChat", updatedChat);
-        setActiveChat(updatedChat);
+        setIsTyping(false);
+      }, [activeChat?._id, curMessage, messages]);
 
-        const timer = setTimeout(() => setIsTyping(false), 1000);
-        return () => clearTimeout(timer);
-      }, [activeChat?._id]);
-
-      // websocket
       useEffect(() => {
         if (curChatEnd) {
           simulateAssistantResponse();
         }
-      }, [messages, curChatEnd]);
+      }, [curChatEnd]);
 
-      const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "end",
-        });
-      };
+      useEffect(() => {
+        setConnected(connected);
+      }, [connected]);
+
+      // 使用节流优化滚动
+      const scrollToBottom = useCallback(
+        debounce(() => {
+          messagesEndRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "end",
+          });
+        }, 100),
+        []
+      );
 
       useEffect(() => {
         scrollToBottom();
       }, [activeChat?.messages, isTyping, curMessage]);
-
-      useEffect(() => {
-        return () => {
-          chatClose();
-          setMessages("");
-          setCurMessage("");
-          setActiveChat(undefined);
-          setIsTyping(false);
-          setCurChatEnd(true);
-        };
-      }, []);
 
       const createNewChat = useCallback(async (value: string = "") => {
         chatClose();
@@ -202,14 +194,14 @@ const ChatAI = memo(
             },
             body: JSON.stringify({ message: content }),
           });
-          console.log("_send", response, websocketId);
+          // console.log("_send", response, websocketId);
           setCurId(response.data[0]?._id);
           const updatedChat: Chat = {
             ...newChat,
             messages: [...(newChat?.messages || []), ...(response.data || [])],
           };
           changeInput("");
-          console.log("updatedChat2", updatedChat);
+          // console.log("updatedChat2", updatedChat);
           setActiveChat(updatedChat);
           setIsTyping(true);
           setCurChatEnd(false);
@@ -265,6 +257,18 @@ const ChatAI = memo(
             });
         }
       }
+
+      useEffect(() => {
+        return () => {
+          chatClose();
+          setMessages("");
+          setCurMessage("");
+          setActiveChat(undefined);
+          setIsTyping(false);
+          setCurChatEnd(true);
+          scrollToBottom.cancel();
+        };
+      }, []);
 
       if (!isTransitioned) return null;
 
