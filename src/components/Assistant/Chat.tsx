@@ -78,9 +78,8 @@ const ChatAI = memo(
           if (msg.includes("websocket-session-id")) {
             const array = msg.split(" ");
             setWebsocketId(array[2]);
-          }
-          
-          if (msg.includes("PRIVATE")) {
+            return "";
+          } else if (msg.includes("PRIVATE")) {
             if (msg.includes("assistant finished output")) {
               // console.log("AI finished output");
               simulateAssistantResponse();
@@ -162,7 +161,20 @@ const ChatAI = memo(
           console.log("_new", response);
           const newChat: Chat = response.data;
 
-          setActiveChat(newChat);
+          const greetingMessage: Message = {
+            _id: newChat._id,
+            _source: {
+              type: "assistant",
+              message: t("assistant.chat.greetings"),
+            },
+          };
+
+          const chatWithGreeting = {
+            ...newChat,
+            messages: [greetingMessage],
+          };
+
+          setActiveChat(chatWithGreeting);
           handleSendMessage(value, newChat);
         } catch (error) {
           console.error("Failed to fetch user data:", error);
@@ -307,6 +319,7 @@ const ChatAI = memo(
                 }
               />
             ))}
+
             {!curChatEnd && activeChat?._id ? (
               <ChatMessage
                 key={"last"}
@@ -320,6 +333,7 @@ const ChatAI = memo(
                 isTyping={!curChatEnd}
               />
             ) : null}
+
             {!connected && (
               <div className="absolute top-0 right-0 bottom-0 left-0 px-2 py-4 bg-red-500/10 rounded-md font-normal text-xs text-gray-400 flex items-center gap-4">
                 {t("assistant.chat.connectionError")}
@@ -331,6 +345,7 @@ const ChatAI = memo(
                 </div>
               </div>
             )}
+
             <div ref={messagesEndRef} />
           </div>
         </div>

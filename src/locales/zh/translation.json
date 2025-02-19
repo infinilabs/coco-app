@@ -106,7 +106,8 @@
       "openChat": "打开聊天窗口",
       "newChat": "新建对话",
       "connectionError": "无法连接到服务器",
-      "reconnect": "重新连接"
+      "reconnect": "重新连接",
+      "greetings": "嗨！我是 Coco，很高兴认识你。我可以利用互联网和你的数据源来回答你的问题。我今天能为你提供什么帮助？"
     },
     "input": {
       "stopMessage": "停止生成",

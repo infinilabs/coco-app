@@ -106,7 +106,8 @@
       "openChat": "Open Chat Window",
       "newChat": "New Chat",
       "connectionError": "Unable to connect to the server",
-      "reconnect": "Reconnect"
+      "reconnect": "Reconnect",
+      "greetings": "Hi! I’m Coco, nice to meet you. I can help answer your questions by tapping into the internet and your data sources. How can I assist you today?"
     },
     "input": {
       "stopMessage": "Stop message",
