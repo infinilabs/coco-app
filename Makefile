@@ -24,7 +24,7 @@ install-dependencies: check-node-version
 # Start desktop development
 start-dev: install-dependencies
 	@echo "Starting desktop development..."
-	pnpm tauri dev
+	RUST_BACKTRACE=1 pnpm tauri dev
 
 # Build desktop application for MacOS
 build-mac-app: 
@@ -68,7 +68,7 @@ build-linux-appimage: install-dependencies
 	pnpm tauri build --bundles appimage
 
 # Combined: Install dependencies, start dev, and build app
-dev-build: install-dependencies start-dev build-app
+dev-build: install-dependencies start-dev
 	@echo "Development and build process completed."
 
 # Clean up node_modules and rebuild

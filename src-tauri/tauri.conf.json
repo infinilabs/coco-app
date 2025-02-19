@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2.0.0",
-  "productName": "Coco AI",
+  "productName": "Coco-AI",
   "version": "../package.json",
   "identifier": "rs.coco.app",
   "build": {
@@ -21,7 +21,7 @@
         "decorations": false,
         "minimizable": false,
         "maximizable": false,
-        "skipTaskbar": false,
+        "skipTaskbar": true,
         "resizable": false,
         "alwaysOnTop": true,
         "acceptFirstMouse": true,
@@ -37,6 +37,7 @@
       },
       {
         "label": "settings",
+        "title": "Coco AI Settings",
         "url": "/ui/settings",
         "width": 1000,
         "height": 700,

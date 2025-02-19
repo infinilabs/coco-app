@@ -14,7 +14,11 @@ name = "coco_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+tauri-build = { version = "2", features = ["default"] }
+
+[features]
+default = ["desktop"]
+desktop = []
 
 [dependencies]
 pizza-common = { git = "https://github.com/infinilabs/pizza-common", branch = "main" }
@@ -27,7 +31,6 @@ tauri-plugin-http = "2"
 tauri-plugin-websocket = "2"
 tauri-plugin-theme = "2.1.2"
 tauri-plugin-deep-link = "2.0.0"
-tauri-plugin-single-instance = "2.0.0"
 tauri-plugin-store = "2.2.0"
 tauri-plugin-os = "2"
 tauri-plugin-dialog = "2"
@@ -55,6 +58,10 @@ fuzzy_prefix_search = "0.2"
 
 [target."cfg(target_os = \"macos\")".dependencies]
 tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }
+
+[target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\"))".dependencies]
+tauri-plugin-single-instance = { version = "2.0.0", features = ["deep-link"] }
+
 
 [profile.dev]
 incremental = true # Compile your binary in smaller steps.

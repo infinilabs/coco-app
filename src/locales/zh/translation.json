@@ -21,7 +21,7 @@
       "title": "语言",
       "description": "选择您的首选语言",
       "english": "English",
-      "chinese": "中文"
+      "chinese": "简体中文"
     },
     "tooltip": {
       "title": "提示",
@@ -60,7 +60,7 @@
   },
   "search": {
     "textarea": {
-      "placeholder": "问我任何问题...",
+      "placeholder": "尝试问我任何问题...",
       "ariaLabel": "输入你想问的问题"
     },
     "document": {
@@ -89,7 +89,7 @@
       "connectionError": "无法连接到服务器",
       "reconnect": "重新连接",
       "deepThink": "深度思考",
-      "search": "搜索"
+      "search": "联网搜索"
     },
     "main": {
       "noDataAlt": "无数据图片",
@@ -112,7 +112,7 @@
       "stopMessage": "停止生成",
       "deepThink": "深度思考",
       "deepThinkTooltip": "启用深度思考模式",
-      "search": "搜索",
+      "search": "联网搜索",
       "searchTooltip": "启用搜索模式"
     },
     "message": {

@@ -12,6 +12,9 @@ Information about release notes of Coco Server is provided here.
 ### Features
 ### Breaking changes
 ### Bug fix
+- Fix to access deeplink for linux #148
+
+
 ### Improvements
 
 ## 0.1.0 (2015-02-16)
