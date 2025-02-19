@@ -59,7 +59,6 @@ export default defineConfig(async () => ({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          lodash: ['lodash'],
           katex: ['rehype-katex'],
           highlight: ['rehype-highlight'],
           mermaid: ['mermaid'],

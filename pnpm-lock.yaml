@@ -62,7 +62,7 @@ importers:
       i18next-browser-languagedetector:
         specifier: ^8.0.3
         version: 8.0.3
-      lodash:
+      lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
       lucide-react:
@@ -120,7 +120,7 @@ importers:
       '@tauri-apps/cli':
         specifier: ^2.2.7
         version: 2.2.7
-      '@types/lodash':
+      '@types/lodash-es':
         specifier: ^4.17.12
         version: 4.17.12
       '@types/markdown-it':
@@ -874,6 +874,9 @@ packages:
 
   '@types/linkify-it@5.0.0':
     resolution: {integrity: sha512-sVDA58zAw4eWAffKOaQH5/5j3XeayukzDk+ewSsnv3p4yJEZHCCzMDiZM8e0OUrRvmpGZ85jf4yDHkHsgBNr9Q==}
+
+  '@types/lodash-es@4.17.12':
+    resolution: {integrity: sha512-0NgftHUcV4v34VhXm8QBSftKVXtbkBG3ViCjs6+eJ5a6y6Mi/jiFGPc1sC7QK+9BFhWrURE3EOggmWaSxL9OzQ==}
 
   '@types/lodash@4.17.12':
     resolution: {integrity: sha512-sviUmCE8AYdaF/KIHLDJBQgeYzPBI0vf/17NaYehBJfYD1j6/L95Slh07NlyK2iNyBNaEkb3En2jRt+a8y3xZQ==}
@@ -2996,6 +2999,10 @@ snapshots:
   '@types/katex@0.16.7': {}
 
   '@types/linkify-it@5.0.0': {}
+
+  '@types/lodash-es@4.17.12':
+    dependencies:
+      '@types/lodash': 4.17.12
 
   '@types/lodash@4.17.12': {}
 
