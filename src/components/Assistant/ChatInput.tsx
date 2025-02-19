@@ -145,7 +145,7 @@ export function ChatInput({
             </button>
             <button
               type="button"
-              className={`h-5 px-2 inline-flex items-center border  rounded-[10px] transition-colors relative ${
+              className={`h-5 px-2 inline-flex items-center border rounded-[10px] transition-colors relative ${
                 isSearchActive
                   ? "bg-[rgba(0,114,255,0.3)] border-[rgba(0,114,255,0.3)]"
                   : "border-[#262727]"

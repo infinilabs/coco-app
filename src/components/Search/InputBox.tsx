@@ -41,7 +41,6 @@ export default function ChatInput({
   isDeepThinkActive,
   setIsDeepThinkActive,
 }: ChatInputProps) {
-
   const { t } = useTranslation();
 
   const showTooltip = useAppStore(
@@ -263,7 +262,7 @@ export default function ChatInput({
               autoCapitalize="none"
               spellCheck="false"
               className="text-base font-normal flex-1 outline-none min-w-[200px] text-[#333] dark:text-[#d8d8d8] placeholder-text-xs placeholder-[#999] dark:placeholder-gray-500 bg-transparent"
-              placeholder={t('search.input.searchPlaceholder')}
+              placeholder={t("search.input.searchPlaceholder")}
               value={inputValue}
               onChange={(e) => {
                 onSend(e.target.value);
@@ -351,12 +350,12 @@ export default function ChatInput({
 
         {!connected && isChatMode ? (
           <div className="absolute top-0 right-0 bottom-0 left-0 px-2 py-4 bg-red-500/10 rounded-md font-normal text-xs text-gray-400 flex items-center gap-4">
-            {t('search.input.connectionError')}
+            {t("search.input.connectionError")}
             <div
               className="w-[96px] h-[24px] bg-[#0061FF] rounded-[12px] font-normal text-xs text-white flex items-center justify-center cursor-pointer"
               onClick={ReconnectClick}
             >
-              {t('search.input.reconnect')} ({countdown})
+              {t("search.input.reconnect")} ({countdown})
             </div>
           </div>
         ) : null}
@@ -369,33 +368,49 @@ export default function ChatInput({
         {isChatMode ? (
           <div className="flex gap-2 text-xs text-[#333] dark:text-[#d8d8d8]">
             <button
-              className={`inline-flex items-center rounded-lg transition-colors relative py-1`}
+              className={`h-5 px-2 inline-flex items-center border  rounded-[10px] transition-colors relative ${
+                isDeepThinkActive
+                  ? "bg-[rgba(0,114,255,0.3)] border-[rgba(0,114,255,0.3)]"
+                  : "border-[#262727]"
+              }`}
               onClick={DeepThinkClick}
             >
               <Brain
-                className={`w-4 h-4 mr-1 ${
+                className={`w-3 h-3 mr-1 ${
                   isDeepThinkActive
                     ? "text-[#0072FF] dark:text-[#0072FF]"
-                    : "text-[#000] dark:text-[#d8d8d8]"
+                    : "text-[#333] dark:text-white"
                 }`}
               />
-              <span className={isDeepThinkActive ? "text-[#0072FF]" : ""}>
-                {t('search.input.deepThink')}
+              <span
+                className={
+                  isDeepThinkActive ? "text-[#0072FF]" : "dark:text-white"
+                }
+              >
+                {t("search.input.deepThink")}
               </span>
             </button>
             <button
-              className={`inline-flex items-center rounded-lg transition-colors relative py-1`}
+              className={`h-5 px-2 inline-flex items-center border rounded-[10px] transition-colors relative ${
+                isSearchActive
+                  ? "bg-[rgba(0,114,255,0.3)] border-[rgba(0,114,255,0.3)]"
+                  : "border-[#262727]"
+              }`}
               onClick={SearchClick}
             >
               <Globe
-                className={`w-4 h-4 mr-1 ${
+                className={`w-3 h-3 mr-1 ${
                   isSearchActive
                     ? "text-[#0072FF] dark:text-[#0072FF]"
-                    : "text-[#000] dark:text-[#d8d8d8]"
+                    : "text-[#333] dark:text-white"
                 }`}
               />
-              <span className={isSearchActive ? "text-[#0072FF]" : ""}>
-                {t('search.input.search')}
+              <span
+                className={
+                  isSearchActive ? "text-[#0072FF]" : "dark:text-white"
+                }
+              >
+                {t("search.input.search")}
               </span>
             </button>
             {/*<button*/}

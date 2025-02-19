@@ -12,8 +12,7 @@ import { useSearchStore } from "@/stores/searchStore";
 import ThemedIcon from "@/components/Common/Icons/ThemedIcon";
 import IconWrapper from "@/components/Common/Icons/IconWrapper";
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
-import ItemIcon from "@/components/Common/Icons/ItemIcon";
-import ListRight from "./ListRight";
+import SearchListItem from "./SearchListItem";
 import { metaOrCtrlKey, isMetaOrCtrlKey } from "@/utils/keyboardUtils";
 
 type ISearchData = Record<string, any[]>;
@@ -203,35 +202,27 @@ function DropdownList({
           {items.map((hit: any, index: number) => {
             const isSelected = selectedItem === globalIndex;
             const currentIndex = globalIndex;
-            const item=hit.document;
+            const item = hit.document;
             globalItemIndexMap.push(item);
             globalIndex++;
             return (
-              <div
+              <SearchListItem
                 key={item.id + index}
-                ref={(el) => (itemRefs.current[currentIndex] = el)}
+                item={item}
+                isSelected={isSelected}
+                currentIndex={currentIndex}
+                showIndex={showIndex}
                 onMouseEnter={() => setSelectedItem(currentIndex)}
-                onClick={() => {
+                onItemClick={() => {
                   if (item?.url) {
                     handleOpenURL(item?.url);
                   } else {
                     selected(item);
                   }
                 }}
-                className={`w-full px-2 py-2.5 text-sm flex gap-7 items-center justify-between rounded-lg transition-colors cursor-pointer ${isSelected
-                  ? "text-white bg-[var(--coco-primary-color)] hover:bg-[var(--coco-primary-color)]"
-                  : "text-[#333] dark:text-[#d8d8d8]"
-                  }`}
-              >
-                <div className="flex gap-2 items-center justify-start max-w-[450px]">
-                  <ItemIcon item={item} />
-                  <span
-                    className={`text-sm  truncate text-left`} >
-                    {item?.title}
-                  </span>
-                </div>
-                <ListRight goToTwoPage={goToTwoPage} item={item} isSelected={isSelected} showIndex={showIndex} currentIndex={currentIndex}/>
-              </div>
+                goToTwoPage={goToTwoPage}
+                itemRef={(el) => (itemRefs.current[currentIndex] = el)}
+              />
             );
           })}
         </div>
