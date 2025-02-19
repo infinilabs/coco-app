@@ -19,7 +19,6 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 import { useChatStore } from "@/stores/chatStore";
 import { useWindows } from "@/hooks/useWindows";
 import { clientEnv } from "@/utils/env";
-// import { useAppStore } from '@/stores/appStore';
 
 interface ChatAIProps {
   isTransitioned: boolean;
@@ -48,8 +47,6 @@ const ChatAI = memo(
         connected: connected,
         reconnect: reconnect,
       }));
-
-      // const appStore = useAppStore();
 
       const { createWin } = useWindows();
 
@@ -141,7 +138,6 @@ const ChatAI = memo(
         setConnected(connected);
       }, [connected]);
 
-      // 使用节流优化滚动
       const scrollToBottom = useCallback(
         debounce(() => {
           messagesEndRef.current?.scrollIntoView({
@@ -194,7 +190,7 @@ const ChatAI = memo(
             },
             body: JSON.stringify({ message: content }),
           });
-          // console.log("_send", response, websocketId);
+          console.log("_send", response, websocketId);
           setCurId(response.data[0]?._id);
           const updatedChat: Chat = {
             ...newChat,
