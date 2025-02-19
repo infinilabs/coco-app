@@ -77,6 +77,7 @@ pub fn run() {
 
     let app = app_builder
         .invoke_handler(tauri::generate_handler![
+                        util::open_url,
             change_window_height,
             shortcut::change_shortcut,
             shortcut::unregister_shortcut,

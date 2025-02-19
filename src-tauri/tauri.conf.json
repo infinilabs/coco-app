@@ -127,7 +127,9 @@
       ]
     },
     "websocket": {},
-    "shell": {},
+    "shell": {
+      "open": true
+    },
     "globalShortcut": {},
     "deep-link": {
       "schema": "coco",
