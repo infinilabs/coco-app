@@ -54,11 +54,14 @@ const ChatAI = memo(
 
       const [activeChat, setActiveChat] = useState<Chat>();
       const [isTyping, setIsTyping] = useState(false);
+      const [timedoutShow, setTimedoutShow] = useState(false);
       const messagesEndRef = useRef<HTMLDivElement>(null);
 
       const [websocketId, setWebsocketId] = useState("");
       const [curMessage, setCurMessage] = useState("");
       const [curId, setCurId] = useState("");
+
+      const websocketIdRef = useRef("");
 
       const curChatEndRef = useRef(curChatEnd);
       curChatEndRef.current = curChatEnd;
@@ -70,36 +73,55 @@ const ChatAI = memo(
         setCurMessage((prev) => prev + chunk);
       }, []);
 
-      const { messages, setMessages, connected, reconnect } = useWebSocket(
-        clientEnv.COCO_WEBSOCKET_URL,
-        (msg) => {
-          // console.log("msg:", msg);
+      const messageTimeoutRef = useRef<NodeJS.Timeout>();
 
-          if (msg.includes("websocket-session-id")) {
-            const array = msg.split(" ");
-            setWebsocketId(array[2]);
-            return "";
-          } else if (msg.includes("PRIVATE")) {
-            if (msg.includes("assistant finished output")) {
-              // console.log("AI finished output");
-              simulateAssistantResponse();
-              setCurChatEnd(true);
-            } else {
-              const cleanedData = msg.replace(/^PRIVATE /, "");
-              try {
-                console.log("cleanedData", cleanedData);
-                const chunkData = JSON.parse(cleanedData);
-                if (chunkData.reply_to_message === curIdRef.current) {
-                  handleMessageChunk(chunkData.message_chunk);
-                  setMessages((prev) => prev + chunkData.message_chunk);
-                  return chunkData.message_chunk;
-                }
-              } catch (error) {
-                console.error("parse error:", error);
+      const dealMsg = useCallback((msg: string) => {
+        // console.log("msg:", msg);
+        if (messageTimeoutRef.current) {
+          clearTimeout(messageTimeoutRef.current);
+        }
+
+        if (msg.includes("websocket-session-id")) {
+          const array = msg.split(" ");
+          setWebsocketId(array[2]);
+          websocketIdRef.current = array[2];
+          return "";
+        } else if (msg.includes("PRIVATE")) {
+          messageTimeoutRef.current = setTimeout(() => {
+            if (!curChatEnd && isTyping) {
+              console.log("AI response timeout");
+              setTimedoutShow(true);
+              cancelChat();
+            }
+          }, 30000);
+
+          if (msg.includes("assistant finished output")) {
+            if (messageTimeoutRef.current) {
+              clearTimeout(messageTimeoutRef.current);
+            }
+            // console.log("AI finished output");
+            simulateAssistantResponse();
+            setCurChatEnd(true);
+          } else {
+            const cleanedData = msg.replace(/^PRIVATE /, "");
+            try {
+              console.log("cleanedData", cleanedData);
+              const chunkData = JSON.parse(cleanedData);
+              if (chunkData.reply_to_message === curIdRef.current) {
+                handleMessageChunk(chunkData.message_chunk);
+                setMessages((prev) => prev + chunkData.message_chunk);
+                return chunkData.message_chunk;
               }
+            } catch (error) {
+              console.error("parse error:", error);
             }
           }
         }
+      }, []);
+
+      const { messages, setMessages, connected, reconnect } = useWebSocket(
+        clientEnv.COCO_WEBSOCKET_URL,
+        dealMsg
       );
 
       const simulateAssistantResponse = useCallback(() => {
@@ -160,21 +182,8 @@ const ChatAI = memo(
           });
           console.log("_new", response);
           const newChat: Chat = response.data;
-
-          const greetingMessage: Message = {
-            _id: newChat._id,
-            _source: {
-              type: "assistant",
-              message: t("assistant.chat.greetings"),
-            },
-          };
-
-          const chatWithGreeting = {
-            ...newChat,
-            messages: [greetingMessage],
-          };
-
-          setActiveChat(chatWithGreeting);
+          
+          setActiveChat(newChat);
           handleSendMessage(value, newChat);
         } catch (error) {
           console.error("Failed to fetch user data:", error);
@@ -190,24 +199,27 @@ const ChatAI = memo(
         }
       };
 
-      const handleSendMessage = async (content: string, newChat?: Chat) => {
+      const handleSendMessage = useCallback(async (content: string, newChat?: Chat) => {
         newChat = newChat || activeChat;
         if (!newChat?._id || !content) return;
+        setTimedoutShow(false);
         try {
           const response = await tauriFetch({
             url: `/chat/${newChat?._id}/_send?search=${isSearchActive}&deep_thinking=${isDeepThinkActive}`,
             method: "POST",
             headers: {
-              "WEBSOCKET-SESSION-ID": websocketId,
+               "WEBSOCKET-SESSION-ID": websocketIdRef.current || websocketId
             },
             body: JSON.stringify({ message: content }),
           });
           console.log("_send", response, websocketId);
           setCurId(response.data[0]?._id);
+
           const updatedChat: Chat = {
             ...newChat,
             messages: [...(newChat?.messages || []), ...(response.data || [])],
           };
+
           changeInput("");
           // console.log("updatedChat2", updatedChat);
           setActiveChat(updatedChat);
@@ -216,7 +228,7 @@ const ChatAI = memo(
         } catch (error) {
           console.error("Failed to fetch user data:", error);
         }
-      };
+      }, [JSON.stringify(activeChat), websocketId]);
 
       const chatClose = async () => {
         if (!activeChat?._id) return;
@@ -232,6 +244,10 @@ const ChatAI = memo(
       };
 
       const cancelChat = async () => {
+        if (curMessage || messages) {
+          simulateAssistantResponse();
+        }
+
         setCurChatEnd(true);
         setIsTyping(false);
         if (!activeChat?._id) return;
@@ -268,6 +284,9 @@ const ChatAI = memo(
 
       useEffect(() => {
         return () => {
+          if (messageTimeoutRef.current) {
+            clearTimeout(messageTimeoutRef.current);
+          }
           chatClose();
           setMessages("");
           setCurMessage("");
@@ -307,7 +326,19 @@ const ChatAI = memo(
           </header>
 
           {/* Chat messages */}
-          <div className="w-full overflow-x-hidden overflow-y-auto border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.15)] custom-scrollbar">
+          <div className="w-full overflow-x-hidden overflow-y-auto border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.15)] custom-scrollbar relative">
+            <ChatMessage
+              key={"greetings"}
+              message={{
+                _id: 'greetings',
+                _source: {
+                  type: 'assistant',
+                  message: t("assistant.chat.greetings")
+                }
+              }}
+              isTyping={false}
+            />
+
             {activeChat?.messages?.map((message, index) => (
               <ChatMessage
                 key={message._id + index}
@@ -334,17 +365,17 @@ const ChatAI = memo(
               />
             ) : null}
 
-            {!connected && (
-              <div className="absolute top-0 right-0 bottom-0 left-0 px-2 py-4 bg-red-500/10 rounded-md font-normal text-xs text-gray-400 flex items-center gap-4">
-                {t("assistant.chat.connectionError")}
-                <div
-                  className="w-[96px] h-[24px] bg-[#0061FF] rounded-[12px] font-normal text-xs text-white flex items-center justify-center cursor-pointer"
-                  onClick={reconnect}
-                >
-                  {t("assistant.chat.reconnect")}
-                </div>
-              </div>
-            )}
+            {timedoutShow ? <ChatMessage
+              key={"timedout"}
+              message={{
+                _id: 'timedout',
+                _source: {
+                  type: 'assistant',
+                  message: t("assistant.chat.timedout")
+                }
+              }}
+              isTyping={false}
+            />: null}
 
             <div ref={messagesEndRef} />
           </div>

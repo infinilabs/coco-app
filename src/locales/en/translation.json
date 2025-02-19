@@ -107,7 +107,8 @@
       "newChat": "New Chat",
       "connectionError": "Unable to connect to the server",
       "reconnect": "Reconnect",
-      "greetings": "Hi! I’m Coco, nice to meet you. I can help answer your questions by tapping into the internet and your data sources. How can I assist you today?"
+      "greetings": "Hi! I’m Coco, nice to meet you. I can help answer your questions by tapping into the internet and your data sources. How can I assist you today?",
+      "timedout": "Request timed out. Please try again later."
     },
     "input": {
       "stopMessage": "Stop message",
