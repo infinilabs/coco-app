@@ -76,10 +76,10 @@ export function SourceResult({ text }: SourceResultProps) {
             <div
               key={idx}
               onClick={() => item.url && OpenURLWithBrowser(item.url)}
-              className="group flex items-center px-2 py-1 hover:bg-[#F7F7F7] dark:hover:bg-[#2C2C2C] border-b border-[#E6E6E6] dark:border-[#272626] last:border-b-0 cursor-pointer transition-colors"
+              className="group flex items-center p-2 hover:bg-[#F7F7F7] dark:hover:bg-[#2C2C2C] border-b border-[#E6E6E6] dark:border-[#272626] last:border-b-0 cursor-pointer transition-colors"
             >
               <div className="flex-1 min-w-0 flex items-center gap-2">
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 flex items-center gap-1">
                   <File className="w-3 h-3" />
                   <div className="text-xs text-[#333333] dark:text-[#D8D8D8] truncate font-normal group-hover:text-[#0072FF] dark:group-hover:text-[#0072FF]">
                     {item.title || item.category}

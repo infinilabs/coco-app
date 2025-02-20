@@ -8,7 +8,6 @@ import {
   useState,
   useMemo,
 } from "react";
-import { MessageSquarePlus, PanelLeft } from "lucide-react";
 import { isTauri } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
 import { debounce } from "lodash-es";
@@ -20,7 +19,7 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 import { useChatStore } from "@/stores/chatStore";
 import { useWindows } from "@/hooks/useWindows";
 import { clientEnv } from "@/utils/env";
-
+import { ChatHeader } from "./ChatHeader";
 interface ChatAIProps {
   isTransitioned: boolean;
   isSearchActive?: boolean;
@@ -249,7 +248,7 @@ const ChatAI = memo(
             console.error("Failed to fetch user data:", error);
           }
         },
-        [activeChat?._id]
+        [activeChat?._id, isSearchActive, isDeepThinkActive]
       );
 
       const chatClose = async () => {
@@ -327,26 +326,10 @@ const ChatAI = memo(
           className={`h-full flex flex-col rounded-xl overflow-hidden`}
         >
           {isChatPage ? null : (
-            <header
-              data-tauri-drag-region
-              className={`flex items-center justify-between py-2 px-1`}
-            >
-              <button
-                onClick={() => openChatAI()}
-                className={`p-2 rounded-lg transition-colors text-[#333] dark:text-[#d8d8d8]`}
-              >
-                <PanelLeft className="h-4 w-4" />
-              </button>
-
-              <button
-                onClick={() => {
-                  createNewChat();
-                }}
-                className={`p-2 rounded-lg transition-colors text-[#333] dark:text-[#d8d8d8]`}
-              >
-                <MessageSquarePlus className="h-4 w-4" />
-              </button>
-            </header>
+            <ChatHeader
+              onCreateNewChat={createNewChat}
+              onOpenChatAI={openChatAI}
+            />
           )}
 
           {/* Chat messages */}
