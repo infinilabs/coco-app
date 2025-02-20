@@ -2,108 +2,31 @@ import { useState, useRef, useEffect } from "react";
 import { PanelRightClose, PanelRightOpen, X } from "lucide-react";
 import { isTauri } from "@tauri-apps/api/core";
 
-import { ChatMessage } from "@/components/Assistant/ChatMessage";
+import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
 import { ChatInput } from "@/components/Assistant/ChatInput";
 import { Sidebar } from "@/components/Assistant/Sidebar";
-import type { Chat, Message } from "@/components/Assistant/types";
+import type { Chat } from "@/components/Assistant/types";
 import { tauriFetch } from "@/api/tauriFetchClient";
-import { useWebSocket } from "@/hooks/useWebSocket";
 import { useWindows }  from "@/hooks/useWindows";
-import { clientEnv } from "@/utils/env";
-// import { useAppStore } from '@/stores/appStore';
 import ApiDetails from "@/components/Common/ApiDetails";
 
-interface ChatAIProps {}
+interface ChatProps {}
 
-export default function ChatAI({}: ChatAIProps) {
+export default function Chat({}: ChatProps) {
   const { closeWin } = useWindows();
 
-  // const appStore = useAppStore();
+  const chatAIRef = useRef<ChatAIRef>(null);
 
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChat, setActiveChat] = useState<Chat>();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const [websocketId, setWebsocketId] = useState("");
-  const [curMessage, setCurMessage] = useState("");
   const [curChatEnd, setCurChatEnd] = useState(true);
-
-  const [curId, setCurId] = useState("");
 
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isDeepThinkActive, setIsDeepThinkActive] = useState(false);
 
-  const curChatEndRef = useRef(curChatEnd);
-  curChatEndRef.current = curChatEnd;
-
-  const curIdRef = useRef(curId);
-  curIdRef.current = curId;
-
-  console.log("index useWebSocket", clientEnv.COCO_WEBSOCKET_URL,)
-  const { messages, setMessages } = useWebSocket(
-    clientEnv.COCO_WEBSOCKET_URL,
-    (msg) => {
-      msg = msg.replace(/<think>/g, "AI is thinking...").replace(/<\/think>/g, "");
-
-      if (msg.includes("websocket-session-id")) {
-        const array = msg.split(" ");
-        setWebsocketId(array[2]);
-      }
-
-      if (msg.includes("PRIVATE")) {
-        if (
-          msg.includes("assistant finished output") ||
-          curChatEndRef.current
-        ) {
-          setCurChatEnd(true);
-        } else {
-          const cleanedData = msg.replace(/^PRIVATE /, "");
-          try {
-            const chunkData = JSON.parse(cleanedData);
-            if (chunkData.reply_to_message === curIdRef.current) {
-              setCurMessage((prev) => prev + chunkData.message_chunk);
-              return chunkData.message_chunk;
-            }
-          } catch (error) {
-            console.error("JSON Parse error:", error);
-          }
-        }
-      }
-    }
-  );
-
-  // websocket
-  useEffect(() => {
-    if (messages.length === 0 || !activeChat?._id) return;
-
-    const simulateAssistantResponse = () => {
-      console.log("messages", messages);
-
-      const assistantMessage: Message = {
-        _id: activeChat._id,
-        _source: {
-          type: "assistant",
-          message: messages,
-        },
-      };
-
-      const updatedChat = {
-        ...activeChat,
-        messages: [...(activeChat.messages || []), assistantMessage],
-      };
-      setMessages("");
-      setCurMessage("");
-      setActiveChat(updatedChat);
-      setTimeout(() => setIsTyping(false), 1000);
-    };
-    if (curChatEnd) {
-      simulateAssistantResponse();
-    }
-  }, [messages, isTyping, curChatEnd]);
-
-  // getChatHistory
   useEffect(() => {
     getChatHistory();
   }, []);
@@ -120,34 +43,8 @@ export default function ChatAI({}: ChatAIProps) {
       if (hits[0]) {
         onSelectChat(hits[0]);
       } else {
-        createNewChat();
+        chatAIRef.current?.init("");
       }
-    } catch (error) {
-      console.error("Failed to fetch user data:", error);
-    }
-  };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "end",
-    });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [activeChat?.messages, isTyping, curMessage]);
-
-  const createNewChat = async () => {
-    try {
-      const response = await tauriFetch({
-        url: "/chat/_new",
-        method: "POST",
-      });
-      console.log("_new", response);
-      const newChat: Chat = response.data;
-      setChats((prev) => [newChat, ...prev]);
-      setActiveChat(newChat);
     } catch (error) {
       console.error("Failed to fetch user data:", error);
     }
@@ -160,35 +57,13 @@ export default function ChatAI({}: ChatAIProps) {
       if (remainingChats.length > 0) {
         setActiveChat(remainingChats[0]);
       } else {
-        createNewChat();
+        chatAIRef.current?.init("");
       }
     }
   };
 
   const handleSendMessage = async (content: string) => {
-    if (!activeChat?._id) return;
-    try {
-      const response = await tauriFetch({
-        url: `/chat/${activeChat?._id}/_send?search=${isSearchActive}&deep_thinking=${isDeepThinkActive}`,
-        method: "POST",
-        headers: {
-          "WEBSOCKET-SESSION-ID": websocketId,
-        },
-        body: JSON.stringify({ message: content }),
-      });
-      console.log("_send", response, websocketId);
-      setCurId(response.data[0]?._id);
-      const updatedChat: Chat = {
-        ...activeChat,
-        messages: [...(activeChat?.messages || []), ...(response.data || [])],
-      };
-
-      setActiveChat(updatedChat);
-      setIsTyping(true);
-      setCurChatEnd(false);
-    } catch (error) {
-      console.error("Failed to fetch user data:", error);
-    }
+    chatAIRef.current?.handleSendMessage(content);
   };
 
   const chatHistory = async (chat: Chat) => {
@@ -269,7 +144,7 @@ export default function ChatAI({}: ChatAIProps) {
               <Sidebar
                 chats={chats}
                 activeChat={activeChat}
-                onNewChat={createNewChat}
+                onNewChat={() => chatAIRef.current?.init("")}
                 onSelectChat={onSelectChat}
                 onDeleteChat={deleteChat}
               />
@@ -297,33 +172,15 @@ export default function ChatAI({}: ChatAIProps) {
           </header>
 
           {/* Chat messages */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
-            {activeChat?.messages?.map((message, index) => (
-              <ChatMessage
-                key={message._id + index}
-                message={message}
-                isTyping={
-                  isTyping &&
-                  index === (activeChat.messages?.length || 0) - 1 &&
-                  message._source?.type === "assistant"
-                }
-              />
-            ))}
-            {!curChatEnd && activeChat?._id ? (
-              <ChatMessage
-                key={"last"}
-                message={{
-                  _id: activeChat?._id,
-                  _source: {
-                    type: "assistant",
-                    message: curMessage,
-                  },
-                }}
-                isTyping={!curChatEnd}
-              />
-            ) : null}
-            <div ref={messagesEndRef} />
-          </div>
+          <ChatAI
+            ref={chatAIRef}
+            key="ChatAI"
+            activeChatProp={activeChat}
+            isTransitioned={true}
+            isSearchActive={isSearchActive}
+            isDeepThinkActive={isDeepThinkActive}
+            isChatPage={true}
+          />
 
           {/* Input area */}
           <div className={`border-t p-4 border-gray-200 dark:border-gray-800`}>

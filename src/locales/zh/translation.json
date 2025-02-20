@@ -121,7 +121,7 @@
       "logo": "Coco AI 图标",
       "aiName": "Coco AI",
       "thinking": "AI 正在思考...",
-      "thoughtTime": "思考了 {{time}} 秒",
+      "thoughtTime": "思考了数秒",
       "thinkingButton": "查看思考过程"
     },
     "sidebar": {

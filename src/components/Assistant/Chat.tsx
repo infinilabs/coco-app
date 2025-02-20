@@ -6,6 +6,7 @@ import {
   useImperativeHandle,
   useRef,
   useState,
+  useMemo,
 } from "react";
 import { MessageSquarePlus, PanelLeft } from "lucide-react";
 import { isTauri } from "@tauri-apps/api/core";
@@ -13,7 +14,7 @@ import { useTranslation } from "react-i18next";
 import { debounce } from "lodash-es";
 
 import { ChatMessage } from "./ChatMessage";
-import type { Chat, Message } from "./types";
+import type { Chat } from "./types";
 import { tauriFetch } from "@/api/tauriFetchClient";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useChatStore } from "@/stores/chatStore";
@@ -22,9 +23,11 @@ import { clientEnv } from "@/utils/env";
 
 interface ChatAIProps {
   isTransitioned: boolean;
-  changeInput: (val: string) => void;
   isSearchActive?: boolean;
   isDeepThinkActive?: boolean;
+  isChatPage?: boolean;
+  activeChatProp?: Chat;
+  changeInput?: (val: string) => void;
 }
 
 export interface ChatAIRef {
@@ -32,12 +35,20 @@ export interface ChatAIRef {
   cancelChat: () => void;
   connected: boolean;
   reconnect: () => void;
+  handleSendMessage: (value: string) => void;
 }
 
 const ChatAI = memo(
   forwardRef<ChatAIRef, ChatAIProps>(
     (
-      { isTransitioned, changeInput, isSearchActive, isDeepThinkActive },
+      {
+        isTransitioned,
+        changeInput,
+        isSearchActive,
+        isDeepThinkActive,
+        isChatPage = false,
+        activeChatProp,
+      },
       ref
     ) => {
       const { t } = useTranslation();
@@ -46,6 +57,7 @@ const ChatAI = memo(
         cancelChat: cancelChat,
         connected: connected,
         reconnect: reconnect,
+        handleSendMessage: handleSendMessage,
       }));
 
       const { createWin } = useWindows();
@@ -57,17 +69,18 @@ const ChatAI = memo(
       const [timedoutShow, setTimedoutShow] = useState(false);
       const messagesEndRef = useRef<HTMLDivElement>(null);
 
-      const [websocketId, setWebsocketId] = useState("");
       const [curMessage, setCurMessage] = useState("");
-      const [curId, setCurId] = useState("");
 
       const websocketIdRef = useRef("");
 
       const curChatEndRef = useRef(curChatEnd);
       curChatEndRef.current = curChatEnd;
 
-      const curIdRef = useRef(curId);
-      curIdRef.current = curId;
+      const curIdRef = useRef("");
+
+      useEffect(() => {
+        activeChatProp && setActiveChat(activeChatProp);
+      }, [activeChatProp]);
 
       const handleMessageChunk = useCallback((chunk: string) => {
         setCurMessage((prev) => prev + chunk);
@@ -83,7 +96,6 @@ const ChatAI = memo(
 
         if (msg.includes("websocket-session-id")) {
           const array = msg.split(" ");
-          setWebsocketId(array[2]);
           websocketIdRef.current = array[2];
           return "";
         } else if (msg.includes("PRIVATE")) {
@@ -105,7 +117,7 @@ const ChatAI = memo(
           } else {
             const cleanedData = msg.replace(/^PRIVATE /, "");
             try {
-              console.log("cleanedData", cleanedData);
+              // console.log("cleanedData", cleanedData);
               const chunkData = JSON.parse(cleanedData);
               if (chunkData.reply_to_message === curIdRef.current) {
                 handleMessageChunk(chunkData.message_chunk);
@@ -117,37 +129,41 @@ const ChatAI = memo(
             }
           }
         }
-      }, []);
+      }, [curChatEnd, isTyping]);
 
       const { messages, setMessages, connected, reconnect } = useWebSocket(
         clientEnv.COCO_WEBSOCKET_URL,
         dealMsg
       );
 
-      const simulateAssistantResponse = useCallback(() => {
-        if (!activeChat?._id) return;
-
-        // console.log("curMessage", curMessage);
-
-        const assistantMessage: Message = {
+      const assistantMessage = useMemo(() => {
+        if (!activeChat?._id || (!curMessage && !messages)) return null;
+        return {
           _id: activeChat._id,
           _source: {
             type: "assistant",
             message: curMessage || messages,
           },
         };
+      }, [activeChat?._id, curMessage, messages]);
 
-        const updatedChat = {
+      const updatedChat = useMemo(() => {
+        if (!activeChat?._id || !assistantMessage) return null;
+        return {
           ...activeChat,
           messages: [...(activeChat.messages || []), assistantMessage],
         };
+      }, [activeChat, assistantMessage]);
+      
+      const simulateAssistantResponse = useCallback(() => {
+        if (!updatedChat) return;
 
         // console.log("updatedChat:", updatedChat);
         setActiveChat(updatedChat);
         setMessages("");
         setCurMessage("");
         setIsTyping(false);
-      }, [activeChat?._id, curMessage, messages]);
+      }, [updatedChat]);
 
       useEffect(() => {
         if (curChatEnd) {
@@ -182,7 +198,7 @@ const ChatAI = memo(
           });
           console.log("_new", response);
           const newChat: Chat = response.data;
-          
+
           setActiveChat(newChat);
           handleSendMessage(value, newChat);
         } catch (error) {
@@ -199,36 +215,42 @@ const ChatAI = memo(
         }
       };
 
-      const handleSendMessage = useCallback(async (content: string, newChat?: Chat) => {
-        newChat = newChat || activeChat;
-        if (!newChat?._id || !content) return;
-        setTimedoutShow(false);
-        try {
-          const response = await tauriFetch({
-            url: `/chat/${newChat?._id}/_send?search=${isSearchActive}&deep_thinking=${isDeepThinkActive}`,
-            method: "POST",
-            headers: {
-               "WEBSOCKET-SESSION-ID": websocketIdRef.current || websocketId
-            },
-            body: JSON.stringify({ message: content }),
-          });
-          console.log("_send", response, websocketId);
-          setCurId(response.data[0]?._id);
+      const handleSendMessage = useCallback(
+        async (content: string, newChat?: Chat) => {
+          newChat = newChat || activeChat;
+          if (!newChat?._id || !content) return;
+          setTimedoutShow(false);
+          try {
+            const response = await tauriFetch({
+              url: `/chat/${newChat?._id}/_send?search=${isSearchActive}&deep_thinking=${isDeepThinkActive}`,
+              method: "POST",
+              headers: {
+                "WEBSOCKET-SESSION-ID": websocketIdRef.current,
+              },
+              body: JSON.stringify({ message: content }),
+            });
+            console.log("_send", response, websocketIdRef.current);
+            curIdRef.current = response.data[0]?._id;
 
-          const updatedChat: Chat = {
-            ...newChat,
-            messages: [...(newChat?.messages || []), ...(response.data || [])],
-          };
+            const updatedChat: Chat = {
+              ...newChat,
+              messages: [
+                ...(newChat?.messages || []),
+                ...(response.data || []),
+              ],
+            };
 
-          changeInput("");
-          // console.log("updatedChat2", updatedChat);
-          setActiveChat(updatedChat);
-          setIsTyping(true);
-          setCurChatEnd(false);
-        } catch (error) {
-          console.error("Failed to fetch user data:", error);
-        }
-      }, [JSON.stringify(activeChat), websocketId]);
+            changeInput && changeInput("");
+            // console.log("updatedChat2", updatedChat);
+            setActiveChat(updatedChat);
+            setIsTyping(true);
+            setCurChatEnd(false);
+          } catch (error) {
+            console.error("Failed to fetch user data:", error);
+          }
+        },
+        [activeChat?._id]
+      );
 
       const chatClose = async () => {
         if (!activeChat?._id) return;
@@ -302,39 +324,41 @@ const ChatAI = memo(
       return (
         <div
           data-tauri-drag-region
-          className={`h-[500px] flex flex-col rounded-xl overflow-hidden`}
+          className={`h-full flex flex-col rounded-xl overflow-hidden`}
         >
-          <header
-            data-tauri-drag-region
-            className={`flex items-center justify-between py-2 px-1`}
-          >
-            <button
-              onClick={() => openChatAI()}
-              className={`p-2 rounded-lg transition-colors text-[#333] dark:text-[#d8d8d8]`}
+          {isChatPage ? null : (
+            <header
+              data-tauri-drag-region
+              className={`flex items-center justify-between py-2 px-1`}
             >
-              <PanelLeft className="h-4 w-4" />
-            </button>
+              <button
+                onClick={() => openChatAI()}
+                className={`p-2 rounded-lg transition-colors text-[#333] dark:text-[#d8d8d8]`}
+              >
+                <PanelLeft className="h-4 w-4" />
+              </button>
 
-            <button
-              onClick={() => {
-                createNewChat();
-              }}
-              className={`p-2 rounded-lg transition-colors text-[#333] dark:text-[#d8d8d8]`}
-            >
-              <MessageSquarePlus className="h-4 w-4" />
-            </button>
-          </header>
+              <button
+                onClick={() => {
+                  createNewChat();
+                }}
+                className={`p-2 rounded-lg transition-colors text-[#333] dark:text-[#d8d8d8]`}
+              >
+                <MessageSquarePlus className="h-4 w-4" />
+              </button>
+            </header>
+          )}
 
           {/* Chat messages */}
           <div className="w-full overflow-x-hidden overflow-y-auto border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.15)] custom-scrollbar relative">
             <ChatMessage
               key={"greetings"}
               message={{
-                _id: 'greetings',
+                _id: "greetings",
                 _source: {
-                  type: 'assistant',
-                  message: t("assistant.chat.greetings")
-                }
+                  type: "assistant",
+                  message: t("assistant.chat.greetings"),
+                },
               }}
               isTyping={false}
             />
@@ -365,17 +389,19 @@ const ChatAI = memo(
               />
             ) : null}
 
-            {timedoutShow ? <ChatMessage
-              key={"timedout"}
-              message={{
-                _id: 'timedout',
-                _source: {
-                  type: 'assistant',
-                  message: t("assistant.chat.timedout")
-                }
-              }}
-              isTyping={false}
-            />: null}
+            {timedoutShow ? (
+              <ChatMessage
+                key={"timedout"}
+                message={{
+                  _id: "timedout",
+                  _source: {
+                    type: "assistant",
+                    message: t("assistant.chat.timedout"),
+                  },
+                }}
+                isTyping={false}
+              />
+            ) : null}
 
             <div ref={messagesEndRef} />
           </div>

@@ -37,7 +37,11 @@ const SearchListItem: React.FC<SearchListItemProps> = ({
           : "text-[#333] dark:text-[#d8d8d8]"
       } ${showListRight ? "gap-7" : ""}`}
     >
-      <div className="flex-1 min-w-0 flex gap-2 items-center justify-start">
+      <div
+        className={`${
+          showListRight ? "max-w-[450px]" : "flex-1"
+        } min-w-0 flex gap-2 items-center justify-start `}
+      >
         <ItemIcon item={item} />
         <span className={`text-sm truncate text-left`}>{item?.title}</span>
       </div>

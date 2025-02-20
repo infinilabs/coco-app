@@ -3,6 +3,7 @@ import {
   ChevronUp,
   ChevronDown,
   SquareArrowOutUpRight,
+  File,
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -79,6 +80,7 @@ export function SourceResult({ text }: SourceResultProps) {
             >
               <div className="flex-1 min-w-0 flex items-center gap-2">
                 <div className="flex-1 min-w-0">
+                  <File className="w-3 h-3" />
                   <div className="text-xs text-[#333333] dark:text-[#D8D8D8] truncate font-normal group-hover:text-[#0072FF] dark:group-hover:text-[#0072FF]">
                     {item.title || item.category}
                   </div>

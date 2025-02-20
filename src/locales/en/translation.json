@@ -121,7 +121,7 @@
       "logo": "Coco AI Logo",
       "aiName": "Coco AI",
       "thinking": "AI is thinking...",
-      "thoughtTime": "Thought for {{time}} seconds",
+      "thoughtTime": "Thought for a few seconds",
       "thinkingButton": "View thinking process"
     },
     "sidebar": {

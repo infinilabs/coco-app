@@ -1,37 +1,25 @@
 import { Brain, ChevronDown, ChevronUp } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, memo } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { Message } from "./types";
 import Markdown from "./Markdown";
 import { formatThinkingMessage } from "@/utils/index";
 import logoImg from "@/assets/icon.svg";
 import { SourceResult } from "./SourceResult";
-import { useTranslation } from "react-i18next";
 
 interface ChatMessageProps {
   message: Message;
   isTyping?: boolean;
 }
 
-export function ChatMessage({ message, isTyping }: ChatMessageProps) {
+export const ChatMessage = memo(function ChatMessage({ message, isTyping }: ChatMessageProps) {
   const { t } = useTranslation();
   const [isThinkingExpanded, setIsThinkingExpanded] = useState(true);
-  const [responseTime, setResponseTime] = useState(0);
-  const startTimeRef = useRef<number | null>(null);
-  const hasStartedRef = useRef(false);
-  const isAssistant = message._source?.type === "assistant";
-  const segments = formatThinkingMessage(message._source.message);
 
-  useEffect(() => {
-    if (isTyping && !hasStartedRef.current) {
-      startTimeRef.current = Date.now();
-      hasStartedRef.current = true;
-    } else if (!isTyping && hasStartedRef.current && startTimeRef.current) {
-      const duration = (Date.now() - startTimeRef.current) / 1000;
-      setResponseTime(duration);
-      hasStartedRef.current = false;
-    }
-  }, [isTyping]);
+  const isAssistant = message._source?.type === "assistant";
+
+  const segments = formatThinkingMessage(message._source.message);
 
   return (
     <div
@@ -85,9 +73,7 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
                               <>
                                 <Brain className="w-4 h-4 text-[#999999]" />
                                 <span className="text-xs text-[#999999]">
-                                  {t("assistant.message.thoughtTime", {
-                                    time: responseTime.toFixed(1),
-                                  })}
+                                  {t("assistant.message.thoughtTime")}
                                 </span>
                               </>
                             )}
@@ -140,4 +126,4 @@ export function ChatMessage({ message, isTyping }: ChatMessageProps) {
       </div>
     </div>
   );
-}
+})
