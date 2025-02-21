@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from 'path';
 import { config } from "dotenv";
+import packageJson from './package.json';
 
 config();
 
@@ -10,6 +11,9 @@ const host = process.env.TAURI_DEV_HOST;
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
+  define: {
+    'process.env.VERSION': JSON.stringify(packageJson.version),
+  },
   plugins: [react()],
   resolve: {
     alias: {

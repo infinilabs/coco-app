@@ -23,7 +23,6 @@
         "maximizable": false,
         "skipTaskbar": true,
         "resizable": false,
-        "alwaysOnTop": true,
         "acceptFirstMouse": true,
         "shadow": true,
         "transparent": true,

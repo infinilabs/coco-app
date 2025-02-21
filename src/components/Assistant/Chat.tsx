@@ -18,8 +18,10 @@ import { tauriFetch } from "@/api/tauriFetchClient";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useChatStore } from "@/stores/chatStore";
 import { useWindows } from "@/hooks/useWindows";
-import { clientEnv } from "@/utils/env";
 import { ChatHeader } from "./ChatHeader";
+import { useAppStore } from "@/stores/appStore"
+import { Sidebar } from "@/components/Assistant/Sidebar";
+
 interface ChatAIProps {
   isTransitioned: boolean;
   isSearchActive?: boolean;
@@ -50,6 +52,8 @@ const ChatAI = memo(
       },
       ref
     ) => {
+      if (!isTransitioned) return null;
+
       const { t } = useTranslation();
       useImperativeHandle(ref, () => ({
         init: init,
@@ -130,8 +134,10 @@ const ChatAI = memo(
         }
       }, [curChatEnd, isTyping]);
 
+      const endpoint_websocket = useAppStore((state) => state.endpoint_websocket);
+
       const { messages, setMessages, connected, reconnect } = useWebSocket(
-        clientEnv.COCO_WEBSOCKET_URL,
+        endpoint_websocket,
         dealMsg
       );
 
@@ -317,8 +323,6 @@ const ChatAI = memo(
           scrollToBottom.cancel();
         };
       }, []);
-
-      if (!isTransitioned) return null;
 
       return (
         <div

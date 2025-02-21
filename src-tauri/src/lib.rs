@@ -63,7 +63,8 @@ pub fn run() {
         }));
     }
 
-    app_builder = app_builder.plugin(tauri_plugin_http::init())
+    app_builder = app_builder
+        .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_autostart::init(
             MacosLauncher::AppleScript,

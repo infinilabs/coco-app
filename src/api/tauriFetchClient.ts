@@ -39,7 +39,10 @@ export const tauriFetch = async <T = any>({
   const addLog = useLogStore.getState().addLog;
 
   try {
-    console.log("baseURL", baseURL)
+    const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
+    console.log("baseURL", appStore.state?.endpoint_http)
+
+    baseURL = appStore.state?.endpoint_http || baseURL;
 
     const authStore = JSON.parse(localStorage.getItem("auth-store") || "{}")
     const auth = authStore?.state?.auth

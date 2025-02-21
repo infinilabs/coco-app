@@ -1,12 +1,39 @@
-import { MessageSquarePlus, PanelLeft, Pin, MoreHorizontal } from "lucide-react";
-import { useState } from "react";
-import { Listbox, Popover } from "@headlessui/react";
+import {
+  MessageSquarePlus,
+  PictureInPicture2,
+  Pin,
+  PinOff,
+  MoreHorizontal,
+  ChevronDownIcon,
+  Settings,
+  RefreshCw,
+  Check,
+  PanelRightClose,
+} from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+  Popover,
+  PopoverButton,
+  PopoverPanel,
+} from "@headlessui/react";
+import { useTranslation } from "react-i18next";
+import { invoke } from "@tauri-apps/api/core";
+import { emit } from "@tauri-apps/api/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+
+import logoImg from "@/assets/icon.svg";
+import { useAppStore } from "@/stores/appStore"
 
 interface Server {
   id: string;
   name: string;
-  status: 'online' | 'offline';
-  assistantCount: number;
+  available: boolean;
+  endpoint: string;
+  assistantCount?: number;
 }
 
 interface ChatHeaderProps {
@@ -15,64 +42,95 @@ interface ChatHeaderProps {
 }
 
 export function ChatHeader({ onCreateNewChat, onOpenChatAI }: ChatHeaderProps) {
-  const [isPinned, setIsPinned] = useState(false);
-  const [showAI] = useState(false);
-  const [servers] = useState<Server[]>([
-    { id: '1', name: 'Coco Cloud', status: 'online', assistantCount: 3 },
-    { id: '2', name: 'Searchkit', status: 'online', assistantCount: 3 },
-    { id: '3', name: 'INFINI Labs', status: 'online', assistantCount: 2 },
-    { id: '4', name: 'Test server', status: 'offline', assistantCount: 1 },
-  ]);
-  const [selectedServer, setSelectedServer] = useState(servers[0]);
+  const { t } = useTranslation();
+
+  const setEndpoint = useAppStore((state) => state.setEndpoint);
+  const isPinned = useAppStore((state) => state.isPinned);
+  const setIsPinned = useAppStore((state) => state.setIsPinned);
+
+  const [serverList, setServerList] = useState<Server[]>([]);
+  const [selectedServer, setSelectedServer] = useState<string>("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fetchServers = async (resetSelection: boolean) => {
+    invoke("list_coco_servers")
+      .then((res: any) => {
+        setServerList(res);
+        if (resetSelection && res.length > 0) {
+          setSelectedServer(res[0].id);
+          setEndpoint(res[0].endpoint);
+        } else {
+          console.warn("Service list is empty or last item has no id");
+        }
+      })
+      .catch((err: any) => {
+        console.error(err);
+      });
+  };
+
+  useEffect(() => {
+    fetchServers(true);
+  }, []);
+
+  const togglePin = async () => {
+    try {
+      const newPinned = !isPinned;
+      await getCurrentWindow().setAlwaysOnTop(newPinned);
+      setIsPinned(newPinned);
+    } catch (err) {
+      console.error('Failed to toggle window pin state:', err);
+      setIsPinned(isPinned);
+    }
+  };
+
+  const openSettings = async () => {
+    emit("open_settings", "connect");
+  };
+  
+  const openHistList = async () => {
+  };
 
   return (
-    <header className="flex items-center justify-between py-2 px-3" data-tauri-drag-region>
+    <header
+      className="flex items-center justify-between py-2 px-3"
+      data-tauri-drag-region
+    >
       <div className="flex items-center gap-2">
         <button
-          onClick={onOpenChatAI}
+          onClick={openHistList}
           className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
         >
-          <PanelLeft className="h-4 w-4" />
+          <PanelRightClose className="h-4 w-4" />
         </button>
 
-        {showAI ? <Listbox value={selectedServer} onChange={setSelectedServer}>
-          <div className="relative">
-            <Listbox.Button className="relative w-48 h-8 px-3 py-1 text-left bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-2">
-                <img src="/path-to-server-icon.png" className="w-4 h-4 rounded-full" />
-                <span className="block truncate">{selectedServer.name}</span>
-              </div>
-            </Listbox.Button>
-            <Listbox.Options className="absolute w-full mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-              {servers.map((server) => (
-                <Listbox.Option
-                  key={server.id}
-                  value={server}
-                  className={({ active }) =>
-                    `relative cursor-pointer select-none py-2 px-3 ${
-                      active ? 'bg-gray-100 dark:bg-gray-700' : ''
-                    }`
-                  }
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-2">
-                      <img src="/path-to-server-icon.png" className="w-4 h-4 rounded-full" />
-                      <span>{server.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${
-                        server.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
-                      }`} />
-                      <span className="text-xs text-gray-500">
-                        AI Assistant: {server.assistantCount}
-                      </span>
-                    </div>
-                  </div>
-                </Listbox.Option>
-              ))}
-            </Listbox.Options>
-          </div>
-        </Listbox> : null}
+        <Menu>
+          <MenuButton className="flex items-center gap-1 rounded-full bg-white dark:bg-[#202126] p-1 text-sm/6 font-semibold text-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none">
+            <img
+              src={logoImg}
+              className="w-4 h-4"
+              alt={t("assistant.message.logo")}
+            />
+            Coco AI
+            <ChevronDownIcon className="size-4 text-gray-500 dark:text-gray-400" />
+          </MenuButton>
+
+          <MenuItems
+            transition
+            anchor="bottom end"
+            className="w-28 origin-top-right rounded-xl bg-white dark:bg-[#202126] p-1 text-sm/6 text-gray-800 dark:text-white shadow-lg border border-gray-200 dark:border-gray-700 focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0"
+          >
+            <MenuItem>
+              <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <img
+                  src={logoImg}
+                  className="w-4 h-4"
+                  alt={t("assistant.message.logo")}
+                />
+                Coco AI
+              </button>
+            </MenuItem>
+          </MenuItems>
+        </Menu>
 
         <button
           onClick={onCreateNewChat}
@@ -84,42 +142,108 @@ export function ChatHeader({ onCreateNewChat, onOpenChatAI }: ChatHeaderProps) {
 
       <div className="flex items-center gap-2">
         <button
-          onClick={() => setIsPinned(!isPinned)}
-          className={`p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 ${
-            isPinned ? 'text-blue-500' : ''
+          onClick={togglePin}
+          className={`rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 ${
+            isPinned ? "text-blue-500" : ""
           }`}
         >
-          <Pin className="h-4 w-4" />
+          {isPinned ? (
+            <Pin className="h-4 w-4" />
+          ) : (
+            <PinOff className="h-4 w-4" />
+          )}
+        </button>
+
+        <button
+          onClick={onOpenChatAI}
+          className="rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+        >
+          <PictureInPicture2 className="h-4 w-4" />
         </button>
 
         <Popover className="relative">
-          <Popover.Button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+          <PopoverButton className="flex items-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
             <MoreHorizontal className="h-4 w-4" />
-          </Popover.Button>
+          </PopoverButton>
 
-          <Popover.Panel className="absolute right-0 mt-2 w-60 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-            <div className="p-2">
-              <h3 className="font-medium mb-2">Servers</h3>
-              <div className="space-y-2">
-                {servers.map(server => (
-                  <div key={server.id} className="flex items-center justify-between p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+          <PopoverPanel className="absolute right-0 z-10 mt-2 w-60 bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+            <div className="p-3">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  Servers
+                </h3>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={openSettings}
+                    className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
+                  >
+                    <Settings className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={async () => {
+                      setIsRefreshing(true);
+                      await fetchServers(false);
+                      setTimeout(() => setIsRefreshing(false), 1000);
+                    }}
+                    className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
+                    disabled={isRefreshing}
+                  >
+                    <RefreshCw
+                      className={`h-4 w-4 transition-transform duration-1000 ${
+                        isRefreshing ? "animate-spin" : ""
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-1">
+                {serverList.map((server) => (
+                  <button
+                    key={server.id}
+                    onClick={() => {
+                      setSelectedServer(server.id)
+                      setEndpoint(server.endpoint)
+                     }}
+                    className={`w-full flex items-center justify-between p-2 rounded-lg transition-colors ${
+                      selectedServer === server.id
+                        ? "bg-gray-100 dark:bg-gray-800"
+                        : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                    }`}
+                  >
                     <div className="flex items-center gap-2">
-                      <img src="/path-to-server-icon.png" className="w-6 h-6 rounded-full" />
-                      <div>
-                        <div className="font-medium">{server.name}</div>
-                        <div className="text-xs text-gray-500">
-                          AI Assistant: {server.assistantCount}
+                      <img
+                        src={logoImg}
+                        className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800"
+                        alt={server.name}
+                      />
+                      <div className="text-left">
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {server.name}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          AI Assistant: {server.assistantCount || 1}
                         </div>
                       </div>
                     </div>
-                    <span className={`w-2 h-2 rounded-full ${
-                      server.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
-                    }`} />
-                  </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`w-3 h-3 rounded-full ${
+                          server.available
+                            ? "bg-[#00B926]"
+                            : "bg-gray-400 dark:bg-gray-600"
+                        }`}
+                      />
+                      <div className="w-4 h-4">
+                        {selectedServer === server.id && (
+                          <Check className="w-full h-full text-gray-500 dark:text-gray-400" />
+                        )}
+                      </div>
+                    </div>
+                  </button>
                 ))}
               </div>
             </div>
-          </Popover.Panel>
+          </PopoverPanel>
         </Popover>
       </div>
     </header>

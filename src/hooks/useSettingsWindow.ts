@@ -1,8 +1,10 @@
 import { useEffect, useCallback } from "react";
-import { listen } from "@tauri-apps/api/event";
+import { listen} from "@tauri-apps/api/event";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 import { isMetaOrCtrlKey } from "@/utils/keyboardUtils";
+import { useAppStore } from "@/stores/appStore";
+
 interface CreateWindowOptions {
   label?: string;
   title?: string;
@@ -15,6 +17,8 @@ interface CreateWindowOptions {
 }
 
 export default function useSettingsWindow() {
+  const setTabIndex = useAppStore((state) => state.setTabIndex);
+
   const openSettingsWindow = useCallback((tab?: string) => {
     const url = tab ? `/ui/settings?tab=${tab}` : `/ui/settings`;
     const options: CreateWindowOptions = {
@@ -65,8 +69,9 @@ export default function useSettingsWindow() {
   useEffect(() => {
     const unlisten = listen("open_settings", (event) => {
       console.log("open_settings event received:", event);
-      const tab = event.payload as string | undefined;
+      const tab = event.payload as string | "";
 
+      setTabIndex(tab)
       openSettingsWindow(tab);
     });
     window.addEventListener("keydown", handleKeyDown);

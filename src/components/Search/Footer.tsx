@@ -1,11 +1,19 @@
-import { ArrowDown01, Command, CornerDownLeft } from "lucide-react";
+import {
+  ArrowDown01,
+  Command,
+  CornerDownLeft,
+  Pin,
+  PinOff,
+} from "lucide-react";
 import { emit } from "@tauri-apps/api/event";
 import { useTranslation } from "react-i18next";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 import logoImg from "@/assets/icon.svg";
 import { useSearchStore } from "@/stores/searchStore";
 import { isMac } from "@/utils/keyboardUtils";
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
+import { useAppStore } from "@/stores/appStore";
 
 interface FooterProps {
   isChat: boolean;
@@ -16,9 +24,23 @@ export default function Footer({}: FooterProps) {
   const { t } = useTranslation();
   const sourceData = useSearchStore((state) => state.sourceData);
 
+  const isPinned = useAppStore((state) => state.isPinned);
+  const setIsPinned = useAppStore((state) => state.setIsPinned);
+
   function openSetting() {
     emit("open_settings", "");
   }
+
+  const togglePin = async () => {
+    try {
+      const newPinned = !isPinned;
+      await getCurrentWindow().setAlwaysOnTop(newPinned);
+      setIsPinned(newPinned);
+    } catch (err) {
+      console.error("Failed to toggle window pin state:", err);
+      setIsPinned(isPinned);
+    }
+  };
 
   return (
     <div
@@ -34,18 +56,31 @@ export default function Footer({}: FooterProps) {
               src={logoImg}
               className="w-4 h-4 cursor-pointer"
               onClick={openSetting}
-              alt={t('search.footer.logoAlt')}
+              alt={t("search.footer.logoAlt")}
             />
           )}
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            {sourceData?.source?.name || t('search.footer.version', { version: 'v1.0.0' })}
+            {sourceData?.source?.name ||
+              t("search.footer.version", { version: process.env.VERSION || "v1.0.0" })}
           </span>
+          <button
+            onClick={togglePin}
+            className={`rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 ${
+              isPinned ? "text-blue-500" : ""
+            }`}
+          >
+            {isPinned ? (
+              <Pin className="h-3 w-3" />
+            ) : (
+              <PinOff className="h-3 w-3" />
+            )}
+          </button>
         </div>
       </div>
 
       <div className="flex items-center gap-3">
         <div className="gap-1 flex items-center text-[#666] dark:text-[#666] text-xs">
-          <span className="mr-1.5">{t('search.footer.select')}:</span>
+          <span className="mr-1.5">{t("search.footer.select")}:</span>
           <kbd className="coco-modal-footer-commands-key pr-1">
             {isMac ? (
               <Command className="w-3 h-3" />
@@ -61,7 +96,7 @@ export default function Footer({}: FooterProps) {
           </kbd>
         </div>
         <div className="flex items-center text-[#666] dark:text-[#666] text-xs">
-          <span className="mr-1.5">{t('search.footer.open')}: </span>
+          <span className="mr-1.5">{t("search.footer.open")}: </span>
           <kbd className="coco-modal-footer-commands-key pr-1">
             <CornerDownLeft className="w-3 h-3" />
           </kbd>

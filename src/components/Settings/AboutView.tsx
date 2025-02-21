@@ -37,7 +37,7 @@ export default function AboutView() {
         </button>
       </div>
       <div className="mt-8 text-sm text-gray-500 dark:text-gray-400">
-        {t('settings.about.version', { version: '1.0.0' })}
+        {t('settings.about.version', { version: process.env.VERSION || "v1.0.0" })}
       </div>
       <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
         {t('settings.about.copyright', { year: new Date().getFullYear() })}

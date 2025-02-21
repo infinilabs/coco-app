@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { Settings, Puzzle, Settings2, Info, Server } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import SettingsPanel from "@/components/Settings/SettingsPanel";
@@ -10,17 +9,13 @@ import AboutView from "@/components/Settings/AboutView";
 import Cloud from "@/components/Cloud/Cloud.tsx"
 import Footer from "@/components/Footer";
 import ApiDetails from "@/components/Common/ApiDetails";
+import { useAppStore } from "@/stores/appStore";
+
+
+
 
 function SettingsPage() {
   const { t } = useTranslation();
-  const [defaultIndex, setDefaultIndex] = useState<number>(0);
-
-  const [searchParams] = useSearchParams();
-  const name = searchParams.get("tab");
-
-  useEffect(() => {
-    setDefaultIndex(name === "about" ? 5 : 0);
-  }, [name]);
 
   const tabs = [
     { name: t('settings.tabs.general'), icon: Settings },
@@ -29,6 +24,9 @@ function SettingsPage() {
     { name: t('settings.tabs.advanced'), icon: Settings2 },
     { name: t('settings.tabs.about'), icon: Info },
   ];
+  
+  const tabIndex = useAppStore((state) => state.tabIndex);
+  const [defaultIndex, setDefaultIndex] = useState<number>(tabIndex);
 
   return (
     <div>

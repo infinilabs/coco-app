@@ -47,6 +47,8 @@ export default function ChatInput({
     (state: { showTooltip: boolean }) => state.showTooltip
   );
 
+  const isPinned = useAppStore((state) => state.isPinned);
+
   const sourceData = useSearchStore(
     (state: { sourceData: any }) => state.sourceData
   );
@@ -84,7 +86,7 @@ export default function ChatInput({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      console.log("handleKeyDown", e.code, e.key);
+      // console.log("handleKeyDown", e.code, e.key);
 
       if (e.key === "Escape") {
         console.log("Escape:" + inputValue);
@@ -93,13 +95,12 @@ export default function ChatInput({
           return;
         } else {
           console.log("empty value, but Escape key pressed.");
-          invoke("hide_coco")
-            .then(() => {
-              console.log("Hide Coco");
-            })
-            .finally(() => {
-              console.log("Hide Coco");
-            });
+          if (isPinned) {
+            return;
+          }
+          invoke("hide_coco").then(() => {
+            console.log("Hide Coco");
+          });
         }
       }
 
