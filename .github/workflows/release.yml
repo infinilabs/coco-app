@@ -96,6 +96,7 @@ jobs:
           PLATFORM: ${{ matrix.platform }}
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Coco ${{ needs.create-release.outputs.APP_VERSION }}
