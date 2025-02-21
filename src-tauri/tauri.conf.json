@@ -68,6 +68,7 @@
   },
   "bundle": {
     "active": true,
+    "createUpdaterArtifacts": true,
     "targets": ["nsis", "dmg", "app", "appimage", "deb", "rpm"],
     "category": "Utility",
     "shortDescription": "Coco AI",
