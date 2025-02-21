@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "release": "release-it",
+    "release-rc": "release-it --preRelease=rc --preReleaseBase=1",
+    "release-beta": "release-it --preRelease=beta --preReleaseBase=1"
   },
   "dependencies": {
     "@headlessui/react": "^2.1.10",
@@ -61,7 +64,9 @@
     "autoprefixer": "^10.4.20",
     "immer": "^10.1.1",
     "postcss": "^8.4.47",
+    "release-it": "^18.1.2",
     "tailwindcss": "^3.4.14",
+    "tsx": "^4.19.3",
     "typescript": "^5.2.2",
     "vite": "^5.3.1"
   }
