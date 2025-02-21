@@ -78,7 +78,7 @@ jobs:
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
-          workspaces: target
+          workspaces: src-tauri/target
 
       - name: Sync node version and setup cache
         uses: actions/setup-node@v4
@@ -96,6 +96,7 @@ jobs:
           PLATFORM: ${{ matrix.platform }}
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Coco ${{ needs.create-release.outputs.APP_VERSION }}
