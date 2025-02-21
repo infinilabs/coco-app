@@ -96,6 +96,7 @@ export function ChatHeader({ onCreateNewChat, onOpenChatAI }: ChatHeaderProps) {
   };
 
   const switchServer = async (server: IServer) => {
+    onCreateNewChat();
     try {
       await disconnect();
       await connect(server);

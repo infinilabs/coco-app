@@ -66,8 +66,14 @@ const ChatAI = memo(
 
       const { createWin } = useWindows();
 
-      const { curChatEnd, setCurChatEnd, connected, setConnected, messages, setMessages } =
-        useChatStore();
+      const {
+        curChatEnd,
+        setCurChatEnd,
+        connected,
+        setConnected,
+        messages,
+        setMessages,
+      } = useChatStore();
       const activeServer = useAppStore((state) => state.activeServer);
 
       const [activeChat, setActiveChat] = useState<Chat>();
@@ -196,15 +202,32 @@ const ChatAI = memo(
         }
       }, [curChatEnd]);
 
+      const [autoScroll, setAutoScroll] = useState(true);
+
       const scrollToBottom = useCallback(
         debounce(() => {
-          messagesEndRef.current?.scrollIntoView({
-            behavior: "smooth",
-            block: "end",
-          });
+          if (autoScroll) {
+            messagesEndRef.current?.scrollIntoView({
+              behavior: "smooth",
+              block: "end",
+            });
+          }
         }, 100),
-        []
+        [autoScroll]
       );
+
+      useEffect(() => {
+        const container = messagesEndRef.current?.parentElement;
+        if (!container) return;
+
+        const handleScroll = () => {
+          const { scrollTop, scrollHeight, clientHeight } = container;
+          setAutoScroll(Math.abs(scrollHeight - scrollTop - clientHeight) < 50);
+        };
+
+        container.addEventListener('scroll', handleScroll);
+        return () => container.removeEventListener('scroll', handleScroll);
+      }, []);
 
       useEffect(() => {
         scrollToBottom();
@@ -242,6 +265,10 @@ const ChatAI = memo(
           newChat = newChat || activeChat;
           if (!newChat?._id || !content) return;
           setTimedoutShow(false);
+
+          const messagePayload = {
+            message: content
+          };
           try {
             const response = await tauriFetch({
               url: `/chat/${newChat?._id}/_send?search=${isSearchActive}&deep_thinking=${isDeepThinkActive}`,
@@ -249,7 +276,7 @@ const ChatAI = memo(
               headers: {
                 "WEBSOCKET-SESSION-ID": websocketIdRef.current,
               },
-              body: JSON.stringify({ message: content }),
+              body: JSON.stringify(messagePayload),
             });
             console.log("_send", response, websocketIdRef.current);
             curIdRef.current = response.data[0]?._id;
