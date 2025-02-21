@@ -33,6 +33,9 @@ interface Server {
   name: string;
   available: boolean;
   endpoint: string;
+  provider: {
+    icon: string;
+  };
   assistantCount?: number;
 }
 
@@ -166,9 +169,9 @@ export function ChatHeader({ onCreateNewChat, onOpenChatAI }: ChatHeaderProps) {
             <MoreHorizontal className="h-4 w-4" />
           </PopoverButton>
 
-          <PopoverPanel className="absolute right-0 z-10 mt-2 w-60 bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+          <PopoverPanel className="absolute right-0 z-10 mt-2 min-w-[240px] bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
             <div className="p-3">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-3 whitespace-nowrap">
                 <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   Servers
                 </h3>
@@ -177,7 +180,7 @@ export function ChatHeader({ onCreateNewChat, onOpenChatAI }: ChatHeaderProps) {
                     onClick={openSettings}
                     className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
                   >
-                    <Settings className="h-4 w-4" />
+                    <Settings className="h-4 w-4 text-[#0287FF]" />
                   </button>
                   <button
                     onClick={async () => {
@@ -189,7 +192,7 @@ export function ChatHeader({ onCreateNewChat, onOpenChatAI }: ChatHeaderProps) {
                     disabled={isRefreshing}
                   >
                     <RefreshCw
-                      className={`h-4 w-4 transition-transform duration-1000 ${
+                      className={`h-4 w-4 text-[#0287FF] transition-transform duration-1000 ${
                         isRefreshing ? "animate-spin" : ""
                       }`}
                     />
@@ -204,7 +207,7 @@ export function ChatHeader({ onCreateNewChat, onOpenChatAI }: ChatHeaderProps) {
                       setSelectedServer(server.id)
                       setEndpoint(server.endpoint)
                      }}
-                    className={`w-full flex items-center justify-between p-2 rounded-lg transition-colors ${
+                    className={`w-full flex items-center justify-between p-2 rounded-lg transition-colors whitespace-nowrap ${
                       selectedServer === server.id
                         ? "bg-gray-100 dark:bg-gray-800"
                         : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
@@ -212,9 +215,9 @@ export function ChatHeader({ onCreateNewChat, onOpenChatAI }: ChatHeaderProps) {
                   >
                     <div className="flex items-center gap-2">
                       <img
-                        src={logoImg}
-                        className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800"
+                        src={server?.provider?.icon || logoImg}
                         alt={server.name}
+                        className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800"
                       />
                       <div className="text-left">
                         <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
