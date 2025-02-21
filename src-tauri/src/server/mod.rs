@@ -17,3 +17,4 @@ pub mod datasource;
 pub mod http_client;
 pub mod profile;
 pub mod search;
+pub mod websocket;
