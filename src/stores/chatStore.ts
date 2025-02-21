@@ -11,6 +11,8 @@ export type IChatStore = {
   setStopChat: (value: boolean) => void;
   connected: boolean;
   setConnected: (value: boolean) => void;
+  messages: string;
+  setMessages: (value: string | ((prev: string) => string)) => void;
 };
 
 export const useChatStore = create<IChatStore>()(
@@ -22,6 +24,11 @@ export const useChatStore = create<IChatStore>()(
       setStopChat: (value: boolean) => set(() => ({ stopChat: value })),
       connected: false,
       setConnected: (value: boolean) => set(() => ({ connected: value })),
+      messages: "",
+      setMessages: (value: string | ((prev: string) => string)) =>
+        set((state) => ({
+          messages: typeof value === "function" ? value(state.messages) : value,
+        })),
     }),
     {
       name: "chat-state",

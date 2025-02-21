@@ -26,18 +26,10 @@ import { emit } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
 import logoImg from "@/assets/icon.svg";
-import { useAppStore } from "@/stores/appStore"
+import { useAppStore, IServer } from "@/stores/appStore";
+import { useChatStore } from "@/stores/chatStore";
 
-interface Server {
-  id: string;
-  name: string;
-  available: boolean;
-  endpoint: string;
-  provider: {
-    icon: string;
-  };
-  assistantCount?: number;
-}
+
 
 interface ChatHeaderProps {
   onCreateNewChat: () => void;
@@ -51,17 +43,21 @@ export function ChatHeader({ onCreateNewChat, onOpenChatAI }: ChatHeaderProps) {
   const isPinned = useAppStore((state) => state.isPinned);
   const setIsPinned = useAppStore((state) => state.setIsPinned);
 
-  const [serverList, setServerList] = useState<Server[]>([]);
-  const [selectedServer, setSelectedServer] = useState<string>("");
+  const { setConnected, setMessages } = useChatStore();
+
+  const [serverList, setServerList] = useState<IServer[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const activeServer = useAppStore((state) => state.activeServer);
+  const setActiveServer = useAppStore((state) => state.setActiveServer);
 
   const fetchServers = async (resetSelection: boolean) => {
     invoke("list_coco_servers")
       .then((res: any) => {
         setServerList(res);
         if (resetSelection && res.length > 0) {
-          setSelectedServer(res[0].id);
+          setActiveServer(res[0]);
           setEndpoint(res[0].endpoint);
+          switchServer(res[0]);
         } else {
           console.warn("Service list is empty or last item has no id");
         }
@@ -75,13 +71,46 @@ export function ChatHeader({ onCreateNewChat, onOpenChatAI }: ChatHeaderProps) {
     fetchServers(true);
   }, []);
 
+  const disconnect = async () => {
+    console.log("disconnecting");
+    try {
+      await invoke("disconnect");
+      setConnected(false);
+      setActiveServer(null);
+      console.log("disconnected");
+    } catch (error) {
+      console.error("Failed to disconnect:", error);
+    }
+  };
+
+  const connect = async (server: IServer) => {
+    try {
+      await invoke("connect_to_server", { id: server.id });
+      setActiveServer(server);
+      setEndpoint(server.endpoint);
+      setConnected(true);
+      setMessages(""); // Clear previous messages
+    } catch (error) {
+      console.error("Failed to connect:", error);
+    }
+  };
+
+  const switchServer = async (server: IServer) => {
+    try {
+      await disconnect();
+      await connect(server);
+    } catch (error) {
+      console.error("switchServer:", error);
+    }
+  };
+
   const togglePin = async () => {
     try {
       const newPinned = !isPinned;
       await getCurrentWindow().setAlwaysOnTop(newPinned);
       setIsPinned(newPinned);
     } catch (err) {
-      console.error('Failed to toggle window pin state:', err);
+      console.error("Failed to toggle window pin state:", err);
       setIsPinned(isPinned);
     }
   };
@@ -89,9 +118,8 @@ export function ChatHeader({ onCreateNewChat, onOpenChatAI }: ChatHeaderProps) {
   const openSettings = async () => {
     emit("open_settings", "connect");
   };
-  
-  const openHistList = async () => {
-  };
+
+  const openHistList = async () => {};
 
   return (
     <header
@@ -203,12 +231,9 @@ export function ChatHeader({ onCreateNewChat, onOpenChatAI }: ChatHeaderProps) {
                 {serverList.map((server) => (
                   <button
                     key={server.id}
-                    onClick={() => {
-                      setSelectedServer(server.id)
-                      setEndpoint(server.endpoint)
-                     }}
+                    onClick={() => switchServer(server)}
                     className={`w-full flex items-center justify-between p-2 rounded-lg transition-colors whitespace-nowrap ${
-                      selectedServer === server.id
+                      activeServer?.id === server.id
                         ? "bg-gray-100 dark:bg-gray-800"
                         : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
                     }`}
@@ -237,7 +262,7 @@ export function ChatHeader({ onCreateNewChat, onOpenChatAI }: ChatHeaderProps) {
                         }`}
                       />
                       <div className="w-4 h-4">
-                        {selectedServer === server.id && (
+                        {activeServer?.id === server.id && (
                           <Check className="w-full h-full text-gray-500 dark:text-gray-400" />
                         )}
                       </div>

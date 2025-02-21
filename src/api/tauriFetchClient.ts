@@ -61,7 +61,8 @@ export const tauriFetch = async <T = any>({
       headers["Content-Type"] = "application/json";
     }
 
-    const res: any = await invoke("get_server_token", {id: "default_coco_server"});
+    const server_id = appStore.state?.activeServer?.id || "default_coco_server"
+    const res: any = await invoke("get_server_token", {id: server_id});
     
     headers["X-API-TOKEN"] = headers["X-API-TOKEN"] || res?.access_token || undefined;
 

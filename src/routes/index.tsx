@@ -4,7 +4,7 @@ import Layout from "./layout";
 import ErrorPage from "@/error-page";
 import DesktopApp from "@/pages/main/index";
 import SettingsPage from "@/pages/settings/index";
-import App1 from "@/components/Assistant/Chat1.tsx";
+import ChatAI from "@/pages/chat/index";
 
 export const router = createBrowserRouter([
     {
@@ -14,8 +14,7 @@ export const router = createBrowserRouter([
         children: [
             {path: "/ui", element: <DesktopApp/>},
             {path: "/ui/settings", element: <SettingsPage/>},
-            {path: "/ui/chat", element: <App1/>},
-            // { path: "/ui/chat", element: <ChatAI /> },
+            { path: "/ui/chat", element: <ChatAI /> },
         ],
     },
 ]);

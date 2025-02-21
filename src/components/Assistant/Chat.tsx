@@ -11,16 +11,16 @@ import {
 import { isTauri } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
 import { debounce } from "lodash-es";
+import { listen } from "@tauri-apps/api/event";
+import { invoke } from "@tauri-apps/api/core";
 
 import { ChatMessage } from "./ChatMessage";
 import type { Chat } from "./types";
 import { tauriFetch } from "@/api/tauriFetchClient";
-import { useWebSocket } from "@/hooks/useWebSocket";
 import { useChatStore } from "@/stores/chatStore";
 import { useWindows } from "@/hooks/useWindows";
 import { ChatHeader } from "./ChatHeader";
-import { useAppStore } from "@/stores/appStore"
-import { Sidebar } from "@/components/Assistant/Sidebar";
+import { useAppStore } from "@/stores/appStore";
 
 interface ChatAIProps {
   isTransitioned: boolean;
@@ -55,6 +55,7 @@ const ChatAI = memo(
       if (!isTransitioned) return null;
 
       const { t } = useTranslation();
+
       useImperativeHandle(ref, () => ({
         init: init,
         cancelChat: cancelChat,
@@ -65,7 +66,9 @@ const ChatAI = memo(
 
       const { createWin } = useWindows();
 
-      const { curChatEnd, setCurChatEnd, setConnected } = useChatStore();
+      const { curChatEnd, setCurChatEnd, connected, setConnected, messages, setMessages } =
+        useChatStore();
+      const activeServer = useAppStore((state) => state.activeServer);
 
       const [activeChat, setActiveChat] = useState<Chat>();
       const [isTyping, setIsTyping] = useState(false);
@@ -89,57 +92,74 @@ const ChatAI = memo(
         setCurMessage((prev) => prev + chunk);
       }, []);
 
+      const reconnect = async () => {
+        if (!activeServer?.id) return;
+        try {
+          await invoke("connect_to_server", { id: activeServer?.id });
+          setConnected(true);
+        } catch (error) {
+          console.error("Failed to connect:", error);
+        }
+      };
+
       const messageTimeoutRef = useRef<NodeJS.Timeout>();
 
-      const dealMsg = useCallback((msg: string) => {
-        // console.log("msg:", msg);
-        if (messageTimeoutRef.current) {
-          clearTimeout(messageTimeoutRef.current);
-        }
+      const dealMsg = useCallback(
+        (msg: string) => {
+          // console.log("msg:", msg);
+          if (messageTimeoutRef.current) {
+            clearTimeout(messageTimeoutRef.current);
+          }
 
-        if (msg.includes("websocket-session-id")) {
-          const array = msg.split(" ");
-          websocketIdRef.current = array[2];
-          return "";
-        } else if (msg.includes("PRIVATE")) {
-          messageTimeoutRef.current = setTimeout(() => {
-            if (!curChatEnd && isTyping) {
-              console.log("AI response timeout");
-              setTimedoutShow(true);
-              cancelChat();
-            }
-          }, 30000);
-
-          if (msg.includes("assistant finished output")) {
-            if (messageTimeoutRef.current) {
-              clearTimeout(messageTimeoutRef.current);
-            }
-            // console.log("AI finished output");
-            simulateAssistantResponse();
-            setCurChatEnd(true);
-          } else {
-            const cleanedData = msg.replace(/^PRIVATE /, "");
-            try {
-              // console.log("cleanedData", cleanedData);
-              const chunkData = JSON.parse(cleanedData);
-              if (chunkData.reply_to_message === curIdRef.current) {
-                handleMessageChunk(chunkData.message_chunk);
-                setMessages((prev) => prev + chunkData.message_chunk);
-                return chunkData.message_chunk;
+          if (msg.includes("websocket-session-id")) {
+            const array = msg.split(" ");
+            websocketIdRef.current = array[2];
+            return "";
+          } else if (msg.includes("PRIVATE")) {
+            messageTimeoutRef.current = setTimeout(() => {
+              if (!curChatEnd && isTyping) {
+                console.log("AI response timeout");
+                setTimedoutShow(true);
+                cancelChat();
               }
-            } catch (error) {
-              console.error("parse error:", error);
+            }, 30000);
+
+            if (msg.includes("assistant finished output")) {
+              if (messageTimeoutRef.current) {
+                clearTimeout(messageTimeoutRef.current);
+              }
+              console.log("AI finished output");
+              setCurChatEnd(true);
+            } else {
+              const cleanedData = msg.replace(/^PRIVATE /, "");
+              try {
+                // console.log("cleanedData", cleanedData);
+                const chunkData = JSON.parse(cleanedData);
+                if (chunkData.reply_to_message === curIdRef.current) {
+                  handleMessageChunk(chunkData.message_chunk);
+                  return chunkData.message_chunk;
+                }
+              } catch (error) {
+                console.error("parse error:", error);
+              }
             }
           }
-        }
-      }, [curChatEnd, isTyping]);
-
-      const endpoint_websocket = useAppStore((state) => state.endpoint_websocket);
-
-      const { messages, setMessages, connected, reconnect } = useWebSocket(
-        endpoint_websocket,
-        dealMsg
+        },
+        [curChatEnd, isTyping]
       );
+
+      useEffect(() => {
+        const unlisten = listen("ws-message", (event) => {
+          const data = dealMsg(String(event.payload));
+          if (data) {
+            setMessages((prev) => prev + data);
+          }
+        });
+
+        return () => {
+          unlisten.then((fn) => fn());
+        };
+      }, []);
 
       const assistantMessage = useMemo(() => {
         if (!activeChat?._id || (!curMessage && !messages)) return null;
@@ -159,11 +179,11 @@ const ChatAI = memo(
           messages: [...(activeChat.messages || []), assistantMessage],
         };
       }, [activeChat, assistantMessage]);
-      
+
       const simulateAssistantResponse = useCallback(() => {
         if (!updatedChat) return;
 
-        // console.log("updatedChat:", updatedChat);
+        console.log("updatedChat:", updatedChat);
         setActiveChat(updatedChat);
         setMessages("");
         setCurMessage("");
@@ -175,10 +195,6 @@ const ChatAI = memo(
           simulateAssistantResponse();
         }
       }, [curChatEnd]);
-
-      useEffect(() => {
-        setConnected(connected);
-      }, [connected]);
 
       const scrollToBottom = useCallback(
         debounce(() => {
@@ -222,6 +238,7 @@ const ChatAI = memo(
 
       const handleSendMessage = useCallback(
         async (content: string, newChat?: Chat) => {
+          console.log("11111111", isSearchActive, isDeepThinkActive);
           newChat = newChat || activeChat;
           if (!newChat?._id || !content) return;
           setTimedoutShow(false);
@@ -246,7 +263,7 @@ const ChatAI = memo(
             };
 
             changeInput && changeInput("");
-            // console.log("updatedChat2", updatedChat);
+            console.log("updatedChat2", updatedChat);
             setActiveChat(updatedChat);
             setIsTyping(true);
             setCurChatEnd(false);
@@ -254,7 +271,7 @@ const ChatAI = memo(
             console.error("Failed to fetch user data:", error);
           }
         },
-        [activeChat?._id, isSearchActive, isDeepThinkActive]
+        [activeChat, isSearchActive, isDeepThinkActive]
       );
 
       const chatClose = async () => {
