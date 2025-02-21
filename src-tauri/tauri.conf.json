@@ -49,9 +49,7 @@
         "hiddenTitle": true,
         "visible": false,
         "windowEffects": {
-          "effects": [
-            "sidebar"
-          ],
+          "effects": ["sidebar"],
           "state": "active"
         }
       }
@@ -62,9 +60,7 @@
       "assetProtocol": {
         "enable": true,
         "scope": {
-          "allow": [
-            "**/*"
-          ],
+          "allow": ["**/*"],
           "requireLiteralLeadingDot": false
         }
       }
@@ -72,7 +68,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["nsis", "dmg", "app", "appimage", "deb", "rpm"],
     "category": "Utility",
     "shortDescription": "Coco AI",
     "icon": [
@@ -107,16 +103,11 @@
         }
       }
     },
-    "resources": [
-      "assets",
-      "icons"
-    ]
+    "resources": ["assets", "icons"]
   },
   "plugins": {
     "features": {
-      "protocol": [
-        "all"
-      ]
+      "protocol": ["all"]
     },
     "window": {},
     "updater": {
@@ -135,15 +126,11 @@
       "mobile": [
         {
           "host": "app.infini.cloud",
-          "pathPrefix": [
-            "/open"
-          ]
+          "pathPrefix": ["/open"]
         }
       ],
       "desktop": {
-        "schemes": [
-          "coco"
-        ]
+        "schemes": ["coco"]
       }
     },
     "os": {}
