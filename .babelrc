@@ -3,8 +3,13 @@
     [
       "@babel/preset-env",
       {
-        "targets": "defaults, not dead, Safari >= 12"
+        "targets": {
+          "safari": "15"
+        },
+        "useBuiltIns": "usage",
+        "corejs": 3.32
       }
     ]
-  ]
+  ],
+  "plugins": ["@babel/plugin-transform-runtime"]
 }

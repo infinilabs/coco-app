@@ -1,12 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
+import 'core-js/stable'
 
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { router } from "./routes/index";
 import './i18n';
-import './utils/polyfills';
-
 import "./main.css";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(

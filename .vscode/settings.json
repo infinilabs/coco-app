@@ -6,6 +6,7 @@
     "callout",
     "clsx",
     "codegen",
+    "corejs",
     "dyld",
     "fullscreen",
     "headlessui",

@@ -2,6 +2,8 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from 'path';
 import { config } from "dotenv";
+import commonjs from 'vite-plugin-commonjs'
+
 import packageJson from './package.json';
 
 config();
@@ -14,7 +16,18 @@ export default defineConfig(async () => ({
   define: {
     'process.env.VERSION': JSON.stringify(packageJson.version),
   },
-  plugins: [react()],
+  plugins: [
+    react(),
+    commonjs({
+      filter(id) {
+        // `node_modules` is exclude by default, so we need to include it explicitly
+        // https://github.com/vite-plugin/vite-plugin-commonjs/blob/v0.7.0/src/index.ts#L125-L127
+        if (id.includes('node_modules/react-markdown')) {
+          return true
+        }
+      }
+    })
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
