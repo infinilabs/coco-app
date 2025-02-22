@@ -59,6 +59,7 @@ export default defineConfig(async () => ({
     },
   },
   build: {
+    target: 'es2019',
     rollupOptions: {
       output: {
         manualChunks: {
@@ -71,4 +72,7 @@ export default defineConfig(async () => ({
     },
     chunkSizeWarningLimit: 600,
   },
+  optimizeDeps: {
+    include: ['react-markdown', 'rehype-katex', 'rehype-highlight', 'mermaid']
+  }
 }));
