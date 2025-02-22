@@ -86,6 +86,6 @@ export default defineConfig(async () => ({
     chunkSizeWarningLimit: 600,
   },
   optimizeDeps: {
-    include: ['react-markdown', 'rehype-katex', 'rehype-highlight', 'mermaid']
+    include: ['react-markdown', 'rehype-katex', 'rehype-highlight', 'mermaid', 'remark-gfm']
   }
 }));
