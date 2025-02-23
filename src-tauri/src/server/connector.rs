@@ -29,8 +29,6 @@ pub fn get_connector_by_id(server_id: &str, connector_id: &str) -> Option<Connec
 }
 
 pub async fn refresh_all_connectors<R: Runtime>(app_handle: &AppHandle<R>) -> Result<(), String> {
-    // dbg!("Attempting to refresh all connectors");
-
     let servers = get_all_servers();
 
     // Collect all the tasks for fetching and refreshing connectors
@@ -47,13 +45,11 @@ pub async fn refresh_all_connectors<R: Runtime>(app_handle: &AppHandle<R>) -> Re
                 connectors_map
             }
             Err(_e) => {
-                // dbg!("Failed to get connectors for server {}: {}", &server.id, e);
                 HashMap::new() // Return empty map on failure
             }
         };
 
         server_map.insert(server.id.clone(), connectors);
-        // dbg!("end fetch connectors for server: {}", &server.id);
     }
 
     // After all tasks have finished, perform a read operation on the cache
@@ -65,8 +61,6 @@ pub async fn refresh_all_connectors<R: Runtime>(app_handle: &AppHandle<R>) -> Re
         // let cache = CONNECTOR_CACHE.read().await; // Async read lock
         cache.len()
     };
-
-    // dbg!("finished refresh connectors: {:?}", cache_size);
 
     Ok(())
 }
@@ -101,8 +95,6 @@ pub async fn get_connectors_from_cache_or_remote(
 }
 
 pub async fn fetch_connectors_by_server(id: &str) -> Result<Vec<Connector>, String> {
-    // dbg!("start get_connectors_by_server: id =", &id);
-
     // Use the generic GET method from HttpClient
     let resp = HttpClient::get(&id, "/connector/_search")
         .await
@@ -110,10 +102,6 @@ pub async fn fetch_connectors_by_server(id: &str) -> Result<Vec<Connector>, Stri
             // dbg!("Error fetching connector for id {}: {}", &id, &e);
             format!("Error fetching connector: {}", e)
         })?;
-
-    // // Log the raw response status and headers
-    // dbg!("Response status: {:?}", resp.status());
-    // dbg!("Response headers: {:?}", resp.headers());
 
     // Ensure the response body is not empty or invalid
     if resp.status().is_success() {
@@ -127,17 +115,12 @@ pub async fn fetch_connectors_by_server(id: &str) -> Result<Vec<Connector>, Stri
 
     // Parse the search results directly from the response body
     let datasources: Vec<Connector> = parse_search_results(resp).await.map_err(|e| {
-        // dbg!("Error parsing search results for id {}: {}", &id, &e);
         e.to_string()
     })?;
-
-    // Log the parsed results
-    // dbg!("Parsed connectors: {:?}", &datasources);
 
     // Save the connectors to the cache
     save_connectors_to_cache(&id, datasources.clone());
 
-    // dbg!("end get_connectors_by_server: id =", &id);
     return Ok(datasources);
 }
 
@@ -146,8 +129,6 @@ pub async fn get_connectors_by_server<R: Runtime>(
     _app_handle: AppHandle<R>,
     id: String,
 ) -> Result<Vec<Connector>, String> {
-    //fetch_connectors_by_server
-
     let connectors = fetch_connectors_by_server(&id).await?;
     Ok(connectors)
 }
