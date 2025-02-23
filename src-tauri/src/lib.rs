@@ -54,7 +54,7 @@ pub fn run() {
     let mut ctx = tauri::generate_context!();
     // Initialize logger
     env_logger::init();
-    
+
     let mut app_builder = tauri::Builder::default();
 
     #[cfg(desktop)]
@@ -122,10 +122,9 @@ pub fn run() {
             let rt = RT::new().expect("Failed to create Tokio runtime");
 
             // Use the runtime to spawn the async initialization tasks
+            let init_app_handle = app.handle().clone();
             rt.spawn(async move {
-                dbg!("Running async initialization tasks");
-                init(&app_handle).await; // Pass a reference to `app_handle`
-                dbg!("Async initialization tasks completed");
+                init(&init_app_handle).await; // Pass a reference to `app_handle`
             });
 
             shortcut::enable_shortcut(&app);
@@ -160,6 +159,7 @@ pub fn run() {
             let settings_window = app.get_webview_window(SETTINGS_WINDOW_LABEL).unwrap();
             setup::default(app, main_window.clone(), settings_window.clone());
 
+
             Ok(())
         })
         .on_window_event(|window, event| match event {
@@ -172,6 +172,13 @@ pub fn run() {
         })
         .build(ctx)
         .expect("error while running tauri application");
+
+    // Create a single Tokio runtime instance
+    let rt = RT::new().expect("Failed to create Tokio runtime");
+    let app_handle = app.handle().clone();
+    rt.spawn(async move {
+        init_app_search_source(&app_handle).await;
+    });
 
     app.run(|app_handle, event| match event {
         #[cfg(target_os = "macos")]
@@ -194,7 +201,6 @@ pub fn run() {
 }
 
 pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
-    dbg!("Initializing...");
     // Await the async functions to load the servers and tokens
     if let Err(err) = load_or_insert_default_server(app_handle).await {
         eprintln!("Failed to load servers: {}", err);
@@ -213,47 +219,35 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
         let source = CocoSearchSource::new(server.clone(), Client::new());
         registry.register_source(source).await;
     }
+}
 
-    // Clone app_handle to move it into the background task
-    let app_handle_clone = app_handle.clone();
-
+async fn init_app_search_source<R: Runtime>(app_handle: &AppHandle<R>) {
     // Run the slow application directory search in the background
-    tokio::spawn(async move {
-        dbg!("Initializing application search source in background");
-        let dir = vec![
-            dirs::home_dir().map(|home| home.join("Applications")), // Resolve `~/Applications`
-            Some(PathBuf::from("/Applications")),
-            Some(PathBuf::from("/System/Applications")),
-            Some(PathBuf::from("/System/Applications/Utilities")),
-        ];
+    let dir = vec![
+        dirs::home_dir().map(|home| home.join("Applications")), // Resolve `~/Applications`
+        Some(PathBuf::from("/Applications")),
+        Some(PathBuf::from("/System/Applications")),
+        Some(PathBuf::from("/System/Applications/Utilities")),
+    ];
 
-        // Remove any `None` values if `home_dir()` fails
-        let app_dirs: Vec<PathBuf> = dir.into_iter().flatten().collect();
+    // Remove any `None` values if `home_dir()` fails
+    let app_dirs: Vec<PathBuf> = dir.into_iter().flatten().collect();
 
-        let application_search =
-            local::application::ApplicationSearchSource::new(1000f64, app_dirs);
+    let application_search =
+        local::application::ApplicationSearchSource::new(1000f64, app_dirs);
 
-        // Register the application search source
-        let registry = app_handle_clone.state::<SearchSourceRegistry>();
-        registry.register_source(application_search).await;
-
-        dbg!("Application search source initialized in background");
-    });
-
-    dbg!("Initialization completed");
+    // Register the application search source
+    let registry = app_handle.state::<SearchSourceRegistry>();
+    registry.register_source(application_search).await;
 }
 
 #[tauri::command]
 fn hide_coco(app: tauri::AppHandle) {
-    dbg!("Hide Coco menu clicked!");
-
     if let Some(window) = app.get_window(MAIN_WINDOW_LABEL) {
         match window.is_visible() {
             Ok(true) => {
                 if let Err(err) = window.hide() {
                     eprintln!("Failed to hide the window: {}", err);
-                } else {
-                    println!("Window successfully hidden.");
                 }
             }
             Ok(false) => {
@@ -263,14 +257,10 @@ fn hide_coco(app: tauri::AppHandle) {
                 eprintln!("Failed to check window visibility: {}", err);
             }
         }
-    } else {
-        eprintln!("Main window not found.");
     }
 }
 
 fn handle_open_coco(app: &AppHandle) {
-    println!("Open Coco menu clicked!");
-
     if let Some(window) = app.get_window(MAIN_WINDOW_LABEL) {
         move_window_to_active_monitor(&window);
 
@@ -278,8 +268,6 @@ fn handle_open_coco(app: &AppHandle) {
         window.set_visible_on_all_workspaces(true).unwrap();
         window.set_always_on_top(true).unwrap();
         window.set_focus().unwrap();
-    } else {
-        eprintln!("Failed to get main window.");
     }
 }
 
@@ -358,8 +346,6 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
 }
 
 fn handle_hide_coco(app: &AppHandle) {
-    // println!("Hide Coco menu clicked!");
-
     if let Some(window) = app.get_window(MAIN_WINDOW_LABEL) {
         if let Err(err) = window.hide() {
             eprintln!("Failed to hide the window: {}", err);
