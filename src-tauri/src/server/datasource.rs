@@ -24,7 +24,7 @@ pub fn save_datasource_to_cache(server_id: &str, datasources: Vec<DataSource>) {
 
 pub fn get_datasources_from_cache(server_id: &str) -> Option<HashMap<String, DataSource>> {
     let cache = DATASOURCE_CACHE.read().unwrap(); // Acquire read lock
-                                                  // dbg!("cache: {:?}", &cache);
+    // dbg!("cache: {:?}", &cache);
     let server_cache = cache.get(server_id)?; // Get the server's cache
     Some(server_cache.clone())
 }
@@ -89,7 +89,6 @@ pub async fn get_datasources_by_server<R: Runtime>(
     _app_handle: AppHandle<R>,
     id: String,
 ) -> Result<Vec<DataSource>, String> {
-    // dbg!("get_datasources_by_server: id = {}", &id);
 
     // Perform the async HTTP request outside the cache lock
     let resp = HttpClient::get(&id, "/datasource/_search")
@@ -101,30 +100,9 @@ pub async fn get_datasources_by_server<R: Runtime>(
 
     // Parse the search results from the response
     let datasources: Vec<DataSource> = parse_search_results(resp).await.map_err(|e| {
-        // dbg!("Error parsing search results: {}", &e);
+        dbg!("Error parsing search results: {}", &e);
         e.to_string()
     })?;
-
-    // let connectors=fetch_connectors_by_server(id.as_str()).await?;
-    //
-    // // Convert the Vec<Connector> into HashMap<String, Connector>
-    // let connectors_map: HashMap<String, Connector> = connectors
-    //     .into_iter()
-    //     .map(|connector| (connector.id.clone(), connector))  // Assuming Connector has an `id` field
-    //     .collect();
-    //
-    // for datasource in datasources.iter_mut() {
-    //     if let Some(connector) = &datasource.connector {
-    //         if let Some(connector_id) = connector.id.as_ref() {
-    //             if let Some(existing_connector) = connectors_map.get(connector_id) {
-    //                 // If found in cache, update the connector's info
-    //                 datasource.connector_info = Some(existing_connector.clone());
-    //             }
-    //         }
-    //     }
-    // }
-
-    // dbg!("Parsed datasources: {:?}", &datasources);
 
     // Save the updated datasources to cache
     save_datasource_to_cache(&id, datasources.clone());

@@ -250,7 +250,7 @@ impl ApplicationSearchSource {
                             .to_lowercase(); // to_lowercase returns a String, which is owned
 
                         //TODO, replace this hard-coded name to actual local app name in case it may change
-                        if search_word.is_empty() || search_word.eq("coco ai") {
+                        if search_word.is_empty() || search_word.eq("coco-ai") {
                             continue;
                         }
 
@@ -353,6 +353,8 @@ impl SearchSource for ApplicationSearchSource {
 
                 // Attach icon if available
                 if let Some(icon_path) = self.icons.get(file_path_str.as_str()) {
+                    // doc.icon = Some(format!("file://{}", icon_path.to_string_lossy()));
+                    // dbg!(&doc.icon);
                     if let Ok(icon_data) = read_icon_and_encode(icon_path) {
                         doc.icon = Some(format!("data:image/png;base64,{}", icon_data));
                     }

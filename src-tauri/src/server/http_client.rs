@@ -1,7 +1,4 @@
-// use lazy_static::lazy_static;
-// use tauri::AppHandle;
 use crate::server::servers::{get_server_by_id, get_server_token};
-// use std::future::Future;
 use std::time::Duration;
 
 use once_cell::sync::Lazy;

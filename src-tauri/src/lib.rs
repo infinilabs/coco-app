@@ -134,12 +134,12 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             app.set_activation_policy(ActivationPolicy::Accessory);
 
-            app.listen("theme-changed", move |event| {
-                if let Ok(payload) = serde_json::from_str::<ThemeChangedPayload>(event.payload()) {
-                    // switch_tray_icon(app.app_handle(), payload.is_dark_mode);
-                    println!("Theme changed: is_dark_mode = {}", payload.is_dark_mode);
-                }
-            });
+            // app.listen("theme-changed", move |event| {
+            //     if let Ok(payload) = serde_json::from_str::<ThemeChangedPayload>(event.payload()) {
+            //         // switch_tray_icon(app.app_handle(), payload.is_dark_mode);
+            //         println!("Theme changed: is_dark_mode = {}", payload.is_dark_mode);
+            //     }
+            // });
 
             #[cfg(desktop)]
             {
@@ -151,9 +151,9 @@ pub fn run() {
                 }
             }
 
-            app.deep_link().on_open_url(|event| {
-                dbg!(event.urls());
-            });
+            // app.deep_link().on_open_url(|event| {
+            //     dbg!(event.urls());
+            // });
 
             let main_window = app.get_webview_window(MAIN_WINDOW_LABEL).unwrap();
             let settings_window = app.get_webview_window(SETTINGS_WINDOW_LABEL).unwrap();
@@ -173,11 +173,14 @@ pub fn run() {
         .build(ctx)
         .expect("error while running tauri application");
 
+
     // Create a single Tokio runtime instance
     let rt = RT::new().expect("Failed to create Tokio runtime");
     let app_handle = app.handle().clone();
     rt.spawn(async move {
         init_app_search_source(&app_handle).await;
+        let _ = server::connector::refresh_all_connectors(&app_handle).await;
+        let _ = server::datasource::refresh_all_datasources(&app_handle).await;
     });
 
     app.run(|app_handle, event| match event {
