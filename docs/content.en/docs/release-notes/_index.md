@@ -14,8 +14,8 @@ Information about release notes of Coco Server is provided here.
 ### Bug fix
 - Fix to access deeplink for linux #148
 
-
 ### Improvements
+- Improve app startup, init application search in background #172
 
 ## 0.1.0 (2015-02-16)
 
