@@ -6,7 +6,10 @@ use crate::common::traits::SearchError;
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use tauri::{AppHandle, Manager, Runtime};
+use tokio::time::{timeout, Duration};
+
 #[tauri::command]
 pub async fn query_coco_fusion<R: Runtime>(
     app_handle: AppHandle<R>,
@@ -22,6 +25,10 @@ pub async fn query_coco_fusion<R: Runtime>(
 
     let sources_list = sources_future.await;
 
+    // Time limit for each query
+    let timeout_duration = Duration::from_millis(100);
+
+    // Push all queries into futures
     for query_source in sources_list {
         let query_source_type = query_source.get_type().clone();
         sources.insert(query_source_type.id.clone(), query_source_type);
@@ -30,7 +37,11 @@ pub async fn query_coco_fusion<R: Runtime>(
         let query_source_clone = query_source.clone(); // Clone Arc to avoid ownership issues
 
         futures.push(tokio::spawn(async move {
-            query_source_clone.search(query).await
+            // Timeout each query execution
+            timeout(timeout_duration, async {
+                query_source_clone.search(query).await
+            })
+                .await
         }));
     }
 
@@ -41,7 +52,7 @@ pub async fn query_coco_fusion<R: Runtime>(
 
     while let Some(result) = futures.next().await {
         match result {
-            Ok(Ok(response)) => {
+            Ok(Ok(Ok(response))) => {
                 total_hits += response.total_hits;
                 let source_id = response.source.id.clone();
 
@@ -69,6 +80,19 @@ pub async fn query_coco_fusion<R: Runtime>(
                     },
                     status: 0,
                     error: Some(err.to_string()),
+                    reason: None,
+                });
+            }
+            // Timeout reached, skip this request
+            Ok(_) => {
+                failed_requests.push(FailedRequest {
+                    source: QuerySource {
+                        r#type: "N/A".into(),
+                        name: "N/A".into(),
+                        id: "N/A".into(),
+                    },
+                    status: 0,
+                    error: Some("Query source timed out".to_string()),
                     reason: None,
                 });
             }
@@ -100,7 +124,7 @@ pub async fn query_coco_fusion<R: Runtime>(
     };
 
     let mut final_hits = Vec::new();
-    let mut seen_docs = std::collections::HashSet::new(); // To track documents we've already added
+    let mut seen_docs = HashSet::new(); // To track documents we've already added
 
     // Distribute hits fairly across sources
     for (_source_id, hits) in &mut hits_per_source {
