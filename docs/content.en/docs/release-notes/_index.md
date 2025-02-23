@@ -10,6 +10,8 @@ Information about release notes of Coco Server is provided here.
 ## Latest (In development)
 
 ### Features
+- Add timeout to fusion search #174
+
 ### Breaking changes
 ### Bug fix
 - Fix to access deeplink for linux #148
