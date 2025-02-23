@@ -138,7 +138,7 @@ fn _register_shortcut_upon_start(app: &App, shortcut: Shortcut) {
                             if window.is_visible().unwrap() {
                                 window.hide().unwrap();
                             } else {
-                                dbg!("showing window");
+                                // dbg!("showing window");
                                 move_window_to_active_monitor(&window);
                                 window.set_visible_on_all_workspaces(true).unwrap();
                                 window.set_always_on_top(true).unwrap();

@@ -56,31 +56,21 @@ pub async fn connect_to_server(
     state: tauri::State<'_, WebSocketManager>,
     app_handle: tauri::AppHandle,
 ) -> Result<(), String> {
-    dbg!("Connecting to server",id.as_str());
-
     // Disconnect any existing connection first
     disconnect(state.clone()).await?;
-
-    dbg!("Disconnected from previous server",id.as_str());
 
     // Retrieve server details
     let server = get_server_by_id(id.as_str())
         .ok_or_else(|| format!("Server with ID {} not found", id))?;
-    let mut endpoint = convert_to_websocket(server.endpoint.as_str())?;
-
-    dbg!("Server endpoint",endpoint.as_str());
+    let endpoint = convert_to_websocket(server.endpoint.as_str())?;
 
     // Retrieve the token for the server (token is optional)
     let token = get_server_token(id.as_str()).map(|t| t.access_token.clone());
-
-    dbg!("Server token",token.as_ref().unwrap_or(&"".to_string()).as_str());
 
     // Create the WebSocket request
     let mut request = tokio_tungstenite::tungstenite::client::IntoClientRequest::into_client_request(
         &endpoint
     ).map_err(|e| format!("Failed to create WebSocket request: {}", e))?;
-
-    dbg!("WebSocket request");
 
     // Add necessary headers
     request.headers_mut().insert("Connection", "Upgrade".parse().unwrap());
@@ -91,20 +81,15 @@ pub async fn connect_to_server(
         generate_key().parse().unwrap(),
     );
 
-    dbg!("WebSocket headers",request.headers().iter().map(|(k, v)| format!("{}: {}", k.as_str(), v.to_str().unwrap())).collect::<Vec<String>>().join("\n"));
-
     // If a token exists, add it to the headers
     if let Some(token) = token {
         request.headers_mut().insert("X-API-TOKEN", token.parse().unwrap());
     }
 
-    dbg!("WebSocket headers with token",request.headers().iter().map(|(k, v)| format!("{}: {}", k.as_str(), v.to_str().unwrap())).collect::<Vec<String>>().join("\n"));
-
     // Establish the WebSocket connection
-    dbg!(&request);
+    // dbg!(&request);
     let (mut ws_remote, _) = connect_async(request).await
         .map_err(|e| {
-            dbg!("WebSocket connection error",&e);
             match e {
                 Error::ConnectionClosed => "WebSocket connection was closed".to_string(),
                 Error::Protocol(protocol_error) => format!("Protocol error: {}", protocol_error),
@@ -113,19 +98,12 @@ pub async fn connect_to_server(
             }
         })?;
 
-    dbg!("Connected to server1234",id.as_str());
-
     // Create cancellation channel
     let (cancel_tx, mut cancel_rx) = mpsc::channel(1);
-
-    dbg!("try to lock Connected to server",id.as_str());
 
     // Store connection and cancellation sender
     *state.ws_connection.lock().await = Some(ws_remote);
     *state.cancel_tx.lock().await = Some(cancel_tx);
-
-    dbg!("locked Connected to server",id.as_str());
-
     // Spawn listener task with cancellation
     let app_handle_clone = app_handle.clone();
     let connection_clone = state.ws_connection.clone();
@@ -133,8 +111,6 @@ pub async fn connect_to_server(
         let mut connection = connection_clone.lock().await;
         if let Some(ws) = connection.as_mut() {
             loop {
-                dbg!("try to select Connected to server",id.as_str());
-
                 tokio::select! {
                     msg = ws.next() => {
                         match msg {
@@ -152,8 +128,6 @@ pub async fn connect_to_server(
             }
         }
     });
-
-    dbg!("END Connected to server");
 
     Ok(())
 }

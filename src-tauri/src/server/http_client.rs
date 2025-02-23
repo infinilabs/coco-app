@@ -1,8 +1,8 @@
-// use std::future::Future;
-use std::time::Duration;
 // use lazy_static::lazy_static;
 // use tauri::AppHandle;
 use crate::server::servers::{get_server_by_id, get_server_token};
+// use std::future::Future;
+use std::time::Duration;
 
 use once_cell::sync::Lazy;
 use reqwest::{Client, Method, RequestBuilder};
@@ -84,9 +84,6 @@ impl HttpClient {
             // Construct the URL
             let url = HttpClient::join_url(&s.endpoint, path);
 
-            // dbg!(&url);
-            // dbg!(&server_id);
-
             // Retrieve the token for the server (token is optional)
             let token = get_server_token(server_id).map(|t| t.access_token.clone());
 
@@ -99,6 +96,8 @@ impl HttpClient {
                 );
             }
 
+            // dbg!(&server_id);
+            // dbg!(&url);
             // dbg!(&headers);
 
             Self::send_raw_request(method, &url, Some(headers), body).await
