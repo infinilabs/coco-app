@@ -143,10 +143,10 @@ export default function Cloud() {
 
     const handleUrl = (url: string) => {
         try {
-            const urlObject = new URL(url);
+            const urlObject = new URL(url.trim());
             console.log("handle urlObject:", urlObject);
 
-            // TODO, pass request_id and check with local, if the request_id are same, then continue
+            // pass request_id and check with local, if the request_id are same, then continue
             const reqId = urlObject.searchParams.get("request_id");
             const code = urlObject.searchParams.get("code");
 
@@ -170,7 +170,7 @@ export default function Cloud() {
         // handleUrl("coco://oauth_callback?code=cuq8asc61mdmvii032q0sx1e5akx10zo8bks45znpv3cx1gtyc6wsi0rvplizb34mwbsrbm3jar8jnefg3o5&request_id=3f1acedb-6a5b-4fe1-82fd-e66934e98a55&provider=coco-cloud/");
         // Function to handle pasted URL
         const handlePaste = (event: any) => {
-            const pastedText = event.clipboardData.getData("text");
+            const pastedText = event.clipboardData.getData("text").trim();
             console.log("handle paste text:", pastedText);
             if (isValidCallbackUrl(pastedText)) {
                 // Handle the URL as if it's a deep link
@@ -191,7 +191,7 @@ export default function Cloud() {
             .then((urls) => {
                 console.log("URLs:", urls);
                 if (urls && urls.length > 0) {
-                    if (isValidCallbackUrl(urls[0])) {
+                    if (isValidCallbackUrl(urls[0].trim())) {
                         handleUrl(urls[0]);
                     }
                 }

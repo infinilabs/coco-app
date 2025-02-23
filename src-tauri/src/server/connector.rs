@@ -103,25 +103,15 @@ pub async fn fetch_connectors_by_server(id: &str) -> Result<Vec<Connector>, Stri
             format!("Error fetching connector: {}", e)
         })?;
 
-    // Ensure the response body is not empty or invalid
-    if resp.status().is_success() {
-        dbg!("Received successful response for id: {}", &id);
-    } else {
-        dbg!(
-            "Failed to fetch connectors. Response status: {}",
-            resp.status()
-        );
-    }
-
     // Parse the search results directly from the response body
-    let datasources: Vec<Connector> = parse_search_results(resp).await.map_err(|e| {
+    let datasource: Vec<Connector> = parse_search_results(resp).await.map_err(|e| {
         e.to_string()
     })?;
 
     // Save the connectors to the cache
-    save_connectors_to_cache(&id, datasources.clone());
+    save_connectors_to_cache(&id, datasource.clone());
 
-    return Ok(datasources);
+    Ok(datasource)
 }
 
 #[tauri::command]
