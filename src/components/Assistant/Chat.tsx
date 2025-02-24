@@ -10,7 +10,7 @@ import {
 } from "react";
 import { isTauri } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
-import { debounce } from "lodash-es";
+import { debounce, throttle } from "lodash-es";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 
@@ -202,18 +202,22 @@ const ChatAI = memo(
         }
       }, [curChatEnd]);
 
-      const [autoScroll, setAutoScroll] = useState(true);
+      const [userScrolling, setUserScrolling] = useState(false);
+      const scrollTimeoutRef = useRef<NodeJS.Timeout>();
 
       const scrollToBottom = useCallback(
         debounce(() => {
-          if (autoScroll) {
-            messagesEndRef.current?.scrollIntoView({
-              behavior: "smooth",
-              block: "end",
-            });
+          if (!userScrolling) {
+            const container = messagesEndRef.current?.parentElement;
+            if (container) {
+              container.scrollTo({
+                top: container.scrollHeight,
+                behavior: "smooth"
+              });
+            }
           }
         }, 100),
-        [autoScroll]
+        [userScrolling]
       );
 
       useEffect(() => {
@@ -221,12 +225,35 @@ const ChatAI = memo(
         if (!container) return;
 
         const handleScroll = () => {
+          if (scrollTimeoutRef.current) {
+            clearTimeout(scrollTimeoutRef.current);
+          }
+
           const { scrollTop, scrollHeight, clientHeight } = container;
-          setAutoScroll(Math.abs(scrollHeight - scrollTop - clientHeight) < 50);
+          const isAtBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 10;
+          
+          setUserScrolling(!isAtBottom);
+
+          if (isAtBottom) {
+            setUserScrolling(false);
+          }
+
+          scrollTimeoutRef.current = setTimeout(() => {
+            const { scrollTop: newScrollTop, scrollHeight: newScrollHeight, clientHeight: newClientHeight } = container;
+            const nowAtBottom = Math.abs(newScrollHeight - newScrollTop - newClientHeight) < 10;
+            if (nowAtBottom) {
+              setUserScrolling(false);
+            }
+          }, 500);
         };
 
         container.addEventListener('scroll', handleScroll);
-        return () => container.removeEventListener('scroll', handleScroll);
+        return () => {
+          container.removeEventListener('scroll', handleScroll);
+          if (scrollTimeoutRef.current) {
+            clearTimeout(scrollTimeoutRef.current);
+          }
+        };
       }, []);
 
       useEffect(() => {
