@@ -21,6 +21,8 @@ Information about release notes of Coco Server is provided here.
 - Improve app startup, init application search in background #172
 - Refactoring login #173
 - Init icons in background during start #176
+- Refactoring health api #187
+
 
 
 ## 0.1.0 (2015-02-16)
