@@ -1,8 +1,8 @@
-use std::hash::{Hash, Hasher};
-use serde::{Deserialize, Serialize};
 use crate::common::profile::UserProfile;
+use serde::{Deserialize, Serialize};
+use std::hash::{Hash, Hasher};
 
-#[derive(Debug,Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Provider {
     pub name: String,
     pub icon: String,
@@ -13,22 +13,22 @@ pub struct Provider {
     pub description: String,
 }
 
-#[derive(Debug,Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Version {
     pub number: String,
 }
 
-#[derive(Debug, Clone,Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Sso {
     pub url: String,
 }
 
-#[derive(Debug,Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AuthProvider {
     pub sso: Sso,
 }
 
-#[derive(Debug,Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Server {
     #[serde(default = "default_empty_string")] // Custom default function for empty string
     pub id: String,
@@ -39,6 +39,8 @@ pub struct Server {
     pub provider: Provider,
     pub version: Version,
     pub updated: String,
+    #[serde(default = "default_enabled_type")]
+    pub enabled: bool,
     #[serde(default = "default_bool_type")]
     pub public: bool,
     #[serde(default = "default_available_type")]
@@ -65,7 +67,7 @@ impl Hash for Server {
 }
 
 
-#[derive(Debug,Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ServerAccessToken {
     #[serde(default = "default_empty_string")] // Custom default function for empty string
     pub id: String,
@@ -73,7 +75,7 @@ pub struct ServerAccessToken {
     pub expired_at: u32, //unix timestamp in seconds
 }
 
-impl ServerAccessToken{
+impl ServerAccessToken {
     pub fn new(id: String, access_token: String, expired_at: u32) -> Self {
         Self {
             id,
@@ -103,6 +105,10 @@ fn default_empty_string() -> String {
 
 fn default_bool_type() -> bool {
     false  // Default to false if not provided
+}
+
+fn default_enabled_type() -> bool {
+    true
 }
 
 fn default_available_type() -> bool {

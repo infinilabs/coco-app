@@ -117,6 +117,7 @@ fn get_default_server() -> Server {
     Server {
         id: "default_coco_server".to_string(),
         builtin: true,
+        enabled: true,
         name: "Coco Cloud".to_string(),
         endpoint: "https://coco.infini.cloud".to_string(),
         provider: Provider {
@@ -432,6 +433,38 @@ pub async fn remove_coco_server<R: Runtime>(
         .await
         .expect("failed to save servers");
     persist_servers_token(&app_handle).expect("failed to save server tokens");
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn enable_server<R: Runtime>(
+    app_handle: AppHandle<R>,
+    id: String,
+) -> Result<(), ()> {
+    let server = get_server_by_id(id.as_str());
+    if let Some(mut server) = server {
+        server.enabled = true;
+        save_server(&server);
+        persist_servers(&app_handle)
+            .await
+            .expect("failed to save servers");
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn disable_server<R: Runtime>(
+    app_handle: AppHandle<R>,
+    id: String,
+) -> Result<(), ()> {
+    let server = get_server_by_id(id.as_str());
+    if let Some(mut server) = server {
+        server.enabled = false;
+        save_server(&server);
+        persist_servers(&app_handle)
+            .await
+            .expect("failed to save servers");
+    }
     Ok(())
 }
 
