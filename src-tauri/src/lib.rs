@@ -96,6 +96,8 @@ pub fn run() {
             server::servers::list_coco_servers,
             server::servers::logout_coco_server,
             server::servers::refresh_coco_server_info,
+            server::servers::enable_server,
+            server::servers::disable_server,
             server::auth::handle_sso_callback,
             server::profile::get_user_profiles,
             server::datasource::get_datasources_by_server,
@@ -159,7 +161,6 @@ pub fn run() {
             let settings_window = app.get_webview_window(SETTINGS_WINDOW_LABEL).unwrap();
             setup::default(app, main_window.clone(), settings_window.clone());
 
-
             Ok(())
         })
         .on_window_event(|window, event| match event {
@@ -172,7 +173,6 @@ pub fn run() {
         })
         .build(ctx)
         .expect("error while running tauri application");
-
 
     // Create a single Tokio runtime instance
     let rt = RT::new().expect("Failed to create Tokio runtime");
@@ -236,8 +236,7 @@ async fn init_app_search_source<R: Runtime>(app_handle: &AppHandle<R>) {
     // Remove any `None` values if `home_dir()` fails
     let app_dirs: Vec<PathBuf> = dir.into_iter().flatten().collect();
 
-    let application_search =
-        local::application::ApplicationSearchSource::new(1000f64, app_dirs);
+    let application_search = local::application::ApplicationSearchSource::new(1000f64, app_dirs);
 
     // Register the application search source
     let registry = app_handle.state::<SearchSourceRegistry>();

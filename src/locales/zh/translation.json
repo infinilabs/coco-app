@@ -162,6 +162,8 @@
       "serverOffline": "服务器离线",
       "yourServers": "您的 Coco-Servers",
       "addServer": "添加新服务器"
-    }
+    },
+    "enable_server": "启用服务",
+    "disable_server": "禁用服务"
   }
 }

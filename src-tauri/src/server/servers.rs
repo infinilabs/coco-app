@@ -437,10 +437,9 @@ pub async fn remove_coco_server<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn enable_server<R: Runtime>(
-    app_handle: AppHandle<R>,
-    id: String,
-) -> Result<(), ()> {
+pub async fn enable_server<R: Runtime>(app_handle: AppHandle<R>, id: String) -> Result<(), ()> {
+    println!("enable_server: {}", id);
+
     let server = get_server_by_id(id.as_str());
     if let Some(mut server) = server {
         server.enabled = true;
@@ -458,10 +457,9 @@ pub async fn enable_server<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn disable_server<R: Runtime>(
-    app_handle: AppHandle<R>,
-    id: String,
-) -> Result<(), ()> {
+pub async fn disable_server<R: Runtime>(app_handle: AppHandle<R>, id: String) -> Result<(), ()> {
+    println!("disable_server: {}", id);
+
     let server = get_server_by_id(id.as_str());
     if let Some(mut server) = server {
         server.enabled = false;
@@ -570,6 +568,7 @@ fn test_trim_endpoint_last_forward_slash() {
             },
         },
         priority: 0,
+        enabled: true,
     };
 
     trim_endpoint_last_forward_slash(&mut server);

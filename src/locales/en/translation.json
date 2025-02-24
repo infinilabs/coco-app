@@ -162,6 +162,8 @@
       "serverOffline": "Server Offline",
       "yourServers": "Your Coco-Servers",
       "addServer": "Add New Server"
-    }
+    },
+    "enable_server": "Enable Server",
+    "disable_server": "Disable Server"
   }
 }
