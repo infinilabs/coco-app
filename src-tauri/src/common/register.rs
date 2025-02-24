@@ -21,9 +21,9 @@ impl SearchSourceRegistry {
         sources.clear();
     }
 
-    pub async fn remove_source(&self, id: String) {
+    pub async fn remove_source(&self, id: &str) {
         let mut sources = self.sources.write().await;
-        sources.remove(id.as_str());
+        sources.remove(id);
     }
 
     pub async fn get_source(&self, id: &str) -> Option<Arc<dyn SearchSource>> {
