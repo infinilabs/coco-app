@@ -10,7 +10,7 @@ import {
 } from "react";
 import { isTauri } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
-import { debounce, throttle } from "lodash-es";
+import { debounce } from "lodash-es";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 
