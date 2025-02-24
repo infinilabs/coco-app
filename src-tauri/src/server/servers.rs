@@ -546,6 +546,7 @@ fn test_trim_endpoint_last_forward_slash() {
     let mut server = Server {
         id: "test".to_string(),
         builtin: false,
+        enabled: true,
         name: "".to_string(),
         endpoint: "https://example.com///".to_string(),
         provider: Provider {
