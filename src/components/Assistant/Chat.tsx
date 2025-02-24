@@ -21,14 +21,16 @@ import { useChatStore } from "@/stores/chatStore";
 import { useWindows } from "@/hooks/useWindows";
 import { ChatHeader } from "./ChatHeader";
 import { useAppStore } from "@/stores/appStore";
+import { Sidebar } from "@/components/Assistant/Sidebar";
 
 interface ChatAIProps {
   isTransitioned: boolean;
   isSearchActive?: boolean;
   isDeepThinkActive?: boolean;
-  isChatPage?: boolean;
   activeChatProp?: Chat;
   changeInput?: (val: string) => void;
+  setIsSidebarOpen?: (value: boolean) => void;
+  isSidebarOpen?: boolean;
 }
 
 export interface ChatAIRef {
@@ -47,8 +49,9 @@ const ChatAI = memo(
         changeInput,
         isSearchActive,
         isDeepThinkActive,
-        isChatPage = false,
         activeChatProp,
+        setIsSidebarOpen,
+        isSidebarOpen = false,
       },
       ref
     ) => {
@@ -89,6 +92,9 @@ const ChatAI = memo(
       curChatEndRef.current = curChatEnd;
 
       const curIdRef = useRef("");
+
+      const [isSidebarOpenChat, setIsSidebarOpenChat] = useState(isSidebarOpen);
+      const [chats, setChats] = useState<Chat[]>([]);
 
       useEffect(() => {
         activeChatProp && setActiveChat(activeChatProp);
@@ -212,7 +218,7 @@ const ChatAI = memo(
             if (container) {
               container.scrollTo({
                 top: container.scrollHeight,
-                behavior: "smooth"
+                behavior: "smooth",
               });
             }
           }
@@ -230,8 +236,9 @@ const ChatAI = memo(
           }
 
           const { scrollTop, scrollHeight, clientHeight } = container;
-          const isAtBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 10;
-          
+          const isAtBottom =
+            Math.abs(scrollHeight - scrollTop - clientHeight) < 10;
+
           setUserScrolling(!isAtBottom);
 
           if (isAtBottom) {
@@ -239,17 +246,22 @@ const ChatAI = memo(
           }
 
           scrollTimeoutRef.current = setTimeout(() => {
-            const { scrollTop: newScrollTop, scrollHeight: newScrollHeight, clientHeight: newClientHeight } = container;
-            const nowAtBottom = Math.abs(newScrollHeight - newScrollTop - newClientHeight) < 10;
+            const {
+              scrollTop: newScrollTop,
+              scrollHeight: newScrollHeight,
+              clientHeight: newClientHeight,
+            } = container;
+            const nowAtBottom =
+              Math.abs(newScrollHeight - newScrollTop - newClientHeight) < 10;
             if (nowAtBottom) {
               setUserScrolling(false);
             }
           }, 500);
         };
 
-        container.addEventListener('scroll', handleScroll);
+        container.addEventListener("scroll", handleScroll);
         return () => {
-          container.removeEventListener('scroll', handleScroll);
+          container.removeEventListener("scroll", handleScroll);
           if (scrollTimeoutRef.current) {
             clearTimeout(scrollTimeoutRef.current);
           }
@@ -278,6 +290,7 @@ const ChatAI = memo(
       }, []);
 
       const init = (value: string) => {
+        console.log(111111, "init", value, curChatEnd, activeChat);
         if (!curChatEnd) return;
         if (!activeChat?._id) {
           createNewChat(value);
@@ -294,7 +307,7 @@ const ChatAI = memo(
           setTimedoutShow(false);
 
           const messagePayload = {
-            message: content
+            message: content,
           };
           try {
             const response = await tauriFetch({
@@ -395,17 +408,134 @@ const ChatAI = memo(
         };
       }, []);
 
+      const chatHistory = async (chat: Chat) => {
+        try {
+          const response = await tauriFetch({
+            url: `/chat/${chat._id}/_history`,
+            method: "GET",
+          });
+          console.log("id_history", response);
+          const hits = response.data?.hits?.hits || [];
+          const updatedChat: Chat = {
+            ...chat,
+            messages: hits,
+          };
+          setActiveChat(updatedChat);
+        } catch (error) {
+          console.error("Failed to fetch user data:", error);
+        }
+      };
+
+      const onSelectChat = async (chat: any) => {
+        chatClose();
+        try {
+          const response = await tauriFetch({
+            url: `/chat/${chat._id}/_open`,
+            method: "POST",
+          });
+          console.log("_open", response);
+          chatHistory(response.data);
+        } catch (error) {
+          console.error("Failed to fetch user data:", error);
+        }
+      };
+
+      const deleteChat = (chatId: string) => {
+        setChats((prev) => prev.filter((chat) => chat._id !== chatId));
+        if (activeChat?._id === chatId) {
+          const remainingChats = chats.filter((chat) => chat._id !== chatId);
+          if (remainingChats.length > 0) {
+            setActiveChat(remainingChats[0]);
+          } else {
+            init("");
+          }
+        }
+      };
+
+      const handleOutsideClick = useCallback((e: MouseEvent) => {
+        const sidebar = document.querySelector("[data-sidebar]");
+        const button = document.querySelector("[data-sidebar-button]");
+        if (
+          sidebar &&
+          !sidebar.contains(e.target as Node) &&
+          button &&
+          !button.contains(e.target as Node)
+        ) {
+          setIsSidebarOpenChat(false);
+        }
+      }, []);
+
+      useEffect(() => {
+        if (isSidebarOpenChat) {
+          document.addEventListener("click", handleOutsideClick);
+        }
+        return () => {
+          document.removeEventListener("click", handleOutsideClick);
+        };
+      }, [isSidebarOpenChat, handleOutsideClick]);
+
+      const getChatHistory = async () => {
+        try {
+          const response = await tauriFetch({
+            url: "/chat/_history",
+            method: "GET",
+          });
+          console.log("_history", response);
+          const hits = response.data?.hits?.hits || [];
+          setChats(hits);
+          if (hits[0]) {
+            onSelectChat(hits[0]);
+          } else {
+            init("");
+          }
+        } catch (error) {
+          console.error("Failed to fetch user data:", error);
+        }
+      };
+
+      useEffect(() => {
+        !setIsSidebarOpen && getChatHistory();
+      }, []);
+
       return (
         <div
           data-tauri-drag-region
           className={`h-full flex flex-col rounded-xl overflow-hidden`}
         >
-          {isChatPage ? null : (
-            <ChatHeader
-              onCreateNewChat={createNewChat}
-              onOpenChatAI={openChatAI}
-            />
+          {setIsSidebarOpen ? null : (
+            <div
+              data-sidebar
+              className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-all duration-300 ease-in-out 
+              ${
+                isSidebarOpenChat
+                  ? "translate-x-0"
+                  : "-translate-x-[calc(100%)]"
+              }
+              md:relative md:translate-x-0 bg-gray-100 dark:bg-gray-800
+              border-r border-gray-200 dark:border-gray-700 rounded-tl-xl rounded-bl-xl
+              overflow-hidden`}
+            >
+              {activeChat ? (
+                <Sidebar
+                  chats={chats}
+                  activeChat={activeChat}
+                  onNewChat={() => init("")}
+                  onSelectChat={onSelectChat}
+                  onDeleteChat={deleteChat}
+                />
+              ) : null}
+            </div>
           )}
+
+          <ChatHeader
+            onCreateNewChat={createNewChat}
+            onOpenChatAI={openChatAI}
+            setIsSidebarOpen={() => {
+              setIsSidebarOpenChat(!isSidebarOpenChat);
+              setIsSidebarOpen && setIsSidebarOpen(!isSidebarOpenChat);
+            }}
+            isSidebarOpen={isSidebarOpenChat}
+          />
 
           {/* Chat messages */}
           <div className="w-full overflow-x-hidden overflow-y-auto border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.15)] custom-scrollbar relative">

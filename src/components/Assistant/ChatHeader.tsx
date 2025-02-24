@@ -3,12 +3,13 @@ import {
   PictureInPicture2,
   Pin,
   PinOff,
-  MoreHorizontal,
   ChevronDownIcon,
   Settings,
   RefreshCw,
   Check,
   PanelRightClose,
+  PanelRightOpen,
+  Server,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import {
@@ -29,14 +30,19 @@ import logoImg from "@/assets/icon.svg";
 import { useAppStore, IServer } from "@/stores/appStore";
 import { useChatStore } from "@/stores/chatStore";
 
-
-
 interface ChatHeaderProps {
   onCreateNewChat: () => void;
   onOpenChatAI: () => void;
+  setIsSidebarOpen: () => void;
+  isSidebarOpen: boolean;
 }
 
-export function ChatHeader({ onCreateNewChat, onOpenChatAI }: ChatHeaderProps) {
+export function ChatHeader({
+  onCreateNewChat,
+  onOpenChatAI,
+  setIsSidebarOpen,
+  isSidebarOpen,
+}: ChatHeaderProps) {
   const { t } = useTranslation();
 
   const setEndpoint = useAppStore((state) => state.setEndpoint);
@@ -54,12 +60,8 @@ export function ChatHeader({ onCreateNewChat, onOpenChatAI }: ChatHeaderProps) {
     invoke("list_coco_servers")
       .then((res: any) => {
         setServerList(res);
-        if (resetSelection && res.length > 0) {
-          setActiveServer(res[0]);
-          setEndpoint(res[0].endpoint);
-          switchServer(res[0]);
-        } else {
-          console.warn("Service list is empty or last item has no id");
+        if (resetSelection && res.length > 0 && !activeServer) {
+          switchServer(res[res.length - 1]);
         }
       })
       .catch((err: any) => {
@@ -90,13 +92,13 @@ export function ChatHeader({ onCreateNewChat, onOpenChatAI }: ChatHeaderProps) {
       setEndpoint(server.endpoint);
       setConnected(true);
       setMessages(""); // Clear previous messages
+      onCreateNewChat();
     } catch (error) {
       console.error("Failed to connect:", error);
     }
   };
 
   const switchServer = async (server: IServer) => {
-    onCreateNewChat();
     try {
       await disconnect();
       await connect(server);
@@ -120,8 +122,6 @@ export function ChatHeader({ onCreateNewChat, onOpenChatAI }: ChatHeaderProps) {
     emit("open_settings", "connect");
   };
 
-  const openHistList = async () => {};
-
   return (
     <header
       className="flex items-center justify-between py-2 px-3"
@@ -129,10 +129,18 @@ export function ChatHeader({ onCreateNewChat, onOpenChatAI }: ChatHeaderProps) {
     >
       <div className="flex items-center gap-2">
         <button
-          onClick={openHistList}
+          data-sidebar-button
+          onClick={(e) => {
+            e.stopPropagation(); 
+            setIsSidebarOpen()
+          }}
           className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
         >
-          <PanelRightClose className="h-4 w-4" />
+          {isSidebarOpen ? (
+            <PanelRightOpen className="h-4 w-4" />
+          ) : (
+            <PanelRightClose className="h-4 w-4" />
+          )}
         </button>
 
         <Menu>
@@ -195,7 +203,7 @@ export function ChatHeader({ onCreateNewChat, onOpenChatAI }: ChatHeaderProps) {
 
         <Popover className="relative">
           <PopoverButton className="flex items-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-            <MoreHorizontal className="h-4 w-4" />
+            <Server className="h-4 w-4" />
           </PopoverButton>
 
           <PopoverPanel className="absolute right-0 z-10 mt-2 min-w-[240px] bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">

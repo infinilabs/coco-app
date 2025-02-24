@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { PanelRightClose, PanelRightOpen, X } from "lucide-react";
 import { isTauri } from "@tauri-apps/api/core";
 
 import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
@@ -154,22 +153,6 @@ export default function Chat({}: ChatProps) {
 
         {/* Main content */}
         <div className={`flex-1 flex flex-col bg-white dark:bg-gray-900`}>
-          <header
-            className={`flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-800`}
-          >
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className={`rounded-lg transition-colors hover:bg-gray-100 text-gray-600 dark:hover:bg-gray-800 dark:text-gray-300`}
-            >
-              {isSidebarOpen ? (
-                <PanelRightOpen className="h-6 w-6" />
-              ) : (
-                <PanelRightClose className="h-6 w-6" />
-              )}
-            </button>
-
-            <X className="cursor-pointer" onClick={closeWindow} />
-          </header>
 
           {/* Chat messages */}
           <ChatAI
@@ -179,7 +162,8 @@ export default function Chat({}: ChatProps) {
             isTransitioned={true}
             isSearchActive={isSearchActive}
             isDeepThinkActive={isDeepThinkActive}
-            isChatPage={true}
+            setIsSidebarOpen={setIsSidebarOpen}
+            isSidebarOpen={isSidebarOpen}
           />
 
           {/* Input area */}
