@@ -26,6 +26,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useConnectStore } from "@/stores/connectStore";
 import bannerImg from "@/assets/images/coco-cloud-banner.jpeg";
 import SettingsToggle from "../Settings/SettingsToggle";
+import clsx from "clsx";
 
 export default function Cloud() {
   const { t } = useTranslation();
@@ -324,6 +325,9 @@ export default function Cloud() {
               <div className="flex items-center gap-2">
                 <SettingsToggle
                   checked={currentService?.enabled}
+                  className={clsx({
+                    "bg-red-600 focus:ring-red-500": !currentService?.enabled,
+                  })}
                   label={
                     currentService?.enabled
                       ? t("cloud.enable_server")
