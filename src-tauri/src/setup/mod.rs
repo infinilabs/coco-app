@@ -19,5 +19,9 @@ pub use windows::*;
 pub use linux::*;
 
 pub fn default(app: &mut App, main_window: WebviewWindow, settings_window: WebviewWindow) {
+    // Development mode automatically opens the console: https://tauri.app/develop/debug
+    #[cfg(any(dev, debug_assertions))]
+    main_window.open_devtools();
+
     platform(app, main_window.clone(), settings_window.clone());
 }
