@@ -11,6 +11,7 @@ Information about release notes of Coco Server is provided here.
 
 ### Features
 - Add timeout to fusion search #174
+- Add api to disable or enable server #185
 
 ### Breaking changes
 ### Bug fix
