@@ -9,6 +9,8 @@ import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
 import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
 import ApiDetails from "@/components/Common/ApiDetails";
+import clsx from "clsx";
+import { isWin } from "@/utils/platform";
 
 export default function DesktopApp() {
   const initializeListeners = useAppStore((state) => state.initializeListeners);
@@ -88,11 +90,17 @@ export default function DesktopApp() {
   return (
     <div
       data-tauri-drag-region
-      className={`w-full h-full m-auto rounded-xl overflow-hidden relative border border-[#E6E6E6] dark:border-[#272626] ${
-        isTransitioned
-          ? "bg-chat_bg_light dark:bg-chat_bg_dark"
-          : "bg-search_bg_light dark:bg-search_bg_dark"
-      } bg-no-repeat bg-cover bg-center`}
+      className={clsx(
+        "w-full h-full m-auto  overflow-hidden relative border border-[#E6E6E6] dark:border-[#272626] bg-no-repeat bg-cover bg-center",
+        [
+          isTransitioned
+            ? "bg-chat_bg_light dark:bg-chat_bg_dark"
+            : "bg-search_bg_light dark:bg-search_bg_dark",
+        ],
+        {
+          "rounded-xl": !isWin,
+        }
+      )}
     >
       <div
         data-tauri-drag-region
