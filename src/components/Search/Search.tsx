@@ -10,7 +10,7 @@ import noDataImg from "@/assets/coconut-tree.png";
 // import { res_search2 } from "@/mock/index";
 import { SearchResults } from "@/components/Search/SearchResults";
 import { useSearchStore } from "@/stores/searchStore";
-import { isMac } from "@/utils/keyboardUtils";
+import { isMac } from "@/utils/platform";
 
 interface SearchProps {
   changeInput: (val: string) => void;
@@ -151,10 +151,10 @@ function Search({ isChatMode, input }: SearchProps) {
         >
           <img src={noDataImg} alt="no-data" className="w-16 h-16 mt-24" />
           <div className="mt-4 text-sm text-[#999] dark:text-[#666]">
-            {t('search.main.noResults')}
+            {t("search.main.noResults")}
           </div>
           <div className="mt-10 text-sm  text-[#333] dark:text-[#D8D8D8] flex">
-            {t('search.main.askCoco')}
+            {t("search.main.askCoco")}
             {isMac ? (
               <span className="ml-3 w-5 h-5 rounded-[6px] border border-[#D8D8D8] flex justify-center items-center">
                 <Command className="w-3 h-3" />

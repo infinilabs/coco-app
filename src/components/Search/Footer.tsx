@@ -11,9 +11,9 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 
 import logoImg from "@/assets/icon.svg";
 import { useSearchStore } from "@/stores/searchStore";
-import { isMac } from "@/utils/keyboardUtils";
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import { useAppStore } from "@/stores/appStore";
+import { isMac } from "@/utils/platform";
 
 interface FooterProps {
   isChat: boolean;
@@ -61,7 +61,9 @@ export default function Footer({}: FooterProps) {
           )}
           <span className="text-xs text-gray-500 dark:text-gray-400">
             {sourceData?.source?.name ||
-              t("search.footer.version", { version: process.env.VERSION || "v1.0.0" })}
+              t("search.footer.version", {
+                version: process.env.VERSION || "v1.0.0",
+              })}
           </span>
           <button
             onClick={togglePin}
