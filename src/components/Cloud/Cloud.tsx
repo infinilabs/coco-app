@@ -347,9 +347,7 @@ export default function Cloud() {
                       ? t("cloud.enable_server")
                       : t("cloud.disable_server")
                   }
-                  onChange={(value) => {
-                    enable_coco_server(value);
-                  }}
+                  onChange={enable_coco_server}
                 />
 
                 <button
