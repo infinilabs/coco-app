@@ -9,8 +9,7 @@ use crate::common::MAIN_WINDOW_LABEL;
 
 #[allow(non_upper_case_globals)]
 const NSWindowStyleMaskNonActivatingPanel: i32 = 1 << 7;
-#[allow(non_upper_case_globals)]
-const NSResizableWindowMask: i32 = 1 << 3;
+
 const WINDOW_FOCUS_EVENT: &str = "tauri://focus";
 const WINDOW_BLUR_EVENT: &str = "tauri://blur";
 const WINDOW_MOVED_EVENT: &str = "tauri://move";
@@ -25,8 +24,8 @@ pub fn platform(app: &mut App, main_window: WebviewWindow, _settings_window: Web
     // Make the window above the dock
     panel.set_level(NSMainMenuWindowLevel + 1);
 
-    // Do not steal focus from other windows and support resizing
-    panel.set_style_mask(NSWindowStyleMaskNonActivatingPanel | NSResizableWindowMask);
+    // Do not steal focus from other windows
+    panel.set_style_mask(NSWindowStyleMaskNonActivatingPanel);
 
     // Share the window across all desktop spaces and full screen
     panel.set_collection_behaviour(
