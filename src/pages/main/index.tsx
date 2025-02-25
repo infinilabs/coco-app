@@ -91,7 +91,7 @@ export default function DesktopApp() {
     <div
       data-tauri-drag-region
       className={clsx(
-        "w-full h-full m-auto  overflow-hidden relative border border-[#E6E6E6] dark:border-[#272626] bg-no-repeat bg-cover bg-center",
+        "size-full m-auto overflow-hidden relative border border-[#E6E6E6] dark:border-[#272626] bg-no-repeat bg-cover bg-center",
         [
           isTransitioned
             ? "bg-chat_bg_light dark:bg-chat_bg_dark"
@@ -106,7 +106,7 @@ export default function DesktopApp() {
         data-tauri-drag-region
         className={`p-2 pb-0 absolute w-full flex items-center justify-center transition-all duration-500 ${
           isTransitioned
-            ? "top-[500px] h-[90px] border-t"
+            ? "top-[calc(100vh-90px)] h-[90px] border-t"
             : "top-0 h-[90px] border-b"
         } border-[#E6E6E6] dark:border-[#272626]`}
       >
@@ -132,7 +132,7 @@ export default function DesktopApp() {
         data-tauri-drag-region
         className={`absolute w-full transition-opacity duration-500 ${
           isTransitioned ? "opacity-0 pointer-events-none" : "opacity-100"
-        } bottom-0 h-[500px] `}
+        } bottom-0 h-[calc(100vh-90px)] `}
       >
         <Search
           key="Search"
@@ -148,7 +148,7 @@ export default function DesktopApp() {
           isTransitioned
             ? "top-0 opacity-100 pointer-events-auto"
             : "-top-[506px] opacity-0 pointer-events-none"
-        } h-[500px]`}
+        } h-[calc(100vh-90px)]`}
       >
         {isTransitioned && isChatMode ? (
           <ChatAI

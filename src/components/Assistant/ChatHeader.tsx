@@ -59,9 +59,12 @@ export function ChatHeader({
   const fetchServers = async (resetSelection: boolean) => {
     invoke("list_coco_servers")
       .then((res: any) => {
-        setServerList(res);
-        if (resetSelection && res.length > 0 && !activeServer) {
-          switchServer(res[res.length - 1]);
+        const enabledServers = (res as IServer[]).filter(
+          (server) => server.enabled !== false
+        );
+        setServerList(enabledServers);
+        if (resetSelection && enabledServers.length > 0 && !activeServer) {
+          switchServer(enabledServers[enabledServers.length - 1]);
         }
       })
       .catch((err: any) => {
@@ -131,8 +134,8 @@ export function ChatHeader({
         <button
           data-sidebar-button
           onClick={(e) => {
-            e.stopPropagation(); 
-            setIsSidebarOpen()
+            e.stopPropagation();
+            setIsSidebarOpen();
           }}
           className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
         >
@@ -237,47 +240,62 @@ export function ChatHeader({
                 </div>
               </div>
               <div className="space-y-1">
-                {serverList.map((server) => (
-                  <button
-                    key={server.id}
-                    onClick={() => switchServer(server)}
-                    className={`w-full flex items-center justify-between p-2 rounded-lg transition-colors whitespace-nowrap ${
-                      activeServer?.id === server.id
-                        ? "bg-gray-100 dark:bg-gray-800"
-                        : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <img
-                        src={server?.provider?.icon || logoImg}
-                        alt={server.name}
-                        className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800"
-                      />
-                      <div className="text-left">
-                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {server.name}
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          AI Assistant: {server.assistantCount || 1}
+                {serverList.length > 0 ? (
+                  serverList.map((server) => (
+                    <button
+                      key={server.id}
+                      onClick={() => switchServer(server)}
+                      className={`w-full flex items-center justify-between p-2 rounded-lg transition-colors whitespace-nowrap ${
+                        activeServer?.id === server.id
+                          ? "bg-gray-100 dark:bg-gray-800"
+                          : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={server?.provider?.icon || logoImg}
+                          alt={server.name}
+                          className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800"
+                        />
+                        <div className="text-left">
+                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {server.name}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            AI Assistant: {server.assistantCount || 1}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`w-3 h-3 rounded-full ${
-                          server.available
-                            ? "bg-[#00B926]"
-                            : "bg-gray-400 dark:bg-gray-600"
-                        }`}
-                      />
-                      <div className="w-4 h-4">
-                        {activeServer?.id === server.id && (
-                          <Check className="w-full h-full text-gray-500 dark:text-gray-400" />
-                        )}
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`w-3 h-3 rounded-full ${
+                            server.available
+                              ? "bg-[#00B926]"
+                              : "bg-gray-400 dark:bg-gray-600"
+                          }`}
+                        />
+                        <div className="w-4 h-4">
+                          {activeServer?.id === server.id && (
+                            <Check className="w-full h-full text-gray-500 dark:text-gray-400" />
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-6 text-center">
+                    <Server className="w-8 h-8 text-gray-400 dark:text-gray-600 mb-2" />
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {t("assistant.chat.noServers")}
+                    </p>
+                    <button
+                      onClick={openSettings}
+                      className="mt-2 text-xs text-[#0287FF] hover:underline"
+                    >
+                      {t("assistant.chat.addServer")}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </PopoverPanel>

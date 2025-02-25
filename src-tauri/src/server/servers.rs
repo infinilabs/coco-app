@@ -135,6 +135,7 @@ fn get_default_server() -> Server {
         updated: "2025-01-24T12:12:17.326286927+08:00".to_string(),
         public: false,
         available: true,
+        health: None,
         profile: None,
         auth_provider: AuthProvider {
             sso: Sso {
@@ -562,6 +563,7 @@ fn test_trim_endpoint_last_forward_slash() {
         updated: "".to_string(),
         public: false,
         available: false,
+        health: None,
         profile: None,
         auth_provider: AuthProvider {
             sso: Sso {
@@ -570,6 +572,7 @@ fn test_trim_endpoint_last_forward_slash() {
         },
         priority: 0,
         enabled: true,
+        health: None,
     };
 
     trim_endpoint_last_forward_slash(&mut server);

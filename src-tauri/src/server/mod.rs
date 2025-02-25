@@ -2,7 +2,6 @@
 
 pub mod auth;
 pub mod servers;
-pub mod health;
 pub mod connector;
 pub mod datasource;
 pub mod http_client;

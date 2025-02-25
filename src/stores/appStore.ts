@@ -14,6 +14,7 @@ export interface IServer {
   provider: {
     icon: string;
   };
+  enabled: boolean;
   assistantCount?: number;
 }
 

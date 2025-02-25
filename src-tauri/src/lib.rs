@@ -103,7 +103,6 @@ pub fn run() {
             server::datasource::get_datasources_by_server,
             server::connector::get_connectors_by_server,
             search::query_coco_fusion,
-            server::health::get_server_health,
             // server::get_user_profiles,
             // server::get_coco_server_datasources,
             // server::get_coco_server_connectors,
