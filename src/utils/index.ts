@@ -96,10 +96,10 @@ export const formatThinkingMessage = (message: string) => {
     isThinking: boolean;
     thinkContent: string;
   }> = [];
-  const parts = message.split(/<\/?think>/);
+  const parts = message?.split(/<\/?think>/) || [];
   let hasThinkingSegment = false;
 
-  const thinkContents = parts.filter((_text, index) => index % 2 === 1);
+  const thinkContents = parts?.filter((_text, index) => index % 2 === 1);
   
   const targetThink = thinkContents.find(text => text.trim()) || thinkContents[0];
 

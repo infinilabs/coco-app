@@ -308,7 +308,7 @@ const ChatAI = memo(
               serverId: activeServer?.id,
               sessionId: newChat?._id,
               websocketId: websocketIdRef.current,
-              queryParams: {
+              query_params: {
                 search: isSearchActive,
                 deep_thinking: isDeepThinkActive,
               },
