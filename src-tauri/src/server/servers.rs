@@ -1,7 +1,7 @@
 use crate::common::register::SearchSourceRegistry;
 use crate::common::server::{AuthProvider, Provider, Server, ServerAccessToken, Sso, Version};
-use crate::server::connector::refresh_all_connectors;
-use crate::server::datasource::refresh_all_datasources;
+use crate::server::connector::fetch_connectors_by_server;
+use crate::server::datasource::get_datasources_by_server;
 use crate::server::http_client::HttpClient;
 use crate::server::search::CocoSearchSource;
 use crate::COCO_TAURI_STORE;
@@ -302,10 +302,9 @@ pub async fn refresh_coco_server_info<R: Runtime>(
             if let Some(content_length) = response.content_length() {
                 if content_length > 0 {
                     let new_coco_server: Result<Server, _> = response.json().await;
-
                     match new_coco_server {
                         Ok(mut server) => {
-                            server.id = id;
+                            server.id = id.clone();
                             server.builtin = is_builtin;
                             server.available = true;
                             server.profile = profile;
@@ -316,17 +315,14 @@ pub async fn refresh_coco_server_info<R: Runtime>(
                                 .expect("Failed to persist coco servers.");
 
                             //refresh connectors and datasources
-                            if let Err(err) = refresh_all_connectors(&app_handle).await {
-                                return Err(format!("Failed to load server connectors: {}", err));
-                            }
+                            let _ = fetch_connectors_by_server(&id).await;
 
-                            if let Err(err) = refresh_all_datasources(&app_handle).await {
-                                return Err(format!("Failed to load server datasources: {}", err));
-                            }
+                            let _ = get_datasources_by_server(&id).await;
+
 
                             Ok(server)
                         }
-                        Err(e) => Err(format!("Failed to deserialize the response: {}", e)),
+                        Err(e) => Err(format!("Failed to deserialize the response: {:?}", e)),
                     }
                 } else {
                     Err("Received empty response body.".to_string())
@@ -571,8 +567,6 @@ fn test_trim_endpoint_last_forward_slash() {
             },
         },
         priority: 0,
-        enabled: true,
-        health: None,
     };
 
     trim_endpoint_last_forward_slash(&mut server);

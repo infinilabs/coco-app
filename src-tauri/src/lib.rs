@@ -15,20 +15,25 @@ use crate::common::{MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL};
 use crate::server::search::CocoSearchSource;
 use crate::server::servers::{load_or_insert_default_server, load_servers_token};
 use autostart::{change_autostart, enable_autostart};
+use lazy_static::lazy_static;
 use reqwest::Client;
 use std::path::PathBuf;
+use std::sync::Mutex;
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
 use tauri::{
-    AppHandle, Emitter, Listener, Manager, PhysicalPosition, Runtime, State, WebviewWindow, Window,
+    AppHandle, Emitter, Manager, PhysicalPosition, Runtime, State, WebviewWindow, Window,
     WindowEvent,
 };
 use tauri_plugin_autostart::MacosLauncher;
-use tauri_plugin_deep_link::DeepLinkExt;
 use tokio::runtime::Runtime as RT;
 
 /// Tauri store name
 pub(crate) const COCO_TAURI_STORE: &str = "coco_tauri_store";
+
+lazy_static! {
+    static ref PREVIOUS_MONITOR_NAME: Mutex<Option<String>> = Mutex::new(None);
+}
 
 #[tauri::command]
 fn change_window_height(handle: AppHandle, height: u32) {
@@ -327,6 +332,18 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
         }
     };
 
+    if let Some(name) = monitor.name() {
+        let previous_monitor_name = PREVIOUS_MONITOR_NAME.lock().unwrap();
+
+        if let Some(ref prev_name) = *previous_monitor_name {
+            if name.to_string() == *prev_name {
+                println!("Currently on the same monitor");
+
+                return;
+            }
+        }
+    }
+
     let monitor_position = monitor.position();
     let monitor_size = monitor.size();
 
@@ -349,6 +366,13 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
     // Move the window to the new position
     if let Err(e) = window.set_position(PhysicalPosition::new(window_x, window_y)) {
         eprintln!("Failed to move window: {}", e);
+    }
+
+    if let Some(name) = monitor.name() {
+        println!("Window moved to monitor: {}", name);
+
+        let mut previous_monitor = PREVIOUS_MONITOR_NAME.lock().unwrap();
+        *previous_monitor = Some(name.to_string());
     }
 }
 
