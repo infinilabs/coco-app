@@ -41,7 +41,7 @@ pub async fn refresh_all_datasources<R: Runtime>(app_handle: &AppHandle<R>) -> R
 
         // Attempt to get datasources by server, and continue even if it fails
         let connectors =
-            match get_datasources_by_server(app_handle.clone(), server.id.clone()).await {
+            match get_datasources_by_server(server.id.as_str()).await {
                 Ok(connectors) => {
                     // Process connectors only after fetching them
                     let connectors_map: HashMap<String, DataSource> = connectors
@@ -85,13 +85,12 @@ pub async fn refresh_all_datasources<R: Runtime>(app_handle: &AppHandle<R>) -> R
 }
 
 #[tauri::command]
-pub async fn get_datasources_by_server<R: Runtime>(
-    _app_handle: AppHandle<R>,
-    id: String,
+pub async fn get_datasources_by_server(
+    id: &str,
 ) -> Result<Vec<DataSource>, String> {
 
     // Perform the async HTTP request outside the cache lock
-    let resp = HttpClient::get(&id, "/datasource/_search",None)
+    let resp = HttpClient::get(id, "/datasource/_search", None)
         .await
         .map_err(|e| {
             // dbg!("Error fetching datasource: {}", &e);
