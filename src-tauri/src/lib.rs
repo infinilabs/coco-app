@@ -7,6 +7,7 @@ mod shortcut;
 mod util;
 
 mod setup;
+mod assistant;
 
 use crate::common::register::SearchSourceRegistry;
 // use crate::common::traits::SearchSource;
@@ -103,7 +104,13 @@ pub fn run() {
             server::datasource::get_datasources_by_server,
             server::connector::get_connectors_by_server,
             search::query_coco_fusion,
-            // server::get_user_profiles,
+            assistant::chat_history,
+            assistant::new_chat,
+            assistant::send_message,
+            assistant::session_chat_history,
+            assistant::open_session_chat,
+            assistant::close_session_chat,
+            assistant::cancel_session_chat,
             // server::get_coco_server_datasources,
             // server::get_coco_server_connectors,
             server::websocket::connect_to_server,

@@ -22,6 +22,8 @@ Information about release notes of Coco Server is provided here.
 - Refactoring login #173
 - Init icons in background during start #176
 - Refactoring health api #187
+- Refactoring assistant api #195
+
 
 
 

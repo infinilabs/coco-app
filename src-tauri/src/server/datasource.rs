@@ -91,7 +91,7 @@ pub async fn get_datasources_by_server<R: Runtime>(
 ) -> Result<Vec<DataSource>, String> {
 
     // Perform the async HTTP request outside the cache lock
-    let resp = HttpClient::get(&id, "/datasource/_search")
+    let resp = HttpClient::get(&id, "/datasource/_search",None)
         .await
         .map_err(|e| {
             // dbg!("Error fetching datasource: {}", &e);
