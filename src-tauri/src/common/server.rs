@@ -1,3 +1,4 @@
+use crate::common::health::Health;
 use crate::common::profile::UserProfile;
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
@@ -43,8 +44,11 @@ pub struct Server {
     pub enabled: bool,
     #[serde(default = "default_bool_type")]
     pub public: bool,
+    
     #[serde(default = "default_available_type")]
     pub available: bool,
+
+    pub health: Option<Health>,
     #[serde(default = "default_user_profile_type")] // Custom default function for empty string
     pub profile: Option<UserProfile>,
     pub auth_provider: AuthProvider,
