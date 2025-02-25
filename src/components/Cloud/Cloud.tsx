@@ -296,6 +296,20 @@ export default function Cloud() {
       });
   };
 
+  const enable_coco_server = async (enabled: boolean) => {
+    try {
+      const command = enabled ? "enable_server" : "disable_server";
+
+      await invoke(command, { id: currentService?.id });
+
+      setCurrentService({ ...currentService, enabled });
+
+      await fetchServers(false);
+    } catch (error) {
+      setError(error);
+    }
+  };
+
   console.log("currentService", currentService);
 
   return (
@@ -334,11 +348,7 @@ export default function Cloud() {
                       : t("cloud.disable_server")
                   }
                   onChange={(value) => {
-                    const command = value ? "enable_server" : "disable_server";
-
-                    invoke(command, { id: currentService?.id });
-
-                    setCurrentService({ ...currentService, enabled: value });
+                    enable_coco_server(value);
                   }}
                 />
 
