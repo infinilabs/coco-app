@@ -1,13 +1,12 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Command } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
-// import { isTauri } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
+import { debounce } from "lodash-es";
 
 import DropdownList from "./DropdownList";
 import Footer from "./Footer";
 import noDataImg from "@/assets/coconut-tree.png";
-// import { res_search2 } from "@/mock/index";
 import { SearchResults } from "@/components/Search/SearchResults";
 import { useSearchStore } from "@/stores/searchStore";
 import { isMac } from "@/utils/platform";
@@ -29,64 +28,15 @@ function Search({ isChatMode, input }: SearchProps) {
   const [selectedItem, setSelectedItem] = useState<any>();
 
   const mainWindowRef = useRef<HTMLDivElement>(null);
-  // useEffect(() => {
-  //   if (!isTauri()) return;
-  //   const element = mainWindowRef.current;
-  //   if (!element) return;
-
-  //   const resizeObserver = new ResizeObserver(async (entries) => {
-  //     const { getCurrentWebviewWindow } = await import(
-  //       "@tauri-apps/api/webviewWindow"
-  //     );
-  //     const { LogicalSize } = await import("@tauri-apps/api/dpi");
-
-  //     for (let entry of entries) {
-  //       let newHeight = entry.contentRect.height;
-  //       console.log("Height updated:", newHeight);
-  //       newHeight = newHeight + 90 + (newHeight === 0 ? 0 : 46);
-  //       await getCurrentWebviewWindow()?.setSize(
-  //         new LogicalSize(680, newHeight)
-  //       );
-  //     }
-  //   });
-
-  //   resizeObserver.observe(element);
-
-  //   return () => {
-  //     resizeObserver.disconnect();
-  //   };
-  // }, [suggests]);
 
   const getSuggest = async () => {
     if (!input) return;
-    //
-    // mock
-    // let list = res_search2?.hits?.hits;
-    // setSuggests(list);
-    // const search_data = list.reduce((acc: any, item) => {
-    //   const name = item._source.source.name;
-    //   if (!acc[name]) {
-    //     acc[name] = [];
-    //   }
-    //   acc[name].push(item);
-    //   return acc;
-    // }, {});
-    // setSearchData(search_data);
-    // return;
-    //
     try {
-      // const response = await tauriFetch({
-      //   url: `/query/_search?query=${input}`,
-      //   method: "GET",
-      //   baseURL: appStore.endpoint_http,
-      // });
-
       const response: any = await invoke("query_coco_fusion", {
         from: 0,
         size: 10,
         queryStrings: { query: input },
       });
-      // failed_coco_servers documents
 
       console.log("_suggest", input, response);
       let data = response?.hits || [];
@@ -112,14 +62,6 @@ function Search({ isChatMode, input }: SearchProps) {
       console.error("Failed to fetch user data:", error);
     }
   };
-
-  function debounce(fn: Function, delay: number) {
-    let timer: NodeJS.Timeout;
-    return (...args: any[]) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => fn(...args), delay);
-    };
-  }
 
   const debouncedSearch = useCallback(debounce(getSuggest, 500), [input]);
 

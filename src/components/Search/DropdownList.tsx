@@ -1,12 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import {
-  CircleAlert,
-  Bolt,
-  X,
-  ArrowBigRight,
-} from "lucide-react";
-import { isTauri } from "@tauri-apps/api/core";
-import { open } from "@tauri-apps/plugin-shell";
+import { CircleAlert, Bolt, X, ArrowBigRight } from "lucide-react";
 
 import { useSearchStore } from "@/stores/searchStore";
 import ThemedIcon from "@/components/Common/Icons/ThemedIcon";
@@ -14,6 +7,7 @@ import IconWrapper from "@/components/Common/Icons/IconWrapper";
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import SearchListItem from "./SearchListItem";
 import { metaOrCtrlKey, isMetaOrCtrlKey } from "@/utils/keyboardUtils";
+import { OpenURLWithBrowser } from "@/utils/index";
 
 type ISearchData = Record<string, any[]>;
 
@@ -36,7 +30,9 @@ function DropdownList({
   let globalIndex = 0;
   const globalItemIndexMap: any[] = [];
 
-  const setSourceData = useSearchStore((state: { setSourceData: any; }) => state.setSourceData);
+  const setSourceData = useSearchStore(
+    (state: { setSourceData: any }) => state.setSourceData
+  );
 
   const [showError, setShowError] = useState<boolean>(IsError);
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
@@ -51,75 +47,66 @@ function DropdownList({
     }
   }, [isChatMode]);
 
-  const handleOpenURL = async (url: string) => {
-    if (!url) return;
-    try {
-      if (isTauri()) {
-        await open(url);
-        // console.log("URL opened in default browser");
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      // console.log(
+      //   "handleKeyDown",
+      //   e.key,
+      //   showIndex,
+      //   e.key >= "0" && e.key <= "9" && showIndex
+      // );
+      if (!suggests.length) return;
+
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelectedItem((prev) => {
+          const res =
+            prev === null || prev === 0 ? suggests.length - 1 : prev - 1;
+
+          return res;
+        });
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelectedItem((prev) =>
+          prev === null || prev === suggests.length - 1 ? 0 : prev + 1
+        );
+      } else if (e.key === metaOrCtrlKey()) {
+        e.preventDefault();
+        if (selectedItem !== null) {
+          const item = globalItemIndexMap[selectedItem];
+          setSelectedName(item?.source?.name);
+        }
+        setShowIndex(true);
       }
-    } catch (error) {
-      console.error("Failed to open URL:", error);
-    }
-  };
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    // console.log(
-    //   "handleKeyDown",
-    //   e.key,
-    //   showIndex,
-    //   e.key >= "0" && e.key <= "9" && showIndex
-    // );
-    if (!suggests.length) return;
-
-    if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setSelectedItem((prev) => {
-        const res =
-          prev === null || prev === 0 ? suggests.length - 1 : prev - 1;
-
-        return res;
-      });
-    } else if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setSelectedItem((prev) =>
-        prev === null || prev === suggests.length - 1 ? 0 : prev + 1
-      );
-    } else if (e.key === metaOrCtrlKey()) {
-      e.preventDefault();
-      if (selectedItem !== null) {
+      if (e.key === "ArrowRight" && selectedItem !== null) {
+        e.preventDefault();
         const item = globalItemIndexMap[selectedItem];
-        setSelectedName(item?.source?.name);
+        goToTwoPage(item);
       }
-      setShowIndex(true);
-    }
 
-    if (e.key === "ArrowRight" && selectedItem !== null) {
-      e.preventDefault();
-      const item = globalItemIndexMap[selectedItem];
-      goToTwoPage(item);
-    }
-
-    if (e.key === "Enter" && selectedItem !== null) {
-      // console.log("Enter key pressed", selectedItem);
-      const item = globalItemIndexMap[selectedItem];
-      if (item?.url) {
-        handleOpenURL(item?.url);
-      } else {
-        selected(item);
+      if (e.key === "Enter" && selectedItem !== null) {
+        // console.log("Enter key pressed", selectedItem);
+        const item = globalItemIndexMap[selectedItem];
+        if (item?.url) {
+          OpenURLWithBrowser(item?.url);
+        } else {
+          selected(item);
+        }
       }
-    }
 
-    if (e.key >= "0" && e.key <= "9" && showIndex) {
-      // console.log(`number ${e.key}`);
-      const item = globalItemIndexMap[parseInt(e.key, 10)];
-      if (item?.url) {
-        handleOpenURL(item?.url);
-      } else {
-        selected(item);
+      if (e.key >= "0" && e.key <= "9" && showIndex) {
+        // console.log(`number ${e.key}`);
+        const item = globalItemIndexMap[parseInt(e.key, 10)];
+        if (item?.url) {
+          OpenURLWithBrowser(item?.url);
+        } else {
+          selected(item);
+        }
       }
-    }
-  }, [suggests, selectedItem, showIndex, selected, handleOpenURL, globalItemIndexMap]);
+    },
+    [suggests, selectedItem, showIndex, selected, globalItemIndexMap]
+  );
 
   const handleKeyUp = useCallback((e: KeyboardEvent) => {
     // console.log("handleKeyUp", e.key);
@@ -189,13 +176,8 @@ function DropdownList({
               >
                 <ThemedIcon component={ArrowBigRight} className="w-4 h-4" />
               </IconWrapper>
-
               {showIndex && sourceName === selectedName ? (
-                <div
-                  className={`bg-[#ccc] dark:bg-[#6B6B6B] `}
-                >
-                  →
-                </div>
+                <div className={`bg-[#ccc] dark:bg-[#6B6B6B] `}>→</div>
               ) : null}
             </div>
           ) : null}
@@ -215,7 +197,7 @@ function DropdownList({
                 onMouseEnter={() => setSelectedItem(currentIndex)}
                 onItemClick={() => {
                   if (item?.url) {
-                    handleOpenURL(item?.url);
+                    OpenURLWithBrowser(item?.url);
                   } else {
                     selected(item);
                   }

@@ -1,11 +1,11 @@
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { RefreshCcw } from "lucide-react";
+import { invoke } from "@tauri-apps/api/core";
 
 import { DataSourceItem } from "./DataSourceItem";
 import { useConnectStore } from "@/stores/connectStore";
 import { useAppStore } from "@/stores/appStore";
-import { invoke } from "@tauri-apps/api/core";
 
 export function DataSourcesList({ server }: { server: string }) {
   const { t } = useTranslation();

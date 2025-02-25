@@ -3,7 +3,7 @@ import { Box } from "lucide-react";
 
 import IconWrapper from "./IconWrapper";
 import ThemedIcon from "./ThemedIcon";
-import { useFindConnectorIcon } from "./hooks";
+import { useFindConnectorIcon } from "@/hooks/useFindConnectorIcon";
 import { useAppStore } from "@/stores/appStore";
 
 interface TypeIconProps {
