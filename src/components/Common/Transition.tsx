@@ -30,7 +30,7 @@ const TransitionComponent = () => {
         data-tauri-drag-region
         className={`shadow-window-custom border border-[#E6E6E6] dark:border-[#272626] absolute w-full bg-green-500 transition-opacity duration-500 ${
           isTransitioned ? "opacity-0 pointer-events-none" : "opacity-100"
-        } bottom-0 h-[500px]`}
+        } bottom-0 h-[calc(100vh-90px)]`}
       ></div>
 
       <div
@@ -39,7 +39,7 @@ const TransitionComponent = () => {
           isTransitioned
             ? "top-0 opacity-100 pointer-events-auto"
             : "-top-[506px] opacity-0 pointer-events-none"
-        } h-[500px]`}
+        } h-[calc(100vh-90px)]`}
       ></div>
     </div>
   );

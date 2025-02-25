@@ -129,7 +129,10 @@ function Search({ isChatMode, input }: SearchProps) {
   }, [input]);
 
   return (
-    <div ref={mainWindowRef} className={`h-[500px] pb-10 w-full relative`}>
+    <div
+      ref={mainWindowRef}
+      className={`h-[calc(100vh-90px)] pb-10 w-full relative`}
+    >
       {/* Search Results Panel */}
       {suggests.length > 0 ? (
         sourceData ? (
