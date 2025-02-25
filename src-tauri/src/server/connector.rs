@@ -96,7 +96,7 @@ pub async fn get_connectors_from_cache_or_remote(
 
 pub async fn fetch_connectors_by_server(id: &str) -> Result<Vec<Connector>, String> {
     // Use the generic GET method from HttpClient
-    let resp = HttpClient::get(&id, "/connector/_search")
+    let resp = HttpClient::get(&id, "/connector/_search",None)
         .await
         .map_err(|e| {
             // dbg!("Error fetching connector for id {}: {}", &id, &e);

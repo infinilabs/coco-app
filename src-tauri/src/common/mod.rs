@@ -8,6 +8,8 @@ pub mod search;
 pub mod document;
 pub mod traits;
 pub mod register;
+pub mod assistant;
+pub mod http;
 
 pub static MAIN_WINDOW_LABEL: &str = "main";
 pub static SETTINGS_WINDOW_LABEL: &str = "settings";

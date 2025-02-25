@@ -28,7 +28,7 @@ pub async fn handle_sso_callback<R: Runtime>(
         let path = request_access_token_url(&request_id, &code);
 
         // Send the request for the access token using the util::http::HttpClient::get method
-        let response = HttpClient::get(&server_id, &path)
+        let response = HttpClient::get(&server_id, &path, None)
             .await
             .map_err(|e| format!("Failed to send request to the server: {}", e))?;
 

@@ -294,7 +294,7 @@ pub async fn refresh_coco_server_info<R: Runtime>(
         let profile = server.profile;
 
         // Use the HttpClient to send the request
-        let response = HttpClient::get(&id, "/provider/_info") // Assuming "/provider-info" is the endpoint
+        let response = HttpClient::get(&id, "/provider/_info", None) // Assuming "/provider-info" is the endpoint
             .await
             .map_err(|e| format!("Failed to send request to the server: {}", e))?;
 
@@ -366,7 +366,7 @@ pub async fn add_coco_server<R: Runtime>(
     let url = provider_info_url(&endpoint);
 
     // Use the HttpClient to fetch provider information
-    let response = HttpClient::send_raw_request(Method::GET, url.as_str(), None, None)
+    let response = HttpClient::send_raw_request(Method::GET, url.as_str(), None, None, None)
         .await
         .map_err(|e| format!("Failed to send request to the server: {}", e))?;
 
