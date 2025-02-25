@@ -16,7 +16,6 @@ import { invoke } from "@tauri-apps/api/core";
 
 import { ChatMessage } from "./ChatMessage";
 import type { Chat } from "./types";
-import { tauriFetch } from "@/api/tauriFetchClient";
 import { useChatStore } from "@/stores/chatStore";
 import { useWindows } from "@/hooks/useWindows";
 import { ChatHeader } from "./ChatHeader";
@@ -275,12 +274,13 @@ const ChatAI = memo(
       const createNewChat = useCallback(async (value: string = "") => {
         chatClose();
         try {
-          const response = await tauriFetch({
-            url: "/chat/_new",
-            method: "POST",
+          let response: any = await invoke("new_chat", {
+            serverId: activeServer?.id,
+            message: value,
           });
+          response = JSON.parse(response || "")
           console.log("_new", response);
-          const newChat: Chat = response.data;
+          const newChat: Chat = response;
 
           setActiveChat(newChat);
           handleSendMessage(value, newChat);
@@ -303,27 +303,26 @@ const ChatAI = memo(
           newChat = newChat || activeChat;
           if (!newChat?._id || !content) return;
           setTimedoutShow(false);
-
-          const messagePayload = {
-            message: content,
-          };
           try {
-            const response = await tauriFetch({
-              url: `/chat/${newChat?._id}/_send?search=${isSearchActive}&deep_thinking=${isDeepThinkActive}`,
-              method: "POST",
-              headers: {
-                "WEBSOCKET-SESSION-ID": websocketIdRef.current,
+            let response: any = await invoke("send_message", {
+              serverId: activeServer?.id,
+              sessionId: newChat?._id,
+              websocketId: websocketIdRef.current,
+              query_params: {
+                search: isSearchActive,
+                deep_thinking: isDeepThinkActive,
               },
-              body: JSON.stringify(messagePayload),
+              message: content,
             });
+            response = JSON.parse(response || "")
             console.log("_send", response, websocketIdRef.current);
-            curIdRef.current = response.data[0]?._id;
+            curIdRef.current = response[0]?._id;
 
             const updatedChat: Chat = {
               ...newChat,
               messages: [
                 ...(newChat?.messages || []),
-                ...(response.data || []),
+                ...(response || []),
               ],
             };
 
@@ -342,10 +341,11 @@ const ChatAI = memo(
       const chatClose = async () => {
         if (!activeChat?._id) return;
         try {
-          const response = await tauriFetch({
-            url: `/chat/${activeChat._id}/_close`,
-            method: "POST",
+          let response: any = await invoke("close_session_chat", {
+            serverId: activeServer?.id,
+            sessionId: activeChat?._id,
           });
+          response = JSON.parse(response || "")
           console.log("_close", response);
         } catch (error) {
           console.error("Failed to fetch user data:", error);
@@ -361,11 +361,11 @@ const ChatAI = memo(
         setIsTyping(false);
         if (!activeChat?._id) return;
         try {
-          const response = await tauriFetch({
-            url: `/chat/${activeChat._id}/_cancel`,
-            method: "POST",
+          let response: any = await invoke("cancel_session_chat", {
+            serverId: activeServer?.id,
+            sessionId: activeChat?._id,
           });
-
+          response = JSON.parse(response || "")
           console.log("_cancel", response);
         } catch (error) {
           console.error("Failed to fetch user data:", error);
@@ -408,12 +408,15 @@ const ChatAI = memo(
 
       const chatHistory = async (chat: Chat) => {
         try {
-          const response = await tauriFetch({
-            url: `/chat/${chat._id}/_history`,
-            method: "GET",
+          let response: any = await invoke("session_chat_history", {
+            serverId: activeServer?.id,
+            sessionId: chat?._id,
+            from: 0,
+            size: 20,
           });
+          response = JSON.parse(response || "")
           console.log("id_history", response);
-          const hits = response.data?.hits?.hits || [];
+          const hits = response?.hits?.hits || [];
           const updatedChat: Chat = {
             ...chat,
             messages: hits,
@@ -427,12 +430,13 @@ const ChatAI = memo(
       const onSelectChat = async (chat: any) => {
         chatClose();
         try {
-          const response = await tauriFetch({
-            url: `/chat/${chat._id}/_open`,
-            method: "POST",
+          let response: any = await invoke("open_session_chat", {
+            serverId: activeServer?.id,
+            sessionId: chat?._id,
           });
+          response = JSON.parse(response || "")
           console.log("_open", response);
-          chatHistory(response.data);
+          chatHistory(response);
         } catch (error) {
           console.error("Failed to fetch user data:", error);
         }
@@ -473,13 +477,17 @@ const ChatAI = memo(
       }, [isSidebarOpenChat, handleOutsideClick]);
 
       const getChatHistory = async () => {
+        console.log(11111, activeServer?.id)
+        if (!activeServer?.id) return;
         try {
-          const response = await tauriFetch({
-            url: "/chat/_history",
-            method: "GET",
+          let response: any = await invoke("chat_history", {
+            serverId: activeServer?.id,
+            from: 0,
+            size: 20,
           });
+          response = JSON.parse(response || "")
           console.log("_history", response);
-          const hits = response.data?.hits?.hits || [];
+          const hits = response?.hits?.hits || [];
           setChats(hits);
           if (hits[0]) {
             onSelectChat(hits[0]);
@@ -492,8 +500,8 @@ const ChatAI = memo(
       };
 
       useEffect(() => {
-        !setIsSidebarOpen && getChatHistory();
-      }, []);
+        activeServer && !setIsSidebarOpen && getChatHistory();
+      }, [activeServer]);
 
       return (
         <div

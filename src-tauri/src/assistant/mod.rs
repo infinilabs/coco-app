@@ -12,7 +12,9 @@ pub async fn new_chat<R: Runtime>(
     message: String,
 ) -> Result<GetResponse, String> {
     let body = if !message.is_empty() {
-        let message = InitChatMessage { message: Some(message) };
+        let message = InitChatMessage {
+            message: Some(message),
+        };
         let body = reqwest::Body::from(serde_json::to_string(&message).unwrap());
         Some(body)
     } else {
@@ -42,7 +44,6 @@ pub async fn new_chat<R: Runtime>(
     Ok(chat_response)
 }
 
-
 #[tauri::command]
 pub async fn chat_history<R: Runtime>(
     app_handle: AppHandle<R>,
@@ -66,12 +67,17 @@ pub async fn chat_history<R: Runtime>(
 }
 
 async fn handle_raw_response(response: Response) -> Result<Result<String, String>, String> {
-    Ok(if response.status().as_u16() < 200 || response.status().as_u16() >= 400 {
-        Err("Failed to send message".to_string())
-    } else {
-        let body = response.text().await.map_err(|e| format!("Failed to parse response JSON: {}", e))?;
-        Ok(body)
-    })
+    Ok(
+        if response.status().as_u16() < 200 || response.status().as_u16() >= 400 {
+            Err("Failed to send message".to_string())
+        } else {
+            let body = response
+                .text()
+                .await
+                .map_err(|e| format!("Failed to parse response JSON: {}", e))?;
+            Ok(body)
+        },
+    )
 }
 
 #[tauri::command]
@@ -159,11 +165,10 @@ pub async fn send_message<R: Runtime>(
     let mut headers = HashMap::new();
     headers.insert("WEBSOCKET-SESSION-ID".to_string(), websocket_id);
 
-    let response = HttpClient::advanced_post(&server_id, path.as_str(), Some(headers), query_params, None)
-        .await
-        .map_err(|e| format!("Error cancel session: {}", e))?;
+    let response =
+        HttpClient::advanced_post(&server_id, path.as_str(), Some(headers), query_params, None)
+            .await
+            .map_err(|e| format!("Error cancel session: {}", e))?;
 
     handle_raw_response(response).await?
 }
-
-

@@ -19,7 +19,7 @@ function ItemIcon({
   const endpoint_http = useAppStore((state) => state.endpoint_http);
 
   const connectorSource = useFindConnectorIcon(item);
-  console.log("connectorSource", connectorSource);
+  // console.log("connectorSource", connectorSource);
   const icons = connectorSource?.assets?.icons || {};
 
   // If the icon is a valid base64-encoded image

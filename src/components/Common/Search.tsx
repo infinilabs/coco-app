@@ -1,12 +1,11 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { isTauri } from "@tauri-apps/api/core";
+import { isTauri, invoke } from "@tauri-apps/api/core";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { LogicalSize } from "@tauri-apps/api/dpi";
 
 import DropdownList from "./DropdownList";
 import { Footer } from "./Footer";
 import { SearchResults } from "../Search/SearchResults";
-import { tauriFetch } from "../../api/tauriFetchClient";
 import { useAppStore } from '@/stores/appStore';
 interface SearchProps {
   changeInput: (val: string) => void;
@@ -21,8 +20,6 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
     initializeListeners();
   }, []);
   
-  const appStore = useAppStore();
-
   const [suggests, setSuggests] = useState<any[]>([]);
   const [isSearchComplete, setIsSearchComplete] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>();
@@ -54,10 +51,10 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
   const getSuggest = async () => {
     if (!input) return
     try {
-      const response = await tauriFetch({
-        url: `/query/_search?query=${input}`,
-        method: "GET",
-        baseURL: appStore.endpoint_http,
+      const response: any = await invoke("query_coco_fusion", {
+        from: 0,
+        size: 10,
+        queryStrings: { query: input },
       });
       console.log("_suggest", input, response);
       const data = response.data?.hits?.hits || [];
