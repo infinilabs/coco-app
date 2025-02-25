@@ -9,12 +9,15 @@ const ENDPOINT_CHANGE_EVENT = 'endpoint-changed';
 export interface IServer {
   id: string;
   name: string;
-  available: boolean;
   endpoint: string;
   provider: {
     icon: string;
   };
   enabled: boolean;
+  available?: boolean;
+  health?: {
+    status: string;
+  },
   assistantCount?: number;
 }
 

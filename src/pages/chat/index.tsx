@@ -1,19 +1,15 @@
 import { useState, useRef, useEffect } from "react";
-import { isTauri } from "@tauri-apps/api/core";
 
 import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
 import { ChatInput } from "@/components/Assistant/ChatInput";
 import { Sidebar } from "@/components/Assistant/Sidebar";
 import type { Chat } from "@/components/Assistant/types";
 import { tauriFetch } from "@/api/tauriFetchClient";
-import { useWindows }  from "@/hooks/useWindows";
 import ApiDetails from "@/components/Common/ApiDetails";
 
 interface ChatProps {}
 
 export default function Chat({}: ChatProps) {
-  const { closeWin } = useWindows();
-
   const chatAIRef = useRef<ChatAIRef>(null);
 
   const [chats, setChats] = useState<Chat[]>([]);
@@ -122,12 +118,6 @@ export default function Chat({}: ChatProps) {
       console.error("Failed to fetch user data:", error);
     }
   };
-
-  async function closeWindow() {
-    if (isTauri() && closeWin) {
-      await closeWin("chat");
-    }
-  }
 
   return (
     <div className="h-screen">

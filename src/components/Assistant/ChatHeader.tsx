@@ -62,6 +62,7 @@ export function ChatHeader({
         const enabledServers = (res as IServer[]).filter(
           (server) => server.enabled !== false
         );
+        console.log("list_coco_servers", enabledServers);
         setServerList(enabledServers);
         if (resetSelection && enabledServers.length > 0 && !activeServer) {
           switchServer(enabledServers[enabledServers.length - 1]);
@@ -77,12 +78,9 @@ export function ChatHeader({
   }, []);
 
   const disconnect = async () => {
-    console.log("disconnecting");
     try {
       await invoke("disconnect");
       setConnected(false);
-      setActiveServer(null);
-      console.log("disconnected");
     } catch (error) {
       console.error("Failed to disconnect:", error);
     }
@@ -91,11 +89,7 @@ export function ChatHeader({
   const connect = async (server: IServer) => {
     try {
       await invoke("connect_to_server", { id: server.id });
-      setActiveServer(server);
-      setEndpoint(server.endpoint);
       setConnected(true);
-      setMessages(""); // Clear previous messages
-      onCreateNewChat();
     } catch (error) {
       console.error("Failed to connect:", error);
     }
@@ -103,6 +97,12 @@ export function ChatHeader({
 
   const switchServer = async (server: IServer) => {
     try {
+      // Switch UI first, then switch server connection
+      setActiveServer(server);
+      setEndpoint(server.endpoint);
+      setMessages(""); // Clear previous messages
+      onCreateNewChat();
+      //
       await disconnect();
       await connect(server);
     } catch (error) {
@@ -269,8 +269,8 @@ export function ChatHeader({
                       <div className="flex items-center gap-2">
                         <span
                           className={`w-3 h-3 rounded-full ${
-                            server.available
-                              ? "bg-[#00B926]"
+                            server.health?.status
+                              ? `bg-[${server.health?.status}]`
                               : "bg-gray-400 dark:bg-gray-600"
                           }`}
                         />

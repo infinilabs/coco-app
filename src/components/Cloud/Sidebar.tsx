@@ -42,10 +42,10 @@ export const Sidebar = forwardRef<{ refreshData: () => void }, SidebarProps>(
           <span className="font-medium">{item?.name}</span>
           <div className="flex-1" />
           <button className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
-            {item?.available ? (
-              <div className="w-3 h-3 rounded-full bg-[#00DB5E]" />
+            {item.health?.status ? (
+              <div className={`w-3 h-3 rounded-full bg-[${item.health?.status}]`} />
             ) : (
-              <div className="w-3 h-3 rounded-full bg-[#FF4747]" />
+              <div className="w-3 h-3 rounded-full bg-gray-400 dark:bg-gray-600" />
             )}
           </button>
         </div>
