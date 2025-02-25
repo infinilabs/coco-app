@@ -290,7 +290,6 @@ const ChatAI = memo(
       }, []);
 
       const init = (value: string) => {
-        console.log(111111, "init", value, curChatEnd, activeChat);
         if (!curChatEnd) return;
         if (!activeChat?._id) {
           createNewChat(value);
@@ -301,7 +300,6 @@ const ChatAI = memo(
 
       const handleSendMessage = useCallback(
         async (content: string, newChat?: Chat) => {
-          console.log("11111111", isSearchActive, isDeepThinkActive);
           newChat = newChat || activeChat;
           if (!newChat?._id || !content) return;
           setTimedoutShow(false);

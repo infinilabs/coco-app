@@ -62,8 +62,6 @@ export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Short
 
     if (!hasModifier || !hasNonModifier) return;
 
-    console.log(111111, currentKeys)
-
     const isReserved = RESERVED_SHORTCUTS.some(reserved =>
       reserved.length === currentKeys.length &&
       reserved.every((key, index) => key.toLowerCase() === currentKeys[index].toLowerCase())

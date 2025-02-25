@@ -5,7 +5,7 @@ export function useFindConnectorIcon(item: any) {
   const datasourceData = useConnectStore((state) => state.datasourceData);
   const currentService = useConnectStore((state) => state.currentService);
 
-  console.log(1111, connector_data, datasourceData, currentService, item?.source);
+  // console.log(1111, connector_data, datasourceData, currentService, item?.source);
 
   const id = item?.source?.id || "";
 
