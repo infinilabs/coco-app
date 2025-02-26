@@ -198,7 +198,7 @@ const ChatAI = memo(
       const simulateAssistantResponse = useCallback(() => {
         if (!updatedChat) return;
 
-        console.log("updatedChat:", updatedChat);
+        // console.log("updatedChat:", updatedChat);
         setActiveChat(updatedChat);
         setMessages("");
         setCurMessage("");
@@ -336,7 +336,7 @@ const ChatAI = memo(
             };
 
             changeInput && changeInput("");
-            console.log("updatedChat2", updatedChat);
+            // console.log("updatedChat2", updatedChat);
             setActiveChat(updatedChat);
             setIsTyping(true);
             setCurChatEnd(false);
@@ -426,6 +426,7 @@ const ChatAI = memo(
           response = JSON.parse(response || "")
           console.log("id_history", response);
           const hits = response?.hits?.hits || [];
+          console.log("his", hits[hits.length - 1]?._source?.message) 
           const updatedChat: Chat = {
             ...chat,
             messages: hits,

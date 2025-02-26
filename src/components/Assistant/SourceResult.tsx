@@ -33,9 +33,21 @@ export function SourceResult({ text }: SourceResultProps) {
 
   const getSourceData = (): SourceItem[] => {
     try {
-      const sourceMatch = text.match(/<Source[^>]*>(.*?)<\/Source>/s);
-      if (!sourceMatch) return [];
-      return JSON.parse(sourceMatch[1]);
+      // console.log("Raw text:", text);
+
+      const sourceRegex = /<Source.*?total=(\d+)>\s*(.*?)\s*<\/Source>/s;
+      const sourceMatch = text.match(sourceRegex);
+
+      if (!sourceMatch) {
+        // console.log("No source match found");
+        return [];
+      }
+
+      const jsonContent = sourceMatch[2];
+      // console.log("Extracted JSON:", jsonContent);
+
+      const parsedData = JSON.parse(jsonContent);
+      return parsedData;
     } catch (error) {
       console.error("Failed to parse source data:", error);
       return [];
@@ -46,21 +58,27 @@ export function SourceResult({ text }: SourceResultProps) {
   const sourceData = getSourceData();
 
   return (
-    <div className={`mt-2 ${
-      isSourceExpanded
-        ? "rounded-lg overflow-hidden border border-[#E6E6E6] dark:border-[#272626]"
-        : ""
-    }`}>
+    <div
+      className={`mt-2 ${
+        isSourceExpanded
+          ? "rounded-lg overflow-hidden border border-[#E6E6E6] dark:border-[#272626]"
+          : ""
+      }`}
+    >
       <button
         onClick={() => setIsSourceExpanded((prev) => !prev)}
         className={`inline-flex justify-between items-center gap-2 px-2 py-1 rounded-xl transition-colors ${
-          isSourceExpanded ? "w-full" : "border border-[#E6E6E6] dark:border-[#272626]"
+          isSourceExpanded
+            ? "w-full"
+            : "border border-[#E6E6E6] dark:border-[#272626]"
         }`}
       >
         <div className="flex gap-2">
           <Search className="w-4 h-4 text-[#999999] dark:text-[#999999]" />
           <span className="text-xs text-[#999999] dark:text-[#999999]">
-            {t('assistant.source.foundResults', { count: Number(totalResults) })}
+            {t("assistant.source.foundResults", {
+              count: Number(totalResults),
+            })}
           </span>
         </div>
         {isSourceExpanded ? (

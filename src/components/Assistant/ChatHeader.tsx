@@ -67,7 +67,7 @@ export function ChatHeader({
         const enabledServers = (res as IServer[]).filter(
           (server) => server.enabled !== false
         );
-        console.log("list_coco_servers", enabledServers);
+        // console.log("list_coco_servers", enabledServers);
         setServerList(enabledServers);
         if (resetSelection && enabledServers.length > 0 && !currentService) {
           switchServer(enabledServers[enabledServers.length - 1]);
