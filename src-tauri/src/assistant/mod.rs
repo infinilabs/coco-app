@@ -149,8 +149,6 @@ pub async fn new_chat<R: Runtime>(
         return Err(format!("Unexpected result: {}", chat_response.result));
     }
 
-    println!("chat_response: {:?}", chat_response);
-
     Ok(chat_response)
 }
 

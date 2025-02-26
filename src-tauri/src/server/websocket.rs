@@ -127,7 +127,7 @@ pub async fn connect_to_server(
                     msg = ws.next() => {
                         match msg {
                             Some(Ok(Message::Text(text))) => {
-                                // println!("Received message: {}", text);
+                                //println!("Received message: {}", text);
                                 let _ = app_handle_clone.emit("ws-message", text);
                             },
                             Some(Err(_)) | None => break,

@@ -7,6 +7,7 @@ import Markdown from "./Markdown";
 import { formatThinkingMessage } from "@/utils/index";
 import logoImg from "@/assets/icon.svg";
 import { SourceResult } from "./SourceResult";
+// import { ThinkingSteps } from "./ThinkingSteps";
 
 interface ChatMessageProps {
   message: Message;
@@ -52,6 +53,7 @@ export const ChatMessage = memo(function ChatMessage({
             <div className="text-[#333] dark:text-[#d8d8d8] leading-relaxed">
               {isAssistant ? (
                 <>
+                  {/* <ThinkingSteps currentStep={4} /> */}
                   {segments.map((segment, index) => (
                     <span key={index}>
                       {segment.isSource ? (
@@ -59,7 +61,9 @@ export const ChatMessage = memo(function ChatMessage({
                       ) : segment.isThinking ? (
                         <div className="space-y-2 mb-3 w-full">
                           <button
-                            onClick={() => setIsThinkingExpanded((prev) => !prev)}
+                            onClick={() =>
+                              setIsThinkingExpanded((prev) => !prev)
+                            }
                             className="inline-flex items-center gap-2 px-2 py-1 rounded-xl transition-colors border border-[#E6E6E6] dark:border-[#272626]"
                           >
                             {isTyping ? (
@@ -77,13 +81,12 @@ export const ChatMessage = memo(function ChatMessage({
                                 </span>
                               </>
                             )}
-                            {segment.thinkContent && (
-                              isThinkingExpanded ? (
+                            {segment.thinkContent &&
+                              (isThinkingExpanded ? (
                                 <ChevronUp className="w-4 h-4" />
                               ) : (
                                 <ChevronDown className="w-4 h-4" />
-                              )
-                            )}
+                              ))}
                           </button>
                           {isThinkingExpanded && segment.thinkContent && (
                             <div className="pl-2 border-l-2 border-[e5e5e5]">
