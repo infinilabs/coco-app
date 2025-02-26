@@ -89,7 +89,11 @@
       "connectionError": "Unable to connect to the server",
       "reconnect": "Reconnect",
       "deepThink": "Deep Think",
-      "search": "Search"
+      "search": "Search",
+      "searchPopover": {
+        "title": "Search Scope",
+        "allScope": "All Scope"
+      }
     },
     "main": {
       "noDataAlt": "No data image",

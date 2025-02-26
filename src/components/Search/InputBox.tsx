@@ -1,4 +1,14 @@
-import { ArrowBigLeft, Search, Send, Globe, Brain } from "lucide-react";
+import {
+  ArrowBigLeft,
+  Search,
+  Send,
+  Globe,
+  Brain,
+  ChevronDownIcon,
+  RefreshCw,
+  CheckIcon,
+  Layers,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke, isTauri } from "@tauri-apps/api/core";
@@ -11,6 +21,15 @@ import StopIcon from "@/icons/Stop";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
+import {
+  Checkbox,
+  Popover,
+  PopoverButton,
+  PopoverPanel,
+} from "@headlessui/react";
+import clsx from "clsx";
+import { useConnectStore } from "@/stores/connectStore";
+import TypeIcon from "../Common/Icons/TypeIcon";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -41,7 +60,7 @@ export default function ChatInput({
   isDeepThinkActive,
   setIsDeepThinkActive,
 }: ChatInputProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const showTooltip = useAppStore(
     (state: { showTooltip: boolean }) => state.showTooltip
@@ -55,6 +74,35 @@ export default function ChatInput({
   const setSourceData = useSearchStore(
     (state: { setSourceData: any }) => state.setSourceData
   );
+
+  const currentService = useConnectStore((state) => state.currentService);
+
+  const datasourceData = useConnectStore((state) => state.datasourceData);
+
+  const [dataSourceList, setDataSourceList] = useState<any[]>([]);
+  const [checkedDataSource, setCheckedDataSource] = useState<string[]>([]);
+
+  const getDataSourceList = () => {
+    if (!currentService?.id) return [];
+
+    setDataSourceList([
+      {
+        id: "all",
+        name: t("search.input.searchPopover.allScope"),
+      },
+      ...datasourceData[currentService.id],
+    ]);
+  };
+
+  useEffect(() => {
+    getDataSourceList();
+  }, [currentService, datasourceData, i18n.language]);
+
+  useEffect(() => {
+    console.log("dataSourceList", dataSourceList);
+  }, [dataSourceList]);
+
+  const [isRefreshDataSource, setIsRefreshDataSource] = useState(false);
 
   useEffect(() => {
     setSourceData(undefined);
@@ -175,6 +223,7 @@ export default function ChatInput({
 
   useEffect(() => {
     if (!isTauri()) return;
+
     const setupListener = async () => {
       const unlisten = await listen("tauri://focus", () => {
         // console.log("Window focused!");
@@ -226,6 +275,24 @@ export default function ChatInput({
 
   const DeepThinkClick = () => {
     setIsDeepThinkActive();
+  };
+
+  const selectDataSource = (id: string, checked: boolean, isAll: boolean) => {
+    if (isAll) {
+      if (checked) {
+        setCheckedDataSource(dataSourceList.slice(1).map((item) => item.id));
+      } else {
+        setCheckedDataSource([]);
+      }
+
+      return;
+    }
+
+    if (checked) {
+      setCheckedDataSource((data) => [...new Set([...data, id])]);
+    } else {
+      setCheckedDataSource((data) => data.filter((item) => item !== id));
+    }
   };
 
   return (
@@ -391,8 +458,8 @@ export default function ChatInput({
                 {t("search.input.deepThink")}
               </span>
             </button>
-            <button
-              className={`h-5 px-2 inline-flex items-center border rounded-[10px] transition-colors relative ${
+            <div
+              className={`h-5 px-2 inline-flex items-center border rounded-[10px] transition-colors relative cursor-pointer ${
                 isSearchActive
                   ? "bg-[rgba(0,114,255,0.3)] border-[rgba(0,114,255,0.3)]"
                   : "border-[#262727]"
@@ -406,6 +473,7 @@ export default function ChatInput({
                     : "text-[#333] dark:text-white"
                 }`}
               />
+
               <span
                 className={
                   isSearchActive ? "text-[#0072FF]" : "dark:text-white"
@@ -413,7 +481,101 @@ export default function ChatInput({
               >
                 {t("search.input.search")}
               </span>
-            </button>
+
+              <Popover>
+                <PopoverButton className={clsx("flex items-center")}>
+                  <ChevronDownIcon
+                    className={clsx("size-4", [
+                      isSearchActive
+                        ? "text-[#0072FF] dark:text-[#0072FF]"
+                        : "text-[#333] dark:text-white",
+                    ])}
+                  />
+                </PopoverButton>
+
+                <PopoverPanel
+                  anchor="top start"
+                  className="min-w-[220px] bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+                >
+                  <div
+                    className="text-sm px-[12px] py-[18px]"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                  >
+                    <div className="flex justify-between mb-[18px]">
+                      <span>{t("search.input.searchPopover.title")}</span>
+
+                      <button
+                        onClick={async () => {
+                          setIsRefreshDataSource(true);
+
+                          getDataSourceList();
+
+                          setTimeout(() => {
+                            setIsRefreshDataSource(false);
+                          }, 1000);
+                        }}
+                        className="size-[24px] flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10"
+                        disabled={isRefreshDataSource}
+                      >
+                        <RefreshCw
+                          className={`size-3 text-[#0287FF] transition-transform duration-1000 ${
+                            isRefreshDataSource ? "animate-spin" : ""
+                          }`}
+                        />
+                      </button>
+                    </div>
+                    <ul className="flex flex-col gap-[16px]">
+                      {dataSourceList?.map((item, index) => {
+                        const { id, name } = item;
+
+                        const isAll = index === 0;
+
+                        return (
+                          <li
+                            key={id}
+                            className="flex justify-between items-center"
+                          >
+                            <div className="flex items-center gap-[8px]">
+                              {isAll ? (
+                                <Layers className="size-[16px] text-[#0287FF]" />
+                              ) : (
+                                <TypeIcon item={item} className="size-[16px]" />
+                              )}
+
+                              <span>{name}</span>
+                            </div>
+
+                            <Checkbox
+                              checked={
+                                isAll
+                                  ? checkedDataSource.length ===
+                                    dataSourceList.length - 1
+                                  : checkedDataSource?.includes(id)
+                              }
+                              onChange={(value) =>
+                                selectDataSource(id, value, isAll)
+                              }
+                              className="group size-[14px] rounded-sm border border-black/30 dark:border-white/30 data-[checked]:bg-[#2F54EB] data-[checked]:!border-[#2F54EB] transition"
+                            >
+                              {isAll && (
+                                <div className="size-full flex items-center justify-center group-data-[checked]:hidden">
+                                  <div className="size-[6px] bg-[#2F54EB]"></div>
+                                </div>
+                              )}
+
+                              <CheckIcon className="hidden size-[12px] text-white group-data-[checked]:block" />
+                            </Checkbox>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                </PopoverPanel>
+              </Popover>
+            </div>
+
             {/*<button*/}
             {/*    className="inline-flex items-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors relative"*/}
             {/*    onClick={openChatAI}*/}
