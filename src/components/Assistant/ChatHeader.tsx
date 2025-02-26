@@ -27,10 +27,17 @@ import { emit } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
 import logoImg from "@/assets/icon.svg";
+import historyIcon from "@/assets/images/History.svg";
+import PinOffIcon from "@/assets/images/pin-off.svg";
+import PinIcon from "@/assets/images/pin.svg";
+import ServerIcon from "@/assets/images/Server.svg";
+import windowsFullIcon from "@/assets/images/windows-full.svg";
 import { useAppStore, IServer } from "@/stores/appStore";
 import { useChatStore } from "@/stores/chatStore";
 import type { Chat } from "./types";
 import { useConnectStore } from "@/stores/connectStore";
+import IconWrapper from "@/components/Common/Icons/IconWrapper";
+import ThemedIcon from "@/components/Common/Icons/ThemedIcon";
 
 interface ChatHeaderProps {
   onCreateNewChat: () => void;
@@ -144,11 +151,7 @@ export function ChatHeader({
           }}
           className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
         >
-          {isSidebarOpen ? (
-            <PanelRightOpen className="h-4 w-4" />
-          ) : (
-            <PanelRightClose className="h-4 w-4" />
-          )}
+          <img src={historyIcon} className="w-4 h-4" alt={"Pin"} />
         </button>
 
         <Menu>
@@ -202,9 +205,9 @@ export function ChatHeader({
           }`}
         >
           {isPinned ? (
-            <Pin className="h-4 w-4" />
+            <img src={PinIcon} className="w-4 h-4" alt={"Pin"} />
           ) : (
-            <PinOff className="h-4 w-4" />
+            <img src={PinOffIcon} className="w-4 h-4" alt={"PinOff"} />
           )}
         </button>
 
@@ -212,12 +215,16 @@ export function ChatHeader({
           onClick={onOpenChatAI}
           className="rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
         >
-          <PictureInPicture2 className="h-4 w-4" />
+          <img
+            src={windowsFullIcon}
+            className="w-4 h-4"
+            alt={"PictureInPicture2"}
+          />
         </button>
 
         <Popover className="relative">
           <PopoverButton className="flex items-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-            <Server className="h-4 w-4" />
+            <img src={ServerIcon} className="w-4 h-4" alt={"Server"} />
           </PopoverButton>
 
           <PopoverPanel className="absolute right-0 z-10 mt-2 min-w-[240px] bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">

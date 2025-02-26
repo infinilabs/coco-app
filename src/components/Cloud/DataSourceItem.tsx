@@ -28,6 +28,8 @@ export function DataSourceItem({ name, connector }: DataSourceItemProps) {
   function findConnectorIcon() {
     const connector_id = connector?.id;
 
+    console.log("connector_id", connector_data, connector_id);
+
     const result_connector = connector_data[endpoint_http]?.find(
       (data: any) => data.id === connector_id
     );

@@ -3,7 +3,7 @@ import React from "react";
 interface IconWrapperProps {
   children: React.ReactNode;
   className?: string;
-  onClick: React.MouseEventHandler<HTMLDivElement>;
+  onClick?: React.MouseEventHandler<HTMLDivElement>;
 }
 
 function IconWrapper({ children, className = "", onClick }: IconWrapperProps) {
@@ -12,7 +12,7 @@ function IconWrapper({ children, className = "", onClick }: IconWrapperProps) {
       className={className}
       onClick={(e) => {
         e.stopPropagation();
-        onClick(e);
+        onClick && onClick(e);
       }}
     >
       {children}
