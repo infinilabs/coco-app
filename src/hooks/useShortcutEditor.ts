@@ -67,9 +67,6 @@ export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Short
       reserved.every((key, index) => key.toLowerCase() === currentKeys[index].toLowerCase())
     );
 
-    console.log(22222, isReserved)
-
-
     if (isReserved) {
       console.error("This is a system reserved shortcut");
       return;

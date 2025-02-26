@@ -166,15 +166,10 @@ pub async fn send_message<R: Runtime>(
     };
 
     let body = reqwest::Body::from(serde_json::to_string(&msg).unwrap());
-    let response = HttpClient::advanced_post(
-        &server_id,
-        path.as_str(),
-        None,
-        query_params,
-        Some(body),
-    )
-        .await
-        .map_err(|e| format!("Error cancel session: {}", e))?;
+    let response =
+        HttpClient::advanced_post(&server_id, path.as_str(), None, query_params, Some(body))
+            .await
+            .map_err(|e| format!("Error cancel session: {}", e))?;
 
     handle_raw_response(response).await?
 }

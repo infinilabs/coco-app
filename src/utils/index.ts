@@ -95,38 +95,44 @@ export const formatThinkingMessage = (message: string) => {
     text: string;
     isThinking: boolean;
     thinkContent: string;
+    isSource?: boolean;
   }> = [];
-  const parts = message?.split(/<\/?think>/) || [];
-  let hasThinkingSegment = false;
 
-  const thinkContents = parts?.filter((_text, index) => index % 2 === 1);
-  
-  const targetThink = thinkContents.find(text => text.trim()) || thinkContents[0];
+  if (!message) return segments;
 
-  parts.forEach((text, index) => {
-    if (index % 2 === 0) {
-      if (text.trim()) {
-        segments.push({
-          text: text.trim(),
-          isThinking: false,
-          thinkContent: ''
-        });
-      }
-    } else if (!hasThinkingSegment && text === targetThink) {
-      hasThinkingSegment = true;
-      if (segments.length > 0) {
-        segments[0].thinkContent = text;
-        segments[0].isThinking = true;
-      } else {
-        segments.push({
-          text: '',
-          isThinking: true,
-          thinkContent: text
-        });
-      }
+  const sourceRegex = /(<Source.*?>.*?<\/Source>)/gs;
+  const parts = message.split(sourceRegex);
+
+  parts.forEach(part => {
+    if (part.startsWith('<Source')) {
+      segments.push({
+        text: part,
+        isThinking: false,
+        thinkContent: '',
+        isSource: true
+      });
+    } else {
+      const thinkParts = part.split(/(<think>.*?<\/think>)/s);
+      
+      thinkParts.forEach(thinkPart => {
+        if (thinkPart.startsWith('<think>')) {
+          const content = thinkPart.replace(/<\/?think>/g, '');
+          segments.push({
+            text: '',
+            isThinking: true,
+            thinkContent: content.trim()
+          });
+        } else if (thinkPart.trim()) {
+          segments.push({
+            text: thinkPart.trim(),
+            isThinking: false,
+            thinkContent: ''
+          });
+        }
+      });
     }
   });
-  
+
   return segments;
 };
 

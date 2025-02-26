@@ -109,7 +109,7 @@ export default function GeneralSettings() {
   async function getCurrentShortcut() {
     try {
       const res: any = await invoke("get_current_shortcut");
-      console.log("DBG: ", res);
+      console.log("get_current_shortcut: ", res);
       setShortcut(res?.split("+"));
     } catch (err) {
       console.error("Failed to fetch shortcut:", err);

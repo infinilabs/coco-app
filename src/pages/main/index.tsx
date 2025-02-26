@@ -143,7 +143,7 @@ export default function DesktopApp() {
 
       <div
         data-tauri-drag-region
-        className={`absolute w-full transition-all duration-500 ${
+        className={`absolute w-full transition-all duration-500 select-auto ${
           isTransitioned
             ? "top-0 opacity-100 pointer-events-auto"
             : "-top-[506px] opacity-0 pointer-events-none"

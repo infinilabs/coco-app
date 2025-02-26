@@ -66,10 +66,10 @@ export default function Cloud() {
   const fetchServers = async (resetSelection: boolean) => {
     invoke("list_coco_servers")
       .then((res: any) => {
-        console.log("list_coco_servers", res);
+        // console.log("list_coco_servers", res);
         setServerList(res);
         if (resetSelection && res.length > 0) {
-          console.log("setCurrentService", res[res.length - 1]);
+          // console.log("setCurrentService", res[res.length - 1]);
           setCurrentService(res[res.length - 1]);
         } else {
           console.warn("Service list is empty or last item has no id");
@@ -96,7 +96,7 @@ export default function Cloud() {
 
     return invoke("add_coco_server", { endpoint: endpointLink })
       .then((res: any) => {
-        console.log("add_coco_server", res);
+        // console.log("add_coco_server", res);
         fetchServers(false)
           .then((r) => {
             console.log("fetchServers", r);

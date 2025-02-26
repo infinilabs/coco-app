@@ -82,7 +82,7 @@
   }
 
   html {
-    @apply h-full overscroll-none;
+    @apply h-full overscroll-none select-none;
   }
 
   body,
