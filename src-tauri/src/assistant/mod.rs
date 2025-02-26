@@ -159,9 +159,7 @@ pub async fn send_message<R: Runtime>(
     session_id: String,
     message: String,
     query_params: Option<HashMap<String, String>>, //search,deep_thinking
-    datasource: String,
 ) -> Result<String, String> {
-    println!("datasource: {}", datasource);
     let path = format!("/chat/{}/_send", session_id);
     let msg = ChatRequestMessage {
         message: Some(message),

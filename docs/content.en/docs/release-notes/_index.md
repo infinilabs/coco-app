@@ -10,14 +10,19 @@ Information about release notes of Coco Server is provided here.
 ## Latest (In development)
 
 ### Features
+
 - Add timeout to fusion search #174
 - Add api to disable or enable server #185
+- Networked search supports selection of data sources #209
 
 ### Breaking changes
+
 ### Bug fix
+
 - Fix to access deeplink for linux #148
 
 ### Improvements
+
 - Improve app startup, init application search in background #172
 - Refactoring login #173
 - Init icons in background during start #176
@@ -29,8 +34,9 @@ Information about release notes of Coco Server is provided here.
 ## 0.1.0 (2015-02-16)
 
 ### Features
+
 - Fusion Search
-- Chat with AI Assistant 
+- Chat with AI Assistant
 - RAG-based AI Chat
 - General Settings
 - Global Shortcut
@@ -44,4 +50,3 @@ Information about release notes of Coco Server is provided here.
 ### Bug fix
 
 ### Improvements
-

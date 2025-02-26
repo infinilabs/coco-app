@@ -14,9 +14,7 @@ export const useSearchStore = create<ISearchStore>()(
       sourceData: undefined,
       setSourceData: (sourceData: any) => set({ sourceData }),
       sourceDataIds: [],
-      setSourceDataIds: (sourceDataIds: string[]) => {
-        set({ sourceDataIds });
-      },
+      setSourceDataIds: (sourceDataIds: string[]) => set({ sourceDataIds }),
     }),
     {
       name: "search-store",
