@@ -159,22 +159,19 @@ pub async fn send_message<R: Runtime>(
     session_id: String,
     message: String,
     query_params: Option<HashMap<String, String>>, //search,deep_thinking
+    datasource: String,
 ) -> Result<String, String> {
+    println!("datasource: {}", datasource);
     let path = format!("/chat/{}/_send", session_id);
     let msg = ChatRequestMessage {
         message: Some(message),
     };
 
     let body = reqwest::Body::from(serde_json::to_string(&msg).unwrap());
-    let response = HttpClient::advanced_post(
-        &server_id,
-        path.as_str(),
-        None,
-        query_params,
-        Some(body),
-    )
-        .await
-        .map_err(|e| format!("Error cancel session: {}", e))?;
+    let response =
+        HttpClient::advanced_post(&server_id, path.as_str(), None, query_params, Some(body))
+            .await
+            .map_err(|e| format!("Error cancel session: {}", e))?;
 
     handle_raw_response(response).await?
 }

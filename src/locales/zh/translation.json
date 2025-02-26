@@ -89,7 +89,11 @@
       "connectionError": "无法连接到服务器",
       "reconnect": "重新连接",
       "deepThink": "深度思考",
-      "search": "联网搜索"
+      "search": "联网搜索",
+      "searchPopover": {
+        "title": "搜索范围",
+        "allScope": "所有范围"
+      }
     },
     "main": {
       "noDataAlt": "无数据图片",

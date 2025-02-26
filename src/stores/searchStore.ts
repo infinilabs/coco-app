@@ -4,6 +4,8 @@ import { persist } from "zustand/middleware";
 export type ISearchStore = {
   sourceData: any;
   setSourceData: (sourceData: any) => void;
+  sourceDataIds: string[];
+  setSourceDataIds: (prevSourceDataId: string[]) => void;
 };
 
 export const useSearchStore = create<ISearchStore>()(
@@ -11,6 +13,10 @@ export const useSearchStore = create<ISearchStore>()(
     (set) => ({
       sourceData: undefined,
       setSourceData: (sourceData: any) => set({ sourceData }),
+      sourceDataIds: [],
+      setSourceDataIds: (sourceDataIds: string[]) => {
+        set({ sourceDataIds });
+      },
     }),
     {
       name: "search-store",
