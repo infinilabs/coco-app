@@ -7,6 +7,7 @@ use tokio::net::TcpStream;
 use tokio::sync::{mpsc, Mutex};
 use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 use tokio_tungstenite::tungstenite::Error;
+use tokio_tungstenite::tungstenite::Error as WsError;
 use tokio_tungstenite::{
     connect_async, tungstenite::protocol::Message, MaybeTlsStream, WebSocketStream,
 };
@@ -130,11 +131,32 @@ pub async fn connect_to_server(
                                 println!("Received message: {}", text);
                                 let _ = app_handle_clone.emit("ws-message", text);
                             },
-                            Some(Err(_)) | None => break,
+                                Some(Err(WsError::ConnectionClosed)) => {
+                                let _ = app_handle_clone.emit("ws-error", id);
+                                eprintln!("WebSocket connection closed by the server.");
+                                break;
+                            },
+                            Some(Err(WsError::Protocol(e))) => {
+                                let _ = app_handle_clone.emit("ws-error", id);
+                                eprintln!("Protocol error: {}", e);
+                                break;
+                            },
+                            Some(Err(WsError::Utf8)) => {
+                                let _ = app_handle_clone.emit("ws-error", id);
+                                eprintln!("Received invalid UTF-8 data.");
+                                break;
+                            },
+                            Some(Err(_)) => {
+                                let _ = app_handle_clone.emit("ws-error", id);
+                                eprintln!("WebSocket error encountered.");
+                                break;
+                            },
                             _ => continue,
                         }
                     }
                     _ = cancel_rx.recv() => {
+                        let _ = app_handle_clone.emit("ws-error", id);
+                        dbg!("Cancelling WebSocket connection");
                         break;
                     }
                 }
