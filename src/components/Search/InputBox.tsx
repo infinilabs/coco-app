@@ -61,7 +61,7 @@ export default function ChatInput({
   isDeepThinkActive,
   setIsDeepThinkActive,
 }: ChatInputProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const showTooltip = useAppStore(
     (state: { showTooltip: boolean }) => state.showTooltip
@@ -99,7 +99,7 @@ export default function ChatInput({
     ];
 
     onSelectDataSource("all", true, true);
-  }, [currentService?.id, datasourceData, t]);
+  }, [currentService?.id, datasourceData]);
 
   useEffect(() => {
     getDataSourceList();

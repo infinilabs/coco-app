@@ -90,8 +90,6 @@ const ChatAI = memo(
 
       const [curMessage, setCurMessage] = useState("");
 
-      const websocketIdRef = useRef("");
-
       const curChatEndRef = useRef(curChatEnd);
       curChatEndRef.current = curChatEnd;
 
@@ -128,11 +126,7 @@ const ChatAI = memo(
             clearTimeout(messageTimeoutRef.current);
           }
 
-          if (msg.includes("websocket-session-id")) {
-            const array = msg.split(" ");
-            websocketIdRef.current = array[2];
-            return "";
-          } else if (msg.includes("PRIVATE")) {
+          if (msg.includes("PRIVATE")) {
             messageTimeoutRef.current = setTimeout(() => {
               if (!curChatEnd && isTyping) {
                 console.log("AI response timeout");
@@ -152,7 +146,7 @@ const ChatAI = memo(
               try {
                 // console.log("cleanedData", cleanedData);
                 const chunkData = JSON.parse(cleanedData);
-                console.log("msg1:", chunkData, curIdRef.current);
+                // console.log("msg1:", chunkData, curIdRef.current);
 
                 if (chunkData.reply_to_message === curIdRef.current) {
                   handleMessageChunk(chunkData.message_chunk);
@@ -304,7 +298,7 @@ const ChatAI = memo(
           });
           console.log("_new", response);
           const newChat: Chat = response;
-          curIdRef.current = response?.payload;
+          curIdRef.current = response?.payload?.id;
 
           newChat._source = {
             message: value,
@@ -353,7 +347,7 @@ const ChatAI = memo(
               message: content,
             });
             response = JSON.parse(response || "");
-            console.log("_send", response, websocketIdRef.current);
+            console.log("_send", response);
             curIdRef.current = response[0]?._id;
 
             const updatedChat: Chat = {

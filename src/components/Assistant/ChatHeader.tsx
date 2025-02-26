@@ -143,7 +143,7 @@ export function ChatHeader({
           }}
           className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
         >
-          <HistoryIcon className="w-4 h-4" />
+          <HistoryIcon />
         </button>
 
         <Menu>
@@ -192,27 +192,18 @@ export function ChatHeader({
       <div className="flex items-center gap-2">
         <button
           onClick={togglePin}
-          className={`rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 ${
-            isPinned ? "text-blue-500" : ""
-          }`}
+          className={`${isPinned ? "text-blue-500" : ""}`}
         >
-          {isPinned ? (
-            <PinIcon className="w-4 h-4" />
-          ) : (
-            <PinOffIcon className="w-4 h-4" />
-          )}
+          {isPinned ? <PinIcon /> : <PinOffIcon />}
         </button>
 
-        <button
-          onClick={onOpenChatAI}
-          className="rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          <WindowsFullIcon className="w-4 h-4" />
+        <button onClick={onOpenChatAI}>
+          <WindowsFullIcon />
         </button>
 
         <Popover className="relative">
-          <PopoverButton className="flex items-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-            <ServerIcon className="w-4 h-4" />
+          <PopoverButton className="flex items-center">
+            <ServerIcon />
           </PopoverButton>
 
           <PopoverPanel className="absolute right-0 z-10 mt-2 min-w-[240px] bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
