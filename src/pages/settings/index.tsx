@@ -6,25 +6,21 @@ import { useTranslation } from "react-i18next";
 import SettingsPanel from "@/components/Settings/SettingsPanel";
 import GeneralSettings from "@/components/Settings/GeneralSettings";
 import AboutView from "@/components/Settings/AboutView";
-import Cloud from "@/components/Cloud/Cloud.tsx"
+import Cloud from "@/components/Cloud/Cloud.tsx";
 import Footer from "@/components/Footer";
-import ApiDetails from "@/components/Common/ApiDetails";
 import { useAppStore } from "@/stores/appStore";
-
-
-
 
 function SettingsPage() {
   const { t } = useTranslation();
 
   const tabs = [
-    { name: t('settings.tabs.general'), icon: Settings },
-    { name: t('settings.tabs.extensions'), icon: Puzzle },
-    { name: t('settings.tabs.connect'), icon: Server },
-    { name: t('settings.tabs.advanced'), icon: Settings2 },
-    { name: t('settings.tabs.about'), icon: Info },
+    { name: t("settings.tabs.general"), icon: Settings },
+    { name: t("settings.tabs.extensions"), icon: Puzzle },
+    { name: t("settings.tabs.connect"), icon: Server },
+    { name: t("settings.tabs.advanced"), icon: Settings2 },
+    { name: t("settings.tabs.about"), icon: Info },
   ];
-  
+
   const tabIndex = useAppStore((state) => state.tabIndex);
   const [defaultIndex, setDefaultIndex] = useState<number>(tabIndex);
 
@@ -71,7 +67,7 @@ function SettingsPage() {
               <TabPanel>
                 <SettingsPanel title="">
                   <div className="text-gray-600 dark:text-gray-400">
-                    {t('settings.tabs.extensionsContent')}
+                    {t("settings.tabs.extensionsContent")}
                   </div>
                 </SettingsPanel>
               </TabPanel>
@@ -81,7 +77,7 @@ function SettingsPage() {
               <TabPanel>
                 <SettingsPanel title="">
                   <div className="text-gray-600 dark:text-gray-400">
-                    {t('settings.tabs.advancedContent')}
+                    {t("settings.tabs.advancedContent")}
                   </div>
                 </SettingsPanel>
               </TabPanel>
@@ -95,11 +91,8 @@ function SettingsPage() {
         </div>
       </div>
       <Footer />
-
-      <ApiDetails />
     </div>
   );
 }
-
 
 export default SettingsPage;

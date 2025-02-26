@@ -5,14 +5,12 @@ import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
 import { ChatInput } from "@/components/Assistant/ChatInput";
 import { Sidebar } from "@/components/Assistant/Sidebar";
 import type { Chat } from "@/components/Assistant/types";
-import ApiDetails from "@/components/Common/ApiDetails";
-import { useAppStore } from "@/stores/appStore";
+import { useConnectStore } from "@/stores/connectStore";
 
 interface ChatProps {}
 
 export default function Chat({}: ChatProps) {
-  const activeServer = useAppStore((state) => state.activeServer);
-
+  const currentService = useConnectStore((state) => state.currentService);
 
   const chatAIRef = useRef<ChatAIRef>(null);
 
@@ -33,11 +31,11 @@ export default function Chat({}: ChatProps) {
   const getChatHistory = async () => {
     try {
       let response: any = await invoke("chat_history", {
-        serverId: activeServer?.id,
+        serverId: currentService?.id,
         from: 0,
         size: 20,
       });
-      response = JSON.parse(response || "")
+      response = JSON.parse(response || "");
       console.log("_history", response);
       const hits = response?.hits?.hits || [];
       setChats(hits);
@@ -70,12 +68,12 @@ export default function Chat({}: ChatProps) {
   const chatHistory = async (chat: Chat) => {
     try {
       let response: any = await invoke("session_chat_history", {
-        serverId: activeServer?.id,
+        serverId: currentService?.id,
         sessionId: chat?._id,
         from: 0,
         size: 20,
       });
-      response = JSON.parse(response || "")
+      response = JSON.parse(response || "");
       console.log("id_history", response);
       const hits = response?.hits?.hits || [];
       const updatedChat: Chat = {
@@ -92,10 +90,10 @@ export default function Chat({}: ChatProps) {
     if (!activeChat?._id) return;
     try {
       let response: any = await invoke("close_session_chat", {
-        serverId: activeServer?.id,
+        serverId: currentService?.id,
         sessionId: activeChat?._id,
       });
-      response = JSON.parse(response || "")
+      response = JSON.parse(response || "");
       console.log("_close", response);
     } catch (error) {
       console.error("Failed to fetch user data:", error);
@@ -106,10 +104,10 @@ export default function Chat({}: ChatProps) {
     chatClose();
     try {
       let response: any = await invoke("open_session_chat", {
-        serverId: activeServer?.id,
+        serverId: currentService?.id,
         sessionId: chat?._id,
       });
-      response = JSON.parse(response || "")
+      response = JSON.parse(response || "");
       console.log("_open", response);
       chatHistory(response);
     } catch (error) {
@@ -121,10 +119,10 @@ export default function Chat({}: ChatProps) {
     if (!activeChat?._id) return;
     try {
       let response: any = await invoke("cancel_session_chat", {
-        serverId: activeServer?.id,
+        serverId: currentService?.id,
         sessionId: activeChat?._id,
       });
-      response = JSON.parse(response || "")
+      response = JSON.parse(response || "");
       console.log("_cancel", response);
     } catch (error) {
       console.error("Failed to fetch user data:", error);
@@ -134,7 +132,7 @@ export default function Chat({}: ChatProps) {
   const clearChat = () => {
     chatClose();
     setActiveChat(undefined);
-  }
+  };
 
   return (
     <div className="h-screen">
@@ -160,7 +158,6 @@ export default function Chat({}: ChatProps) {
 
         {/* Main content */}
         <div className={`flex-1 flex flex-col bg-white dark:bg-gray-900`}>
-
           {/* Chat messages */}
           <ChatAI
             ref={chatAIRef}
@@ -193,8 +190,6 @@ export default function Chat({}: ChatProps) {
           </div>
         </div>
       </div>
-
-      <ApiDetails/>
     </div>
   );
 }

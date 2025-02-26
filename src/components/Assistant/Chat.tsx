@@ -19,8 +19,8 @@ import type { Chat } from "./types";
 import { useChatStore } from "@/stores/chatStore";
 import { useWindows } from "@/hooks/useWindows";
 import { ChatHeader } from "./ChatHeader";
-import { useAppStore } from "@/stores/appStore";
 import { Sidebar } from "@/components/Assistant/Sidebar";
+import { useConnectStore } from "@/stores/connectStore";
 
 interface ChatAIProps {
   isTransitioned: boolean;
@@ -80,7 +80,7 @@ const ChatAI = memo(
         messages,
         setMessages,
       } = useChatStore();
-      const activeServer = useAppStore((state) => state.activeServer);
+      const currentService = useConnectStore((state) => state.currentService);
 
       const [activeChat, setActiveChat] = useState<Chat>();
       const [isTyping, setIsTyping] = useState(false);
@@ -108,9 +108,9 @@ const ChatAI = memo(
       }, []);
 
       const reconnect = async () => {
-        if (!activeServer?.id) return;
+        if (!currentService?.id) return;
         try {
-          await invoke("connect_to_server", { id: activeServer?.id });
+          await invoke("connect_to_server", { id: currentService?.id });
           setConnected(true);
         } catch (error) {
           console.error("Failed to connect:", error);
@@ -285,7 +285,7 @@ const ChatAI = memo(
         chatClose();
         try {
           let response: any = await invoke("new_chat", {
-            serverId: activeServer?.id,
+            serverId: currentService?.id,
             message: value,
           });
           console.log("_new", response);
@@ -314,7 +314,7 @@ const ChatAI = memo(
           setTimedoutShow(false);
           try {
             let response: any = await invoke("send_message", {
-              serverId: activeServer?.id,
+              serverId: currentService?.id,
               sessionId: newChat?._id,
               websocketId: websocketIdRef.current,
               query_params: {
@@ -351,7 +351,7 @@ const ChatAI = memo(
         if (!activeChat?._id) return;
         try {
           let response: any = await invoke("close_session_chat", {
-            serverId: activeServer?.id,
+            serverId: currentService?.id,
             sessionId: activeChat?._id,
           });
           response = JSON.parse(response || "")
@@ -371,7 +371,7 @@ const ChatAI = memo(
         if (!activeChat?._id) return;
         try {
           let response: any = await invoke("cancel_session_chat", {
-            serverId: activeServer?.id,
+            serverId: currentService?.id,
             sessionId: activeChat?._id,
           });
           response = JSON.parse(response || "")
@@ -418,7 +418,7 @@ const ChatAI = memo(
       const chatHistory = async (chat: Chat) => {
         try {
           let response: any = await invoke("session_chat_history", {
-            serverId: activeServer?.id,
+            serverId: currentService?.id,
             sessionId: chat?._id,
             from: 0,
             size: 20,
@@ -440,7 +440,7 @@ const ChatAI = memo(
         chatClose();
         try {
           let response: any = await invoke("open_session_chat", {
-            serverId: activeServer?.id,
+            serverId: currentService?.id,
             sessionId: chat?._id,
           });
           response = JSON.parse(response || "")
@@ -486,10 +486,10 @@ const ChatAI = memo(
       }, [isSidebarOpenChat, handleOutsideClick]);
 
       const getChatHistory = async () => {
-        if (!activeServer?.id) return;
+        if (!currentService?.id) return;
         try {
           let response: any = await invoke("chat_history", {
-            serverId: activeServer?.id,
+            serverId: currentService?.id,
             from: 0,
             size: 20,
           });
@@ -508,8 +508,8 @@ const ChatAI = memo(
       };
 
       useEffect(() => {
-        activeServer && !setIsSidebarOpen && getChatHistory();
-      }, [activeServer]);
+        currentService && !setIsSidebarOpen && getChatHistory();
+      }, [currentService]);
 
       return (
         <div

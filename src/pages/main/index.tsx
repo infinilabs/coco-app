@@ -2,14 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { LogicalSize } from "@tauri-apps/api/dpi";
+import clsx from "clsx";
 
 import InputBox from "@/components/Search/InputBox";
 import Search from "@/components/Search/Search";
 import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
 import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
-import ApiDetails from "@/components/Common/ApiDetails";
-import clsx from "clsx";
 import { isWin } from "@/utils/platform";
 
 export default function DesktopApp() {
@@ -161,8 +160,6 @@ export default function DesktopApp() {
           />
         ) : null}
       </div>
-
-      <ApiDetails />
     </div>
   );
 }

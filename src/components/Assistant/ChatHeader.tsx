@@ -30,6 +30,7 @@ import logoImg from "@/assets/icon.svg";
 import { useAppStore, IServer } from "@/stores/appStore";
 import { useChatStore } from "@/stores/chatStore";
 import type { Chat } from "./types";
+import { useConnectStore } from "@/stores/connectStore";
 
 interface ChatHeaderProps {
   onCreateNewChat: () => void;
@@ -56,8 +57,9 @@ export function ChatHeader({
 
   const [serverList, setServerList] = useState<IServer[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const activeServer = useAppStore((state) => state.activeServer);
-  const setActiveServer = useAppStore((state) => state.setActiveServer);
+
+  const currentService = useConnectStore((state) => state.currentService);
+  const setCurrentService = useConnectStore((state) => state.setCurrentService);
 
   const fetchServers = async (resetSelection: boolean) => {
     invoke("list_coco_servers")
@@ -67,7 +69,7 @@ export function ChatHeader({
         );
         console.log("list_coco_servers", enabledServers);
         setServerList(enabledServers);
-        if (resetSelection && enabledServers.length > 0 && !activeServer) {
+        if (resetSelection && enabledServers.length > 0 && !currentService) {
           switchServer(enabledServers[enabledServers.length - 1]);
         }
       })
@@ -101,7 +103,7 @@ export function ChatHeader({
   const switchServer = async (server: IServer) => {
     try {
       // Switch UI first, then switch server connection
-      setActiveServer(server);
+      setCurrentService(server);
       setEndpoint(server.endpoint);
       setMessages(""); // Clear previous messages
       onCreateNewChat();
@@ -255,7 +257,7 @@ export function ChatHeader({
                       key={server.id}
                       onClick={() => switchServer(server)}
                       className={`w-full flex items-center justify-between p-2 rounded-lg transition-colors whitespace-nowrap ${
-                        activeServer?.id === server.id
+                        currentService?.id === server.id
                           ? "bg-gray-100 dark:bg-gray-800"
                           : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
                       }`}
@@ -284,7 +286,7 @@ export function ChatHeader({
                           }`}
                         />
                         <div className="w-4 h-4">
-                          {activeServer?.id === server.id && (
+                          {currentService?.id === server.id && (
                             <Check className="w-full h-full text-gray-500 dark:text-gray-400" />
                           )}
                         </div>

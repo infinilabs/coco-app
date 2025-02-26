@@ -1,7 +1,6 @@
 import { useRouteError } from "react-router-dom";
 
 import errorImg from "./assets/error_page.png";
-import ApiDetails from "@/components/Common/ApiDetails";
 
 export default function ErrorPage() {
   const error: any = useRouteError();
@@ -22,23 +21,6 @@ export default function ErrorPage() {
         <div className="w-[380px] h-[45px] font-normal text-[10px] text-[rgba(135,135,135,0.85)] leading-[16px] text-center">
           <i>{error.statusText || error.message}</i>
         </div>
-      </div>
-
-      <ApiDetails />
-    </div>
-  );
-
-  return (
-    <div id="error-page">
-      <div className="error-content">
-        <h1 className="error-title">Oops!</h1>
-        <p className="error-message">
-          Sorry, there is an error in your Coco App. Please contact the
-          administrator.
-        </p>
-        <p className="error-details">
-          <i>{error.statusText || error.message}</i>
-        </p>
       </div>
     </div>
   );

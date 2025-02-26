@@ -44,8 +44,6 @@ export type IAppStore = {
   setTabIndex: (tabName: string) => void;
   isPinned: boolean,
   setIsPinned: (isPinned: boolean) => void,
-  activeServer: IServer | null,
-  setActiveServer: (activeServer: IServer | null) => void,
   initializeListeners: () => void;
 };
 
@@ -99,8 +97,6 @@ export const useAppStore = create<IAppStore>()(
       },
       isPinned: false,
       setIsPinned: (isPinned: boolean) => set({ isPinned }),
-      activeServer: null,
-      setActiveServer: (activeServer: IServer | null) => set({ activeServer }),
       initializeListeners: () => {
         listen(ENDPOINT_CHANGE_EVENT, (event: any) => {
           const { endpoint, endpoint_http, endpoint_websocket } = event.payload;
@@ -119,7 +115,6 @@ export const useAppStore = create<IAppStore>()(
         endpoint_http: state.endpoint_http,
         endpoint_websocket: state.endpoint_websocket,
         language: state.language,
-        activeServer: state.activeServer,
       }),
     }
   )
