@@ -4,15 +4,14 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
-  useMemo,
 } from "react";
-import { isTauri } from "@tauri-apps/api/core";
+import { invoke, isTauri } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
 import { debounce } from "lodash-es";
 import { listen } from "@tauri-apps/api/event";
-import { invoke } from "@tauri-apps/api/core";
 
 import { ChatMessage } from "./ChatMessage";
 import type { Chat } from "./types";
@@ -198,7 +197,7 @@ const ChatAI = memo(
       const simulateAssistantResponse = useCallback(() => {
         if (!updatedChat) return;
 
-        // console.log("updatedChat:", updatedChat);
+        console.log("updatedChat:", updatedChat);
         setActiveChat(updatedChat);
         setMessages("");
         setCurMessage("");
@@ -279,8 +278,8 @@ const ChatAI = memo(
         chatClose();
         setActiveChat(undefined);
         clearChatPage && clearChatPage();
-      }
-      
+      };
+
       const createNewChat = useCallback(async (value: string = "") => {
         chatClose();
         try {
@@ -316,27 +315,23 @@ const ChatAI = memo(
             let response: any = await invoke("send_message", {
               serverId: currentService?.id,
               sessionId: newChat?._id,
-              websocketId: websocketIdRef.current,
               query_params: {
                 search: isSearchActive,
                 deep_thinking: isDeepThinkActive,
               },
               message: content,
             });
-            response = JSON.parse(response || "")
+            response = JSON.parse(response || "");
             console.log("_send", response, websocketIdRef.current);
             curIdRef.current = response[0]?._id;
 
             const updatedChat: Chat = {
               ...newChat,
-              messages: [
-                ...(newChat?.messages || []),
-                ...(response || []),
-              ],
+              messages: [...(newChat?.messages || []), ...(response || [])],
             };
 
             changeInput && changeInput("");
-            // console.log("updatedChat2", updatedChat);
+            console.log("updatedChat2", updatedChat);
             setActiveChat(updatedChat);
             setIsTyping(true);
             setCurChatEnd(false);
@@ -354,7 +349,7 @@ const ChatAI = memo(
             serverId: currentService?.id,
             sessionId: activeChat?._id,
           });
-          response = JSON.parse(response || "")
+          response = JSON.parse(response || "");
           console.log("_close", response);
         } catch (error) {
           console.error("Failed to fetch user data:", error);
@@ -374,7 +369,7 @@ const ChatAI = memo(
             serverId: currentService?.id,
             sessionId: activeChat?._id,
           });
-          response = JSON.parse(response || "")
+          response = JSON.parse(response || "");
           console.log("_cancel", response);
         } catch (error) {
           console.error("Failed to fetch user data:", error);
@@ -423,10 +418,9 @@ const ChatAI = memo(
             from: 0,
             size: 20,
           });
-          response = JSON.parse(response || "")
+          response = JSON.parse(response || "");
           console.log("id_history", response);
           const hits = response?.hits?.hits || [];
-          console.log("his", hits[hits.length - 1]?._source?.message) 
           const updatedChat: Chat = {
             ...chat,
             messages: hits,
@@ -444,7 +438,7 @@ const ChatAI = memo(
             serverId: currentService?.id,
             sessionId: chat?._id,
           });
-          response = JSON.parse(response || "")
+          response = JSON.parse(response || "");
           console.log("_open", response);
           chatHistory(response);
         } catch (error) {
@@ -494,7 +488,7 @@ const ChatAI = memo(
             from: 0,
             size: 20,
           });
-          response = JSON.parse(response || "")
+          response = JSON.parse(response || "");
           console.log("_history", response);
           const hits = response?.hits?.hits || [];
           setChats(hits);
