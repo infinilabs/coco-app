@@ -13,6 +13,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
+import {
+  Checkbox,
+  Popover,
+  PopoverButton,
+  PopoverPanel,
+} from "@headlessui/react";
+import clsx from "clsx";
+import { useReactive } from "ahooks";
 
 import ChatSwitch from "@/components/Common/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
@@ -21,16 +29,8 @@ import StopIcon from "@/icons/Stop";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
-import {
-  Checkbox,
-  Popover,
-  PopoverButton,
-  PopoverPanel,
-} from "@headlessui/react";
-import clsx from "clsx";
 import { useConnectStore } from "@/stores/connectStore";
-import TypeIcon from "../Common/Icons/TypeIcon";
-import { useReactive, useUpdateEffect } from "ahooks";
+import TypeIcon from "@/components/Common/Icons/TypeIcon";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -87,7 +87,7 @@ export default function ChatInput({
   const sourceDataIds = useSearchStore((state) => state.sourceDataIds);
   const setSourceDataIds = useSearchStore((state) => state.setSourceDataIds);
 
-  const getDataSourceList = () => {
+  const getDataSourceList = useCallback(() => {
     if (!currentService?.id) return [];
 
     state.dataSourceList = [
@@ -95,20 +95,24 @@ export default function ChatInput({
         id: "all",
         name: t("search.input.searchPopover.allScope"),
       },
-      ...datasourceData[currentService.id],
+      ...(datasourceData[currentService.id] || []),
     ];
 
     onSelectDataSource("all", true, true);
-  };
+  }, [currentService?.id, datasourceData, t]);
 
   useEffect(() => {
     getDataSourceList();
-  }, [currentService, datasourceData, i18n.language]);
+  }, [getDataSourceList]);
 
   const [isRefreshDataSource, setIsRefreshDataSource] = useState(false);
 
   useEffect(() => {
-    setSourceData(undefined);
+    return () => {
+      changeInput("");
+      setSourceData(undefined);
+      setIsCommandPressed(false);
+    };
   }, []);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -129,6 +133,7 @@ export default function ChatInput({
   const handleSubmit = useCallback(() => {
     const trimmedValue = inputValue.trim();
     if (trimmedValue && !disabled) {
+      changeInput("");
       onSend(trimmedValue);
     }
   }, [inputValue, disabled, onSend]);

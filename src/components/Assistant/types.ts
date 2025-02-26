@@ -22,5 +22,6 @@ export interface Chat {
   found?: boolean;
   title?: string;
   messages?: any[];
+  payload?: string;
   [key: string]: any;
 }

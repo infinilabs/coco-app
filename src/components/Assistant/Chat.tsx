@@ -85,6 +85,7 @@ const ChatAI = memo(
       const [activeChat, setActiveChat] = useState<Chat>();
       const [isTyping, setIsTyping] = useState(false);
       const [timedoutShow, setTimedoutShow] = useState(false);
+      const [errorShow, setErrorShow] = useState(false);
       const messagesEndRef = useRef<HTMLDivElement>(null);
 
       const [curMessage, setCurMessage] = useState("");
@@ -151,6 +152,8 @@ const ChatAI = memo(
               try {
                 // console.log("cleanedData", cleanedData);
                 const chunkData = JSON.parse(cleanedData);
+                console.log("msg1:", chunkData, curIdRef.current);
+
                 if (chunkData.reply_to_message === curIdRef.current) {
                   handleMessageChunk(chunkData.message_chunk);
                   return chunkData.message_chunk;
@@ -285,6 +288,8 @@ const ChatAI = memo(
       };
 
       const createNewChat = useCallback(async (value: string = "") => {
+        setTimedoutShow(false);
+        setErrorShow(false);
         chatClose();
         try {
           console.log("sourceDataIds", sourceDataIds);
@@ -299,7 +304,7 @@ const ChatAI = memo(
           });
           console.log("_new", response);
           const newChat: Chat = response;
-          curIdRef.current = response?._id;
+          curIdRef.current = response?.payload;
 
           newChat._source = {
             message: value,
@@ -315,6 +320,7 @@ const ChatAI = memo(
           setIsTyping(true);
           setCurChatEnd(false);
         } catch (error) {
+          setErrorShow(true);
           console.error("Failed to fetch user data:", error);
         }
       }, []);
@@ -333,6 +339,7 @@ const ChatAI = memo(
           newChat = newChat || activeChat;
           if (!newChat?._id || !content) return;
           setTimedoutShow(false);
+          setErrorShow(false);
           try {
             console.log("sourceDataIds", sourceDataIds);
             let response: any = await invoke("send_message", {
@@ -360,6 +367,7 @@ const ChatAI = memo(
             setIsTyping(true);
             setCurChatEnd(false);
           } catch (error) {
+            setErrorShow(true);
             console.error("Failed to fetch user data:", error);
           }
         },
@@ -612,6 +620,20 @@ const ChatAI = memo(
                   _source: {
                     type: "assistant",
                     message: t("assistant.chat.timedout"),
+                  },
+                }}
+                isTyping={false}
+              />
+            ) : null}
+
+            {errorShow ? (
+              <ChatMessage
+                key={"error"}
+                message={{
+                  _id: "error",
+                  _source: {
+                    type: "assistant",
+                    message: t("assistant.chat.error"),
                   },
                 }}
                 isTyping={false}

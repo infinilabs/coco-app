@@ -114,7 +114,8 @@
       "greetings": "Hi! I’m Coco, nice to meet you. I can help answer your questions by tapping into the internet and your data sources. How can I assist you today?",
       "timedout": "Request timed out. Please try again later.",
       "noServers": "No servers found",
-      "addServer": "Add Server"
+      "addServer": "Add Server",
+      "error": "Request error. Please try again later."
     },
     "input": {
       "stopMessage": "Stop message",

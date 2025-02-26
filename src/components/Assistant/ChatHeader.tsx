@@ -44,7 +44,6 @@ export function ChatHeader({
   onCreateNewChat,
   onOpenChatAI,
   setIsSidebarOpen,
-  isSidebarOpen,
   activeChat,
 }: ChatHeaderProps) {
   const { t } = useTranslation();

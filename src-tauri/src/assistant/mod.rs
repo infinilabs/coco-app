@@ -114,7 +114,6 @@ pub async fn cancel_session_chat<R: Runtime>(
     handle_raw_response(response).await?
 }
 
-
 #[tauri::command]
 pub async fn new_chat<R: Runtime>(
     app_handle: AppHandle<R>,
@@ -149,6 +148,8 @@ pub async fn new_chat<R: Runtime>(
     if chat_response.result != "created" {
         return Err(format!("Unexpected result: {}", chat_response.result));
     }
+
+    println!("chat_response: {:?}", chat_response);
 
     Ok(chat_response)
 }
