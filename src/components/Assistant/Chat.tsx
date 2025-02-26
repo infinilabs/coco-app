@@ -30,6 +30,7 @@ interface ChatAIProps {
   changeInput?: (val: string) => void;
   setIsSidebarOpen?: (value: boolean) => void;
   isSidebarOpen?: boolean;
+  clearChatPage?: () => void;
 }
 
 export interface ChatAIRef {
@@ -38,6 +39,7 @@ export interface ChatAIRef {
   connected: boolean;
   reconnect: () => void;
   handleSendMessage: (value: string) => void;
+  clearChat: () => void;
 }
 
 const ChatAI = memo(
@@ -51,6 +53,7 @@ const ChatAI = memo(
         activeChatProp,
         setIsSidebarOpen,
         isSidebarOpen = false,
+        clearChatPage,
       },
       ref
     ) => {
@@ -64,6 +67,7 @@ const ChatAI = memo(
         connected: connected,
         reconnect: reconnect,
         handleSendMessage: handleSendMessage,
+        clearChat: clearChat,
       }));
 
       const { createWin } = useWindows();
@@ -271,6 +275,12 @@ const ChatAI = memo(
         scrollToBottom();
       }, [activeChat?.messages, isTyping, curMessage]);
 
+      const clearChat = () => {
+        chatClose();
+        setActiveChat(undefined);
+        clearChatPage && clearChatPage();
+      }
+      
       const createNewChat = useCallback(async (value: string = "") => {
         chatClose();
         try {
@@ -278,7 +288,6 @@ const ChatAI = memo(
             serverId: activeServer?.id,
             message: value,
           });
-          response = JSON.parse(response || "")
           console.log("_new", response);
           const newChat: Chat = response;
 
@@ -477,7 +486,6 @@ const ChatAI = memo(
       }, [isSidebarOpenChat, handleOutsideClick]);
 
       const getChatHistory = async () => {
-        console.log(11111, activeServer?.id)
         if (!activeServer?.id) return;
         try {
           let response: any = await invoke("chat_history", {
@@ -521,26 +529,25 @@ const ChatAI = memo(
               border-r border-gray-200 dark:border-gray-700 rounded-tl-xl rounded-bl-xl
               overflow-hidden`}
             >
-              {activeChat ? (
-                <Sidebar
-                  chats={chats}
-                  activeChat={activeChat}
-                  onNewChat={() => init("")}
-                  onSelectChat={onSelectChat}
-                  onDeleteChat={deleteChat}
-                />
-              ) : null}
+              <Sidebar
+                chats={chats}
+                activeChat={activeChat}
+                onNewChat={clearChat}
+                onSelectChat={onSelectChat}
+                onDeleteChat={deleteChat}
+              />
             </div>
           )}
 
           <ChatHeader
-            onCreateNewChat={createNewChat}
+            onCreateNewChat={clearChat}
             onOpenChatAI={openChatAI}
             setIsSidebarOpen={() => {
               setIsSidebarOpenChat(!isSidebarOpenChat);
               setIsSidebarOpen && setIsSidebarOpen(!isSidebarOpenChat);
             }}
             isSidebarOpen={isSidebarOpenChat}
+            activeChat={activeChat}
           />
 
           {/* Chat messages */}

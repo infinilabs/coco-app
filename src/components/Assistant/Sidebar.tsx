@@ -4,7 +4,7 @@ import { MessageSquare, Plus } from "lucide-react";
 import type { Chat } from "./types";
 interface SidebarProps {
   chats: Chat[];
-  activeChat: Chat;
+  activeChat: Chat | undefined;
   onNewChat: () => void;
   onSelectChat: (chat: Chat) => void;
   onDeleteChat: (chatId: string) => void;
@@ -36,7 +36,7 @@ export function Sidebar({
           <div
             key={chat._id}
             className={`group relative rounded-xl transition-all ${
-              activeChat._id === chat._id
+              activeChat?._id === chat._id
                 ? "bg-gray-100/80 dark:bg-gray-700/50"
                 : "hover:bg-gray-50/80 dark:hover:bg-gray-600/30"
             }`}
@@ -47,14 +47,14 @@ export function Sidebar({
             >
               <MessageSquare
                 className={`h-4 w-4 flex-shrink-0 ${
-                  activeChat._id === chat._id
+                  activeChat?._id === chat._id
                     ? "text-[#0072FF] dark:text-[#0072FF]"
                     : "text-gray-400 dark:text-gray-500"
                 }`}
               />
               <span
                 className={`truncate ${
-                  activeChat._id === chat._id
+                  activeChat?._id === chat._id
                     ? "text-gray-900 dark:text-white font-medium"
                     : "text-gray-600 dark:text-gray-300"
                 }`}
@@ -62,7 +62,7 @@ export function Sidebar({
                 {chat.title || chat._id}
               </span>
             </button>
-            {activeChat._id === chat._id && (
+            {activeChat?._id === chat._id && (
               <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-full bg-[#0072FF]" />
             )}
           </div>

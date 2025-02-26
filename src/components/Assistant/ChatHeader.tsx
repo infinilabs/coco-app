@@ -29,12 +29,14 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import logoImg from "@/assets/icon.svg";
 import { useAppStore, IServer } from "@/stores/appStore";
 import { useChatStore } from "@/stores/chatStore";
+import type { Chat } from "./types";
 
 interface ChatHeaderProps {
   onCreateNewChat: () => void;
   onOpenChatAI: () => void;
   setIsSidebarOpen: () => void;
   isSidebarOpen: boolean;
+  activeChat: Chat | undefined;
 }
 
 export function ChatHeader({
@@ -42,6 +44,7 @@ export function ChatHeader({
   onOpenChatAI,
   setIsSidebarOpen,
   isSidebarOpen,
+  activeChat,
 }: ChatHeaderProps) {
   const { t } = useTranslation();
 
@@ -181,6 +184,12 @@ export function ChatHeader({
         >
           <MessageSquarePlus className="h-4 w-4" />
         </button>
+      </div>
+
+      <div>
+        <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+          {activeChat?.title || activeChat?._id}
+        </h2>
       </div>
 
       <div className="flex items-center gap-2">

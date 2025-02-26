@@ -34,6 +34,8 @@ export default function Chat({}: ChatProps) {
     try {
       let response: any = await invoke("chat_history", {
         serverId: activeServer?.id,
+        from: 0,
+        size: 20,
       });
       response = JSON.parse(response || "")
       console.log("_history", response);
@@ -129,6 +131,11 @@ export default function Chat({}: ChatProps) {
     }
   };
 
+  const clearChat = () => {
+    chatClose();
+    setActiveChat(undefined);
+  }
+
   return (
     <div className="h-screen">
       <div className="h-[100%] flex">
@@ -139,15 +146,15 @@ export default function Chat({}: ChatProps) {
               isSidebarOpen ? "translate-x-0" : "-translate-x-full"
             } transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block bg-gray-100 dark:bg-gray-800`}
           >
-            {activeChat ? (
-              <Sidebar
-                chats={chats}
-                activeChat={activeChat}
-                onNewChat={() => chatAIRef.current?.init("")}
-                onSelectChat={onSelectChat}
-                onDeleteChat={deleteChat}
-              />
-            ) : null}
+            <Sidebar
+              chats={chats}
+              activeChat={activeChat}
+              onNewChat={() => {
+                chatAIRef.current?.clearChat();
+              }}
+              onSelectChat={onSelectChat}
+              onDeleteChat={deleteChat}
+            />
           </div>
         ) : null}
 
@@ -164,6 +171,7 @@ export default function Chat({}: ChatProps) {
             isDeepThinkActive={isDeepThinkActive}
             setIsSidebarOpen={setIsSidebarOpen}
             isSidebarOpen={isSidebarOpen}
+            clearChatPage={clearChat}
           />
 
           {/* Input area */}
