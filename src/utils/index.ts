@@ -100,13 +100,11 @@ export const formatThinkingMessage = (message: string) => {
 
   if (!message) return segments;
 
-  // 先处理 Source 标签
   const sourceRegex = /(<Source.*?>.*?<\/Source>)/gs;
   const parts = message.split(sourceRegex);
 
   parts.forEach(part => {
     if (part.startsWith('<Source')) {
-      // Source 标签部分
       segments.push({
         text: part,
         isThinking: false,
@@ -114,12 +112,10 @@ export const formatThinkingMessage = (message: string) => {
         isSource: true
       });
     } else {
-      // 处理剩余文本中的 think 标签
       const thinkParts = part.split(/(<think>.*?<\/think>)/s);
       
       thinkParts.forEach(thinkPart => {
         if (thinkPart.startsWith('<think>')) {
-          // 提取 think 标签中的内容
           const content = thinkPart.replace(/<\/?think>/g, '');
           segments.push({
             text: '',
@@ -127,7 +123,6 @@ export const formatThinkingMessage = (message: string) => {
             thinkContent: content.trim()
           });
         } else if (thinkPart.trim()) {
-          // 普通文本
           segments.push({
             text: thinkPart.trim(),
             isThinking: false,
