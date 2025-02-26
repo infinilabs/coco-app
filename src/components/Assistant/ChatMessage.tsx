@@ -54,43 +54,37 @@ export const ChatMessage = memo(function ChatMessage({
                 <>
                   {segments.map((segment, index) => (
                     <span key={index}>
-                      {segment.text?.includes("<Source") ||
-                      segment.isThinking ||
-                      segment.thinkContent ? (
+                      {segment.isSource ? (
+                        <SourceResult text={segment.text} />
+                      ) : segment.isThinking ? (
                         <div className="space-y-2 mb-3 w-full">
-                          {segment.text?.includes("<Source") && (
-                            <SourceResult text={segment.text} />
-                          )}
-                          {segment.isThinking || segment.thinkContent ? (
-                            <button
-                              onClick={() =>
-                                setIsThinkingExpanded((prev) => !prev)
-                              }
-                              className="inline-flex items-center gap-2 px-2 py-1 rounded-xl transition-colors border border-[#E6E6E6] dark:border-[#272626]"
-                            >
-                              {isTyping ? (
-                                <>
-                                  <Brain className="w-4 h-4 animate-pulse text-[#999999]" />
-                                  <span className="text-xs text-[#999999] italic">
-                                    {t("assistant.message.thinking")}
-                                  </span>
-                                </>
+                          <button
+                            onClick={() => setIsThinkingExpanded((prev) => !prev)}
+                            className="inline-flex items-center gap-2 px-2 py-1 rounded-xl transition-colors border border-[#E6E6E6] dark:border-[#272626]"
+                          >
+                            {isTyping ? (
+                              <>
+                                <Brain className="w-4 h-4 animate-pulse text-[#999999]" />
+                                <span className="text-xs text-[#999999] italic">
+                                  {t("assistant.message.thinking")}
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <Brain className="w-4 h-4 text-[#999999]" />
+                                <span className="text-xs text-[#999999]">
+                                  {t("assistant.message.thoughtTime")}
+                                </span>
+                              </>
+                            )}
+                            {segment.thinkContent && (
+                              isThinkingExpanded ? (
+                                <ChevronUp className="w-4 h-4" />
                               ) : (
-                                <>
-                                  <Brain className="w-4 h-4 text-[#999999]" />
-                                  <span className="text-xs text-[#999999]">
-                                    {t("assistant.message.thoughtTime")}
-                                  </span>
-                                </>
-                              )}
-                              {segment.thinkContent &&
-                                (isThinkingExpanded ? (
-                                  <ChevronUp className="w-4 h-4" />
-                                ) : (
-                                  <ChevronDown className="w-4 h-4" />
-                                ))}
-                            </button>
-                          ) : null}
+                                <ChevronDown className="w-4 h-4" />
+                              )
+                            )}
+                          </button>
                           {isThinkingExpanded && segment.thinkContent && (
                             <div className="pl-2 border-l-2 border-[e5e5e5]">
                               <div className="text-[#8b8b8b] dark:text-[#a6a6a6] space-y-2">

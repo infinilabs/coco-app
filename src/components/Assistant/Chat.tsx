@@ -275,8 +275,10 @@ const ChatAI = memo(
       }, [activeChat?.messages, isTyping, curMessage]);
 
       const clearChat = () => {
+        console.log("clearChat");
         chatClose();
         setActiveChat(undefined);
+        setCurChatEnd(true);
         clearChatPage && clearChatPage();
       };
 
@@ -289,9 +291,21 @@ const ChatAI = memo(
           });
           console.log("_new", response);
           const newChat: Chat = response;
+          curIdRef.current = response?._id;
 
-          setActiveChat(newChat);
-          handleSendMessage(value, newChat);
+          newChat._source = {
+            message: value,
+          };
+          const updatedChat: Chat = {
+            ...newChat,
+            messages: [newChat],
+          };
+
+          changeInput && changeInput("");
+          console.log("updatedChat2", updatedChat);
+          setActiveChat(updatedChat);
+          setIsTyping(true);
+          setCurChatEnd(false);
         } catch (error) {
           console.error("Failed to fetch user data:", error);
         }
@@ -492,11 +506,6 @@ const ChatAI = memo(
           console.log("_history", response);
           const hits = response?.hits?.hits || [];
           setChats(hits);
-          if (hits[0]) {
-            onSelectChat(hits[0]);
-          } else {
-            init("");
-          }
         } catch (error) {
           console.error("Failed to fetch user data:", error);
         }
