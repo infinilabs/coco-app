@@ -20,6 +20,7 @@ import { useWindows } from "@/hooks/useWindows";
 import { ChatHeader } from "./ChatHeader";
 import { Sidebar } from "@/components/Assistant/Sidebar";
 import { useConnectStore } from "@/stores/connectStore";
+import { useSearchStore } from "@/stores/searchStore";
 
 interface ChatAIProps {
   isTransitioned: boolean;
@@ -97,6 +98,7 @@ const ChatAI = memo(
 
       const [isSidebarOpenChat, setIsSidebarOpenChat] = useState(isSidebarOpen);
       const [chats, setChats] = useState<Chat[]>([]);
+      const sourceDataIds = useSearchStore((state) => state.sourceDataIds);
 
       useEffect(() => {
         activeChatProp && setActiveChat(activeChatProp);
@@ -275,23 +277,43 @@ const ChatAI = memo(
       }, [activeChat?.messages, isTyping, curMessage]);
 
       const clearChat = () => {
+        console.log("clearChat");
         chatClose();
         setActiveChat(undefined);
+        setCurChatEnd(true);
         clearChatPage && clearChatPage();
       };
 
       const createNewChat = useCallback(async (value: string = "") => {
         chatClose();
         try {
+          console.log("sourceDataIds", sourceDataIds);
           let response: any = await invoke("new_chat", {
             serverId: currentService?.id,
             message: value,
+            queryParams: {
+              search: isSearchActive,
+              deep_thinking: isDeepThinkActive,
+              datasource: sourceDataIds.join(","),
+            },
           });
           console.log("_new", response);
           const newChat: Chat = response;
+          curIdRef.current = response?._id;
 
-          setActiveChat(newChat);
-          handleSendMessage(value, newChat);
+          newChat._source = {
+            message: value,
+          };
+          const updatedChat: Chat = {
+            ...newChat,
+            messages: [newChat],
+          };
+
+          changeInput && changeInput("");
+          console.log("updatedChat2", updatedChat);
+          setActiveChat(updatedChat);
+          setIsTyping(true);
+          setCurChatEnd(false);
         } catch (error) {
           console.error("Failed to fetch user data:", error);
         }
@@ -312,12 +334,14 @@ const ChatAI = memo(
           if (!newChat?._id || !content) return;
           setTimedoutShow(false);
           try {
+            console.log("sourceDataIds", sourceDataIds);
             let response: any = await invoke("send_message", {
               serverId: currentService?.id,
               sessionId: newChat?._id,
-              query_params: {
+              queryParams: {
                 search: isSearchActive,
                 deep_thinking: isDeepThinkActive,
+                datasource: sourceDataIds.join(","),
               },
               message: content,
             });
@@ -492,11 +516,6 @@ const ChatAI = memo(
           console.log("_history", response);
           const hits = response?.hits?.hits || [];
           setChats(hits);
-          if (hits[0]) {
-            onSelectChat(hits[0]);
-          } else {
-            init("");
-          }
         } catch (error) {
           console.error("Failed to fetch user data:", error);
         }
