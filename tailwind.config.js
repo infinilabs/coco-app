@@ -43,4 +43,5 @@ export default {
   plugins: [],
   mode: "jit",
   darkMode: ["class", '[data-theme="dark"]'],
+  safelist: ["bg-[green]", "bg-[red]", "bg-[yellow]"],
 };
