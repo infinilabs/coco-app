@@ -12,11 +12,13 @@ import { SourceResult } from "./SourceResult";
 interface ChatMessageProps {
   message: Message;
   isTyping?: boolean;
+  isThinkTyping?: boolean;
 }
 
 export const ChatMessage = memo(function ChatMessage({
   message,
   isTyping,
+  isThinkTyping,
 }: ChatMessageProps) {
   const { t } = useTranslation();
   const [isThinkingExpanded, setIsThinkingExpanded] = useState(true);
@@ -43,10 +45,10 @@ export const ChatMessage = memo(function ChatMessage({
             ) : segment.isThinking ? (
               <div className="space-y-2 mb-3 w-full">
                 <button
-                  onClick={() => setIsThinkingExpanded(prev => !prev)}
+                  onClick={() => setIsThinkingExpanded((prev) => !prev)}
                   className="inline-flex items-center gap-2 px-2 py-1 rounded-xl transition-colors border border-[#E6E6E6] dark:border-[#272626]"
                 >
-                  {isTyping ? (
+                  {isThinkTyping ? (
                     <>
                       <Brain className="w-4 h-4 animate-pulse text-[#999999]" />
                       <span className="text-xs text-[#999999] italic">
@@ -61,13 +63,12 @@ export const ChatMessage = memo(function ChatMessage({
                       </span>
                     </>
                   )}
-                  {segment.thinkContent && (
-                    isThinkingExpanded ? (
+                  {segment.thinkContent &&
+                    (isThinkingExpanded ? (
                       <ChevronUp className="w-4 h-4" />
                     ) : (
                       <ChevronDown className="w-4 h-4" />
-                    )
-                  )}
+                    ))}
                 </button>
                 {isThinkingExpanded && segment.thinkContent && (
                   <div className="pl-2 border-l-2 border-[e5e5e5]">
@@ -104,12 +105,26 @@ export const ChatMessage = memo(function ChatMessage({
   };
 
   return (
-    <div className={`py-8 flex ${isAssistant ? "justify-start" : "justify-end"}`}>
-      <div className={`max-w-3xl px-4 sm:px-6 lg:px-8 flex gap-4 ${isAssistant ? "" : "flex-row-reverse"}`}>
-        <div className={`flex-1 space-y-2 ${isAssistant ? "text-left" : "text-right"}`}>
+    <div
+      className={`py-8 flex ${isAssistant ? "justify-start" : "justify-end"}`}
+    >
+      <div
+        className={`max-w-3xl px-4 sm:px-6 lg:px-8 flex gap-4 ${
+          isAssistant ? "" : "flex-row-reverse"
+        }`}
+      >
+        <div
+          className={`flex-1 space-y-2 ${
+            isAssistant ? "text-left" : "text-right"
+          }`}
+        >
           <p className="flex items-center gap-4 font-semibold text-sm text-[#333] dark:text-[#d8d8d8]">
             {isAssistant ? (
-              <img src={logoImg} className="w-6 h-6" alt={t("assistant.message.logo")} />
+              <img
+                src={logoImg}
+                className="w-6 h-6"
+                alt={t("assistant.message.logo")}
+              />
             ) : null}
             {isAssistant ? t("assistant.message.aiName") : ""}
           </p>

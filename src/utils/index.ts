@@ -90,49 +90,58 @@ export const formatter = {
   },
 };
 
-export const formatThinkingMessage = (message: string) => {
-  const segments: Array<{
-    text: string;
-    isThinking: boolean;
-    thinkContent: string;
-    isSource?: boolean;
-  }> = [];
+export function formatThinkingMessage(message: string) {
+  const segments = [];
+  let currentText = '';
 
-  if (!message) return segments;
+  const regex = /<(Think|Source[^>]*)>([\s\S]*?)<\/\1>/gi;
+  let lastIndex = 0;
+  let match;
 
-  const sourceRegex = /(<Source.*?>.*?<\/Source>)/gs;
-  const parts = message.split(sourceRegex);
+  while ((match = regex.exec(message)) !== null) {
+    if (match.index > lastIndex) {
+      currentText = message.slice(lastIndex, match.index);
+      if (currentText.trim()) {
+        segments.push({
+          text: currentText.trim(),
+          isSource: false,
+          isThinking: false
+        });
+      }
+    }
 
-  parts.forEach(part => {
-    if (part.startsWith('<Source')) {
+    const tagName = match[1].toLowerCase();
+    const content = match[2].trim();
+
+    if (tagName.startsWith('source')) {
       segments.push({
-        text: part,
-        isThinking: false,
-        thinkContent: '',
-        isSource: true
+        text: content,
+        isSource: true,
+        isThinking: false
       });
-    } else {
-      const thinkParts = part.split(/(<think>.*?<\/think>)/s);
-      
-      thinkParts.forEach(thinkPart => {
-        if (thinkPart.startsWith('<think>')) {
-          const content = thinkPart.replace(/<\/?think>/g, '');
-          segments.push({
-            text: '',
-            isThinking: true,
-            thinkContent: content.trim()
-          });
-        } else if (thinkPart.trim()) {
-          segments.push({
-            text: thinkPart.trim(),
-            isThinking: false,
-            thinkContent: ''
-          });
-        }
+    } else if (tagName === 'think') {
+      segments.push({
+        text: '',
+        isSource: false,
+        isThinking: true,
+        thinkContent: content
       });
     }
-  });
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < message.length) {
+    currentText = message.slice(lastIndex);
+    if (currentText.trim()) {
+      segments.push({
+        text: currentText.trim(),
+        isSource: false,
+        isThinking: false
+      });
+    }
+  }
 
   return segments;
-};
+}
 

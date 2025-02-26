@@ -18,27 +18,25 @@ export const ThinkingSteps = ({ currentStep = 4 }: ThinkingStepsProps) => {
   const steps: StepDetail[] = [
     {
       title: "Understand the query",
-      content: "草坪晚上浇水失去的水分，这导致水资源浪费。建议改变浇水时间：200-300毫升。",
+      content: "...",
     },
     {
       title: "Retrieve documents",
-      content: "检索相关文档中...",
+      content: "...",
     },
     {
       title: "Intelligent pre-selection",
-      content: "智能预选相关内容...",
+      content: "...",
     },
     {
       title: "Deep reading",
-      content: "深度阅读分析中...",
+      content: "...",
     },
   ];
 
   const toggleStep = (index: number) => {
-    setExpandedSteps(prev => 
-      prev.includes(index) 
-        ? prev.filter(i => i !== index)
-        : [...prev, index]
+    setExpandedSteps((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
     );
   };
 
@@ -72,11 +70,17 @@ export const ThinkingSteps = ({ currentStep = 4 }: ThinkingStepsProps) => {
                 {index < currentStep - 1 ? (
                   <span className="text-white text-xs">✓</span>
                 ) : (
-                  <span className="text-[#0072FF] text-xs animate-pulse">⋯</span>
+                  <span className="text-[#0072FF] text-xs animate-pulse">
+                    ⋯
+                  </span>
                 )}
               </div>
               <span className="text-xs text-[#333333] dark:text-[#D8D8D8]">
-                {t(`assistant.message.steps.${step.title.toLowerCase().replace(/\s+/g, "_")}`)}
+                {t(
+                  `assistant.message.steps.${step.title
+                    .toLowerCase()
+                    .replace(/\s+/g, "_")}`
+                )}
               </span>
             </div>
             {expandedSteps.includes(index) ? (

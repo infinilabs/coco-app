@@ -119,84 +119,128 @@ const ChatAI = memo(
 
       const messageTimeoutRef = useRef<NodeJS.Timeout>();
 
-      const [currentChunkType, setCurrentChunkType] = useState<'source' | 'think' | 'response' | null>(null);
-      const [currentChunkContent, setCurrentChunkContent] = useState('');
+      const [currentChunkType, setCurrentChunkType] = useState<
+        "source" | "think" | "response" | null
+      >(null);
+      const [currentChunkContent, setCurrentChunkContent] = useState("");
+      const [thinkBuffer, setThinkBuffer] = useState("");
+
+      const handleChunkContent = useCallback(
+        (type: string, content: string) => {
+          switch (type) {
+            case "source":
+              handleMessageChunk(`<Source total="1">${content}</Source>\n`);
+              break;
+            case "think":
+              handleMessageChunk(`<Think>${content}</Think>\n`);
+              break;
+            case "response":
+              handleMessageChunk(content);
+              break;
+          }
+        },
+        [handleMessageChunk]
+      );
+
+      const [showThinkTyping, setShowThinkTyping] = useState(false);
 
       const dealMsg = useCallback(
         (msg: string) => {
-          // console.log("msg:", msg);
           if (messageTimeoutRef.current) {
             clearTimeout(messageTimeoutRef.current);
           }
 
-          if (msg.includes("PRIVATE")) {
-            messageTimeoutRef.current = setTimeout(() => {
-              if (!curChatEnd && isTyping) {
-                console.log("AI response timeout");
-                setTimedoutShow(true);
-                cancelChat();
-              }
-            }, 30000);
+          if (!msg.includes("PRIVATE")) return;
 
-            if (msg.includes("assistant finished output")) {
-              if (messageTimeoutRef.current) {
-                clearTimeout(messageTimeoutRef.current);
-              }
-              console.log("AI finished output");
-              setCurChatEnd(true);
-            } else {
-              const cleanedData = msg.replace(/^PRIVATE /, "");
-              try {
-                // console.log("cleanedData", cleanedData);
-                const chunkData = JSON.parse(cleanedData);
-                console.log("msg1:", chunkData);
+          messageTimeoutRef.current = setTimeout(() => {
+            if (!curChatEnd && isTyping) {
+              console.log("AI response timeout");
+              setTimedoutShow(true);
+              cancelChat();
+            }
+          }, 30000);
 
-                if (chunkData.reply_to_message === curIdRef.current) {
-                  if (chunkData.chunk_type !== currentChunkType && currentChunkContent) {
-                    if (currentChunkType === 'source') {
-                      handleMessageChunk(`<Source total="1">${currentChunkContent}</Source>\n`);
-                    } else if (currentChunkType === 'think') {
-                      handleMessageChunk(`<think>${currentChunkContent}</think>\n`);
-                    } else if (currentChunkType === 'response') {
-                      handleMessageChunk(currentChunkContent);
-                    }
-                    setCurrentChunkContent('');
-                  }
-        
-                  setCurrentChunkType(chunkData.chunk_type);
-                  setCurrentChunkContent(prev => prev + chunkData.message_chunk);
-                  
-                  return chunkData.message_chunk;
+          if (msg.includes("assistant finished output")) {
+            clearTimeout(messageTimeoutRef.current);
+            console.log("AI finished output");
+            setCurChatEnd(true);
+            return;
+          }
+
+          const cleanedData = msg.replace(/^PRIVATE /, "");
+          try {
+            const chunkData = JSON.parse(cleanedData);
+
+            if (chunkData.reply_to_message !== curIdRef.current) return;
+
+            if (
+              chunkData.chunk_type === "think" ||
+              !["source", "response"].includes(chunkData.chunk_type)
+            ) {
+              setShowThinkTyping(true);
+              const newThinkBuffer = thinkBuffer + chunkData.message_chunk;
+              setThinkBuffer(newThinkBuffer);
+              setCurMessage((prev) => {
+                const parts = prev.split("<Think>");
+                if (parts.length > 1) {
+                  const afterThink = parts[1].split("</Think>")[1] || "";
+                  return `${parts[0]}<Think>${newThinkBuffer}</Think>${afterThink}`;
                 }
-              } catch (error) {
-                console.error("parse error:", error);
+                return `<Think>${newThinkBuffer}</Think>\n`;
+              });
+            } else {
+              if (thinkBuffer) {
+                setShowThinkTyping(false);
+                setThinkBuffer("");
+              }
+
+              if (chunkData.chunk_type === "source") {
+                handleMessageChunk(
+                  `<Source total="1">${chunkData.message_chunk}</Source>\n`
+                );
+              } else if (chunkData.chunk_type === "response") {
+                handleMessageChunk(chunkData.message_chunk);
               }
             }
+
+            setCurrentChunkType(chunkData.chunk_type);
+          } catch (error) {
+            console.error("parse error:", error);
           }
         },
-        [curChatEnd, isTyping]
+        [curChatEnd, isTyping, thinkBuffer, handleMessageChunk]
       );
 
       useEffect(() => {
-        const unlisten = listen("ws-message", (event) => {
-          const data = dealMsg(String(event.payload));
-          if (data) {
-            if (currentChunkType === 'source') {
-              setMessages(prev => prev + `<Source total="1">${data}</Source>\n`);
-            } else if (currentChunkType === 'think') {
-              setMessages(prev => prev + `<think>${data}</think>\n`);
-            } else if (currentChunkType === 'response') {
-              setMessages(prev => prev + data);
-            } else {
-              setMessages(prev => prev + `<think>${data}</think>\n`);
-            }
-          }
-        });
+        if (curChatEnd) {
+          setShowThinkTyping(false);
+          setThinkBuffer("");
+          setCurrentChunkType(null);
+          simulateAssistantResponse();
+        }
+      }, [curChatEnd, setShowThinkTyping, setThinkBuffer, setCurrentChunkType]);
 
+      useEffect(() => {
+        const unlisten = listen("ws-message", (event) => {
+          dealMsg(String(event.payload));
+        });
         return () => {
           unlisten.then((fn) => fn());
         };
-      }, []);
+      }, [dealMsg]);
+
+      useEffect(() => {
+        if (curChatEnd && currentChunkContent) {
+          handleChunkContent(currentChunkType || "", currentChunkContent);
+          setCurrentChunkContent("");
+          setCurrentChunkType(null);
+        }
+      }, [
+        curChatEnd,
+        currentChunkContent,
+        currentChunkType,
+        handleChunkContent,
+      ]);
 
       const assistantMessage = useMemo(() => {
         if (!activeChat?._id || (!curMessage && !messages)) return null;
@@ -627,6 +671,7 @@ const ChatAI = memo(
                   },
                 }}
                 isTyping={!curChatEnd}
+                isThinkTyping={showThinkTyping}
               />
             ) : null}
 
