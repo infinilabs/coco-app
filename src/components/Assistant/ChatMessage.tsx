@@ -15,6 +15,17 @@ interface ChatMessageProps {
   isThinkTyping?: boolean;
 }
 
+interface SegmentType {
+  isSource?: boolean;
+  isThinking?: boolean;
+  text?: string;
+  sourcePrefix?: string;
+  sourceData?: any[];
+  total?: string;
+  sourceType?: string;
+  thinkContent?: string;
+}
+
 export const ChatMessage = memo(function ChatMessage({
   message,
   isTyping,
@@ -36,12 +47,20 @@ export const ChatMessage = memo(function ChatMessage({
     }
 
     const segments = formatThinkingMessage(messageContent);
+    console.log('Source segments:', segments.filter(s => s.isSource));
+    
     return (
       <>
-        {segments.map((segment, index) => (
+        {segments.map((segment: SegmentType, index) => (
           <span key={index}>
             {segment.isSource ? (
-              <SourceResult text={segment.text} />
+              <SourceResult 
+                text={segment.text || ''}
+                prefix={segment.sourcePrefix}
+                data={segment.sourceData}
+                total={segment.total}
+                type={segment.sourceType}
+              />
             ) : segment.isThinking ? (
               <div className="space-y-2 mb-3 w-full">
                 <button

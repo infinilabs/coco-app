@@ -94,51 +94,65 @@ export function formatThinkingMessage(message: string) {
   const segments = [];
   let currentText = '';
 
-  const regex = /<(Think|Source[^>]*)>([\s\S]*?)<\/\1>/gi;
+  // 正则表达式匹配 Source 和 Think 标签
+  const regex = /<(Source|Think)(?:\s+[^>]*)?>([\s\S]*?)<\/\1>/g;
   let lastIndex = 0;
   let match;
 
   while ((match = regex.exec(message)) !== null) {
+    // 添加标签之前的文本
     if (match.index > lastIndex) {
-      currentText = message.slice(lastIndex, match.index);
-      if (currentText.trim()) {
-        segments.push({
-          text: currentText.trim(),
-          isSource: false,
-          isThinking: false
-        });
+      currentText = message.slice(lastIndex, match.index).trim();
+      if (currentText) {
+        segments.push({ text: currentText });
       }
     }
 
-    const tagName = match[1].toLowerCase();
-    const content = match[2].trim();
-
-    if (tagName.startsWith('source')) {
+    const [fullMatch, tagName, content] = match;
+    
+    if (tagName === 'Source') {
+      // 提取 Source 标签的类型属性
+      const typeMatch = fullMatch.match(/type="([^"]+)"/);
+      const sourceType = typeMatch ? typeMatch[1] : '';
+      
+      // 检查是否包含 Payload
+      const payloadMatch = content.match(/^(.*?)\s*<Payload total=(\d+)>([\s\S]*)<\/Payload>/);
+      if (payloadMatch) {
+        const [_, prefix, total, payloadContent] = payloadMatch;
+        try {
+          const jsonData = JSON.parse(payloadContent.trim());
+          segments.push({
+            isSource: true,
+            sourceType: sourceType,
+            sourcePrefix: prefix.trim(),
+            sourceData: jsonData,
+            total: total,
+            text: fullMatch
+          });
+        } catch (e) {
+          console.error('Failed to parse source data:', e);
+          segments.push({
+            isSource: true,
+            text: fullMatch
+          });
+        }
+      }
+    } else if (tagName === 'Think') {
       segments.push({
-        text: content,
-        isSource: true,
-        isThinking: false
-      });
-    } else if (tagName === 'think') {
-      segments.push({
-        text: '',
-        isSource: false,
         isThinking: true,
-        thinkContent: content
+        thinkContent: content.trim(),
+        text: fullMatch  // 保留原始文本
       });
     }
 
-    lastIndex = match.index + match[0].length;
+    lastIndex = regex.lastIndex;
   }
 
+  // 添加剩余的文本
   if (lastIndex < message.length) {
-    currentText = message.slice(lastIndex);
-    if (currentText.trim()) {
-      segments.push({
-        text: currentText.trim(),
-        isSource: false,
-        isThinking: false
-      });
+    currentText = message.slice(lastIndex).trim();
+    if (currentText) {
+      segments.push({ text: currentText });
     }
   }
 
