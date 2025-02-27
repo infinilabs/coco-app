@@ -281,43 +281,47 @@ const ChatAI = memo(
         clearChatPage && clearChatPage();
       };
 
-      const createNewChat = useCallback(async (value: string = "") => {
-        setTimedoutShow(false);
-        setErrorShow(false);
-        chatClose();
-        try {
-          console.log("sourceDataIds", sourceDataIds);
-          let response: any = await invoke("new_chat", {
-            serverId: currentService?.id,
-            message: value,
-            queryParams: {
-              search: isSearchActive,
-              deep_thinking: isDeepThinkActive,
-              datasource: sourceDataIds.join(","),
-            },
-          });
-          console.log("_new", response);
-          const newChat: Chat = response;
-          curIdRef.current = response?.payload?.id;
+      const createNewChat = useCallback(
+        async (value: string = "") => {
+          setTimedoutShow(false);
+          setErrorShow(false);
+          chatClose();
+          try {
+            console.log("isDeepThinkActive", isDeepThinkActive);
+            console.log("isSearchActive", isSearchActive);
+            let response: any = await invoke("new_chat", {
+              serverId: currentService?.id,
+              message: value,
+              queryParams: {
+                search: isSearchActive,
+                deep_thinking: isDeepThinkActive,
+                datasource: sourceDataIds.join(","),
+              },
+            });
+            console.log("_new", response);
+            const newChat: Chat = response;
+            curIdRef.current = response?.payload?.id;
 
-          newChat._source = {
-            message: value,
-          };
-          const updatedChat: Chat = {
-            ...newChat,
-            messages: [newChat],
-          };
+            newChat._source = {
+              message: value,
+            };
+            const updatedChat: Chat = {
+              ...newChat,
+              messages: [newChat],
+            };
 
-          changeInput && changeInput("");
-          console.log("updatedChat2", updatedChat);
-          setActiveChat(updatedChat);
-          setIsTyping(true);
-          setCurChatEnd(false);
-        } catch (error) {
-          setErrorShow(true);
-          console.error("Failed to fetch user data:", error);
-        }
-      }, []);
+            changeInput && changeInput("");
+            console.log("updatedChat2", updatedChat);
+            setActiveChat(updatedChat);
+            setIsTyping(true);
+            setCurChatEnd(false);
+          } catch (error) {
+            setErrorShow(true);
+            console.error("Failed to fetch user data:", error);
+          }
+        },
+        [isSearchActive, isDeepThinkActive]
+      );
 
       const init = (value: string) => {
         if (!curChatEnd) return;
@@ -335,7 +339,7 @@ const ChatAI = memo(
           setTimedoutShow(false);
           setErrorShow(false);
           try {
-            console.log("sourceDataIds", sourceDataIds);
+            console.log("isSearchActive", isSearchActive);
             let response: any = await invoke("send_message", {
               serverId: currentService?.id,
               sessionId: newChat?._id,
