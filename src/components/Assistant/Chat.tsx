@@ -410,7 +410,7 @@ const ChatAI = memo(
           setErrorShow(true);
           console.error("Failed to fetch user data:", error);
         }
-      }, []);
+      }, [isSearchActive, isDeepThinkActive]);
 
       const init = (value: string) => {
         if (!curChatEnd) return;
