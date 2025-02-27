@@ -20,7 +20,7 @@ import {
   PopoverPanel,
 } from "@headlessui/react";
 import clsx from "clsx";
-import { useReactive } from "ahooks";
+import { useReactive, useRequest } from "ahooks";
 
 import ChatSwitch from "@/components/Common/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
@@ -31,6 +31,7 @@ import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import { useConnectStore } from "@/stores/connectStore";
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
+import { isArray } from "lodash-es";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -78,8 +79,6 @@ export default function ChatInput({
 
   const currentService = useConnectStore((state) => state.currentService);
 
-  const datasourceData = useConnectStore((state) => state.datasourceData);
-
   const state = useReactive<{ dataSourceList: any[] }>({
     dataSourceList: [],
   });
@@ -87,23 +86,27 @@ export default function ChatInput({
   const sourceDataIds = useSearchStore((state) => state.sourceDataIds);
   const setSourceDataIds = useSearchStore((state) => state.setSourceDataIds);
 
-  const getDataSourceList = useCallback(() => {
-    if (!currentService?.id) return [];
+  const { run: getDataSourceList } = useRequest(
+    () => {
+      return invoke("get_datasources_by_server", { id: currentService?.id });
+    },
+    {
+      refreshDeps: [currentService],
+      onSuccess(data) {
+        if (!isArray(data)) return [];
 
-    state.dataSourceList = [
-      {
-        id: "all",
-        name: t("search.input.searchPopover.allScope"),
+        state.dataSourceList = [
+          {
+            id: "all",
+            name: "search.input.searchPopover.allScope",
+          },
+          ...data,
+        ];
+
+        onSelectDataSource("all", true, true);
       },
-      ...(datasourceData[currentService.id] || []),
-    ];
-
-    onSelectDataSource("all", true, true);
-  }, [currentService?.id, datasourceData]);
-
-  useEffect(() => {
-    getDataSourceList();
-  }, [getDataSourceList]);
+    }
+  );
 
   const [isRefreshDataSource, setIsRefreshDataSource] = useState(false);
 
@@ -286,12 +289,6 @@ export default function ChatInput({
   };
 
   const onSelectDataSource = (id: string, checked: boolean, isAll: boolean) => {
-    console.log("id", id);
-    console.log("checked", checked);
-    console.log("isAll", isAll);
-
-    console.log("state.dataSourceList", state.dataSourceList);
-
     if (isAll) {
       if (checked) {
         setSourceDataIds(state.dataSourceList.slice(1).map((item) => item.id));
@@ -558,7 +555,7 @@ export default function ChatInput({
                                 <TypeIcon item={item} className="size-[16px]" />
                               )}
 
-                              <span>{name}</span>
+                              <span>{isAll ? t(name) : name}</span>
                             </div>
 
                             <Checkbox
