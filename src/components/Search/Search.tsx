@@ -71,10 +71,6 @@ function Search({ isChatMode, input }: SearchProps) {
     if (!input) setSuggests([]);
   }, [input]);
 
-  useEffect(() => {
-    console.log("SearchData", SearchData);
-  }, [SearchData]);
-
   return (
     <div
       ref={mainWindowRef}

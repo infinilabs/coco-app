@@ -8,6 +8,10 @@ export type ISearchStore = {
   setSourceDataIds: (prevSourceDataId: string[]) => void;
   visibleContextMenu: boolean;
   setVisibleContextMenu: (visibleContextMenu: boolean) => void;
+  selectedSearchContent?: Record<string, any>;
+  setSelectedSearchContent: (
+    selectedSearchContent?: Record<string, any>
+  ) => void;
 };
 
 export const useSearchStore = create<ISearchStore>()(
@@ -18,8 +22,12 @@ export const useSearchStore = create<ISearchStore>()(
       sourceDataIds: [],
       setSourceDataIds: (sourceDataIds: string[]) => set({ sourceDataIds }),
       visibleContextMenu: false,
-      setVisibleContextMenu: (visibleContextMenu: boolean) =>
-        set({ visibleContextMenu }),
+      setVisibleContextMenu: (visibleContextMenu) => {
+        return set({ visibleContextMenu });
+      },
+      setSelectedSearchContent: (selectedSearchContent) => {
+        return set({ selectedSearchContent });
+      },
     }),
     {
       name: "search-store",

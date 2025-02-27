@@ -8,6 +8,8 @@ import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import SearchListItem from "./SearchListItem";
 import { metaOrCtrlKey, isMetaOrCtrlKey } from "@/utils/keyboardUtils";
 import { OpenURLWithBrowser } from "@/utils/index";
+import { isNil, isPlainObject } from "lodash-es";
+import { useUnmount } from "ahooks";
 
 type ISearchData = Record<string, any[]>;
 
@@ -40,6 +42,24 @@ function DropdownList({
   const [showIndex, setShowIndex] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const setSelectedSearchContent = useSearchStore((state) => {
+    return state.setSelectedSearchContent;
+  });
+
+  useUnmount(() => {
+    setSelectedSearchContent(void 0);
+  });
+
+  useEffect(() => {
+    if (isNil(selectedItem)) {
+      setSelectedSearchContent(void 0);
+
+      return;
+    }
+
+    setSelectedSearchContent(globalItemIndexMap[selectedItem]);
+  }, [selectedItem]);
 
   useEffect(() => {
     if (isChatMode) {
@@ -181,6 +201,7 @@ function DropdownList({
               ) : null}
             </div>
           ) : null}
+
           {items.map((hit: any, index: number) => {
             const isSelected = selectedItem === globalIndex;
             const currentIndex = globalIndex;
