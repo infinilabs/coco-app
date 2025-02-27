@@ -104,6 +104,9 @@ const ChatAI = memo(
       }, [activeChatProp]);
 
       const handleMessageChunk = useCallback((chunk: string) => {
+        if (chunk.includes("Source")) {
+          console.log('chunk:', chunk);
+        }
         setCurMessage((prev) => prev + chunk);
       }, []);
 
@@ -123,7 +126,6 @@ const ChatAI = memo(
         "source" | "think" | "response" | null
       >(null);
       const [currentChunkContent, setCurrentChunkContent] = useState("");
-      const [thinkBuffer, setThinkBuffer] = useState("");
 
       const handleChunkContent = useCallback(
         (type: string, content: string) => {
@@ -144,11 +146,10 @@ const ChatAI = memo(
 
       const [showThinkTyping, setShowThinkTyping] = useState(false);
 
-      // 添加新的 state 来分别存储不同类型的 think 内容
       const [thinkTypeBuffers, setThinkTypeBuffers] = useState<Record<string, string>>({});
 
-      // 添加新的 state 来存储不同类型的 source 内容
-      const [sourceTypeBuffers, setSourceTypeBuffers] = useState<Record<string, string>>({});
+
+      const sourceContentRef = useRef<string[]>([]);
 
       const dealMsg = useCallback(
         (msg: string) => {
@@ -180,38 +181,27 @@ const ChatAI = memo(
             if (chunkData.reply_to_message !== curIdRef.current) return;
 
             if (chunkData.chunk_type === "fetch_source" || chunkData.chunk_type === "pick_source") {
-              // 获取原始消息中的前缀文本
-              const prefixText = chunkData.chunk_type === "fetch_source" ? 
-                "根据查询,获取到如下资料:" : 
-                "筛选需要进一步深度分析的文档:";
-
               try {
-                // 提取 Payload 中的内容，保持原始格式
+                const prefix = chunkData.message_chunk.split('<Payload')[0];
                 const payloadMatch = chunkData.message_chunk.match(/<Payload[^>]*>([\s\S]*?)<\/Payload>/);
-                if (payloadMatch) {
-                  const payloadContent = payloadMatch[1];
-                  const total = chunkData.message_chunk.match(/total=(\d+)/)?.[1] || "0";
-                  
-                  // 构建完整的 Source 标签内容
-                  handleMessageChunk(
-                    `<Source type="${chunkData.chunk_type}" total="${total}">${prefixText}\n${payloadContent}</Source>\n`
-                  );
-                } else {
-                  // 如果没有匹配到 Payload，使用完整消息
-                  handleMessageChunk(
-                    `<Source type="${chunkData.chunk_type}">${chunkData.message_chunk}</Source>\n`
-                  );
+                const sourceTag = payloadMatch 
+                  ? `<Source type="${chunkData.chunk_type}" total="${chunkData.message_chunk.match(/total=(\d+)/)?.[1] || "0"}">${prefix}${payloadMatch[0]}</Source>\n`
+                  : `<Source type="${chunkData.chunk_type}">${chunkData.message_chunk}</Source>\n`;
+                
+                if (!sourceContentRef.current.includes(sourceTag)) {
+                  sourceContentRef.current.push(sourceTag);
+                  handleMessageChunk(sourceTag);
                 }
               } catch (e) {
                 console.error('Failed to parse source data:', e);
-                // 发生错误时保持原始消息格式
-                handleMessageChunk(
-                  `<Source type="${chunkData.chunk_type}">${chunkData.message_chunk}</Source>\n`
-                );
+                const sourceTag = `<Source type="${chunkData.chunk_type}">${chunkData.message_chunk}</Source>\n`;
+                if (!sourceContentRef.current.includes(sourceTag)) {
+                  sourceContentRef.current.push(sourceTag);
+                  handleMessageChunk(sourceTag);
+                }
               }
             }
             else if (chunkData.chunk_type === "think" || !["fetch_source", "pick_source", "response"].includes(chunkData.chunk_type)) {
-              // think 相关的逻辑保持不变
               setShowThinkTyping(true);
               const chunkType = chunkData.chunk_type || 'unknown';
               
@@ -222,16 +212,22 @@ const ChatAI = memo(
                 };
                 return newBuffers;
               });
-
-              setCurMessage(prevMessage => {
-                let message = prevMessage.split('<Think')[0];
+              
+              setCurMessage(() => {
+                const sourceContent = sourceContentRef.current.join('\n');
+                
+                let message = sourceContent;
+                if (message && !message.endsWith('\n')) {
+                  message += '\n';
+                }
+                
                 Object.entries(thinkTypeBuffers).forEach(([_type, content]) => {
                   message += `<Think>${content}</Think>\n`;
                 });
+                
                 return message;
               });
             } else if (chunkData.chunk_type === "response") {
-              // response 逻辑保持不变
               handleMessageChunk(chunkData.message_chunk);
             }
 
@@ -243,12 +239,10 @@ const ChatAI = memo(
         [curChatEnd, isTyping, thinkTypeBuffers, handleMessageChunk]
       );
 
-      // 修改对话结束时的处理
       useEffect(() => {
         if (curChatEnd) {
           setShowThinkTyping(false);
           setThinkTypeBuffers({});
-          setSourceTypeBuffers({});
           setCurrentChunkType(null);
           simulateAssistantResponse();
         }
@@ -388,7 +382,7 @@ const ChatAI = memo(
         setErrorShow(false);
         chatClose();
         try {
-          console.log("sourceDataIds", sourceDataIds);
+          // console.log("sourceDataIds", sourceDataIds);
           let response: any = await invoke("new_chat", {
             serverId: currentService?.id,
             message: value,
@@ -437,7 +431,7 @@ const ChatAI = memo(
           setTimedoutShow(false);
           setErrorShow(false);
           try {
-            console.log("sourceDataIds", sourceDataIds);
+            // console.log("sourceDataIds", sourceDataIds);
             let response: any = await invoke("send_message", {
               serverId: currentService?.id,
               sessionId: newChat?._id,

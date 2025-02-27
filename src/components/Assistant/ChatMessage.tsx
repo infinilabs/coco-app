@@ -45,9 +45,13 @@ export const ChatMessage = memo(function ChatMessage({
         </div>
       );
     }
-
+    
     const segments = formatThinkingMessage(messageContent);
-    console.log('Source segments:', segments.filter(s => s.isSource));
+
+    const sourceSegments = segments.filter(s => s.isSource);
+    if (sourceSegments.length > 0) {
+      console.log('Source segments:', sourceSegments);
+    }
     
     return (
       <>

@@ -94,13 +94,11 @@ export function formatThinkingMessage(message: string) {
   const segments = [];
   let currentText = '';
 
-  // 正则表达式匹配 Source 和 Think 标签
-  const regex = /<(Source|Think)(?:\s+[^>]*)?>([\s\S]*?)<\/\1>/g;
+  const regex = /<(Source|Payload|Think)(?:\s+[^>]*)?>([\s\S]*?)<\/\1>/g;
   let lastIndex = 0;
   let match;
 
   while ((match = regex.exec(message)) !== null) {
-    // 添加标签之前的文本
     if (match.index > lastIndex) {
       currentText = message.slice(lastIndex, match.index).trim();
       if (currentText) {
@@ -111,11 +109,9 @@ export function formatThinkingMessage(message: string) {
     const [fullMatch, tagName, content] = match;
     
     if (tagName === 'Source') {
-      // 提取 Source 标签的类型属性
       const typeMatch = fullMatch.match(/type="([^"]+)"/);
       const sourceType = typeMatch ? typeMatch[1] : '';
       
-      // 检查是否包含 Payload
       const payloadMatch = content.match(/^(.*?)\s*<Payload total=(\d+)>([\s\S]*)<\/Payload>/);
       if (payloadMatch) {
         const [_, prefix, total, payloadContent] = payloadMatch;
@@ -141,14 +137,13 @@ export function formatThinkingMessage(message: string) {
       segments.push({
         isThinking: true,
         thinkContent: content.trim(),
-        text: fullMatch  // 保留原始文本
+        text: fullMatch
       });
     }
 
     lastIndex = regex.lastIndex;
   }
 
-  // 添加剩余的文本
   if (lastIndex < message.length) {
     currentText = message.slice(lastIndex).trim();
     if (currentText) {

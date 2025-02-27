@@ -185,7 +185,7 @@ export function ChatHeader({
 
       <div>
         <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-          {activeChat?.title || activeChat?._id}
+          {activeChat?._source?.title || activeChat?._id}
         </h2>
       </div>
 
