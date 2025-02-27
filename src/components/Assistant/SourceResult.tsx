@@ -39,18 +39,18 @@ export const SourceResult = ({ prefix, data, total, type }: SourceResultProps) =
         }`}
       >
         <div className="flex gap-2">
-          <Search className="w-4 h-4 text-[#999999] dark:text-[#999999]" />
-          <span className="text-xs text-[#999999] dark:text-[#999999]">
-            <span className="mr-2">{t(`assistant.message.steps.${type}`)}</span>
+          <Search className="w-4 h-4 text-[#38C200]" />
+          <span className="text-xs text-[#999999]">
+            {t(`assistant.message.steps.${type}`)}，
             {t("assistant.source.foundResults", {
               count: Number(total),
             })}
           </span>
         </div>
         {isSourceExpanded ? (
-          <ChevronUp className="w-4 h-4 text-[#999999] dark:text-[#999999]" />
+          <ChevronUp className="w-4 h-4 text-[#999999]" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-[#999999] dark:text-[#999999]" />
+          <ChevronDown className="w-4 h-4 text-[#999999]" />
         )}
       </button>
 
@@ -69,7 +69,7 @@ export const SourceResult = ({ prefix, data, total, type }: SourceResultProps) =
             >
               <div className="flex-1 min-w-0 flex items-center gap-2">
                 <div className="flex-1 min-w-0 flex items-center gap-1">
-                  <Globe className="w-3 h-3" />
+                  <Globe className="w-3 h-3 text-[#38C200]" />
                   <div className="text-xs text-[#333333] dark:text-[#D8D8D8] truncate font-normal group-hover:text-[#0072FF] dark:group-hover:text-[#0072FF]">
                     {item.title || item.category}
                   </div>

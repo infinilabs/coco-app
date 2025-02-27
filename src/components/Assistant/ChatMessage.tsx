@@ -63,7 +63,6 @@ export const ChatMessage = memo(function ChatMessage({
                 sourceType={segment.sourceType || ""}
                 thinkContent={segment.thinkContent || ""}
                 isThinkTyping={isThinkTyping}
-                isTyping={isTyping}
               />
             ) : null}
             {segment.isSource ? (

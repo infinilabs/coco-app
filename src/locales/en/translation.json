@@ -132,7 +132,7 @@
       "steps": {
         "query_intent": "Understand the query",
         "fetch_source": "Retrieve documents",
-        "pick_source": "Intelligent pre-selection",
+        "pick_source": "Intelligent pick",
         "deep_read": "Deep reading",
         "think": "AI is thinking...",
         "thoughtTime": "Thought for a few seconds"
