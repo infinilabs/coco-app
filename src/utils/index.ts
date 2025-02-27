@@ -166,7 +166,7 @@ function processSegment(tagName: string, sourceType: string, content: string, fu
     }
   } else if (tagName === 'Think') {
     return {
-      isThinking: true,
+      isThinking: sourceType !== 'query_intent',
       isQueryIntent: sourceType === 'query_intent',
       thinkContent: content.trim(),
       text: fullMatch,

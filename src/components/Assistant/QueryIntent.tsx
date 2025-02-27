@@ -2,17 +2,21 @@ import { Brain, ChevronDown, ChevronUp, Loader, BadgeCheck } from "lucide-react"
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-interface ThinkingSegmentProps {
+import Markdown from "./Markdown";
+
+interface QueryIntentProps {
   sourceType: string;
   thinkContent: string;
   isThinkTyping?: boolean;
+  isTyping?: boolean;
 }
 
-export const ThinkingSegment = ({
+export const QueryIntent = ({
   sourceType,
   thinkContent,
   isThinkTyping,
-}: ThinkingSegmentProps) => {
+  isTyping,
+}: QueryIntentProps) => {
   const { t } = useTranslation();
   const [isThinkingExpanded, setIsThinkingExpanded] = useState(true);
 
@@ -58,14 +62,12 @@ export const ThinkingSegment = ({
       {isThinkingExpanded && thinkContent && (
         <div className="pl-2 border-l-2 border-[e5e5e5]">
           <div className="text-[#8b8b8b] dark:text-[#a6a6a6] space-y-2">
-            {thinkContent.split("\n").map(
-              (paragraph, idx) =>
-                paragraph.trim() && (
-                  <p key={idx} className="text-sm">
-                    {paragraph}
-                  </p>
-                )
-            )}
+            <Markdown
+              key={`${sourceType}-${isTyping ? "loading" : "done"}`}
+              content={thinkContent}
+              loading={isTyping}
+              onDoubleClickCapture={() => {}}
+            />
           </div>
         </div>
       )}

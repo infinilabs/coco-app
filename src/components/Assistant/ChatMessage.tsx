@@ -7,6 +7,7 @@ import { formatThinkingMessage } from "@/utils/index";
 import logoImg from "@/assets/icon.svg";
 import { SourceResult } from "./SourceResult";
 import { ThinkingSegment } from "./ThinkingSegment";
+import { QueryIntent } from "./QueryIntent";
 // import { ThinkingSteps } from "./ThinkingSteps";
 
 interface ChatMessageProps {
@@ -57,6 +58,14 @@ export const ChatMessage = memo(function ChatMessage({
       <>
         {segments.map((segment: SegmentType, index) => (
           <span key={index}>
+            {segment.isQueryIntent ? (
+              <QueryIntent
+                sourceType={segment.sourceType || ""}
+                thinkContent={segment.thinkContent || ""}
+                isThinkTyping={isThinkTyping}
+                isTyping={isTyping}
+              />
+            ) : null}
             {segment.isSource ? (
               <SourceResult
                 text={segment.text || ""}
@@ -65,13 +74,18 @@ export const ChatMessage = memo(function ChatMessage({
                 total={segment.total}
                 type={segment.sourceType}
               />
-            ) : segment.isThinking ? (
+            ) : null}
+            {segment.isThinking ? (
               <ThinkingSegment
                 sourceType={segment.sourceType || ""}
                 thinkContent={segment.thinkContent || ""}
                 isThinkTyping={isThinkTyping}
               />
-            ) : segment.text ? (
+            ) : null}
+            {!segment.isQueryIntent &&
+            !segment.isSource &&
+            !segment.isThinking &&
+            segment.text ? (
               <div className="space-y-4">
                 <Markdown
                   key={`${index}-${isTyping ? "loading" : "done"}`}
