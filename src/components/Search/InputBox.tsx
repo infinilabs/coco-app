@@ -517,7 +517,7 @@ export default function ChatInput({
                     <div className="flex justify-between mb-[18px]">
                       <span>{t("search.input.searchPopover.title")}</span>
 
-                      <button
+                      <div
                         onClick={async () => {
                           setIsRefreshDataSource(true);
 
@@ -528,14 +528,13 @@ export default function ChatInput({
                           }, 1000);
                         }}
                         className="size-[24px] flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10"
-                        disabled={isRefreshDataSource}
                       >
                         <RefreshCw
                           className={`size-3 text-[#0287FF] transition-transform duration-1000 ${
                             isRefreshDataSource ? "animate-spin" : ""
                           }`}
                         />
-                      </button>
+                      </div>
                     </div>
                     <ul className="flex flex-col gap-[16px]">
                       {state.dataSourceList?.map((item, index) => {
