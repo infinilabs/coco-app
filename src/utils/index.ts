@@ -90,49 +90,89 @@ export const formatter = {
   },
 };
 
-export const formatThinkingMessage = (message: string) => {
-  const segments: Array<{
-    text: string;
-    isThinking: boolean;
-    thinkContent: string;
-    isSource?: boolean;
-  }> = [];
+export function formatThinkingMessage(message: string) {
+  const segments = [];
+  let currentText = '';
 
-  if (!message) return segments;
+  const regex = /<(Source|Payload|Think)(?:\s+[^>]*)?>([\s\S]*?)<\/\1>/g;
+  let lastIndex = 0;
+  let match;
 
-  const sourceRegex = /(<Source.*?>.*?<\/Source>)/gs;
-  const parts = message.split(sourceRegex);
-
-  parts.forEach(part => {
-    if (part.startsWith('<Source')) {
-      segments.push({
-        text: part,
-        isThinking: false,
-        thinkContent: '',
-        isSource: true
-      });
-    } else {
-      const thinkParts = part.split(/(<think>.*?<\/think>)/s);
-      
-      thinkParts.forEach(thinkPart => {
-        if (thinkPart.startsWith('<think>')) {
-          const content = thinkPart.replace(/<\/?think>/g, '');
-          segments.push({
-            text: '',
-            isThinking: true,
-            thinkContent: content.trim()
-          });
-        } else if (thinkPart.trim()) {
-          segments.push({
-            text: thinkPart.trim(),
-            isThinking: false,
-            thinkContent: ''
-          });
-        }
-      });
+  while ((match = regex.exec(message)) !== null) {
+    if (match.index > lastIndex) {
+      currentText = message.slice(lastIndex, match.index).trim();
+      if (currentText) {
+        segments.push({ text: currentText });
+      }
     }
-  });
 
-  return segments;
-};
+    const [fullMatch, tagName, content] = match;
+    const typeMatch = fullMatch.match(/type="([^"]+)"/);
+    const sourceType = typeMatch ? typeMatch[1] : '';
+
+    if (tagName === 'Source' || tagName === 'Think') {
+      const segment = processSegment(tagName, sourceType, content, fullMatch);
+      if (segment) {
+        segments.push(segment);
+      }
+    }
+
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < message.length) {
+    currentText = message.slice(lastIndex).trim();
+    if (currentText) {
+      segments.push({ text: currentText });
+    }
+  }
+
+  const typeOrder = ['query_intent', 'fetch_source', 'pick_source', 'deep_read', 'think', 'response'];
+  
+  return segments.sort((a, b) => {
+    if (!('sourceType' in a) && !('sourceType' in b)) return 0;
+    if (!('sourceType' in a)) return 1;
+    if (!('sourceType' in b)) return -1;
+  
+    const aIndex = typeOrder.indexOf(a.sourceType);
+    const bIndex = typeOrder.indexOf(b.sourceType);
+    return aIndex - bIndex;
+  });
+}
+
+function processSegment(tagName: string, sourceType: string, content: string, fullMatch: string) {
+  if (tagName === 'Source') {
+    const payloadMatch = content.match(/^(.*?)\s*<Payload total=(\d+)>([\s\S]*)<\/Payload>/);
+    if (payloadMatch) {
+      const [_, prefix, total, payloadContent] = payloadMatch;
+      try {
+        const jsonData = JSON.parse(payloadContent.trim());
+        return {
+          isSource: true,
+          sourceType: sourceType,
+          sourcePrefix: prefix.trim(),
+          sourceData: jsonData,
+          total: total,
+          text: fullMatch
+        };
+      } catch (e) {
+        console.error('Failed to parse source data:', e);
+        return {
+          isSource: true,
+          text: fullMatch,
+          sourceType: sourceType
+        };
+      }
+    }
+  } else if (tagName === 'Think') {
+    return {
+      isThinking: sourceType !== 'query_intent',
+      isQueryIntent: sourceType === 'query_intent',
+      thinkContent: content.trim(),
+      text: fullMatch,
+      sourceType: sourceType,
+    };
+  }
+  return null;
+}
 

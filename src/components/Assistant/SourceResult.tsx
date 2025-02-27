@@ -12,54 +12,19 @@ import { OpenURLWithBrowser } from "@/utils/index";
 
 interface SourceResultProps {
   text: string;
+  prefix?: string;
+  data?: any[];
+  total?: string;
+  type?: string;
 }
 
-interface SourceItem {
-  url?: string;
-  title?: string;
-  category?: string;
-  source?: {
-    name: string;
-  };
-}
-
-export function SourceResult({ text }: SourceResultProps) {
+export const SourceResult = ({ prefix, data, total, type }: SourceResultProps) => {
   const { t } = useTranslation();
   const [isSourceExpanded, setIsSourceExpanded] = useState(false);
 
-  if (!text?.includes("<Source")) {
-    return null;
-  }
-
-  const getSourceData = (): SourceItem[] => {
-    try {
-      // console.log("Raw text:", text);
-
-      const sourceRegex = /<Source.*?total=(\d+)>\s*(.*?)\s*<\/Source>/s;
-      const sourceMatch = text.match(sourceRegex);
-
-      if (!sourceMatch) {
-        // console.log("No source match found");
-        return [];
-      }
-
-      const jsonContent = sourceMatch[2];
-      // console.log("Extracted JSON:", jsonContent);
-
-      const parsedData = JSON.parse(jsonContent);
-      return parsedData;
-    } catch (error) {
-      console.error("Failed to parse source data:", error);
-      return [];
-    }
-  };
-
-  const totalResults = text.match(/total=["']?(\d+)["']?/)?.[1] || "0";
-  const sourceData = getSourceData();
-
   return (
     <div
-      className={`mt-2 ${
+      className={`mt-2 mb-2 ${
         isSourceExpanded
           ? "rounded-lg overflow-hidden border border-[#E6E6E6] dark:border-[#272626]"
           : ""
@@ -74,23 +39,29 @@ export function SourceResult({ text }: SourceResultProps) {
         }`}
       >
         <div className="flex gap-2">
-          <Search className="w-4 h-4 text-[#999999] dark:text-[#999999]" />
-          <span className="text-xs text-[#999999] dark:text-[#999999]">
+          <Search className="w-4 h-4 text-[#38C200]" />
+          <span className="text-xs text-[#999999]">
+            {t(`assistant.message.steps.${type}`)}，
             {t("assistant.source.foundResults", {
-              count: Number(totalResults),
+              count: Number(total),
             })}
           </span>
         </div>
         {isSourceExpanded ? (
-          <ChevronUp className="w-4 h-4 text-[#999999] dark:text-[#999999]" />
+          <ChevronUp className="w-4 h-4 text-[#999999]" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-[#999999] dark:text-[#999999]" />
+          <ChevronDown className="w-4 h-4 text-[#999999]" />
         )}
       </button>
 
       {isSourceExpanded && (
         <div className="">
-          {sourceData.map((item, idx) => (
+          {prefix && (
+             <div className="px-3 py-2 bg-[#F7F7F7] dark:bg-[#1E1E1E] text-[#666666] dark:text-[#A3A3A3] text-xs leading-relaxed border-b border-[#E6E6E6] dark:border-[#272626]">
+             {prefix}
+           </div>
+          )}
+          {data?.map((item, idx) => (
             <div
               key={idx}
               onClick={() => item.url && OpenURLWithBrowser(item.url)}
@@ -98,7 +69,7 @@ export function SourceResult({ text }: SourceResultProps) {
             >
               <div className="flex-1 min-w-0 flex items-center gap-2">
                 <div className="flex-1 min-w-0 flex items-center gap-1">
-                  <Globe className="w-3 h-3" />
+                  <Globe className="w-3 h-3"/>
                   <div className="text-xs text-[#333333] dark:text-[#D8D8D8] truncate font-normal group-hover:text-[#0072FF] dark:group-hover:text-[#0072FF]">
                     {item.title || item.category}
                   </div>
@@ -116,4 +87,4 @@ export function SourceResult({ text }: SourceResultProps) {
       )}
     </div>
   );
-}
+};

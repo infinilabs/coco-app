@@ -127,14 +127,14 @@
     "message": {
       "logo": "Coco AI 图标",
       "aiName": "Coco AI",
-      "thinking": "AI 正在思考...",
-      "thoughtTime": "思考了数秒",
       "thinkingButton": "查看思考过程",
       "steps": {
-        "understand_the_query": "理解查询",
-        "retrieve_documents": "检索文档",
-        "intelligent_pre_selection": "智能预选",
-        "deep_reading": "深度阅读"
+        "query_intent": "理解查询",
+        "fetch_source": "检索文档",
+        "pick_source": "智能预选",
+        "deep_read": "深度阅读",
+        "think": "AI 正在思考...",
+        "thoughtTime": "思考了数秒"
       }
     },
     "sidebar": {

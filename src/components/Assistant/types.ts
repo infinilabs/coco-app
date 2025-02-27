@@ -12,6 +12,7 @@ export interface ISource {
   session_id?: string;
   type?: string;
   message?: any;
+  title?: string;
 }
 export interface Chat {
   _id: string;

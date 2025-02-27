@@ -128,7 +128,7 @@ pub async fn connect_to_server(
                     msg = ws.next() => {
                         match msg {
                             Some(Ok(Message::Text(text))) => {
-                                println!("Received message: {}", text);
+                                // println!("Received message: {}", text);
                                 let _ = app_handle_clone.emit("ws-message", text);
                             },
                                 Some(Err(WsError::ConnectionClosed)) => {
@@ -169,7 +169,6 @@ pub async fn connect_to_server(
 
 #[tauri::command]
 pub async fn disconnect(state: tauri::State<'_, WebSocketManager>) -> Result<(), String> {
-
     // Send cancellation signal
     if let Some(cancel_tx) = state.cancel_tx.lock().await.take() {
         let _ = cancel_tx.send(()).await;

@@ -119,60 +119,153 @@ const ChatAI = memo(
 
       const messageTimeoutRef = useRef<NodeJS.Timeout>();
 
+      const [currentChunkType, setCurrentChunkType] = useState<
+        "source" | "think" | "response" | null
+      >(null);
+      const [currentChunkContent, setCurrentChunkContent] = useState("");
+
+      const handleChunkContent = useCallback(
+        (type: string, content: string) => {
+          switch (type) {
+            case "source":
+              handleMessageChunk(`<Source total="1">${content}</Source>\n`);
+              break;
+            case "think":
+              handleMessageChunk(`<Think>${content}</Think>\n`);
+              break;
+            case "response":
+              handleMessageChunk(content);
+              break;
+          }
+        },
+        [handleMessageChunk]
+      );
+
+      const [showThinkTyping, setShowThinkTyping] = useState(false);
+
+      const [thinkTypeBuffers, setThinkTypeBuffers] = useState<Record<string, string>>({});
+
+
+      const sourceContentRef = useRef<string[]>([]);
+
       const dealMsg = useCallback(
         (msg: string) => {
-          // console.log("msg:", msg);
           if (messageTimeoutRef.current) {
             clearTimeout(messageTimeoutRef.current);
           }
 
-          if (msg.includes("PRIVATE")) {
-            messageTimeoutRef.current = setTimeout(() => {
-              if (!curChatEnd && isTyping) {
-                console.log("AI response timeout");
-                setTimedoutShow(true);
-                cancelChat();
-              }
-            }, 30000);
+          if (!msg.includes("PRIVATE")) return;
 
-            if (msg.includes("assistant finished output")) {
-              if (messageTimeoutRef.current) {
-                clearTimeout(messageTimeoutRef.current);
-              }
-              console.log("AI finished output");
-              setCurChatEnd(true);
-            } else {
-              const cleanedData = msg.replace(/^PRIVATE /, "");
+          messageTimeoutRef.current = setTimeout(() => {
+            if (!curChatEnd && isTyping) {
+              console.log("AI response timeout");
+              setTimedoutShow(true);
+              cancelChat();
+            }
+          }, 30000);
+
+          if (msg.includes("assistant finished output")) {
+            clearTimeout(messageTimeoutRef.current);
+            console.log("AI finished output");
+            setCurChatEnd(true);
+            return;
+          }
+
+          const cleanedData = msg.replace(/^PRIVATE /, "");
+          try {
+            const chunkData = JSON.parse(cleanedData);
+            
+            if (chunkData.reply_to_message !== curIdRef.current) return;
+
+            if (chunkData.chunk_type === "fetch_source" || chunkData.chunk_type === "pick_source") {
               try {
-                // console.log("cleanedData", cleanedData);
-                const chunkData = JSON.parse(cleanedData);
-                // console.log("msg1:", chunkData, curIdRef.current);
-
-                if (chunkData.reply_to_message === curIdRef.current) {
-                  handleMessageChunk(chunkData.message_chunk);
-                  return chunkData.message_chunk;
+                const prefix = chunkData.message_chunk.split('<Payload')[0];
+                const payloadMatch = chunkData.message_chunk.match(/<Payload[^>]*>([\s\S]*?)<\/Payload>/);
+                const sourceTag = payloadMatch 
+                  ? `<Source type="${chunkData.chunk_type}" total="${chunkData.message_chunk.match(/total=(\d+)/)?.[1] || "0"}">${prefix}${payloadMatch[0]}</Source>\n`
+                  : `<Source type="${chunkData.chunk_type}">${chunkData.message_chunk}</Source>\n`;
+                
+                if (!sourceContentRef.current.includes(sourceTag)) {
+                  sourceContentRef.current.push(sourceTag);
+                  handleMessageChunk(sourceTag);
                 }
-              } catch (error) {
-                console.error("parse error:", error);
+              } catch (e) {
+                console.error('Failed to parse source data:', e);
+                const sourceTag = `<Source type="${chunkData.chunk_type}">${chunkData.message_chunk}</Source>\n`;
+                if (!sourceContentRef.current.includes(sourceTag)) {
+                  sourceContentRef.current.push(sourceTag);
+                  handleMessageChunk(sourceTag);
+                }
               }
             }
+            else if (chunkData.chunk_type === "think" || !["fetch_source", "pick_source", "response"].includes(chunkData.chunk_type)) {
+              setShowThinkTyping(true);
+              const chunkType = chunkData.chunk_type || 'unknown';
+              
+              setThinkTypeBuffers(prev => {
+                const newBuffers = {
+                  ...prev,
+                  [chunkType]: (prev[chunkType] || '') + chunkData.message_chunk
+                };
+                return newBuffers;
+              });
+              
+              setCurMessage(() => {
+                const sourceContent = sourceContentRef.current.join('\n');
+                
+                let message = sourceContent;
+                if (message && !message.endsWith('\n')) {
+                  message += '\n';
+                }
+                
+                Object.entries(thinkTypeBuffers).forEach(([type, content]) => {
+                  message += `<Think type="${type}">${content}</Think>\n`;
+                });
+                
+                return message;
+              });
+            } else if (chunkData.chunk_type === "response") {
+              handleMessageChunk(chunkData.message_chunk);
+            }
+
+            setCurrentChunkType(chunkData.chunk_type);
+          } catch (error) {
+            console.error("parse error:", error);
           }
         },
-        [curChatEnd, isTyping]
+        [curChatEnd, isTyping, thinkTypeBuffers, handleMessageChunk]
       );
 
       useEffect(() => {
-        const unlisten = listen("ws-message", (event) => {
-          const data = dealMsg(String(event.payload));
-          if (data) {
-            setMessages((prev) => prev + data);
-          }
-        });
+        if (curChatEnd) {
+          setShowThinkTyping(false);
+          setThinkTypeBuffers({});
+          setCurrentChunkType(null);
+          simulateAssistantResponse();
+        }
+      }, [curChatEnd, setShowThinkTyping, setCurrentChunkType]);
 
+      useEffect(() => {
+        const unlisten = listen("ws-message", (event) => {
+          dealMsg(String(event.payload));
+        });
         return () => {
           unlisten.then((fn) => fn());
         };
-      }, []);
+      }, [dealMsg]);
+
+      useEffect(() => {
+        if (curChatEnd && currentChunkContent) {
+          handleChunkContent(currentChunkType || "", currentChunkContent);
+          setCurrentChunkContent("");
+          setCurrentChunkType(null);
+        }
+      }, [
+        curChatEnd,
+        currentChunkContent,
+        currentChunkType,
+        handleChunkContent,
+      ]);
 
       const assistantMessage = useMemo(() => {
         if (!activeChat?._id || (!curMessage && !messages)) return null;
@@ -286,7 +379,7 @@ const ChatAI = memo(
         setErrorShow(false);
         chatClose();
         try {
-          console.log("sourceDataIds", sourceDataIds);
+          // console.log("sourceDataIds", sourceDataIds);
           let response: any = await invoke("new_chat", {
             serverId: currentService?.id,
             message: value,
@@ -317,7 +410,7 @@ const ChatAI = memo(
           setErrorShow(true);
           console.error("Failed to fetch user data:", error);
         }
-      }, []);
+      }, [isSearchActive, isDeepThinkActive]);
 
       const init = (value: string) => {
         if (!curChatEnd) return;
@@ -335,7 +428,7 @@ const ChatAI = memo(
           setTimedoutShow(false);
           setErrorShow(false);
           try {
-            console.log("sourceDataIds", sourceDataIds);
+            // console.log("sourceDataIds", sourceDataIds);
             let response: any = await invoke("send_message", {
               serverId: currentService?.id,
               sessionId: newChat?._id,
@@ -603,6 +696,7 @@ const ChatAI = memo(
                   },
                 }}
                 isTyping={!curChatEnd}
+                isThinkTyping={showThinkTyping}
               />
             ) : null}
 
