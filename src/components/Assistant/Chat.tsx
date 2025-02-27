@@ -104,9 +104,6 @@ const ChatAI = memo(
       }, [activeChatProp]);
 
       const handleMessageChunk = useCallback((chunk: string) => {
-        if (chunk.includes("Source")) {
-          console.log('chunk:', chunk);
-        }
         setCurMessage((prev) => prev + chunk);
       }, []);
 
@@ -221,8 +218,8 @@ const ChatAI = memo(
                   message += '\n';
                 }
                 
-                Object.entries(thinkTypeBuffers).forEach(([_type, content]) => {
-                  message += `<Think>${content}</Think>\n`;
+                Object.entries(thinkTypeBuffers).forEach(([type, content]) => {
+                  message += `<Think type="${type}">${content}</Think>\n`;
                 });
                 
                 return message;

@@ -18,6 +18,7 @@ interface ChatMessageProps {
 interface SegmentType {
   isSource?: boolean;
   isThinking?: boolean;
+  isQueryIntent?: boolean;
   text?: string;
   sourcePrefix?: string;
   sourceData?: any[];
@@ -45,21 +46,21 @@ export const ChatMessage = memo(function ChatMessage({
         </div>
       );
     }
-    
+
     const segments = formatThinkingMessage(messageContent);
 
-    const sourceSegments = segments.filter(s => s.isSource);
-    if (sourceSegments.length > 0) {
-      console.log('Source segments:', sourceSegments);
-    }
-    
+    // const sourceSegments = segments.filter((s: SegmentType) => s.isSource);
+    // if (sourceSegments.length > 0) {
+    //   console.log("Source segments:", sourceSegments);
+    // }
+
     return (
       <>
         {segments.map((segment: SegmentType, index) => (
           <span key={index}>
             {segment.isSource ? (
-              <SourceResult 
-                text={segment.text || ''}
+              <SourceResult
+                text={segment.text || ""}
                 prefix={segment.sourcePrefix}
                 data={segment.sourceData}
                 total={segment.total}
@@ -75,14 +76,16 @@ export const ChatMessage = memo(function ChatMessage({
                     <>
                       <Brain className="w-4 h-4 animate-pulse text-[#999999]" />
                       <span className="text-xs text-[#999999] italic">
-                        {t("assistant.message.thinking")}
+                        {t(`assistant.message.steps.${segment.sourceType}`)}
                       </span>
                     </>
                   ) : (
                     <>
                       <Brain className="w-4 h-4 text-[#999999]" />
                       <span className="text-xs text-[#999999]">
-                        {t("assistant.message.thoughtTime")}
+                        {segment.sourceType === "think"
+                          ? t("assistant.message.steps.thoughtTime")
+                          : t(`assistant.message.steps.${segment.sourceType}`)}
                       </span>
                     </>
                   )}

@@ -127,14 +127,15 @@
     "message": {
       "logo": "Coco AI Logo",
       "aiName": "Coco AI",
-      "thinking": "AI is thinking...",
-      "thoughtTime": "Thought for a few seconds",
+      
       "thinkingButton": "View thinking process",
       "steps": {
-        "understand_the_query": "Understand the query",
-        "retrieve_documents": "Retrieve documents",
-        "intelligent_pre_selection": "Intelligent pre-selection",
-        "deep_reading": "Deep reading"
+        "query_intent": "Understand the query",
+        "fetch_source": "Retrieve documents",
+        "pick_source": "Intelligent pre-selection",
+        "deep_read": "Deep reading",
+        "think": "AI is thinking...",
+        "thoughtTime": "Thought for a few seconds"
       }
     },
     "sidebar": {

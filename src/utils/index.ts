@@ -107,38 +107,14 @@ export function formatThinkingMessage(message: string) {
     }
 
     const [fullMatch, tagName, content] = match;
-    
-    if (tagName === 'Source') {
-      const typeMatch = fullMatch.match(/type="([^"]+)"/);
-      const sourceType = typeMatch ? typeMatch[1] : '';
-      
-      const payloadMatch = content.match(/^(.*?)\s*<Payload total=(\d+)>([\s\S]*)<\/Payload>/);
-      if (payloadMatch) {
-        const [_, prefix, total, payloadContent] = payloadMatch;
-        try {
-          const jsonData = JSON.parse(payloadContent.trim());
-          segments.push({
-            isSource: true,
-            sourceType: sourceType,
-            sourcePrefix: prefix.trim(),
-            sourceData: jsonData,
-            total: total,
-            text: fullMatch
-          });
-        } catch (e) {
-          console.error('Failed to parse source data:', e);
-          segments.push({
-            isSource: true,
-            text: fullMatch
-          });
-        }
+    const typeMatch = fullMatch.match(/type="([^"]+)"/);
+    const sourceType = typeMatch ? typeMatch[1] : '';
+
+    if (tagName === 'Source' || tagName === 'Think') {
+      const segment = processSegment(tagName, sourceType, content, fullMatch);
+      if (segment) {
+        segments.push(segment);
       }
-    } else if (tagName === 'Think') {
-      segments.push({
-        isThinking: true,
-        thinkContent: content.trim(),
-        text: fullMatch
-      });
     }
 
     lastIndex = regex.lastIndex;
@@ -151,6 +127,52 @@ export function formatThinkingMessage(message: string) {
     }
   }
 
-  return segments;
+  const typeOrder = ['query_intent', 'fetch_source', 'pick_source', 'deep_read', 'think', 'response'];
+  
+  return segments.sort((a, b) => {
+    if (!('sourceType' in a) && !('sourceType' in b)) return 0;
+    if (!('sourceType' in a)) return 1;
+    if (!('sourceType' in b)) return -1;
+  
+    const aIndex = typeOrder.indexOf(a.sourceType);
+    const bIndex = typeOrder.indexOf(b.sourceType);
+    return aIndex - bIndex;
+  });
+}
+
+function processSegment(tagName: string, sourceType: string, content: string, fullMatch: string) {
+  if (tagName === 'Source') {
+    const payloadMatch = content.match(/^(.*?)\s*<Payload total=(\d+)>([\s\S]*)<\/Payload>/);
+    if (payloadMatch) {
+      const [_, prefix, total, payloadContent] = payloadMatch;
+      try {
+        const jsonData = JSON.parse(payloadContent.trim());
+        return {
+          isSource: true,
+          sourceType: sourceType,
+          sourcePrefix: prefix.trim(),
+          sourceData: jsonData,
+          total: total,
+          text: fullMatch
+        };
+      } catch (e) {
+        console.error('Failed to parse source data:', e);
+        return {
+          isSource: true,
+          text: fullMatch,
+          sourceType: sourceType
+        };
+      }
+    }
+  } else if (tagName === 'Think') {
+    return {
+      isThinking: true,
+      isQueryIntent: sourceType === 'query_intent',
+      thinkContent: content.trim(),
+      text: fullMatch,
+      sourceType: sourceType,
+    };
+  }
+  return null;
 }
 

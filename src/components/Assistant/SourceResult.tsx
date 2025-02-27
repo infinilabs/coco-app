@@ -18,7 +18,7 @@ interface SourceResultProps {
   type?: string;
 }
 
-export const SourceResult = ({ prefix, data, total }: SourceResultProps) => {
+export const SourceResult = ({ prefix, data, total, type }: SourceResultProps) => {
   const { t } = useTranslation();
   const [isSourceExpanded, setIsSourceExpanded] = useState(false);
 
@@ -41,6 +41,7 @@ export const SourceResult = ({ prefix, data, total }: SourceResultProps) => {
         <div className="flex gap-2">
           <Search className="w-4 h-4 text-[#999999] dark:text-[#999999]" />
           <span className="text-xs text-[#999999] dark:text-[#999999]">
+            <span className="mr-2">{t(`assistant.message.steps.${type}`)}</span>
             {t("assistant.source.foundResults", {
               count: Number(total),
             })}

@@ -8,8 +8,20 @@ interface ThinkingStepsProps {
 
 interface StepDetail {
   title: string;
+  type: string;
   content?: string;
 }
+
+// QueryIntent  = "query_intent" 
+// QueryRewrite = "query_rewrite" //
+// FetchDetail  = "fetch_detail" // 
+// References   = "references" //
+
+// Think        = "think" //reasoning message by LLM
+// Response     = "response" //formal response by assistant
+// FetchSource  = "fetch_source"
+// PickSource   = "pick_source"
+// ReplyEnd     = "reply_end"
 
 export const ThinkingSteps = ({ currentStep = 4 }: ThinkingStepsProps) => {
   const { t } = useTranslation();
@@ -19,18 +31,22 @@ export const ThinkingSteps = ({ currentStep = 4 }: ThinkingStepsProps) => {
     {
       title: "Understand the query",
       content: "...",
+      type: "query_intent"
     },
     {
       title: "Retrieve documents",
       content: "...",
+      type: "fetch_source"
     },
     {
       title: "Intelligent pre-selection",
       content: "...",
+      type: "pick_source"
     },
     {
       title: "Deep reading",
       content: "...",
+      type: "think"
     },
   ];
 
