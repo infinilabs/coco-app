@@ -69,7 +69,7 @@ export const SourceResult = ({ prefix, data, total, type }: SourceResultProps) =
             >
               <div className="flex-1 min-w-0 flex items-center gap-2">
                 <div className="flex-1 min-w-0 flex items-center gap-1">
-                  <Globe className="w-3 h-3" />
+                  <Globe className="w-3 h-3"/>
                   <div className="text-xs text-[#333333] dark:text-[#D8D8D8] truncate font-normal group-hover:text-[#0072FF] dark:group-hover:text-[#0072FF]">
                     {item.title || item.category}
                   </div>
