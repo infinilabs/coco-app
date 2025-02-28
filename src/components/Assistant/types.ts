@@ -26,3 +26,14 @@ export interface Chat {
   payload?: string;
   [key: string]: any;
 }
+
+export interface IChunkData {
+  session_id: string;
+  message_id: string;
+  message_type: string;
+  reply_to_message: string;
+  chunk_sequence: number;
+  chunk_type: string;
+  message_chunk: string;
+  [key: string]: any;
+}

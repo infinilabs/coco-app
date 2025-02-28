@@ -2,29 +2,32 @@ import { ChevronDown, ChevronUp, Loader, BadgeCheck } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
+import type { IChunkData } from "./types";
+
 interface QueryIntentProps {
-  sourceType: string;
-  thinkContent: string;
-  isThinkTyping?: boolean;
+  query_intent: IChunkData | null;
 }
 
-export const QueryIntent = ({ sourceType, thinkContent }: QueryIntentProps) => {
+export const QueryIntent = ({ query_intent }: QueryIntentProps) => {
+  if (!query_intent) return null;
+
   const { t } = useTranslation();
+
   const [isThinkingExpanded, setIsThinkingExpanded] = useState(true);
 
-  const [isTyping, setIsTyping] = useState(false);
-  const [prevContent, setPrevContent] = useState(thinkContent);
+  const [loading, setLoading] = useState(false);
+  const [prevContent, setPrevContent] = useState(query_intent?.message_chunk);
   const [isCompleted, setIsCompleted] = useState(false);
 
   useEffect(() => {
-    if (!isCompleted && thinkContent !== prevContent) {
-      setIsTyping(true);
-      setPrevContent(thinkContent);
-    } else if (thinkContent === prevContent && isTyping) {
-      setIsTyping(false);
+    if (!isCompleted && query_intent.message_chunk !== prevContent) {
+      setLoading(true);
+      setPrevContent(query_intent?.message_chunk);
+    } else if (query_intent?.message_chunk === prevContent && loading) {
+      setLoading(false);
       setIsCompleted(true);
     }
-  }, [thinkContent, prevContent, isTyping, isCompleted]);
+  }, [query_intent?.message_chunk, prevContent, loading, isCompleted]);
 
   const [queryData, setQueryData] = useState<{
     category: string;
@@ -34,9 +37,9 @@ export const QueryIntent = ({ sourceType, thinkContent }: QueryIntentProps) => {
   } | null>(null);
 
   useEffect(() => {
-    if (thinkContent) {
+    if (query_intent?.message_chunk) {
       try {
-       const cleanContent = thinkContent.replace(/^"|"$/g, '');
+       const cleanContent = query_intent?.message_chunk.replace(/^"|"$/g, '');
        const jsonMatch = cleanContent.match(/<JSON>([\s\S]*?)<\/JSON>/);
        const jsonString = jsonMatch ? jsonMatch[1] : cleanContent;
        const data = JSON.parse(jsonString);
@@ -45,7 +48,7 @@ export const QueryIntent = ({ sourceType, thinkContent }: QueryIntentProps) => {
         console.error("Failed to parse query data:", e);
       }
     }
-  }, [thinkContent]);
+  }, [query_intent?.message_chunk]);
 
   return (
     <div className="space-y-2 mb-3 w-full">
@@ -53,31 +56,29 @@ export const QueryIntent = ({ sourceType, thinkContent }: QueryIntentProps) => {
         onClick={() => setIsThinkingExpanded((prev) => !prev)}
         className="inline-flex items-center gap-2 px-2 py-1 rounded-xl transition-colors border border-[#E6E6E6] dark:border-[#272626]"
       >
-        {isTyping ? (
+        {loading ? (
           <>
             <Loader className="w-4 h-4 animate-spin text-[#1990FF]" />
             <span className="text-xs text-[#999999] italic">
-              {t(`assistant.message.steps.${sourceType}`)}
+              {t(`assistant.message.steps.${query_intent?.source_type}`)}
             </span>
           </>
         ) : (
           <>
             <BadgeCheck className="w-4 h-4 text-[#38C200]" />
             <span className="text-xs text-[#999999]">
-              {sourceType === "think"
-                ? t("assistant.message.steps.thoughtTime")
-                : t(`assistant.message.steps.${sourceType}`)}
+              {t(`assistant.message.steps.${query_intent?.source_type}`)}
             </span>
           </>
         )}
-        {thinkContent &&
+        {query_intent?.message_chunk &&
           (isThinkingExpanded ? (
             <ChevronUp className="w-4 h-4" />
           ) : (
             <ChevronDown className="w-4 h-4" />
           ))}
       </button>
-      {isThinkingExpanded && thinkContent && (
+      {isThinkingExpanded && query_intent?.message_chunk && (
         <div className="pl-2 border-l-2 border-[e5e5e5]">
           <div className="text-[#8b8b8b] dark:text-[#a6a6a6] space-y-2">
             <div className="mb-4 space-y-2 text-xs">

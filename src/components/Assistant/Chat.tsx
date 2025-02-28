@@ -14,13 +14,14 @@ import { debounce } from "lodash-es";
 import { listen } from "@tauri-apps/api/event";
 
 import { ChatMessage } from "./ChatMessage";
-import type { Chat } from "./types";
+import type { Chat, IChunkData } from "./types";
 import { useChatStore } from "@/stores/chatStore";
 import { useWindows } from "@/hooks/useWindows";
 import { ChatHeader } from "./ChatHeader";
 import { Sidebar } from "@/components/Assistant/Sidebar";
 import { useConnectStore } from "@/stores/connectStore";
 import { useSearchStore } from "@/stores/searchStore";
+// import { QueryIntent } from "./QueryIntent";
 
 interface ChatAIProps {
   isTransitioned: boolean;
@@ -149,6 +150,26 @@ const ChatAI = memo(
 
       const sourceContentRef = useRef<string[]>([]);
 
+      const [_query_intent, setQuery_intent] = useState<IChunkData | null>(null);
+      const deal_query_intent = useCallback((data: IChunkData) => {
+        setQuery_intent((prev: IChunkData | null): IChunkData => {
+          if (!prev) return data;
+          return {
+            ...prev,
+            message_chunk: prev.message_chunk + data.message_chunk,
+          };
+        });
+        // data = {
+        //   session_id: "cv0i7802sdb2vvonbneg",
+        //   message_id: "cv0i7882sdb2vvonbng0",
+        //   message_type: "assistant",
+        //   reply_to_message: "cv0i7802sdb2vvonbnf0",
+        //   chunk_sequence: 1,
+        //   chunk_type: "query_intent",
+        //   message_chunk: "\u003cJSON",
+        // };
+      }, []);
+
       const dealMsg = useCallback(
         (msg: string) => {
           if (messageTimeoutRef.current) {
@@ -178,10 +199,34 @@ const ChatAI = memo(
 
             if (chunkData.reply_to_message !== curIdRef.current) return;
 
-            if (
-              chunkData.chunk_type === "fetch_source" ||
-              chunkData.chunk_type === "pick_source"
-            ) {
+            // ['query_intent', 'fetch_source', 'pick_source', 'deep_read', 'think', 'response'];
+            if (chunkData.chunk_type === "query_intent") {
+              deal_query_intent(chunkData);
+            } else if (chunkData.chunk_type === "fetch_source") {
+              try {
+                const prefix = chunkData.message_chunk.split("<Payload")[0];
+                const payloadMatch = chunkData.message_chunk.match(
+                  /<Payload[^>]*>([\s\S]*?)<\/Payload>/
+                );
+                const sourceTag = payloadMatch
+                  ? `<Source type="${chunkData.chunk_type}" total="${
+                      chunkData.message_chunk.match(/total=(\d+)/)?.[1] || "0"
+                    }">${prefix}${payloadMatch[0]}</Source>\n`
+                  : `<Source type="${chunkData.chunk_type}">${chunkData.message_chunk}</Source>\n`;
+
+                if (!sourceContentRef.current.includes(sourceTag)) {
+                  sourceContentRef.current.push(sourceTag);
+                  handleMessageChunk(sourceTag);
+                }
+              } catch (e) {
+                console.error("Failed to parse source data:", e);
+                const sourceTag = `<Source type="${chunkData.chunk_type}">${chunkData.message_chunk}</Source>\n`;
+                if (!sourceContentRef.current.includes(sourceTag)) {
+                  sourceContentRef.current.push(sourceTag);
+                  handleMessageChunk(sourceTag);
+                }
+              }
+            } else if (chunkData.chunk_type === "pick_source") {
               try {
                 const prefix = chunkData.message_chunk.split("<Payload")[0];
                 const payloadMatch = chunkData.message_chunk.match(
@@ -259,19 +304,21 @@ const ChatAI = memo(
       }, [curChatEnd, setShowThinkTyping, setCurrentChunkType]);
 
       useEffect(() => {
-        let unlisten_error = null
-        let unlisten_message = null
+        let unlisten_error = null;
+        let unlisten_message = null;
         if (!connected) {
+          console.log("reconnect", 2222222);
+
           reconnect();
         } else {
-          setErrorShow(false)
+          setErrorShow(false);
           unlisten_message = listen("ws-message", (event) => {
             dealMsg(String(event.payload));
           });
           unlisten_error = listen("ws-error", (event) => {
             console.error("WebSocket error:", event.payload);
             setConnected(false);
-            setErrorShow(true)  
+            setErrorShow(true);
           });
         }
 
@@ -731,6 +778,11 @@ const ChatAI = memo(
                 isThinkTyping={showThinkTyping}
               />
             ) : null}
+            {/* {!curChatEnd && activeChat?._id ? (
+              <>
+                <QueryIntent query_intent={query_intent} />
+              </>
+            ) : null} */}
 
             {timedoutShow ? (
               <ChatMessage

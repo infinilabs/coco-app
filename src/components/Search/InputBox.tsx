@@ -259,8 +259,10 @@ export default function ChatInput({
   const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
+    if (!isChatMode) return;
     if (connected) return;
     if (countdown <= 0) {
+      console.log("ReconnectClick", 111111);
       ReconnectClick();
       return;
     }
@@ -270,7 +272,7 @@ export default function ChatInput({
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [countdown, connected]);
+  }, [countdown, connected, isChatMode]);
 
   const ReconnectClick = () => {
     setCountdown(5);

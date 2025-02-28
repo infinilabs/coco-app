@@ -52,15 +52,15 @@ where
         .await
         .map_err(|e| format!("Failed to parse JSON: {}", e))?;
 
+    // dbg!(&body);
+
     let search_response: SearchResponse<T> = serde_json::from_value(body)
         .map_err(|e| format!("Failed to deserialize search response: {}", e))?;
 
     Ok(search_response)
 }
 
-pub async fn parse_search_hits<T>(
-    response: Response,
-) -> Result<Vec<SearchHit<T>>, Box<dyn Error>>
+pub async fn parse_search_hits<T>(response: Response) -> Result<Vec<SearchHit<T>>, Box<dyn Error>>
 where
     T: for<'de> Deserialize<'de> + std::fmt::Debug,
 {
@@ -69,13 +69,15 @@ where
     Ok(response.hits.hits)
 }
 
-pub async fn parse_search_results<T>(
-    response: Response,
-) -> Result<Vec<T>, Box<dyn Error>>
+pub async fn parse_search_results<T>(response: Response) -> Result<Vec<T>, Box<dyn Error>>
 where
     T: for<'de> Deserialize<'de> + std::fmt::Debug,
 {
-    Ok(parse_search_hits(response).await?.into_iter().map(|hit| hit._source).collect())
+    Ok(parse_search_hits(response)
+        .await?
+        .into_iter()
+        .map(|hit| hit._source)
+        .collect())
 }
 
 pub async fn parse_search_results_with_score<T>(
@@ -84,7 +86,11 @@ pub async fn parse_search_results_with_score<T>(
 where
     T: for<'de> Deserialize<'de> + std::fmt::Debug,
 {
-    Ok(parse_search_hits(response).await?.into_iter().map(|hit| (hit._source, hit._score)).collect())
+    Ok(parse_search_hits(response)
+        .await?
+        .into_iter()
+        .map(|hit| (hit._source, hit._score))
+        .collect())
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -107,8 +113,8 @@ impl SearchQuery {
 #[derive(Debug, Clone, Serialize)]
 pub struct QuerySource {
     pub r#type: String, //coco-server/local/ etc.
-    pub id: String, //coco server's id
-    pub name: String, //coco server's name, local computer name, etc.
+    pub id: String,     //coco server's id
+    pub name: String,   //coco server's name, local computer name, etc.
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -139,4 +145,3 @@ pub struct MultiSourceQueryResponse {
     pub hits: Vec<QueryHits>,
     pub total_hits: usize,
 }
-

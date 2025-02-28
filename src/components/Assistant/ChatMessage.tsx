@@ -7,7 +7,7 @@ import { formatThinkingMessage } from "@/utils/index";
 import logoImg from "@/assets/icon.svg";
 import { SourceResult } from "./SourceResult";
 import { ThinkingSegment } from "./ThinkingSegment";
-import { QueryIntent } from "./QueryIntent";
+// import { QueryIntent } from "./QueryIntent";
 // import { ThinkingSteps } from "./ThinkingSteps";
 
 interface ChatMessageProps {
@@ -58,13 +58,13 @@ export const ChatMessage = memo(function ChatMessage({
       <>
         {segments.map((segment: SegmentType, index) => (
           <div key={segment?.sourceType || '' + index} className="w-full">
-            {segment.isQueryIntent ? (
+            {/* {segment.isQueryIntent ? (
               <QueryIntent
                 sourceType={segment.sourceType || ""}
                 thinkContent={segment.thinkContent || ""}
                 isThinkTyping={isThinkTyping}
               />
-            ) : null}
+            ) : null} */}
             {segment.isSource ? (
               <SourceResult
                 text={segment.text || ""}
