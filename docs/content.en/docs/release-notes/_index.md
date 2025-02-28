@@ -31,6 +31,8 @@ Information about release notes of Coco Server is provided here.
 - Refactor: remove websocket_session_id from message request #206
 - Refactor: the display of search results and the logic of creating new chats #207
 - Refactor: AI conversation rendering logic #216
+- Refresh all server's info on purpose, get the actual health info #225
+
 
 ## 0.1.0 (2015-02-16)
 

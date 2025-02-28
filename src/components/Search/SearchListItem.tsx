@@ -1,7 +1,8 @@
-import React from "react";
+import React, { MouseEvent } from "react";
 
 import ItemIcon from "@/components/Common/Icons/ItemIcon";
 import ListRight from "./ListRight";
+import { useSearchStore } from "@/stores/searchStore";
 
 interface SearchListItemProps {
   item: any;
@@ -26,6 +27,16 @@ const SearchListItem: React.FC<SearchListItemProps> = ({
   goToTwoPage,
   itemRef,
 }) => {
+  const setVisibleContextMenu = useSearchStore(
+    (state) => state.setVisibleContextMenu
+  );
+
+  const onContextMenu = (event: MouseEvent) => {
+    event.preventDefault();
+
+    setVisibleContextMenu(true);
+  };
+
   return (
     <div
       ref={itemRef}
@@ -36,6 +47,7 @@ const SearchListItem: React.FC<SearchListItemProps> = ({
           ? "text-white bg-[var(--coco-primary-color)] hover:bg-[var(--coco-primary-color)]"
           : "text-[#333] dark:text-[#d8d8d8]"
       } ${showListRight ? "gap-7" : ""}`}
+      onContextMenu={onContextMenu}
     >
       <div
         className={`${

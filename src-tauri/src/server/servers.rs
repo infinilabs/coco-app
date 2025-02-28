@@ -259,6 +259,10 @@ pub async fn load_or_insert_default_server<R: Runtime>(
 pub async fn list_coco_servers<R: Runtime>(
     _app_handle: AppHandle<R>,
 ) -> Result<Vec<Server>, String> {
+
+    //hard fresh all server's info, in order to get the actual health
+    refresh_all_coco_server_info(_app_handle.clone()).await;
+
     let servers: Vec<Server> = get_all_servers();
     Ok(servers)
 }
@@ -277,6 +281,15 @@ pub fn get_all_servers() -> Vec<Server> {
 pub const COCO_SERVERS: &str = "coco_servers";
 
 const COCO_SERVER_TOKENS: &str = "coco_server_tokens";
+
+pub async fn refresh_all_coco_server_info<R: Runtime>(
+    app_handle: AppHandle<R>,
+) {
+    let servers = get_all_servers();
+    for server in servers {
+        let _ = refresh_coco_server_info(app_handle.clone(), server.id.clone()).await;
+    }
+}
 
 #[tauri::command]
 pub async fn refresh_coco_server_info<R: Runtime>(
@@ -328,9 +341,11 @@ pub async fn refresh_coco_server_info<R: Runtime>(
                     Err("Received empty response body.".to_string())
                 }
             } else {
+                mark_server_as_offline(id.as_str()).await;
                 Err("Could not determine the content length.".to_string())
             }
         } else {
+            mark_server_as_offline(id.as_str()).await;
             Err(format!("Request failed with status: {}", response.status()))
         }
     } else {
@@ -451,6 +466,17 @@ pub async fn enable_server<R: Runtime>(app_handle: AppHandle<R>, id: String) -> 
             .expect("failed to save servers");
     }
     Ok(())
+}
+
+
+pub async fn mark_server_as_offline(id: &str) {
+    // println!("server_is_offline: {}", id);
+    let server = get_server_by_id(id);
+    if let Some(mut server) = server {
+        server.available = false;
+        server.health = None;
+        save_server(&server);
+    }
 }
 
 #[tauri::command]

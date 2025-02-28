@@ -103,6 +103,10 @@
     "header": {
       "found": "找到",
       "results": "个结果"
+    },
+    "contextMenu": {
+      "open": "打开",
+      "copyLink": "复制链接"
     }
   },
   "assistant": {

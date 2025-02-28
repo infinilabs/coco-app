@@ -10,6 +10,7 @@ import noDataImg from "@/assets/coconut-tree.png";
 import { SearchResults } from "@/components/Search/SearchResults";
 import { useSearchStore } from "@/stores/searchStore";
 import { isMac } from "@/utils/platform";
+import ContextMenu from "./ContextMenu";
 
 interface SearchProps {
   changeInput: (val: string) => void;
@@ -119,6 +120,8 @@ function Search({ isChatMode, input }: SearchProps) {
       )}
 
       <Footer isChat={false} name={selectedItem?.source?.name} />
+
+      <ContextMenu />
     </div>
   );
 }
