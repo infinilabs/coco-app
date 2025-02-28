@@ -21,7 +21,8 @@ import { ChatHeader } from "./ChatHeader";
 import { Sidebar } from "@/components/Assistant/Sidebar";
 import { useConnectStore } from "@/stores/connectStore";
 import { useSearchStore } from "@/stores/searchStore";
-// import { QueryIntent } from "./QueryIntent";
+import { QueryIntent } from "./QueryIntent";
+import { IServer } from "@/stores/appStore";
 
 interface ChatAIProps {
   isTransitioned: boolean;
@@ -108,10 +109,12 @@ const ChatAI = memo(
         setCurMessage((prev) => prev + chunk);
       }, []);
 
-      const reconnect = async () => {
-        if (!currentService?.id) return;
+      const reconnect = async (server?: IServer) => {
+        server = server || currentService
+        if (!server?.id) return;
         try {
-          await invoke("connect_to_server", { id: currentService?.id });
+          console.log("reconnect", 1111111, server.id);
+          await invoke("connect_to_server", { id: server.id });
           setConnected(true);
         } catch (error) {
           console.error("Failed to connect:", error);
@@ -150,7 +153,7 @@ const ChatAI = memo(
 
       const sourceContentRef = useRef<string[]>([]);
 
-      const [_query_intent, setQuery_intent] = useState<IChunkData | null>(null);
+      const [query_intent, setQuery_intent] = useState<IChunkData | null>(null);
       const deal_query_intent = useCallback((data: IChunkData) => {
         setQuery_intent((prev: IChunkData | null): IChunkData => {
           if (!prev) return data;
@@ -306,10 +309,7 @@ const ChatAI = memo(
       useEffect(() => {
         let unlisten_error = null;
 
-        if (!connected) {
-          console.log("reconnect", 222222);
-          reconnect();
-        } else {
+        if (connected)  {
           setErrorShow(false);
           unlisten_error = listen("ws-error", (event) => {
             console.error("WebSocket error:", event.payload);
@@ -695,6 +695,7 @@ const ChatAI = memo(
             from: 0,
             size: 20,
           });
+          console.log("_history", response);
           response = JSON.parse(response || "");
           console.log("_history", response);
           const hits = response?.hits?.hits || [];
@@ -745,6 +746,7 @@ const ChatAI = memo(
             }}
             isSidebarOpen={isSidebarOpenChat}
             activeChat={activeChat}
+            reconnect={reconnect}
           />
 
           {/* Chat messages */}
@@ -788,11 +790,11 @@ const ChatAI = memo(
               />
             ) : null}
 
-            {/* {!curChatEnd && activeChat?._id ? (
+            {!curChatEnd && activeChat?._id ? (
               <>
                 <QueryIntent query_intent={query_intent} />
               </>
-            ) : null} */}
+            ) : null}
 
             {timedoutShow ? (
               <ChatMessage

@@ -38,6 +38,7 @@ interface ChatHeaderProps {
   setIsSidebarOpen: () => void;
   isSidebarOpen: boolean;
   activeChat: Chat | undefined;
+  reconnect: (server?: IServer) => void;
 }
 
 export function ChatHeader({
@@ -45,6 +46,7 @@ export function ChatHeader({
   onOpenChatAI,
   setIsSidebarOpen,
   activeChat,
+  reconnect,
 }: ChatHeaderProps) {
   const { t } = useTranslation();
 
@@ -52,7 +54,7 @@ export function ChatHeader({
   const isPinned = useAppStore((state) => state.isPinned);
   const setIsPinned = useAppStore((state) => state.setIsPinned);
 
-  const { setConnected, setMessages } = useChatStore();
+  const { connected, setConnected, setMessages } = useChatStore();
 
   const [serverList, setServerList] = useState<IServer[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -68,8 +70,17 @@ export function ChatHeader({
         );
         // console.log("list_coco_servers", enabledServers);
         setServerList(enabledServers);
-        if (resetSelection && enabledServers.length > 0 && !currentService) {
-          switchServer(enabledServers[enabledServers.length - 1]);
+
+        if (resetSelection && enabledServers.length > 0) {
+          const currentServiceExists = enabledServers.some(
+            server => server.id === currentService?.id
+          );
+          
+          if (currentServiceExists) {
+            switchServer(currentService);
+          } else {
+            switchServer(enabledServers[enabledServers.length - 1]);
+          }
         }
       })
       .catch((err: any) => {
@@ -79,23 +90,21 @@ export function ChatHeader({
 
   useEffect(() => {
     fetchServers(true);
+
+    return () => {
+      // Cleanup logic if needed
+      disconnect();
+    };
   }, []);
 
   const disconnect = async () => {
+    if (!connected) return;
     try {
+      console.log("disconnect", 33333333);
       await invoke("disconnect");
       setConnected(false);
     } catch (error) {
       console.error("Failed to disconnect:", error);
-    }
-  };
-
-  const connect = async (server: IServer) => {
-    try {
-      await invoke("connect_to_server", { id: server.id });
-      setConnected(true);
-    } catch (error) {
-      console.error("Failed to connect:", error);
     }
   };
 
@@ -108,7 +117,7 @@ export function ChatHeader({
       onCreateNewChat();
       //
       await disconnect();
-      await connect(server);
+      reconnect && reconnect(server);
     } catch (error) {
       console.error("switchServer:", error);
     }
