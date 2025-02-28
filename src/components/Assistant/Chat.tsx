@@ -143,8 +143,9 @@ const ChatAI = memo(
 
       const [showThinkTyping, setShowThinkTyping] = useState(false);
 
-      const [thinkTypeBuffers, setThinkTypeBuffers] = useState<Record<string, string>>({});
-
+      const [thinkTypeBuffers, setThinkTypeBuffers] = useState<
+        Record<string, string>
+      >({});
 
       const sourceContentRef = useRef<string[]>([]);
 
@@ -174,54 +175,66 @@ const ChatAI = memo(
           const cleanedData = msg.replace(/^PRIVATE /, "");
           try {
             const chunkData = JSON.parse(cleanedData);
-            
+
             if (chunkData.reply_to_message !== curIdRef.current) return;
 
-            if (chunkData.chunk_type === "fetch_source" || chunkData.chunk_type === "pick_source") {
+            if (
+              chunkData.chunk_type === "fetch_source" ||
+              chunkData.chunk_type === "pick_source"
+            ) {
               try {
-                const prefix = chunkData.message_chunk.split('<Payload')[0];
-                const payloadMatch = chunkData.message_chunk.match(/<Payload[^>]*>([\s\S]*?)<\/Payload>/);
-                const sourceTag = payloadMatch 
-                  ? `<Source type="${chunkData.chunk_type}" total="${chunkData.message_chunk.match(/total=(\d+)/)?.[1] || "0"}">${prefix}${payloadMatch[0]}</Source>\n`
+                const prefix = chunkData.message_chunk.split("<Payload")[0];
+                const payloadMatch = chunkData.message_chunk.match(
+                  /<Payload[^>]*>([\s\S]*?)<\/Payload>/
+                );
+                const sourceTag = payloadMatch
+                  ? `<Source type="${chunkData.chunk_type}" total="${
+                      chunkData.message_chunk.match(/total=(\d+)/)?.[1] || "0"
+                    }">${prefix}${payloadMatch[0]}</Source>\n`
                   : `<Source type="${chunkData.chunk_type}">${chunkData.message_chunk}</Source>\n`;
-                
+
                 if (!sourceContentRef.current.includes(sourceTag)) {
                   sourceContentRef.current.push(sourceTag);
                   handleMessageChunk(sourceTag);
                 }
               } catch (e) {
-                console.error('Failed to parse source data:', e);
+                console.error("Failed to parse source data:", e);
                 const sourceTag = `<Source type="${chunkData.chunk_type}">${chunkData.message_chunk}</Source>\n`;
                 if (!sourceContentRef.current.includes(sourceTag)) {
                   sourceContentRef.current.push(sourceTag);
                   handleMessageChunk(sourceTag);
                 }
               }
-            }
-            else if (chunkData.chunk_type === "think" || !["fetch_source", "pick_source", "response"].includes(chunkData.chunk_type)) {
+            } else if (
+              chunkData.chunk_type === "think" ||
+              !["fetch_source", "pick_source", "response"].includes(
+                chunkData.chunk_type
+              )
+            ) {
               setShowThinkTyping(true);
-              const chunkType = chunkData.chunk_type || 'unknown';
-              
-              setThinkTypeBuffers(prev => {
+              const chunkType = chunkData.chunk_type || "unknown";
+
+              setThinkTypeBuffers((prev) => {
                 const newBuffers = {
                   ...prev,
-                  [chunkType]: (prev[chunkType] || '') + chunkData.message_chunk
+                  [chunkType]:
+                    (prev[chunkType] || "") + chunkData.message_chunk,
                 };
                 return newBuffers;
               });
-              
+
               setCurMessage(() => {
-                const sourceContent = sourceContentRef.current.join('\n');
-                
+                const sourceContent = sourceContentRef.current.join("\n");
+
                 let message = sourceContent;
-                if (message && !message.endsWith('\n')) {
-                  message += '\n';
+                if (message && !message.endsWith("\n")) {
+                  message += "\n";
                 }
-                
+
                 Object.entries(thinkTypeBuffers).forEach(([type, content]) => {
                   message += `<Think type="${type}">${content}</Think>\n`;
                 });
-                
+
                 return message;
               });
             } else if (chunkData.chunk_type === "response") {
@@ -246,13 +259,27 @@ const ChatAI = memo(
       }, [curChatEnd, setShowThinkTyping, setCurrentChunkType]);
 
       useEffect(() => {
-        const unlisten = listen("ws-message", (event) => {
-          dealMsg(String(event.payload));
-        });
+        let unlisten_error = null
+        let unlisten_message = null
+        if (!connected) {
+          reconnect();
+        } else {
+          setErrorShow(false)
+          unlisten_message = listen("ws-message", (event) => {
+            dealMsg(String(event.payload));
+          });
+          unlisten_error = listen("ws-error", (event) => {
+            console.error("WebSocket error:", event.payload);
+            setConnected(false);
+            setErrorShow(true)  
+          });
+        }
+
         return () => {
-          unlisten.then((fn) => fn());
+          unlisten_message?.then((fn) => fn());
+          unlisten_error?.then((fn) => fn());
         };
-      }, [dealMsg]);
+      }, [dealMsg, connected]);
 
       useEffect(() => {
         if (curChatEnd && currentChunkContent) {
@@ -374,43 +401,47 @@ const ChatAI = memo(
         clearChatPage && clearChatPage();
       };
 
-      const createNewChat = useCallback(async (value: string = "") => {
-        setTimedoutShow(false);
-        setErrorShow(false);
-        chatClose();
-        try {
-          // console.log("sourceDataIds", sourceDataIds);
-          let response: any = await invoke("new_chat", {
-            serverId: currentService?.id,
-            message: value,
-            queryParams: {
-              search: isSearchActive,
-              deep_thinking: isDeepThinkActive,
-              datasource: sourceDataIds.join(","),
-            },
-          });
-          console.log("_new", response);
-          const newChat: Chat = response;
-          curIdRef.current = response?.payload?.id;
+      const createNewChat = useCallback(
+        async (value: string = "") => {
+          setTimedoutShow(false);
+          setErrorShow(false);
+          chatClose();
+          sourceContentRef.current = [];
+          try {
+            // console.log("sourceDataIds", sourceDataIds);
+            let response: any = await invoke("new_chat", {
+              serverId: currentService?.id,
+              message: value,
+              queryParams: {
+                search: isSearchActive,
+                deep_thinking: isDeepThinkActive,
+                datasource: sourceDataIds.join(","),
+              },
+            });
+            console.log("_new", response);
+            const newChat: Chat = response;
+            curIdRef.current = response?.payload?.id;
 
-          newChat._source = {
-            message: value,
-          };
-          const updatedChat: Chat = {
-            ...newChat,
-            messages: [newChat],
-          };
+            newChat._source = {
+              message: value,
+            };
+            const updatedChat: Chat = {
+              ...newChat,
+              messages: [newChat],
+            };
 
-          changeInput && changeInput("");
-          console.log("updatedChat2", updatedChat);
-          setActiveChat(updatedChat);
-          setIsTyping(true);
-          setCurChatEnd(false);
-        } catch (error) {
-          setErrorShow(true);
-          console.error("Failed to fetch user data:", error);
-        }
-      }, [isSearchActive, isDeepThinkActive]);
+            changeInput && changeInput("");
+            console.log("updatedChat2", updatedChat);
+            setActiveChat(updatedChat);
+            setIsTyping(true);
+            setCurChatEnd(false);
+          } catch (error) {
+            setErrorShow(true);
+            console.error("Failed to fetch user data:", error);
+          }
+        },
+        [isSearchActive, isDeepThinkActive]
+      );
 
       const init = (value: string) => {
         if (!curChatEnd) return;
@@ -427,6 +458,7 @@ const ChatAI = memo(
           if (!newChat?._id || !content) return;
           setTimedoutShow(false);
           setErrorShow(false);
+          sourceContentRef.current = [];
           try {
             // console.log("sourceDataIds", sourceDataIds);
             let response: any = await invoke("send_message", {

@@ -1,10 +1,4 @@
-import {
-  ArrowDown01,
-  Command,
-  CornerDownLeft,
-  Pin,
-  PinOff,
-} from "lucide-react";
+import { ArrowDown01, Command, CornerDownLeft } from "lucide-react";
 import { emit } from "@tauri-apps/api/event";
 import { useTranslation } from "react-i18next";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -14,6 +8,8 @@ import { useSearchStore } from "@/stores/searchStore";
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import { useAppStore } from "@/stores/appStore";
 import { isMac } from "@/utils/platform";
+import PinOffIcon from "@/icons/PinOff";
+import PinIcon from "@/icons/Pin";
 
 interface FooterProps {
   isChat: boolean;
@@ -65,17 +61,12 @@ export default function Footer({}: FooterProps) {
                 version: process.env.VERSION || "v1.0.0",
               })}
           </span>
+
           <button
             onClick={togglePin}
-            className={`rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 ${
-              isPinned ? "text-blue-500" : ""
-            }`}
+            className={`${isPinned ? "text-blue-500" : ""}`}
           >
-            {isPinned ? (
-              <Pin className="h-3 w-3" />
-            ) : (
-              <PinOff className="h-3 w-3" />
-            )}
+            {isPinned ? <PinIcon /> : <PinOffIcon />}
           </button>
         </div>
       </div>

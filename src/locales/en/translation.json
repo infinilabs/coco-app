@@ -127,15 +127,19 @@
     "message": {
       "logo": "Coco AI Logo",
       "aiName": "Coco AI",
-      
       "thinkingButton": "View thinking process",
       "steps": {
         "query_intent": "Understand the query",
-        "fetch_source": "Retrieve documents",
-        "pick_source": "Intelligent pick",
+        "fetch_source": "Retrieve documents, found {{count}} results",
+        "pick_source": "Intelligent pick {{count}} results",
         "deep_read": "Deep reading",
         "think": "AI is thinking...",
-        "thoughtTime": "Thought for a few seconds"
+        "thoughtTime": "Thought for a few seconds",
+        "keywords": "Keywords",
+        "questionType": "Query Type",
+        "userIntent": "User Intent",
+        "relatedQuestions": "Query",
+        "informationSeeking": "Information Seeking"
       }
     },
     "sidebar": {
@@ -145,7 +149,8 @@
       "untitledChat": "Untitled Chat"
     },
     "source": {
-      "foundResults": "Found {{count}} results"
+      "fetch_source": "Found {{count}} results",
+      "pick_source": "{{count}} results"
     }
   },
   "cloud": {

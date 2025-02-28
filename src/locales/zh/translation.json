@@ -130,11 +130,16 @@
       "thinkingButton": "查看思考过程",
       "steps": {
         "query_intent": "理解查询",
-        "fetch_source": "检索文档",
-        "pick_source": "智能预选",
-        "deep_read": "深度阅读",
+        "fetch_source": "检索文档，找到 {{count}} 个结果",
+        "pick_source": "智能预选 {{count}} 个结果",
+        "deep_read": "深度阅读，",
         "think": "AI 正在思考...",
-        "thoughtTime": "思考了数秒"
+        "thoughtTime": "思考了数秒",
+        "keywords": "关键词",
+        "questionType": "查询类型",
+        "userIntent": "用户意图",
+        "relatedQuestions": "查询",
+        "informationSeeking": "信息查询"
       }
     },
     "sidebar": {
@@ -144,7 +149,8 @@
       "untitledChat": "未命名对话"
     },
     "source": {
-      "foundResults": "找到 {{count}} 个结果"
+      "fetch_source": "找到 {{count}} 个结果",
+      "pick_source": "{{count}} 个结果"
     }
   },
   "cloud": {

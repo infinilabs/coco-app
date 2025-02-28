@@ -57,7 +57,7 @@ export const ChatMessage = memo(function ChatMessage({
     return (
       <>
         {segments.map((segment: SegmentType, index) => (
-          <span key={index}>
+          <div key={segment?.sourceType || '' + index} className="w-full">
             {segment.isQueryIntent ? (
               <QueryIntent
                 sourceType={segment.sourceType || ""}
@@ -94,10 +94,10 @@ export const ChatMessage = memo(function ChatMessage({
                 />
               </div>
             ) : null}
-          </span>
+          </div>
         ))}
         {isTyping && (
-          <span className="inline-block w-1.5 h-4 ml-0.5 -mb-0.5 bg-current animate-pulse" />
+          <div className="inline-block w-1.5 h-4 ml-0.5 -mb-0.5 bg-current animate-pulse" />
         )}
       </>
     );
@@ -108,12 +108,12 @@ export const ChatMessage = memo(function ChatMessage({
       className={`py-8 flex ${isAssistant ? "justify-start" : "justify-end"}`}
     >
       <div
-        className={`max-w-3xl px-4 sm:px-6 lg:px-8 flex gap-4 ${
-          isAssistant ? "" : "flex-row-reverse"
+        className={`px-4 flex gap-4 ${
+          isAssistant ? "w-full" : "flex-row-reverse"
         }`}
       >
         <div
-          className={`flex-1 space-y-2 ${
+          className={`space-y-2 ${
             isAssistant ? "text-left" : "text-right"
           }`}
         >

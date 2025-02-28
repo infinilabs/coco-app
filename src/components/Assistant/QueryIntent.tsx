@@ -1,9 +1,4 @@
-import {
-  ChevronDown,
-  ChevronUp,
-  Loader,
-  BadgeCheck,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, Loader, BadgeCheck } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -30,6 +25,27 @@ export const QueryIntent = ({ sourceType, thinkContent }: QueryIntentProps) => {
       setIsCompleted(true);
     }
   }, [thinkContent, prevContent, isTyping, isCompleted]);
+
+  const [queryData, setQueryData] = useState<{
+    category: string;
+    intent: string;
+    query: string[];
+    keyword: string[];
+  } | null>(null);
+
+  useEffect(() => {
+    if (thinkContent) {
+      try {
+       const cleanContent = thinkContent.replace(/^"|"$/g, '');
+       const jsonMatch = cleanContent.match(/<JSON>([\s\S]*?)<\/JSON>/);
+       const jsonString = jsonMatch ? jsonMatch[1] : cleanContent;
+       const data = JSON.parse(jsonString);
+       setQueryData(data);
+      } catch (e) {
+        console.error("Failed to parse query data:", e);
+      }
+    }
+  }, [thinkContent]);
 
   return (
     <div className="space-y-2 mb-3 w-full">
@@ -65,31 +81,48 @@ export const QueryIntent = ({ sourceType, thinkContent }: QueryIntentProps) => {
         <div className="pl-2 border-l-2 border-[e5e5e5]">
           <div className="text-[#8b8b8b] dark:text-[#a6a6a6] space-y-2">
             <div className="mb-4 space-y-2 text-xs">
-              <div className="flex items-center gap-1">
-                <span className="text-[#999999]">关键词：</span>
+              {queryData?.keyword ? <div className="flex items-center gap-1">
+                <span className="text-[#999999]">
+                  {t("assistant.message.steps.keywords")}：
+                </span>
                 <div className="flex flex-wrap gap-1">
-                  {["Easysearch"].map((keyword, index) => (
+                  {queryData?.keyword?.map((keyword, index) => (
                     <span
                       key={index}
                       className="text-[#333333] dark:text-[#D8D8D8]"
                     >
                       {keyword}
+                      {index < 2 && "、"}
                     </span>
                   ))}
                 </div>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-[#999999]">问题类型：</span>
-                <span className="text-[#333333] dark:text-[#D8D8D8]">
-                  Seeking Information
+              </div> : null}
+              {queryData?.category ? <div className="flex items-center gap-1">
+                <span className="text-[#999999]">
+                  {t("assistant.message.steps.questionType")}：
                 </span>
-              </div>
-              <div className="flex items-start gap-1">
-                <span className="text-[#999999]">用户意图：</span>
+                <span className="text-[#333333] dark:text-[#D8D8D8]">
+                  {queryData?.category}
+                </span>
+              </div> :null}
+              {queryData?.intent ? <div className="flex items-start gap-1">
+                <span className="text-[#999999]">
+                  {t("assistant.message.steps.userIntent")}：
+                </span>
                 <div className="flex-1 text-[#333333] dark:text-[#D8D8D8]">
-                  了解 Easysearch 的相关信息
+                  {queryData?.intent}
                 </div>
-              </div>
+              </div> : null}
+              {queryData?.query ? <div className="flex items-start gap-1">
+                <span className="text-[#999999]">
+                  {t("assistant.message.steps.relatedQuestions")}：
+                </span>
+                <div className="flex-1 flex flex-col text-[#333333] dark:text-[#D8D8D8]">
+                  {queryData?.query?.map((question) => (
+                    <span key={question}>- {question}</span>
+                  ))}
+                </div>
+              </div> : null}
             </div>
           </div>
         </div>
