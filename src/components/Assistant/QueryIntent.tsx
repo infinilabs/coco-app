@@ -37,16 +37,18 @@ export const QueryIntent = ({ query_intent }: QueryIntentProps) => {
   } | null>(null);
 
   useEffect(() => {
-    if (query_intent?.message_chunk) {
-      try {
-       const cleanContent = query_intent?.message_chunk.replace(/^"|"$/g, '');
-       const jsonMatch = cleanContent.match(/<JSON>([\s\S]*?)<\/JSON>/);
-       const jsonString = jsonMatch ? jsonMatch[1] : cleanContent;
-       const data = JSON.parse(jsonString);
-       setQueryData(data);
-      } catch (e) {
-        console.error("Failed to parse query data:", e);
+    if (!query_intent?.message_chunk) return;
+    try {
+      const cleanContent = query_intent.message_chunk.replace(/^"|"$/g, "");
+      const allMatches = cleanContent.match(/<JSON>([\s\S]*?)<\/JSON>/g);
+      if (allMatches) {
+        const lastMatch = allMatches[allMatches.length - 1];
+        const jsonString = lastMatch.replace(/<JSON>|<\/JSON>/g, "");
+        const data = JSON.parse(jsonString);
+        setQueryData(data);
       }
+    } catch (e) {
+      console.error("Failed to parse query data:", e);
     }
   }, [query_intent?.message_chunk]);
 
@@ -60,70 +62,77 @@ export const QueryIntent = ({ query_intent }: QueryIntentProps) => {
           <>
             <Loader className="w-4 h-4 animate-spin text-[#1990FF]" />
             <span className="text-xs text-[#999999] italic">
-              {t(`assistant.message.steps.${query_intent?.source_type}`)}
+              {t(`assistant.message.steps.${query_intent?.chunk_type}`)}
             </span>
           </>
         ) : (
           <>
             <BadgeCheck className="w-4 h-4 text-[#38C200]" />
             <span className="text-xs text-[#999999]">
-              {t(`assistant.message.steps.${query_intent?.source_type}`)}
+              {t(`assistant.message.steps.${query_intent?.chunk_type}`)}
             </span>
           </>
         )}
-        {query_intent?.message_chunk &&
-          (isThinkingExpanded ? (
-            <ChevronUp className="w-4 h-4" />
-          ) : (
-            <ChevronDown className="w-4 h-4" />
-          ))}
+        {isThinkingExpanded ? (
+          <ChevronUp className="w-4 h-4" />
+        ) : (
+          <ChevronDown className="w-4 h-4" />
+        )}
       </button>
-      {isThinkingExpanded && query_intent?.message_chunk && (
+      {isThinkingExpanded && (
         <div className="pl-2 border-l-2 border-[e5e5e5]">
           <div className="text-[#8b8b8b] dark:text-[#a6a6a6] space-y-2">
             <div className="mb-4 space-y-2 text-xs">
-              {queryData?.keyword ? <div className="flex items-center gap-1">
-                <span className="text-[#999999]">
-                  {t("assistant.message.steps.keywords")}：
-                </span>
-                <div className="flex flex-wrap gap-1">
-                  {queryData?.keyword?.map((keyword, index) => (
-                    <span
-                      key={index}
-                      className="text-[#333333] dark:text-[#D8D8D8]"
-                    >
-                      {keyword}
-                      {index < 2 && "、"}
-                    </span>
-                  ))}
+              {queryData?.keyword ? (
+                <div className="flex items-center gap-1">
+                  <span className="text-[#999999]">
+                    {t("assistant.message.steps.keywords")}：
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {queryData?.keyword?.map((keyword, index) => (
+                      <span
+                        key={index}
+                        className="text-[#333333] dark:text-[#D8D8D8]"
+                      >
+                        {keyword}
+                        {index < 2 && "、"}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div> : null}
-              {queryData?.category ? <div className="flex items-center gap-1">
-                <span className="text-[#999999]">
-                  {t("assistant.message.steps.questionType")}：
-                </span>
-                <span className="text-[#333333] dark:text-[#D8D8D8]">
-                  {queryData?.category}
-                </span>
-              </div> :null}
-              {queryData?.intent ? <div className="flex items-start gap-1">
-                <span className="text-[#999999]">
-                  {t("assistant.message.steps.userIntent")}：
-                </span>
-                <div className="flex-1 text-[#333333] dark:text-[#D8D8D8]">
-                  {queryData?.intent}
+              ) : null}
+              {queryData?.category ? (
+                <div className="flex items-center gap-1">
+                  <span className="text-[#999999]">
+                    {t("assistant.message.steps.questionType")}：
+                  </span>
+                  <span className="text-[#333333] dark:text-[#D8D8D8]">
+                    {queryData?.category}
+                  </span>
                 </div>
-              </div> : null}
-              {queryData?.query ? <div className="flex items-start gap-1">
-                <span className="text-[#999999]">
-                  {t("assistant.message.steps.relatedQuestions")}：
-                </span>
-                <div className="flex-1 flex flex-col text-[#333333] dark:text-[#D8D8D8]">
-                  {queryData?.query?.map((question) => (
-                    <span key={question}>- {question}</span>
-                  ))}
+              ) : null}
+              {queryData?.intent ? (
+                <div className="flex items-start gap-1">
+                  <span className="text-[#999999]">
+                    {t("assistant.message.steps.userIntent")}：
+                  </span>
+                  <div className="flex-1 text-[#333333] dark:text-[#D8D8D8]">
+                    {queryData?.intent}
+                  </div>
                 </div>
-              </div> : null}
+              ) : null}
+              {queryData?.query ? (
+                <div className="flex items-start gap-1">
+                  <span className="text-[#999999]">
+                    {t("assistant.message.steps.relatedQuestions")}：
+                  </span>
+                  <div className="flex-1 flex flex-col text-[#333333] dark:text-[#D8D8D8]">
+                    {queryData?.query?.map((question) => (
+                      <span key={question}>- {question}</span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

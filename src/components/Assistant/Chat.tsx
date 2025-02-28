@@ -305,16 +305,12 @@ const ChatAI = memo(
 
       useEffect(() => {
         let unlisten_error = null;
-        let unlisten_message = null;
-        if (!connected) {
-          console.log("reconnect", 2222222);
 
+        if (!connected) {
+          console.log("reconnect", 222222);
           reconnect();
         } else {
           setErrorShow(false);
-          unlisten_message = listen("ws-message", (event) => {
-            dealMsg(String(event.payload));
-          });
           unlisten_error = listen("ws-error", (event) => {
             console.error("WebSocket error:", event.payload);
             setConnected(false);
@@ -323,8 +319,21 @@ const ChatAI = memo(
         }
 
         return () => {
-          unlisten_message?.then((fn) => fn());
           unlisten_error?.then((fn) => fn());
+        };
+      }, [connected]);
+
+      useEffect(() => {
+        let unlisten_message = null;
+        if (connected) {
+          setErrorShow(false);
+          unlisten_message = listen("ws-message", (event) => {
+            dealMsg(String(event.payload));
+          });
+        }
+
+        return () => {
+          unlisten_message?.then((fn) => fn());
         };
       }, [dealMsg, connected]);
 
@@ -778,6 +787,7 @@ const ChatAI = memo(
                 isThinkTyping={showThinkTyping}
               />
             ) : null}
+
             {/* {!curChatEnd && activeChat?._id ? (
               <>
                 <QueryIntent query_intent={query_intent} />
