@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { MessageSquare, Plus } from "lucide-react";
 
 import type { Chat } from "./types";
+
 interface SidebarProps {
   chats: Chat[];
   activeChat: Chat | undefined;

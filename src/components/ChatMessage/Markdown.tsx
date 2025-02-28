@@ -9,7 +9,7 @@ import RehypeHighlight from "rehype-highlight";
 import mermaid from "mermaid";
 import { useDebouncedCallback } from "use-debounce";
 
-import { copyToClipboard, useWindowSize } from "../../utils";
+import { copyToClipboard, useWindowSize } from "@/utils";
 
 import "./markdown.css";
 import "./highlight.css";

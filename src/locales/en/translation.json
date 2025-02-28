@@ -130,6 +130,7 @@
       "thinkingButton": "View thinking process",
       "steps": {
         "query_intent": "Understand the query",
+        "source_zero": "Searching for relevant documents",
         "fetch_source": "Retrieve {{count}} documents",
         "pick_source": "Intelligent pick {{count}} results",
         "deep_read": "Deep reading",

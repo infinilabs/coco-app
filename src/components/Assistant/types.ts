@@ -13,6 +13,7 @@ export interface ISource {
   type?: string;
   message?: any;
   title?: string;
+  question?: string;
 }
 export interface Chat {
   _id: string;
