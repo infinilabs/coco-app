@@ -1,7 +1,7 @@
 import { useOSKeyPress } from "@/hooks/useOSKeyPress";
 import { useSearchStore } from "@/stores/searchStore";
 import { copyToClipboard, OpenURLWithBrowser } from "@/utils";
-import { isMac } from "@/utils/platform";
+import { isMac, isWin } from "@/utils/platform";
 import {
   useClickAway,
   useCreation,
@@ -10,8 +10,9 @@ import {
 } from "ahooks";
 import clsx from "clsx";
 import { isNil } from "lodash-es";
-import { Link, PanelRight, Send, SquareArrowOutUpRight } from "lucide-react";
+import { Link, SquareArrowOutUpRight } from "lucide-react";
 import { cloneElement, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 interface State {
   activeMenuIndex: number;
@@ -19,6 +20,8 @@ interface State {
 
 const ContextMenu = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const { t } = useTranslation();
 
   const visibleContextMenu = useSearchStore((state) => {
     return state.visibleContextMenu;
@@ -37,36 +40,22 @@ const ContextMenu = () => {
 
     return [
       {
-        name: "Open",
+        name: "search.contextMenu.open",
         icon: <SquareArrowOutUpRight />,
-        keys: ["↩︎"],
+        keys: isMac ? ["↩︎"] : ["Enter"],
         shortcut: "enter",
         clickEvent: () => {
           OpenURLWithBrowser(selectedSearchContent?.url);
         },
       },
       {
-        name: "Send to AI",
-        icon: <Send />,
-        keys: ["⌘", "↩︎"],
-        shortcut: isMac ? "meta.enter" : "ctrl.enter",
-        clickEvent: () => {},
-      },
-      {
-        name: "Copy link",
+        name: "search.contextMenu.copyLink",
         icon: <Link />,
-        keys: ["⌘", "L"],
+        keys: isMac ? ["⌘", "L"] : ["Ctrl", "L"],
         shortcut: isMac ? "meta.l" : "ctrl.l",
         clickEvent: () => {
           copyToClipboard(selectedSearchContent?.url);
         },
-      },
-      {
-        name: "Toggle details",
-        icon: <PanelRight />,
-        keys: ["⌘", "D"],
-        shortcut: isMac ? "meta.d" : "ctrl.d",
-        clickEvent: () => {},
       },
     ];
   }, [selectedSearchContent]);
@@ -169,14 +158,19 @@ const ContextMenu = () => {
                 <div className="flex items-center gap-2 text-black/80 dark:text-white/80">
                   {cloneElement(icon, { className: "size-4" })}
 
-                  <span>{name}</span>
+                  <span>{t(name)}</span>
                 </div>
 
                 <div className="flex gap-[4px] text-black/60 dark:text-white/60">
                   {keys.map((key) => (
                     <kbd
                       key={key}
-                      className="flex justify-center items-center font-sans h-[20px] min-w-[20px] text-[10px] rounded-md border border-black/10 dark:border-white/10"
+                      className={clsx(
+                        "flex justify-center items-center font-sans h-[20px] min-w-[20px] text-[10px] rounded-md border border-black/10 dark:border-white/10",
+                        {
+                          "px-1": key.length > 1,
+                        }
+                      )}
                     >
                       {key}
                     </kbd>

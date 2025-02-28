@@ -103,6 +103,10 @@
     "header": {
       "found": "Found",
       "results": "results"
+    },
+    "contextMenu": {
+      "open": "Open",
+      "copyLink": "Copy Link"
     }
   },
   "assistant": {
