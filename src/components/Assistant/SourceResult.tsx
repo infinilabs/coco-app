@@ -37,14 +37,14 @@ export const SourceResult = ({
     >
       <button
         onClick={() => setIsSourceExpanded((prev) => !prev)}
-        className={`inline-flex justify-between items-center gap-2 px-2 py-1 rounded-xl transition-colors ${
+        className={`inline-flex justify-between items-center gap-2 px-2 py-1 rounded-xl transition-colors whitespace-nowrap ${
           isSourceExpanded
             ? "w-full"
             : "border border-[#E6E6E6] dark:border-[#272626]"
         }`}
       >
-        <div className="flex gap-2">
-          <Search className="w-4 h-4 text-[#38C200]" />
+        <div className="flex-1 min-w-0 flex items-center gap-2">
+          <Search className="w-4 h-4 text-[#38C200] flex-shrink-0" />
           <span className="text-xs text-[#999999]">
             {t(`assistant.message.steps.${type}`, {
               count: Number(total),

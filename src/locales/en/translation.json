@@ -130,7 +130,7 @@
       "thinkingButton": "View thinking process",
       "steps": {
         "query_intent": "Understand the query",
-        "fetch_source": "Retrieve documents, found {{count}} results",
+        "fetch_source": "Retrieve {{count}} documents",
         "pick_source": "Intelligent pick {{count}} results",
         "deep_read": "Deep reading",
         "think": "AI is thinking...",
