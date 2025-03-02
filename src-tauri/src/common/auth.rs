@@ -5,5 +5,5 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RequestAccessTokenResponse {
     pub access_token: String,
-    pub expire_at: u32,
+    pub expire_in: u32,
 }
