@@ -144,6 +144,7 @@
         "questionType": "查询类型",
         "userIntent": "用户意图",
         "relatedQuestions": "查询",
+        "suggestion": "建议",
         "informationSeeking": "信息查询"
       }
     },

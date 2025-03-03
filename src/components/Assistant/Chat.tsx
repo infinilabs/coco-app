@@ -100,7 +100,7 @@ const ChatAI = memo(
         server = server || currentService;
         if (!server?.id) return;
         try {
-          console.log("reconnect", 1111111, server.id);
+          console.log("reconnect", server.id);
           await invoke("connect_to_server", { id: server.id });
           setConnected(true);
         } catch (error) {
