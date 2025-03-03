@@ -30,7 +30,7 @@ const FileList = () => {
 
               <img src={convertFileSrc(icon)} className="size-[40px]" />
 
-              <div className="flex-1 flex flex-col justify-between">
+              <div className="flex flex-col justify-between overflow-hidden">
                 <div className="truncate">{name}</div>
 
                 <div className="text-xs text-black/60">
