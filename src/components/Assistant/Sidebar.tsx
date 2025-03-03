@@ -60,7 +60,7 @@ export function Sidebar({
                     : "text-gray-600 dark:text-gray-300"
                 }`}
               >
-                {chat.title || chat._id}
+                {chat?._source?.title || chat?._id}
               </span>
             </button>
             {activeChat?._id === chat._id && (

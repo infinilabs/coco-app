@@ -100,7 +100,7 @@ export function ChatHeader({
   const disconnect = async () => {
     if (!connected) return;
     try {
-      console.log("disconnect", 33333333);
+      console.log("disconnect");
       await invoke("disconnect");
       setConnected(false);
     } catch (error) {
@@ -109,6 +109,7 @@ export function ChatHeader({
   };
 
   const switchServer = async (server: IServer) => {
+    if (!server) return;
     try {
       // Switch UI first, then switch server connection
       setCurrentService(server);

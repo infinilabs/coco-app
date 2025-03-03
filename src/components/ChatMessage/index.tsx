@@ -40,7 +40,8 @@ export const ChatMessage = memo(function ChatMessage({
   const messageContent = message?._source?.message || "";
   const question = message?._source?.question || "";
 
-  console.log(11111, messageContent);
+  const showActions =
+    isTyping === false && (messageContent || response?.message_chunk);
 
   const renderContent = () => {
     if (!isAssistant) {
@@ -66,16 +67,16 @@ export const ChatMessage = memo(function ChatMessage({
         {isTyping && (
           <div className="inline-block w-1.5 h-5 ml-0.5 -mb-0.5 bg-[#666666] dark:bg-[#A3A3A3] rounded-sm animate-typing" />
         )}
-        {isTyping === false &&
-          (messageContent || response?.message_chunk) && (
-            <MessageActions
-              content={messageContent || response?.message_chunk || ""}
-              question={question}
-              onResend={() => {
-                onResend && onResend(question);
-              }}
-            />
-          )}
+        {showActions && (
+          <MessageActions
+            id={message._id}
+            content={messageContent || response?.message_chunk || ""}
+            question={question}
+            onResend={() => {
+              onResend && onResend(question);
+            }}
+          />
+        )}
       </>
     );
   };

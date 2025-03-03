@@ -13,6 +13,7 @@ interface IQueryData {
   intent: string;
   query: string[];
   keyword: string[];
+  suggestion: string[];
 }
 
 export const QueryIntent = ({ ChunkData }: QueryIntentProps) => {
@@ -35,6 +36,7 @@ export const QueryIntent = ({ ChunkData }: QueryIntentProps) => {
           const lastMatch = allMatches[allMatches.length - 1];
           const jsonString = lastMatch.replace(/<JSON>|<\/JSON>/g, "");
           const data = JSON.parse(jsonString);
+          console.log("QueryIntent", data);
           setData(data);
         }
         setLoading(false);
@@ -135,6 +137,18 @@ export const QueryIntent = ({ ChunkData }: QueryIntentProps) => {
                   <div className="flex-1 flex flex-col text-[#333333] dark:text-[#D8D8D8]">
                     {Data?.query?.map((question) => (
                       <span key={question}>- {question}</span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+              {Data?.suggestion ? (
+                <div className="flex items-start gap-1">
+                  <span className="text-[#999999]">
+                    {t("assistant.message.steps.suggestion")}：
+                  </span>
+                  <div className="flex-1 flex flex-col text-[#333333] dark:text-[#D8D8D8]">
+                    {Data?.suggestion?.map((suggest) => (
+                      <span key={suggest}>- {suggest}</span>
                     ))}
                   </div>
                 </div>

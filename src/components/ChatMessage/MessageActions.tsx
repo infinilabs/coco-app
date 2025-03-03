@@ -9,12 +9,16 @@ import {
 import { useState } from "react";
 
 interface MessageActionsProps {
+  id: string;
   content: string;
   question?: string;
   onResend?: () => void;
 }
 
+const RefreshOnlyIds = ["timedout", "error"];
+
 export const MessageActions = ({
+  id,
   content,
   question,
   onResend,
@@ -24,6 +28,8 @@ export const MessageActions = ({
   const [disliked, setDisliked] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isResending, setIsResending] = useState(false);
+
+  const isRefreshOnly = RefreshOnlyIds.includes(id);
 
   const handleCopy = async () => {
     try {
@@ -81,56 +87,64 @@ export const MessageActions = ({
 
   return (
     <div className="flex items-center gap-1 mt-2">
-      <button
-        onClick={handleCopy}
-        className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
-      >
-        {copied ? (
-          <Check className="w-4 h-4 text-[#38C200] dark:text-[#38C200]" />
-        ) : (
-          <Copy className="w-4 h-4 text-[#666666] dark:text-[#A3A3A3]" />
-        )}
-      </button>
-      <button
-        onClick={handleLike}
-        className={`p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors ${
-          liked ? "animate-shake" : ""
-        }`}
-      >
-        <ThumbsUp
-          className={`w-4 h-4 ${
-            liked
-              ? "text-[#1990FF] dark:text-[#1990FF]"
-              : "text-[#666666] dark:text-[#A3A3A3]"
+      {!isRefreshOnly && (
+        <button
+          onClick={handleCopy}
+          className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
+        >
+          {copied ? (
+            <Check className="w-4 h-4 text-[#38C200] dark:text-[#38C200]" />
+          ) : (
+            <Copy className="w-4 h-4 text-[#666666] dark:text-[#A3A3A3]" />
+          )}
+        </button>
+      )}
+      {!isRefreshOnly && (
+        <button
+          onClick={handleLike}
+          className={`p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors ${
+            liked ? "animate-shake" : ""
           }`}
-        />
-      </button>
-      <button
-        onClick={handleDislike}
-        className={`p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors ${
-          disliked ? "animate-shake" : ""
-        }`}
-      >
-        <ThumbsDown
-          className={`w-4 h-4 ${
-            disliked
-              ? "text-[#1990FF] dark:text-[#1990FF]"
-              : "text-[#666666] dark:text-[#A3A3A3]"
+        >
+          <ThumbsUp
+            className={`w-4 h-4 ${
+              liked
+                ? "text-[#1990FF] dark:text-[#1990FF]"
+                : "text-[#666666] dark:text-[#A3A3A3]"
+            }`}
+          />
+        </button>
+      )}
+      {!isRefreshOnly && (
+        <button
+          onClick={handleDislike}
+          className={`p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors ${
+            disliked ? "animate-shake" : ""
           }`}
-        />
-      </button>
-      <button
-        onClick={handleSpeak}
-        className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
-      >
-        <Volume2
-          className={`w-4 h-4 ${
-            isSpeaking
-              ? "text-[#1990FF] dark:text-[#1990FF]"
-              : "text-[#666666] dark:text-[#A3A3A3]"
-          }`}
-        />
-      </button>
+        >
+          <ThumbsDown
+            className={`w-4 h-4 ${
+              disliked
+                ? "text-[#1990FF] dark:text-[#1990FF]"
+                : "text-[#666666] dark:text-[#A3A3A3]"
+            }`}
+          />
+        </button>
+      )}
+      {!isRefreshOnly && (
+        <button
+          onClick={handleSpeak}
+          className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
+        >
+          <Volume2
+            className={`w-4 h-4 ${
+              isSpeaking
+                ? "text-[#1990FF] dark:text-[#1990FF]"
+                : "text-[#666666] dark:text-[#A3A3A3]"
+            }`}
+          />
+        </button>
+      )}
       {question && (
         <button
           onClick={handleResend}
