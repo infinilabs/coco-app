@@ -56,6 +56,10 @@ export function DataSourcesList({ server }: { server: string }) {
     getDatasourceData();
   }, []);
 
+  const handleToggle = (id: string, enabled: boolean) => {
+    console.log("handleToggle", id, enabled);
+  };
+
   return (
     <div className="space-y-4">
       <h2 className="flex justify-between text-xl font-medium text-gray-900 dark:text-white">

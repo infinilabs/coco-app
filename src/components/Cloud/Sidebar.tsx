@@ -29,8 +29,8 @@ export const Sidebar = forwardRef<{ refreshData: () => void }, SidebarProps>(
           key={item?.id}
           className={`flex cursor-pointer items-center space-x-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg mb-2 ${
             currentService?.id === item?.id
-              ? "dark:bg-blue-900/20 dark:bg-blue-900"
-              : "bg-gray-50 dark:bg-gray-900"
+              ? "dark:bg-blue-900/20 dark:bg-blue-900 border border-[#0087ff]"
+              : "bg-gray-50 dark:bg-gray-900 border border-[#e6e6e6]"
           }`}
           onClick={() => setCurrentService(item)}
         >
@@ -62,7 +62,7 @@ export const Sidebar = forwardRef<{ refreshData: () => void }, SidebarProps>(
               .map((item) => renderServerItem(item))}
           </div>
 
-          <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+          <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 mt-6">
             {t("cloud.sidebar.yourServers")}
           </div>
 
