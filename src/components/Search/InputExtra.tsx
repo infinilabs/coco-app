@@ -3,8 +3,9 @@ import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { find, isNil } from "lodash-es";
 import { useChatStore } from "@/stores/chatStore";
-import { name, icon, extname } from "tauri-plugin-fs-pro-api";
+import { size, name, icon, extname } from "tauri-plugin-fs-pro-api";
 import { nanoid } from "nanoid";
+import Tooltip from "../Common/Tooltip";
 
 const InputExtra = () => {
   const uploadFiles = useChatStore((state) => state.uploadFiles);
@@ -19,15 +20,24 @@ const InputExtra = () => {
 
     const files: typeof uploadFiles = [];
 
-    for await (const item of selectedFiles) {
-      if (find(uploadFiles, { path: item })) continue;
+    for await (const path of selectedFiles) {
+      if (find(uploadFiles, { path })) continue;
+
+      const fileSize = await size(path);
+
+      console.log(fileSize / 1024 / 1024);
+
+      if (fileSize / 1024 / 1024 > 100) {
+        continue;
+      }
 
       files.push({
         id: nanoid(),
-        path: item,
-        name: await name(item),
-        icon: await icon(item, 256),
-        extname: await extname(item),
+        path,
+        name: await name(path),
+        icon: await icon(path, 256),
+        extname: await extname(path),
+        size: fileSize,
       });
     }
 
@@ -48,9 +58,11 @@ const InputExtra = () => {
   return (
     <Menu>
       <MenuButton>
-        <div className="group h-5 px-2 flex justify-center items-center border rounded-[10px] transition-colors relative border-[#262727] hover:bg-[rgba(0,114,255,0.3)] hover:border-[rgba(0,114,255,0.3)]">
-          <Plus className="size-3 text-[#333] dark:text-white group-hover:text-[#0072FF] hover:dark:text-[#0072FF]" />
-        </div>
+        <Tooltip content="支持截图、上传文件，最多 50个，单个文件最大 100 MB。">
+          <div className="group h-5 px-2 flex justify-center items-center border rounded-[10px] transition-colors relative border-[#262727] hover:bg-[rgba(0,114,255,0.3)] hover:border-[rgba(0,114,255,0.3)]">
+            <Plus className="size-3 text-[#333] dark:text-white group-hover:text-[#0072FF] hover:dark:text-[#0072FF]" />
+          </div>
+        </Tooltip>
       </MenuButton>
       <MenuItems
         anchor="bottom start"

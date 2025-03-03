@@ -10,7 +10,7 @@ interface UploadFile {
   name: string;
   icon: string;
   extname: string;
-  size?: number;
+  size: number;
 }
 
 export type IChatStore = {

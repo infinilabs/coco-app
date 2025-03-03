@@ -1,24 +1,11 @@
 import { useChatStore } from "@/stores/chatStore";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { useAsyncEffect } from "ahooks";
-import { isNil } from "lodash-es";
-import { size } from "tauri-plugin-fs-pro-api";
 import { filesize } from "filesize";
 import { X } from "lucide-react";
 
 const FileList = () => {
   const uploadFiles = useChatStore((state) => state.uploadFiles);
   const setUploadFiles = useChatStore((state) => state.setUploadFiles);
-
-  useAsyncEffect(async () => {
-    for await (const item of uploadFiles) {
-      if (isNil(item.size)) {
-        item.size = await size(item.path);
-      }
-    }
-
-    setUploadFiles(uploadFiles);
-  }, [uploadFiles]);
 
   const deleteFile = (id: string) => {
     setUploadFiles(uploadFiles.filter((file) => file.id !== id));
@@ -27,7 +14,7 @@ const FileList = () => {
   return (
     <div className="flex flex-wrap text-sm -mx-[2px]">
       {uploadFiles.map((file) => {
-        const { id, icon = "", name, extname, size } = file;
+        const { id, icon, name, extname, size } = file;
 
         return (
           <div key={id} className="w-1/3 p-1">
@@ -47,16 +34,12 @@ const FileList = () => {
                 <div className="truncate">{name}</div>
 
                 <div className="text-xs text-black/60">
-                  {size ? (
-                    <div className="flex gap-2">
-                      {extname && <span>{extname}</span>}
-                      <span>
-                        {filesize(size, { standard: "jedec", spacer: "" })}
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="">解析中...</span>
-                  )}
+                  <div className="flex gap-2">
+                    {extname && <span>{extname}</span>}
+                    <span>
+                      {filesize(size, { standard: "jedec", spacer: "" })}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
