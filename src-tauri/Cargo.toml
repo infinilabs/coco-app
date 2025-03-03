@@ -38,6 +38,7 @@ tauri-plugin-fs = "2"
 tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
 tauri-plugin-drag = "2"
+tauri-plugin-fs-pro = "2"
 
 tokio-native-tls = "0.3"  # For wss connections
 tokio = { version = "1", features = ["full"] }

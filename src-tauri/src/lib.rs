@@ -1,13 +1,12 @@
+mod assistant;
 mod autostart;
 mod common;
 mod local;
 mod search;
 mod server;
+mod setup;
 mod shortcut;
 mod util;
-
-mod setup;
-mod assistant;
 
 use crate::common::register::SearchSourceRegistry;
 // use crate::common::traits::SearchSource;
@@ -80,7 +79,9 @@ pub fn run() {
         ))
         .plugin(tauri_plugin_theme::init(ctx.config_mut()))
         .plugin(tauri_plugin_deep_link::init())
-        .plugin(tauri_plugin_store::Builder::default().build());
+        .plugin(tauri_plugin_store::Builder::default().build())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs_pro::init());
 
     // Conditional compilation for macOS
     #[cfg(target_os = "macos")]

@@ -56,6 +56,9 @@ importers:
       dotenv:
         specifier: ^16.4.7
         version: 16.4.7
+      filesize:
+        specifier: ^10.1.6
+        version: 10.1.6
       i18next:
         specifier: ^23.16.2
         version: 23.16.2
@@ -71,6 +74,9 @@ importers:
       mermaid:
         specifier: ^11.4.0
         version: 11.4.0
+      nanoid:
+        specifier: ^5.1.2
+        version: 5.1.2
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -107,6 +113,9 @@ importers:
       remark-math:
         specifier: ^6.0.0
         version: 6.0.0
+      tauri-plugin-fs-pro-api:
+        specifier: ^2.3.1
+        version: 2.3.1
       use-debounce:
         specifier: ^10.0.4
         version: 10.0.4(react@18.3.1)
@@ -1879,6 +1888,10 @@ packages:
     resolution: {integrity: sha512-d+l3qxjSesT4V7v2fh+QnmFnUWv9lSpjarhShNTgBOfA0ttejbQUAlHLitbjkoRiDulW0OPoQPYIGhIC8ohejg==}
     engines: {node: '>=18'}
 
+  filesize@10.1.6:
+    resolution: {integrity: sha512-sJslQKU2uM33qH5nqewAwVB2QgR6w1aMNsYUp3aN5rMRyXEwJGmZvaWzeJFNTOXWlHQyBFCWrdj3fV/fsTOX8w==}
+    engines: {node: '>= 10.4.0'}
+
   fill-range@7.1.1:
     resolution: {integrity: sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==}
     engines: {node: '>=8'}
@@ -2556,6 +2569,11 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
+  nanoid@5.1.2:
+    resolution: {integrity: sha512-b+CiXQCNMUGe0Ri64S9SXFcP9hogjAJ2Rd6GdVxhPLRm7mhGaM7VgOvCAJ1ZshfHbqVDI3uqTI5C8/GaKuLI7g==}
+    engines: {node: ^18 || >=20}
+    hasBin: true
+
   netmask@2.0.2:
     resolution: {integrity: sha512-dBpDMdxv9Irdq66304OLfEmQ9tbNRFnFTuZiLo+bD+r332bBmMJ8GBLXklIXXgxd3+v9+KUnZaUR5PJMa75Gsg==}
     engines: {node: '>= 0.4.0'}
@@ -3086,6 +3104,9 @@ packages:
     resolution: {integrity: sha512-IcSvOcTRcUtQQ7ILQL5quRDg7Xs93PdJEk1ZLbhhvJc7uj/OAhYOnruEiwnGgBvUtaUAJ8/mhSw1o8L2jCiENA==}
     engines: {node: '>=14.0.0'}
     hasBin: true
+
+  tauri-plugin-fs-pro-api@2.3.1:
+    resolution: {integrity: sha512-fx/zITX9MWoDZ603FKWSybluZqJUEOvHU+H6kj3iRJNyoGFHoNkajpQbiK5cu81spQbGBlP9sV2HkaCI07gQ+Q==}
 
   thenify-all@1.6.0:
     resolution: {integrity: sha512-RNxQH/qI8/t3thXJDwcstUO4zeqo64+Uy/+sNVRBx4Xn2OX+OZ9oP+iJnNFqplFra2ZUVeKCSa2oVWi3T4uVmA==}
@@ -5047,6 +5068,8 @@ snapshots:
     dependencies:
       is-unicode-supported: 2.1.0
 
+  filesize@10.1.6: {}
+
   fill-range@7.1.1:
     dependencies:
       to-regex-range: 5.0.1
@@ -5963,6 +5986,8 @@ snapshots:
 
   nanoid@3.3.7: {}
 
+  nanoid@5.1.2: {}
+
   netmask@2.0.2: {}
 
   new-github-release-url@2.0.0:
@@ -6601,6 +6626,10 @@ snapshots:
       sucrase: 3.35.0
     transitivePeerDependencies:
       - ts-node
+
+  tauri-plugin-fs-pro-api@2.3.1:
+    dependencies:
+      '@tauri-apps/api': 2.2.0
 
   thenify-all@1.6.0:
     dependencies:

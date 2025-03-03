@@ -62,6 +62,8 @@
         }
       ],
       "deny": []
-    }
+    },
+    "dialog:default",
+    "fs-pro:default"
   ]
 }
