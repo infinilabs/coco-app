@@ -65,7 +65,7 @@ export const FetchSource = ({ ChunkData }: FetchSourceProps) => {
 
   return (
     <div
-      className={`mt-2 mb-2 w-[98%] ${
+      className={`mt-2 mb-2 w-[610px] ${
         isSourceExpanded
           ? "rounded-lg overflow-hidden border border-[#E6E6E6] dark:border-[#272626]"
           : ""

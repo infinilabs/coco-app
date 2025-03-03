@@ -20,7 +20,7 @@ interface IQueryData {
 export const QueryIntent = ({ ChunkData, getSuggestion }: QueryIntentProps) => {
   const { t } = useTranslation();
 
-  const [isThinkingExpanded, setIsThinkingExpanded] = useState(true);
+  const [isThinkingExpanded, setIsThinkingExpanded] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [prevContent, setPrevContent] = useState("");

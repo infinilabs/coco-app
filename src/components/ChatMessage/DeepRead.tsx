@@ -11,7 +11,7 @@ interface DeepReadeProps {
 export const DeepRead = ({ ChunkData }: DeepReadeProps) => {
   const { t } = useTranslation();
 
-  const [isThinkingExpanded, setIsThinkingExpanded] = useState(true);
+  const [isThinkingExpanded, setIsThinkingExpanded] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [prevContent, setPrevContent] = useState("");
