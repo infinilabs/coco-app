@@ -62,7 +62,7 @@ export default function Chat({}: ChatProps) {
   };
 
   const handleSendMessage = async (content: string) => {
-    chatAIRef.current?.handleSendMessage(content);
+    chatAIRef.current?.init(content);
   };
 
   const chatHistory = async (chat: Chat) => {

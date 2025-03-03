@@ -260,6 +260,7 @@ const ChatAI = memo(
           setErrorShow(false);
           unlisten_message = listen("ws-message", (event) => {
             dealMsg(String(event.payload));
+            console.log("message:", event.payload);
           });
         }
 
@@ -412,6 +413,7 @@ const ChatAI = memo(
       );
 
       const init = (value: string) => {
+        console.log("init", value, curChatEnd, activeChat);
         if (!curChatEnd) return;
         if (!activeChat?._id) {
           createNewChat(value);
