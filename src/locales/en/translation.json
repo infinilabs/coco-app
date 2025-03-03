@@ -137,6 +137,7 @@
         "source_zero": "Searching for relevant documents",
         "fetch_source": "Retrieve {{count}} documents",
         "pick_source": "Intelligent pick {{count}} results",
+        "pick_source_start": "Intelligently pre-selecting",
         "deep_read": "Deep reading",
         "think": "AI is thinking...",
         "thoughtTime": "Thought for a few seconds",

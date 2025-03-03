@@ -73,9 +73,9 @@ export function ChatHeader({
 
         if (resetSelection && enabledServers.length > 0) {
           const currentServiceExists = enabledServers.some(
-            server => server.id === currentService?.id
+            (server) => server.id === currentService?.id
           );
-          
+
           if (currentServiceExists) {
             switchServer(currentService);
           } else {
@@ -192,25 +192,14 @@ export function ChatHeader({
           <MessageSquarePlus className="h-4 w-4" />
         </button>
       </div>
-
+      
       <div>
         <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-          {activeChat?._source?.title || activeChat?._id}
+          {activeChat?._source?.title || activeChat?._source?.message || activeChat?._id}
         </h2>
       </div>
 
       <div className="flex items-center gap-2">
-        <button
-          onClick={togglePin}
-          className={`${isPinned ? "text-blue-500" : ""}`}
-        >
-          {isPinned ? <PinIcon /> : <PinOffIcon />}
-        </button>
-
-        <button onClick={onOpenChatAI}>
-          <WindowsFullIcon />
-        </button>
-
         <Popover className="relative">
           <PopoverButton className="flex items-center">
             <ServerIcon />
@@ -307,6 +296,17 @@ export function ChatHeader({
             </div>
           </PopoverPanel>
         </Popover>
+
+        <button
+          onClick={togglePin}
+          className={`${isPinned ? "text-blue-500" : ""}`}
+        >
+          {isPinned ? <PinIcon /> : <PinOffIcon />}
+        </button>
+
+        <button onClick={onOpenChatAI}>
+          <WindowsFullIcon className="rotate-30 scale-x-[-1]" />
+        </button>
       </div>
     </header>
   );

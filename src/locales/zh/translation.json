@@ -137,6 +137,7 @@
         "source_zero": "正在搜索相关文档",
         "fetch_source": "检索 {{count}} 份文档",
         "pick_source": "智能预选 {{count}} 个结果",
+        "pick_source_start": "正在智能预选",
         "deep_read": "深度阅读，",
         "think": "AI 正在思考...",
         "thoughtTime": "思考了数秒",

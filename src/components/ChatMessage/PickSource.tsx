@@ -17,7 +17,7 @@ interface IData {
 export const PickSource = ({ ChunkData }: PickSourceProps) => {
   const { t } = useTranslation();
 
-  const [isThinkingExpanded, setIsThinkingExpanded] = useState(true);
+  const [isThinkingExpanded, setIsThinkingExpanded] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [prevContent, setPrevContent] = useState("");
@@ -90,9 +90,7 @@ export const PickSource = ({ ChunkData }: PickSourceProps) => {
           <>
             <Loader className="w-4 h-4 animate-spin text-[#1990FF]" />
             <span className="text-xs text-[#999999] italic">
-              {t(`assistant.message.steps.${ChunkData?.chunk_type}`, {
-                count: Data?.length,
-              })}
+              {t(`assistant.message.steps.pick_source_start`)}
             </span>
           </>
         ) : (

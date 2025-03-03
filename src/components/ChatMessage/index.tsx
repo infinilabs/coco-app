@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import logoImg from "@/assets/icon.svg";
@@ -10,6 +10,7 @@ import { DeepRead } from "./DeepRead";
 import { Think } from "./Think";
 import { MessageActions } from "./MessageActions";
 import Markdown from "./Markdown";
+import { SuggestionList } from "./SuggestionList";
 
 interface ChatMessageProps {
   message: Message;
@@ -43,6 +44,13 @@ export const ChatMessage = memo(function ChatMessage({
   const showActions =
     isTyping === false && (messageContent || response?.message_chunk);
 
+  const [suggestion, setSuggestion] = useState<string[]>([]);
+
+  const getSuggestion = (suggestion: string[]) => {
+    setSuggestion(suggestion)
+  }
+
+
   const renderContent = () => {
     if (!isAssistant) {
       return (
@@ -54,7 +62,7 @@ export const ChatMessage = memo(function ChatMessage({
 
     return (
       <>
-        <QueryIntent ChunkData={query_intent} />
+        <QueryIntent ChunkData={query_intent} getSuggestion={getSuggestion}/>
         <FetchSource ChunkData={fetch_source} />
         <PickSource ChunkData={pick_source} />
         <DeepRead ChunkData={deep_read} />
@@ -77,6 +85,10 @@ export const ChatMessage = memo(function ChatMessage({
             }}
           />
         )}
+        {!isTyping && <SuggestionList 
+          suggestions={suggestion} 
+          onSelect={(text) => onResend && onResend(text)} 
+        />}
       </>
     );
   };
@@ -93,7 +105,7 @@ export const ChatMessage = memo(function ChatMessage({
         <div
           className={`space-y-2 ${isAssistant ? "text-left" : "text-right"}`}
         >
-          <p className="flex items-center gap-4 font-semibold text-sm text-[#333] dark:text-[#d8d8d8]">
+          <p className="flex items-center gap-1 font-semibold text-sm text-[#333] dark:text-[#d8d8d8]">
             {isAssistant ? (
               <img
                 src={logoImg}
@@ -104,7 +116,7 @@ export const ChatMessage = memo(function ChatMessage({
             {isAssistant ? t("assistant.message.aiName") : ""}
           </p>
           <div className="prose dark:prose-invert prose-sm max-w-none">
-            <div className="text-[#333] dark:text-[#d8d8d8] leading-relaxed">
+            <div className="pl-7 text-[#333] dark:text-[#d8d8d8] leading-relaxed">
               {renderContent()}
             </div>
           </div>
