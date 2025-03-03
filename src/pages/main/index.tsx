@@ -30,9 +30,9 @@ export default function DesktopApp() {
         return;
       }
 
-      // invoke("hide_coco").then(() => {
-      //   console.log("Hide Coco");
-      // });
+      invoke("hide_coco").then(() => {
+        console.log("Hide Coco");
+      });
     };
 
     const handleFocus = () => {
