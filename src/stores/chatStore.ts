@@ -3,14 +3,12 @@ import {
   persist,
   // createJSONStorage
 } from "zustand/middleware";
+import { Metadata } from "tauri-plugin-fs-pro-api";
 
-interface UploadFile {
+interface UploadFile extends Metadata {
   id: string;
   path: string;
-  name: string;
   icon: string;
-  extname: string;
-  size: number;
 }
 
 export type IChatStore = {

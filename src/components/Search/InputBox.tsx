@@ -33,7 +33,6 @@ import { useConnectStore } from "@/stores/connectStore";
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import { isArray } from "lodash-es";
 import InputExtra from "./InputExtra";
-import FileList from "./FileList";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -312,8 +311,6 @@ export default function ChatInput({
 
   return (
     <div className="w-full relative">
-      <FileList />
-
       <div className="p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded transition-all relative">
         <div className="flex flex-wrap gap-2 flex-1 items-center relative">
           {!isChatMode && !sourceData ? (

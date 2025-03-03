@@ -12,12 +12,12 @@ const FileList = () => {
   };
 
   return (
-    <div className="flex flex-wrap text-sm -mx-[2px]">
+    <div className="flex flex-wrap gap-y-2 -mx-1 text-sm">
       {uploadFiles.map((file) => {
         const { id, icon, name, extname, size } = file;
 
         return (
-          <div key={id} className="w-1/3 p-1">
+          <div key={id} className="w-1/3 px-1">
             <div className="relative group flex items-center rounded-sm bg-black/10 p-1">
               <div
                 className="absolute flex justify-center items-center size-[14px] bg-red-600 top-0 right-0 rounded-full cursor-pointer translate-x-[5px] -translate-y-[5px] transition opacity-0 group-hover:opacity-100 "

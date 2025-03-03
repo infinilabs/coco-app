@@ -3,7 +3,7 @@ import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { find, isNil } from "lodash-es";
 import { useChatStore } from "@/stores/chatStore";
-import { size, name, icon, extname } from "tauri-plugin-fs-pro-api";
+import { metadata, icon } from "tauri-plugin-fs-pro-api";
 import { nanoid } from "nanoid";
 import Tooltip from "../Common/Tooltip";
 
@@ -23,23 +23,21 @@ const InputExtra = () => {
     for await (const path of selectedFiles) {
       if (find(uploadFiles, { path })) continue;
 
-      const fileSize = await size(path);
+      const stat = await metadata(path);
 
-      console.log(fileSize / 1024 / 1024);
-
-      if (fileSize / 1024 / 1024 > 100) {
+      if (stat.size / 1024 / 1024 > 100) {
         continue;
       }
 
       files.push({
+        ...stat,
         id: nanoid(),
         path,
-        name: await name(path),
-        icon: await icon(path, 256),
-        extname: await extname(path),
-        size: fileSize,
+        icon: await icon(path),
       });
     }
+
+    console.log("files", files);
 
     setUploadFiles([...uploadFiles, ...files]);
   };

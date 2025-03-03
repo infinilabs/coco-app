@@ -22,6 +22,7 @@ import { Sidebar } from "@/components/Assistant/Sidebar";
 import { useConnectStore } from "@/stores/connectStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { IServer } from "@/stores/appStore";
+import FileList from "../Search/FileList";
 
 interface ChatAIProps {
   isTransitioned: boolean;
@@ -91,6 +92,7 @@ const ChatAI = memo(
       const [isSidebarOpenChat, setIsSidebarOpenChat] = useState(isSidebarOpen);
       const [chats, setChats] = useState<Chat[]>([]);
       const sourceDataIds = useSearchStore((state) => state.sourceDataIds);
+      const uploadFiles = useChatStore((state) => state.uploadFiles);
 
       useEffect(() => {
         activeChatProp && setActiveChat(activeChatProp);
@@ -641,7 +643,6 @@ const ChatAI = memo(
               />
             </div>
           )}
-
           <ChatHeader
             onCreateNewChat={clearChat}
             onOpenChatAI={openChatAI}
@@ -653,90 +654,92 @@ const ChatAI = memo(
             activeChat={activeChat}
             reconnect={reconnect}
           />
-
           {/* Chat messages */}
-          <div className="w-full overflow-x-hidden overflow-y-auto border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.15)] custom-scrollbar relative">
-            <ChatMessage
-              key={"greetings"}
-              message={{
-                _id: "greetings",
-                _source: {
-                  type: "assistant",
-                  message: t("assistant.chat.greetings"),
-                },
-              }}
-            />
-
-            {activeChat?.messages?.map((message, index) => (
+          <div className="flex flex-col h-full justify-between overflow-hidden">
+            <div className="flex-1 w-full overflow-x-hidden overflow-y-auto border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.15)] custom-scrollbar relative">
               <ChatMessage
-                key={message._id + index}
-                message={message}
-                isTyping={false}
-                onResend={handleSendMessage}
-              />
-            ))}
-
-            {(query_intent ||
-              fetch_source ||
-              pick_source ||
-              deep_read ||
-              think ||
-              response) &&
-            activeChat?._id ? (
-              <ChatMessage
-                key={"current"}
+                key={"greetings"}
                 message={{
-                  _id: "current",
+                  _id: "greetings",
                   _source: {
                     type: "assistant",
-                    message: "",
-                    question: Question,
+                    message: t("assistant.chat.greetings"),
                   },
                 }}
-                onResend={handleSendMessage}
-                isTyping={!curChatEnd}
-                query_intent={query_intent}
-                fetch_source={fetch_source}
-                pick_source={pick_source}
-                deep_read={deep_read}
-                think={think}
-                response={response}
               />
-            ) : null}
+              {activeChat?.messages?.map((message, index) => (
+                <ChatMessage
+                  key={message._id + index}
+                  message={message}
+                  isTyping={false}
+                  onResend={handleSendMessage}
+                />
+              ))}
+              {(query_intent ||
+                fetch_source ||
+                pick_source ||
+                deep_read ||
+                think ||
+                response) &&
+              activeChat?._id ? (
+                <ChatMessage
+                  key={"current"}
+                  message={{
+                    _id: "current",
+                    _source: {
+                      type: "assistant",
+                      message: "",
+                      question: Question,
+                    },
+                  }}
+                  onResend={handleSendMessage}
+                  isTyping={!curChatEnd}
+                  query_intent={query_intent}
+                  fetch_source={fetch_source}
+                  pick_source={pick_source}
+                  deep_read={deep_read}
+                  think={think}
+                  response={response}
+                />
+              ) : null}
+              {timedoutShow ? (
+                <ChatMessage
+                  key={"timedout"}
+                  message={{
+                    _id: "timedout",
+                    _source: {
+                      type: "assistant",
+                      message: t("assistant.chat.timedout"),
+                      question: Question,
+                    },
+                  }}
+                  onResend={handleSendMessage}
+                  isTyping={false}
+                />
+              ) : null}
+              {errorShow ? (
+                <ChatMessage
+                  key={"error"}
+                  message={{
+                    _id: "error",
+                    _source: {
+                      type: "assistant",
+                      message: t("assistant.chat.error"),
+                      question: Question,
+                    },
+                  }}
+                  onResend={handleSendMessage}
+                  isTyping={false}
+                />
+              ) : null}
+              <div ref={messagesEndRef} />
+            </div>
 
-            {timedoutShow ? (
-              <ChatMessage
-                key={"timedout"}
-                message={{
-                  _id: "timedout",
-                  _source: {
-                    type: "assistant",
-                    message: t("assistant.chat.timedout"),
-                    question: Question,
-                  },
-                }}
-                onResend={handleSendMessage}
-                isTyping={false}
-              />
-            ) : null}
-
-            {errorShow ? (
-              <ChatMessage
-                key={"error"}
-                message={{
-                  _id: "error",
-                  _source: {
-                    type: "assistant",
-                    message: t("assistant.chat.error"),
-                    question: Question,
-                  },
-                }}
-                onResend={handleSendMessage}
-                isTyping={false}
-              />
-            ) : null}
-
-            <div ref={messagesEndRef} />
+            {uploadFiles.length > 0 && (
+              <div className="max-h-[120px] overflow-auto p-2 border-t border-[#E6E6E6] cl">
+                <FileList />
+              </div>
+            )}
           </div>
         </div>
       );
