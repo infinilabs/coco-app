@@ -39,11 +39,9 @@ const InputExtra = () => {
         ...stat,
         id: nanoid(),
         path,
-        icon: await icon(path),
+        icon: await icon(path, 256),
       });
     }
-
-    console.log("files", files);
 
     setUploadFiles([...uploadFiles, ...files]);
   };
@@ -63,8 +61,8 @@ const InputExtra = () => {
     <Menu>
       <MenuButton>
         <Tooltip content="支持截图、上传文件，最多 50个，单个文件最大 100 MB。">
-          <div className="group h-5 px-2 flex justify-center items-center border rounded-[10px] transition-colors relative border-[#262727] hover:bg-[rgba(0,114,255,0.3)] hover:border-[rgba(0,114,255,0.3)]">
-            <Plus className="size-3 text-[#333] dark:text-white group-hover:text-[#0072FF] hover:dark:text-[#0072FF]" />
+          <div className="size-6 flex justify-center items-center rounded-lg transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]">
+            <Plus className="size-5" />
           </div>
         </Tooltip>
       </MenuButton>

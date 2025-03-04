@@ -460,19 +460,20 @@ export default function ChatInput({
         className="flex justify-between items-center p-2"
       >
         {isChatMode ? (
-          <div className="flex gap-2 text-xs text-[#333] dark:text-[#d8d8d8]">
+          <div className="flex gap-2 text-sm text-[#333] dark:text-[#d8d8d8]">
             <InputExtra />
 
             <button
-              className={`h-5 px-2 inline-flex justify-center items-center gap-1 border rounded-[10px] transition-colors relative ${
-                isDeepThinkActive
-                  ? "bg-[rgba(0,114,255,0.3)] border-[rgba(0,114,255,0.3)]"
-                  : "border-[#262727]"
-              }`}
+              className={clsx(
+                "flex items-center gap-1 p-1 h-6 rounded-lg transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
+                {
+                  "!bg-[rgba(0,114,255,0.3)]": isDeepThinkActive,
+                }
+              )}
               onClick={DeepThinkClick}
             >
               <Brain
-                className={`size-3 ${
+                className={`size-4 ${
                   isDeepThinkActive
                     ? "text-[#0072FF] dark:text-[#0072FF]"
                     : "text-[#333] dark:text-white"
@@ -490,15 +491,16 @@ export default function ChatInput({
             </button>
 
             <div
-              className={`h-5 px-2 inline-flex items-center justify-center gap-1 border rounded-[10px] transition-colors relative cursor-pointer ${
-                isSearchActive
-                  ? "bg-[rgba(0,114,255,0.3)] border-[rgba(0,114,255,0.3)]"
-                  : "border-[#262727]"
-              }`}
+              className={clsx(
+                "flex items-center gap-1 p-1 h-6 rounded-lg transition hover:bg-[#EDEDED] dark:hover:bg-[#202126] cursor-pointer",
+                {
+                  "!bg-[rgba(0,114,255,0.3)]": isSearchActive,
+                }
+              )}
               onClick={SearchClick}
             >
               <Globe
-                className={`size-3 ${
+                className={`size-4 ${
                   isSearchActive
                     ? "text-[#0072FF] dark:text-[#0072FF]"
                     : "text-[#333] dark:text-white"
@@ -518,7 +520,7 @@ export default function ChatInput({
                   <Popover>
                     <PopoverButton className={clsx("flex items-center")}>
                       <ChevronDownIcon
-                        className={clsx("size-4", [
+                        className={clsx("size-5", [
                           isSearchActive
                             ? "text-[#0072FF] dark:text-[#0072FF]"
                             : "text-[#333] dark:text-white",

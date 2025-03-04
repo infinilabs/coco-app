@@ -18,7 +18,7 @@ const FileList = () => {
 
         return (
           <div key={id} className="w-1/3 px-1">
-            <div className="relative group flex items-center p-1 rounded-[4px] bg-[#dedede] dark:bg-[#202126]">
+            <div className="relative group flex items-center gap-1 p-1 rounded-[4px] bg-[#dedede] dark:bg-[#202126]">
               <div
                 className="absolute flex justify-center items-center size-[14px] bg-red-600 top-0 right-0 rounded-full cursor-pointer translate-x-[5px] -translate-y-[5px] transition opacity-0 group-hover:opacity-100 "
                 onClick={() => {
