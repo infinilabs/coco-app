@@ -744,7 +744,7 @@ const ChatAI = memo(
             </div>
 
             {uploadFiles.length > 0 && (
-              <div className="max-h-[120px] overflow-auto p-2 border-t border-[#E6E6E6] cl">
+              <div className="max-h-[120px] overflow-auto p-2">
                 <FileList />
               </div>
             )}

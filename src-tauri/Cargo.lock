@@ -781,7 +781,7 @@ dependencies = [
 
 [[package]]
 name = "coco"
-version = "0.1.0"
+version = "0.2.0-beta.1"
 dependencies = [
  "async-trait",
  "base64 0.13.1",

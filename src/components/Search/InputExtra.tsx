@@ -6,15 +6,21 @@ import { useChatStore } from "@/stores/chatStore";
 import { metadata, icon } from "tauri-plugin-fs-pro-api";
 import { nanoid } from "nanoid";
 import Tooltip from "../Common/Tooltip";
+import { useAppStore } from "@/stores/appStore";
 
 const InputExtra = () => {
   const uploadFiles = useChatStore((state) => state.uploadFiles);
   const setUploadFiles = useChatStore((state) => state.setUploadFiles);
+  const setIsPinned = useAppStore((state) => state.setIsPinned);
 
   const uploadFile = async () => {
+    setIsPinned(true);
+
     const selectedFiles = await open({
       multiple: true,
     });
+
+    setIsPinned(false);
 
     if (isNil(selectedFiles)) return;
 

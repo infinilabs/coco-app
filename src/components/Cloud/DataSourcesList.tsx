@@ -56,9 +56,9 @@ export function DataSourcesList({ server }: { server: string }) {
     getDatasourceData();
   }, []);
 
-  const handleToggle = (id: string, enabled: boolean) => {
-    console.log("handleToggle", id, enabled);
-  };
+  // const handleToggle = (id: string, enabled: boolean) => {
+  //   console.log("handleToggle", id, enabled);
+  // };
 
   return (
     <div className="space-y-4">
