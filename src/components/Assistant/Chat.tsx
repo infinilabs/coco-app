@@ -201,7 +201,7 @@ const ChatAI = memo(
               setTimedoutShow(true);
               cancelChat();
             }
-          }, 30000);
+          }, 60000);
 
           if (msg.includes("assistant finished output")) {
             clearTimeout(messageTimeoutRef.current);
