@@ -2,10 +2,10 @@ import { useState, useRef, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 
 import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
-import { ChatInput } from "@/components/Assistant/ChatInput";
 import { Sidebar } from "@/components/Assistant/Sidebar";
 import type { Chat } from "@/components/Assistant/types";
 import { useConnectStore } from "@/stores/connectStore";
+import InputBox from "@/components/Search/InputBox";
 
 interface ChatProps {}
 
@@ -19,10 +19,12 @@ export default function Chat({}: ChatProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
 
-  const [curChatEnd, setCurChatEnd] = useState(true);
+  const [input, setInput] = useState("");
 
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isDeepThinkActive, setIsDeepThinkActive] = useState(false);
+
+  const isChatPage = true
 
   useEffect(() => {
     getChatHistory();
@@ -62,6 +64,7 @@ export default function Chat({}: ChatProps) {
   };
 
   const handleSendMessage = async (content: string) => {
+    setInput(content);
     chatAIRef.current?.init(content);
   };
 
@@ -116,22 +119,16 @@ export default function Chat({}: ChatProps) {
   };
 
   const cancelChat = async () => {
-    if (!activeChat?._id) return;
-    try {
-      let response: any = await invoke("cancel_session_chat", {
-        serverId: currentService?.id,
-        sessionId: activeChat?._id,
-      });
-      response = JSON.parse(response || "");
-      console.log("_cancel", response);
-    } catch (error) {
-      console.error("Failed to fetch user data:", error);
-    }
+    chatAIRef.current?.cancelChat();
   };
 
   const clearChat = () => {
     chatClose();
     setActiveChat(undefined);
+  };
+
+  const reconnect = () => {
+    chatAIRef.current?.reconnect();
   };
 
   return (
@@ -169,23 +166,24 @@ export default function Chat({}: ChatProps) {
             setIsSidebarOpen={setIsSidebarOpen}
             isSidebarOpen={isSidebarOpen}
             clearChatPage={clearChat}
+            isChatPage={isChatPage}
           />
 
           {/* Input area */}
           <div className={`border-t p-4 border-gray-200 dark:border-gray-800`}>
-            <ChatInput
+            <InputBox
+              isChatMode={true}
+              inputValue={input}
               onSend={handleSendMessage}
+              changeInput={setInput}
               disabled={isTyping}
-              curChatEnd={curChatEnd}
-              disabledChange={() => {
-                cancelChat();
-                setCurChatEnd(true);
-                setIsTyping(false);
-              }}
+              disabledChange={cancelChat}
+              reconnect={reconnect}
               isSearchActive={isSearchActive}
               setIsSearchActive={() => setIsSearchActive((prev) => !prev)}
               isDeepThinkActive={isDeepThinkActive}
               setIsDeepThinkActive={() => setIsDeepThinkActive((prev) => !prev)}
+              isChatPage={isChatPage}
             />
           </div>
         </div>

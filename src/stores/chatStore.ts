@@ -46,10 +46,10 @@ export const useChatStore = create<IChatStore>()(
     {
       name: "chat-state",
       // storage: createJSONStorage(() => sessionStorage),
-      partialize: (state) =>
-        Object.fromEntries(
-          Object.entries(state).filter(([key]) => key === "curChatEnd")
-        ),
+      partialize: (state) => ({
+        curChatEnd: state.curChatEnd,
+        connected: state.connected,
+      }),
     }
   )
 );

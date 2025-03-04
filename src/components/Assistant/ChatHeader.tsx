@@ -39,6 +39,7 @@ interface ChatHeaderProps {
   isSidebarOpen: boolean;
   activeChat: Chat | undefined;
   reconnect: (server?: IServer) => void;
+  isChatPage?: boolean;
 }
 
 export function ChatHeader({
@@ -47,6 +48,7 @@ export function ChatHeader({
   setIsSidebarOpen,
   activeChat,
   reconnect,
+  isChatPage = false,
 }: ChatHeaderProps) {
   const { t } = useTranslation();
 
@@ -77,7 +79,7 @@ export function ChatHeader({
           );
 
           if (currentServiceExists) {
-            switchServer(currentService);
+            switchServer(currentService, true);
           } else {
             switchServer(enabledServers[enabledServers.length - 1]);
           }
@@ -108,7 +110,7 @@ export function ChatHeader({
     }
   };
 
-  const switchServer = async (server: IServer) => {
+  const switchServer = async (server: IServer, isCurrent: boolean = false) => {
     if (!server) return;
     try {
       // Switch UI first, then switch server connection
@@ -117,8 +119,10 @@ export function ChatHeader({
       setMessages(""); // Clear previous messages
       onCreateNewChat();
       //
-      await disconnect();
-      reconnect && reconnect(server);
+      if (!(isCurrent && connected)) {
+        await disconnect();
+        reconnect && reconnect(server);
+      }
     } catch (error) {
       console.error("switchServer:", error);
     }
@@ -306,9 +310,11 @@ export function ChatHeader({
           </PopoverPanel>
         </Popover>
 
-        <button onClick={onOpenChatAI}>
-          <WindowsFullIcon className="rotate-30 scale-x-[-1]" />
-        </button>
+        {isChatPage ? null : (
+          <button onClick={onOpenChatAI}>
+            <WindowsFullIcon className="rotate-30 scale-x-[-1]" />
+          </button>
+        )}
       </div>
     </header>
   );

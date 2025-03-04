@@ -21,6 +21,7 @@ import {
 } from "@headlessui/react";
 import clsx from "clsx";
 import { useReactive, useRequest } from "ahooks";
+import { isArray } from "lodash-es";
 
 import ChatSwitch from "@/components/Common/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
@@ -31,14 +32,13 @@ import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import { useConnectStore } from "@/stores/connectStore";
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
-import { isArray } from "lodash-es";
 import InputExtra from "./InputExtra";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
   disabled: boolean;
   disabledChange: () => void;
-  changeMode: (isChatMode: boolean) => void;
+  changeMode?: (isChatMode: boolean) => void;
   isChatMode: boolean;
   inputValue: string;
   changeInput: (val: string) => void;
@@ -47,6 +47,7 @@ interface ChatInputProps {
   setIsSearchActive: () => void;
   isDeepThinkActive: boolean;
   setIsDeepThinkActive: () => void;
+  isChatPage?: boolean;
 }
 
 export default function ChatInput({
@@ -62,6 +63,7 @@ export default function ChatInput({
   setIsSearchActive,
   isDeepThinkActive,
   setIsDeepThinkActive,
+  isChatPage = false,
 }: ChatInputProps) {
   const { t } = useTranslation();
 
@@ -266,7 +268,7 @@ export default function ChatInput({
     if (!isChatMode) return;
     if (connected) return;
     if (countdown <= 0) {
-      console.log("ReconnectClick", 111111);
+      console.log("ReconnectClick");
       ReconnectClick();
       return;
     }
@@ -280,7 +282,7 @@ export default function ChatInput({
 
   const ReconnectClick = () => {
     setCountdown(5);
-    reconnect();
+    // reconnect();
   };
 
   const SearchClick = () => {
@@ -310,8 +312,16 @@ export default function ChatInput({
   };
 
   return (
-    <div className="w-full relative">
-      <div className="p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded transition-all relative">
+    <div
+      className={`w-full relative ${
+        isChatPage
+          ? "bg-inputbox_bg_light dark:bg-inputbox_bg_dark bg-cover rounded-xl border border-[#E6E6E6] dark:border-[#272626]"
+          : ""
+      }`}
+    >
+      <div
+        className={`p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded transition-all relative `}
+      >
         <div className="flex flex-wrap gap-2 flex-1 items-center relative">
           {!isChatMode && !sourceData ? (
             <Search className="w-4 h-4 text-[#ccc] dark:text-[#d8d8d8]" />
@@ -326,7 +336,9 @@ export default function ChatInput({
             <AutoResizeTextarea
               ref={textareaRef}
               input={inputValue}
-              setInput={changeInput}
+              setInput={(value: string) => {
+                changeInput(value);
+              }}
               connected={connected}
               handleKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -657,23 +669,25 @@ export default function ChatInput({
           </div>
         )}
 
-        <div className="relative w-16 flex justify-end items-center">
-          {showTooltip && isCommandPressed ? (
-            <div
-              className={`absolute left-1 z-10 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
-            >
-              T
-            </div>
-          ) : null}
-          <ChatSwitch
-            isChatMode={isChatMode}
-            onChange={(value: boolean) => {
-              value && disabledChange();
-              changeMode(value);
-              setSourceData(undefined);
-            }}
-          />
-        </div>
+        {isChatPage ? null : (
+          <div className="relative w-16 flex justify-end items-center">
+            {showTooltip && isCommandPressed ? (
+              <div
+                className={`absolute left-1 z-10 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
+              >
+                T
+              </div>
+            ) : null}
+            <ChatSwitch
+              isChatMode={isChatMode}
+              onChange={(value: boolean) => {
+                value && disabledChange();
+                changeMode && changeMode(value);
+                setSourceData(undefined);
+              }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

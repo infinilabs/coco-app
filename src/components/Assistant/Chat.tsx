@@ -22,7 +22,8 @@ import { Sidebar } from "@/components/Assistant/Sidebar";
 import { useConnectStore } from "@/stores/connectStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { IServer } from "@/stores/appStore";
-import FileList from "../Search/FileList";
+import FileList from "@/components/Search/FileList";
+import { Greetings } from "./Greetings";
 
 interface ChatAIProps {
   isTransitioned: boolean;
@@ -33,6 +34,7 @@ interface ChatAIProps {
   setIsSidebarOpen?: (value: boolean) => void;
   isSidebarOpen?: boolean;
   clearChatPage?: () => void;
+  isChatPage?: boolean;
 }
 
 export interface ChatAIRef {
@@ -56,6 +58,7 @@ const ChatAI = memo(
         setIsSidebarOpen,
         isSidebarOpen = false,
         clearChatPage,
+        isChatPage = false,
       },
       ref
     ) => {
@@ -174,6 +177,7 @@ const ChatAI = memo(
         });
       }, []);
 
+      // send、new、history
       const clearCurrentChat = useCallback(() => {
         setQuery_intent(undefined);
         setFetch_source(undefined);
@@ -258,11 +262,12 @@ const ChatAI = memo(
 
       useEffect(() => {
         let unlisten_message = null;
+        console.log("connected:", connected);
         if (connected) {
           setErrorShow(false);
           unlisten_message = listen("ws-message", (event) => {
             dealMsg(String(event.payload));
-            console.log("message:", event.payload);
+            // console.log("message:", event.payload);
           });
         }
 
@@ -415,7 +420,6 @@ const ChatAI = memo(
       );
 
       const init = (value: string) => {
-        console.log("init", value, curChatEnd, activeChat);
         if (!curChatEnd) return;
         if (!activeChat?._id) {
           createNewChat(value);
@@ -424,16 +428,10 @@ const ChatAI = memo(
         }
       };
 
-      const handleSendMessage = useCallback(
-        async (content: string, newChat?: Chat) => {
-          newChat = newChat || activeChat;
+      const sendMessage = useCallback(
+        async (content: string, newChat: Chat) => {
           if (!newChat?._id || !content) return;
-          setQuestion(content);
-          await chatHistory(newChat);
 
-          setTimedoutShow(false);
-          setErrorShow(false);
-          clearCurrentChat();
           try {
             // console.log("sourceDataIds", sourceDataIds);
             let response: any = await invoke("send_message", {
@@ -464,7 +462,21 @@ const ChatAI = memo(
             console.error("Failed to fetch user data:", error);
           }
         },
-        [activeChat, isSearchActive, isDeepThinkActive]
+        [JSON.stringify(activeChat?.messages), isSearchActive, isDeepThinkActive]
+      );
+
+      const handleSendMessage = useCallback(
+        async (content: string, newChat?: Chat) => {
+          newChat = newChat || activeChat;
+          if (!newChat?._id || !content) return;
+          setQuestion(content);
+          await chatHistory(newChat, (chat) => sendMessage(content, chat));
+
+          setTimedoutShow(false);
+          setErrorShow(false);
+          clearCurrentChat();
+        },
+        [activeChat, sendMessage]
       );
 
       const chatClose = async () => {
@@ -527,7 +539,7 @@ const ChatAI = memo(
         };
       }, []);
 
-      const chatHistory = async (chat: Chat) => {
+      const chatHistory = async (chat: Chat, callback?: (chat: Chat) => void) => {
         try {
           let response: any = await invoke("session_chat_history", {
             serverId: currentService?.id,
@@ -543,6 +555,7 @@ const ChatAI = memo(
             messages: hits,
           };
           setActiveChat(updatedChat);
+          callback && callback(updatedChat)
         } catch (error) {
           console.error("Failed to fetch user data:", error);
         }
@@ -550,6 +563,7 @@ const ChatAI = memo(
 
       const onSelectChat = async (chat: any) => {
         chatClose();
+        clearCurrentChat();
         try {
           let response: any = await invoke("open_session_chat", {
             serverId: currentService?.id,
@@ -655,20 +669,12 @@ const ChatAI = memo(
             isSidebarOpen={isSidebarOpenChat}
             activeChat={activeChat}
             reconnect={reconnect}
+            isChatPage={isChatPage}
           />
           {/* Chat messages */}
           <div className="flex flex-col h-full justify-between overflow-hidden">
             <div className="flex-1 w-full overflow-x-hidden overflow-y-auto border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.15)] custom-scrollbar relative">
-              <ChatMessage
-                key={"greetings"}
-                message={{
-                  _id: "greetings",
-                  _source: {
-                    type: "assistant",
-                    message: t("assistant.chat.greetings"),
-                  },
-                }}
-              />
+              <Greetings />
               {activeChat?.messages?.map((message, index) => (
                 <ChatMessage
                   key={message._id + index}

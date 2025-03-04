@@ -64,7 +64,7 @@ export default function DesktopApp() {
     setIsTransitioned(value);
   }
 
-  async function changeInput(value: string) {
+  function changeInput(value: string) {
     setInput(value);
   }
 
@@ -114,9 +114,7 @@ export default function DesktopApp() {
           inputValue={input}
           onSend={handleSendMessage}
           disabled={isTyping}
-          disabledChange={() => {
-            cancelChat();
-          }}
+          disabledChange={cancelChat}
           changeMode={changeMode}
           changeInput={changeInput}
           reconnect={reconnect}
