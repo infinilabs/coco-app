@@ -554,6 +554,7 @@ const ChatAI = memo(
             ...chat,
             messages: hits,
           };
+          console.log("id_history2", updatedChat) 
           setActiveChat(updatedChat);
           callback && callback(updatedChat)
         } catch (error) {

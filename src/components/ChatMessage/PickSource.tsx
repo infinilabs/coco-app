@@ -1,10 +1,12 @@
-import { ChevronDown, ChevronUp, Loader, BadgeCheck } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { IChunkData } from "@/components/Assistant/types";
+import SelectionIcon from "@/icons/Selection";
 
 interface PickSourceProps {
+  Detail?: any;
   ChunkData?: IChunkData;
 }
 
@@ -14,7 +16,7 @@ interface IData {
   title: string;
 }
 
-export const PickSource = ({ ChunkData }: PickSourceProps) => {
+export const PickSource = ({ Detail, ChunkData }: PickSourceProps) => {
   const { t } = useTranslation();
 
   const [isThinkingExpanded, setIsThinkingExpanded] = useState(false);
@@ -23,6 +25,12 @@ export const PickSource = ({ ChunkData }: PickSourceProps) => {
   const [prevContent, setPrevContent] = useState("");
 
   const [Data, setData] = useState<IData[]>([]);
+
+  useEffect(() => {
+    if (!Detail?.payload) return;
+    setData(Detail?.payload);
+    setLoading(false)
+  }, [Detail?.payload]);
 
   useEffect(() => {
     if (!ChunkData?.message_chunk) return;
@@ -78,7 +86,7 @@ export const PickSource = ({ ChunkData }: PickSourceProps) => {
   }, [ChunkData?.message_chunk]);
 
   // Must be after hooks ！！！
-  if (!ChunkData) return null;
+  if (!ChunkData && !Detail) return null;
 
   return (
     <div className="space-y-2 mb-3 w-full">
@@ -95,7 +103,7 @@ export const PickSource = ({ ChunkData }: PickSourceProps) => {
           </>
         ) : (
           <>
-            <BadgeCheck className="w-4 h-4 text-[#38C200]" />
+            <SelectionIcon className="w-4 h-4 text-[#38C200]" />
             <span className="text-xs text-[#999999]">
               {t(`assistant.message.steps.${ChunkData?.chunk_type}`, {
                 count: Data?.length,

@@ -5,15 +5,22 @@ import { useTranslation } from "react-i18next";
 import type { IChunkData } from "@/components/Assistant/types";
 
 interface ThinkProps {
+  Detail?: any;
   ChunkData?: IChunkData;
 }
 
-export const Think = ({ ChunkData }: ThinkProps) => {
+export const Think = ({ Detail, ChunkData }: ThinkProps) => {
   const { t } = useTranslation();
   const [isThinkingExpanded, setIsThinkingExpanded] = useState(true);
 
   const [loading, setLoading] = useState(true);
   const [Data, setData] = useState("");
+
+  useEffect(() => {
+    if (!Detail?.description) return;
+    setData(Detail?.description);
+    setLoading(false);
+  }, [Detail?.description]);
 
   useEffect(() => {
     if (!ChunkData?.message_chunk) return;
@@ -30,7 +37,7 @@ export const Think = ({ ChunkData }: ThinkProps) => {
   }, [ChunkData?.message_chunk, Data, loading]);
 
   // Must be after hooks ！！！
-  if (!ChunkData) return null;
+  if (!ChunkData && !Detail) return null;
 
   return (
     <div className="space-y-2 mb-3 w-full">
@@ -40,7 +47,7 @@ export const Think = ({ ChunkData }: ThinkProps) => {
       >
         {loading ? (
           <>
-            <Brain className="w-4 h-4 animate-pulse text-[#999999]" />
+            <Brain className="w-4 h-4 animate-pulse text-[#1990FF]" />
             <span className="text-xs text-[#999999] italic">
               {t(`assistant.message.steps.${ChunkData?.chunk_type}`)}
             </span>

@@ -1,14 +1,16 @@
-import { ChevronDown, ChevronUp, Loader, BadgeCheck } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { IChunkData } from "@/components/Assistant/types";
+import ReadingIcon from "@/icons/Reading";
 
 interface DeepReadeProps {
+  Detail?: any;
   ChunkData?: IChunkData;
 }
 
-export const DeepRead = ({ ChunkData }: DeepReadeProps) => {
+export const DeepRead = ({ Detail, ChunkData }: DeepReadeProps) => {
   const { t } = useTranslation();
 
   const [isThinkingExpanded, setIsThinkingExpanded] = useState(false);
@@ -17,6 +19,12 @@ export const DeepRead = ({ ChunkData }: DeepReadeProps) => {
   const [prevContent, setPrevContent] = useState("");
 
   const [Data, setData] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!Detail?.description) return;
+    setData(Detail?.description);
+    setLoading(false);
+  }, [Detail?.description]);
 
   useEffect(() => {
     if (!ChunkData?.message_chunk) return;
@@ -47,7 +55,7 @@ export const DeepRead = ({ ChunkData }: DeepReadeProps) => {
   }, [ChunkData?.message_chunk]);
 
   // Must be after hooks ！！！
-  if (!ChunkData) return null;
+  if (!ChunkData && !Detail) return null;
 
   return (
     <div className="space-y-2 mb-3 w-full">
@@ -64,7 +72,7 @@ export const DeepRead = ({ ChunkData }: DeepReadeProps) => {
           </>
         ) : (
           <>
-            <BadgeCheck className="w-4 h-4 text-[#38C200]" />
+            <ReadingIcon className="w-4 h-4 text-[#38C200]" />
             <span className="text-xs text-[#999999]">
               {t(`assistant.message.steps.${ChunkData?.chunk_type}`, {
                 count: Number(Data.length),

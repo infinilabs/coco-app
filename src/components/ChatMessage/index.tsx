@@ -39,6 +39,7 @@ export const ChatMessage = memo(function ChatMessage({
 
   const isAssistant = message?._source?.type === "assistant";
   const messageContent = message?._source?.message || "";
+  const details = message?._source?.details || [];
   const question = message?._source?.question || "";
 
   const showActions =
@@ -47,9 +48,8 @@ export const ChatMessage = memo(function ChatMessage({
   const [suggestion, setSuggestion] = useState<string[]>([]);
 
   const getSuggestion = (suggestion: string[]) => {
-    setSuggestion(suggestion)
-  }
-
+    setSuggestion(suggestion);
+  };
 
   const renderContent = () => {
     if (!isAssistant) {
@@ -62,11 +62,27 @@ export const ChatMessage = memo(function ChatMessage({
 
     return (
       <>
-        <QueryIntent ChunkData={query_intent} getSuggestion={getSuggestion}/>
-        <FetchSource ChunkData={fetch_source} />
-        <PickSource ChunkData={pick_source} />
-        <DeepRead ChunkData={deep_read} />
-        <Think ChunkData={think} />
+        <QueryIntent
+          Detail={details.find((item) => item.type === "query_intent")}
+          ChunkData={query_intent}
+          getSuggestion={getSuggestion}
+        />
+        <FetchSource
+          Detail={details.find((item) => item.type === "fetch_source")}
+          ChunkData={fetch_source}
+        />
+        <PickSource
+          Detail={details.find((item) => item.type === "pick_source")}
+          ChunkData={pick_source}
+        />
+        <DeepRead
+          Detail={details.find((item) => item.type === "deep_read")}
+          ChunkData={deep_read}
+        />
+        <Think
+          Detail={details.find((item) => item.type === "think")}
+          ChunkData={think}
+        />
         <Markdown
           content={messageContent || response?.message_chunk || ""}
           loading={isTyping}
@@ -85,10 +101,12 @@ export const ChatMessage = memo(function ChatMessage({
             }}
           />
         )}
-        {!isTyping && <SuggestionList 
-          suggestions={suggestion} 
-          onSelect={(text) => onResend && onResend(text)} 
-        />}
+        {!isTyping && (
+          <SuggestionList
+            suggestions={suggestion}
+            onSelect={(text) => onResend && onResend(text)}
+          />
+        )}
       </>
     );
   };

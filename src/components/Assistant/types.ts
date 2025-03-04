@@ -14,6 +14,7 @@ export interface ISource {
   message?: any;
   title?: string;
   question?: string;
+  details?: any[];
 }
 export interface Chat {
   _id: string;

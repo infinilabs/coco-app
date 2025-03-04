@@ -1,10 +1,12 @@
-import { ChevronDown, ChevronUp, Loader, BadgeCheck } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { IChunkData } from "@/components/Assistant/types";
+import UnderstandIcon from "@/icons/Understand";
 
 interface QueryIntentProps {
+  Detail?: any;
   ChunkData?: IChunkData;
   getSuggestion?: (suggestion: string[]) => void;
 }
@@ -17,7 +19,11 @@ interface IQueryData {
   suggestion: string[];
 }
 
-export const QueryIntent = ({ ChunkData, getSuggestion }: QueryIntentProps) => {
+export const QueryIntent = ({
+  Detail,
+  ChunkData,
+  getSuggestion,
+}: QueryIntentProps) => {
   const { t } = useTranslation();
 
   const [isThinkingExpanded, setIsThinkingExpanded] = useState(false);
@@ -26,6 +32,12 @@ export const QueryIntent = ({ ChunkData, getSuggestion }: QueryIntentProps) => {
   const [prevContent, setPrevContent] = useState("");
 
   const [Data, setData] = useState<IQueryData | null>(null);
+
+  useEffect(() => {
+    if (!Detail?.payload) return;
+    setData(Detail?.payload);
+    setLoading(false);
+  }, [Detail?.payload]);
 
   useEffect(() => {
     if (!ChunkData?.message_chunk) return;
@@ -39,7 +51,7 @@ export const QueryIntent = ({ ChunkData, getSuggestion }: QueryIntentProps) => {
           const data = JSON.parse(jsonString);
           // console.log("QueryIntent", data);
           if (data?.suggestion && getSuggestion) {
-            getSuggestion(data?.suggestion)
+            getSuggestion(data?.suggestion);
           }
           setData(data);
         }
@@ -62,7 +74,7 @@ export const QueryIntent = ({ ChunkData, getSuggestion }: QueryIntentProps) => {
   }, [ChunkData?.message_chunk]);
 
   // Must be after hooks ！！！
-  if (!ChunkData) return null;
+  if (!ChunkData && !Detail) return null;
 
   return (
     <div className="space-y-2 mb-3 w-full">
@@ -74,14 +86,14 @@ export const QueryIntent = ({ ChunkData, getSuggestion }: QueryIntentProps) => {
           <>
             <Loader className="w-4 h-4 animate-spin text-[#1990FF]" />
             <span className="text-xs text-[#999999] italic">
-              {t(`assistant.message.steps.${ChunkData?.chunk_type}`)}
+              {t(`assistant.message.steps.${ChunkData?.chunk_type || Detail.type}`)}
             </span>
           </>
         ) : (
           <>
-            <BadgeCheck className="w-4 h-4 text-[#38C200]" />
+            <UnderstandIcon className="w-4 h-4 text-[#38C200]" />
             <span className="text-xs text-[#999999]">
-              {t(`assistant.message.steps.${ChunkData?.chunk_type}`)}
+              {t(`assistant.message.steps.${ChunkData?.chunk_type || Detail.type}`)}
             </span>
           </>
         )}

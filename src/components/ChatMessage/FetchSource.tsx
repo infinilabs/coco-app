@@ -1,5 +1,4 @@
 import {
-  Search,
   ChevronUp,
   ChevronDown,
   SquareArrowOutUpRight,
@@ -10,8 +9,10 @@ import { useTranslation } from "react-i18next";
 
 import { OpenURLWithBrowser } from "@/utils/index";
 import type { IChunkData } from "@/components/Assistant/types";
+import RetrieveIcon from "@/icons/Retrieve";
 
 interface FetchSourceProps {
+  Detail?: any;
   ChunkData?: IChunkData;
 }
 
@@ -32,12 +33,17 @@ interface ISourceData {
   url: string;
 }
 
-export const FetchSource = ({ ChunkData }: FetchSourceProps) => {
+export const FetchSource = ({ Detail, ChunkData }: FetchSourceProps) => {
   const { t } = useTranslation();
   const [isSourceExpanded, setIsSourceExpanded] = useState(false);
 
   const [total, setTotal] = useState(0);
   const [data, setData] = useState<ISourceData[]>([]);
+
+  useEffect(() => {
+    if (!Detail?.payload) return;
+    setData(Detail?.payload);
+  }, [Detail?.payload]);
 
   useEffect(() => {
     if (!ChunkData?.message_chunk) return;
@@ -61,7 +67,7 @@ export const FetchSource = ({ ChunkData }: FetchSourceProps) => {
   }, [ChunkData?.message_chunk]);
 
   // Must be after hooks ！！！
-  if (!ChunkData) return null;
+  if (!ChunkData && !Detail) return null;
 
   return (
     <div
@@ -80,7 +86,7 @@ export const FetchSource = ({ ChunkData }: FetchSourceProps) => {
         }`}
       >
         <div className="flex-1 min-w-0 flex items-center gap-2">
-          <Search className="w-4 h-4 text-[#38C200] flex-shrink-0" />
+          <RetrieveIcon className="w-4 h-4 text-[#38C200] flex-shrink-0" />
           <span className="text-xs text-[#999999]">
             {t(`assistant.message.steps.${ChunkData?.chunk_type}`, {
               count: Number(total),
