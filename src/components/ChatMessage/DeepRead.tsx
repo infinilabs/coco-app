@@ -19,10 +19,11 @@ export const DeepRead = ({ Detail, ChunkData }: DeepReadeProps) => {
   const [prevContent, setPrevContent] = useState("");
 
   const [Data, setData] = useState<string[]>([]);
+  const [description, setDescription] = useState("");
 
   useEffect(() => {
     if (!Detail?.description) return;
-    setData(Detail?.description);
+    setDescription(Detail?.description);
     setLoading(false);
   }, [Detail?.description]);
 
@@ -67,16 +68,25 @@ export const DeepRead = ({ Detail, ChunkData }: DeepReadeProps) => {
           <>
             <Loader className="w-4 h-4 animate-spin text-[#1990FF]" />
             <span className="text-xs text-[#999999] italic">
-              {t(`assistant.message.steps.${ChunkData?.chunk_type}`)}
+              {t(
+                `assistant.message.steps.${
+                  ChunkData?.chunk_type || Detail?.type
+                }`
+              )}
             </span>
           </>
         ) : (
           <>
             <ReadingIcon className="w-4 h-4 text-[#38C200]" />
             <span className="text-xs text-[#999999]">
-              {t(`assistant.message.steps.${ChunkData?.chunk_type}`, {
-                count: Number(Data.length),
-              })}
+              {t(
+                `assistant.message.steps.${
+                  ChunkData?.chunk_type || Detail?.type
+                }`,
+                {
+                  count: Number(Data.length),
+                }
+              )}
             </span>
           </>
         )}
@@ -97,6 +107,14 @@ export const DeepRead = ({ Detail, ChunkData }: DeepReadeProps) => {
                   </div>
                 </div>
               ))}
+              {description?.split("\n").map(
+                (paragraph, idx) =>
+                  paragraph.trim() && (
+                    <p key={idx} className="text-sm">
+                      {paragraph}
+                    </p>
+                  )
+              )}
             </div>
           </div>
         </div>

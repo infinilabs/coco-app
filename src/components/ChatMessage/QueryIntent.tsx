@@ -36,6 +36,9 @@ export const QueryIntent = ({
   useEffect(() => {
     if (!Detail?.payload) return;
     setData(Detail?.payload);
+    if (Detail?.payload?.suggestion && getSuggestion) {
+      getSuggestion(Detail?.payload?.suggestion);
+    }
     setLoading(false);
   }, [Detail?.payload]);
 

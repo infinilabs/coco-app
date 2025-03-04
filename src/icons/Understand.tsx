@@ -6,17 +6,17 @@ export default function Understand(props: I.SVG) {
       <g
         id="Understand"
         stroke="none"
-        stroke-width="1"
+        strokeWidth="1"
         fill="none"
-        fill-rule="evenodd"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        fillRule="evenodd"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       >
         <g
           id="编组"
           transform="translate(0.5, 0.5)"
           stroke="currentColor"
-          stroke-width="1.25"
+          strokeWidth="1.25"
         >
           <path
             d="M7.44444444,3 C9.89904333,3 11.8888889,4.95366655 11.8888889,7.36363636 C11.8888889,9.06711551 10.8946979,10.5426108 9.44492275,11.2613085 L9.44444444,12.2727273 C9.44444444,13.3772968 8.54901394,14.2727273 7.44444444,14.2727273 C6.33987494,14.2727273 5.44444444,13.3772968 5.44444444,12.2727273 L5.44396614,11.2613085 C3.99419095,10.5426108 3,9.06711551 3,7.36363636 C3,4.95366655 4.98984556,3 7.44444444,3 Z"

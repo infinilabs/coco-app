@@ -6,11 +6,11 @@ export default function Retrieve(props: I.SVG) {
       <g
         id="Retrieve"
         stroke="none"
-        stroke-width="1"
+        strokeWidth="1"
         fill="none"
-        fill-rule="evenodd"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        fillRule="evenodd"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       >
         <line
           x1="10.8977456"
@@ -19,13 +19,13 @@ export default function Retrieve(props: I.SVG) {
           y2="10.9204757"
           id="路径"
           stroke="currentColor"
-          stroke-width="1.25"
+          strokeWidth="1.25"
           transform="translate(12.4489, 12.7102) scale(-1, 1) translate(-12.4489, -12.7102)"
         ></line>
         <circle
           id="椭圆形"
           stroke="currentColor"
-          stroke-width="1.25"
+          strokeWidth="1.25"
           transform="translate(7.5, 7) scale(-1, 1) translate(-7.5, -7)"
           cx="7.5"
           cy="7"

@@ -105,7 +105,7 @@ export const PickSource = ({ Detail, ChunkData }: PickSourceProps) => {
           <>
             <SelectionIcon className="w-4 h-4 text-[#38C200]" />
             <span className="text-xs text-[#999999]">
-              {t(`assistant.message.steps.${ChunkData?.chunk_type}`, {
+              {t(`assistant.message.steps.${ChunkData?.chunk_type || Detail.type }`, {
                 count: Data?.length,
               })}
             </span>

@@ -43,6 +43,7 @@ export const FetchSource = ({ Detail, ChunkData }: FetchSourceProps) => {
   useEffect(() => {
     if (!Detail?.payload) return;
     setData(Detail?.payload);
+    setTotal(Detail?.payload.length);
   }, [Detail?.payload]);
 
   useEffect(() => {
@@ -88,7 +89,7 @@ export const FetchSource = ({ Detail, ChunkData }: FetchSourceProps) => {
         <div className="flex-1 min-w-0 flex items-center gap-2">
           <RetrieveIcon className="w-4 h-4 text-[#38C200] flex-shrink-0" />
           <span className="text-xs text-[#999999]">
-            {t(`assistant.message.steps.${ChunkData?.chunk_type}`, {
+            {t(`assistant.message.steps.${ChunkData?.chunk_type || Detail.type }`, {
               count: Number(total),
             })}
           </span>
