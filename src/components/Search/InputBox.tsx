@@ -282,7 +282,7 @@ export default function ChatInput({
 
   const ReconnectClick = () => {
     setCountdown(5);
-    // reconnect();
+    reconnect();
   };
 
   const SearchClick = () => {

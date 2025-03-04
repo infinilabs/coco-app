@@ -17,7 +17,7 @@ export default function Chat({}: ChatProps) {
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChat, setActiveChat] = useState<Chat>();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isTyping, setIsTyping] = useState(false);
+  const isTyping = false;
 
   const [input, setInput] = useState("");
 
