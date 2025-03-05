@@ -15,7 +15,7 @@ import { metadata, icon } from "tauri-plugin-fs-pro-api";
 import { nanoid } from "nanoid";
 import Tooltip from "../Common/Tooltip";
 import { useAppStore } from "@/stores/appStore";
-import { useCreation, useReactive } from "ahooks";
+import { useCreation, useMount, useReactive } from "ahooks";
 import {
   checkScreenRecordingPermission,
   requestScreenRecordingPermission,
@@ -31,6 +31,7 @@ import {
 import { Fragment, MouseEvent } from "react";
 
 interface State {
+  screenRecordingPermission?: boolean;
   screenshotableMonitors: ScreenshotableMonitor[];
   screenshotableWindows: ScreenshotableWindow[];
 }
@@ -51,6 +52,10 @@ const InputExtra = () => {
   const state = useReactive<State>({
     screenshotableMonitors: [],
     screenshotableWindows: [],
+  });
+
+  useMount(async () => {
+    state.screenRecordingPermission = await checkScreenRecordingPermission();
   });
 
   const handleUploadFiles = async (paths: string | string[]) => {
@@ -97,9 +102,7 @@ const InputExtra = () => {
       {
         label: "截取屏幕截图",
         clickEvent: async (event) => {
-          const authorized = await checkScreenRecordingPermission();
-
-          if (authorized) {
+          if (state.screenRecordingPermission) {
             state.screenshotableMonitors = await getScreenshotableMonitors();
             state.screenshotableWindows = await getScreenshotableWindows();
           } else {
@@ -112,10 +115,12 @@ const InputExtra = () => {
           {
             groupName: "屏幕",
             groupItems: state.screenshotableMonitors.map((item) => {
+              const { id, name } = item;
+
               return {
-                label: item.name,
+                label: name,
                 clickEvent: async () => {
-                  const path = await getMonitorScreenshot(item.id);
+                  const path = await getMonitorScreenshot(id);
 
                   handleUploadFiles(path);
                 },
@@ -165,12 +170,13 @@ const InputExtra = () => {
             <MenuItem key={label}>
               {children ? (
                 <Popover>
-                  <PopoverButton onClick={clickEvent}>
-                    <div className="flex items-center justify-between gap-2 px-3 py-2 hover:bg-black/5 hover:dark:bg-white/5 rounded-lg cursor-pointer">
-                      <span>{label}</span>
+                  <PopoverButton
+                    className="flex items-center justify-between gap-2 px-3 py-2 hover:bg-black/5 hover:dark:bg-white/5 rounded-lg cursor-pointer"
+                    onClick={clickEvent}
+                  >
+                    <span>{label}</span>
 
-                      <ChevronRight className="size-4" />
-                    </div>
+                    <ChevronRight className="size-4" />
                   </PopoverButton>
 
                   <PopoverPanel
