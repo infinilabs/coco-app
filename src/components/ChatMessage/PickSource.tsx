@@ -29,7 +29,7 @@ export const PickSource = ({ Detail, ChunkData }: PickSourceProps) => {
   useEffect(() => {
     if (!Detail?.payload) return;
     setData(Detail?.payload);
-    setLoading(false)
+    setLoading(false);
   }, [Detail?.payload]);
 
   useEffect(() => {
@@ -37,53 +37,46 @@ export const PickSource = ({ Detail, ChunkData }: PickSourceProps) => {
 
     const timerID = setTimeout(() => {
       if (ChunkData.message_chunk === prevContent) {
-        const cleanContent = ChunkData.message_chunk?.replace(/^"|"$/g, "");
-        const match = cleanContent.match(/<JSON>([\s\S]*?)<\/JSON>/);
-        if (match && match[1]) {
-          const data = JSON.parse(match[1].trim());
-          if (
-            Array.isArray(data) &&
-            data.every((item) => item.id && item.title && item.explain)
-          ) {
-            setData(data);
+        try {
+          const cleanContent = ChunkData.message_chunk.replace(/^"|"$/g, "");
+          const allMatches = cleanContent.match(/<JSON>([\s\S]*?)<\/JSON>/g);
+
+          if (allMatches) {
+            for (let i = allMatches.length - 1; i >= 0; i--) {
+              try {
+                const jsonString = allMatches[i].replace(
+                  /<JSON>|<\/JSON>/g,
+                  ""
+                );
+                const data = JSON.parse(jsonString.trim());
+
+                if (
+                  Array.isArray(data) &&
+                  data.every((item) => item.id && item.title && item.explain)
+                ) {
+                  setData(data);
+                  setLoading(false);
+                  break;
+                }
+              } catch (e) {
+                continue;
+              }
+            }
           }
+
+        } catch (e) {
+          console.error("Failed to parse pick source data:", e);
+          setLoading(false);
         }
-        setLoading(false);
-        clearTimeout(timerID);
       }
-    }, 500);
+    }, 1000);
+
     setPrevContent(ChunkData.message_chunk);
+
     return () => {
       timerID && clearTimeout(timerID);
     };
   }, [ChunkData?.message_chunk, prevContent]);
-
-  useEffect(() => {
-    if (!ChunkData?.message_chunk) return;
-    try {
-      const cleanContent = ChunkData.message_chunk.replace(/^"|"$/g, "");
-      const allMatches = cleanContent.match(/<JSON>([\s\S]*?)<\/JSON>/g);
-      if (allMatches) {
-        for (let i = allMatches.length - 1; i >= 0; i--) {
-          try {
-            const jsonString = allMatches[i].replace(/<JSON>|<\/JSON>/g, "");
-            const data = JSON.parse(jsonString);
-            if (
-              Array.isArray(data) &&
-              data.every((item) => item.id && item.title && item.explain)
-            ) {
-              setData(data);
-              break;
-            }
-          } catch (e) {
-            continue;
-          }
-        }
-      }
-    } catch (e) {
-      console.error("Failed to parse pick source data:", e);
-    }
-  }, [ChunkData?.message_chunk]);
 
   // Must be after hooks ！！！
   if (!ChunkData && !Detail) return null;
@@ -105,9 +98,14 @@ export const PickSource = ({ Detail, ChunkData }: PickSourceProps) => {
           <>
             <SelectionIcon className="w-4 h-4 text-[#38C200]" />
             <span className="text-xs text-[#999999]">
-              {t(`assistant.message.steps.${ChunkData?.chunk_type || Detail.type }`, {
-                count: Data?.length,
-              })}
+              {t(
+                `assistant.message.steps.${
+                  ChunkData?.chunk_type || Detail.type
+                }`,
+                {
+                  count: Data?.length,
+                }
+              )}
             </span>
           </>
         )}
