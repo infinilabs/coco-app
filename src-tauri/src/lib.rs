@@ -81,7 +81,9 @@ pub fn run() {
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_fs_pro::init());
+        .plugin(tauri_plugin_fs_pro::init())
+        .plugin(tauri_plugin_macos_permissions::init())
+        .plugin(tauri_plugin_screenshots::init());
 
     // Conditional compilation for macOS
     #[cfg(target_os = "macos")]

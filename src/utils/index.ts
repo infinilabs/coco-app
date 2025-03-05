@@ -55,9 +55,9 @@ export function useWindowSize() {
 
 export const IsTauri = () => {
   return Boolean(
-    typeof window !== 'undefined' &&
-    window !== undefined &&
-    (window as any).__TAURI_INTERNALS__ !== undefined
+    typeof window !== "undefined" &&
+      window !== undefined &&
+      (window as any).__TAURI_INTERNALS__ !== undefined
   );
 };
 
@@ -86,8 +86,12 @@ export const formatter = {
     const index = Math.floor(Math.log(value) / Math.log(1024));
     const size = (value / Math.pow(1024, index)).toFixed(1);
 
-    return size + (unitArr[index] ?? "B")
+    return size + (unitArr[index] ?? "B");
   },
 };
 
+export const isImage = (value: string) => {
+  const regex = /\.(jpe?g|png|webp|avif|gif|svg|bmp|ico|tiff?|heic|apng)$/i;
 
+  return regex.test(value);
+};

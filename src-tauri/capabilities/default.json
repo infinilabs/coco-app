@@ -64,6 +64,8 @@
       "deny": []
     },
     "dialog:default",
-    "fs-pro:default"
+    "fs-pro:default",
+    "macos-permissions:default",
+    "screenshots:default"
   ]
 }

@@ -1,4 +1,5 @@
 import { useChatStore } from "@/stores/chatStore";
+import { isImage } from "@/utils";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { filesize } from "filesize";
 import { X } from "lucide-react";
@@ -14,7 +15,7 @@ const FileList = () => {
   return (
     <div className="flex flex-wrap gap-y-2 -mx-1 text-sm">
       {uploadFiles.map((file) => {
-        const { id, icon, name, extname, size } = file;
+        const { id, path, icon, name, extname, size } = file;
 
         return (
           <div key={id} className="w-1/3 px-1">
@@ -28,7 +29,10 @@ const FileList = () => {
                 <X className="size-[10px] text-white" />
               </div>
 
-              <img src={convertFileSrc(icon)} className="size-[40px]" />
+              <img
+                src={convertFileSrc(isImage(path) ? path : icon)}
+                className="size-[40px]"
+              />
 
               <div className="flex flex-col justify-between overflow-hidden">
                 <div className="truncate text-[#333333] dark:text-[#D8D8D8]">
