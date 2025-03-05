@@ -26,7 +26,6 @@
     "@tauri-apps/plugin-websocket": "~2.3.0",
     "@tauri-apps/plugin-window": "2.0.0-alpha.1",
     "ahooks": "^3.8.4",
-    "axios": "^1.8.1",
     "clsx": "^2.1.1",
     "dotenv": "^16.4.7",
     "filesize": "^10.1.6",

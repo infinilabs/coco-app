@@ -1,14 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { Settings, Puzzle, Settings2, Info, Server } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { listen } from '@tauri-apps/api/event'; 
 
 import SettingsPanel from "@/components/Settings/SettingsPanel";
 import GeneralSettings from "@/components/Settings/GeneralSettings";
 import AboutView from "@/components/Settings/AboutView";
 import Cloud from "@/components/Cloud/Cloud.tsx";
 import Footer from "@/components/Footer";
-import { useAppStore } from "@/stores/appStore";
+
+const tabIndexMap: { [key: string]: number } = {
+  'general': 0,
+  'extensions': 1,
+  'connect': 2,
+  'advanced': 3,
+  'about': 4
+};
 
 function SettingsPage() {
   const { t } = useTranslation();
@@ -21,8 +29,21 @@ function SettingsPage() {
     { name: t("settings.tabs.about"), icon: Info },
   ];
 
-  const tabIndex = useAppStore((state) => state.tabIndex);
-  const [defaultIndex, setDefaultIndex] = useState<number>(tabIndex);
+  const [defaultIndex, setDefaultIndex] = useState<number>(0);
+
+  useEffect(() => {
+    const unlisten = listen("tab_index", (event) => {
+      const tabName = event.payload as string;
+      const index = tabIndexMap[tabName];
+      if (index !== -1) {
+        setDefaultIndex(index);
+      }
+    });
+
+    return () => {
+      unlisten.then(fn => fn());
+    };
+  }, []);
 
   return (
     <div>

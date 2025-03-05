@@ -24,6 +24,7 @@ import { useSearchStore } from "@/stores/searchStore";
 import { IServer } from "@/stores/appStore";
 import FileList from "@/components/Search/FileList";
 import { Greetings } from "./Greetings";
+import ConnectPrompt from "./ConnectPrompt";
 
 interface ChatAIProps {
   isTransitioned: boolean;
@@ -85,6 +86,8 @@ const ChatAI = memo(
       const [activeChat, setActiveChat] = useState<Chat>();
       const [timedoutShow, setTimedoutShow] = useState(false);
       const [errorShow, setErrorShow] = useState(false);
+      const [IsLogin, setIsLogin] = useState(false);
+
       const messagesEndRef = useRef<HTMLDivElement>(null);
 
       const curChatEndRef = useRef(curChatEnd);
@@ -106,7 +109,8 @@ const ChatAI = memo(
         if (!server?.id) return;
         try {
           console.log("reconnect", server.id);
-          await invoke("connect_to_server", { id: server.id });
+          const res: any = await invoke("connect_to_server", { id: server.id });
+          console.log(1111, res)
           setConnected(true);
         } catch (error) {
           console.error("Failed to connect:", error);
@@ -462,7 +466,11 @@ const ChatAI = memo(
             console.error("Failed to fetch user data:", error);
           }
         },
-        [JSON.stringify(activeChat?.messages), isSearchActive, isDeepThinkActive]
+        [
+          JSON.stringify(activeChat?.messages),
+          isSearchActive,
+          isDeepThinkActive,
+        ]
       );
 
       const handleSendMessage = useCallback(
@@ -539,7 +547,10 @@ const ChatAI = memo(
         };
       }, []);
 
-      const chatHistory = async (chat: Chat, callback?: (chat: Chat) => void) => {
+      const chatHistory = async (
+        chat: Chat,
+        callback?: (chat: Chat) => void
+      ) => {
         try {
           let response: any = await invoke("session_chat_history", {
             serverId: currentService?.id,
@@ -554,9 +565,9 @@ const ChatAI = memo(
             ...chat,
             messages: hits,
           };
-          console.log("id_history2", updatedChat) 
+          console.log("id_history2", updatedChat);
           setActiveChat(updatedChat);
-          callback && callback(updatedChat)
+          callback && callback(updatedChat);
         } catch (error) {
           console.error("Failed to fetch user data:", error);
         }
@@ -671,85 +682,89 @@ const ChatAI = memo(
             activeChat={activeChat}
             reconnect={reconnect}
             isChatPage={isChatPage}
+            setIsLogin={setIsLogin}
           />
-          {/* Chat messages */}
-          <div className="flex flex-col h-full justify-between overflow-hidden">
-            <div className="flex-1 w-full overflow-x-hidden overflow-y-auto border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.15)] custom-scrollbar relative">
-              <Greetings />
-              {activeChat?.messages?.map((message, index) => (
-                <ChatMessage
-                  key={message._id + index}
-                  message={message}
-                  isTyping={false}
-                  onResend={handleSendMessage}
-                />
-              ))}
-              {(query_intent ||
-                fetch_source ||
-                pick_source ||
-                deep_read ||
-                think ||
-                response) &&
-              activeChat?._id ? (
-                <ChatMessage
-                  key={"current"}
-                  message={{
-                    _id: "current",
-                    _source: {
-                      type: "assistant",
-                      message: "",
-                      question: Question,
-                    },
-                  }}
-                  onResend={handleSendMessage}
-                  isTyping={!curChatEnd}
-                  query_intent={query_intent}
-                  fetch_source={fetch_source}
-                  pick_source={pick_source}
-                  deep_read={deep_read}
-                  think={think}
-                  response={response}
-                />
-              ) : null}
-              {timedoutShow ? (
-                <ChatMessage
-                  key={"timedout"}
-                  message={{
-                    _id: "timedout",
-                    _source: {
-                      type: "assistant",
-                      message: t("assistant.chat.timedout"),
-                      question: Question,
-                    },
-                  }}
-                  onResend={handleSendMessage}
-                  isTyping={false}
-                />
-              ) : null}
-              {errorShow ? (
-                <ChatMessage
-                  key={"error"}
-                  message={{
-                    _id: "error",
-                    _source: {
-                      type: "assistant",
-                      message: t("assistant.chat.error"),
-                      question: Question,
-                    },
-                  }}
-                  onResend={handleSendMessage}
-                  isTyping={false}
-                />
-              ) : null}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {uploadFiles.length > 0 && (
-              <div className="max-h-[120px] overflow-auto p-2">
-                <FileList />
+          {IsLogin ? (
+            <div className="flex flex-col h-full justify-between overflow-hidden">
+              <div className="flex-1 w-full overflow-x-hidden overflow-y-auto border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.15)] custom-scrollbar relative">
+                <Greetings />
+                {activeChat?.messages?.map((message, index) => (
+                  <ChatMessage
+                    key={message._id + index}
+                    message={message}
+                    isTyping={false}
+                    onResend={handleSendMessage}
+                  />
+                ))}
+                {(query_intent ||
+                  fetch_source ||
+                  pick_source ||
+                  deep_read ||
+                  think ||
+                  response) &&
+                activeChat?._id ? (
+                  <ChatMessage
+                    key={"current"}
+                    message={{
+                      _id: "current",
+                      _source: {
+                        type: "assistant",
+                        message: "",
+                        question: Question,
+                      },
+                    }}
+                    onResend={handleSendMessage}
+                    isTyping={!curChatEnd}
+                    query_intent={query_intent}
+                    fetch_source={fetch_source}
+                    pick_source={pick_source}
+                    deep_read={deep_read}
+                    think={think}
+                    response={response}
+                  />
+                ) : null}
+                {timedoutShow ? (
+                  <ChatMessage
+                    key={"timedout"}
+                    message={{
+                      _id: "timedout",
+                      _source: {
+                        type: "assistant",
+                        message: t("assistant.chat.timedout"),
+                        question: Question,
+                      },
+                    }}
+                    onResend={handleSendMessage}
+                    isTyping={false}
+                  />
+                ) : null}
+                {errorShow ? (
+                  <ChatMessage
+                    key={"error"}
+                    message={{
+                      _id: "error",
+                      _source: {
+                        type: "assistant",
+                        message: t("assistant.chat.error"),
+                        question: Question,
+                      },
+                    }}
+                    onResend={handleSendMessage}
+                    isTyping={false}
+                  />
+                ) : null}
+                <div ref={messagesEndRef} />
               </div>
-            )}
-          </div>
+
+              {uploadFiles.length > 0 && (
+                <div className="max-h-[120px] overflow-auto p-2">
+                  <FileList />
+                </div>
+              )}
+            </div>
+          ) : (
+            <ConnectPrompt />
+          )}
         </div>
       );
     }

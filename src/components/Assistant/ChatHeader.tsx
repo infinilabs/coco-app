@@ -39,6 +39,7 @@ interface ChatHeaderProps {
   isSidebarOpen: boolean;
   activeChat: Chat | undefined;
   reconnect: (server?: IServer) => void;
+  setIsLogin: (isLogin: boolean) => void;
   isChatPage?: boolean;
 }
 
@@ -48,6 +49,7 @@ export function ChatHeader({
   setIsSidebarOpen,
   activeChat,
   reconnect,
+  setIsLogin,
   isChatPage = false,
 }: ChatHeaderProps) {
   const { t } = useTranslation();
@@ -70,7 +72,7 @@ export function ChatHeader({
         const enabledServers = (res as IServer[]).filter(
           (server) => server.enabled !== false
         );
-        // console.log("list_coco_servers", enabledServers);
+        console.log("list_coco_servers", enabledServers);
         setServerList(enabledServers);
 
         if (resetSelection && enabledServers.length > 0) {
@@ -103,7 +105,8 @@ export function ChatHeader({
     if (!connected) return;
     try {
       console.log("disconnect");
-      await invoke("disconnect");
+      const res: any = await invoke("disconnect");
+      console.log(121212213213123, res)
       setConnected(false);
     } catch (error) {
       console.error("Failed to disconnect:", error);
@@ -118,6 +121,12 @@ export function ChatHeader({
       setEndpoint(server.endpoint);
       setMessages(""); // Clear previous messages
       onCreateNewChat();
+      //
+      if (!server.public && !server.profile) {
+        setIsLogin(false);
+        return;
+      }
+      setIsLogin(true);
       //
       if (!(isCurrent && connected)) {
         await disconnect();
