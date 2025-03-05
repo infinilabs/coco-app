@@ -30,7 +30,6 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tauri-plugin-http = "2"
 tauri-plugin-websocket = "2"
-tauri-plugin-theme = "2.1.2"
 tauri-plugin-deep-link = "2.0.0"
 tauri-plugin-store = "2.2.0"
 tauri-plugin-os = "2"

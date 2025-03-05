@@ -6,10 +6,18 @@ import { listen } from "@tauri-apps/api/event";
 import { useAppStore } from "@/stores/appStore";
 import useEscape from "@/hooks/useEscape";
 import useSettingsWindow from "@/hooks/useSettingsWindow";
-import { useEventListener } from "ahooks";
+import { useAsyncEffect, useEventListener, useMount } from "ahooks";
+import { useThemeStore } from "@/stores/themeStore";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { AppTheme } from "@/utils/tauri";
+
+const appWindow = getCurrentWebviewWindow();
 
 export default function Layout() {
   const location = useLocation();
+
+  const activeTheme = useThemeStore((state) => state.activeTheme);
+  const setTheme = useThemeStore((state) => state.setTheme);
 
   function updateBodyClass(path: string) {
     const body = document.body;
@@ -19,6 +27,29 @@ export default function Layout() {
       body.classList.add("input-body");
     }
   }
+
+  useMount(async () => {
+    listen<AppTheme>("theme-changed", ({ payload }) => {
+      setTheme(payload);
+    });
+
+    appWindow.onThemeChanged(({ payload }) => {
+      console.log("onThemeChanged", payload);
+      if (activeTheme !== "auto") return;
+
+      setTheme(payload);
+    });
+  });
+
+  useAsyncEffect(async () => {
+    let nextTheme = activeTheme === "auto" ? null : activeTheme;
+
+    await appWindow.setTheme(nextTheme);
+
+    const root = window.document.documentElement;
+    root.className = nextTheme ?? "light";
+    root.dataset.theme = nextTheme ?? "light";
+  }, [activeTheme]);
 
   useEffect(() => {
     updateBodyClass(location.pathname);

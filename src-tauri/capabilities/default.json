@@ -46,7 +46,6 @@
     "global-shortcut:allow-register",
     "global-shortcut:allow-unregister",
     "global-shortcut:allow-unregister-all",
-    "theme:default",
     "core:event:default",
     "deep-link:allow-get-current",
     "deep-link:default",
@@ -66,6 +65,7 @@
     "dialog:default",
     "fs-pro:default",
     "macos-permissions:default",
-    "screenshots:default"
+    "screenshots:default",
+    "core:window:allow-set-theme"
   ]
 }

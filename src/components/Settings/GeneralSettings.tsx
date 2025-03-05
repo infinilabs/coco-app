@@ -16,7 +16,7 @@ import {
   isEnabled,
   // enable, disable
 } from "@tauri-apps/plugin-autostart";
-import { emit } from '@tauri-apps/api/event';
+import { emit } from "@tauri-apps/api/event";
 
 import SettingsItem from "./SettingsItem";
 import SettingsToggle from "./SettingsToggle";
@@ -26,6 +26,8 @@ import { useShortcutEditor } from "@/hooks/useShortcutEditor";
 import { useAppStore } from "@/stores/appStore";
 import { AppTheme } from "@/utils/tauri";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useThemeStore } from "@/stores/themeStore";
+import { useCreation } from "ahooks";
 
 export function ThemeOption({
   icon: Icon,
@@ -36,14 +38,19 @@ export function ThemeOption({
   title: string;
   theme: AppTheme;
 }) {
-  const { theme: currentTheme, changeTheme } = useTheme();
+  // const { theme: currentTheme, changeTheme } = useTheme();
   const { t } = useTranslation();
+  const activeTheme = useThemeStore((state) => state.activeTheme);
 
-  const isSelected = currentTheme === theme;
+  const isSelected = useCreation(() => {
+    return activeTheme === theme;
+  }, [activeTheme]);
 
   return (
     <button
-      onClick={() => changeTheme(theme)}
+      onClick={() => {
+        emit("theme-changed", theme);
+      }}
       className={`p-4 rounded-lg border-2 ${
         isSelected
           ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
@@ -52,7 +59,9 @@ export function ThemeOption({
       title={title}
     >
       <Icon className={`w-6 h-6 ${isSelected ? "text-blue-500" : ""}`} />
-      <span className={`text-sm font-medium ${isSelected ? "text-blue-500" : ""}`}>
+      <span
+        className={`text-sm font-medium ${isSelected ? "text-blue-500" : ""}`}
+      >
         {t(`settings.appearance.${theme}`)}
       </span>
     </button>
@@ -172,9 +181,9 @@ export default function GeneralSettings() {
     setLanguage(lang);
     //
     try {
-      await emit('language-changed', { language: lang });
+      await emit("language-changed", { language: lang });
     } catch (error) {
-      console.error('Failed to emit language change event:', error);
+      console.error("Failed to emit language change event:", error);
     }
   };
 
@@ -182,25 +191,27 @@ export default function GeneralSettings() {
     <div className="space-y-8">
       <div>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          {t('settings.general')}
+          {t("settings.general")}
         </h2>
         <div className="space-y-6">
           <SettingsItem
             icon={Power}
-            title={t('settings.startup.title')}
-            description={t('settings.startup.description')}
+            title={t("settings.startup.title")}
+            description={t("settings.startup.description")}
           >
             <SettingsToggle
               checked={launchAtLogin}
-              onChange={(value) => value ? enableAutoStart() : disableAutoStart()}
-              label={t('settings.startup.toggle')}
+              onChange={(value) =>
+                value ? enableAutoStart() : disableAutoStart()
+              }
+              label={t("settings.startup.toggle")}
             />
           </SettingsItem>
 
           <SettingsItem
             icon={Command}
-            title={t('settings.hotkey.title')}
-            description={t('settings.hotkey.description')}
+            title={t("settings.hotkey.title")}
+            description={t("settings.hotkey.description")}
           >
             <div className="flex items-center gap-2">
               <ShortcutItem
@@ -216,21 +227,33 @@ export default function GeneralSettings() {
 
           <SettingsItem
             icon={Palette}
-            title={t('settings.appearance.title')}
-            description={t('settings.appearance.description')}
+            title={t("settings.appearance.title")}
+            description={t("settings.appearance.description")}
           >
             <div></div>
           </SettingsItem>
           <div className="grid grid-cols-3 gap-4">
-            <ThemeOption icon={Sun} title={t('settings.appearance.light')} theme="light" />
-            <ThemeOption icon={Moon} title={t('settings.appearance.dark')} theme="dark" />
-            <ThemeOption icon={Monitor} title={t('settings.appearance.auto')} theme="auto" />
+            <ThemeOption
+              icon={Sun}
+              title={t("settings.appearance.light")}
+              theme="light"
+            />
+            <ThemeOption
+              icon={Moon}
+              title={t("settings.appearance.dark")}
+              theme="dark"
+            />
+            <ThemeOption
+              icon={Monitor}
+              title={t("settings.appearance.auto")}
+              theme="auto"
+            />
           </div>
-          
+
           <SettingsItem
             icon={Globe}
-            title={t('settings.language.title')}
-            description={t('settings.language.description')}
+            title={t("settings.language.title")}
+            description={t("settings.language.description")}
           >
             <div className="flex items-center gap-2">
               <select
@@ -238,21 +261,21 @@ export default function GeneralSettings() {
                 onChange={(e) => changeLanguage(e.target.value)}
                 className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="en">{t('settings.language.english')}</option>
-                <option value="zh">{t('settings.language.chinese')}</option>
+                <option value="en">{t("settings.language.english")}</option>
+                <option value="zh">{t("settings.language.chinese")}</option>
               </select>
             </div>
           </SettingsItem>
 
           <SettingsItem
             icon={Tags}
-            title={t('settings.tooltip.title')}
-            description={t('settings.tooltip.description')}
+            title={t("settings.tooltip.title")}
+            description={t("settings.tooltip.description")}
           >
             <SettingsToggle
               checked={showTooltip}
               onChange={(value) => setShowTooltip(value)}
-              label={t('settings.tooltip.toggle')}
+              label={t("settings.tooltip.toggle")}
             />
           </SettingsItem>
         </div>
