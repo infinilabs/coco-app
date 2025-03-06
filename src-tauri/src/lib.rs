@@ -187,15 +187,6 @@ pub fn run() {
         .build(ctx)
         .expect("error while running tauri application");
 
-    // Create a single Tokio runtime instance
-    // let rt = RT::new().expect("Failed to create Tokio runtime");
-    // let app_handle = app.handle().clone();
-    // rt.spawn(async move {
-    //     init_app_search_source(&app_handle).await;
-    //     let _ = server::connector::refresh_all_connectors(&app_handle).await;
-    //     let _ = server::datasource::refresh_all_datasources(&app_handle).await;
-    // });
-
     app.run(|app_handle, event| match event {
         #[cfg(target_os = "macos")]
         tauri::RunEvent::Reopen {
