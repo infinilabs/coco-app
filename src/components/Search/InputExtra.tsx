@@ -29,6 +29,7 @@ import {
   getWindowScreenshot,
 } from "tauri-plugin-screenshots-api";
 import { Fragment, MouseEvent } from "react";
+import { useTranslation } from "react-i18next";
 
 interface State {
   screenRecordingPermission?: boolean;
@@ -46,6 +47,7 @@ interface MenuItem {
 }
 
 const InputExtra = () => {
+  const { t, i18n } = useTranslation();
   const uploadFiles = useChatStore((state) => state.uploadFiles);
   const setUploadFiles = useChatStore((state) => state.setUploadFiles);
   const setIsPinned = useAppStore((state) => state.setIsPinned);
@@ -85,7 +87,7 @@ const InputExtra = () => {
   const menuItems = useCreation<MenuItem[]>(() => {
     const menuItems: MenuItem[] = [
       {
-        label: "上传文件",
+        label: t("search.input.uploadFile"),
         clickEvent: async () => {
           setIsPinned(true);
 
@@ -101,7 +103,7 @@ const InputExtra = () => {
         },
       },
       {
-        label: "截取屏幕截图",
+        label: t("search.input.screenshot"),
         clickEvent: async (event) => {
           if (state.screenRecordingPermission) {
             state.screenshotableMonitors = await getScreenshotableMonitors();
@@ -114,7 +116,7 @@ const InputExtra = () => {
         },
         children: [
           {
-            groupName: "屏幕",
+            groupName: t("search.input.screenshotType.screen"),
             groupItems: state.screenshotableMonitors.map((item) => {
               const { id, name } = item;
 
@@ -130,7 +132,7 @@ const InputExtra = () => {
             }),
           },
           {
-            groupName: "窗口",
+            groupName: t("search.input.screenshotType.window"),
             groupItems: state.screenshotableWindows.map((item) => {
               const { id, name } = item;
 
@@ -150,7 +152,11 @@ const InputExtra = () => {
     ];
 
     return menuItems;
-  }, [state.screenshotableMonitors, state.screenshotableWindows]);
+  }, [
+    state.screenshotableMonitors,
+    state.screenshotableWindows,
+    i18n.language,
+  ]);
 
   return (
     <Menu>

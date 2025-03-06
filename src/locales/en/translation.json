@@ -90,6 +90,12 @@
       "reconnect": "Reconnect",
       "deepThink": "Deep Think",
       "search": "Search",
+      "uploadFile": "Upload File",
+      "screenshot": "Screenshot",
+      "screenshotType": {
+        "screen": "Screen",
+        "window": "Window"
+      },
       "searchPopover": {
         "title": "Search Scope",
         "allScope": "All Scope"

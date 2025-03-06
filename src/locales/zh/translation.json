@@ -90,6 +90,12 @@
       "reconnect": "重新连接",
       "deepThink": "深度思考",
       "search": "联网搜索",
+      "uploadFile": "上传文件",
+      "screenshot": "截取屏幕截图",
+      "screenshotType": {
+        "screen": "屏幕",
+        "window": "窗口"
+      },
       "searchPopover": {
         "title": "搜索范围",
         "allScope": "所有范围"
