@@ -19,24 +19,29 @@ pub struct ApplicationSearchSource {
 }
 
 impl ApplicationSearchSource {
-    pub async fn new<R: Runtime>(app_handle: AppHandle<R>, base_score: f64) -> Self {
+    pub async fn new<R: Runtime>(
+        app_handle: AppHandle<R>,
+        base_score: f64,
+    ) -> Result<Self, String> {
         let application_paths = Trie::new();
         let mut icons = HashMap::new();
 
         let mut ctx = AppInfoContext::new(vec![]);
-        ctx.refresh_apps().unwrap(); // must refresh apps before getting them
+        ctx.refresh_apps().map_err(|err| err.to_string())?; // must refresh apps before getting them
         let apps = ctx.get_all_apps();
 
         for app in &apps {
             let path = if cfg!(target_os = "macos") {
                 app.app_desktop_path.clone()
             } else {
-                app.app_path_exe.clone().unwrap()
+                app.app_path_exe
+                    .clone()
+                    .unwrap_or(PathBuf::from("Path not found"))
             };
             let search_word = name(path.clone()).await;
             let icon = icon(app_handle.clone(), path.clone(), Some(256))
                 .await
-                .unwrap();
+                .map_err(|err| err.to_string())?;
             let path_string = path.to_string_lossy().into_owned();
 
             if search_word.is_empty() || search_word.eq("coco-ai") {
@@ -47,11 +52,11 @@ impl ApplicationSearchSource {
             icons.insert(path_string, icon);
         }
 
-        ApplicationSearchSource {
+        Ok(ApplicationSearchSource {
             base_score,
             icons,
             application_paths,
-        }
+        })
     }
 }
 

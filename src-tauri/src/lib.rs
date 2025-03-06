@@ -228,13 +228,15 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
     }
 }
 
-async fn init_app_search_source<R: Runtime>(app_handle: &AppHandle<R>) {
+async fn init_app_search_source<R: Runtime>(app_handle: &AppHandle<R>) -> Result<(), String> {
     let application_search =
-        local::application::ApplicationSearchSource::new(app_handle.clone(), 1000f64).await;
+        local::application::ApplicationSearchSource::new(app_handle.clone(), 1000f64).await?;
 
     // Register the application search source
     let registry = app_handle.state::<SearchSourceRegistry>();
     registry.register_source(application_search).await;
+
+    Ok(())
 }
 
 #[tauri::command]
@@ -466,8 +468,10 @@ fn open_settings(app: &tauri::AppHandle) {
 }
 
 #[tauri::command]
-async fn get_app_search_source<R: Runtime>(app_handle: AppHandle<R>) {
-    init_app_search_source(&app_handle).await;
+async fn get_app_search_source<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), String> {
+    init_app_search_source(&app_handle).await?;
     let _ = server::connector::refresh_all_connectors(&app_handle).await;
     let _ = server::datasource::refresh_all_datasources(&app_handle).await;
+
+    Ok(())
 }
