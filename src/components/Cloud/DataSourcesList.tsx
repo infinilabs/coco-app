@@ -19,7 +19,7 @@ export function DataSourcesList({ server }: { server: string }) {
     //fetch datasource data
     invoke("get_connectors_by_server", { id: server })
       .then((res: any) => {
-        console.log("get_connectors_by_server", res);
+        // console.log("get_connectors_by_server", res);
         setConnectorData(res, server);
       })
       .catch((err: any) => {
@@ -31,7 +31,7 @@ export function DataSourcesList({ server }: { server: string }) {
     //fetch datasource data
     invoke("get_datasources_by_server", { id: server })
       .then((res: any) => {
-        console.log("get_datasources_by_server", res);
+        // console.log("get_datasources_by_server", res);
         setDatasourceData(res, server);
       })
       .catch((err: any) => {

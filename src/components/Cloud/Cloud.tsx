@@ -71,10 +71,10 @@ export default function Cloud() {
             if (item.id === currentService?.id) {
               item.health = {
                 services: null,
-                status: null
-              }
+                status: null,
+              };
             }
-            return item
+            return item;
           });
         }
         console.log("list_coco_servers", res);
@@ -82,8 +82,6 @@ export default function Cloud() {
         if (resetSelection && res.length > 0) {
           // console.log("setCurrentService", res[res.length - 1]);
           setCurrentService(res[res.length - 1]);
-        } else {
-          console.warn("Service list is empty or last item has no id");
         }
       })
       .catch((err: any) => {
@@ -253,7 +251,7 @@ export default function Cloud() {
     setRefreshLoading(true);
     invoke("refresh_coco_server_info", { id })
       .then((res: any) => {
-        console.log("refresh_coco_server_info", id, JSON.stringify(res));
+        console.log("refresh_coco_server_info", id, res);
         fetchServers(false).then((r) => {
           console.log("fetchServers", r);
         });
@@ -305,7 +303,7 @@ export default function Cloud() {
       });
   };
 
-  const enable_coco_server = async (enabled: boolean) => {
+  const enable_coco_server = useCallback(async (enabled: boolean) => {
     try {
       const command = enabled ? "enable_server" : "disable_server";
 
@@ -317,9 +315,7 @@ export default function Cloud() {
     } catch (error) {
       setError(error);
     }
-  };
-
-  console.log("currentService", currentService);
+  }, [currentService?.id]);
 
   return (
     <div className="flex bg-gray-50 dark:bg-gray-900">

@@ -22,14 +22,13 @@ export function DataSourceItem({ name, connector }: DataSourceItemProps) {
 
   const activeTheme = useThemeStore((state) => state.activeTheme);
 
-
   const connector_data = useConnectStore((state) => state.connector_data);
   const endpoint_http = useAppStore((state) => state.endpoint_http);
 
   function findConnectorIcon() {
     const connector_id = connector?.id;
 
-    console.log("connector_id", connector_data, connector_id);
+    // console.log("connector_id", connector_data, connector_id);
 
     const result_connector = connector_data[endpoint_http]?.find(
       (data: any) => data.id === connector_id
@@ -43,7 +42,9 @@ export function DataSourceItem({ name, connector }: DataSourceItemProps) {
     const icons = connectorSource?.icon;
 
     if (!icons) {
-      return activeTheme === "dark" ? source_default_dark_img : source_default_img;
+      return activeTheme === "dark"
+        ? source_default_dark_img
+        : source_default_img;
     }
 
     if (icons?.startsWith("http://") || icons?.startsWith("https://")) {
