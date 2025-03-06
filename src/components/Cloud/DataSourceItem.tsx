@@ -3,8 +3,8 @@ import { Link2 } from "lucide-react";
 import { useAppStore } from "@/stores/appStore";
 import source_default_img from "@/assets/images/source_default.png";
 import source_default_dark_img from "@/assets/images/source_default_dark.png";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useConnectStore } from "@/stores/connectStore";
+import { useThemeStore } from "@/stores/themeStore";
 
 interface Account {
   email: string;
@@ -20,7 +20,8 @@ interface DataSourceItemProps {
 export function DataSourceItem({ name, connector }: DataSourceItemProps) {
   // const isConnected = true;
 
-  const { theme } = useTheme();
+  const activeTheme = useThemeStore((state) => state.activeTheme);
+
 
   const connector_data = useConnectStore((state) => state.connector_data);
   const endpoint_http = useAppStore((state) => state.endpoint_http);
@@ -42,7 +43,7 @@ export function DataSourceItem({ name, connector }: DataSourceItemProps) {
     const icons = connectorSource?.icon;
 
     if (!icons) {
-      return theme === "dark" ? source_default_dark_img : source_default_img;
+      return activeTheme === "dark" ? source_default_dark_img : source_default_img;
     }
 
     if (icons?.startsWith("http://") || icons?.startsWith("https://")) {

@@ -41,9 +41,7 @@ interface ChatAIProps {
 export interface ChatAIRef {
   init: (value: string) => void;
   cancelChat: () => void;
-  connected: boolean;
   reconnect: () => void;
-  handleSendMessage: (value: string) => void;
   clearChat: () => void;
 }
 
@@ -70,9 +68,7 @@ const ChatAI = memo(
       useImperativeHandle(ref, () => ({
         init: init,
         cancelChat: cancelChat,
-        connected: connected,
         reconnect: reconnect,
-        handleSendMessage: handleSendMessage,
         clearChat: clearChat,
       }));
 
@@ -86,7 +82,7 @@ const ChatAI = memo(
       const [activeChat, setActiveChat] = useState<Chat>();
       const [timedoutShow, setTimedoutShow] = useState(false);
       const [errorShow, setErrorShow] = useState(false);
-      const [IsLogin, setIsLogin] = useState(false);
+      const [IsLogin, setIsLogin] = useState(true);
 
       const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -109,8 +105,7 @@ const ChatAI = memo(
         if (!server?.id) return;
         try {
           console.log("reconnect", server.id);
-          const res: any = await invoke("connect_to_server", { id: server.id });
-          console.log(1111, res)
+          await invoke("connect_to_server", { id: server.id });
           setConnected(true);
         } catch (error) {
           console.error("Failed to connect:", error);

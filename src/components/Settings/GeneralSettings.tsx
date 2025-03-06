@@ -17,6 +17,7 @@ import {
   // enable, disable
 } from "@tauri-apps/plugin-autostart";
 import { emit } from "@tauri-apps/api/event";
+import { useCreation } from "ahooks";
 
 import SettingsItem from "./SettingsItem";
 import SettingsToggle from "./SettingsToggle";
@@ -25,9 +26,7 @@ import { Shortcut } from "./shortcut";
 import { useShortcutEditor } from "@/hooks/useShortcutEditor";
 import { useAppStore } from "@/stores/appStore";
 import { AppTheme } from "@/utils/tauri";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useThemeStore } from "@/stores/themeStore";
-import { useCreation } from "ahooks";
 
 export function ThemeOption({
   icon: Icon,
@@ -38,7 +37,6 @@ export function ThemeOption({
   title: string;
   theme: AppTheme;
 }) {
-  // const { theme: currentTheme, changeTheme } = useTheme();
   const { t } = useTranslation();
   const activeTheme = useThemeStore((state) => state.activeTheme);
 

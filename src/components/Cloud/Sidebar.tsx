@@ -30,7 +30,7 @@ export const Sidebar = forwardRef<{ refreshData: () => void }, SidebarProps>(
           className={`flex cursor-pointer items-center space-x-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg mb-2 ${
             currentService?.id === item?.id
               ? "dark:bg-blue-900/20 dark:bg-blue-900 border border-[#0087ff]"
-              : "bg-gray-50 dark:bg-gray-900 border border-[#e6e6e6]"
+              : "bg-gray-50 dark:bg-gray-900 border border-[#e6e6e6] dark:border-gray-700"
           }`}
           onClick={() => setCurrentService(item)}
         >

@@ -262,29 +262,6 @@ export default function ChatInput({
     };
   }, [isChatMode]);
 
-  const [countdown, setCountdown] = useState(5);
-
-  useEffect(() => {
-    if (!isChatMode) return;
-    if (connected) return;
-    if (countdown <= 0) {
-      console.log("ReconnectClick");
-      ReconnectClick();
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      setCountdown((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [countdown, connected, isChatMode]);
-
-  const ReconnectClick = () => {
-    setCountdown(5);
-    reconnect();
-  };
-
   const SearchClick = () => {
     setIsSearchActive();
   };
@@ -447,9 +424,9 @@ export default function ChatInput({
             {t("search.input.connectionError")}
             <div
               className="w-[96px] h-[24px] bg-[#0061FF] rounded-[12px] font-normal text-xs text-white flex items-center justify-center cursor-pointer"
-              onClick={ReconnectClick}
+              onClick={reconnect}
             >
-              {t("search.input.reconnect")} ({countdown})
+              {t("search.input.reconnect")}
             </div>
           </div>
         ) : null}

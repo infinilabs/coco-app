@@ -105,8 +105,7 @@ export function ChatHeader({
     if (!connected) return;
     try {
       console.log("disconnect");
-      const res: any = await invoke("disconnect");
-      console.log(121212213213123, res)
+      await invoke("disconnect");
       setConnected(false);
     } catch (error) {
       console.error("Failed to disconnect:", error);

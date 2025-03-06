@@ -4,13 +4,13 @@ import { emit } from "@tauri-apps/api/event";
 
 import LoginDark from "@/assets/images/login-dark.svg";
 import LoginLight from "@/assets/images/login-light.svg";
-import { useTheme } from "@/contexts/ThemeContext";
+import { useThemeStore } from "@/stores/themeStore";
 
 const ConnectPrompt = () => {
   const { t } = useTranslation();
-  const { theme } = useTheme();
+  const activeTheme = useThemeStore((state) => state.activeTheme);
 
-  const logo = theme === "dark" ? LoginDark : LoginLight;
+  const logo = activeTheme === "dark" ? LoginDark : LoginLight;
 
   const handleConnect = async () => {
     emit("open_settings", "connect");
