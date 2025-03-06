@@ -122,6 +122,7 @@ pub fn run() {
             // server::get_coco_server_connectors,
             server::websocket::connect_to_server,
             server::websocket::disconnect,
+            get_app_search_source
         ])
         .setup(|app| {
             let registry = SearchSourceRegistry::default();
@@ -187,13 +188,13 @@ pub fn run() {
         .expect("error while running tauri application");
 
     // Create a single Tokio runtime instance
-    let rt = RT::new().expect("Failed to create Tokio runtime");
-    let app_handle = app.handle().clone();
-    rt.spawn(async move {
-        init_app_search_source(&app_handle).await;
-        let _ = server::connector::refresh_all_connectors(&app_handle).await;
-        let _ = server::datasource::refresh_all_datasources(&app_handle).await;
-    });
+    // let rt = RT::new().expect("Failed to create Tokio runtime");
+    // let app_handle = app.handle().clone();
+    // rt.spawn(async move {
+    //     init_app_search_source(&app_handle).await;
+    //     let _ = server::connector::refresh_all_connectors(&app_handle).await;
+    //     let _ = server::datasource::refresh_all_datasources(&app_handle).await;
+    // });
 
     app.run(|app_handle, event| match event {
         #[cfg(target_os = "macos")]
@@ -237,18 +238,8 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
 }
 
 async fn init_app_search_source<R: Runtime>(app_handle: &AppHandle<R>) {
-    // Run the slow application directory search in the background
-    let dir = vec![
-        dirs::home_dir().map(|home| home.join("Applications")), // Resolve `~/Applications`
-        Some(PathBuf::from("/Applications")),
-        Some(PathBuf::from("/System/Applications")),
-        Some(PathBuf::from("/System/Applications/Utilities")),
-    ];
-
-    // Remove any `None` values if `home_dir()` fails
-    let app_dirs: Vec<PathBuf> = dir.into_iter().flatten().collect();
-
-    let application_search = local::application::ApplicationSearchSource::new(1000f64, app_dirs);
+    let application_search =
+        local::application::ApplicationSearchSource::new(app_handle.clone(), 1000f64).await;
 
     // Register the application search source
     let registry = app_handle.state::<SearchSourceRegistry>();
@@ -481,4 +472,11 @@ fn open_settings(app: &tauri::AppHandle) {
             )
             .unwrap();
     }
+}
+
+#[tauri::command]
+async fn get_app_search_source<R: Runtime>(app_handle: AppHandle<R>) {
+    init_app_search_source(&app_handle).await;
+    let _ = server::connector::refresh_all_connectors(&app_handle).await;
+    let _ = server::datasource::refresh_all_datasources(&app_handle).await;
 }
