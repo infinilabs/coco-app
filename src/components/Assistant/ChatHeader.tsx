@@ -58,7 +58,7 @@ export function ChatHeader({
   const isPinned = useAppStore((state) => state.isPinned);
   const setIsPinned = useAppStore((state) => state.setIsPinned);
 
-  const { connected, setConnected, setMessages } = useChatStore();
+  const { connected, setMessages } = useChatStore();
 
   const [serverList, setServerList] = useState<IServer[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -106,7 +106,6 @@ export function ChatHeader({
     try {
       console.log("disconnect");
       await invoke("disconnect");
-      setConnected(false);
     } catch (error) {
       console.error("Failed to disconnect:", error);
     }

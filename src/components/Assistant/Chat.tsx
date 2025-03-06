@@ -108,6 +108,7 @@ const ChatAI = memo(
           await invoke("connect_to_server", { id: server.id });
           setConnected(true);
         } catch (error) {
+          setConnected(false);
           console.error("Failed to connect:", error);
         }
       };
