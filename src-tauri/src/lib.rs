@@ -237,18 +237,8 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
 }
 
 async fn init_app_search_source<R: Runtime>(app_handle: &AppHandle<R>) {
-    // Run the slow application directory search in the background
-    let dir = vec![
-        dirs::home_dir().map(|home| home.join("Applications")), // Resolve `~/Applications`
-        Some(PathBuf::from("/Applications")),
-        Some(PathBuf::from("/System/Applications")),
-        Some(PathBuf::from("/System/Applications/Utilities")),
-    ];
-
-    // Remove any `None` values if `home_dir()` fails
-    let app_dirs: Vec<PathBuf> = dir.into_iter().flatten().collect();
-
-    let application_search = local::application::ApplicationSearchSource::new(1000f64, app_dirs);
+    let application_search =
+        local::application::ApplicationSearchSource::new(app_handle.clone(), 1000f64).await;
 
     // Register the application search source
     let registry = app_handle.state::<SearchSourceRegistry>();
