@@ -303,6 +303,7 @@ pub async fn refresh_coco_server_info<R: Runtime>(
     };
 
     if let Some(server) = server {
+        let is_enabled = server.enabled;
         let is_builtin = server.builtin;
         let profile = server.profile;
 
@@ -319,6 +320,7 @@ pub async fn refresh_coco_server_info<R: Runtime>(
                         Ok(mut server) => {
                             server.id = id.clone();
                             server.builtin = is_builtin;
+                            server.builtin = is_enabled;
                             server.available = true;
                             server.profile = profile;
                             trim_endpoint_last_forward_slash(&mut server);
