@@ -320,7 +320,7 @@ pub async fn refresh_coco_server_info<R: Runtime>(
                         Ok(mut server) => {
                             server.id = id.clone();
                             server.builtin = is_builtin;
-                            server.builtin = is_enabled;
+                            server.enabled = is_enabled;
                             server.available = true;
                             server.profile = profile;
                             trim_endpoint_last_forward_slash(&mut server);
