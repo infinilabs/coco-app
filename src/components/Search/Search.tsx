@@ -60,7 +60,7 @@ function Search({ isChatMode, input }: SearchProps) {
     } catch (error) {
       setSuggests([]);
       setIsError(true);
-      console.error("Failed to fetch user data:", error);
+      console.error("query_coco_fusion:", error);
     }
   };
 

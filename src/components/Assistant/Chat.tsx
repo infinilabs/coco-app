@@ -326,13 +326,14 @@ const ChatAI = memo(
             setCurChatEnd(false);
           } catch (error) {
             setErrorShow(true);
-            console.error("Failed to fetch user data:", error);
+            console.error("createNewChat:", error);
           }
         },
         [isSearchActive, isDeepThinkActive]
       );
 
       const init = (value: string) => {
+        if (!IsLogin) return;
         if (!curChatEnd) return;
         if (!activeChat?._id) {
           createNewChat(value);
@@ -372,7 +373,7 @@ const ChatAI = memo(
             setCurChatEnd(false);
           } catch (error) {
             setErrorShow(true);
-            console.error("Failed to fetch user data:", error);
+            console.error("sendMessage:", error);
           }
         },
         [
@@ -406,7 +407,7 @@ const ChatAI = memo(
           response = JSON.parse(response || "");
           console.log("_close", response);
         } catch (error) {
-          console.error("Failed to fetch user data:", error);
+          console.error("chatClose:", error);
         }
       };
 
@@ -421,7 +422,7 @@ const ChatAI = memo(
           response = JSON.parse(response || "");
           console.log("_cancel", response);
         } catch (error) {
-          console.error("Failed to fetch user data:", error);
+          console.error("cancelChat:", error);
         }
       };
 
@@ -478,7 +479,7 @@ const ChatAI = memo(
           setActiveChat(updatedChat);
           callback && callback(updatedChat);
         } catch (error) {
-          console.error("Failed to fetch user data:", error);
+          console.error("chatHistory:", error);
         }
       };
 
@@ -494,7 +495,7 @@ const ChatAI = memo(
           console.log("_open", response);
           chatHistory(response);
         } catch (error) {
-          console.error("Failed to fetch user data:", error);
+          console.error("open_session_chat:", error);
         }
       };
 
@@ -532,7 +533,7 @@ const ChatAI = memo(
         };
       }, [isSidebarOpenChat, handleOutsideClick]);
 
-      const getChatHistory = async () => {
+      const getChatHistory = useCallback(async () => {
         if (!currentService?.id) return;
         try {
           let response: any = await invoke("chat_history", {
@@ -545,13 +546,14 @@ const ChatAI = memo(
           const hits = response?.hits?.hits || [];
           setChats(hits);
         } catch (error) {
-          console.error("Failed to fetch user data:", error);
+          console.error("chat_history:", error);
         }
-      };
+      }, [currentService?.id]);
 
-      useEffect(() => {
-        IsLogin && currentService && !setIsSidebarOpen && getChatHistory();
-      }, [IsLogin, currentService]);
+      const setIsLoginChat = useCallback((value: boolean) => {
+        setIsLogin(value);
+        value && currentService && !setIsSidebarOpen && getChatHistory();
+      }, [currentService]);
 
       return (
         <div
@@ -591,7 +593,7 @@ const ChatAI = memo(
             activeChat={activeChat}
             reconnect={reconnect}
             isChatPage={isChatPage}
-            setIsLogin={setIsLogin}
+            setIsLogin={setIsLoginChat}
           />
           {IsLogin ? (
             <div className="flex flex-col h-full justify-between overflow-hidden">

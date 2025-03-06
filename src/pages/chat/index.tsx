@@ -47,7 +47,7 @@ export default function Chat({}: ChatProps) {
         chatAIRef.current?.init("");
       }
     } catch (error) {
-      console.error("Failed to fetch user data:", error);
+      console.error("chat_history:", error);
     }
   };
 
@@ -85,7 +85,7 @@ export default function Chat({}: ChatProps) {
       };
       setActiveChat(updatedChat);
     } catch (error) {
-      console.error("Failed to fetch user data:", error);
+      console.error("session_chat_history:", error);
     }
   };
 
@@ -99,7 +99,7 @@ export default function Chat({}: ChatProps) {
       response = JSON.parse(response || "");
       console.log("_close", response);
     } catch (error) {
-      console.error("Failed to fetch user data:", error);
+      console.error("close_session_chat:", error);
     }
   };
 
@@ -114,7 +114,7 @@ export default function Chat({}: ChatProps) {
       console.log("_open", response);
       chatHistory(response);
     } catch (error) {
-      console.error("Failed to fetch user data:", error);
+      console.error("open_session_chat:", error);
     }
   };
 

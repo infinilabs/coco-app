@@ -70,7 +70,7 @@ function Search({ isTransitioned, isChatMode, input }: SearchProps) {
       //
       setIsSearchComplete(true);
     } catch (error) {
-      console.error("Failed to fetch user data:", error);
+      console.error("query_coco_fusion:", error);
     }
   };
 
