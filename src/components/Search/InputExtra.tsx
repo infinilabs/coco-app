@@ -37,6 +37,7 @@ interface State {
 }
 
 interface MenuItem {
+  id?: number;
   label?: string;
   groupName?: string;
   groupItems?: MenuItem[];
@@ -118,6 +119,7 @@ const InputExtra = () => {
               const { id, name } = item;
 
               return {
+                id,
                 label: name,
                 clickEvent: async () => {
                   const path = await getMonitorScreenshot(id);
@@ -133,6 +135,7 @@ const InputExtra = () => {
               const { id, name } = item;
 
               return {
+                id,
                 label: name,
                 clickEvent: async () => {
                   const path = await getWindowScreenshot(id);
@@ -199,10 +202,11 @@ const InputExtra = () => {
                           </div>
 
                           {groupItems?.map((groupItem) => {
-                            const { label, clickEvent } = groupItem;
+                            const { id, label, clickEvent } = groupItem;
 
                             return (
                               <div
+                                key={id}
                                 className="px-3 py-2 hover:bg-black/5 hover:dark:bg-white/5 rounded-lg cursor-pointer"
                                 onClick={clickEvent}
                               >

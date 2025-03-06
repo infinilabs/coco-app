@@ -584,26 +584,28 @@ export default function ChatInput({
                                   <span>{isAll ? t(name) : name}</span>
                                 </div>
 
-                                <Checkbox
-                                  checked={
-                                    isAll
-                                      ? sourceDataIds.length ===
-                                        state.dataSourceList.length - 1
-                                      : sourceDataIds?.includes(id)
-                                  }
-                                  onChange={(value) =>
-                                    onSelectDataSource(id, value, isAll)
-                                  }
-                                  className="group size-[14px] rounded-sm border border-black/30 dark:border-white/30 data-[checked]:bg-[#2F54EB] data-[checked]:!border-[#2F54EB] transition"
-                                >
-                                  {isAll && (
-                                    <div className="size-full flex items-center justify-center group-data-[checked]:hidden">
-                                      <div className="size-[6px] bg-[#2F54EB]"></div>
-                                    </div>
-                                  )}
+                                <div className="flex justify-center items-center size-[24px]">
+                                  <Checkbox
+                                    checked={
+                                      isAll
+                                        ? sourceDataIds.length ===
+                                          state.dataSourceList.length - 1
+                                        : sourceDataIds?.includes(id)
+                                    }
+                                    onChange={(value) =>
+                                      onSelectDataSource(id, value, isAll)
+                                    }
+                                    className="group size-[14px] rounded-sm border border-black/30 dark:border-white/30 data-[checked]:bg-[#2F54EB] data-[checked]:!border-[#2F54EB] transition"
+                                  >
+                                    {isAll && (
+                                      <div className="size-full flex items-center justify-center group-data-[checked]:hidden">
+                                        <div className="size-[6px] bg-[#2F54EB]"></div>
+                                      </div>
+                                    )}
 
-                                  <CheckIcon className="hidden size-[12px] text-white group-data-[checked]:block" />
-                                </Checkbox>
+                                    <CheckIcon className="hidden size-[12px] text-white group-data-[checked]:block" />
+                                  </Checkbox>
+                                </div>
                               </li>
                             );
                           })}
