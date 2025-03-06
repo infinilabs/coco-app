@@ -8,6 +8,7 @@ import SelectionIcon from "@/icons/Selection";
 interface PickSourceProps {
   Detail?: any;
   ChunkData?: IChunkData;
+  loading?: boolean;
 }
 
 interface IData {
@@ -16,67 +17,53 @@ interface IData {
   title: string;
 }
 
-export const PickSource = ({ Detail, ChunkData }: PickSourceProps) => {
+export const PickSource = ({
+  Detail,
+  ChunkData,
+  loading,
+}: PickSourceProps) => {
   const { t } = useTranslation();
 
   const [isThinkingExpanded, setIsThinkingExpanded] = useState(false);
-
-  const [loading, setLoading] = useState(true);
-  const [prevContent, setPrevContent] = useState("");
 
   const [Data, setData] = useState<IData[]>([]);
 
   useEffect(() => {
     if (!Detail?.payload) return;
     setData(Detail?.payload);
-    setLoading(false);
   }, [Detail?.payload]);
 
   useEffect(() => {
     if (!ChunkData?.message_chunk) return;
 
-    const timerID = setTimeout(() => {
-      if (ChunkData.message_chunk === prevContent) {
-        try {
-          const cleanContent = ChunkData.message_chunk.replace(/^"|"$/g, "");
-          const allMatches = cleanContent.match(/<JSON>([\s\S]*?)<\/JSON>/g);
+    if (loading) {
+      try {
+        const cleanContent = ChunkData.message_chunk.replace(/^"|"$/g, "");
+        const allMatches = cleanContent.match(/<JSON>([\s\S]*?)<\/JSON>/g);
 
-          if (allMatches) {
-            for (let i = allMatches.length - 1; i >= 0; i--) {
-              try {
-                const jsonString = allMatches[i].replace(
-                  /<JSON>|<\/JSON>/g,
-                  ""
-                );
-                const data = JSON.parse(jsonString.trim());
+        if (allMatches) {
+          for (let i = allMatches.length - 1; i >= 0; i--) {
+            try {
+              const jsonString = allMatches[i].replace(/<JSON>|<\/JSON>/g, "");
+              const data = JSON.parse(jsonString.trim());
 
-                if (
-                  Array.isArray(data) &&
-                  data.every((item) => item.id && item.title && item.explain)
-                ) {
-                  setData(data);
-                  setLoading(false);
-                  break;
-                }
-              } catch (e) {
-                continue;
+              if (
+                Array.isArray(data) &&
+                data.every((item) => item.id && item.title && item.explain)
+              ) {
+                setData(data);
+                break;
               }
+            } catch (e) {
+              continue;
             }
           }
-
-        } catch (e) {
-          console.error("Failed to parse pick source data:", e);
-          setLoading(false);
         }
+      } catch (e) {
+        console.error("Failed to parse pick source data:", e);
       }
-    }, 1000);
-
-    setPrevContent(ChunkData.message_chunk);
-
-    return () => {
-      timerID && clearTimeout(timerID);
-    };
-  }, [ChunkData?.message_chunk, prevContent]);
+    }
+  }, [ChunkData?.message_chunk, loading]);
 
   // Must be after hooks ！！！
   if (!ChunkData && !Detail) return null;

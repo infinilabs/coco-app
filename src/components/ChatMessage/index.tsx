@@ -22,6 +22,7 @@ interface ChatMessageProps {
   think?: IChunkData;
   response?: IChunkData;
   onResend?: (value: string) => void;
+  loadingStep?: Record<string, boolean>;
 }
 
 export const ChatMessage = memo(function ChatMessage({
@@ -34,6 +35,7 @@ export const ChatMessage = memo(function ChatMessage({
   think,
   response,
   onResend,
+  loadingStep,
 }: ChatMessageProps) {
   const { t } = useTranslation();
 
@@ -66,22 +68,27 @@ export const ChatMessage = memo(function ChatMessage({
           Detail={details.find((item) => item.type === "query_intent")}
           ChunkData={query_intent}
           getSuggestion={getSuggestion}
+          loading={loadingStep?.query_intent}
         />
         <FetchSource
           Detail={details.find((item) => item.type === "fetch_source")}
           ChunkData={fetch_source}
+          loading={loadingStep?.fetch_source}
         />
         <PickSource
           Detail={details.find((item) => item.type === "pick_source")}
           ChunkData={pick_source}
+          loading={loadingStep?.pick_source}
         />
         <DeepRead
           Detail={details.find((item) => item.type === "deep_read")}
           ChunkData={deep_read}
+          loading={loadingStep?.deep_read}
         />
         <Think
           Detail={details.find((item) => item.type === "think")}
           ChunkData={think}
+          loading={loadingStep?.think}
         />
         <Markdown
           content={messageContent || response?.message_chunk || ""}

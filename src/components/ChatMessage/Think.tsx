@@ -1,4 +1,4 @@
-import { Brain, ChevronDown, ChevronUp } from "lucide-react";
+import {Loader, Brain, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -7,34 +7,24 @@ import type { IChunkData } from "@/components/Assistant/types";
 interface ThinkProps {
   Detail?: any;
   ChunkData?: IChunkData;
+  loading?: boolean;
 }
 
-export const Think = ({ Detail, ChunkData }: ThinkProps) => {
+export const Think = ({ Detail, ChunkData, loading }: ThinkProps) => {
   const { t } = useTranslation();
   const [isThinkingExpanded, setIsThinkingExpanded] = useState(true);
 
-  const [loading, setLoading] = useState(true);
   const [Data, setData] = useState("");
 
   useEffect(() => {
     if (!Detail?.description) return;
     setData(Detail?.description);
-    setLoading(false);
   }, [Detail?.description]);
 
   useEffect(() => {
     if (!ChunkData?.message_chunk) return;
-    const timerID = setTimeout(() => {
-      if (ChunkData.message_chunk === Data) {
-        setLoading(false);
-        clearTimeout(timerID);
-      }
-    }, 500);
     setData(ChunkData?.message_chunk);
-    return () => {
-      timerID && clearTimeout(timerID);
-    };
-  }, [ChunkData?.message_chunk, Data, loading]);
+  }, [ChunkData?.message_chunk, Data]);
 
   // Must be after hooks ！！！
   if (!ChunkData && !Detail) return null;
@@ -47,7 +37,7 @@ export const Think = ({ Detail, ChunkData }: ThinkProps) => {
       >
         {loading ? (
           <>
-            <Brain className="w-4 h-4 animate-pulse text-[#1990FF]" />
+            <Loader className="w-4 h-4 animate-spin text-[#1990FF]" />
             <span className="text-xs text-[#999999] italic">
               {t(`assistant.message.steps.${ChunkData?.chunk_type}`)}
             </span>

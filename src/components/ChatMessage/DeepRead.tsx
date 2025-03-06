@@ -8,15 +8,17 @@ import ReadingIcon from "@/icons/Reading";
 interface DeepReadeProps {
   Detail?: any;
   ChunkData?: IChunkData;
+  loading?: boolean;
 }
 
-export const DeepRead = ({ Detail, ChunkData }: DeepReadeProps) => {
+export const DeepRead = ({
+  Detail,
+  ChunkData,
+  loading,
+}: DeepReadeProps) => {
   const { t } = useTranslation();
 
   const [isThinkingExpanded, setIsThinkingExpanded] = useState(false);
-
-  const [loading, setLoading] = useState(true);
-  const [prevContent, setPrevContent] = useState("");
 
   const [Data, setData] = useState<string[]>([]);
   const [description, setDescription] = useState("");
@@ -24,22 +26,7 @@ export const DeepRead = ({ Detail, ChunkData }: DeepReadeProps) => {
   useEffect(() => {
     if (!Detail?.description) return;
     setDescription(Detail?.description);
-    setLoading(false);
   }, [Detail?.description]);
-
-  useEffect(() => {
-    if (!ChunkData?.message_chunk) return;
-    const timerID = setTimeout(() => {
-      if (ChunkData.message_chunk === prevContent) {
-        setLoading(false);
-        clearTimeout(timerID);
-      }
-    }, 500);
-    setPrevContent(ChunkData.message_chunk);
-    return () => {
-      timerID && clearTimeout(timerID);
-    };
-  }, [ChunkData?.message_chunk, prevContent, loading]);
 
   useEffect(() => {
     if (!ChunkData?.message_chunk) return;

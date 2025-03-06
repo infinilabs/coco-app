@@ -9,6 +9,7 @@ interface QueryIntentProps {
   Detail?: any;
   ChunkData?: IChunkData;
   getSuggestion?: (suggestion: string[]) => void;
+  loading?: boolean;
 }
 
 interface IQueryData {
@@ -23,13 +24,11 @@ export const QueryIntent = ({
   Detail,
   ChunkData,
   getSuggestion,
+  loading,
 }: QueryIntentProps) => {
   const { t } = useTranslation();
 
   const [isThinkingExpanded, setIsThinkingExpanded] = useState(false);
-
-  const [loading, setLoading] = useState(true);
-  const [prevContent, setPrevContent] = useState("");
 
   const [Data, setData] = useState<IQueryData | null>(null);
 
@@ -39,34 +38,25 @@ export const QueryIntent = ({
     if (Detail?.payload?.suggestion && getSuggestion) {
       getSuggestion(Detail?.payload?.suggestion);
     }
-    setLoading(false);
   }, [Detail?.payload]);
 
   useEffect(() => {
     if (!ChunkData?.message_chunk) return;
-    const timerID = setTimeout(() => {
-      if (ChunkData.message_chunk === prevContent) {
-        const cleanContent = ChunkData.message_chunk.replace(/^"|"$/g, "");
-        const allMatches = cleanContent.match(/<JSON>([\s\S]*?)<\/JSON>/g);
-        if (allMatches) {
-          const lastMatch = allMatches[allMatches.length - 1];
-          const jsonString = lastMatch.replace(/<JSON>|<\/JSON>/g, "");
-          const data = JSON.parse(jsonString);
-          // console.log("QueryIntent", data);
-          if (data?.suggestion && getSuggestion) {
-            getSuggestion(data?.suggestion);
-          }
-          setData(data);
+    if (loading) {
+      const cleanContent = ChunkData.message_chunk.replace(/^"|"$/g, "");
+      const allMatches = cleanContent.match(/<JSON>([\s\S]*?)<\/JSON>/g);
+      if (allMatches) {
+        const lastMatch = allMatches[allMatches.length - 1];
+        const jsonString = lastMatch.replace(/<JSON>|<\/JSON>/g, "");
+        const data = JSON.parse(jsonString);
+        console.log("QueryIntent", data);
+        if (data?.suggestion && getSuggestion) {
+          getSuggestion(data?.suggestion);
         }
-        setLoading(false);
-        clearTimeout(timerID);
+        setData(data);
       }
-    }, 500);
-    setPrevContent(ChunkData.message_chunk);
-    return () => {
-      timerID && clearTimeout(timerID);
-    };
-  }, [ChunkData?.message_chunk, prevContent, loading]);
+    }
+  }, [ChunkData?.message_chunk, loading]);
 
   useEffect(() => {
     if (!ChunkData?.message_chunk) return;
@@ -113,7 +103,7 @@ export const QueryIntent = ({
               {Data?.keyword ? (
                 <div className="flex gap-1">
                   <span className="text-[#999999]">
-                    {t("assistant.message.steps.keywords")}：
+                    - {t("assistant.message.steps.keywords")}：
                   </span>
                   <div className="flex flex-wrap gap-1">
                     {Data?.keyword?.map((keyword, index) => (
@@ -131,7 +121,7 @@ export const QueryIntent = ({
               {Data?.category ? (
                 <div className="flex items-center gap-1">
                   <span className="text-[#999999]">
-                    {t("assistant.message.steps.questionType")}：
+                    - {t("assistant.message.steps.questionType")}：
                   </span>
                   <span className="text-[#333333] dark:text-[#D8D8D8]">
                     {Data?.category}
@@ -141,7 +131,7 @@ export const QueryIntent = ({
               {Data?.intent ? (
                 <div className="flex items-start gap-1">
                   <span className="text-[#999999]">
-                    {t("assistant.message.steps.userIntent")}：
+                    - {t("assistant.message.steps.userIntent")}：
                   </span>
                   <div className="flex-1 text-[#333333] dark:text-[#D8D8D8]">
                     {Data?.intent}
@@ -151,7 +141,7 @@ export const QueryIntent = ({
               {Data?.query ? (
                 <div className="flex items-start gap-1">
                   <span className="text-[#999999]">
-                    {t("assistant.message.steps.relatedQuestions")}：
+                    - {t("assistant.message.steps.relatedQuestions")}：
                   </span>
                   <div className="flex-1 flex flex-col text-[#333333] dark:text-[#D8D8D8]">
                     {Data?.query?.map((question) => (

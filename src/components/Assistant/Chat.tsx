@@ -11,20 +11,20 @@ import {
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
 import { debounce } from "lodash-es";
-import { listen } from "@tauri-apps/api/event";
 
 import { ChatMessage } from "@/components/ChatMessage";
-import type { Chat, IChunkData } from "./types";
+import type { Chat } from "./types";
 import { useChatStore } from "@/stores/chatStore";
 import { useWindows } from "@/hooks/useWindows";
 import { ChatHeader } from "./ChatHeader";
 import { Sidebar } from "@/components/Assistant/Sidebar";
 import { useConnectStore } from "@/stores/connectStore";
 import { useSearchStore } from "@/stores/searchStore";
-import { IServer } from "@/stores/appStore";
 import FileList from "@/components/Search/FileList";
 import { Greetings } from "./Greetings";
 import ConnectPrompt from "./ConnectPrompt";
+import useMessageChunkData from "@/hooks/useMessageChunkData";
+import useWebSocket from "@/hooks/useWebSocket";
 
 interface ChatAIProps {
   isTransitioned: boolean;
@@ -81,13 +81,9 @@ const ChatAI = memo(
 
       const [activeChat, setActiveChat] = useState<Chat>();
       const [timedoutShow, setTimedoutShow] = useState(false);
-      const [errorShow, setErrorShow] = useState(false);
       const [IsLogin, setIsLogin] = useState(true);
 
       const messagesEndRef = useRef<HTMLDivElement>(null);
-
-      const curChatEndRef = useRef(curChatEnd);
-      curChatEndRef.current = curChatEnd;
 
       const curIdRef = useRef("");
 
@@ -100,92 +96,31 @@ const ChatAI = memo(
         activeChatProp && setActiveChat(activeChatProp);
       }, [activeChatProp]);
 
-      const reconnect = async (server?: IServer) => {
-        server = server || currentService;
-        if (!server?.id) return;
-        try {
-          console.log("reconnect", server.id);
-          await invoke("connect_to_server", { id: server.id });
-          setConnected(true);
-        } catch (error) {
-          setConnected(false);
-          console.error("Failed to connect:", error);
-        }
-      };
-
       const messageTimeoutRef = useRef<NodeJS.Timeout>();
 
       const [Question, setQuestion] = useState<string>("");
 
-      const [query_intent, setQuery_intent] = useState<IChunkData>();
-      const deal_query_intent = useCallback((data: IChunkData) => {
-        setQuery_intent((prev: IChunkData | undefined): IChunkData => {
-          if (!prev) return data;
-          return {
-            ...prev,
-            message_chunk: prev.message_chunk + data.message_chunk,
-          };
-        });
-      }, []);
+      const {
+        data: {
+          query_intent,
+          fetch_source,
+          pick_source,
+          deep_read,
+          think,
+          response,
+        },
+        handlers,
+        clearAllChunkData,
+      } = useMessageChunkData();
 
-      const [fetch_source, setFetch_source] = useState<IChunkData>();
-      const deal_fetch_source = useCallback((data: IChunkData) => {
-        setFetch_source(data);
-      }, []);
-
-      const [pick_source, setPick_source] = useState<IChunkData>();
-      const deal_pick_source = useCallback((data: IChunkData) => {
-        setPick_source((prev: IChunkData | undefined): IChunkData => {
-          if (!prev) return data;
-          return {
-            ...prev,
-            message_chunk: prev.message_chunk + data.message_chunk,
-          };
-        });
-      }, []);
-
-      const [deep_read, setDeep_read] = useState<IChunkData>();
-      const deal_deep_read = useCallback((data: IChunkData) => {
-        setDeep_read((prev: IChunkData | undefined): IChunkData => {
-          if (!prev) return data;
-          return {
-            ...prev,
-            message_chunk: prev.message_chunk + "&" + data.message_chunk,
-          };
-        });
-      }, []);
-
-      const [think, setThink] = useState<IChunkData>();
-      const deal_think = useCallback((data: IChunkData) => {
-        setThink((prev: IChunkData | undefined): IChunkData => {
-          if (!prev) return data;
-          return {
-            ...prev,
-            message_chunk: prev.message_chunk + data.message_chunk,
-          };
-        });
-      }, []);
-
-      const [response, setResponse] = useState<IChunkData>();
-      const deal_response = useCallback((data: IChunkData) => {
-        setResponse((prev: IChunkData | undefined): IChunkData => {
-          if (!prev) return data;
-          return {
-            ...prev,
-            message_chunk: prev.message_chunk + data.message_chunk,
-          };
-        });
-      }, []);
-
-      // send、new、history
-      const clearCurrentChat = useCallback(() => {
-        setQuery_intent(undefined);
-        setFetch_source(undefined);
-        setPick_source(undefined);
-        setDeep_read(undefined);
-        setThink(undefined);
-        setResponse(undefined);
-      }, []);
+      const [loadingStep, setLoadingStep] = useState<Record<string, boolean>>({
+        query_intent: false,
+        fetch_source: false,
+        pick_source: false,
+        deep_read: false,
+        think: false,
+        response: false,
+      });
 
       const dealMsg = useCallback(
         (msg: string) => {
@@ -216,19 +151,29 @@ const ChatAI = memo(
 
             if (chunkData.reply_to_message !== curIdRef.current) return;
 
+            setLoadingStep(() => ({
+              query_intent: false,
+              fetch_source: false,
+              pick_source: false,
+              deep_read: false,
+              think: false,
+              response: false,
+              [chunkData.chunk_type]: true
+            }));     
+
             // ['query_intent', 'fetch_source', 'pick_source', 'deep_read', 'think', 'response'];
             if (chunkData.chunk_type === "query_intent") {
-              deal_query_intent(chunkData);
+              handlers.deal_query_intent(chunkData);
             } else if (chunkData.chunk_type === "fetch_source") {
-              deal_fetch_source(chunkData);
+              handlers.deal_fetch_source(chunkData);
             } else if (chunkData.chunk_type === "pick_source") {
-              deal_pick_source(chunkData);
+              handlers.deal_pick_source(chunkData);
             } else if (chunkData.chunk_type === "deep_read") {
-              deal_deep_read(chunkData);
+              handlers.deal_deep_read(chunkData);
             } else if (chunkData.chunk_type === "think") {
-              deal_think(chunkData);
+              handlers.deal_think(chunkData);
             } else if (chunkData.chunk_type === "response") {
-              deal_response(chunkData);
+              handlers.deal_response(chunkData);
             }
           } catch (error) {
             console.error("parse error:", error);
@@ -237,44 +182,12 @@ const ChatAI = memo(
         [curChatEnd]
       );
 
-      useEffect(() => {
-        if (curChatEnd) {
-          simulateAssistantResponse();
-        }
-      }, [curChatEnd]);
-
-      useEffect(() => {
-        let unlisten_error = null;
-
-        if (connected) {
-          setErrorShow(false);
-          unlisten_error = listen("ws-error", (event) => {
-            console.error("WebSocket error:", event.payload);
-            setConnected(false);
-            setErrorShow(true);
-          });
-        }
-
-        return () => {
-          unlisten_error?.then((fn) => fn());
-        };
-      }, [connected]);
-
-      useEffect(() => {
-        let unlisten_message = null;
-        console.log("connected:", connected);
-        if (connected) {
-          setErrorShow(false);
-          unlisten_message = listen("ws-message", (event) => {
-            dealMsg(String(event.payload));
-            // console.log("message:", event.payload);
-          });
-        }
-
-        return () => {
-          unlisten_message?.then((fn) => fn());
-        };
-      }, [dealMsg, connected]);
+      const { errorShow, setErrorShow, reconnect } = useWebSocket({
+        connected,
+        setConnected,
+        currentService,
+        dealMsg,
+      });
 
       const updatedChat = useMemo(() => {
         if (!activeChat?._id) return null;
@@ -382,7 +295,7 @@ const ChatAI = memo(
           setTimedoutShow(false);
           setErrorShow(false);
           chatClose();
-          clearCurrentChat();
+          clearAllChunkData();
           setQuestion(value);
           try {
             // console.log("sourceDataIds", sourceDataIds);
@@ -478,7 +391,7 @@ const ChatAI = memo(
 
           setTimedoutShow(false);
           setErrorShow(false);
-          clearCurrentChat();
+          clearAllChunkData();
         },
         [activeChat, sendMessage]
       );
@@ -571,7 +484,7 @@ const ChatAI = memo(
 
       const onSelectChat = async (chat: any) => {
         chatClose();
-        clearCurrentChat();
+        clearAllChunkData();
         try {
           let response: any = await invoke("open_session_chat", {
             serverId: currentService?.id,
@@ -637,8 +550,8 @@ const ChatAI = memo(
       };
 
       useEffect(() => {
-        currentService && !setIsSidebarOpen && getChatHistory();
-      }, [currentService]);
+        IsLogin && currentService && !setIsSidebarOpen && getChatHistory();
+      }, [IsLogin, currentService]);
 
       return (
         <div
@@ -717,6 +630,7 @@ const ChatAI = memo(
                     deep_read={deep_read}
                     think={think}
                     response={response}
+                    loadingStep={loadingStep}
                   />
                 ) : null}
                 {timedoutShow ? (
