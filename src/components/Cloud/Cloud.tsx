@@ -17,6 +17,7 @@ import {
 import { invoke } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
+import { emit } from "@tauri-apps/api/event";
 
 import { UserProfile } from "./UserProfile";
 import { DataSourcesList } from "./DataSourcesList";
@@ -77,11 +78,17 @@ export default function Cloud() {
             return item;
           });
         }
-        console.log("list_coco_servers", res);
+        //console.log("list_coco_servers", res);
         setServerList(res);
+
         if (resetSelection && res.length > 0) {
-          // console.log("setCurrentService", res[res.length - 1]);
-          setCurrentService(res[res.length - 1]);
+          const currentServiceExists = res.some(
+            (server: any) => server.id === currentService?.id
+          );
+
+          if (!currentServiceExists) {
+            setCurrentService(res[res.length - 1]);
+          }
         }
       })
       .catch((err: any) => {
@@ -257,6 +264,7 @@ export default function Cloud() {
         });
         // update currentService
         setCurrentService(res);
+        emit("login_or_logout", true);
       })
       .catch((err: any) => {
         setError(err);
@@ -278,6 +286,7 @@ export default function Cloud() {
       .then((res: any) => {
         console.log("logout_coco_server", id, JSON.stringify(res));
         refreshClick(id);
+        emit("login_or_logout", false);
       })
       .catch((err: any) => {
         setError(err);

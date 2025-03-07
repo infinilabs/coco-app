@@ -1,24 +1,8 @@
-import {
-  ArrowBigLeft,
-  Search,
-  Send,
-  Globe,
-  Brain,
-  ChevronDownIcon,
-  RefreshCw,
-  CheckIcon,
-  Layers,
-} from "lucide-react";
+import { ArrowBigLeft, Search, Send, Brain } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
-import {
-  Checkbox,
-  Popover,
-  PopoverButton,
-  PopoverPanel,
-} from "@headlessui/react";
 import clsx from "clsx";
 
 import ChatSwitch from "@/components/Common/ChatSwitch";
@@ -28,15 +12,8 @@ import StopIcon from "@/icons/Stop";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
-import { useConnectStore } from "@/stores/connectStore";
-import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import InputExtra from "./InputExtra";
-
-interface DataSource {
-  id: string;
-  name: string;
-  [key: string]: any; 
-}
+import SearchPopover from "./SearchPopover";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -84,45 +61,12 @@ export default function ChatInput({
     (state: { setSourceData: any }) => state.setSourceData
   );
 
-  const currentService = useConnectStore((state) => state.currentService);
-
-  const [dataSourceList, setDataSourceList] = useState<DataSource[]>([]);
-
-  const sourceDataIds = useSearchStore((state) => state.sourceDataIds);
-  const setSourceDataIds = useSearchStore((state) => state.setSourceDataIds);
-
-  const getDataSourceList = useCallback(async () => {
-    try {
-      const res: DataSource[] = await invoke("get_datasources_by_server", {
-        id: currentService?.id,
-      });
-      const data = [
-        {
-          id: "all",
-          name: "search.input.searchPopover.allScope",
-        },
-        ...(res || []),
-      ];
-      setDataSourceList(data);
-      onSelectDataSource("all", true, true);
-    } catch (err) {
-      setDataSourceList([]);
-      console.error("get_datasources_by_server", err);
-    }
-  }, [currentService?.id]);
-
-  useEffect(() => {
-    getDataSourceList();
-  }, [currentService?.id]);
-
-
-  const [isRefreshDataSource, setIsRefreshDataSource] = useState(false);
-
   useEffect(() => {
     return () => {
       changeInput("");
       setSourceData(undefined);
       setIsCommandPressed(false);
+      pressedKeys.clear();
     };
   }, []);
 
@@ -151,24 +95,21 @@ export default function ChatInput({
 
   const pressedKeys = new Set<string>();
 
+  const handleEscapeKey = useCallback(() => {
+    if (inputValue) {
+      changeInput("");
+    } else if (!isPinned) {
+      invoke("hide_coco").then(() => console.log("Hide Coco"));
+    }
+  }, [inputValue, isPinned]);
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       // console.log("handleKeyDown", e.code, e.key);
 
       if (e.key === "Escape") {
-        console.log("Escape:" + inputValue);
-        if (inputValue) {
-          changeInput("");
-          return;
-        } else {
-          console.log("empty value, but Escape key pressed.");
-          if (isPinned) {
-            return;
-          }
-          invoke("hide_coco").then(() => {
-            console.log("Hide Coco");
-          });
-        }
+        handleEscapeKey();
+        return;
       }
 
       pressedKeys.add(e.key);
@@ -267,30 +208,8 @@ export default function ChatInput({
     };
   }, [isChatMode]);
 
-  const SearchClick = () => {
-    setIsSearchActive();
-  };
-
   const DeepThinkClick = () => {
     setIsDeepThinkActive();
-  };
-
-  const onSelectDataSource = (id: string, checked: boolean, isAll: boolean) => {
-    if (isAll) {
-      if (checked) {
-        setSourceDataIds(dataSourceList.slice(1).map((item) => item.id));
-      } else {
-        setSourceDataIds([]);
-      }
-
-      return;
-    }
-
-    if (checked) {
-      setSourceDataIds([...new Set([...sourceDataIds, id])]);
-    } else {
-      setSourceDataIds(sourceDataIds.filter((item) => item !== id));
-    }
   };
 
   return (
@@ -472,189 +391,13 @@ export default function ChatInput({
               )}
             </button>
 
-            <div
-              className={clsx(
-                "flex items-center gap-1 p-1 h-6 rounded-lg transition hover:bg-[#EDEDED] dark:hover:bg-[#202126] cursor-pointer",
-                {
-                  "!bg-[rgba(0,114,255,0.3)]": isSearchActive,
-                }
-              )}
-              onClick={SearchClick}
-            >
-              <Globe
-                className={`size-4 ${
-                  isSearchActive
-                    ? "text-[#0072FF] dark:text-[#0072FF]"
-                    : "text-[#333] dark:text-white"
-                }`}
-              />
-
-              {isSearchActive && (
-                <>
-                  <span
-                    className={
-                      isSearchActive ? "text-[#0072FF]" : "dark:text-white"
-                    }
-                  >
-                    {t("search.input.search")}
-                  </span>
-
-                  {dataSourceList?.length > 0 && (
-                    <Popover>
-                      <PopoverButton className={clsx("flex items-center")}>
-                        <ChevronDownIcon
-                          className={clsx("size-5", [
-                            isSearchActive
-                              ? "text-[#0072FF] dark:text-[#0072FF]"
-                              : "text-[#333] dark:text-white",
-                          ])}
-                        />
-                      </PopoverButton>
-
-                      <PopoverPanel
-                        anchor="top start"
-                        className="min-w-[220px] bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
-                      >
-                        <div
-                          className="text-sm px-[12px] py-[18px]"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                          }}
-                        >
-                          <div className="flex justify-between mb-[18px]">
-                            <span>{t("search.input.searchPopover.title")}</span>
-
-                            <div
-                              onClick={async () => {
-                                setIsRefreshDataSource(true);
-
-                                getDataSourceList();
-
-                                setTimeout(() => {
-                                  setIsRefreshDataSource(false);
-                                }, 1000);
-                              }}
-                              className="size-[24px] flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10"
-                            >
-                              <RefreshCw
-                                className={`size-3 text-[#0287FF] transition-transform duration-1000 ${
-                                  isRefreshDataSource ? "animate-spin" : ""
-                                }`}
-                              />
-                            </div>
-                          </div>
-                          <ul className="flex flex-col gap-[16px]">
-                            {dataSourceList?.map((item, index) => {
-                              const { id, name } = item;
-
-                              const isAll = index === 0;
-
-                              return (
-                                <li
-                                  key={id}
-                                  className="flex justify-between items-center"
-                                >
-                                  <div className="flex items-center gap-[8px]">
-                                    {isAll ? (
-                                      <Layers className="size-[16px] text-[#0287FF]" />
-                                    ) : (
-                                      <TypeIcon
-                                        item={item}
-                                        className="size-[16px]"
-                                      />
-                                    )}
-
-                                    <span>{isAll ? t(name) : name}</span>
-                                  </div>
-
-                                  <div className="flex justify-center items-center size-[24px]">
-                                    <Checkbox
-                                      checked={
-                                        isAll
-                                          ? sourceDataIds.length ===
-                                            dataSourceList.length - 1
-                                          : sourceDataIds?.includes(id)
-                                      }
-                                      onChange={(value) =>
-                                        onSelectDataSource(id, value, isAll)
-                                      }
-                                      className="group size-[14px] rounded-sm border border-black/30 dark:border-white/30 data-[checked]:bg-[#2F54EB] data-[checked]:!border-[#2F54EB] transition"
-                                    >
-                                      {isAll && (
-                                        <div className="size-full flex items-center justify-center group-data-[checked]:hidden">
-                                          <div className="size-[6px] bg-[#2F54EB]"></div>
-                                        </div>
-                                      )}
-
-                                      <CheckIcon className="hidden size-[12px] text-white group-data-[checked]:block" />
-                                    </Checkbox>
-                                  </div>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        </div>
-                      </PopoverPanel>
-                    </Popover>
-                  )}
-                </>
-              )}
-            </div>
-
-            {/*<button*/}
-            {/*    className="inline-flex items-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors relative"*/}
-            {/*    onClick={openChatAI}*/}
-            {/*>*/}
-            {/*    <Library className="w-4 h-4 mr-1 text-[#000] dark:text-[#d8d8d8]"/>*/}
-            {/*    Coco*/}
-            {/*</button>*/}
-            {/*<button*/}
-            {/*    className="inline-flex items-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color relative">*/}
-            {/*    <Plus className="w-4 h-4 mr-1 text-[#000] dark:text-[#d8d8d8]"/>*/}
-            {/*    Upload*/}
-            {/*</button>*/}
-            {/*{showTooltip && isCommandPressed ? (*/}
-            {/*    <div*/}
-            {/*        className={`absolute left-2 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}*/}
-            {/*    >*/}
-            {/*        O*/}
-            {/*    </div>*/}
-            {/*) : null}*/}
-            {/*{showTooltip && isCommandPressed ? (*/}
-            {/*    <div*/}
-            {/*        className={`absolute left-16 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}*/}
-            {/*    >*/}
-            {/*        U*/}
-            {/*    </div>*/}
-            {/*) : null}*/}
+            <SearchPopover
+              isSearchActive={isSearchActive}
+              setIsSearchActive={setIsSearchActive}
+            />
           </div>
         ) : (
-          <div className="w-28 flex gap-2 relative">
-            {/*<button*/}
-            {/*    className="inline-flex items-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors relative"*/}
-            {/*    onClick={openChatAI}*/}
-            {/*>*/}
-            {/*    <AudioLines className="w-4 h-4 text-[#000] dark:text-[#d8d8d8]"/>*/}
-            {/*</button>*/}
-            {/*<button*/}
-            {/*    className="inline-flex items-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-color relative">*/}
-            {/*    <Image className="w-4 h-4 text-[#000] dark:text-[#d8d8d8]"/>*/}
-            {/*</button>*/}
-            {/*{showTooltip && isCommandPressed ? (*/}
-            {/*    <div*/}
-            {/*        className={`absolute left-0 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}*/}
-            {/*    >*/}
-            {/*        N*/}
-            {/*    </div>*/}
-            {/*) : null}*/}
-            {/*{showTooltip && isCommandPressed ? (*/}
-            {/*    <div*/}
-            {/*        className={`absolute left-6 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}*/}
-            {/*    >*/}
-            {/*        G*/}
-            {/*    </div>*/}
-            {/*) : null}*/}
-          </div>
+          <div className="w-28 flex gap-2 relative"></div>
         )}
 
         {isChatPage ? null : (

@@ -30,6 +30,7 @@
     "rehype",
     "reqwest",
     "rgba",
+    "screenshotable",
     "serde",
     "tailwindcss",
     "tauri",

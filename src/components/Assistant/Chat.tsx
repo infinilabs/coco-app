@@ -158,8 +158,8 @@ const ChatAI = memo(
               deep_read: false,
               think: false,
               response: false,
-              [chunkData.chunk_type]: true
-            }));     
+              [chunkData.chunk_type]: true,
+            }));
 
             // ['query_intent', 'fetch_source', 'pick_source', 'deep_read', 'think', 'response'];
             if (chunkData.chunk_type === "query_intent") {
@@ -200,7 +200,7 @@ const ChatAI = memo(
       const simulateAssistantResponse = useCallback(() => {
         if (!updatedChat) return;
 
-        console.log("updatedChat:", updatedChat);
+        // console.log("updatedChat:", updatedChat);
         setActiveChat(updatedChat);
       }, [updatedChat]);
 
@@ -321,7 +321,7 @@ const ChatAI = memo(
             };
 
             changeInput && changeInput("");
-            console.log("updatedChat2", updatedChat);
+            //console.log("updatedChat2", updatedChat);
             setActiveChat(updatedChat);
             setCurChatEnd(false);
           } catch (error) {
@@ -347,7 +347,7 @@ const ChatAI = memo(
           if (!newChat?._id || !content) return;
 
           try {
-            // console.log("sourceDataIds", sourceDataIds);
+            //console.log("sourceDataIds", sourceDataIds);
             let response: any = await invoke("send_message", {
               serverId: currentService?.id,
               sessionId: newChat?._id,
@@ -368,7 +368,7 @@ const ChatAI = memo(
             };
 
             changeInput && changeInput("");
-            console.log("updatedChat2", updatedChat);
+            //console.log("updatedChat2", updatedChat);
             setActiveChat(updatedChat);
             setCurChatEnd(false);
           } catch (error) {
@@ -469,13 +469,12 @@ const ChatAI = memo(
             size: 20,
           });
           response = JSON.parse(response || "");
-          console.log("id_history", response);
           const hits = response?.hits?.hits || [];
           const updatedChat: Chat = {
             ...chat,
             messages: hits,
           };
-          console.log("id_history2", updatedChat);
+          console.log("id_history", response, updatedChat);
           setActiveChat(updatedChat);
           callback && callback(updatedChat);
         } catch (error) {
@@ -550,10 +549,14 @@ const ChatAI = memo(
         }
       }, [currentService?.id]);
 
-      const setIsLoginChat = useCallback((value: boolean) => {
-        setIsLogin(value);
-        value && currentService && !setIsSidebarOpen && getChatHistory();
-      }, [currentService]);
+      const setIsLoginChat = useCallback(
+        (value: boolean) => {
+          setIsLogin(value);
+          value && currentService && !setIsSidebarOpen && getChatHistory();
+          !value && setChats([]);
+        },
+        [currentService]
+      );
 
       return (
         <div
@@ -588,6 +591,7 @@ const ChatAI = memo(
             setIsSidebarOpen={() => {
               setIsSidebarOpenChat(!isSidebarOpenChat);
               setIsSidebarOpen && setIsSidebarOpen(!isSidebarOpenChat);
+              !isSidebarOpenChat && getChatHistory();
             }}
             isSidebarOpen={isSidebarOpenChat}
             activeChat={activeChat}

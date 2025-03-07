@@ -6,7 +6,7 @@ import {
   Check,
   Server,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Menu,
   MenuButton,
@@ -18,7 +18,7 @@ import {
 } from "@headlessui/react";
 import { useTranslation } from "react-i18next";
 import { invoke } from "@tauri-apps/api/core";
-import { emit } from "@tauri-apps/api/event";
+import { emit, listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
 import logoImg from "@/assets/icon.svg";
@@ -66,22 +66,22 @@ export function ChatHeader({
   const currentService = useConnectStore((state) => state.currentService);
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
 
-  const fetchServers = async (resetSelection: boolean) => {
+  const fetchServers = useCallback(async (resetSelection: boolean) => {
     invoke("list_coco_servers")
       .then((res: any) => {
         const enabledServers = (res as IServer[]).filter(
           (server) => server.enabled !== false
         );
-        console.log("list_coco_servers", enabledServers);
+        //console.log("list_coco_servers", enabledServers);
         setServerList(enabledServers);
 
         if (resetSelection && enabledServers.length > 0) {
-          const currentServiceExists = enabledServers.some(
+          const currentServiceExists = enabledServers.find(
             (server) => server.id === currentService?.id
           );
 
           if (currentServiceExists) {
-            switchServer(currentService, true);
+            switchServer(currentServiceExists, true);
           } else {
             switchServer(enabledServers[enabledServers.length - 1]);
           }
@@ -90,14 +90,20 @@ export function ChatHeader({
       .catch((err: any) => {
         console.error(err);
       });
-  };
+  }, [currentService?.id]);
 
   useEffect(() => {
     fetchServers(true);
 
+    const unlisten = listen("login_or_logout", (event) => {
+      console.log("Login or Logout:", currentService, event);
+      fetchServers(true);
+    });
+
     return () => {
       // Cleanup logic if needed
       disconnect();
+      unlisten.then((fn) => fn());
     };
   }, []);
 
@@ -258,26 +264,26 @@ export function ChatHeader({
               <div className="space-y-1">
                 {serverList.length > 0 ? (
                   serverList.map((server) => (
-                    <button
+                    <div
                       key={server.id}
                       onClick={() => switchServer(server)}
-                      className={`w-full flex items-center justify-between p-2 rounded-lg transition-colors whitespace-nowrap ${
+                      className={`w-full flex items-center justify-between gap-1 p-2 rounded-lg transition-colors whitespace-nowrap ${
                         currentService?.id === server.id
                           ? "bg-gray-100 dark:bg-gray-800"
                           : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
                       }`}
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 overflow-hidden min-w-0">
                         <img
                           src={server?.provider?.icon || logoImg}
                           alt={server.name}
                           className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800"
                         />
-                        <div className="text-left">
-                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        <div className="text-left flex-1 min-w-0">
+                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-[200px]">
                             {server.name}
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[200px]">
                             AI Assistant: {server.assistantCount || 1}
                           </div>
                         </div>
@@ -296,7 +302,7 @@ export function ChatHeader({
                           )}
                         </div>
                       </div>
-                    </button>
+                    </div>
                   ))
                 ) : (
                   <div className="flex flex-col items-center justify-center py-6 text-center">
