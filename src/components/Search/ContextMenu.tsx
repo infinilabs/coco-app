@@ -2,6 +2,7 @@ import { useOSKeyPress } from "@/hooks/useOSKeyPress";
 import { useSearchStore } from "@/stores/searchStore";
 import { copyToClipboard, OpenURLWithBrowser } from "@/utils";
 import { isMac } from "@/utils/platform";
+import { invoke } from "@tauri-apps/api/core";
 import {
   useClickAway,
   useCreation,
@@ -121,6 +122,8 @@ const ContextMenu = () => {
     clickEvent?.();
 
     setVisibleContextMenu(false);
+
+    invoke("hide_coco");
   };
 
   return (
