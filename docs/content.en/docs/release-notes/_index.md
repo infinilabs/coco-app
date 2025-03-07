@@ -17,7 +17,7 @@ Information about release notes of Coco Server is provided here.
 
 ### Improvements
 
-## 0.2.0 (2015-03-07)
+## 0.2.0 (2025-03-07)
 
 ### Features
 
@@ -55,7 +55,7 @@ Information about release notes of Coco Server is provided here.
 - etc.
 
 
-## 0.1.0 (2015-02-16)
+## 0.1.0 (2025-02-16)
 
 ### Features
 
