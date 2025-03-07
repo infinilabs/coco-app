@@ -28,7 +28,7 @@ Information about release notes of Coco Server is provided here.
 - Support i18n, add Chinese language support 
 - Support Windows platform
 - etc.
-- 
+
 ### Breaking changes
 
 ### Bug fix
