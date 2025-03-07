@@ -201,5 +201,10 @@
     },
     "enable_server": "启用服务",
     "disable_server": "禁用服务"
+  },
+  "tray": {
+    "showCoco": "显示 Coco",
+    "settings": "偏好设置",
+    "quitCoco": "退出 Coco"
   }
 }

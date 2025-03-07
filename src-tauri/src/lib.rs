@@ -82,7 +82,8 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs_pro::init())
         .plugin(tauri_plugin_macos_permissions::init())
-        .plugin(tauri_plugin_screenshots::init());
+        .plugin(tauri_plugin_screenshots::init())
+        .plugin(tauri_plugin_process::init());
 
     // Conditional compilation for macOS
     #[cfg(target_os = "macos")]
@@ -97,7 +98,9 @@ pub fn run() {
             shortcut::unregister_shortcut,
             shortcut::get_current_shortcut,
             change_autostart,
+            show_coco,
             hide_coco,
+            show_settings,
             server::servers::get_server_token,
             server::servers::add_coco_server,
             server::servers::remove_coco_server,
@@ -143,7 +146,7 @@ pub fn run() {
             });
 
             shortcut::enable_shortcut(&app);
-            enable_tray(app);
+            // enable_tray(app);
             enable_autostart(app);
 
             #[cfg(target_os = "macos")]
@@ -237,6 +240,11 @@ async fn init_app_search_source<R: Runtime>(app_handle: &AppHandle<R>) -> Result
     registry.register_source(application_search).await;
 
     Ok(())
+}
+
+#[tauri::command]
+async fn show_coco(app_handle: AppHandle) {
+    handle_open_coco(&app_handle);
 }
 
 #[tauri::command]
@@ -474,4 +482,9 @@ async fn get_app_search_source<R: Runtime>(app_handle: AppHandle<R>) -> Result<(
     let _ = server::datasource::refresh_all_datasources(&app_handle).await;
 
     Ok(())
+}
+
+#[tauri::command]
+async fn show_settings(app_handle: AppHandle) {
+    open_settings(&app_handle);
 }

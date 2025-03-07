@@ -201,5 +201,10 @@
     },
     "enable_server": "Enable Server",
     "disable_server": "Disable Server"
+  },
+  "tray": {
+    "showCoco": "Show Coco",
+    "settings": "Settings...",
+    "quitCoco": "Quit Coco"
   }
 }

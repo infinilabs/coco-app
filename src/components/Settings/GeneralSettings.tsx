@@ -113,6 +113,14 @@ export default function GeneralSettings() {
 
   const [shortcut, setShortcut] = useState<Shortcut>([]);
 
+  const setShowCocoShortcuts = useAppStore((state) => {
+    return state.setShowCocoShortcuts;
+  });
+
+  useEffect(() => {
+    setShowCocoShortcuts(shortcut);
+  }, [shortcut]);
+
   async function getCurrentShortcut() {
     try {
       const res: any = await invoke("get_current_shortcut");

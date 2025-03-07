@@ -2,24 +2,27 @@ import { useState, useEffect } from "react";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { Settings, Puzzle, Settings2, Info, Server } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { listen } from '@tauri-apps/api/event'; 
+import { listen } from "@tauri-apps/api/event";
 
 import SettingsPanel from "@/components/Settings/SettingsPanel";
 import GeneralSettings from "@/components/Settings/GeneralSettings";
 import AboutView from "@/components/Settings/AboutView";
 import Cloud from "@/components/Cloud/Cloud.tsx";
 import Footer from "@/components/Footer";
+import { useTray } from "@/hooks/useTray";
 
 const tabIndexMap: { [key: string]: number } = {
-  'general': 0,
-  'extensions': 1,
-  'connect': 2,
-  'advanced': 3,
-  'about': 4
+  general: 0,
+  extensions: 1,
+  connect: 2,
+  advanced: 3,
+  about: 4,
 };
 
 function SettingsPage() {
   const { t } = useTranslation();
+
+  useTray();
 
   const tabs = [
     { name: t("settings.tabs.general"), icon: Settings },
@@ -41,7 +44,7 @@ function SettingsPage() {
     });
 
     return () => {
-      unlisten.then(fn => fn());
+      unlisten.then((fn) => fn());
     };
   }, []);
 

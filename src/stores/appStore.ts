@@ -1,10 +1,10 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { listen, emit } from '@tauri-apps/api/event';
+import { listen, emit } from "@tauri-apps/api/event";
 
-import { AppEndpoint } from "@/utils/tauri"
+import { AppEndpoint } from "@/utils/tauri";
 
-const ENDPOINT_CHANGE_EVENT = 'endpoint-changed';
+const ENDPOINT_CHANGE_EVENT = "endpoint-changed";
 
 export interface IServer {
   id: string;
@@ -19,7 +19,7 @@ export interface IServer {
   available?: boolean;
   health?: {
     status: string;
-  },
+  };
   assistantCount?: number;
 }
 
@@ -28,23 +28,26 @@ export type IAppStore = {
   setShowTooltip: (showTooltip: boolean) => void;
 
   error: string;
-  setError: (message: any) => void,
+  setError: (message: any) => void;
 
   ssoRequestID: string;
-  setSSORequestID: (ssoRequestID: string) => void,
+  setSSORequestID: (ssoRequestID: string) => void;
 
   // ssoServerID: string;
   // setSSOServerID: (ssoServerID: string) => void,
 
-  endpoint: AppEndpoint,
-  endpoint_http: string,
-  endpoint_websocket: string,
-  setEndpoint: (endpoint: AppEndpoint) => void,
+  endpoint: AppEndpoint;
+  endpoint_http: string;
+  endpoint_websocket: string;
+  setEndpoint: (endpoint: AppEndpoint) => void;
   language: string;
   setLanguage: (language: string) => void;
-  isPinned: boolean,
-  setIsPinned: (isPinned: boolean) => void,
+  isPinned: boolean;
+  setIsPinned: (isPinned: boolean) => void;
   initializeListeners: () => void;
+
+  showCocoShortcuts: string[];
+  setShowCocoShortcuts: (showCocoShortcuts: string[]) => void;
 };
 
 export const useAppStore = create<IAppStore>()(
@@ -66,7 +69,7 @@ export const useAppStore = create<IAppStore>()(
 
         const withoutProtocol = endpoint.split("//")[1];
 
-        const endpoint_websocket = endpoint?.includes('https')
+        const endpoint_websocket = endpoint?.includes("https")
           ? `wss://${withoutProtocol}/ws`
           : `ws://${withoutProtocol}/ws`;
 
@@ -79,7 +82,7 @@ export const useAppStore = create<IAppStore>()(
         await emit(ENDPOINT_CHANGE_EVENT, {
           endpoint,
           endpoint_http,
-          endpoint_websocket
+          endpoint_websocket,
         });
       },
       language: "en",
@@ -91,6 +94,12 @@ export const useAppStore = create<IAppStore>()(
           const { endpoint, endpoint_http, endpoint_websocket } = event.payload;
           set({ endpoint, endpoint_http, endpoint_websocket });
         });
+      },
+      showCocoShortcuts: [],
+      setShowCocoShortcuts: (showCocoShortcuts: string[]) => {
+        console.log("set showCocoShortcuts", showCocoShortcuts);
+
+        return set({ showCocoShortcuts });
       },
     }),
     {

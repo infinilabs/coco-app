@@ -66,6 +66,7 @@
     "fs-pro:default",
     "macos-permissions:default",
     "screenshots:default",
-    "core:window:allow-set-theme"
+    "core:window:allow-set-theme",
+    "process:default"
   ]
 }

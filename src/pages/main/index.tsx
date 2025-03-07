@@ -10,7 +10,6 @@ import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
 import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
 import { isWin } from "@/utils/platform";
-import { useMount } from "ahooks";
 
 export default function DesktopApp() {
   const initializeListeners = useAppStore((state) => state.initializeListeners);
@@ -20,9 +19,9 @@ export default function DesktopApp() {
 
   const isPinned = useAppStore((state) => state.isPinned);
 
-  useMount(() => {
+  useEffect(() => {
     invoke("get_app_search_source");
-  });
+  }, []);
 
   useEffect(() => {
     initializeListeners();
