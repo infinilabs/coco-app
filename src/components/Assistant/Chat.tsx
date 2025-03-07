@@ -298,7 +298,7 @@ const ChatAI = memo(
           clearAllChunkData();
           setQuestion(value);
           try {
-            // console.log("sourceDataIds", sourceDataIds);
+            console.log("sourceDataIds", sourceDataIds);
             let response: any = await invoke("new_chat", {
               serverId: currentService?.id,
               message: value,
@@ -329,7 +329,7 @@ const ChatAI = memo(
             console.error("createNewChat:", error);
           }
         },
-        [isSearchActive, isDeepThinkActive]
+        [currentService?.id, sourceDataIds, isSearchActive, isDeepThinkActive]
       );
 
       const init = (value: string) => {
@@ -378,6 +378,8 @@ const ChatAI = memo(
         },
         [
           JSON.stringify(activeChat?.messages),
+          currentService?.id,
+          sourceDataIds,
           isSearchActive,
           isDeepThinkActive,
         ]
