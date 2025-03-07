@@ -362,7 +362,7 @@ export default function ChatInput({
       >
         {isChatMode ? (
           <div className="flex gap-2 text-sm text-[#333] dark:text-[#d8d8d8]">
-            <InputExtra />
+            {/* <InputExtra /> */}
 
             <button
               className={clsx(
