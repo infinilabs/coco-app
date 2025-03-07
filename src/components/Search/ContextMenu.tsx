@@ -128,7 +128,16 @@ const ContextMenu = () => {
 
   return (
     <>
-      {visibleContextMenu && <div className="fixed inset-0"></div>}
+      {visibleContextMenu && (
+        <div
+          className="fixed inset-0"
+          onContextMenu={(event) => {
+            event?.preventDefault();
+
+            setVisibleContextMenu(false);
+          }}
+        ></div>
+      )}
 
       <div
         ref={containerRef}
