@@ -12,7 +12,6 @@ import StopIcon from "@/icons/Stop";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
-import InputExtra from "./InputExtra";
 import SearchPopover from "./SearchPopover";
 
 interface ChatInputProps {
