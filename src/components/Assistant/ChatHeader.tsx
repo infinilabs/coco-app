@@ -81,7 +81,7 @@ export function ChatHeader({
           );
 
           if (currentServiceExists) {
-            switchServer(currentServiceExists, true);
+            switchServer(currentServiceExists);
           } else {
             switchServer(enabledServers[enabledServers.length - 1]);
           }
@@ -117,7 +117,7 @@ export function ChatHeader({
     }
   };
 
-  const switchServer = async (server: IServer, isCurrent: boolean = false) => {
+  const switchServer = async (server: IServer) => {
     if (!server) return;
     try {
       // Switch UI first, then switch server connection
@@ -132,10 +132,8 @@ export function ChatHeader({
       }
       setIsLogin(true);
       //
-      if (!(isCurrent && connected)) {
-        await disconnect();
-        reconnect && reconnect(server);
-      }
+      await disconnect();
+      reconnect && reconnect(server);
     } catch (error) {
       console.error("switchServer:", error);
     }
