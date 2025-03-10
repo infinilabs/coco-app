@@ -11,6 +11,7 @@ import { Think } from "./Think";
 import { MessageActions } from "./MessageActions";
 import Markdown from "./Markdown";
 import { SuggestionList } from "./SuggestionList";
+import { UserMessage } from "./UserMessage";
 
 interface ChatMessageProps {
   message: Message;
@@ -55,11 +56,7 @@ export const ChatMessage = memo(function ChatMessage({
 
   const renderContent = () => {
     if (!isAssistant) {
-      return (
-        <div className="px-3 py-2 bg-white dark:bg-[#202126] rounded-xl border border-black/12 dark:border-black/15 font-normal text-sm text-[#333333] dark:text-[#D8D8D8]">
-          {messageContent}
-        </div>
-      );
+      return <UserMessage messageContent={messageContent} />;
     }
 
     return (
