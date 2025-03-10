@@ -1,13 +1,11 @@
 use crate::common::auth::RequestAccessTokenResponse;
-use crate::common::register::SearchSourceRegistry;
 use crate::common::server::ServerAccessToken;
 use crate::server::http_client::HttpClient;
 use crate::server::profile::get_user_profiles;
-use crate::server::search::CocoSearchSource;
-use crate::server::servers::{get_server_by_id, persist_servers, persist_servers_token, save_access_token, save_server};
-use reqwest::{Client, StatusCode};
+use crate::server::servers::{get_server_by_id, persist_servers, persist_servers_token, save_access_token, save_server, try_register_server_to_search_source};
+use reqwest::StatusCode;
 use std::collections::HashMap;
-use tauri::{AppHandle, Manager, Runtime};
+use tauri::{AppHandle, Runtime};
 fn request_access_token_url(request_id: &str) -> String {
     // Remove the endpoint part and keep just the path for the request
     format!("/auth/request_access_token?request_id={}", request_id)
@@ -54,9 +52,8 @@ pub async fn handle_sso_callback<R: Runtime>(
                             save_access_token(server_id.clone(), access_token);
                             persist_servers_token(&app_handle)?;
 
-                            let registry = app_handle.state::<SearchSourceRegistry>();
-                            let source = CocoSearchSource::new(server.clone(), Client::new());
-                            registry.register_source(source).await;
+                            // Register the server to the search source
+                            try_register_server_to_search_source(app_handle.clone(), &server).await;
 
                             // Update the server's profile using the util::http::HttpClient::get method
                             let profile = get_user_profiles(app_handle.clone(), server_id.clone()).await;

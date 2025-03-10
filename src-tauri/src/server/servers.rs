@@ -407,9 +407,8 @@ pub async fn add_coco_server<R: Runtime>(
                         // Save the new server to the cache
                         save_server(&server);
 
-                        let registry = app_handle.state::<SearchSourceRegistry>();
-                        let source = CocoSearchSource::new(server.clone(), Client::new());
-                        registry.register_source(source).await;
+                        // Register the server to the search source
+                        try_register_server_to_search_source(app_handle.clone(), &server).await;
 
                         // Persist the servers to the store
                         persist_servers(&app_handle)
@@ -459,15 +458,25 @@ pub async fn enable_server<R: Runtime>(app_handle: AppHandle<R>, id: String) -> 
         server.enabled = true;
         save_server(&server);
 
-        let registry = app_handle.state::<SearchSourceRegistry>();
-        let source = CocoSearchSource::new(server.clone(), Client::new());
-        registry.register_source(source).await;
+        // Register the server to the search source
+        try_register_server_to_search_source(app_handle.clone(), &server).await;
 
         persist_servers(&app_handle)
             .await
             .expect("failed to save servers");
     }
     Ok(())
+}
+
+pub async fn try_register_server_to_search_source(
+    app_handle: AppHandle<impl Runtime>,
+    server: &Server,
+) {
+    if server.enabled {
+        let registry = app_handle.state::<SearchSourceRegistry>();
+        let source = CocoSearchSource::new(server.clone(), Client::new());
+        registry.register_source(source).await;
+    }
 }
 
 

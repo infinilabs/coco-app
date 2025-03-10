@@ -11,12 +11,9 @@ mod util;
 use crate::common::register::SearchSourceRegistry;
 // use crate::common::traits::SearchSource;
 use crate::common::{MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL};
-use crate::server::search::CocoSearchSource;
 use crate::server::servers::{load_or_insert_default_server, load_servers_token};
 use autostart::{change_autostart, enable_autostart};
 use lazy_static::lazy_static;
-use reqwest::Client;
-use std::path::PathBuf;
 use std::sync::Mutex;
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
@@ -226,8 +223,7 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
     let registry: State<SearchSourceRegistry> = app_handle.state::<SearchSourceRegistry>();
 
     for server in coco_servers {
-        let source = CocoSearchSource::new(server.clone(), Client::new());
-        registry.register_source(source).await;
+        crate::server::servers::try_register_server_to_search_source(app_handle.clone(), &server).await;
     }
 }
 
