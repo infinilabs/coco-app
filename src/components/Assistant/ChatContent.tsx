@@ -1,9 +1,11 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ChatMessage } from "@/components/ChatMessage";
 import { Greetings } from "./Greetings";
 import FileList from "@/components/Search/FileList";
+import { useChatScroll } from "@/hooks/useChatScroll";
+import { useChatStore } from "@/stores/chatStore";
 import type { Chat, IChunkData } from "./types";
 
 interface ChatContentProps {
@@ -20,7 +22,6 @@ interface ChatContentProps {
   errorShow: boolean;
   Question: string;
   handleSendMessage: (content: string, newChat?: Chat) => void;
-  uploadFiles: any[];
 }
 
 export const ChatContent = ({
@@ -37,10 +38,32 @@ export const ChatContent = ({
   errorShow,
   Question,
   handleSendMessage,
-  uploadFiles,
 }: ChatContentProps) => {
   const { t } = useTranslation();
+
+  const uploadFiles = useChatStore((state) => state.uploadFiles);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const { scrollToBottom } = useChatScroll(messagesEndRef);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [
+    activeChat?.messages,
+    query_intent?.message_chunk,
+    fetch_source?.message_chunk,
+    pick_source?.message_chunk,
+    deep_read?.message_chunk,
+    think?.message_chunk,
+    response?.message_chunk,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      scrollToBottom.cancel();
+    };
+  }, [scrollToBottom]);
 
   return (
     <div className="flex flex-col h-full justify-between overflow-hidden">

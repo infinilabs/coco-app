@@ -109,7 +109,7 @@ export function useChatActions(
         console.error("createNewChat:", error);
       }
     },
-    [currentServiceId, sourceDataIds, isSearchActive, isDeepThinkActive, chatClose, clearAllChunkData, setQuestion, setTimedoutShow, setErrorShow, curIdRef, setActiveChat, setCurChatEnd, changeInput]
+    [currentServiceId, sourceDataIds, isSearchActive, isDeepThinkActive, curIdRef]
   );
 
   const sendMessage = useCallback(

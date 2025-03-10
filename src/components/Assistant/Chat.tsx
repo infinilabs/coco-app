@@ -8,20 +8,19 @@ import {
   useState,
 } from "react";
 
-import type { Chat } from "./types";
 import { useChatStore } from "@/stores/chatStore";
-import { useWindows } from "@/hooks/useWindows";
-import { ChatHeader } from "./ChatHeader";
-import { Sidebar } from "@/components/Assistant/Sidebar";
 import { useConnectStore } from "@/stores/connectStore";
 import { useSearchStore } from "@/stores/searchStore";
-import ConnectPrompt from "./ConnectPrompt";
+import { useWindows } from "@/hooks/useWindows";
 import useMessageChunkData from "@/hooks/useMessageChunkData";
 import useWebSocket from "@/hooks/useWebSocket";
 import { useChatActions } from "@/hooks/useChatActions";
-import { useChatScroll } from "@/hooks/useChatScroll";
 import { useMessageHandler } from "@/hooks/useMessageHandler";
+import { ChatSidebar } from "./ChatSidebar";
+import { ChatHeader } from "./ChatHeader";
 import { ChatContent } from "./ChatContent";
+import ConnectPrompt from "./ConnectPrompt";
+import type { Chat } from "./types";
 
 interface ChatAIProps {
   isTransitioned: boolean;
@@ -60,6 +59,12 @@ const ChatAI = memo(
     ) => {
       if (!isTransitioned) return null;
 
+      useImperativeHandle(ref, () => ({
+        init: init,
+        cancelChat: () => cancelChat(activeChat),
+        reconnect: reconnect,
+        clearChat: clearChat,
+      }));
 
       const { curChatEnd, setCurChatEnd, connected, setConnected } =
         useChatStore();
@@ -70,16 +75,11 @@ const ChatAI = memo(
       const [timedoutShow, setTimedoutShow] = useState(false);
       const [isLogin, setIsLogin] = useState(true);
 
-      const messagesEndRef = useRef<HTMLDivElement>(null);
-
       const curIdRef = useRef("");
-
-      const { scrollToBottom } = useChatScroll(messagesEndRef);
 
       const [isSidebarOpenChat, setIsSidebarOpenChat] = useState(isSidebarOpen);
       const [chats, setChats] = useState<Chat[]>([]);
       const sourceDataIds = useSearchStore((state) => state.sourceDataIds);
-      const uploadFiles = useChatStore((state) => state.uploadFiles);
 
       useEffect(() => {
         activeChatProp && setActiveChat(activeChatProp);
@@ -111,22 +111,23 @@ const ChatAI = memo(
 
       const dealMsgRef = useRef<((msg: string) => void) | null>(null);
 
-      const { errorShow, setErrorShow, reconnect, updateDealMsg } = useWebSocket({
-        connected,
-        setConnected,
-        currentService,
-        dealMsgRef,
-      });
+      const { errorShow, setErrorShow, reconnect, updateDealMsg } =
+        useWebSocket({
+          connected,
+          setConnected,
+          currentService,
+          dealMsgRef,
+        });
 
-      const { 
-        chatClose, 
-        cancelChat, 
-        chatHistory, 
-        createNewChat, 
+      const {
+        chatClose,
+        cancelChat,
+        chatHistory,
+        createNewChat,
         handleSendMessage,
         openSessionChat,
         getChatHistory,
-        createChatWindow
+        createChatWindow,
       } = useChatActions(
         currentService?.id,
         setActiveChat,
@@ -158,19 +159,7 @@ const ChatAI = memo(
         }
       }, [dealMsg, updateDealMsg]);
 
-      useEffect(() => {
-        scrollToBottom();
-      }, [
-        activeChat?.messages,
-        query_intent?.message_chunk,
-        fetch_source?.message_chunk,
-        pick_source?.message_chunk,
-        deep_read?.message_chunk,
-        think?.message_chunk,
-        response?.message_chunk,
-      ]);
-
-      const clearChat = () => {
+      const clearChat = useCallback(() => {
         console.log("clearChat");
         setTimedoutShow(false);
         setErrorShow(false);
@@ -178,29 +167,32 @@ const ChatAI = memo(
         setActiveChat(undefined);
         setCurChatEnd(true);
         clearChatPage && clearChatPage();
-      };
+      }, [
+        activeChat,
+        chatClose,
+        clearChatPage,
+        setCurChatEnd,
+        setErrorShow,
+        setTimedoutShow,
+      ]);
 
-      const init = (value: string) => {
-        if (!isLogin) return;
-        if (!curChatEnd) return;
-        if (!activeChat?._id) {
-          createNewChat(value, activeChat);
-        } else {
-          handleSendMessage(value, activeChat);
-        }
-      };
-
-      useImperativeHandle(ref, () => ({
-        init: init,
-        cancelChat: () => cancelChat(activeChat),
-        reconnect: reconnect,
-        clearChat: clearChat,
-      }));
+      const init = useCallback(
+        (value: string) => {
+          if (!isLogin) return;
+          if (!curChatEnd) return;
+          if (!activeChat?._id) {
+            createNewChat(value, activeChat);
+          } else {
+            handleSendMessage(value, activeChat);
+          }
+        },
+        [isLogin, curChatEnd, activeChat, createNewChat, handleSendMessage]
+      );
 
       const { createWin } = useWindows();
-      async function openChatAI() {
+      const openChatAI = useCallback(() => {
         createChatWindow(createWin);
-      }
+      }, [createChatWindow, createWin]);
 
       useEffect(() => {
         return () => {
@@ -210,21 +202,30 @@ const ChatAI = memo(
           chatClose(activeChat);
           setActiveChat(undefined);
           setCurChatEnd(true);
-          scrollToBottom.cancel();
         };
-      }, [activeChat, chatClose, setCurChatEnd, scrollToBottom]);
+      }, [chatClose, setCurChatEnd]);
 
-      const onSelectChat = async (chat: any) => {
-        cancelChat(activeChat);
-        chatClose(activeChat);
-        clearAllChunkData();
-        const response = await openSessionChat(chat);
-        if (response) {
-          chatHistory(response);
-        }
-      };
+      const onSelectChat = useCallback(
+        async (chat: Chat) => {
+          clearAllChunkData();
+          await cancelChat(activeChat);
+          await chatClose(activeChat);
+          const response = await openSessionChat(chat);
+          if (response) {
+            chatHistory(response);
+          }
+        },
+        [
+          clearAllChunkData,
+          cancelChat,
+          activeChat,
+          chatClose,
+          openSessionChat,
+          chatHistory,
+        ]
+      );
 
-      const deleteChat = (chatId: string) => {
+      const deleteChat = useCallback((chatId: string) => {
         setChats((prev) => prev.filter((chat) => chat._id !== chatId));
         if (activeChat?._id === chatId) {
           const remainingChats = chats.filter((chat) => chat._id !== chatId);
@@ -234,7 +235,7 @@ const ChatAI = memo(
             init("");
           }
         }
-      };
+      }, [activeChat, chats, init, setActiveChat]);
 
       const handleOutsideClick = useCallback((e: MouseEvent) => {
         const sidebar = document.querySelector("[data-sidebar]");
@@ -272,41 +273,32 @@ const ChatAI = memo(
         [currentService, setIsSidebarOpen, fetchChatHistory]
       );
 
+      const toggleSidebar = useCallback(() => {
+        setIsSidebarOpenChat(!isSidebarOpenChat);
+        setIsSidebarOpen && setIsSidebarOpen(!isSidebarOpenChat);
+        !isSidebarOpenChat && getChatHistory();
+      }, [isSidebarOpenChat, setIsSidebarOpen, getChatHistory]);
+
       return (
         <div
           data-tauri-drag-region
           className={`h-full flex flex-col rounded-xl overflow-hidden`}
         >
-          {setIsSidebarOpen ? null : (
-            <div
-              data-sidebar
-              className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-all duration-300 ease-in-out 
-              ${
-                isSidebarOpenChat
-                  ? "translate-x-0"
-                  : "-translate-x-[calc(100%)]"
-              }
-              md:relative md:translate-x-0 bg-gray-100 dark:bg-gray-800
-              border-r border-gray-200 dark:border-gray-700 rounded-tl-xl rounded-bl-xl
-              overflow-hidden`}
-            >
-              <Sidebar
-                chats={chats}
-                activeChat={activeChat}
-                onNewChat={clearChat}
-                onSelectChat={onSelectChat}
-                onDeleteChat={deleteChat}
-              />
-            </div>
+          {!setIsSidebarOpen && (
+            <ChatSidebar
+              isSidebarOpen={isSidebarOpenChat}
+              chats={chats}
+              activeChat={activeChat}
+              onNewChat={clearChat}
+              onSelectChat={onSelectChat}
+              onDeleteChat={deleteChat}
+            />
           )}
+
           <ChatHeader
             onCreateNewChat={clearChat}
             onOpenChatAI={openChatAI}
-            setIsSidebarOpen={() => {
-              setIsSidebarOpenChat(!isSidebarOpenChat);
-              setIsSidebarOpen && setIsSidebarOpen(!isSidebarOpenChat);
-              !isSidebarOpenChat && getChatHistory();
-            }}
+            setIsSidebarOpen={toggleSidebar}
             isSidebarOpen={isSidebarOpenChat}
             activeChat={activeChat}
             reconnect={reconnect}
@@ -328,7 +320,6 @@ const ChatAI = memo(
               errorShow={errorShow}
               Question={Question}
               handleSendMessage={handleSendMessage}
-              uploadFiles={uploadFiles}
             />
           ) : (
             <ConnectPrompt />
