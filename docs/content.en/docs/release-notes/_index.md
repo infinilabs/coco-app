@@ -14,6 +14,7 @@ Information about release notes of Coco Server is provided here.
 ### Breaking changes
 
 ### Bug fix
+- Fix the issue that the fusion search include disabled servers
 
 ### Improvements
 
