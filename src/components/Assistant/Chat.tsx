@@ -276,8 +276,8 @@ const ChatAI = memo(
       const toggleSidebar = useCallback(() => {
         setIsSidebarOpenChat(!isSidebarOpenChat);
         setIsSidebarOpen && setIsSidebarOpen(!isSidebarOpenChat);
-        !isSidebarOpenChat && getChatHistory();
-      }, [isSidebarOpenChat, setIsSidebarOpen, getChatHistory]);
+        !isSidebarOpenChat && fetchChatHistory();
+      }, [isSidebarOpenChat, setIsSidebarOpen, fetchChatHistory]);
 
       return (
         <div
@@ -292,6 +292,7 @@ const ChatAI = memo(
               onNewChat={clearChat}
               onSelectChat={onSelectChat}
               onDeleteChat={deleteChat}
+              fetchChatHistory={fetchChatHistory}
             />
           )}
 

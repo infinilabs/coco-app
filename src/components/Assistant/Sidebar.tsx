@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { MessageSquare, Plus } from "lucide-react";
+import { MessageSquare, Plus, RefreshCw } from "lucide-react";
 
 import type { Chat } from "./types";
 
@@ -10,6 +11,7 @@ interface SidebarProps {
   onSelectChat: (chat: Chat) => void;
   onDeleteChat: (chatId: string) => void;
   className?: string;
+  fetchChatHistory: () => void;
 }
 
 export function Sidebar({
@@ -18,18 +20,36 @@ export function Sidebar({
   onNewChat,
   onSelectChat,
   className = "",
+  fetchChatHistory,
 }: SidebarProps) {
   const { t } = useTranslation();
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   return (
     <div className={`h-full flex flex-col ${className}`}>
-      <div className="p-4">
+      <div className="flex justify-between gap-1 p-4">
         <button
           onClick={onNewChat}
-          className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all border border-[#E6E6E6] dark:border-[#272626] text-gray-700 hover:bg-gray-50/80 active:bg-gray-100/80 dark:text-white dark:hover:bg-gray-600/50 dark:active:bg-gray-500/50`}
+          className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all border border-[#E6E6E6] dark:border-[#272626] text-gray-700 hover:bg-gray-50/80 active:bg-gray-100/80 dark:text-white dark:hover:bg-gray-600/50 dark:active:bg-gray-500/50`}
         >
           <Plus className={`h-4 w-4 text-[#0072FF] dark:text-[#0072FF]`} />
           {t("assistant.sidebar.newChat")}
+        </button>
+        <button
+          onClick={async () => {
+            setIsRefreshing(true);
+            fetchChatHistory();
+            setTimeout(() => setIsRefreshing(false), 1000);
+          }}
+          className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
+          disabled={isRefreshing}
+        >
+          <RefreshCw
+            className={`h-4 w-4 text-[#0287FF] transition-transform duration-1000 ${
+              isRefreshing ? "animate-spin" : ""
+            }`}
+          />
         </button>
       </div>
       <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-2 custom-scrollbar">
