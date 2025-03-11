@@ -6,6 +6,8 @@ export type IUpdateStore = {
   setVisible: (visible: boolean) => void;
   skipVersion?: string;
   setSkipVersion: (skipVersion?: string) => void;
+  isOptional: boolean;
+  setIsOptional: (isOptional: boolean) => void;
 };
 
 export const useUpdateStore = create<IUpdateStore>()(
@@ -18,12 +20,17 @@ export const useUpdateStore = create<IUpdateStore>()(
       setSkipVersion: (skipVersion?: string) => {
         return set({ skipVersion });
       },
+      isOptional: false,
+      setIsOptional: (isOptional: boolean) => {
+        return set({ isOptional });
+      },
     }),
     {
       name: "update-store",
       partialize: (state) => ({
         visible: state.visible,
         skipVersion: state.skipVersion,
+        isOptional: state.isOptional,
       }),
     }
   )

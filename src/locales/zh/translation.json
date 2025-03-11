@@ -208,7 +208,9 @@
     "quitCoco": "退出 Coco"
   },
   "update": {
-    "title": "Coco AI 有新的可用更新",
+    "optional_description": "Coco AI 有新的可用更新。",
+    "force_description1": "Coco Al 需要更新。",
+    "force_description2": "请安装最新版本后继续使用。",
     "releaseNotes": "更新日志",
     "button": {
       "download": "下载"

@@ -27,6 +27,9 @@ const UpdateApp = () => {
   const setVisible = useUpdateStore((state) => state.setVisible);
   const skipVersion = useUpdateStore((state) => state.skipVersion);
   const setSkipVersion = useUpdateStore((state) => state.setSkipVersion);
+  const isOptional = useUpdateStore((state) => state.isOptional);
+
+  console.log("isOptional", isOptional);
 
   const state = useReactive<State>({ download: 0 });
 
@@ -109,7 +112,10 @@ const UpdateApp = () => {
             <X
               className={clsx(
                 "absolute size-5 text-[#999] top-3 right-3 dark:text-[#D8D8D8]",
-                cursorClassName
+                cursorClassName,
+                {
+                  hidden: !isOptional,
+                }
               )}
               onClick={handleCancel}
             />
@@ -117,7 +123,14 @@ const UpdateApp = () => {
             <img src={isDark ? darkIcon : lightIcon} className="h-6" />
 
             <div className="text-[#333] text-sm leading-5 py-2 dark:text-[#D8D8D8]">
-              {t("update.title")}
+              {isOptional ? (
+                t("update.optional_description")
+              ) : (
+                <div className="leading-5 text-center">
+                  <p>{t("update.force_description1")}</p>
+                  <p>{t("update.force_description2")}</p>
+                </div>
+              )}
             </div>
 
             <div
@@ -152,7 +165,9 @@ const UpdateApp = () => {
             </Button>
 
             <div
-              className={clsx("text-xs text-[#999]", cursorClassName)}
+              className={clsx("text-xs text-[#999]", cursorClassName, {
+                hidden: !isOptional,
+              })}
               onClick={handleSkip}
             >
               {t("update.skip_version")}

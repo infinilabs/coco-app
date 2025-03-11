@@ -209,6 +209,9 @@
   },
   "update": {
     "title": "New update available for Coco AI.",
+    "optional_description": "New update available for Coco AI.",
+    "force_description1": "Coco AI update required.",
+    "force_description2": "Please install the latest version to continue.",
     "releaseNotes": "Release Notes",
     "button": {
       "download": "Download"
