@@ -81,6 +81,7 @@
     "footer": {
       "logoAlt": "Coco 图标",
       "version": "{{version}}",
+      "updateAvailable": "有可用更新",
       "select": "选择",
       "open": "打开"
     },

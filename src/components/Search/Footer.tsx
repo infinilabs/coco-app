@@ -10,6 +10,8 @@ import { useAppStore } from "@/stores/appStore";
 import { isMac } from "@/utils/platform";
 import PinOffIcon from "@/icons/PinOff";
 import PinIcon from "@/icons/Pin";
+import { useUpdateStore } from "@/stores/updateStore";
+import clsx from "clsx";
 
 interface FooterProps {
   isChat: boolean;
@@ -22,6 +24,8 @@ export default function Footer({}: FooterProps) {
 
   const isPinned = useAppStore((state) => state.isPinned);
   const setIsPinned = useAppStore((state) => state.setIsPinned);
+  const setVisible = useUpdateStore((state) => state.setVisible);
+  const updateInfo = useUpdateStore((state) => state.updateInfo);
 
   function openSetting() {
     emit("open_settings", "");
@@ -55,16 +59,26 @@ export default function Footer({}: FooterProps) {
               alt={t("search.footer.logoAlt")}
             />
           )}
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            {sourceData?.source?.name ||
+          <div className="relative text-xs text-gray-500 dark:text-gray-400">
+            {updateInfo?.available ? (
+              <div className="cursor-pointer" onClick={() => setVisible(true)}>
+                <span>{t("search.footer.updateAvailable")}</span>
+                <span className="absolute top-0 -right-2 size-1.5 bg-[#FF3434] rounded-full"></span>
+              </div>
+            ) : (
+              sourceData?.source?.name ||
               t("search.footer.version", {
                 version: process.env.VERSION || "v1.0.0",
-              })}
-          </span>
+              })
+            )}
+          </div>
 
           <button
             onClick={togglePin}
-            className={`${isPinned ? "text-blue-500" : ""}`}
+            className={clsx({
+              "text-blue-500": isPinned,
+              "pl-2": updateInfo?.available,
+            })}
           >
             {isPinned ? <PinIcon /> : <PinOffIcon />}
           </button>

@@ -1,3 +1,4 @@
+import { Update } from "@tauri-apps/plugin-updater";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -8,29 +9,32 @@ export type IUpdateStore = {
   setSkipVersion: (skipVersion?: string) => void;
   isOptional: boolean;
   setIsOptional: (isOptional: boolean) => void;
+  updateInfo?: Update;
+  setUpdateInfo: (updateInfo?: Update) => void;
 };
 
 export const useUpdateStore = create<IUpdateStore>()(
   persist(
     (set) => ({
-      visible: true,
+      visible: false,
       setVisible: (visible: boolean) => {
         return set({ visible });
       },
       setSkipVersion: (skipVersion?: string) => {
         return set({ skipVersion });
       },
-      isOptional: false,
+      isOptional: true,
       setIsOptional: (isOptional: boolean) => {
         return set({ isOptional });
+      },
+      setUpdateInfo: (updateInfo?: Update) => {
+        return set({ updateInfo });
       },
     }),
     {
       name: "update-store",
       partialize: (state) => ({
-        visible: state.visible,
         skipVersion: state.skipVersion,
-        isOptional: state.isOptional,
       }),
     }
   )

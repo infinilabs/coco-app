@@ -81,6 +81,7 @@
     "footer": {
       "logoAlt": "Coco Logo",
       "version": "{{version}}",
+      "updateAvailable": "Update available",
       "select": "Select",
       "open": "Open"
     },

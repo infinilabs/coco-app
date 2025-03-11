@@ -7,7 +7,7 @@ import { noop } from "lodash-es";
 import { LoaderCircle, X } from "lucide-react";
 import { useUpdateStore } from "@/stores/updateStore";
 import { useInterval, useReactive } from "ahooks";
-import { type Update, check } from "@tauri-apps/plugin-updater";
+import { check } from "@tauri-apps/plugin-updater";
 import { useCallback, useMemo } from "react";
 import { relaunch } from "@tauri-apps/plugin-process";
 import clsx from "clsx";
@@ -15,7 +15,6 @@ import { open } from "@tauri-apps/plugin-shell";
 
 interface State {
   loading?: boolean;
-  update?: Update;
   total?: number;
   download: number;
 }
@@ -28,8 +27,8 @@ const UpdateApp = () => {
   const skipVersion = useUpdateStore((state) => state.skipVersion);
   const setSkipVersion = useUpdateStore((state) => state.setSkipVersion);
   const isOptional = useUpdateStore((state) => state.isOptional);
-
-  console.log("isOptional", isOptional);
+  const updateInfo = useUpdateStore((state) => state.updateInfo);
+  const setUpdateInfo = useUpdateStore((state) => state.setUpdateInfo);
 
   const state = useReactive<State>({ download: 0 });
 
@@ -41,9 +40,9 @@ const UpdateApp = () => {
     const update = await check();
 
     if (update?.available) {
-      if (skipVersion === update.version) return;
+      setUpdateInfo(update);
 
-      state.update = update;
+      if (skipVersion === update.version) return;
 
       setVisible(true);
     }
@@ -66,7 +65,7 @@ const UpdateApp = () => {
 
     state.loading = true;
 
-    await state.update?.downloadAndInstall((progress) => {
+    await updateInfo?.downloadAndInstall((progress) => {
       switch (progress.event) {
         case "Started":
           state.total = progress.data.contentLength;
@@ -91,7 +90,7 @@ const UpdateApp = () => {
   const handleSkip = () => {
     if (state.loading) return;
 
-    setSkipVersion(state.update?.version);
+    setSkipVersion(updateInfo?.version);
 
     setVisible(false);
   };
@@ -141,7 +140,7 @@ const UpdateApp = () => {
                 );
               }}
             >
-              v{state.update?.version} {t("update.releaseNotes")}
+              v{updateInfo?.version} {t("update.releaseNotes")}
             </div>
 
             <Button
