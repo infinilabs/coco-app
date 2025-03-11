@@ -149,6 +149,7 @@ export default function Chat({}: ChatProps) {
               }}
               onSelectChat={onSelectChat}
               onDeleteChat={deleteChat}
+              fetchChatHistory={getChatHistory}
             />
           </div>
         ) : null}
