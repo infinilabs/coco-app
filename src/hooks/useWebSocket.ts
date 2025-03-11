@@ -8,14 +8,14 @@ interface WebSocketProps {
   connected: boolean;
   setConnected: (connected: boolean) => void;
   currentService: IServer | null;
-  dealMsg: (msg: string) => void;
+  dealMsgRef: React.MutableRefObject<((msg: string) => void) | null>;
 }
 
 export default function useWebSocket({
   connected,
   setConnected,
   currentService,
-  dealMsg
+  dealMsgRef,
 }: WebSocketProps) {
   const [errorShow, setErrorShow] = useState(false);
 
@@ -32,7 +32,13 @@ export default function useWebSocket({
     }
   }, [currentService]);
 
+  const updateDealMsg = useCallback((newDealMsg: (msg: string) => void) => {
+    dealMsgRef.current = newDealMsg;
+  }, [dealMsgRef]);
+
   useEffect(() => {
+    if (!currentService?.id) return;
+
     let unlisten_error = null;
     let unlisten_message = null;
 
@@ -52,7 +58,8 @@ export default function useWebSocket({
       });
       
       unlisten_message = listen("ws-message", (event) => {
-        dealMsg(String(event.payload));
+        const msg = event.payload as string;
+        dealMsgRef.current && dealMsgRef.current(msg);
       });
     }
 
@@ -60,7 +67,7 @@ export default function useWebSocket({
       unlisten_error?.then((fn: any) => fn());
       unlisten_message?.then((fn: any) => fn());
     };
-  }, [connected, dealMsg]);
+  }, [connected, dealMsgRef]);
 
-  return { errorShow, setErrorShow, reconnect };
+  return { errorShow, setErrorShow, reconnect, updateDealMsg };
 }

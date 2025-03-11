@@ -9,7 +9,9 @@ import RehypeHighlight from "rehype-highlight";
 import mermaid from "mermaid";
 import { useDebouncedCallback } from "use-debounce";
 
-import { copyToClipboard, useWindowSize } from "@/utils";
+import { copyToClipboard, 
+  // useWindowSize 
+} from "@/utils";
 
 import "./markdown.css";
 import "./highlight.css";
@@ -67,9 +69,9 @@ function PreCode(props: { children?: any }) {
   const ref = useRef<HTMLPreElement>(null);
   // const previewRef = useRef<HTMLPreviewHander>(null);
   const [mermaidCode, setMermaidCode] = useState("");
-  const [htmlCode, setHtmlCode] = useState("");
-  const { height } = useWindowSize();
-  console.log(htmlCode, height);
+  // const [htmlCode, setHtmlCode] = useState("");
+  // const { height } = useWindowSize();
+  // console.log(htmlCode, height);
 
   const renderArtifacts = useDebouncedCallback(() => {
     if (!ref.current) return;
@@ -77,17 +79,17 @@ function PreCode(props: { children?: any }) {
     if (mermaidDom) {
       setMermaidCode((mermaidDom as HTMLElement).innerText);
     }
-    const htmlDom = ref.current.querySelector("code.language-html");
-    const refText = ref.current.querySelector("code")?.innerText;
-    if (htmlDom) {
-      setHtmlCode((htmlDom as HTMLElement).innerText);
-    } else if (refText?.startsWith("<!DOCTYPE")) {
-      setHtmlCode(refText);
-    }
+    // const htmlDom = ref.current.querySelector("code.language-html");
+    // const refText = ref.current.querySelector("code")?.innerText;
+    // if (htmlDom) {
+    //   setHtmlCode((htmlDom as HTMLElement).innerText);
+    // } else if (refText?.startsWith("<!DOCTYPE")) {
+    //   setHtmlCode(refText);
+    // }
   }, 600);
 
-  const enableArtifacts = true;
-  console.log(enableArtifacts);
+  // const enableArtifacts = true;
+  // console.log(enableArtifacts);
 
   //Wrap the paragraph for plain-text
   useEffect(() => {

@@ -44,7 +44,7 @@ export const PickSource = ({
         if (allMatches) {
           for (let i = allMatches.length - 1; i >= 0; i--) {
             try {
-              const jsonString = allMatches[i].replace(/<JSON>|<\/JSON>/g, "");
+              const jsonString = allMatches[i].replace(/<JSON>|<\/JSON>|<think>|<\/think>/g, "");
               const data = JSON.parse(jsonString.trim());
 
               if (
