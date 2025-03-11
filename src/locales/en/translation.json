@@ -206,5 +206,13 @@
     "showCoco": "Show Coco",
     "settings": "Settings...",
     "quitCoco": "Quit Coco"
+  },
+  "update": {
+    "title": "New update available for Coco AI.",
+    "releaseNotes": "Release Notes",
+    "button": {
+      "download": "Download"
+    },
+    "skip_version": "Skip this version"
   }
 }

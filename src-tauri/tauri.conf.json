@@ -112,9 +112,7 @@
     "window": {},
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDlDRjNDRUU0NTdBMzdCRTMKUldUamU2Tlg1TTd6bkUwZWM0d2Zjdk0wdXJmendWVlpMMmhKN25EcmprYmIydnJ3dmFUME9QYXkK",
-      "endpoints": [
-        "https://api.coco.rs/update/{{target}}/{{arch}}/{{current_version}}"
-      ]
+      "endpoints": ["https://release.infinilabs.com/coco/app/.latest.json"]
     },
     "websocket": {},
     "shell": {},

@@ -30,6 +30,11 @@ pub struct AuthProvider {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MinimalClientVersion {
+    number: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Server {
     #[serde(default = "default_empty_string")] // Custom default function for empty string
     pub id: String,
@@ -39,12 +44,13 @@ pub struct Server {
     pub endpoint: String,
     pub provider: Provider,
     pub version: Version,
+    pub minimal_client_version: Option<MinimalClientVersion>,
     pub updated: String,
     #[serde(default = "default_enabled_type")]
     pub enabled: bool,
     #[serde(default = "default_bool_type")]
     pub public: bool,
-    
+
     #[serde(default = "default_available_type")]
     pub available: bool,
 
@@ -69,7 +75,6 @@ impl Hash for Server {
         self.id.hash(state);
     }
 }
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ServerAccessToken {
@@ -104,11 +109,11 @@ impl Hash for ServerAccessToken {
 }
 
 fn default_empty_string() -> String {
-    "".to_string()  // Default to empty string if not provided
+    "".to_string() // Default to empty string if not provided
 }
 
 fn default_bool_type() -> bool {
-    false  // Default to false if not provided
+    false // Default to false if not provided
 }
 
 fn default_enabled_type() -> bool {
