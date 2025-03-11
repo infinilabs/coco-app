@@ -8,9 +8,9 @@ import { useThemeStore } from "@/stores/themeStore";
 
 export default function AboutView() {
   const { t } = useTranslation();
-  const activeTheme = useThemeStore((state) => state.activeTheme);
+  const isDark = useThemeStore((state) => state.isDark);
 
-  const logo = activeTheme === "dark" ? logoDark : logoLight;
+  const logo = isDark ? logoDark : logoLight;
 
   return (
     <div className="flex justify-center items-center flex-col h-[calc(100vh-170px)]">

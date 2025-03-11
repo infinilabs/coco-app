@@ -8,9 +8,9 @@ import { useThemeStore } from "@/stores/themeStore";
 
 const ConnectPrompt = () => {
   const { t } = useTranslation();
-  const activeTheme = useThemeStore((state) => state.activeTheme);
+  const isDark = useThemeStore((state) => state.isDark);
 
-  const logo = activeTheme === "dark" ? LoginDark : LoginLight;
+  const logo = isDark ? LoginDark : LoginLight;
 
   const handleConnect = async () => {
     emit("open_settings", "connect");

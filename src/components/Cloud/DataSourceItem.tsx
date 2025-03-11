@@ -20,7 +20,7 @@ interface DataSourceItemProps {
 export function DataSourceItem({ name, connector }: DataSourceItemProps) {
   // const isConnected = true;
 
-  const activeTheme = useThemeStore((state) => state.activeTheme);
+  const isDark = useThemeStore((state) => state.isDark);
 
   const connector_data = useConnectStore((state) => state.connector_data);
   const endpoint_http = useAppStore((state) => state.endpoint_http);
@@ -42,9 +42,7 @@ export function DataSourceItem({ name, connector }: DataSourceItemProps) {
     const icons = connectorSource?.icon;
 
     if (!icons) {
-      return activeTheme === "dark"
-        ? source_default_dark_img
-        : source_default_img;
+      return isDark ? source_default_dark_img : source_default_img;
     }
 
     if (icons?.startsWith("http://") || icons?.startsWith("https://")) {

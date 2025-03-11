@@ -9,6 +9,8 @@ export type IThemeStore = {
   themes: AppTheme[];
   activeTheme: AppTheme;
   setTheme: (theme: AppTheme) => void;
+  isDark: boolean;
+  setIsDark: (isDark: boolean) => void;
 };
 
 export const useThemeStore = create<IThemeStore>()(
@@ -17,6 +19,8 @@ export const useThemeStore = create<IThemeStore>()(
       themes: ["dark", "light", "auto"],
       activeTheme: "auto",
       setTheme: (activeTheme: AppTheme) => set(() => ({ activeTheme })),
+      isDark: false,
+      setIsDark: (isDark: boolean) => set(() => ({ isDark })),
     }),
     {
       name: "active-theme",

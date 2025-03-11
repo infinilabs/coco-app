@@ -18,6 +18,8 @@ export default function Layout() {
 
   const activeTheme = useThemeStore((state) => state.activeTheme);
   const setTheme = useThemeStore((state) => state.setTheme);
+  const isDark = useThemeStore((state) => state.isDark);
+  const setIsDark = useThemeStore((state) => state.setIsDark);
 
   function updateBodyClass(path: string) {
     const body = document.body;
@@ -34,10 +36,9 @@ export default function Layout() {
     });
 
     appWindow.onThemeChanged(({ payload }) => {
-      console.log("onThemeChanged", payload);
       if (activeTheme !== "auto") return;
 
-      setTheme(payload);
+      setIsDark(payload === "dark");
     });
   });
 
@@ -46,10 +47,18 @@ export default function Layout() {
 
     await appWindow.setTheme(nextTheme);
 
-    const root = window.document.documentElement;
-    root.className = nextTheme ?? "light";
-    root.dataset.theme = nextTheme ?? "light";
+    nextTheme = nextTheme ?? (await appWindow.theme());
+
+    setIsDark(nextTheme === "dark");
   }, [activeTheme]);
+
+  useEffect(() => {
+    const theme = isDark ? "dark" : "light";
+    const root = window.document.documentElement;
+
+    root.className = theme;
+    root.dataset.theme = theme;
+  }, [isDark]);
 
   useEffect(() => {
     updateBodyClass(location.pathname);

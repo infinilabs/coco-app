@@ -47,6 +47,10 @@ const ContextMenu = () => {
         shortcut: "enter",
         clickEvent: () => {
           OpenURLWithBrowser(selectedSearchContent?.url);
+
+          setVisibleContextMenu(false);
+
+          invoke("hide_coco");
         },
       },
       {
@@ -56,6 +60,8 @@ const ContextMenu = () => {
         shortcut: isMac ? "meta.l" : "ctrl.l",
         clickEvent: () => {
           copyToClipboard(selectedSearchContent?.url);
+
+          setVisibleContextMenu(false);
         },
       },
     ];
@@ -108,7 +114,7 @@ const ContextMenu = () => {
 
       const item = menus.find((item) => item.shortcut === key);
 
-      handleClick(item?.clickEvent);
+      item?.clickEvent();
     }
   );
 
@@ -117,14 +123,6 @@ const ContextMenu = () => {
 
     event.stopImmediatePropagation();
   });
-
-  const handleClick = (clickEvent?: () => void) => {
-    clickEvent?.();
-
-    setVisibleContextMenu(false);
-
-    invoke("hide_coco");
-  };
 
   return (
     <>
@@ -165,7 +163,7 @@ const ContextMenu = () => {
                 onMouseEnter={() => {
                   state.activeMenuIndex = index;
                 }}
-                onClick={() => handleClick(clickEvent)}
+                onClick={clickEvent}
               >
                 <div className="flex items-center gap-2 text-black/80 dark:text-white/80">
                   {cloneElement(icon, { className: "size-4" })}
