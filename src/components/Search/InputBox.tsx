@@ -1,4 +1,4 @@
-import { ArrowBigLeft, Search, Send, Brain } from "lucide-react";
+import { ArrowBigLeft, Search, Send, Brain, AudioLines } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke, isTauri } from "@tauri-apps/api/core";
@@ -13,6 +13,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import SearchPopover from "./SearchPopover";
+import SpeechToText from "../SpeechToText";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -281,23 +282,13 @@ export default function ChatInput({
           ) : null}
         </div>
 
-        {/* {isChatMode ? (
-          <button
-            className={`p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-colors ${
-              isListening ? "bg-blue-100 dark:bg-blue-900" : ""
-            }`}
-            type="button"
-            onClick={() => {}}
-          >
-            <Mic
-              className={`w-4 h-4 ${
-                isListening
-                  ? "text-blue-500 animate-pulse"
-                  : "text-[#999] dark:text-[#999]"
-              }`}
-            />
-          </button>
-        ) : null} */}
+        {isChatMode && (
+          <SpeechToText
+            onChange={(transcript) => {
+              changeInput(inputValue + transcript);
+            }}
+          />
+        )}
 
         {isChatMode && curChatEnd ? (
           <button
@@ -396,7 +387,14 @@ export default function ChatInput({
             />
           </div>
         ) : (
-          <div className="w-28 flex gap-2 relative"></div>
+          <div data-tauri-drag-region className="w-28 flex gap-2 relative">
+            <SpeechToText
+              Icon={AudioLines}
+              onChange={(transcript) => {
+                changeInput(inputValue + transcript);
+              }}
+            />
+          </div>
         )}
 
         {isChatPage ? null : (
