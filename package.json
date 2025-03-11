@@ -57,6 +57,7 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.3.1",
+    "@types/dom-speech-recognition": "^0.0.4",
     "@types/lodash-es": "^4.17.12",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^22.13.10",
