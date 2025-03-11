@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 
 import Layout from "./layout";
-import ErrorPage from "@/error-page";
+import ErrorPage from "@/pages/error/index";
 import DesktopApp from "@/pages/main/index";
 import SettingsPage from "@/pages/settings/index";
 import ChatAI from "@/pages/chat/index";

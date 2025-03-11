@@ -217,5 +217,8 @@
       "download": "下载"
     },
     "skip_version": "跳过此版本"
+  },
+  "error": {
+    "message": "抱歉，Coco 应用出现了错误。请联系管理员。"
   }
 }
