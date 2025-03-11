@@ -67,6 +67,7 @@
     "macos-permissions:default",
     "screenshots:default",
     "core:window:allow-set-theme",
-    "process:default"
+    "process:default",
+    "updater:default"
   ]
 }

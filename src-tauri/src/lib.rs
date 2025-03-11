@@ -80,7 +80,8 @@ pub fn run() {
         .plugin(tauri_plugin_fs_pro::init())
         .plugin(tauri_plugin_macos_permissions::init())
         .plugin(tauri_plugin_screenshots::init())
-        .plugin(tauri_plugin_process::init());
+        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_updater::Builder::new().build());
 
     // Conditional compilation for macOS
     #[cfg(target_os = "macos")]
@@ -223,7 +224,8 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
     let registry: State<SearchSourceRegistry> = app_handle.state::<SearchSourceRegistry>();
 
     for server in coco_servers {
-        crate::server::servers::try_register_server_to_search_source(app_handle.clone(), &server).await;
+        crate::server::servers::try_register_server_to_search_source(app_handle.clone(), &server)
+            .await;
     }
 }
 

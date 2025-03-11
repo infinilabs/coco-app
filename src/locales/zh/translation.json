@@ -81,6 +81,7 @@
     "footer": {
       "logoAlt": "Coco 图标",
       "version": "{{version}}",
+      "updateAvailable": "有可用更新",
       "select": "选择",
       "open": "打开"
     },
@@ -206,5 +207,15 @@
     "showCoco": "显示 Coco",
     "settings": "偏好设置",
     "quitCoco": "退出 Coco"
+  },
+  "update": {
+    "optional_description": "Coco AI 有新的可用更新。",
+    "force_description1": "Coco Al 需要更新。",
+    "force_description2": "请安装最新版本后继续使用。",
+    "releaseNotes": "更新日志",
+    "button": {
+      "download": "下载"
+    },
+    "skip_version": "跳过此版本"
   }
 }

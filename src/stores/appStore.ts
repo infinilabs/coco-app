@@ -21,6 +21,9 @@ export interface IServer {
     status: string;
   };
   assistantCount?: number;
+  minimal_client_version?: {
+    number: number;
+  };
 }
 
 export type IAppStore = {

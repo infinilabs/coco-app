@@ -132,6 +132,7 @@ fn get_default_server() -> Server {
         version: Version {
             number: "1.0.0_SNAPSHOT".to_string(),
         },
+        minimal_client_version: None,
         updated: "2025-01-24T12:12:17.326286927+08:00".to_string(),
         public: false,
         available: true,
@@ -259,7 +260,6 @@ pub async fn load_or_insert_default_server<R: Runtime>(
 pub async fn list_coco_servers<R: Runtime>(
     _app_handle: AppHandle<R>,
 ) -> Result<Vec<Server>, String> {
-
     //hard fresh all server's info, in order to get the actual health
     refresh_all_coco_server_info(_app_handle.clone()).await;
 
@@ -282,9 +282,7 @@ pub const COCO_SERVERS: &str = "coco_servers";
 
 const COCO_SERVER_TOKENS: &str = "coco_server_tokens";
 
-pub async fn refresh_all_coco_server_info<R: Runtime>(
-    app_handle: AppHandle<R>,
-) {
+pub async fn refresh_all_coco_server_info<R: Runtime>(app_handle: AppHandle<R>) {
     let servers = get_all_servers();
     for server in servers {
         let _ = refresh_coco_server_info(app_handle.clone(), server.id.clone()).await;
@@ -333,7 +331,6 @@ pub async fn refresh_coco_server_info<R: Runtime>(
                             let _ = fetch_connectors_by_server(&id).await;
 
                             let _ = get_datasources_by_server(&id).await;
-
 
                             Ok(server)
                         }
@@ -478,7 +475,6 @@ pub async fn try_register_server_to_search_source(
         registry.register_source(source).await;
     }
 }
-
 
 pub async fn mark_server_as_offline(id: &str) {
     // println!("server_is_offline: {}", id);

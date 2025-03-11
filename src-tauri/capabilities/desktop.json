@@ -9,6 +9,7 @@
     "autostart:allow-enable",
     "autostart:allow-disable",
     "autostart:allow-is-enabled",
-    "global-shortcut:default"
+    "global-shortcut:default",
+    "updater:default"
   ]
 }

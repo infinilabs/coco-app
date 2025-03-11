@@ -10,6 +10,7 @@ import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
 import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
 import { isLinux, isWin } from "@/utils/platform";
+import UpdateApp from "@/components/UpdateApp";
 
 export default function DesktopApp() {
   const initializeListeners = useAppStore((state) => state.initializeListeners);
@@ -163,6 +164,8 @@ export default function DesktopApp() {
           />
         ) : null}
       </div>
+
+      <UpdateApp />
     </div>
   );
 }
