@@ -1,4 +1,4 @@
-import { ArrowBigLeft, Search, Send, Brain } from "lucide-react";
+import { ArrowBigLeft, Search, Send, Brain, AudioLines } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke, isTauri } from "@tauri-apps/api/core";
@@ -387,7 +387,14 @@ export default function ChatInput({
             />
           </div>
         ) : (
-          <div className="w-28 flex gap-2 relative"></div>
+          <div data-tauri-drag-region className="w-28 flex gap-2 relative">
+            <SpeechToText
+              Icon={AudioLines}
+              onChange={(transcript) => {
+                changeInput(inputValue + transcript);
+              }}
+            />
+          </div>
         )}
 
         {isChatPage ? null : (

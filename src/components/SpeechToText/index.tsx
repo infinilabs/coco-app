@@ -1,9 +1,10 @@
 import { useReactive } from "ahooks";
 import clsx from "clsx";
 import { Mic } from "lucide-react";
-import { FC } from "react";
+import { ComponentType, FC } from "react";
 
 interface SpeechToTextProps {
+  Icon?: ComponentType<any>;
   onChange?: (transcript: string) => void;
 }
 
@@ -15,7 +16,7 @@ interface State {
 let recognition: SpeechRecognition;
 
 const SpeechToText: FC<SpeechToTextProps> = (props) => {
-  const { onChange } = props;
+  const { Icon = Mic, onChange } = props;
 
   const state = useReactive<State>({
     speaking: false,
@@ -57,7 +58,7 @@ const SpeechToText: FC<SpeechToTextProps> = (props) => {
         }
       )}
     >
-      <Mic
+      <Icon
         className={clsx("size-4 text-[#999] dark:text-[#999]", {
           "text-blue-500 animate-pulse": state.speaking,
         })}
