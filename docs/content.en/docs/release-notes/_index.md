@@ -18,6 +18,8 @@ Information about release notes of Coco Server is provided here.
 
 ### Improvements
 
+- Refactor: chat components #273
+
 ## 0.2.0 (2025-03-07)
 
 ### Features
@@ -53,9 +55,7 @@ Information about release notes of Coco Server is provided here.
 - Display the version of the server in the settings page
 - Allow to switch between different data sources in networked search
 - Allow to switch servers in the settings page
-- Refactor: chat components #273
 - etc.
-
 
 ## 0.1.0 (2025-02-16)
 
