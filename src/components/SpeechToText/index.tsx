@@ -1,4 +1,4 @@
-import { useReactive } from "ahooks";
+import { useEventListener, useReactive } from "ahooks";
 import clsx from "clsx";
 import { Mic } from "lucide-react";
 import { ComponentType, FC } from "react";
@@ -48,6 +48,18 @@ const SpeechToText: FC<SpeechToTextProps> = (props) => {
 
     state.speaking = true;
   };
+
+  useEventListener("focusin", (event) => {
+    const { target } = event;
+
+    const isInputElement =
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement;
+
+    if (state.speaking && isInputElement) {
+      target.blur();
+    }
+  });
 
   return (
     <div
