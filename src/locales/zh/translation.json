@@ -46,6 +46,63 @@
       "endpoint": {
         "title": "API 接口",
         "description": "接口和 WebSocket 的域名"
+      },
+      "startup": {
+        "title": "启动设置",
+        "defaultStartupWindow": {
+          "title": "默认启动窗口",
+          "description": "设置 Coco 是以搜索模式还是聊天模式打开。",
+          "select": {
+            "searchMode": "搜索模式",
+            "chatMode": "聊天模式"
+          }
+        },
+        "defaultContentForSearchWindow": {
+          "title": "搜索窗口的默认内容",
+          "description": "设置搜索模式下默认显示的内容。",
+          "select": {
+            "systemDefault": "系统默认"
+          }
+        },
+        "defaultContentForChatWindow": {
+          "title": "聊天窗口的默认内容",
+          "description": "设置聊天模式下默认显示的内容。",
+          "select": {
+            "newChat": "开启新聊天",
+            "oldChat": "继续之前的聊天"
+          }
+        }
+      },
+      "shortcuts": {
+        "title": "键盘快捷键",
+        "showCoco": {
+          "title": "显示 Coco",
+          "description": "打开 Coco 的全局快捷按键。"
+        },
+        "modeSwitch": {
+          "title": "模式切换",
+          "description": "在搜索和聊天模式之间切换的快捷按键。"
+        },
+        "returnToInput": {
+          "title": "返回输入",
+          "description": "在搜索和聊天模式下返回输入区域的快捷按键。"
+        },
+        "voiceInput": {
+          "title": "语音输入",
+          "description": "在搜索和聊天模式下激活语音输入功能的快捷按键。"
+        },
+        "addImage": {
+          "title": "添加图片",
+          "description": "在搜索模式下快速添加图片的快捷按键。"
+        },
+        "selectLlmModel": {
+          "title": "选择 LLM 模型",
+          "description": "在聊天模式下选择所需 LLM 模型的快捷按键。"
+        },
+        "addFile": {
+          "title": "添加文件",
+          "description": "在聊天模式下方便地添加文件的快捷按键。"
+        }
       }
     },
     "tabs": {
