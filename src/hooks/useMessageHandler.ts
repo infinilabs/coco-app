@@ -33,13 +33,6 @@ export function useMessageHandler(
         onCancel();
       }, 60000);
 
-      if (msg.includes("assistant finished output")) {
-        clearTimeout(messageTimeoutRef.current);
-        console.log("AI finished output");
-        setCurChatEnd(true);
-        return;
-      }
-
       const cleanedData = msg.replace(/^PRIVATE /, "");
       try {
         const chunkData = JSON.parse(cleanedData);
@@ -56,7 +49,6 @@ export function useMessageHandler(
           [chunkData.chunk_type]: true,
         }));
 
-
         if (chunkData.chunk_type === "query_intent") {
           handlers.deal_query_intent(chunkData);
         } else if (chunkData.chunk_type === "fetch_source") {
@@ -69,6 +61,13 @@ export function useMessageHandler(
           handlers.deal_think(chunkData);
         } else if (chunkData.chunk_type === "response") {
           handlers.deal_response(chunkData);
+        } else if (chunkData.chunk_type === "reply_end") {
+          if (messageTimeoutRef.current) {
+            clearTimeout(messageTimeoutRef.current);
+          }
+          setCurChatEnd(true);
+          console.log("AI finished output");
+          return;
         }
       } catch (error) {
         console.error("parse error:", error);
