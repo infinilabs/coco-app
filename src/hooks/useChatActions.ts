@@ -115,7 +115,7 @@ export function useChatActions(
   const sendMessage = useCallback(
     async (content: string, newChat: Chat) => {
       if (!newChat?._id || !content) return;
-
+      clearAllChunkData();
       try {
         let response: any = await invoke("send_message", {
           serverId: currentServiceId,
@@ -154,7 +154,6 @@ export function useChatActions(
 
       setTimedoutShow(false);
       setErrorShow(false);
-      clearAllChunkData();
 
       await chatHistory(activeChat, (chat) => sendMessage(content, chat));
     },

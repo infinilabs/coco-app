@@ -17,10 +17,12 @@ Information about release notes of Coco Server is provided here.
 - Fix the issue that the fusion search include disabled servers
 - Fix incorrect version type: should be string instead of u32
 - Fix the chat end judgment type #280
+- Fix the chat scrolling and chat rendering #282
 
 ### Improvements
 
 - Refactor: chat components #273
+- Feat：add endpoint display #282
 
 ## 0.2.0 (2025-03-07)
 

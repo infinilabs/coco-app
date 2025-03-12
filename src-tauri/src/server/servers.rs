@@ -589,6 +589,7 @@ fn test_trim_endpoint_last_forward_slash() {
         version: Version {
             number: "".to_string(),
         },
+        minimal_client_version: None,
         updated: "".to_string(),
         public: false,
         available: false,
