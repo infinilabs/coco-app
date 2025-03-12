@@ -1,25 +1,37 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Command } from "lucide-react";
-import { invoke } from "@tauri-apps/api/core";
-import { useTranslation } from "react-i18next";
 import { debounce } from "lodash-es";
 
 import DropdownList from "./DropdownList";
 import Footer from "./Footer";
-import noDataImg from "@/assets/coconut-tree.png";
 import { SearchResults } from "@/components/Search/SearchResults";
 import { useSearchStore } from "@/stores/searchStore";
-import { isMac } from "@/utils/platform";
 import ContextMenu from "./ContextMenu";
+import { NoResults } from "./NoResults";
 
 interface SearchProps {
   changeInput: (val: string) => void;
   isChatMode: boolean;
   input: string;
+  querySearch: (input: string) => Promise<any>;
+  queryDocuments: (
+    from: number,
+    size: number,
+    queryStrings: any
+  ) => Promise<any>;
+  hideCoco: () => Promise<any>;
+  openSetting: () => void;
+  setWindowAlwaysOnTop: (isPinned: boolean) => Promise<void>;
 }
 
-function Search({ isChatMode, input }: SearchProps) {
-  const { t } = useTranslation();
+function Search({
+  isChatMode,
+  input,
+  querySearch,
+  queryDocuments,
+  hideCoco,
+  openSetting,
+  setWindowAlwaysOnTop,
+}: SearchProps) {
   const sourceData = useSearchStore((state) => state.sourceData);
 
   const [IsError, setIsError] = useState<boolean>(false);
@@ -33,11 +45,7 @@ function Search({ isChatMode, input }: SearchProps) {
   const getSuggest = async () => {
     if (!input) return;
     try {
-      const response: any = await invoke("query_coco_fusion", {
-        from: 0,
-        size: 10,
-        queryStrings: { query: input },
-      });
+      const response = await querySearch(input);
 
       console.log("_suggest", input, response);
       let data = response?.hits || [];
@@ -79,7 +87,11 @@ function Search({ isChatMode, input }: SearchProps) {
       {/* Search Results Panel */}
       {suggests.length > 0 ? (
         sourceData ? (
-          <SearchResults input={input} isChatMode={isChatMode} />
+          <SearchResults
+            input={input}
+            isChatMode={isChatMode}
+            queryDocuments={queryDocuments}
+          />
         ) : (
           <DropdownList
             suggests={suggests}
@@ -91,37 +103,17 @@ function Search({ isChatMode, input }: SearchProps) {
           />
         )
       ) : (
-        <div
-          data-tauri-drag-region
-          className="h-full w-full flex flex-col items-center"
-        >
-          <img src={noDataImg} alt="no-data" className="w-16 h-16 mt-24" />
-          <div className="mt-4 text-sm text-[#999] dark:text-[#666]">
-            {t("search.main.noResults")}
-          </div>
-          <div className="mt-10 text-sm  text-[#333] dark:text-[#D8D8D8] flex">
-            {t("search.main.askCoco")}
-            {isMac ? (
-              <span className="ml-3 w-5 h-5 rounded-[6px] border border-[#D8D8D8] flex justify-center items-center">
-                <Command className="w-3 h-3" />
-              </span>
-            ) : (
-              <span className="ml-3 w-8 h-5 rounded-[6px] border border-[#D8D8D8] flex justify-center items-center">
-                <span className="h-3 leading-3 inline-flex items-center text-xs">
-                  Ctrl
-                </span>
-              </span>
-            )}
-            <span className="ml-1 w-5 h-5 rounded-[6px] border border-[#D8D8D8]  flex justify-center items-center">
-              T
-            </span>
-          </div>
-        </div>
+        <NoResults />
       )}
 
-      <Footer isChat={false} name={selectedItem?.source?.name} />
+      <Footer
+        isChat={false}
+        name={selectedItem?.source?.name}
+        openSetting={openSetting}
+        setWindowAlwaysOnTop={setWindowAlwaysOnTop}
+      />
 
-      <ContextMenu />
+      <ContextMenu hideCoco={hideCoco} />
     </div>
   );
 }

@@ -32,6 +32,7 @@ interface ChatAIProps {
   isSidebarOpen?: boolean;
   clearChatPage?: () => void;
   isChatPage?: boolean;
+  getFileUrl: (path: string) => string;
 }
 
 export interface ChatAIRef {
@@ -54,6 +55,7 @@ const ChatAI = memo(
         isSidebarOpen = false,
         clearChatPage,
         isChatPage = false,
+        getFileUrl,
       },
       ref
     ) => {
@@ -321,6 +323,7 @@ const ChatAI = memo(
               errorShow={errorShow}
               Question={Question}
               handleSendMessage={handleSendMessage}
+              getFileUrl={getFileUrl}
             />
           ) : (
             <ConnectPrompt />

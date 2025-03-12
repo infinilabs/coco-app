@@ -6,9 +6,10 @@ import { DocumentDetail } from "./DocumentDetail";
 interface SearchResultsProps {
   input: string;
   isChatMode: boolean;
+  queryDocuments: (from: number, size: number, queryStrings: any) => Promise<any>;
 }
 
-export function SearchResults({ input, isChatMode }: SearchResultsProps) {
+export function SearchResults({ input, isChatMode, queryDocuments }: SearchResultsProps) {
   const [selectedDocumentId, setSelectedDocumentId] = useState("1");
 
   const [detailData, setDetailData] = useState<any>({});
@@ -30,6 +31,7 @@ export function SearchResults({ input, isChatMode }: SearchResultsProps) {
           isChatMode={isChatMode}
           viewMode={viewMode}
           setViewMode={setViewMode}
+          queryDocuments={queryDocuments}
         />
 
         {/* Right Panel */}

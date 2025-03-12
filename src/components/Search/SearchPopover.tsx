@@ -14,26 +14,22 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
-import { invoke } from "@tauri-apps/api/core";
 
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import { useConnectStore } from "@/stores/connectStore";
 import { useSearchStore } from "@/stores/searchStore";
-
-interface DataSource {
-  id: string;
-  name: string;
-  [key: string]: any;
-}
+import { DataSource } from "@/components/Assistant/types"
 
 interface SearchPopoverProps {
   isSearchActive: boolean;
   setIsSearchActive: () => void;
+  getDataSourcesByServer: (serverId: string) => Promise<DataSource[]>;
 }
 
 export default function SearchPopover({
   isSearchActive,
   setIsSearchActive,
+  getDataSourcesByServer,
 }: SearchPopoverProps) {
   const { t } = useTranslation();
   const [isRefreshDataSource, setIsRefreshDataSource] = useState(false);
@@ -46,9 +42,7 @@ export default function SearchPopover({
 
   const getDataSourceList = useCallback(async () => {
     try {
-      const res: DataSource[] = await invoke("get_datasources_by_server", {
-        id: currentService?.id,
-      });
+      const res: DataSource[] = await getDataSourcesByServer(currentService?.id);
       const data = [
         {
           id: "all",

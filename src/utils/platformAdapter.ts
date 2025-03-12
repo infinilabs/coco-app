@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { isTauri } from "@tauri-apps/api/core";
 
 // Platform adapter interface
@@ -8,22 +8,26 @@ export interface PlatformAdapter {
   hideWindow: () => Promise<void>;
   showWindow: () => Promise<void>;
   isPlatformTauri: () => boolean;
+  convertFileSrc: (path: string) => string;
+  emitEvent: (event: string, payload?: any) => Promise<void>;
+  listenEvent: (event: string, callback: () => void) => Promise<() => void>;
+  setAlwaysOnTop: (isPinned: boolean) => Promise<void>;
+  checkScreenRecordingPermission: () => Promise<boolean>;
+  requestScreenRecordingPermission: () => void;
+  getScreenshotableMonitors: () => Promise<any[]>;
+  getScreenshotableWindows: () => Promise<any[]>;
+  captureMonitorScreenshot: (id: number) => Promise<string>;
+  captureWindowScreenshot: (id: number) => Promise<string>;
+  openFileDialog: (options: { multiple: boolean }) => Promise<string | string[] | null>;
+  getFileMetadata: (path: string) => Promise<any>;
+  getFileIcon: (path: string, size: number) => Promise<string>;
 }
-
-// Check if running in Tauri environment
-export const checkIsTauri = (): boolean => {
-  try {
-    return typeof window !== 'undefined' && isTauri();
-  } catch (e) {
-    return false;
-  }
-};
 
 // Create Tauri adapter functions
 export const createTauriAdapter = (): PlatformAdapter => {
   return {
     async invokeBackend(command: string, args?: any): Promise<any> {
-      if (checkIsTauri()) {
+      if (isTauri()) {
         const { invoke } = await import("@tauri-apps/api/core");
         return invoke(command, args);
       }
@@ -31,7 +35,7 @@ export const createTauriAdapter = (): PlatformAdapter => {
     },
 
     async setWindowSize(width: number, height: number): Promise<void> {
-      if (checkIsTauri()) {
+      if (isTauri()) {
         const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
         const { LogicalSize } = await import("@tauri-apps/api/dpi");
         const window = await getCurrentWebviewWindow();
@@ -42,14 +46,14 @@ export const createTauriAdapter = (): PlatformAdapter => {
     },
 
     async hideWindow(): Promise<void> {
-      if (checkIsTauri()) {
+      if (isTauri()) {
         const { invoke } = await import("@tauri-apps/api/core");
         await invoke("hide_coco");
       }
     },
 
     async showWindow(): Promise<void> {
-      if (checkIsTauri()) {
+      if (isTauri()) {
         const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
         const window = await getCurrentWebviewWindow();
         if (window) {
@@ -59,7 +63,109 @@ export const createTauriAdapter = (): PlatformAdapter => {
     },
 
     isPlatformTauri(): boolean {
-      return checkIsTauri();
+      return isTauri();
+    },
+
+    convertFileSrc(path: string): string {
+      if (isTauri()) {
+        const { convertFileSrc } = require("@tauri-apps/api/core");
+        return convertFileSrc(path);
+      }
+      return path;
+    },
+
+    async emitEvent(event: string, payload?: any) {
+      if (isTauri()) {
+        const { emit } = await import("@tauri-apps/api/event");
+        return emit(event, payload);
+      }
+    },
+
+    async listenEvent(event: string, callback: () => void) {
+      if (isTauri()) {
+        const { listen } = await import("@tauri-apps/api/event");
+        return listen(event, callback);
+      }
+      return () => {};
+    },
+
+    async setAlwaysOnTop(isPinned: boolean) {
+      if (isTauri()) {
+        const { getCurrentWindow } = await import("@tauri-apps/api/window");
+        const window = getCurrentWindow();
+        return window.setAlwaysOnTop(isPinned);
+      }
+    },
+
+    async checkScreenRecordingPermission() {
+      if (isTauri()) {
+        const { checkScreenRecordingPermission } = await import("tauri-plugin-macos-permissions-api");
+        return checkScreenRecordingPermission();
+      }
+      return false;
+    },
+
+    async requestScreenRecordingPermission() {
+      if (isTauri()) {
+        const { requestScreenRecordingPermission } = await import("tauri-plugin-macos-permissions-api"); 
+        return requestScreenRecordingPermission();
+      }
+    },
+
+    async getScreenshotableMonitors() {
+      if (isTauri()) {
+        const { getScreenshotableMonitors } = await import("tauri-plugin-screenshots-api");
+        return getScreenshotableMonitors();
+      }
+      return [];
+    },
+
+    async getScreenshotableWindows() {
+      if (isTauri()) {
+        const { getScreenshotableWindows } = await import("tauri-plugin-screenshots-api");
+        return getScreenshotableWindows();
+      }
+      return [];
+    },
+
+    async captureMonitorScreenshot(id: number) {
+      if (isTauri()) {
+        const { getMonitorScreenshot } = await import("tauri-plugin-screenshots-api");
+        return getMonitorScreenshot(id);
+      }
+      return "";
+    },
+
+    async captureWindowScreenshot(id: number) {
+      if (isTauri()) {
+        const { getWindowScreenshot } = await import("tauri-plugin-screenshots-api");
+        return getWindowScreenshot(id);
+      }
+      return "";
+    },
+
+    async openFileDialog(options: { multiple: boolean }) {
+      if (isTauri()) {
+        const { open } = await import("@tauri-apps/plugin-dialog");
+        return open(options);
+      }
+      return null;
+    },
+
+    async getFileMetadata(path: string) {
+      if (isTauri()) {
+        const { metadata } = await import("tauri-plugin-fs-pro-api");
+        return metadata(path);
+      }
+      return null;
+    },
+
+    async getFileIcon(path: string, size: number) {
+      if (isTauri()) {
+        const { icon } = await import("tauri-plugin-fs-pro-api");
+        return icon(path, size);
+      }
+      return "";
     }
   };
 };
@@ -90,6 +196,68 @@ export const createWebAdapter = (): PlatformAdapter => {
 
     isPlatformTauri(): boolean {
       return false;
+    },
+
+    convertFileSrc(path: string): string {
+      return path;
+    },
+
+    async emitEvent(event: string, payload?: any): Promise<void> {
+      console.log("Web mode simulated event emit", event, payload);
+    },
+
+    async listenEvent(event: string, callback: () => void): Promise<() => void> {
+      console.log("Web mode simulated event listen", event);
+      callback && callback();
+      return () => {};
+    },
+
+    async setAlwaysOnTop(isPinned: boolean): Promise<void> {
+      console.log("Web mode simulated set always on top", isPinned);
+    },
+
+    async checkScreenRecordingPermission(): Promise<boolean> {
+      console.log("Web mode simulated check screen recording permission");
+      return false;
+    },
+
+    requestScreenRecordingPermission(): void {
+      console.log("Web mode simulated request screen recording permission");
+    },
+
+    async getScreenshotableMonitors(): Promise<any[]> {
+      console.log("Web mode simulated get screenshotable monitors");
+      return [];
+    },
+
+    async getScreenshotableWindows(): Promise<any[]> {
+      console.log("Web mode simulated get screenshotable windows");
+      return [];
+    },
+
+    async captureMonitorScreenshot(id: number): Promise<string> {
+      console.log("Web mode simulated capture monitor screenshot", id);
+      return "";
+    },
+
+    async captureWindowScreenshot(id: number): Promise<string> {
+      console.log("Web mode simulated capture window screenshot", id);
+      return "";
+    },
+
+    async openFileDialog(options: { multiple: boolean }): Promise<null> {
+      console.log("Web mode simulated open file dialog", options);
+      return null;
+    },
+
+    async getFileMetadata(path: string): Promise<null> {
+      console.log("Web mode simulated get file metadata", path);
+      return null;
+    },
+
+    async getFileIcon(path: string, size: number): Promise<string> {
+      console.log("Web mode simulated get file icon", path, size);
+      return "";
     }
   };
 };
@@ -97,7 +265,7 @@ export const createWebAdapter = (): PlatformAdapter => {
 // Create platform adapter based on environment
 export const createPlatformAdapter = (): PlatformAdapter => {
   try {
-    if (checkIsTauri()) {
+    if (isTauri()) {
       return createTauriAdapter();
     } else {
       return createWebAdapter();

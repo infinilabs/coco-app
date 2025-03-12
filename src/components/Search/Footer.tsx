@@ -1,7 +1,6 @@
 import { ArrowDown01, Command, CornerDownLeft } from "lucide-react";
-import { emit } from "@tauri-apps/api/event";
 import { useTranslation } from "react-i18next";
-import { getCurrentWindow } from "@tauri-apps/api/window";
+import clsx from "clsx";
 
 import logoImg from "@/assets/icon.svg";
 import { useSearchStore } from "@/stores/searchStore";
@@ -11,14 +10,18 @@ import { isMac } from "@/utils/platform";
 import PinOffIcon from "@/icons/PinOff";
 import PinIcon from "@/icons/Pin";
 import { useUpdateStore } from "@/stores/updateStore";
-import clsx from "clsx";
 
 interface FooterProps {
   isChat: boolean;
+  openSetting: () => void;
+  setWindowAlwaysOnTop: (isPinned: boolean) => Promise<void>;
   name?: string;
 }
 
-export default function Footer({}: FooterProps) {
+export default function Footer({
+  openSetting,
+  setWindowAlwaysOnTop,
+}: FooterProps) {
   const { t } = useTranslation();
   const sourceData = useSearchStore((state) => state.sourceData);
 
@@ -27,14 +30,10 @@ export default function Footer({}: FooterProps) {
   const setVisible = useUpdateStore((state) => state.setVisible);
   const updateInfo = useUpdateStore((state) => state.updateInfo);
 
-  function openSetting() {
-    emit("open_settings", "");
-  }
-
   const togglePin = async () => {
     try {
       const newPinned = !isPinned;
-      await getCurrentWindow().setAlwaysOnTop(newPinned);
+      await setWindowAlwaysOnTop(newPinned);
       setIsPinned(newPinned);
     } catch (err) {
       console.error("Failed to toggle window pin state:", err);

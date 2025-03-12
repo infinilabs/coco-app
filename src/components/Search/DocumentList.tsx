@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useInfiniteScroll } from "ahooks";
-import { isTauri, invoke } from "@tauri-apps/api/core";
-import { open } from "@tauri-apps/plugin-shell";
 import { useTranslation } from "react-i18next";
 import { FixedSizeList } from "react-window";
 
@@ -10,6 +8,7 @@ import { SearchHeader } from "./SearchHeader";
 import noDataImg from "@/assets/coconut-tree.png";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import SearchListItem from "./SearchListItem";
+import { OpenURLWithBrowser } from "@/utils/index";
 
 interface DocumentListProps {
   onSelectDocument: (id: string) => void;
@@ -19,6 +18,11 @@ interface DocumentListProps {
   selectedId?: string;
   viewMode: "detail" | "list";
   setViewMode: (mode: "detail" | "list") => void;
+  queryDocuments: (
+    from: number,
+    size: number,
+    queryStrings: any
+  ) => Promise<any>;
 }
 
 const PAGE_SIZE = 20;
@@ -30,6 +34,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   isChatMode,
   viewMode,
   setViewMode,
+  queryDocuments,
 }) => {
   const { t } = useTranslation();
   const sourceData = useSearchStore((state) => state.sourceData);
@@ -58,11 +63,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       }
 
       try {
-        const response: any = await invoke("query_coco_fusion", {
-          from: from,
-          size: PAGE_SIZE,
-          queryStrings,
-        });
+        const response = await queryDocuments(from, PAGE_SIZE, queryStrings);
         const list = response?.hits || [];
         const total = response?.total_hits || 0;
 
@@ -111,18 +112,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     setIsKeyboardMode(false);
   }, [isChatMode, input]);
 
-  const handleOpenURL = async (url: string) => {
-    if (!url) return;
-    try {
-      if (isTauri()) {
-        await open(url);
-        // console.log("URL opened in default browser");
-      }
-    } catch (error) {
-      console.error("Failed to open URL:", error);
-    }
-  };
-
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!data?.list?.length) return;
@@ -158,7 +147,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       if (e.key === "Enter" && selectedItem !== null) {
         const item = data?.list?.[selectedItem];
         if (item?.url) {
-          handleOpenURL(item?.url);
+          OpenURLWithBrowser(item?.url);
         }
       }
     },
@@ -211,7 +200,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
             onMouseEnter={() => onMouseEnter(index, item)}
             onItemClick={() => {
               if (item?.url) {
-                handleOpenURL(item?.url);
+                OpenURLWithBrowser(item?.url);
               }
             }}
             showListRight={viewMode === "list"}
@@ -219,7 +208,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         </div>
       );
     },
-    [data, selectedItem, viewMode, onMouseEnter, handleOpenURL]
+    [data, selectedItem, viewMode, onMouseEnter]
   );
 
   return (
@@ -238,7 +227,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
       <div className="flex-1 overflow-hidden">
         {data?.list && data.list.length > 0 ? (
-          <div ref={containerRef} style={{ height: '100%' }}>
+          <div ref={containerRef} style={{ height: "100%" }}>
             <FixedSizeList
               ref={listRef}
               height={containerRef.current?.clientHeight || 400}
@@ -250,8 +239,13 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                 if (!scrollUpdateWasRequested && containerRef.current) {
                   const threshold = 100;
                   const { scrollHeight, clientHeight } = containerRef.current;
-                  const remainingScroll = scrollHeight - (scrollOffset + clientHeight);
-                  if (remainingScroll <= threshold && !loading && data?.hasMore) {
+                  const remainingScroll =
+                    scrollHeight - (scrollOffset + clientHeight);
+                  if (
+                    remainingScroll <= threshold &&
+                    !loading &&
+                    data?.hasMore
+                  ) {
                     data?.loadMore && data.loadMore();
                   }
                 }

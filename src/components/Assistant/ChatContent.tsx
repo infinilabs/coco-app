@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { ChatMessage } from "@/components/ChatMessage";
 import { Greetings } from "./Greetings";
-import FileList from "@/components/Search/FileList";
+import FileList from "@/components/Assistant/FileList";
 import { useChatScroll } from "@/hooks/useChatScroll";
 import { useChatStore } from "@/stores/chatStore";
 import type { Chat, IChunkData } from "./types";
@@ -22,6 +22,7 @@ interface ChatContentProps {
   errorShow: boolean;
   Question: string;
   handleSendMessage: (content: string, newChat?: Chat) => void;
+  getFileUrl: (path: string) => string;
 }
 
 export const ChatContent = ({
@@ -38,6 +39,7 @@ export const ChatContent = ({
   errorShow,
   Question,
   handleSendMessage,
+  getFileUrl,
 }: ChatContentProps) => {
   const { t } = useTranslation();
 
@@ -142,7 +144,7 @@ export const ChatContent = ({
 
       {uploadFiles.length > 0 && (
         <div className="max-h-[120px] overflow-auto p-2">
-          <FileList />
+          <FileList getFileUrl={getFileUrl}/>
         </div>
       )}
     </div>
