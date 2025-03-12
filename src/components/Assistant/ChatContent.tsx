@@ -59,6 +59,7 @@ export const ChatContent = ({
     deep_read?.message_chunk,
     think?.message_chunk,
     response?.message_chunk,
+    curChatEnd,
   ]);
 
   useEffect(() => {

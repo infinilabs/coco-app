@@ -209,6 +209,8 @@ const ChatAI = memo(
 
       const onSelectChat = useCallback(
         async (chat: Chat) => {
+          setTimedoutShow(false);
+          setErrorShow(false);
           clearAllChunkData();
           await cancelChat(activeChat);
           await chatClose(activeChat);
@@ -322,7 +324,7 @@ const ChatAI = memo(
               timedoutShow={timedoutShow}
               errorShow={errorShow}
               Question={Question}
-              handleSendMessage={handleSendMessage}
+              handleSendMessage={(value) => handleSendMessage(value, activeChat)}
               getFileUrl={getFileUrl}
             />
           ) : (

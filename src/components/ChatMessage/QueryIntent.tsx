@@ -42,7 +42,7 @@ export const QueryIntent = ({
 
   useEffect(() => {
     if (!ChunkData?.message_chunk) return;
-    if (loading) {
+    if (!loading) {
       const cleanContent = ChunkData.message_chunk.replace(/^"|"$/g, "");
       const allMatches = cleanContent.match(/<JSON>([\s\S]*?)<\/JSON>/g);
       if (allMatches) {
@@ -108,7 +108,7 @@ export const QueryIntent = ({
                   <div className="flex flex-wrap gap-1">
                     {Data?.keyword?.map((keyword, index) => (
                       <span
-                        key={index}
+                        key={keyword + index}
                         className="text-[#333333] dark:text-[#D8D8D8]"
                       >
                         {keyword}
@@ -144,8 +144,8 @@ export const QueryIntent = ({
                     - {t("assistant.message.steps.relatedQuestions")}：
                   </span>
                   <div className="flex-1 flex flex-col text-[#333333] dark:text-[#D8D8D8]">
-                    {Data?.query?.map((question) => (
-                      <span key={question}>- {question}</span>
+                    {Data?.query?.map((question, qIndex) => (
+                      <span key={question + qIndex}>- {question}</span>
                     ))}
                   </div>
                 </div>
