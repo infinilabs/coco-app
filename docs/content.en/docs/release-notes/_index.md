@@ -16,6 +16,7 @@ Information about release notes of Coco Server is provided here.
 ### Bug fix
 - Fix the issue that the fusion search include disabled servers
 - Fix incorrect version type: should be string instead of u32
+- Fix the chat end judgment type #280
 
 ### Improvements
 
