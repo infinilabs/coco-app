@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, subscribeWithSelector } from "zustand/middleware";
 
 type DefaultStartupWindow = "searchMode" | "chatMode";
 type DefaultContentForSearchWindow = "systemDefault";
@@ -19,28 +19,30 @@ export type IStartupStore = {
 };
 
 export const useStartupStore = create<IStartupStore>()(
-  persist(
-    (set) => ({
-      defaultStartupWindow: "searchMode",
-      setDefaultStartupWindow: (defaultStartupWindow) => {
-        return set({ defaultStartupWindow });
-      },
-      defaultContentForSearchWindow: "systemDefault",
-      setDefaultContentForSearchWindow: (defaultContentForSearchWindow) => {
-        return set({ defaultContentForSearchWindow });
-      },
-      defaultContentForChatWindow: "newChat",
-      setDefaultContentForChatWindow: (defaultContentForChatWindow) => {
-        return set({ defaultContentForChatWindow });
-      },
-    }),
-    {
-      name: "startup-store",
-      partialize: (state) => ({
-        defaultStartupWindow: state.defaultStartupWindow,
-        defaultContentForSearchWindow: state.defaultContentForSearchWindow,
-        defaultContentForChatWindow: state.defaultContentForChatWindow,
+  subscribeWithSelector(
+    persist(
+      (set) => ({
+        defaultStartupWindow: "searchMode",
+        setDefaultStartupWindow: (defaultStartupWindow) => {
+          return set({ defaultStartupWindow });
+        },
+        defaultContentForSearchWindow: "systemDefault",
+        setDefaultContentForSearchWindow: (defaultContentForSearchWindow) => {
+          return set({ defaultContentForSearchWindow });
+        },
+        defaultContentForChatWindow: "newChat",
+        setDefaultContentForChatWindow: (defaultContentForChatWindow) => {
+          return set({ defaultContentForChatWindow });
+        },
       }),
-    }
+      {
+        name: "startup-store",
+        partialize: (state) => ({
+          defaultStartupWindow: state.defaultStartupWindow,
+          defaultContentForSearchWindow: state.defaultContentForSearchWindow,
+          defaultContentForChatWindow: state.defaultContentForChatWindow,
+        }),
+      }
+    )
   )
 );

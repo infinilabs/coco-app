@@ -266,6 +266,8 @@ fn hide_coco(app: tauri::AppHandle) {
 
 fn handle_open_coco(app: &AppHandle) {
     if let Some(window) = app.get_window(MAIN_WINDOW_LABEL) {
+        let _ = app.emit("show-coco", ());
+
         move_window_to_active_monitor(&window);
 
         window.show().unwrap();

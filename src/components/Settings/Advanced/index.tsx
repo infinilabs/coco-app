@@ -3,6 +3,8 @@ import Shortcuts from "./components/Shortcuts";
 import SettingsItem from "../SettingsItem";
 import { Command } from "lucide-react";
 import { useStartupStore } from "@/stores/startupStore";
+import { useEffect } from "react";
+import { emit } from "@tauri-apps/api/event";
 
 const Advanced = () => {
   const { t } = useTranslation();
@@ -24,6 +26,12 @@ const Advanced = () => {
   const setDefaultContentForChatWindow = useStartupStore((state) => {
     return state.setDefaultContentForChatWindow;
   });
+
+  useEffect(() => {
+    useStartupStore.subscribe((state) => {
+      emit("change-startup-store", state);
+    });
+  }, []);
 
   const startupList = [
     {
@@ -105,7 +113,11 @@ const Advanced = () => {
                 {items.map((item) => {
                   const { label, value } = item;
 
-                  return <option value={value}>{t(label)}</option>;
+                  return (
+                    <option key={value} value={value}>
+                      {t(label)}
+                    </option>
+                  );
                 })}
               </select>
             </SettingsItem>
