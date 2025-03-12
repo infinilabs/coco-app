@@ -31,7 +31,7 @@ pub struct AuthProvider {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MinimalClientVersion {
-    number: u32,
+    number: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
