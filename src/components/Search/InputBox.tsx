@@ -232,7 +232,7 @@ export default function ChatInput({
     <div
       className={`w-full relative ${
         isChatPage
-          ? "bg-inputbox_bg_light dark:bg-inputbox_bg_dark bg-cover rounded-xl border border-[#E6E6E6] dark:border-[#272626]"
+          ? "rounded-xl border border-[#E6E6E6] dark:border-[#272626]"
           : ""
       }`}
     >
