@@ -28,9 +28,11 @@ const Advanced = () => {
   });
 
   useEffect(() => {
-    useStartupStore.subscribe((state) => {
+    const unlisten = useStartupStore.subscribe((state) => {
       emit("change-startup-store", state);
     });
+
+    return unlisten;
   }, []);
 
   const startupList = [

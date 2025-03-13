@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { formatKey } from "@/utils/keyboardUtils";
 import SettingsItem from "@/components/Settings/SettingsItem";
 import { Command } from "lucide-react";
-import { ChangeEvent } from "react";
+import { ChangeEvent, useEffect } from "react";
+import { emit } from "@tauri-apps/api/event";
 
 const Shortcuts = () => {
   const { t } = useTranslation();
@@ -21,6 +22,14 @@ const Shortcuts = () => {
   });
   const addFile = useShortcutsStore((state) => state.addFile);
   const setAddFile = useShortcutsStore((state) => state.setAddFile);
+
+  useEffect(() => {
+    const unlisten = useShortcutsStore.subscribe((state) => {
+      emit("change-shortcuts-store", state);
+    });
+
+    return unlisten;
+  }, []);
 
   const list = [
     {
@@ -94,7 +103,8 @@ const Shortcuts = () => {
               description={t(description)}
             >
               <div className="flex items-center gap-2">
-                {formatKey("Command")} +
+                <span>{formatKey("Command")}</span>
+                <span> + </span>
                 <input
                   value={value}
                   maxLength={1}

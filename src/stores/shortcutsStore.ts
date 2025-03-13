@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, subscribeWithSelector } from "zustand/middleware";
 
 export type IShortcutsStore = {
   modeSwitch: string;
@@ -17,31 +17,33 @@ export type IShortcutsStore = {
 };
 
 export const useShortcutsStore = create<IShortcutsStore>()(
-  persist(
-    (set) => ({
-      modeSwitch: "T",
-      setModeSwitch: (modeSwitch: string) => set({ modeSwitch }),
-      returnToInput: "I",
-      setReturnToInput: (returnToInput: string) => set({ returnToInput }),
-      voiceInput: "N",
-      setVoiceInput: (voiceInput: string) => set({ voiceInput }),
-      addImage: "G",
-      setAddImage: (addImage: string) => set({ addImage }),
-      selectLlmModel: "O",
-      setSelectLlmModel: (selectLlmModel: string) => set({ selectLlmModel }),
-      addFile: "U",
-      setAddFile: (addFile: string) => set({ addFile }),
-    }),
-    {
-      name: "shortcuts-store",
-      partialize: (state) => ({
-        modeSwitch: state.modeSwitch,
-        returnToInput: state.returnToInput,
-        voiceInput: state.voiceInput,
-        addImage: state.addImage,
-        selectLlmModel: state.selectLlmModel,
-        addFile: state.addFile,
+  subscribeWithSelector(
+    persist(
+      (set) => ({
+        modeSwitch: "T",
+        setModeSwitch: (modeSwitch: string) => set({ modeSwitch }),
+        returnToInput: "I",
+        setReturnToInput: (returnToInput: string) => set({ returnToInput }),
+        voiceInput: "N",
+        setVoiceInput: (voiceInput: string) => set({ voiceInput }),
+        addImage: "G",
+        setAddImage: (addImage: string) => set({ addImage }),
+        selectLlmModel: "O",
+        setSelectLlmModel: (selectLlmModel: string) => set({ selectLlmModel }),
+        addFile: "U",
+        setAddFile: (addFile: string) => set({ addFile }),
       }),
-    }
+      {
+        name: "shortcuts-store",
+        partialize: (state) => ({
+          modeSwitch: state.modeSwitch,
+          returnToInput: state.returnToInput,
+          voiceInput: state.voiceInput,
+          addImage: state.addImage,
+          selectLlmModel: state.selectLlmModel,
+          addFile: state.addFile,
+        }),
+      }
+    )
   )
 );
