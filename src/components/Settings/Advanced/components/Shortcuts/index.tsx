@@ -1,6 +1,9 @@
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useTranslation } from "react-i18next";
-import Item, { ItemProps } from "./Item";
+import { formatKey } from "@/utils/keyboardUtils";
+import SettingsItem from "@/components/Settings/SettingsItem";
+import { Command } from "lucide-react";
+import { ChangeEvent } from "react";
 
 const Shortcuts = () => {
   const { t } = useTranslation();
@@ -19,44 +22,59 @@ const Shortcuts = () => {
   const addFile = useShortcutsStore((state) => state.addFile);
   const setAddFile = useShortcutsStore((state) => state.setAddFile);
 
-  const list: ItemProps[] = [
+  const list = [
     {
       title: "settings.advanced.shortcuts.modeSwitch.title",
       description: "settings.advanced.shortcuts.modeSwitch.description",
-      shortcut: modeSwitch,
-      setShortcut: setModeSwitch,
+      value: modeSwitch,
+      setValue: setModeSwitch,
     },
     {
       title: "settings.advanced.shortcuts.returnToInput.title",
       description: "settings.advanced.shortcuts.returnToInput.description",
-      shortcut: returnToInput,
-      setShortcut: setReturnToInput,
+      value: returnToInput,
+      setValue: setReturnToInput,
     },
     {
       title: "settings.advanced.shortcuts.voiceInput.title",
       description: "settings.advanced.shortcuts.voiceInput.description",
-      shortcut: voiceInput,
-      setShortcut: setVoiceInput,
+      value: voiceInput,
+      setValue: setVoiceInput,
     },
     {
       title: "settings.advanced.shortcuts.addImage.title",
       description: "settings.advanced.shortcuts.addImage.description",
-      shortcut: addImage,
-      setShortcut: setAddImage,
+      value: addImage,
+      setValue: setAddImage,
     },
     {
       title: "settings.advanced.shortcuts.selectLlmModel.title",
       description: "settings.advanced.shortcuts.selectLlmModel.description",
-      shortcut: selectLlmModel,
-      setShortcut: setSelectLlmModel,
+      value: selectLlmModel,
+      setValue: setSelectLlmModel,
     },
     {
       title: "settings.advanced.shortcuts.addFile.title",
       description: "settings.advanced.shortcuts.addFile.description",
-      shortcut: addFile,
-      setShortcut: setAddFile,
+      value: addFile,
+      setValue: setAddFile,
     },
   ];
+
+  const handleChange = (
+    event: ChangeEvent<HTMLInputElement>,
+    setValue: (value: string) => void
+  ) => {
+    const value = event.target.value.toUpperCase();
+
+    if (value.length > 1) return;
+
+    const state = useShortcutsStore.getState();
+
+    if (Object.values(state).includes(value)) return;
+
+    setValue(value);
+  };
 
   return (
     <div className="space-y-8">
@@ -66,7 +84,27 @@ const Shortcuts = () => {
 
       <div className="space-y-6">
         {list.map((item) => {
-          return <Item key={item.title} {...item} />;
+          const { title, description, value, setValue } = item;
+
+          return (
+            <SettingsItem
+              key={title}
+              icon={Command}
+              title={t(title)}
+              description={t(description)}
+            >
+              <div className="flex items-center gap-2">
+                {formatKey("Command")} +
+                <input
+                  value={value}
+                  maxLength={1}
+                  onChange={(event) => {
+                    handleChange(event, setValue);
+                  }}
+                />
+              </div>
+            </SettingsItem>
+          );
         })}
       </div>
     </div>
