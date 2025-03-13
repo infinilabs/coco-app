@@ -31,7 +31,7 @@ export function useMessageHandler(
         console.log("AI response timeout");
         setTimedoutShow(true);
         onCancel();
-      }, 60000);
+      }, 120000);
 
       const cleanedData = msg.replace(/^PRIVATE /, "");
       try {
