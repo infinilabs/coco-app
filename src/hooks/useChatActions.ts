@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { invoke, isTauri } from "@tauri-apps/api/core";
 
 import type { Chat } from "@/components/Assistant/types";
+import { min } from "lodash-es";
 
 export function useChatActions(
   currentServiceId: string | undefined,
@@ -202,6 +203,8 @@ export function useChatActions(
         center: true,
         width: 1000,
         height: 800,
+        minWidth: 1000,
+        minHeight: 800,
         alwaysOnTop: false,
         skipTaskbar: false,
         decorations: true,
