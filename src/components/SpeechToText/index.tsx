@@ -1,10 +1,10 @@
 import { useEventListener, useReactive } from "ahooks";
 import clsx from "clsx";
-import { Mic } from "lucide-react";
-import { ComponentType, FC } from "react";
+import { LucideIcon, Mic } from "lucide-react";
+import { FC, useEffect } from "react";
 
 interface SpeechToTextProps {
-  Icon?: ComponentType<any>;
+  Icon?: LucideIcon;
   onChange?: (transcript: string) => void;
 }
 
@@ -13,7 +13,7 @@ interface State {
   transcript: string;
 }
 
-let recognition: SpeechRecognition;
+let recognition: SpeechRecognition | null = null;
 
 const SpeechToText: FC<SpeechToTextProps> = (props) => {
   const { Icon = Mic, onChange } = props;
@@ -23,31 +23,9 @@ const SpeechToText: FC<SpeechToTextProps> = (props) => {
     transcript: "",
   });
 
-  const handleSpeak = async () => {
-    if (state.speaking) {
-      state.speaking = false;
-
-      return recognition.stop();
-    }
-
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = "zh-CN";
-
-    recognition.onresult = (event) => {
-      state.transcript = event.results[0][0].transcript;
-
-      onChange?.(state.transcript);
-    };
-
-    recognition.start();
-
-    state.speaking = true;
-  };
+  useEffect(() => {
+    return destroyRecognition;
+  }, []);
 
   useEventListener("focusin", (event) => {
     const { target } = event;
@@ -61,10 +39,52 @@ const SpeechToText: FC<SpeechToTextProps> = (props) => {
     }
   });
 
+  const handleSpeak = async () => {
+    if (state.speaking) {
+      return destroyRecognition();
+    }
+
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "zh-CN";
+
+    recognition.onresult = (event) => {
+      state.transcript = [...event.results]
+        .map((result) => result[0].transcript)
+        .join("");
+
+      onChange?.(state.transcript);
+    };
+
+    recognition.onerror = destroyRecognition;
+
+    recognition.onend = destroyRecognition;
+
+    recognition.start();
+
+    state.speaking = true;
+  };
+
+  const destroyRecognition = () => {
+    if (recognition) {
+      recognition.abort();
+      recognition.onresult = null;
+      recognition.onerror = null;
+      recognition.onend = null;
+      recognition = null;
+    }
+
+    state.speaking = false;
+  };
+
   return (
     <div
       className={clsx(
-        "p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition",
+        "p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition cursor-pointer",
         {
           "bg-blue-100 dark:bg-blue-900": state.speaking,
         }
