@@ -99,6 +99,7 @@ const Advanced = () => {
 
           return (
             <SettingsItem
+              key={title}
               icon={Command}
               title={t(title)}
               description={t(description)}
