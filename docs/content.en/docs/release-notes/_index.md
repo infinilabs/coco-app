@@ -10,17 +10,24 @@ Information about release notes of Coco Server is provided here.
 ## Latest (In development)
 
 ### Breaking changes
+
 ### Features
+
 ### Bug fix
+
 ### Improvements
 
 ## 0.2.1 (2025-03-14)
 
 ### Features
 
+- support for automatic in-app updates #274
+- voice input support for search and chat #276
+
 ### Breaking changes
 
 ### Bug fix
+
 - Fix the issue that the fusion search include disabled servers
 - Fix incorrect version type: should be string instead of u32
 - Fix the chat end judgment type #280
@@ -42,7 +49,7 @@ Information about release notes of Coco Server is provided here.
 - Add api to disable or enable server #185
 - Networked search supports selection of data sources #209
 - Add deepthink and knowledge search options to RAG based chat
-- Support i18n, add Chinese language support 
+- Support i18n, add Chinese language support
 - Support Windows platform
 - etc.
 
