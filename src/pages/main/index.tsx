@@ -11,6 +11,11 @@ import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
 import { isLinux, isWin } from "@/utils/platform";
 import UpdateApp from "@/components/UpdateApp";
+import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { IStartupStore, useStartupStore } from "@/stores/startupStore";
+import { useAsyncEffect } from "ahooks";
+
+let showCocoListen: UnlistenFn;
 
 export default function DesktopApp() {
   const initializeListeners = useAppStore((state) => state.initializeListeners);
@@ -63,6 +68,27 @@ export default function DesktopApp() {
 
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isDeepThinkActive, setIsDeepThinkActive] = useState(false);
+
+  const defaultStartupWindow = useStartupStore((state) => {
+    return state.defaultStartupWindow;
+  });
+  const setDefaultStartupWindow = useStartupStore((state) => {
+    return state.setDefaultStartupWindow;
+  });
+
+  useEffect(() => {
+    listen<IStartupStore>("change-startup-store", ({ payload }) => {
+      setDefaultStartupWindow(payload.defaultStartupWindow);
+    });
+  }, []);
+
+  useAsyncEffect(async () => {
+    showCocoListen?.();
+
+    showCocoListen = await listen("show-coco", () => {
+      changeMode(defaultStartupWindow === "chatMode");
+    });
+  }, [defaultStartupWindow]);
 
   async function changeMode(value: boolean) {
     setIsChatMode(value);

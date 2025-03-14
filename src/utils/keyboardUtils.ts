@@ -25,6 +25,8 @@ export const KEY_SYMBOLS: Record<string, string> = {
   shift: isMac ? "⇧" : "Shift",
   Alt: isMac ? "⌥" : "Alt",
   alt: isMac ? "⌥" : "Alt",
+  Option: isMac ? "⌥" : "Alt",
+  option: isMac ? "⌥" : "Alt",
   Meta: isMac ? "⌘" : "Win",
   meta: isMac ? "⌘" : "Win",
   Command: isMac ? "⌘" : "Win",

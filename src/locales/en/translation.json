@@ -46,6 +46,70 @@
       "endpoint": {
         "title": "API Endpoint",
         "description": "Domain name for interface and websocket"
+      },
+      "startup": {
+        "title": "Startup Settings",
+        "defaultStartupWindow": {
+          "title": "Default Startup Window",
+          "description": "Set whether Coco opens in Search or Chat mode.",
+          "select": {
+            "searchMode": "Search Mode",
+            "chatMode": "Chat Mode"
+          }
+        },
+        "defaultContentForSearchWindow": {
+          "title": "Default Content for Search Window",
+          "description": "Set what shows by default in Search mode.",
+          "select": {
+            "systemDefault": "System Default"
+          }
+        },
+        "defaultContentForChatWindow": {
+          "title": "Default Content for Chat Window",
+          "description": "Set what shows by default in Chat mode.",
+          "select": {
+            "newChat": "Start new chat",
+            "oldChat": "Continue previous chat"
+          }
+        }
+      },
+      "shortcuts": {
+        "title": "Keyboard Shortcuts",
+        "modifierKey": {
+          "title": "Modifier Key",
+          "description": "Set the primary modifier key for custom shortcuts."
+        },
+        "modeSwitch": {
+          "title": "Mode Switch",
+          "description": "Shortcut to toggle between Search and Chat modes."
+        },
+        "returnToInput": {
+          "title": "Return to Input",
+          "description": "Shortcut to go back to the input area in both Search and Chat modes."
+        },
+        "voiceInput": {
+          "title": "Voice Input",
+          "description": "Shortcut to activate voice input function in Search mode."
+        },
+        "addImage": {
+          "title": "Add Image",
+          "description": "Shortcut to quickly add images in Search mode."
+        },
+        "selectLlmModel": {
+          "title": "Select LLM Model",
+          "description": "Shortcut to select the desired LLM model in Chat mode."
+        },
+        "addFile": {
+          "title": "Add File",
+          "description": "Shortcut to add files conveniently in Chat mode."
+        }
+      },
+      "connect": {
+        "title": "Connection Settings",
+        "connectionTimeout": {
+          "title": "Connection Timeout",
+          "description": "Retries the connection if no response is received within this time. Default: 120s."
+        }
       }
     },
     "tabs": {

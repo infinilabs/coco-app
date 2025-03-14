@@ -1,6 +1,7 @@
 use crate::{move_window_to_active_monitor, COCO_TAURI_STORE};
 use tauri::App;
 use tauri::AppHandle;
+use tauri::Emitter;
 use tauri::Manager;
 use tauri::Runtime;
 use tauri_plugin_global_shortcut::GlobalShortcutExt;
@@ -109,6 +110,8 @@ fn _register_shortcut<R: Runtime>(app: &AppHandle<R>, shortcut: Shortcut) {
                         dbg!("hiding window");
                         main_window.hide().unwrap();
                     } else {
+                        let _ = app.emit("show-coco", ());
+
                         dbg!("showing window");
                         move_window_to_active_monitor(&main_window);
                         main_window.set_visible_on_all_workspaces(true).unwrap();
@@ -138,6 +141,8 @@ fn _register_shortcut_upon_start(app: &App, shortcut: Shortcut) {
                             if window.is_visible().unwrap() {
                                 window.hide().unwrap();
                             } else {
+                                let _ = app.emit("show-coco", ());
+
                                 // dbg!("showing window");
                                 move_window_to_active_monitor(&window);
                                 window.set_visible_on_all_workspaces(true).unwrap();

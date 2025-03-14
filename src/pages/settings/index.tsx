@@ -3,13 +3,13 @@ import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { Settings, Puzzle, Settings2, Info, Server } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { listen } from "@tauri-apps/api/event";
-
 import SettingsPanel from "@/components/Settings/SettingsPanel";
 import GeneralSettings from "@/components/Settings/GeneralSettings";
 import AboutView from "@/components/Settings/AboutView";
 import Cloud from "@/components/Cloud/Cloud.tsx";
 import Footer from "@/components/Footer";
 import { useTray } from "@/hooks/useTray";
+import Advanced from "@/components/Settings/Advanced";
 
 const tabIndexMap: { [key: string]: number } = {
   general: 0,
@@ -100,9 +100,7 @@ function SettingsPage() {
               </TabPanel>
               <TabPanel>
                 <SettingsPanel title="">
-                  <div className="text-gray-600 dark:text-gray-400">
-                    {t("settings.tabs.advancedContent")}
-                  </div>
+                  <Advanced />
                 </SettingsPanel>
               </TabPanel>
               <TabPanel>
