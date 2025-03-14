@@ -1,7 +1,12 @@
+import { isMac } from "@/utils/platform";
 import { create } from "zustand";
 import { persist, subscribeWithSelector } from "zustand/middleware";
 
+export type ModifierKey = "Command" | "Control" | "Option";
+
 export type IShortcutsStore = {
+  modifierKey: ModifierKey;
+  setModifierKey: (modifierKey: ModifierKey) => void;
   modeSwitch: string;
   setModeSwitch: (modeSwitch: string) => void;
   returnToInput: string;
@@ -20,6 +25,8 @@ export const useShortcutsStore = create<IShortcutsStore>()(
   subscribeWithSelector(
     persist(
       (set) => ({
+        modifierKey: isMac ? "Command" : "Control",
+        setModifierKey: (modifierKey: ModifierKey) => set({ modifierKey }),
         modeSwitch: "T",
         setModeSwitch: (modeSwitch: string) => set({ modeSwitch }),
         returnToInput: "I",
@@ -36,6 +43,7 @@ export const useShortcutsStore = create<IShortcutsStore>()(
       {
         name: "shortcuts-store",
         partialize: (state) => ({
+          modifierKey: state.modifierKey,
           modeSwitch: state.modeSwitch,
           returnToInput: state.returnToInput,
           voiceInput: state.voiceInput,

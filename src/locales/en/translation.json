@@ -75,9 +75,9 @@
       },
       "shortcuts": {
         "title": "Keyboard Shortcuts",
-        "showCoco": {
-          "title": "Show Coco",
-          "description": "Global shortcut to open Coco."
+        "modifierKey": {
+          "title": "Modifier Key",
+          "description": "Set the primary modifier key for custom shortcuts."
         },
         "modeSwitch": {
           "title": "Mode Switch",

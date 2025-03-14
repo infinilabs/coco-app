@@ -1,4 +1,4 @@
-import { useShortcutsStore } from "@/stores/shortcutsStore";
+import { ModifierKey, useShortcutsStore } from "@/stores/shortcutsStore";
 import { useTranslation } from "react-i18next";
 import { formatKey } from "@/utils/keyboardUtils";
 import SettingsItem from "@/components/Settings/SettingsItem";
@@ -8,6 +8,8 @@ import { emit } from "@tauri-apps/api/event";
 
 const Shortcuts = () => {
   const { t } = useTranslation();
+  const modifierKey = useShortcutsStore((state) => state.modifierKey);
+  const setModifierKey = useShortcutsStore((state) => state.setModifierKey);
   const modeSwitch = useShortcutsStore((state) => state.modeSwitch);
   const setModeSwitch = useShortcutsStore((state) => state.setModeSwitch);
   const returnToInput = useShortcutsStore((state) => state.returnToInput);
@@ -92,6 +94,23 @@ const Shortcuts = () => {
       </h2>
 
       <div className="space-y-6">
+        <SettingsItem
+          icon={Command}
+          title={t("settings.advanced.shortcuts.modifierKey.title")}
+          description={t("settings.advanced.shortcuts.modifierKey.description")}
+        >
+          <select
+            value={modifierKey}
+            onChange={(event) => {
+              setModifierKey(event.target.value as ModifierKey);
+            }}
+          >
+            {["Command", "Control", "Option"].map((item) => {
+              return <option value={item}>{formatKey(item)}</option>;
+            })}
+          </select>
+        </SettingsItem>
+
         {list.map((item) => {
           const { title, description, value, setValue } = item;
 

@@ -75,9 +75,9 @@
       },
       "shortcuts": {
         "title": "键盘快捷键",
-        "showCoco": {
-          "title": "显示 Coco",
-          "description": "打开 Coco 的全局快捷按键。"
+        "modifierKey": {
+          "title": "修饰键",
+          "description": "为自定义快捷键设置主修饰键。"
         },
         "modeSwitch": {
           "title": "模式切换",
