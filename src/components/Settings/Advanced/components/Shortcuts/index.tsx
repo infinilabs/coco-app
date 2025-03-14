@@ -121,17 +121,13 @@ const Shortcuts = () => {
               title={t(title)}
               description={t(description)}
             >
-              <div className="flex items-center gap-2">
-                <span>{formatKey("Command")}</span>
-                <span> + </span>
-                <input
-                  value={value}
-                  maxLength={1}
-                  onChange={(event) => {
-                    handleChange(event, setValue);
-                  }}
-                />
-              </div>
+              <input
+                value={value}
+                maxLength={1}
+                onChange={(event) => {
+                  handleChange(event, setValue);
+                }}
+              />
             </SettingsItem>
           );
         })}

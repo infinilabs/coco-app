@@ -103,6 +103,13 @@
           "title": "Add File",
           "description": "Shortcut to add files conveniently in Chat mode."
         }
+      },
+      "connect": {
+        "title": "Connection Settings",
+        "connectionTimeout": {
+          "title": "Connection Timeout",
+          "description": "Retries the connection if no response is received within this time. Default: 120s."
+        }
       }
     },
     "tabs": {

@@ -103,6 +103,13 @@
           "title": "添加文件",
           "description": "在聊天模式下方便地添加文件的快捷按键。"
         }
+      },
+      "connect": {
+        "title": "连接设置",
+        "connectionTimeout": {
+          "title": "连接超时",
+          "description": "如果在此时间内未收到响应，则重试连接。默认值：120 秒。"
+        }
       }
     },
     "tabs": {

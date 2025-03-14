@@ -5,6 +5,7 @@ import { Command } from "lucide-react";
 import { useStartupStore } from "@/stores/startupStore";
 import { useEffect } from "react";
 import { emit } from "@tauri-apps/api/event";
+import { useConnectStore } from "@/stores/connectStore";
 
 const Advanced = () => {
   const { t } = useTranslation();
@@ -25,6 +26,12 @@ const Advanced = () => {
   });
   const setDefaultContentForChatWindow = useStartupStore((state) => {
     return state.setDefaultContentForChatWindow;
+  });
+  const connectionTimeout = useConnectStore((state) => {
+    return state.connectionTimeout;
+  });
+  const setConnectionTimeout = useConnectStore((state) => {
+    return state.setConnectionTimeout;
   });
 
   useEffect(() => {
@@ -129,6 +136,29 @@ const Advanced = () => {
       </div>
 
       <Shortcuts />
+
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        {t("settings.advanced.connect.title")}
+      </h2>
+
+      <div className="space-y-6">
+        <SettingsItem
+          icon={Command}
+          title={t("settings.advanced.connect.connectionTimeout.title")}
+          description={t(
+            "settings.advanced.connect.connectionTimeout.description"
+          )}
+        >
+          <input
+            type="number"
+            min={10}
+            value={connectionTimeout}
+            onChange={(event) => {
+              setConnectionTimeout(Number(event.target.value) || 120);
+            }}
+          />
+        </SettingsItem>
+      </div>
     </div>
   );
 };
