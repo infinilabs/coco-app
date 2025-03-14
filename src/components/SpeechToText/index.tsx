@@ -1,7 +1,7 @@
-import { useEventListener } from "ahooks";
+import { useEventListener, useReactive } from "ahooks";
 import clsx from "clsx";
 import { LucideIcon, Mic } from "lucide-react";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
 
 interface SpeechToTextProps {
   Icon?: LucideIcon;
@@ -13,7 +13,9 @@ let recognition: SpeechRecognition | null = null;
 const SpeechToText: FC<SpeechToTextProps> = (props) => {
   const { Icon = Mic, onChange } = props;
 
-  const [speaking, setSpeaking] = useState(false);
+  const state = useReactive({
+    speaking: false,
+  });
 
   useEffect(() => {
     return destroyRecognition;
@@ -26,13 +28,13 @@ const SpeechToText: FC<SpeechToTextProps> = (props) => {
       target instanceof HTMLInputElement ||
       target instanceof HTMLTextAreaElement;
 
-    if (speaking && isInputElement) {
+    if (state.speaking && isInputElement) {
       target.blur();
     }
   });
 
-  const handleSpeak = useCallback(async () => {
-    if (speaking) {
+  const handleSpeak = () => {
+    if (state.speaking) {
       return destroyRecognition();
     }
 
@@ -58,8 +60,8 @@ const SpeechToText: FC<SpeechToTextProps> = (props) => {
 
     recognition.start();
 
-    setSpeaking(true);
-  }, [speaking]);
+    state.speaking = true;
+  };
 
   const destroyRecognition = () => {
     if (recognition) {
@@ -70,7 +72,7 @@ const SpeechToText: FC<SpeechToTextProps> = (props) => {
       recognition = null;
     }
 
-    setSpeaking(false);
+    state.speaking = false;
   };
 
   return (
@@ -78,13 +80,13 @@ const SpeechToText: FC<SpeechToTextProps> = (props) => {
       className={clsx(
         "p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition cursor-pointer",
         {
-          "bg-blue-100 dark:bg-blue-900": speaking,
+          "bg-blue-100 dark:bg-blue-900": state.speaking,
         }
       )}
     >
       <Icon
         className={clsx("size-4 text-[#999] dark:text-[#999]", {
-          "text-blue-500 animate-pulse": speaking,
+          "text-blue-500 animate-pulse": state.speaking,
         })}
         onClick={handleSpeak}
       />
