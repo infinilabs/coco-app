@@ -213,11 +213,7 @@ export default function ChatInput({
 
   return (
     <div
-      className={`w-full relative ${
-        isChatPage
-          ? "rounded-xl border border-[#E6E6E6] dark:border-[#272626]"
-          : ""
-      }`}
+      className={`w-full relative`}
     >
       <div
         className={`p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded transition-all relative `}
