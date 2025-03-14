@@ -1,13 +1,7 @@
 import { useTranslation } from "react-i18next";
 import Shortcuts from "./components/Shortcuts";
 import SettingsItem from "../SettingsItem";
-import {
-  AppWindowMac,
-  Command,
-  MessageSquareMore,
-  Search,
-  Unplug,
-} from "lucide-react";
+import { AppWindowMac, MessageSquareMore, Search, Unplug } from "lucide-react";
 import { useStartupStore } from "@/stores/startupStore";
 import { useEffect } from "react";
 import { emit } from "@tauri-apps/api/event";

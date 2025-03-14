@@ -30,7 +30,7 @@ export const useStartupStore = create<IStartupStore>()(
         setDefaultContentForSearchWindow: (defaultContentForSearchWindow) => {
           return set({ defaultContentForSearchWindow });
         },
-        defaultContentForChatWindow: "newChat",
+        defaultContentForChatWindow: "oldChat",
         setDefaultContentForChatWindow: (defaultContentForChatWindow) => {
           return set({ defaultContentForChatWindow });
         },
