@@ -1,7 +1,13 @@
 import { useTranslation } from "react-i18next";
 import Shortcuts from "./components/Shortcuts";
 import SettingsItem from "../SettingsItem";
-import { Command, Unplug } from "lucide-react";
+import {
+  AppWindowMac,
+  Command,
+  MessageSquareMore,
+  Search,
+  Unplug,
+} from "lucide-react";
 import { useStartupStore } from "@/stores/startupStore";
 import { useEffect } from "react";
 import { emit } from "@tauri-apps/api/event";
@@ -44,6 +50,7 @@ const Advanced = () => {
 
   const startupList = [
     {
+      icon: AppWindowMac,
       title: "settings.advanced.startup.defaultStartupWindow.title",
       description: "settings.advanced.startup.defaultStartupWindow.description",
       value: defaultStartupWindow,
@@ -62,6 +69,7 @@ const Advanced = () => {
       onChange: setDefaultStartupWindow,
     },
     {
+      icon: Search,
       title: "settings.advanced.startup.defaultContentForSearchWindow.title",
       description:
         "settings.advanced.startup.defaultContentForSearchWindow.description",
@@ -76,6 +84,7 @@ const Advanced = () => {
       onChange: setDefaultContentForSearchWindow,
     },
     {
+      icon: MessageSquareMore,
       title: "settings.advanced.startup.defaultContentForChatWindow.title",
       description:
         "settings.advanced.startup.defaultContentForChatWindow.description",
@@ -104,12 +113,12 @@ const Advanced = () => {
 
       <div className="space-y-6">
         {startupList.map((item) => {
-          const { title, description, value, items, onChange } = item;
+          const { icon, title, description, value, items, onChange } = item;
 
           return (
             <SettingsItem
               key={title}
-              icon={Command}
+              icon={icon}
               title={t(title)}
               description={t(description)}
             >
