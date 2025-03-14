@@ -1,6 +1,32 @@
 import { useState } from "react";
 import { isTauri } from "@tauri-apps/api/core";
 
+export interface EventPayloads {
+  'language-changed': {
+    language: string;
+  };
+  'theme-changed': string;
+  'tauri://focus': void;
+  'endpoint-changed': {
+    endpoint: string;
+    endpoint_http: string;
+    endpoint_websocket: string;
+  };
+  'auth-changed': {
+    auth: {
+      [key: string]: any;
+    };
+  };
+  'userInfo-changed': {
+    userInfo: {
+      [key: string]: any;
+    };
+  };
+  'open_settings': string | '';
+  'tab_index': string | '';
+  'login_or_logout': any;
+}
+
 // Platform adapter interface
 export interface PlatformAdapter {
   invokeBackend: (command: string, args?: any) => Promise<any>;
@@ -10,7 +36,10 @@ export interface PlatformAdapter {
   isPlatformTauri: () => boolean;
   convertFileSrc: (path: string) => string;
   emitEvent: (event: string, payload?: any) => Promise<void>;
-  listenEvent: (event: string, callback: () => void) => Promise<() => void>;
+  listenEvent: <K extends keyof EventPayloads>(
+    event: K,
+    callback: (event: { payload: EventPayloads[K] }) => void
+  ) => Promise<() => void>;
   setAlwaysOnTop: (isPinned: boolean) => Promise<void>;
   checkScreenRecordingPermission: () => Promise<boolean>;
   requestScreenRecordingPermission: () => void;
@@ -28,6 +57,12 @@ export interface PlatformAdapter {
   setWindowTheme: (theme: string | null) => Promise<void>;
   getWindowTheme: () => Promise<string>;
   onThemeChanged: (callback: (payload: { payload: string }) => void) => Promise<void>;
+  getWindowByLabel: (label: string) => Promise<{
+    show: () => Promise<void>;
+    setFocus: () => Promise<void>;
+    center: () => Promise<void>;
+  } | null>;
+  createWindow: (label: string, options: any) => Promise<void>;
 }
 
 // Create Tauri adapter functions
@@ -88,7 +123,10 @@ export const createTauriAdapter = (): PlatformAdapter => {
       }
     },
 
-    async listenEvent(event: string, callback: () => void) {
+    async listenEvent<K extends keyof EventPayloads>(
+      event: K,
+      callback: (event: { payload: EventPayloads[K] }) => void
+    ) {
       if (isTauri()) {
         const { listen } = await import("@tauri-apps/api/event");
         return listen(event, callback);
@@ -229,6 +267,22 @@ export const createTauriAdapter = (): PlatformAdapter => {
         window.onThemeChanged(callback);
       }
     },
+
+    async getWindowByLabel(label: string) {
+      if (isTauri()) {
+        const { WebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+        const window = await WebviewWindow.getByLabel(label);
+        return window;
+      }
+      return null;
+    },
+
+    async createWindow(label: string, options: any) {
+      if (isTauri()) {
+        const { WebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+        new WebviewWindow(label, options);
+      }
+    },
   };
 };
 
@@ -268,9 +322,11 @@ export const createWebAdapter = (): PlatformAdapter => {
       console.log("Web mode simulated event emit", event, payload);
     },
 
-    async listenEvent(event: string, callback: () => void): Promise<() => void> {
+    async listenEvent<K extends keyof EventPayloads>(
+      event: K,
+      _callback: (event: { payload: EventPayloads[K] }) => void
+    ): Promise<() => void> {
       console.log("Web mode simulated event listen", event);
-      callback && callback();
       return () => {};
     },
 
@@ -352,6 +408,15 @@ export const createWebAdapter = (): PlatformAdapter => {
 
     async onThemeChanged(callback) {
       console.log("Web mode simulated on theme changed", callback);
+    },
+
+    async getWindowByLabel(label: string) {
+      console.log("Web mode simulated get window by label:", label);
+      return null;
+    },
+
+    async createWindow(label: string, options: any) {
+      console.log("Web mode simulated create window:", label, options);
     },
   };
 };

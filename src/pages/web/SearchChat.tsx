@@ -1,6 +1,6 @@
 import {
   useEffect,
-  // useRef,
+  useRef,
   useCallback,
   useReducer,
   Suspense,
@@ -11,7 +11,7 @@ import clsx from "clsx";
 
 import ErrorBoundary from "@/components/Common/ErrorBoundary";
 import InputBox from "@/components/Search/InputBox";
-// import { ChatAIRef } from "@/components/Assistant/Chat";
+import { ChatAIRef } from "@/components/Assistant/Chat";
 import UpdateApp from "@/components/UpdateApp";
 import { isLinux, isWin } from "@/utils/platform";
 import { appReducer, initialAppState } from "@/reducers/appReducer";
@@ -22,7 +22,7 @@ import platformAdapter from "@/utils/platformAdapter";
 import { DataSource } from "@/components/Assistant/types";
 
 const Search = lazy(() => import("@/components/Search/Search"));
-// const ChatAI = lazy(() => import("@/components/Assistant/Chat"));
+const ChatAI = lazy(() => import("@/components/Assistant/Chat"));
 
 interface SearchChatProps {
   querySearch: (input: string) => Promise<any>;
@@ -57,7 +57,7 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
     platformAdapter.invokeBackend("get_app_search_source");
   }, []);
 
-  // const chatAIRef = useRef<ChatAIRef>(null);
+  const chatAIRef = useRef<ChatAIRef>(null);
 
   const changeMode = useCallback(async (value: boolean) => {
     dispatch({ type: "SET_CHAT_MODE", payload: value });
@@ -67,18 +67,18 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
     async (value: string) => {
       dispatch({ type: "SET_INPUT", payload: value });
       if (isChatMode) {
-        // chatAIRef.current?.init(value);
+        chatAIRef.current?.init(value);
       }
     },
     [isChatMode]
   );
 
   const cancelChat = useCallback(() => {
-    // chatAIRef.current?.cancelChat();
+    chatAIRef.current?.cancelChat();
   }, []);
 
   const reconnect = useCallback(() => {
-    // chatAIRef.current?.reconnect();
+    chatAIRef.current?.reconnect();
   }, []);
 
   const setInput = useCallback((value: string) => {
@@ -101,9 +101,9 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
     return platformAdapter.hideWindow();
   }, []);
 
-  // const getFileUrl = useCallback((path: string) => {
-  //   return platformAdapter.convertFileSrc(path);
-  // }, []);
+  const getFileUrl = useCallback((path: string) => {
+    return platformAdapter.convertFileSrc(path);
+  }, []);
 
   const openSetting = useCallback(() => {
     return platformAdapter.emitEvent("open_settings", "");
@@ -254,7 +254,7 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
         >
           {isTransitioned && isChatMode ? (
             <Suspense fallback={<LoadingFallback />}>
-              {/* <ChatAI
+              <ChatAI
                 ref={chatAIRef}
                 key="ChatAI"
                 isTransitioned={isTransitioned}
@@ -262,7 +262,7 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
                 isSearchActive={isSearchActive}
                 isDeepThinkActive={isDeepThinkActive}
                 getFileUrl={getFileUrl}
-              /> */}
+              />
             </Suspense>
           ) : null}
         </div>

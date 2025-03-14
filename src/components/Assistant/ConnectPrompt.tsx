@@ -1,10 +1,10 @@
 import { ExternalLink } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { emit } from "@tauri-apps/api/event";
 
 import LoginDark from "@/assets/images/login-dark.svg";
 import LoginLight from "@/assets/images/login-light.svg";
 import { useThemeStore } from "@/stores/themeStore";
+import platformAdapter from "@/utils/platformAdapter";
 
 const ConnectPrompt = () => {
   const { t } = useTranslation();
@@ -13,7 +13,7 @@ const ConnectPrompt = () => {
   const logo = isDark ? LoginDark : LoginLight;
 
   const handleConnect = async () => {
-    emit("open_settings", "connect");
+    platformAdapter.emitEvent("open_settings", "connect");
   };
 
   return (

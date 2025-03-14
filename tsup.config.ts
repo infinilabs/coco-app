@@ -1,5 +1,5 @@
 import { defineConfig } from 'tsup';
-import { writeFileSync } from 'fs';
+import { writeFileSync, readFileSync } from 'fs';
 import { join, resolve } from 'path';
 
 export default defineConfig({
@@ -40,17 +40,30 @@ export default defineConfig({
   ],
   outDir: 'dist/search-chat',
   async onSuccess() {
+    const projectPackageJson = JSON.parse(
+      readFileSync(join(__dirname, 'package.json'), 'utf-8')
+    );
+
     const packageJson = {
       name: "search-chat",
       version: "1.0.0",
-      main: "index.cjs",
-      module: "index.js",
-      types: "index.d.ts",
+      main: "SearchChat.cjs",
+      module: "SearchChat.js",
+      types: "SearchChat.d.ts",
+      dependencies: projectPackageJson.dependencies,
       peerDependencies: {
         "react": "^18.0.0",
         "react-dom": "^18.0.0"
       }
     };
+
+    const tauriDeps = Object.keys(packageJson.dependencies).filter(dep => 
+      dep.includes('@tauri-apps') || 
+      dep.includes('tauri-plugin')
+    );
+    tauriDeps.forEach(dep => {
+      delete packageJson.dependencies[dep];
+    });
 
     writeFileSync(
       join(__dirname, 'dist/search-chat/package.json'),

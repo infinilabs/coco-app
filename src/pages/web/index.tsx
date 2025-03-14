@@ -36,10 +36,9 @@ function WebApp() {
   );
 
   return (
-    <SearchChat
-      querySearch={querySearch}
-      queryDocuments={queryDocuments}
-    />
+    <div className="w-[680px] h-[590px]">
+      <SearchChat querySearch={querySearch} queryDocuments={queryDocuments} />
+    </div>
   );
 }
 

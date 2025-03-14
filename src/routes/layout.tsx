@@ -73,10 +73,12 @@ export default function Layout() {
     }
 
     const setupLanguageListener = async () => {
-      const unlisten = await platformAdapter.listenEvent("language-changed", (event: any) => {
-        const { language } = event.payload;
-        i18n.changeLanguage(language);
-      });
+      const unlisten = await platformAdapter.listenEvent(
+        "language-changed",
+        (event) => {
+          i18n.changeLanguage(event.payload.language);
+        }
+      );
       return unlisten;
     };
 
