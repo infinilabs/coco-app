@@ -7,6 +7,12 @@ theme: book
 disablePathToLower: true
 enableGitInfo: false
 
+outputs:
+  home:
+    - HTML
+    - RSS
+    - JSON
+
 # Needed for mermaid/katex shortcodes
 markup:
   goldmark:
