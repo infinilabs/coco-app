@@ -1,33 +1,39 @@
-import { useEventListener, useReactive } from "ahooks";
+import { useEventListener } from "ahooks";
 import clsx from "clsx";
-import { Mic } from "lucide-react";
-import { ComponentType, FC } from "react";
+import { LucideIcon, Mic } from "lucide-react";
+import { FC, useCallback, useEffect, useState } from "react";
 
 interface SpeechToTextProps {
-  Icon?: ComponentType<any>;
+  Icon?: LucideIcon;
   onChange?: (transcript: string) => void;
 }
 
-interface State {
-  speaking: boolean;
-  transcript: string;
-}
-
-let recognition: SpeechRecognition;
+let recognition: SpeechRecognition | null = null;
 
 const SpeechToText: FC<SpeechToTextProps> = (props) => {
   const { Icon = Mic, onChange } = props;
 
-  const state = useReactive<State>({
-    speaking: false,
-    transcript: "",
+  const [speaking, setSpeaking] = useState(false);
+
+  useEffect(() => {
+    return destroyRecognition;
+  }, []);
+
+  useEventListener("focusin", (event) => {
+    const { target } = event;
+
+    const isInputElement =
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement;
+
+    if (speaking && isInputElement) {
+      target.blur();
+    }
   });
 
-  const handleSpeak = async () => {
-    if (state.speaking) {
-      state.speaking = false;
-
-      return recognition.stop();
+  const handleSpeak = useCallback(async () => {
+    if (speaking) {
+      return destroyRecognition();
     }
 
     const SpeechRecognition =
@@ -39,40 +45,46 @@ const SpeechToText: FC<SpeechToTextProps> = (props) => {
     recognition.lang = "zh-CN";
 
     recognition.onresult = (event) => {
-      state.transcript = event.results[0][0].transcript;
+      const transcript = [...event.results]
+        .map((result) => result[0].transcript)
+        .join("");
 
-      onChange?.(state.transcript);
+      onChange?.(transcript);
     };
+
+    recognition.onerror = destroyRecognition;
+
+    recognition.onend = destroyRecognition;
 
     recognition.start();
 
-    state.speaking = true;
-  };
+    setSpeaking(true);
+  }, [speaking]);
 
-  useEventListener("focusin", (event) => {
-    const { target } = event;
-
-    const isInputElement =
-      target instanceof HTMLInputElement ||
-      target instanceof HTMLTextAreaElement;
-
-    if (state.speaking && isInputElement) {
-      target.blur();
+  const destroyRecognition = () => {
+    if (recognition) {
+      recognition.abort();
+      recognition.onresult = null;
+      recognition.onerror = null;
+      recognition.onend = null;
+      recognition = null;
     }
-  });
+
+    setSpeaking(false);
+  };
 
   return (
     <div
       className={clsx(
-        "p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition",
+        "p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition cursor-pointer",
         {
-          "bg-blue-100 dark:bg-blue-900": state.speaking,
+          "bg-blue-100 dark:bg-blue-900": speaking,
         }
       )}
     >
       <Icon
         className={clsx("size-4 text-[#999] dark:text-[#999]", {
-          "text-blue-500 animate-pulse": state.speaking,
+          "text-blue-500 animate-pulse": speaking,
         })}
         onClick={handleSpeak}
       />
