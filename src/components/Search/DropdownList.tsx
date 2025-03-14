@@ -14,7 +14,6 @@ import { OpenURLWithBrowser } from "@/utils/index";
 type ISearchData = Record<string, any[]>;
 
 interface DropdownListProps {
-  selected: (item: any) => void;
   suggests: any[];
   SearchData: ISearchData;
   IsError: boolean;
@@ -23,7 +22,6 @@ interface DropdownListProps {
 }
 
 function DropdownList({
-  selected,
   suggests,
   SearchData,
   IsError,
@@ -110,8 +108,6 @@ function DropdownList({
         const item = globalItemIndexMap[selectedItem];
         if (item?.url) {
           OpenURLWithBrowser(item?.url);
-        } else {
-          selected(item);
         }
       }
 
@@ -120,12 +116,10 @@ function DropdownList({
         const item = globalItemIndexMap[parseInt(e.key, 10)];
         if (item?.url) {
           OpenURLWithBrowser(item?.url);
-        } else {
-          selected(item);
         }
       }
     },
-    [suggests, selectedItem, showIndex, selected, globalItemIndexMap]
+    [suggests, selectedItem, showIndex, globalItemIndexMap]
   );
 
   const handleKeyUp = useCallback((e: KeyboardEvent) => {
@@ -158,7 +152,6 @@ function DropdownList({
 
   function goToTwoPage(item: any) {
     setSourceData(item);
-    selected && selected(item);
   }
 
   return (
@@ -219,8 +212,6 @@ function DropdownList({
                 onItemClick={() => {
                   if (item?.url) {
                     OpenURLWithBrowser(item?.url);
-                  } else {
-                    selected(item);
                   }
                 }}
                 goToTwoPage={goToTwoPage}

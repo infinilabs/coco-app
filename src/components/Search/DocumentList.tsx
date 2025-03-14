@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useInfiniteScroll } from "ahooks";
-import { isTauri, invoke } from "@tauri-apps/api/core";
-import { open } from "@tauri-apps/plugin-shell";
+import { invoke } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
 import { FixedSizeList } from "react-window";
 
@@ -10,6 +9,7 @@ import { SearchHeader } from "./SearchHeader";
 import noDataImg from "@/assets/coconut-tree.png";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import SearchListItem from "./SearchListItem";
+import { OpenURLWithBrowser } from "@/utils/index";
 
 interface DocumentListProps {
   onSelectDocument: (id: string) => void;
@@ -111,18 +111,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     setIsKeyboardMode(false);
   }, [isChatMode, input]);
 
-  const handleOpenURL = async (url: string) => {
-    if (!url) return;
-    try {
-      if (isTauri()) {
-        await open(url);
-        // console.log("URL opened in default browser");
-      }
-    } catch (error) {
-      console.error("Failed to open URL:", error);
-    }
-  };
-
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!data?.list?.length) return;
@@ -158,7 +146,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       if (e.key === "Enter" && selectedItem !== null) {
         const item = data?.list?.[selectedItem];
         if (item?.url) {
-          handleOpenURL(item?.url);
+          OpenURLWithBrowser(item?.url);
         }
       }
     },
@@ -211,7 +199,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
             onMouseEnter={() => onMouseEnter(index, item)}
             onItemClick={() => {
               if (item?.url) {
-                handleOpenURL(item?.url);
+                OpenURLWithBrowser(item?.url);
               }
             }}
             showListRight={viewMode === "list"}
@@ -219,7 +207,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         </div>
       );
     },
-    [data, selectedItem, viewMode, onMouseEnter, handleOpenURL]
+    [data, selectedItem, viewMode, onMouseEnter, OpenURLWithBrowser]
   );
 
   return (
