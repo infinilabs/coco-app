@@ -31,6 +31,7 @@ Information about release notes of Coco Server is provided here.
 - Fix incorrect version type: should be string instead of u32
 - Fix the chat end judgment type #280
 - Fix the chat scrolling and chat rendering #282
+- Fix: store data is not shared among multiple windows #298
 
 ### Improvements
 
