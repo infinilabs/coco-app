@@ -22,7 +22,6 @@ Information about release notes of Coco Server is provided here.
 ### Features
 
 - support for automatic in-app updates #274
-- voice input support for search and chat #276
 
 ### Breaking changes
 
