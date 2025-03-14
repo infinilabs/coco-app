@@ -52,18 +52,18 @@ const Shortcuts = () => {
       value: voiceInput,
       setValue: setVoiceInput,
     },
-    {
-      title: "settings.advanced.shortcuts.addImage.title",
-      description: "settings.advanced.shortcuts.addImage.description",
-      value: addImage,
-      setValue: setAddImage,
-    },
-    {
-      title: "settings.advanced.shortcuts.selectLlmModel.title",
-      description: "settings.advanced.shortcuts.selectLlmModel.description",
-      value: selectLlmModel,
-      setValue: setSelectLlmModel,
-    },
+    // {
+    //   title: "settings.advanced.shortcuts.addImage.title",
+    //   description: "settings.advanced.shortcuts.addImage.description",
+    //   value: addImage,
+    //   setValue: setAddImage,
+    // },
+    // {
+    //   title: "settings.advanced.shortcuts.selectLlmModel.title",
+    //   description: "settings.advanced.shortcuts.selectLlmModel.description",
+    //   value: selectLlmModel,
+    //   setValue: setSelectLlmModel,
+    // },
     {
       title: "settings.advanced.shortcuts.addFile.title",
       description: "settings.advanced.shortcuts.addFile.description",

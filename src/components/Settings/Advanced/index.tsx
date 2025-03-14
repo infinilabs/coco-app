@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import Shortcuts from "./components/Shortcuts";
 import SettingsItem from "../SettingsItem";
-import { Command } from "lucide-react";
+import { Command, Unplug } from "lucide-react";
 import { useStartupStore } from "@/stores/startupStore";
 import { useEffect } from "react";
 import { emit } from "@tauri-apps/api/event";
@@ -143,7 +143,7 @@ const Advanced = () => {
 
       <div className="space-y-6">
         <SettingsItem
-          icon={Command}
+          icon={Unplug}
           title={t("settings.advanced.connect.connectionTimeout.title")}
           description={t(
             "settings.advanced.connect.connectionTimeout.description"
