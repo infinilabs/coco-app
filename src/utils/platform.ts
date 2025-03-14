@@ -1,18 +1,13 @@
-import { family as osFamily, platform } from "@tauri-apps/plugin-os";
-
 const navigatorPlatform = navigator.platform.toLowerCase();
 
 console.log("navigatorPlatform", navigatorPlatform);
 
 export const isWeb = !("__TAURI_OS_PLUGIN_INTERNALS__" in window);
-export const isMobile = isWeb
-  ? navigator.userAgent.toLowerCase().includes("mobile")
-  : platform() === "android";
-export const isDesktop = !isMobile;
+export const isDesktop = true;
 export const isMac = navigatorPlatform.includes("mac");
 export const isWin = navigatorPlatform.includes("win");
 export const isLinux = navigatorPlatform.includes("linux");
-export const appScale = isMobile ? 0.5 : 1;
+export const appScale = 1;
 
 console.log("isMac", isMac);
 console.log("isWin", isWin);
@@ -27,6 +22,6 @@ export function family() {
       return "unix";
     }
   } else {
-    return osFamily();
+    return "unknown";
   }
 }

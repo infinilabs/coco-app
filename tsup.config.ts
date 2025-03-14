@@ -1,4 +1,6 @@
 import { defineConfig } from 'tsup';
+import { writeFileSync } from 'fs';
+import { join, resolve } from 'path';
 
 export default defineConfig({
   entry: ['src/pages/web/SearchChat.tsx'],
@@ -11,6 +13,22 @@ export default defineConfig({
     'react',
     'react-dom',
   ],
+  treeshake: true,
+  minify: true,
+  esbuildOptions(options) {
+    options.bundle = true;
+    options.platform = 'browser';
+    options.loader = {
+      '.css': 'css',
+      '.scss': 'css',
+      '.svg': 'dataurl',
+      '.png': 'dataurl',
+      '.jpg': 'dataurl',
+    },
+    options.alias = {
+      '@': resolve(__dirname, './src')
+    }
+  },
   esbuildPlugins: [
     {
       name: 'jsx-import-source',
@@ -21,4 +39,22 @@ export default defineConfig({
     },
   ],
   outDir: 'dist/search-chat',
+  async onSuccess() {
+    const packageJson = {
+      name: "search-chat",
+      version: "1.0.0",
+      main: "index.cjs",
+      module: "index.js",
+      types: "index.d.ts",
+      peerDependencies: {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0"
+      }
+    };
+
+    writeFileSync(
+      join(__dirname, 'dist/search-chat/package.json'),
+      JSON.stringify(packageJson, null, 2)
+    );
+  }
 });

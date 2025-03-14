@@ -21,6 +21,13 @@ export interface PlatformAdapter {
   openFileDialog: (options: { multiple: boolean }) => Promise<string | string[] | null>;
   getFileMetadata: (path: string) => Promise<any>;
   getFileIcon: (path: string, size: number) => Promise<string>;
+  checkUpdate: () => Promise<any>;
+  relaunchApp: () => Promise<void>;
+  listenThemeChanged: (callback: (theme: any) => void) => Promise<() => void>;
+  getWebviewWindow: () => Promise<any>;
+  setWindowTheme: (theme: string | null) => Promise<void>;
+  getWindowTheme: () => Promise<string>;
+  onThemeChanged: (callback: (payload: { payload: string }) => void) => Promise<void>;
 }
 
 // Create Tauri adapter functions
@@ -166,7 +173,62 @@ export const createTauriAdapter = (): PlatformAdapter => {
         return icon(path, size);
       }
       return "";
-    }
+    },
+
+    async checkUpdate() {
+      if (isTauri()) {
+        const { check } = await import("@tauri-apps/plugin-updater");
+        return check();
+      }
+      return null;
+    },
+
+    async relaunchApp() {
+      if (isTauri()) {
+        const { relaunch } = await import("@tauri-apps/plugin-process");
+        return relaunch();
+      }
+    },
+
+    async listenThemeChanged(callback) {
+      if (isTauri()) {
+        const { listen } = await import("@tauri-apps/api/event");
+        return listen("theme-changed", ({ payload }) => {
+          callback(payload);
+        });
+      }
+      return () => {};
+    },
+
+    async getWebviewWindow() {
+      if (isTauri()) {
+        const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+        return getCurrentWebviewWindow();
+      }
+      return null;
+    },
+
+    async setWindowTheme(theme) {
+      const window = await this.getWebviewWindow();
+      if (window) {
+        return window.setTheme(theme);
+      }
+    },
+
+    async getWindowTheme() {
+      const window = await this.getWebviewWindow();
+      if (window) {
+        return window.theme();
+      }
+      return 'light';
+    },
+
+    async onThemeChanged(callback) {
+      const window = await this.getWebviewWindow();
+      if (window) {
+        window.onThemeChanged(callback);
+      }
+    },
   };
 };
 
@@ -258,7 +320,39 @@ export const createWebAdapter = (): PlatformAdapter => {
     async getFileIcon(path: string, size: number): Promise<string> {
       console.log("Web mode simulated get file icon", path, size);
       return "";
-    }
+    },
+
+    async checkUpdate(): Promise<any> {
+      console.log("Web mode simulated check update");
+      return null;
+    },
+
+    async relaunchApp(): Promise<void> {
+      console.log("Web mode simulated relaunch app");
+    },
+
+    async listenThemeChanged() {
+      console.log("Web mode simulated theme change listener");
+      return () => {};
+    },
+
+    async getWebviewWindow() {
+      console.log("Web mode simulated get webview window");
+      return null;
+    },
+
+    async setWindowTheme(theme) {
+      console.log("Web mode simulated set window theme:", theme);
+    },
+
+    async getWindowTheme() {
+      console.log("Web mode simulated get window theme");
+      return 'light';
+    },
+
+    async onThemeChanged(callback) {
+      console.log("Web mode simulated on theme changed", callback);
+    },
   };
 };
 

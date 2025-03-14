@@ -1,17 +1,13 @@
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { listen } from "@tauri-apps/api/event";
+import { useAsyncEffect, useEventListener, useMount } from "ahooks";
 
 import { useAppStore } from "@/stores/appStore";
 import useEscape from "@/hooks/useEscape";
 import useSettingsWindow from "@/hooks/useSettingsWindow";
-import { useAsyncEffect, useEventListener, useMount } from "ahooks";
 import { useThemeStore } from "@/stores/themeStore";
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { AppTheme } from "@/utils/tauri";
-
-const appWindow = getCurrentWebviewWindow();
+import platformAdapter from "@/utils/platformAdapter";
 
 export default function Layout() {
   const location = useLocation();
@@ -31,11 +27,11 @@ export default function Layout() {
   }
 
   useMount(async () => {
-    listen<AppTheme>("theme-changed", ({ payload }) => {
+    platformAdapter.listenThemeChanged((payload) => {
       setTheme(payload);
     });
 
-    appWindow.onThemeChanged(({ payload }) => {
+    platformAdapter.onThemeChanged(({ payload }) => {
       if (activeTheme !== "auto") return;
 
       setIsDark(payload === "dark");
@@ -43,11 +39,11 @@ export default function Layout() {
   });
 
   useAsyncEffect(async () => {
-    let nextTheme = activeTheme === "auto" ? null : activeTheme;
+    let nextTheme: any = activeTheme === "auto" ? null : activeTheme;
 
-    await appWindow.setTheme(nextTheme);
+    await platformAdapter.setWindowTheme(nextTheme);
 
-    nextTheme = nextTheme ?? (await appWindow.theme());
+    nextTheme = nextTheme ?? (await platformAdapter.getWindowTheme());
 
     setIsDark(nextTheme === "dark");
   }, [activeTheme]);
@@ -76,13 +72,17 @@ export default function Layout() {
       i18n.changeLanguage(language);
     }
 
-    const unlistenLanguageChange = listen("language-changed", (event: any) => {
-      const { language } = event.payload;
-      i18n.changeLanguage(language);
-    });
+    const setupLanguageListener = async () => {
+      const unlisten = await platformAdapter.listenEvent("language-changed", (event: any) => {
+        const { language } = event.payload;
+        i18n.changeLanguage(language);
+      });
+      return unlisten;
+    };
 
+    const unlistenPromise = setupLanguageListener();
     return () => {
-      unlistenLanguageChange.then((unlisten) => unlisten());
+      unlistenPromise.then(unlisten => unlisten());
     };
   }, []);
 

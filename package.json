@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "build:web": "tsup",
+    "build:web": "tsc && tsup",
     "preview": "vite preview",
     "tauri": "tauri",
     "release": "release-it",
