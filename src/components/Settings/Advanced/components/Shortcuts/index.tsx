@@ -16,12 +16,12 @@ const Shortcuts = () => {
   const setReturnToInput = useShortcutsStore((state) => state.setReturnToInput);
   const voiceInput = useShortcutsStore((state) => state.voiceInput);
   const setVoiceInput = useShortcutsStore((state) => state.setVoiceInput);
-  const addImage = useShortcutsStore((state) => state.addImage);
-  const setAddImage = useShortcutsStore((state) => state.setAddImage);
-  const selectLlmModel = useShortcutsStore((state) => state.selectLlmModel);
-  const setSelectLlmModel = useShortcutsStore((state) => {
-    return state.setSelectLlmModel;
-  });
+  // const addImage = useShortcutsStore((state) => state.addImage);
+  // const setAddImage = useShortcutsStore((state) => state.setAddImage);
+  // const selectLlmModel = useShortcutsStore((state) => state.selectLlmModel);
+  // const setSelectLlmModel = useShortcutsStore((state) => {
+  //   return state.setSelectLlmModel;
+  // });
   const addFile = useShortcutsStore((state) => state.addFile);
   const setAddFile = useShortcutsStore((state) => state.setAddFile);
 
@@ -101,6 +101,7 @@ const Shortcuts = () => {
         >
           <select
             value={modifierKey}
+            className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             onChange={(event) => {
               setModifierKey(event.target.value as ModifierKey);
             }}
@@ -122,6 +123,7 @@ const Shortcuts = () => {
               description={t(description)}
             >
               <input
+                className="w-20 h-8 px-2 rounded-md border bg-transparent border-black/5 dark:border-white/10"
                 value={value}
                 maxLength={1}
                 onChange={(event) => {

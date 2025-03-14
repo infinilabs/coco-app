@@ -153,6 +153,7 @@ const Advanced = () => {
             type="number"
             min={10}
             value={connectionTimeout}
+            className="w-20 h-8 px-2 rounded-md border bg-transparent border-black/5 dark:border-white/10"
             onChange={(event) => {
               setConnectionTimeout(Number(event.target.value) || 120);
             }}
