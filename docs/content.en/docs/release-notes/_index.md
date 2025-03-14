@@ -9,6 +9,13 @@ Information about release notes of Coco Server is provided here.
 
 ## Latest (In development)
 
+### Breaking changes
+### Features
+### Bug fix
+### Improvements
+
+## 0.2.1 (2025-03-14)
+
 ### Features
 
 ### Breaking changes
