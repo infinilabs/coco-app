@@ -1,8 +1,7 @@
 import { useEffect, useCallback } from "react";
-import { listen, emit } from "@tauri-apps/api/event";
-import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 import { isMetaOrCtrlKey } from "@/utils/keyboardUtils";
+import platformAdapter from "@/utils/platformAdapter";
 
 interface CreateWindowOptions {
   label?: string;
@@ -41,13 +40,13 @@ export default function useSettingsWindow() {
     };
 
     // Check if the window already exists
-    WebviewWindow.getByLabel(options.label!).then((existingWindow) => {
+    platformAdapter.getWindowByLabel(options.label!).then((existingWindow) => {
       if (existingWindow) {
         existingWindow.show();
         existingWindow.setFocus();
         existingWindow.center();
       } else {
-        new WebviewWindow(options.label!, options);
+        platformAdapter.createWindow(options.label!, options);
       }
     });
   }, []);
@@ -68,11 +67,11 @@ export default function useSettingsWindow() {
   );
 
   useEffect(() => {
-    const unlisten = listen("open_settings", async (event) => {
+    const unlisten = platformAdapter.listenEvent("open_settings", async (event) => {
       console.log("open_settings event received:", event);
       const tab = event.payload as string | "";
 
-      emit("tab_index", tab);
+      platformAdapter.emitEvent("tab_index", tab);
       openSettingsWindow(tab);
     });
     window.addEventListener("keydown", handleKeyDown);

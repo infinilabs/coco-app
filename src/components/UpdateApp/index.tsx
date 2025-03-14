@@ -1,17 +1,16 @@
+import { useCallback, useMemo } from "react";
 import { Button, Dialog, DialogPanel } from "@headlessui/react";
 import { useTranslation } from "react-i18next";
+import { noop } from "lodash-es";
+import { LoaderCircle, X } from "lucide-react";
+import { useInterval, useReactive } from "ahooks";
+import clsx from "clsx";
+
 import lightIcon from "./imgs/light-icon.png";
 import darkIcon from "./imgs/dark-icon.png";
 import { useThemeStore } from "@/stores/themeStore";
-import { noop } from "lodash-es";
-import { LoaderCircle, X } from "lucide-react";
 import { useUpdateStore } from "@/stores/updateStore";
-import { useInterval, useReactive } from "ahooks";
-import { check } from "@tauri-apps/plugin-updater";
-import { useCallback, useMemo } from "react";
-import { relaunch } from "@tauri-apps/plugin-process";
-import clsx from "clsx";
-import { open } from "@tauri-apps/plugin-shell";
+import { OpenURLWithBrowser } from "@/utils/index";
 
 interface State {
   loading?: boolean;
@@ -19,7 +18,12 @@ interface State {
   download: number;
 }
 
-const UpdateApp = () => {
+interface UpdateAppProps {
+  checkUpdate: () => Promise<any>;
+  relaunchApp: () => Promise<void>;
+}
+
+const UpdateApp = ({ checkUpdate, relaunchApp }: UpdateAppProps) => {
   const { t } = useTranslation();
   const isDark = useThemeStore((state) => state.isDark);
   const visible = useUpdateStore((state) => state.visible);
@@ -32,12 +36,12 @@ const UpdateApp = () => {
 
   const state = useReactive<State>({ download: 0 });
 
-  useInterval(() => checkUpdate(), 1000 * 60 * 60 * 24, {
+  useInterval(() => checkUpdateStatus(), 1000 * 60 * 60 * 24, {
     immediate: true,
   });
 
-  const checkUpdate = useCallback(async () => {
-    const update = await check();
+  const checkUpdateStatus = useCallback(async () => {
+    const update = await checkUpdate();
 
     if (update?.available) {
       setUpdateInfo(update);
@@ -78,7 +82,7 @@ const UpdateApp = () => {
 
     state.loading = false;
 
-    relaunch();
+    relaunchApp();
   };
 
   const handleCancel = () => {
@@ -135,7 +139,7 @@ const UpdateApp = () => {
             <div
               className="text-xs text-[#0072FF] cursor-pointer"
               onClick={() => {
-                open(
+                OpenURLWithBrowser(
                   "https://docs.infinilabs.com/coco-app/main/docs/release-notes"
                 );
               }}

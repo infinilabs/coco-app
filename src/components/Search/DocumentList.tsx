@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useInfiniteScroll } from "ahooks";
-import { invoke } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
 import { FixedSizeList } from "react-window";
 
@@ -19,6 +18,11 @@ interface DocumentListProps {
   selectedId?: string;
   viewMode: "detail" | "list";
   setViewMode: (mode: "detail" | "list") => void;
+  queryDocuments: (
+    from: number,
+    size: number,
+    queryStrings: any
+  ) => Promise<any>;
 }
 
 const PAGE_SIZE = 20;
@@ -30,6 +34,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   isChatMode,
   viewMode,
   setViewMode,
+  queryDocuments,
 }) => {
   const { t } = useTranslation();
   const sourceData = useSearchStore((state) => state.sourceData);
@@ -58,11 +63,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       }
 
       try {
-        const response: any = await invoke("query_coco_fusion", {
-          from: from,
-          size: PAGE_SIZE,
-          queryStrings,
-        });
+        const response = await queryDocuments(from, PAGE_SIZE, queryStrings);
         const list = response?.hits || [];
         const total = response?.total_hits || 0;
 
@@ -207,7 +208,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         </div>
       );
     },
-    [data, selectedItem, viewMode, onMouseEnter, OpenURLWithBrowser]
+    [data, selectedItem, viewMode, onMouseEnter]
   );
 
   return (
@@ -226,7 +227,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
       <div className="flex-1 overflow-hidden">
         {data?.list && data.list.length > 0 ? (
-          <div ref={containerRef} style={{ height: '100%' }}>
+          <div ref={containerRef} style={{ height: "100%" }}>
             <FixedSizeList
               ref={listRef}
               height={containerRef.current?.clientHeight || 400}
@@ -238,8 +239,13 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                 if (!scrollUpdateWasRequested && containerRef.current) {
                   const threshold = 100;
                   const { scrollHeight, clientHeight } = containerRef.current;
-                  const remainingScroll = scrollHeight - (scrollOffset + clientHeight);
-                  if (remainingScroll <= threshold && !loading && data?.hasMore) {
+                  const remainingScroll =
+                    scrollHeight - (scrollOffset + clientHeight);
+                  if (
+                    remainingScroll <= threshold &&
+                    !loading &&
+                    data?.hasMore
+                  ) {
                     data?.loadMore && data.loadMore();
                   }
                 }

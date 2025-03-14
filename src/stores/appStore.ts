@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { listen, emit } from "@tauri-apps/api/event";
 
 import { AppEndpoint } from "@/utils/tauri";
+import platformAdapter from "@/utils/platformAdapter";
 
 const ENDPOINT_CHANGE_EVENT = "endpoint-changed";
 
@@ -82,7 +82,7 @@ export const useAppStore = create<IAppStore>()(
           endpoint_websocket,
         });
 
-        await emit(ENDPOINT_CHANGE_EVENT, {
+        await platformAdapter.emitEvent(ENDPOINT_CHANGE_EVENT, {
           endpoint,
           endpoint_http,
           endpoint_websocket,
@@ -93,7 +93,7 @@ export const useAppStore = create<IAppStore>()(
       isPinned: false,
       setIsPinned: (isPinned: boolean) => set({ isPinned }),
       initializeListeners: () => {
-        listen(ENDPOINT_CHANGE_EVENT, (event: any) => {
+        platformAdapter.listenEvent(ENDPOINT_CHANGE_EVENT, (event: any) => {
           const { endpoint, endpoint_http, endpoint_websocket } = event.payload;
           set({ endpoint, endpoint_http, endpoint_websocket });
         });

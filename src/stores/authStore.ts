@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { listen, emit } from '@tauri-apps/api/event';
 import { produce } from 'immer'
+
+import platformAdapter from "@/utils/platformAdapter";
 
 const AUTH_CHANGE_EVENT = 'auth-changed';
 const USERINFO_CHANGE_EVENT = 'userInfo-changed';
@@ -47,7 +48,7 @@ export const useAuthStore = create<IAuthStore>()(
           })
         );
 
-        await emit(AUTH_CHANGE_EVENT, {
+        await platformAdapter.emitEvent(AUTH_CHANGE_EVENT, {
           auth: {
             [key]: auth
           }
@@ -60,7 +61,7 @@ export const useAuthStore = create<IAuthStore>()(
           })
         );
 
-        await emit(AUTH_CHANGE_EVENT, {
+        await platformAdapter.emitEvent(AUTH_CHANGE_EVENT, {
           auth: {
             [key]: undefined
           }
@@ -73,19 +74,19 @@ export const useAuthStore = create<IAuthStore>()(
           })
         );
 
-        await emit(USERINFO_CHANGE_EVENT, {
+        await platformAdapter.emitEvent(USERINFO_CHANGE_EVENT, {
           userInfo: {
             [key]: userInfo
           }
         });
       },
       initializeListeners: () => {
-        listen(AUTH_CHANGE_EVENT, (event: any) => {
+        platformAdapter.listenEvent(AUTH_CHANGE_EVENT, (event: any) => {
           const { auth } = event.payload;
           set({ auth });
         });
 
-        listen(USERINFO_CHANGE_EVENT, (event: any) => {
+        platformAdapter.listenEvent(USERINFO_CHANGE_EVENT, (event: any) => {
           const { userInfo } = event.payload;
           set({ userInfo });
         });

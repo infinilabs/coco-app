@@ -1,9 +1,9 @@
 import { useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 
-import SearchChat from "@/pages/web/SearchChat";
+import SearchChat from "./SearchChat";
 
-function MainApp() {
+function WebApp() {
   const querySearch = useCallback(async (input: string) => {
     try {
       const response: any = await invoke("query_coco_fusion", {
@@ -36,11 +36,10 @@ function MainApp() {
   );
 
   return (
-    <SearchChat
-      querySearch={querySearch}
-      queryDocuments={queryDocuments}
-    />
+    <div className="w-[680px] h-[590px]">
+      <SearchChat querySearch={querySearch} queryDocuments={queryDocuments} />
+    </div>
   );
 }
 
-export default MainApp;
+export default WebApp;

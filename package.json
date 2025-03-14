@@ -6,6 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:web": "tsc && tsup",
+    "publish:web": "cd dist/search-chat && npm publish",
+    "publish:web:beta": "cd dist/search-chat && npm publish --tag beta",
+    "publish:web:alpha": "cd dist/search-chat && npm publish --tag alpha",
+    "publish:web:rc": "cd dist/search-chat && npm publish --tag rc",
     "preview": "vite preview",
     "tauri": "tauri",
     "release": "release-it",
@@ -63,7 +68,6 @@
     "@types/node": "^22.13.10",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
-    "@types/react-i18next": "^8.1.0",
     "@types/react-katex": "^3.0.4",
     "@types/react-window": "^1.8.8",
     "@vitejs/plugin-react": "^4.3.4",
@@ -72,6 +76,7 @@
     "postcss": "^8.5.3",
     "release-it": "^18.1.2",
     "tailwindcss": "^3.4.17",
+    "tsup": "^8.4.0",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2",
     "vite": "^5.4.14"
