@@ -14,8 +14,6 @@ import { useUpdateStore } from "@/stores/updateStore";
 import clsx from "clsx";
 
 interface FooterProps {
-  isChat: boolean;
-  name?: string;
 }
 
 export default function Footer({}: FooterProps) {

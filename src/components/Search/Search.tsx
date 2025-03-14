@@ -26,7 +26,6 @@ function Search({ isChatMode, input }: SearchProps) {
   const [suggests, setSuggests] = useState<any[]>([]);
   const [SearchData, setSearchData] = useState<any>({});
   const [isSearchComplete, setIsSearchComplete] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>();
 
   const mainWindowRef = useRef<HTMLDivElement>(null);
 
@@ -87,7 +86,6 @@ function Search({ isChatMode, input }: SearchProps) {
             IsError={IsError}
             isSearchComplete={isSearchComplete}
             isChatMode={isChatMode}
-            selected={(item) => setSelectedItem(item)}
           />
         )
       ) : (
@@ -119,7 +117,7 @@ function Search({ isChatMode, input }: SearchProps) {
         </div>
       )}
 
-      <Footer isChat={false} name={selectedItem?.source?.name} />
+      <Footer />
 
       <ContextMenu />
     </div>
