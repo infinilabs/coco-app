@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { isTauri } from "@tauri-apps/api/core";
+import { invoke, isTauri } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-shell";
 
 // 1
@@ -56,8 +56,8 @@ export function useWindowSize() {
 export const IsTauri = () => {
   return Boolean(
     typeof window !== "undefined" &&
-      window !== undefined &&
-      (window as any).__TAURI_INTERNALS__ !== undefined
+    window !== undefined &&
+    (window as any).__TAURI_INTERNALS__ !== undefined
   );
 };
 
@@ -66,6 +66,7 @@ export const OpenURLWithBrowser = async (url: string) => {
   if (isTauri()) {
     try {
       await open(url);
+      await invoke("hide_coco");
       console.log("URL opened in default browser");
     } catch (error) {
       console.error("Failed to open URL:", error);

@@ -38,7 +38,6 @@ function Search({
   const [suggests, setSuggests] = useState<any[]>([]);
   const [SearchData, setSearchData] = useState<any>({});
   const [isSearchComplete, setIsSearchComplete] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>();
 
   const mainWindowRef = useRef<HTMLDivElement>(null);
 
@@ -99,7 +98,6 @@ function Search({
             IsError={IsError}
             isSearchComplete={isSearchComplete}
             isChatMode={isChatMode}
-            selected={(item) => setSelectedItem(item)}
           />
         )
       ) : (
@@ -107,8 +105,6 @@ function Search({
       )}
 
       <Footer
-        isChat={false}
-        name={selectedItem?.source?.name}
         openSetting={openSetting}
         setWindowAlwaysOnTop={setWindowAlwaysOnTop}
       />

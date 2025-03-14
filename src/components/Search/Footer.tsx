@@ -12,10 +12,8 @@ import PinIcon from "@/icons/Pin";
 import { useUpdateStore } from "@/stores/updateStore";
 
 interface FooterProps {
-  isChat: boolean;
   openSetting: () => void;
   setWindowAlwaysOnTop: (isPinned: boolean) => Promise<void>;
-  name?: string;
 }
 
 export default function Footer({

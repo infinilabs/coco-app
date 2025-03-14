@@ -120,7 +120,7 @@ export default function SearchPopover({
 
           {dataSourceList?.length > 0 && (
             <Popover>
-              <PopoverButton className={clsx("flex items-center")}>
+              <PopoverButton as="span" className={clsx("flex items-center")}>
                 <ChevronDownIcon
                   className={clsx("size-5", [
                     isSearchActive
