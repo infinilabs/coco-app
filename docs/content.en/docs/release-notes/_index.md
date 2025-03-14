@@ -24,6 +24,7 @@ Information about release notes of Coco Server is provided here.
 - Refactor: chat components #273
 - Feat：add endpoint display #282
 - Chore: chat window min width & remove input bg #284
+- Chore: remove selected function & add hide_coco #286
 
 ## 0.2.0 (2025-03-07)
 
