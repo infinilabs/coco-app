@@ -1,8 +1,3 @@
-import { useOSKeyPress } from "@/hooks/useOSKeyPress";
-import { useSearchStore } from "@/stores/searchStore";
-import { copyToClipboard, OpenURLWithBrowser } from "@/utils";
-import { isMac } from "@/utils/platform";
-import { invoke } from "@tauri-apps/api/core";
 import {
   useClickAway,
   useCreation,
@@ -15,11 +10,20 @@ import { Link, SquareArrowOutUpRight } from "lucide-react";
 import { cloneElement, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useOSKeyPress } from "@/hooks/useOSKeyPress";
+import { useSearchStore } from "@/stores/searchStore";
+import { copyToClipboard, OpenURLWithBrowser } from "@/utils";
+import { isMac } from "@/utils/platform";
+
 interface State {
   activeMenuIndex: number;
 }
 
-const ContextMenu = () => {
+interface ContextMenuProps {
+  hideCoco: () => Promise<void>;
+}
+
+const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const { t } = useTranslation();
@@ -50,7 +54,7 @@ const ContextMenu = () => {
 
           setVisibleContextMenu(false);
 
-          invoke("hide_coco");
+          hideCoco();
         },
       },
       {

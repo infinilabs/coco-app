@@ -17,9 +17,6 @@ import {
   PopoverPanel,
 } from "@headlessui/react";
 import { useTranslation } from "react-i18next";
-import { invoke } from "@tauri-apps/api/core";
-import { emit, listen } from "@tauri-apps/api/event";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 
 import logoImg from "@/assets/icon.svg";
 import HistoryIcon from "@/icons/History";
@@ -31,6 +28,7 @@ import { useAppStore, IServer } from "@/stores/appStore";
 import { useChatStore } from "@/stores/chatStore";
 import type { Chat } from "./types";
 import { useConnectStore } from "@/stores/connectStore";
+import platformAdapter from "@/utils/platformAdapter";
 
 interface ChatHeaderProps {
   onCreateNewChat: () => void;
@@ -67,7 +65,7 @@ export function ChatHeader({
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
 
   const fetchServers = useCallback(async (resetSelection: boolean) => {
-    invoke("list_coco_servers")
+    platformAdapter.invokeBackend("list_coco_servers")
       .then((res: any) => {
         const enabledServers = (res as IServer[]).filter(
           (server) => server.enabled !== false
@@ -95,7 +93,7 @@ export function ChatHeader({
   useEffect(() => {
     fetchServers(true);
 
-    const unlisten = listen("login_or_logout", (event) => {
+    const unlisten = platformAdapter.listenEvent("login_or_logout", (event) => {
       console.log("Login or Logout:", currentService, event);
       fetchServers(true);
     });
@@ -111,7 +109,7 @@ export function ChatHeader({
     if (!connected) return;
     try {
       console.log("disconnect");
-      await invoke("disconnect");
+      await platformAdapter.invokeBackend("disconnect");
     } catch (error) {
       console.error("Failed to disconnect:", error);
     }
@@ -142,7 +140,7 @@ export function ChatHeader({
   const togglePin = async () => {
     try {
       const newPinned = !isPinned;
-      await getCurrentWindow().setAlwaysOnTop(newPinned);
+      await platformAdapter.setAlwaysOnTop(newPinned);
       setIsPinned(newPinned);
     } catch (err) {
       console.error("Failed to toggle window pin state:", err);
@@ -151,7 +149,7 @@ export function ChatHeader({
   };
 
   const openSettings = async () => {
-    emit("open_settings", "connect");
+    platformAdapter.emitEvent("open_settings", "connect");
   };
 
   return (

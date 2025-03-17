@@ -282,5 +282,8 @@
       "download": "Download"
     },
     "skip_version": "Skip this version"
+  },
+  "error": {
+    "message": "Sorry, there is an error in your Coco App. Please contact the administrator."
   }
 }

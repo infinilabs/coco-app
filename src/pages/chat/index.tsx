@@ -1,11 +1,27 @@
-import { useState, useRef, useEffect } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { useState, useRef, useEffect, useCallback, lazy } from "react";
+import { invoke, convertFileSrc } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
+import {
+  checkScreenRecordingPermission,
+  requestScreenRecordingPermission,
+} from "tauri-plugin-macos-permissions-api";
+import {
+  getScreenshotableMonitors,
+  getScreenshotableWindows,
+  getMonitorScreenshot,
+  getWindowScreenshot,
+} from "tauri-plugin-screenshots-api";
+import { open } from "@tauri-apps/plugin-dialog";
+import { metadata, icon } from "tauri-plugin-fs-pro-api";
 
-import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
+import { ChatAIRef } from "@/components/Assistant/Chat";
 import { Sidebar } from "@/components/Assistant/Sidebar";
 import type { Chat } from "@/components/Assistant/types";
 import { useConnectStore } from "@/stores/connectStore";
 import InputBox from "@/components/Search/InputBox";
+import { DataSource } from "@/components/Assistant/types";
+
+const ChatAI = lazy(() => import("@/components/Assistant/Chat"));
 
 interface ChatProps {}
 
@@ -131,6 +147,63 @@ export default function Chat({}: ChatProps) {
     chatAIRef.current?.reconnect();
   };
 
+  const hideCoco = useCallback(() => {
+    return invoke("hide_coco");
+  }, []);
+
+  const getFileUrl = useCallback((path: string) => {
+    return convertFileSrc(path);
+  }, []);
+
+  const getDataSourcesByServer = useCallback(
+    async (serverId: string): Promise<DataSource[]> => {
+      return invoke("get_datasources_by_server", {
+        id: serverId,
+      });
+    },
+    []
+  );
+
+  const setupWindowFocusListener = useCallback(async (callback: () => void) => {
+    return listen("tauri://focus", callback);
+  }, []);
+
+  const checkScreenPermission = useCallback(async () => {
+    return checkScreenRecordingPermission();
+  }, []);
+
+  const requestScreenPermission = useCallback(() => {
+    return requestScreenRecordingPermission();
+  }, []);
+
+  const getScreenMonitors = useCallback(async () => {
+    return getScreenshotableMonitors();
+  }, []);
+
+  const getScreenWindows = useCallback(async () => {
+    return getScreenshotableWindows();
+  }, []);
+
+  const captureMonitorScreenshot = useCallback(async (id: number) => {
+    return getMonitorScreenshot(id);
+  }, []);
+
+  const captureWindowScreenshot = useCallback(async (id: number) => {
+    return getWindowScreenshot(id);
+  }, []);
+
+  const openFileDialog = useCallback(async (options: { multiple: boolean }) => {
+    return open(options);
+  }, []);
+
+  const getFileMetadata = useCallback(async (path: string) => {
+    return metadata(path);
+  }, []);
+
+  const getFileIcon = useCallback(async (path: string, size: number) => {
+    return icon(path, size);
+  }, []);
+
   return (
     <div className="h-screen">
       <div className="h-[100%] flex">
@@ -168,6 +241,7 @@ export default function Chat({}: ChatProps) {
             isSidebarOpen={isSidebarOpen}
             clearChatPage={clearChat}
             isChatPage={isChatPage}
+            getFileUrl={getFileUrl}
             changeInput={setInput}
           />
 
@@ -186,6 +260,18 @@ export default function Chat({}: ChatProps) {
               isDeepThinkActive={isDeepThinkActive}
               setIsDeepThinkActive={() => setIsDeepThinkActive((prev) => !prev)}
               isChatPage={isChatPage}
+              getDataSourcesByServer={getDataSourcesByServer}
+              setupWindowFocusListener={setupWindowFocusListener}
+              hideCoco={hideCoco}
+              checkScreenPermission={checkScreenPermission}
+              requestScreenPermission={requestScreenPermission}
+              getScreenMonitors={getScreenMonitors}
+              getScreenWindows={getScreenWindows}
+              captureMonitorScreenshot={captureMonitorScreenshot}
+              captureWindowScreenshot={captureWindowScreenshot}
+              openFileDialog={openFileDialog}
+              getFileMetadata={getFileMetadata}
+              getFileIcon={getFileIcon}
             />
           </div>
         </div>

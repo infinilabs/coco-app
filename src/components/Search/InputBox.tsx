@@ -1,7 +1,5 @@
 import { ArrowBigLeft, Search, Send, Brain } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { listen } from "@tauri-apps/api/event";
-import { invoke, isTauri } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 
@@ -13,6 +11,8 @@ import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import SearchPopover from "./SearchPopover";
+// import SpeechToText from "../SpeechToText";
+import { DataSource } from "@/components/Assistant/types";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -28,6 +28,20 @@ interface ChatInputProps {
   isDeepThinkActive: boolean;
   setIsDeepThinkActive: () => void;
   isChatPage?: boolean;
+  getDataSourcesByServer: (serverId: string) => Promise<DataSource[]>;
+  setupWindowFocusListener: (callback: () => void) => Promise<() => void>;
+  hideCoco: () => Promise<any>;
+  checkScreenPermission: () => Promise<boolean>;
+  requestScreenPermission: () => void;
+  getScreenMonitors: () => Promise<any[]>;
+  getScreenWindows: () => Promise<any[]>;
+  captureMonitorScreenshot: (id: number) => Promise<string>;
+  captureWindowScreenshot: (id: number) => Promise<string>;
+  openFileDialog: (options: {
+    multiple: boolean;
+  }) => Promise<string | string[] | null>;
+  getFileMetadata: (path: string) => Promise<any>;
+  getFileIcon: (path: string, size: number) => Promise<string>;
 }
 
 export default function ChatInput({
@@ -44,6 +58,18 @@ export default function ChatInput({
   isDeepThinkActive,
   setIsDeepThinkActive,
   isChatPage = false,
+  getDataSourcesByServer,
+  setupWindowFocusListener,
+  hideCoco,
+  // checkScreenPermission,
+  // requestScreenPermission,
+  // getScreenMonitors,
+  // getScreenWindows,
+  // captureMonitorScreenshot,
+  // captureWindowScreenshot,
+  // openFileDialog,
+  // getFileMetadata,
+  // getFileIcon,
 }: ChatInputProps) {
   const { t } = useTranslation();
 
@@ -98,7 +124,7 @@ export default function ChatInput({
     if (inputValue) {
       changeInput("");
     } else if (!isPinned) {
-      invoke("hide_coco").then(() => console.log("Hide Coco"));
+      hideCoco();
     }
   }, [inputValue, isPinned]);
 
@@ -181,24 +207,15 @@ export default function ChatInput({
   }, [handleKeyDown, handleKeyUp]);
 
   useEffect(() => {
-    if (!isTauri()) return;
-
-    const setupListener = async () => {
-      const unlisten = await listen("tauri://focus", () => {
-        // console.log("Window focused!");
-        if (isChatMode) {
-          textareaRef.current?.focus();
-        } else {
-          inputRef.current?.focus();
-        }
-      });
-
-      return unlisten;
-    };
-
     let unlisten: (() => void) | undefined;
 
-    setupListener().then((unlistener) => {
+    setupWindowFocusListener(() => {
+      if (isChatMode) {
+        textareaRef.current?.focus();
+      } else {
+        inputRef.current?.focus();
+      }
+    }).then((unlistener) => {
       unlisten = unlistener;
     });
 
@@ -347,7 +364,17 @@ export default function ChatInput({
       >
         {isChatMode ? (
           <div className="flex gap-2 text-sm text-[#333] dark:text-[#d8d8d8]">
-            {/* <InputExtra /> */}
+            {/* <InputExtra
+              checkScreenPermission={checkScreenPermission}
+              requestScreenPermission={requestScreenPermission}
+              getScreenMonitors={getScreenMonitors}
+              getScreenWindows={getScreenWindows}
+              captureMonitorScreenshot={captureMonitorScreenshot}
+              captureWindowScreenshot={captureWindowScreenshot}
+              openFileDialog={openFileDialog}
+              getFileMetadata={getFileMetadata}
+              getFileIcon={getFileIcon}
+            /> */}
 
             <button
               className={clsx(
@@ -379,6 +406,7 @@ export default function ChatInput({
             <SearchPopover
               isSearchActive={isSearchActive}
               setIsSearchActive={setIsSearchActive}
+              getDataSourcesByServer={getDataSourcesByServer}
             />
           </div>
         ) : (

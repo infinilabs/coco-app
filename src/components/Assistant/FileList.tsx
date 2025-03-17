@@ -1,10 +1,14 @@
-import { useChatStore } from "@/stores/chatStore";
-import { isImage } from "@/utils";
-import { convertFileSrc } from "@tauri-apps/api/core";
 import { filesize } from "filesize";
 import { X } from "lucide-react";
 
-const FileList = () => {
+import { useChatStore } from "@/stores/chatStore";
+import { isImage } from "@/utils";
+
+interface FileListProps {
+  getFileUrl: (path: string) => string;
+}
+
+const FileList = ({ getFileUrl }: FileListProps) => {
   const uploadFiles = useChatStore((state) => state.uploadFiles);
   const setUploadFiles = useChatStore((state) => state.setUploadFiles);
 
@@ -30,7 +34,7 @@ const FileList = () => {
               </div>
 
               <img
-                src={convertFileSrc(isImage(path) ? path : icon)}
+                src={getFileUrl(isImage(path) ? path : icon)}
                 className="size-[40px]"
               />
 

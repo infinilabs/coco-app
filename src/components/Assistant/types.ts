@@ -39,3 +39,9 @@ export interface IChunkData {
   message_chunk: string;
   [key: string]: any;
 }
+
+export interface DataSource {
+  id: string;
+  name: string;
+  [key: string]: any;
+}

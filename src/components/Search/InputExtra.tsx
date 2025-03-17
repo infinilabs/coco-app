@@ -1,3 +1,5 @@
+import { Fragment, MouseEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { ChevronRight, Plus } from "lucide-react";
 import {
   Menu,
@@ -8,33 +10,18 @@ import {
   PopoverButton,
   PopoverPanel,
 } from "@headlessui/react";
-import { open } from "@tauri-apps/plugin-dialog";
 import { castArray, find, isNil } from "lodash-es";
-import { useChatStore } from "@/stores/chatStore";
-import { metadata, icon } from "tauri-plugin-fs-pro-api";
 import { nanoid } from "nanoid";
-import Tooltip from "../Common/Tooltip";
-import { useAppStore } from "@/stores/appStore";
 import { useCreation, useMount, useReactive } from "ahooks";
-import {
-  checkScreenRecordingPermission,
-  requestScreenRecordingPermission,
-} from "tauri-plugin-macos-permissions-api";
-import {
-  getScreenshotableMonitors,
-  getScreenshotableWindows,
-  ScreenshotableMonitor,
-  ScreenshotableWindow,
-  getMonitorScreenshot,
-  getWindowScreenshot,
-} from "tauri-plugin-screenshots-api";
-import { Fragment, MouseEvent } from "react";
-import { useTranslation } from "react-i18next";
+
+import { useChatStore } from "@/stores/chatStore";
+import { useAppStore } from "@/stores/appStore";
+import Tooltip from "@/components/Common/Tooltip";
 
 interface State {
   screenRecordingPermission?: boolean;
-  screenshotableMonitors: ScreenshotableMonitor[];
-  screenshotableWindows: ScreenshotableWindow[];
+  screenshotableMonitors: any[];
+  screenshotableWindows: any[];
 }
 
 interface MenuItem {
@@ -46,7 +33,29 @@ interface MenuItem {
   clickEvent?: (event: MouseEvent) => void;
 }
 
-const InputExtra = () => {
+interface InputExtraProps {
+  checkScreenPermission: () => Promise<boolean>;
+  requestScreenPermission: () => void;
+  getScreenMonitors: () => Promise<any[]>;
+  getScreenWindows: () => Promise<any[]>;
+  captureMonitorScreenshot: (id: number) => Promise<string>;
+  captureWindowScreenshot: (id: number) => Promise<string>;
+  openFileDialog: (options: { multiple: boolean }) => Promise<string | string[] | null>;
+  getFileMetadata: (path: string) => Promise<any>;
+  getFileIcon: (path: string, size: number) => Promise<string>;
+}
+
+const InputExtra = ({
+  checkScreenPermission,
+  requestScreenPermission,
+  getScreenMonitors,
+  getScreenWindows,
+  captureMonitorScreenshot,
+  captureWindowScreenshot,
+  openFileDialog,
+  getFileMetadata,
+  getFileIcon,
+}: InputExtraProps) => {
   const { t, i18n } = useTranslation();
   const uploadFiles = useChatStore((state) => state.uploadFiles);
   const setUploadFiles = useChatStore((state) => state.setUploadFiles);
@@ -58,7 +67,7 @@ const InputExtra = () => {
   });
 
   useMount(async () => {
-    state.screenRecordingPermission = await checkScreenRecordingPermission();
+    state.screenRecordingPermission = await checkScreenPermission();
   });
 
   const handleUploadFiles = async (paths: string | string[]) => {
@@ -67,7 +76,7 @@ const InputExtra = () => {
     for await (const path of castArray(paths)) {
       if (find(uploadFiles, { path })) continue;
 
-      const stat = await metadata(path);
+      const stat = await getFileMetadata(path);
 
       if (stat.size / 1024 / 1024 > 100) {
         continue;
@@ -77,7 +86,7 @@ const InputExtra = () => {
         ...stat,
         id: nanoid(),
         path,
-        icon: await icon(path, 256),
+        icon: await getFileIcon(path, 256),
       });
     }
 
@@ -91,7 +100,7 @@ const InputExtra = () => {
         clickEvent: async () => {
           setIsPinned(true);
 
-          const selectedFiles = await open({
+          const selectedFiles = await openFileDialog({
             multiple: true,
           });
 
@@ -106,12 +115,12 @@ const InputExtra = () => {
         label: t("search.input.screenshot"),
         clickEvent: async (event) => {
           if (state.screenRecordingPermission) {
-            state.screenshotableMonitors = await getScreenshotableMonitors();
-            state.screenshotableWindows = await getScreenshotableWindows();
+            state.screenshotableMonitors = await getScreenMonitors();
+            state.screenshotableWindows = await getScreenWindows();
           } else {
             event.preventDefault();
 
-            requestScreenRecordingPermission();
+            requestScreenPermission();
           }
         },
         children: [
@@ -124,7 +133,7 @@ const InputExtra = () => {
                 id,
                 label: name,
                 clickEvent: async () => {
-                  const path = await getMonitorScreenshot(id);
+                  const path = await captureMonitorScreenshot(id);
 
                   handleUploadFiles(path);
                 },
@@ -140,7 +149,7 @@ const InputExtra = () => {
                 id,
                 label: name,
                 clickEvent: async () => {
-                  const path = await getWindowScreenshot(id);
+                  const path = await captureWindowScreenshot(id);
 
                   handleUploadFiles(path);
                 },
