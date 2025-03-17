@@ -11,6 +11,8 @@ Information about release notes of Coco Server is provided here.
 
 ### Breaking changes
 
+- feat: add web pages components #277
+
 ### Features
 
 ### Bug fix
