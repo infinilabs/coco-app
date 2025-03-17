@@ -25,6 +25,10 @@ export interface EventPayloads {
   'open_settings': string | '';
   'tab_index': string | '';
   'login_or_logout': any;
+  'change-startup-store': {
+    defaultStartupWindow: string;
+  };
+  'show-coco': void;
 }
 
 // Platform adapter interface

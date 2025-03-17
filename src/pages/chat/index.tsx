@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, lazy } from "react";
 import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import {
@@ -14,12 +14,14 @@ import {
 import { open } from "@tauri-apps/plugin-dialog";
 import { metadata, icon } from "tauri-plugin-fs-pro-api";
 
-import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
+import { ChatAIRef } from "@/components/Assistant/Chat";
 import { Sidebar } from "@/components/Assistant/Sidebar";
 import type { Chat } from "@/components/Assistant/types";
 import { useConnectStore } from "@/stores/connectStore";
 import InputBox from "@/components/Search/InputBox";
 import { DataSource } from "@/components/Assistant/types";
+
+const ChatAI = lazy(() => import("@/components/Assistant/Chat"));
 
 interface ChatProps {}
 
