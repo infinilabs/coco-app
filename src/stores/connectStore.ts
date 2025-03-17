@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { produce } from 'immer'
+import { produce } from "immer";
 import { listen, emit } from "@tauri-apps/api/event";
 
 const CONNECTOR_CHANGE_EVENT = "connector_data_change";
@@ -43,17 +43,6 @@ export const useConnectStore = create<IConnectStore>()(
             draft.currentService = server;
           })
         );
-        console.log("set serverList:", serverList)
-        set(produce((draft) => {
-          draft.serverList = serverList;
-        }))
-      },
-      currentService: "default_coco_server",
-      setCurrentService: (server: any) => {
-        console.log("set default server:", server)
-        set(produce((draft) => {
-          draft.currentService = server;
-        }))
       },
       connector_data: {},
       setConnectorData: async (connector_data: any[], key: string) => {
