@@ -9,15 +9,29 @@ Information about release notes of Coco Server is provided here.
 
 ## Latest (In development)
 
+### Breaking changes
+
 ### Features
+
+### Bug fix
+
+### Improvements
+
+## 0.2.1 (2025-03-14)
+
+### Features
+
+- support for automatic in-app updates #274
 
 ### Breaking changes
 
 ### Bug fix
+
 - Fix the issue that the fusion search include disabled servers
 - Fix incorrect version type: should be string instead of u32
 - Fix the chat end judgment type #280
 - Fix the chat scrolling and chat rendering #282
+- Fix: store data is not shared among multiple windows #298
 
 ### Improvements
 
@@ -26,6 +40,7 @@ Information about release notes of Coco Server is provided here.
 - Chore: chat window min width & remove input bg #284
 - Chore: remove selected function & add hide_coco #286
 - Chore：websocket timeout increased to 2 minutes #289
+- Chore: remove chat input border & clear input #295
 
 ## 0.2.0 (2025-03-07)
 
@@ -35,7 +50,7 @@ Information about release notes of Coco Server is provided here.
 - Add api to disable or enable server #185
 - Networked search supports selection of data sources #209
 - Add deepthink and knowledge search options to RAG based chat
-- Support i18n, add Chinese language support 
+- Support i18n, add Chinese language support
 - Support Windows platform
 - etc.
 
