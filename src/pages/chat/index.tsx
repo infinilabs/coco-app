@@ -168,10 +168,11 @@ export default function Chat({}: ChatProps) {
             isSidebarOpen={isSidebarOpen}
             clearChatPage={clearChat}
             isChatPage={isChatPage}
+            changeInput={setInput}
           />
 
           {/* Input area */}
-          <div className={`border-t p-4 border-gray-200 dark:border-gray-800`}>
+          <div className={`border-t p-4 pb-0 border-gray-200 dark:border-gray-800`}>
             <InputBox
               isChatMode={true}
               inputValue={input}

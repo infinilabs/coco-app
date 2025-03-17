@@ -5,18 +5,28 @@ export function useChatScroll(messagesEndRef: React.RefObject<HTMLDivElement>) {
   const [userScrolling, setUserScrolling] = useState(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout>();
 
+  const lastScrollHeightRef = useRef<number>(0);
+
+  const isNearBottom = (container: HTMLElement) => {
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    return Math.abs(scrollHeight - scrollTop - clientHeight) < 150;
+  };
+
   const scrollToBottom = useCallback(
     debounce(() => {
-      if (!userScrolling) {
-        const container = messagesEndRef.current?.parentElement;
-        if (container) {
-          container.scrollTo({
-            top: container.scrollHeight,
-            behavior: "smooth",
-          });
-        }
+      const container = messagesEndRef.current?.parentElement;
+      if (!container) return;
+
+      const contentChanged = lastScrollHeightRef.current !== container.scrollHeight;
+      lastScrollHeightRef.current = container.scrollHeight;
+
+      if (!userScrolling || (contentChanged && isNearBottom(container))) {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: "smooth",
+        });
       }
-    }, 100),
+    }, 50),
     [userScrolling, messagesEndRef]
   );
 
@@ -24,33 +34,23 @@ export function useChatScroll(messagesEndRef: React.RefObject<HTMLDivElement>) {
     const container = messagesEndRef.current?.parentElement;
     if (!container) return;
 
+    lastScrollHeightRef.current = container.scrollHeight;
+
     const handleScroll = () => {
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
 
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      const isAtBottom =
-        Math.abs(scrollHeight - scrollTop - clientHeight) < 10;
-
-      setUserScrolling(!isAtBottom);
-
-      if (isAtBottom) {
-        setUserScrolling(false);
+      const near = isNearBottom(container);
+      if (!near) {
+        setUserScrolling(true);
       }
 
       scrollTimeoutRef.current = setTimeout(() => {
-        const {
-          scrollTop: newScrollTop,
-          scrollHeight: newScrollHeight,
-          clientHeight: newClientHeight,
-        } = container;
-        const nowAtBottom =
-          Math.abs(newScrollHeight - newScrollTop - newClientHeight) < 10;
-        if (nowAtBottom) {
+        if (isNearBottom(container)) {
           setUserScrolling(false);
         }
-      }, 500);
+      }, 300);
     };
 
     container.addEventListener("scroll", handleScroll);

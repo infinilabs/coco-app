@@ -28,6 +28,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useConnectStore } from "@/stores/connectStore";
 import bannerImg from "@/assets/images/coco-cloud-banner.jpeg";
 import SettingsToggle from "@/components/Settings/SettingsToggle";
+import Tooltip from "@/components/Common/Tooltip";
 
 export default function Cloud() {
   const { t } = useTranslation();
@@ -312,19 +313,22 @@ export default function Cloud() {
       });
   };
 
-  const enable_coco_server = useCallback(async (enabled: boolean) => {
-    try {
-      const command = enabled ? "enable_server" : "disable_server";
+  const enable_coco_server = useCallback(
+    async (enabled: boolean) => {
+      try {
+        const command = enabled ? "enable_server" : "disable_server";
 
-      await invoke(command, { id: currentService?.id });
+        await invoke(command, { id: currentService?.id });
 
-      setCurrentService({ ...currentService, enabled });
+        setCurrentService({ ...currentService, enabled });
 
-      await fetchServers(false);
-    } catch (error) {
-      setError(error);
-    }
-  }, [currentService?.id]);
+        await fetchServers(false);
+      } catch (error) {
+        setError(error);
+      }
+    },
+    [currentService?.id]
+  );
 
   return (
     <div className="flex bg-gray-50 dark:bg-gray-900">
@@ -346,9 +350,11 @@ export default function Cloud() {
             </div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <div className="flex items-center text-gray-900 dark:text-white font-medium">
-                  {currentService?.name}
-                </div>
+                <Tooltip content={currentService?.endpoint}>
+                  <div className="flex items-center text-gray-900 dark:text-white font-medium cursor-pointer">
+                    {currentService?.name}
+                  </div>
+                </Tooltip>
               </div>
               <div className="flex items-center gap-2">
                 <SettingsToggle

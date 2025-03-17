@@ -36,7 +36,7 @@ export const PickSource = ({
   useEffect(() => {
     if (!ChunkData?.message_chunk) return;
 
-    if (loading) {
+    if (!loading) {
       try {
         const cleanContent = ChunkData.message_chunk.replace(/^"|"$/g, "");
         const allMatches = cleanContent.match(/<JSON>([\s\S]*?)<\/JSON>/g);

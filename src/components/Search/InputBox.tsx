@@ -1,4 +1,4 @@
-import { ArrowBigLeft, Search, Send, Brain, AudioLines } from "lucide-react";
+import { ArrowBigLeft, Search, Send, Brain } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke, isTauri } from "@tauri-apps/api/core";
@@ -13,7 +13,6 @@ import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import SearchPopover from "./SearchPopover";
-import SpeechToText from "../SpeechToText";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -214,11 +213,7 @@ export default function ChatInput({
 
   return (
     <div
-      className={`w-full relative ${
-        isChatPage
-          ? "bg-inputbox_bg_light dark:bg-inputbox_bg_dark bg-cover rounded-xl border border-[#E6E6E6] dark:border-[#272626]"
-          : ""
-      }`}
+      className={`w-full relative`}
     >
       <div
         className={`p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded transition-all relative `}
@@ -282,13 +277,13 @@ export default function ChatInput({
           ) : null}
         </div>
 
-        {isChatMode && (
+        {/* {isChatMode && (
           <SpeechToText
             onChange={(transcript) => {
               changeInput(inputValue + transcript);
             }}
           />
-        )}
+        )} */}
 
         {isChatMode && curChatEnd ? (
           <button
@@ -388,12 +383,12 @@ export default function ChatInput({
           </div>
         ) : (
           <div data-tauri-drag-region className="w-28 flex gap-2 relative">
-            <SpeechToText
+            {/* <SpeechToText
               Icon={AudioLines}
               onChange={(transcript) => {
                 changeInput(inputValue + transcript);
               }}
-            />
+            /> */}
           </div>
         )}
 
