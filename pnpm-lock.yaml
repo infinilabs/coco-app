@@ -119,6 +119,9 @@ importers:
       tauri-plugin-macos-permissions-api:
         specifier: ^2.1.1
         version: 2.1.1
+      tauri-plugin-mic-recorder-api:
+        specifier: ^2.0.0
+        version: 2.0.0
       tauri-plugin-screenshots-api:
         specifier: ^2.1.0
         version: 2.1.0
@@ -3171,6 +3174,9 @@ packages:
 
   tauri-plugin-macos-permissions-api@2.1.1:
     resolution: {integrity: sha512-aUM02FibqrG0YRs0o4gza+RlE9Q2Tpo4FJz6G+CSQYc7ZsgCVkywJm40yfHKKFzd4eEAIPPI5agEIFOvWfBpxg==}
+
+  tauri-plugin-mic-recorder-api@2.0.0:
+    resolution: {integrity: sha512-04wqYCX4WIlYd6KUY7aS3+W4B5RtnSoVczaQCBSXKpQkEx9XdaaBN05XCee2unxGva0btSXBItFqQSdosnS4jQ==}
 
   tauri-plugin-screenshots-api@2.1.0:
     resolution: {integrity: sha512-lknHlq7truhBCO4lVlHBWkk/YYrKXNef0mveUftHC3U0LBI/GTNzOFbyZk+VhHAcztTB5BPpZA0TSbuLd9zgQA==}
@@ -6749,6 +6755,10 @@ snapshots:
       '@tauri-apps/api': 2.3.0
 
   tauri-plugin-macos-permissions-api@2.1.1:
+    dependencies:
+      '@tauri-apps/api': 2.3.0
+
+  tauri-plugin-mic-recorder-api@2.0.0:
     dependencies:
       '@tauri-apps/api': 2.3.0
 

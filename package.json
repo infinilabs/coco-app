@@ -55,6 +55,7 @@
     "remark-math": "^6.0.0",
     "tauri-plugin-fs-pro-api": "^2.3.1",
     "tauri-plugin-macos-permissions-api": "^2.1.1",
+    "tauri-plugin-mic-recorder-api": "^2.0.0",
     "tauri-plugin-screenshots-api": "^2.1.0",
     "use-debounce": "^10.0.4",
     "uuid": "^11.1.0",
