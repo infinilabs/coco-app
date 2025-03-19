@@ -11,8 +11,8 @@ import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import SearchPopover from "./SearchPopover";
-// import SpeechToText from "../SpeechToText";
 import { DataSource } from "@/components/Assistant/types";
+import SpeechToText from "../SpeechToText";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -61,16 +61,16 @@ export default function ChatInput({
   getDataSourcesByServer,
   setupWindowFocusListener,
   hideCoco,
-  // checkScreenPermission,
-  // requestScreenPermission,
-  // getScreenMonitors,
-  // getScreenWindows,
-  // captureMonitorScreenshot,
-  // captureWindowScreenshot,
-  // openFileDialog,
-  // getFileMetadata,
-  // getFileIcon,
-}: ChatInputProps) {
+}: // checkScreenPermission,
+// requestScreenPermission,
+// getScreenMonitors,
+// getScreenWindows,
+// captureMonitorScreenshot,
+// captureWindowScreenshot,
+// openFileDialog,
+// getFileMetadata,
+// getFileIcon,
+ChatInputProps) {
   const { t } = useTranslation();
 
   const showTooltip = useAppStore(
@@ -229,11 +229,9 @@ export default function ChatInput({
   };
 
   return (
-    <div
-      className={`w-full relative`}
-    >
+    <div className={`w-full relative`}>
       <div
-        className={`p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded transition-all relative `}
+        className={`p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded transition-all relative overflow-hidden`}
       >
         <div className="flex flex-wrap gap-2 flex-1 items-center relative">
           {!isChatMode && !sourceData ? (
@@ -294,13 +292,12 @@ export default function ChatInput({
           ) : null}
         </div>
 
-        {/* {isChatMode && (
-          <SpeechToText
-            onChange={(transcript) => {
-              changeInput(inputValue + transcript);
-            }}
-          />
-        )} */}
+        <SpeechToText
+          key={isChatMode ? "chat" : "search"}
+          onChange={(text) => {
+            changeInput(inputValue + text);
+          }}
+        />
 
         {isChatMode && curChatEnd ? (
           <button
@@ -410,14 +407,10 @@ export default function ChatInput({
             />
           </div>
         ) : (
-          <div data-tauri-drag-region className="w-28 flex gap-2 relative">
-            {/* <SpeechToText
-              Icon={AudioLines}
-              onChange={(transcript) => {
-                changeInput(inputValue + transcript);
-              }}
-            /> */}
-          </div>
+          <div
+            data-tauri-drag-region
+            className="w-28 flex gap-2 relative"
+          ></div>
         )}
 
         {isChatPage ? null : (

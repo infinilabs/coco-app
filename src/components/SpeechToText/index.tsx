@@ -1,96 +1,121 @@
-import { useEventListener, useReactive } from "ahooks";
 import clsx from "clsx";
-import { LucideIcon, Mic } from "lucide-react";
-import { FC, useEffect } from "react";
+import { Check, Loader, Mic, X } from "lucide-react";
+import { FC, useEffect, useState } from "react";
 
 interface SpeechToTextProps {
-  Icon?: LucideIcon;
-  onChange?: (transcript: string) => void;
+  onChange?: (text: string) => void;
 }
 
-let recognition: SpeechRecognition | null = null;
+let interval: ReturnType<typeof setInterval>;
 
 const SpeechToText: FC<SpeechToTextProps> = (props) => {
-  const { Icon = Mic, onChange } = props;
-
-  const state = useReactive({
-    speaking: false,
-  });
+  const { onChange } = props;
+  const [speaking, setSpeaking] = useState(false);
+  const [converting, setConverting] = useState(false);
+  const [countdown, setCountdown] = useState(30);
 
   useEffect(() => {
-    return destroyRecognition;
+    return reset;
   }, []);
 
-  useEventListener("focusin", (event) => {
-    const { target } = event;
-
-    const isInputElement =
-      target instanceof HTMLInputElement ||
-      target instanceof HTMLTextAreaElement;
-
-    if (state.speaking && isInputElement) {
-      target.blur();
+  useEffect(() => {
+    if (speaking) {
+      interval = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    } else {
+      reset();
     }
-  });
+  }, [speaking]);
 
-  const handleSpeak = () => {
-    if (state.speaking) {
-      return destroyRecognition();
-    }
+  useEffect(() => {
+    if (countdown > 0) return;
 
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+    handleOk();
+  }, [countdown]);
 
-    recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = "zh-CN";
+  const reset = () => {
+    clearInterval(interval);
 
-    recognition.onresult = (event) => {
-      const transcript = [...event.results]
-        .map((result) => result[0].transcript)
-        .join("");
-
-      onChange?.(transcript);
-    };
-
-    recognition.onerror = destroyRecognition;
-
-    recognition.onend = destroyRecognition;
-
-    recognition.start();
-
-    state.speaking = true;
+    setSpeaking(false);
+    setConverting(false);
+    setCountdown(30);
   };
 
-  const destroyRecognition = () => {
-    if (recognition) {
-      recognition.abort();
-      recognition.onresult = null;
-      recognition.onerror = null;
-      recognition.onend = null;
-      recognition = null;
-    }
+  const handleCancel = () => {
+    if (converting) return;
 
-    state.speaking = false;
+    setSpeaking(false);
+  };
+
+  const handleOk = () => {
+    clearInterval(interval);
+
+    setConverting(true);
+
+    setTimeout(() => {
+      onChange?.("");
+
+      setConverting(false);
+      setSpeaking(false);
+    }, 3000);
   };
 
   return (
-    <div
-      className={clsx(
-        "p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition cursor-pointer",
-        {
-          "bg-blue-100 dark:bg-blue-900": state.speaking,
-        }
-      )}
-    >
-      <Icon
-        className={clsx("size-4 text-[#999] dark:text-[#999]", {
-          "text-blue-500 animate-pulse": state.speaking,
-        })}
-        onClick={handleSpeak}
-      />
-    </div>
+    <>
+      <div
+        className={clsx(
+          "p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition cursor-pointer"
+        )}
+      >
+        <Mic
+          className="size-4 text-[#999]"
+          onClick={() => {
+            setSpeaking(true);
+          }}
+        />
+      </div>
+
+      <div
+        className={clsx(
+          "absolute inset-0 left-full flex items-center gap-1 px-1 rounded transition-all bg-[#ededed] dark:bg-[#202126]",
+          {
+            "!left-0": speaking,
+          }
+        )}
+      >
+        <div
+          className={clsx(
+            "flex items-center justify-center size-6 bg-white dark:bg-black rounded-full transition cursor-pointer",
+            {
+              "!cursor-not-allowed opacity-50": converting,
+            }
+          )}
+          onClick={handleCancel}
+        >
+          <X className="size-4 text-[#0C0C0C] dark:text-[#999999]" />
+        </div>
+
+        <div className="flex items-center gap-1 flex-1 h-6 px-2 bg-white dark:bg-black rounded-full transition">
+          <div className="flex-1">...</div>
+
+          <span className="text-xs text-[#333] dark:text-[#999]">
+            {countdown}
+          </span>
+        </div>
+
+        <div
+          className="flex items-center justify-center size-6 text-white  bg-[#0072FF] rounded-full transition cursor-pointer"
+          onClick={handleOk}
+        >
+          {converting ? (
+            <Loader className="size-4 animate-spin" />
+          ) : (
+            <Check className="size-4" />
+          )}
+        </div>
+      </div>
+    </>
   );
 };
 
