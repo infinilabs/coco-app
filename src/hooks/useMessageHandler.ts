@@ -21,6 +21,7 @@ export function useMessageHandler(
 
   const dealMsg = useCallback(
     (msg: string) => {
+      console.log("AI response:", msg);
       if (messageTimeoutRef.current) {
         clearTimeout(messageTimeoutRef.current);
       }

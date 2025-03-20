@@ -36,9 +36,12 @@ impl HttpClient {
         headers: Option<HashMap<String, String>>,
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
-        let mut request_builder = Self::get_request_builder(method, url, headers, query_params, body).await;
+        let mut request_builder =
+            Self::get_request_builder(method, url, headers, query_params, body).await;
 
-        let response = request_builder.send().await
+        let response = request_builder
+            .send()
+            .await
             .map_err(|e| format!("Failed to send request: {}", e))?;
         Ok(response)
     }
@@ -54,7 +57,6 @@ impl HttpClient {
 
         // Build the request
         let mut request_builder = client.request(method.clone(), url);
-
 
         if let Some(h) = headers {
             let mut req_headers = reqwest::header::HeaderMap::new();
@@ -95,6 +97,8 @@ impl HttpClient {
             // Retrieve the token for the server (token is optional)
             let token = get_server_token(server_id).map(|t| t.access_token.clone());
 
+            println!("server_id: {}, token: {:?}", server_id, token);
+
             let mut headers = if let Some(custom_headers) = custom_headers {
                 custom_headers
             } else {
@@ -103,12 +107,8 @@ impl HttpClient {
             };
 
             if let Some(t) = token {
-                headers.insert(
-                    "X-API-TOKEN".to_string(),
-                    t,
-                );
+                headers.insert("X-API-TOKEN".to_string(), t);
             }
-
 
             // dbg!(&server_id);
             // dbg!(&url);
@@ -121,7 +121,10 @@ impl HttpClient {
     }
 
     // Convenience method for GET requests (as it's the most common)
-    pub async fn get(server_id: &str, path: &str, query_params: Option<HashMap<String, Value>>, // Add query parameters
+    pub async fn get(
+        server_id: &str,
+        path: &str,
+        query_params: Option<HashMap<String, Value>>, // Add query parameters
     ) -> Result<reqwest::Response, String> {
         HttpClient::send_request(server_id, Method::GET, path, None, query_params, None).await
     }
@@ -143,7 +146,15 @@ impl HttpClient {
         query_params: Option<HashMap<String, Value>>, // Add query parameters
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
-        HttpClient::send_request(server_id, Method::POST, path, custom_headers, query_params, body).await
+        HttpClient::send_request(
+            server_id,
+            Method::POST,
+            path,
+            custom_headers,
+            query_params,
+            body,
+        )
+        .await
     }
 
     // Convenience method for PUT requests
@@ -154,13 +165,32 @@ impl HttpClient {
         query_params: Option<HashMap<String, Value>>, // Add query parameters
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
-        HttpClient::send_request(server_id, Method::PUT, path, custom_headers, query_params, body).await
+        HttpClient::send_request(
+            server_id,
+            Method::PUT,
+            path,
+            custom_headers,
+            query_params,
+            body,
+        )
+        .await
     }
 
     // Convenience method for DELETE requests
-    pub async fn delete(server_id: &str, path: &str, custom_headers: Option<HashMap<String, String>>,
-                        query_params: Option<HashMap<String, Value>>, // Add query parameters
+    pub async fn delete(
+        server_id: &str,
+        path: &str,
+        custom_headers: Option<HashMap<String, String>>,
+        query_params: Option<HashMap<String, Value>>, // Add query parameters
     ) -> Result<reqwest::Response, String> {
-        HttpClient::send_request(server_id, Method::DELETE, path, custom_headers, query_params, None).await
+        HttpClient::send_request(
+            server_id,
+            Method::DELETE,
+            path,
+            custom_headers,
+            query_params,
+            None,
+        )
+        .await
     }
 }

@@ -30,7 +30,7 @@ interface ChatInputProps {
   isChatPage?: boolean;
   getDataSourcesByServer: (serverId: string) => Promise<DataSource[]>;
   setupWindowFocusListener: (callback: () => void) => Promise<() => void>;
-  hideCoco: () => Promise<any>;
+  hideCoco: () => void;
   checkScreenPermission: () => Promise<boolean>;
   requestScreenPermission: () => void;
   getScreenMonitors: () => Promise<any[]>;
@@ -42,6 +42,9 @@ interface ChatInputProps {
   }) => Promise<string | string[] | null>;
   getFileMetadata: (path: string) => Promise<any>;
   getFileIcon: (path: string, size: number) => Promise<string>;
+  hasModules?: string[];
+  searchPlaceholder?: string;
+  chatPlaceholder?: string;
 }
 
 export default function ChatInput({
@@ -70,6 +73,9 @@ export default function ChatInput({
   // openFileDialog,
   // getFileMetadata,
   // getFileIcon,
+  hasModules,
+  searchPlaceholder,
+  chatPlaceholder,
 }: ChatInputProps) {
   const { t } = useTranslation();
 
@@ -259,6 +265,7 @@ export default function ChatInput({
                   handleSubmit();
                 }
               }}
+              chatPlaceholder={chatPlaceholder}
             />
           ) : (
             <input
@@ -269,7 +276,7 @@ export default function ChatInput({
               autoCapitalize="none"
               spellCheck="false"
               className="text-base font-normal flex-1 outline-none min-w-[200px] text-[#333] dark:text-[#d8d8d8] placeholder-text-xs placeholder-[#999] dark:placeholder-gray-500 bg-transparent"
-              placeholder={t("search.input.searchPlaceholder")}
+              placeholder={searchPlaceholder || t("search.input.searchPlaceholder")}
               value={inputValue}
               onChange={(e) => {
                 onSend(e.target.value);
@@ -420,13 +427,13 @@ export default function ChatInput({
           </div>
         )}
 
-        {isChatPage ? null : (
+        {isChatPage || hasModules?.length !==2  ? null : (
           <div className="relative w-16 flex justify-end items-center">
             {showTooltip && isCommandPressed ? (
               <div
                 className={`absolute left-1 z-10 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
               >
-                T
+                S
               </div>
             ) : null}
             <ChatSwitch

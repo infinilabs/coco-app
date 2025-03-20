@@ -15,8 +15,9 @@ const ChatSwitch: React.FC<ChatSwitchProps> = ({ isChatMode, onChange }) => {
 
   const handleKeydown = useCallback(
     (event: KeyboardEvent) => {
-      if (isMetaOrCtrlKey(event) && event.key === "t") {
+      if (isMetaOrCtrlKey(event) && event.key === "s") {
         event.preventDefault();
+        event.stopPropagation();
         // console.log("Switch mode triggered");
         handleToggle();
       }

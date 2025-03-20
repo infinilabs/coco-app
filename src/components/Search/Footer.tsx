@@ -12,11 +12,13 @@ import PinIcon from "@/icons/Pin";
 import { useUpdateStore } from "@/stores/updateStore";
 
 interface FooterProps {
+  isTauri: boolean;
   openSetting: () => void;
   setWindowAlwaysOnTop: (isPinned: boolean) => Promise<void>;
 }
 
 export default function Footer({
+  isTauri,
   openSetting,
   setWindowAlwaysOnTop,
 }: FooterProps) {
@@ -41,7 +43,7 @@ export default function Footer({
 
   return (
     <div
-      data-tauri-drag-region
+      data-tauri-drag-region={isTauri}
       className="px-4 z-999 mx-[1px] h-8 absolute bottom-0 left-0 right-0 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between rounded-xl rounded-t-none overflow-hidden"
     >
       <div className="flex items-center">
@@ -65,7 +67,7 @@ export default function Footer({
             ) : (
               sourceData?.source?.name ||
               t("search.footer.version", {
-                version: process.env.VERSION || "v1.0.0",
+                version: (window as any).VERSION || "v1.0.0",
               })
             )}
           </div>

@@ -11,6 +11,8 @@ node_modules
 dist
 dist-ssr
 *.local
+out
+src/components/web
 
 # Editor directories and files
 # .vscode/*

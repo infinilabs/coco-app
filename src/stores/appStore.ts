@@ -51,6 +51,9 @@ export type IAppStore = {
 
   showCocoShortcuts: string[];
   setShowCocoShortcuts: (showCocoShortcuts: string[]) => void;
+
+  isTauri: boolean;
+  setIsTauri: (isTauri: boolean) => void;
 };
 
 export const useAppStore = create<IAppStore>()(
@@ -104,6 +107,8 @@ export const useAppStore = create<IAppStore>()(
 
         return set({ showCocoShortcuts });
       },
+      isTauri: true,
+      setIsTauri: (isTauri: boolean) => set({ isTauri }),
     }),
     {
       name: "app-store",

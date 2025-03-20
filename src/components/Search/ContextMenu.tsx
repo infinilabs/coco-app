@@ -20,7 +20,7 @@ interface State {
 }
 
 interface ContextMenuProps {
-  hideCoco: () => Promise<void>;
+  hideCoco: () => void;
 }
 
 const ContextMenu = ({ hideCoco }: ContextMenuProps) => {

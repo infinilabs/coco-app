@@ -21,11 +21,19 @@ import { useAuthStore } from "@/stores/authStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { DataSource } from "@/components/Assistant/types";
 import { useStartupStore } from "@/stores/startupStore";
+import { useThemeStore } from "@/stores/themeStore";
+import { Get } from "@/api/axiosRequest";
 
 const Search = lazy(() => import("@/components/Search/Search"));
 const ChatAI = lazy(() => import("@/components/Assistant/Chat"));
 
 interface SearchChatProps {
+  isTauri: boolean;
+  hasModules: string[];
+  theme?: "auto" | "light" | "dark";
+  hideCoco: () => void;
+  searchPlaceholder?: string;
+  chatPlaceholder?: string;
   querySearch: (input: string) => Promise<any>;
   queryDocuments: (
     from: number,
@@ -34,7 +42,16 @@ interface SearchChatProps {
   ) => Promise<any>;
 }
 
-function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
+function SearchChat({
+  isTauri = true,
+  hasModules = ["search", "chat"],
+  theme,
+  hideCoco,
+  querySearch,
+  queryDocuments,
+  searchPlaceholder,
+  chatPlaceholder,
+}: SearchChatProps) {
   const [state, dispatch] = useReducer(appReducer, initialAppState);
   const {
     isChatMode,
@@ -52,10 +69,16 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
     (state) => state.initializeListeners
   );
 
+  const setTheme = useThemeStore((state) => state.setTheme);
+
   useEffect(() => {
     initializeListeners();
     initializeListeners_auth();
     platformAdapter.invokeBackend("get_app_search_source");
+    //
+    if (theme) {
+      setTheme(theme);
+    }
   }, []);
 
   const chatAIRef = useRef<ChatAIRef>(null);
@@ -98,10 +121,6 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
     <div className="flex items-center justify-center h-full">loading...</div>
   );
 
-  const hideCoco = useCallback(() => {
-    return platformAdapter.hideWindow();
-  }, []);
-
   const getFileUrl = useCallback((path: string) => {
     return platformAdapter.convertFileSrc(path);
   }, []);
@@ -116,9 +135,25 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
 
   const getDataSourcesByServer = useCallback(
     async (serverId: string): Promise<DataSource[]> => {
-      return platformAdapter.invokeBackend("get_datasources_by_server", {
-        id: serverId,
-      });
+      if (isTauri) {
+        return platformAdapter.invokeBackend("get_datasources_by_server", {
+          id: serverId,
+        });
+      } else {
+        const [error, response]: any = await Get("/datasource/_search");
+        if (error) {
+          console.error("_search", error);
+          return [];
+        }
+        const res = response?.hits?.hits?.map((item: any) => {
+          return {
+            ...item,
+            id: item._source.id,
+            name: item._source.name,
+          }
+        })
+        return res || [];
+      }
     },
     []
   );
@@ -177,20 +212,31 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
   const setDefaultStartupWindow = useStartupStore((state) => {
     return state.setDefaultStartupWindow;
   });
-  
+
   const showCocoListenRef = useRef<(() => void) | undefined>();
-  
+
   useEffect(() => {
+    if (hasModules?.length === 1 && hasModules?.includes("chat")) {
+      changeMode(true);
+    }
+
     let unlistenChangeStartupStore: (() => void) | undefined;
-  
+
     const setupListener = async () => {
       try {
         unlistenChangeStartupStore = await platformAdapter.listenEvent(
           "change-startup-store",
           ({ payload }) => {
-            if (payload && typeof payload === 'object' && 'defaultStartupWindow' in payload) {
+            if (
+              payload &&
+              typeof payload === "object" &&
+              "defaultStartupWindow" in payload
+            ) {
               const startupWindow = payload.defaultStartupWindow;
-              if (startupWindow === "searchMode" || startupWindow === "chatMode") {
+              if (
+                startupWindow === "searchMode" ||
+                startupWindow === "chatMode"
+              ) {
                 setDefaultStartupWindow(startupWindow);
               }
             }
@@ -200,36 +246,36 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
         console.error("Error setting up change-startup-store listener:", error);
       }
     };
-  
+
     setupListener();
-  
+
     return () => {
       if (unlistenChangeStartupStore) {
         unlistenChangeStartupStore();
       }
     };
   }, []);
-  
+
   useEffect(() => {
     const setupShowCocoListener = async () => {
       if (showCocoListenRef.current) {
         showCocoListenRef.current();
         showCocoListenRef.current = undefined;
       }
-      
+
       try {
         const unlisten = await platformAdapter.listenEvent("show-coco", () => {
           changeMode(defaultStartupWindow === "chatMode");
         });
-        
+
         showCocoListenRef.current = unlisten;
       } catch (error) {
         console.error("Error setting up show-coco listener:", error);
       }
     };
-    
+
     setupShowCocoListener();
-    
+
     return () => {
       if (showCocoListenRef.current) {
         showCocoListenRef.current();
@@ -238,13 +284,12 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
     };
   }, [defaultStartupWindow, changeMode]);
 
-
   return (
     <ErrorBoundary>
       <div
-        data-tauri-drag-region
+        data-tauri-drag-region={isTauri}
         className={clsx(
-          "size-full m-auto overflow-hidden relative bg-no-repeat bg-cover bg-center",
+          "size-full m-auto overflow-hidden relative bg-no-repeat bg-cover bg-center bg-white dark:bg-black",
           [
             isTransitioned
               ? "bg-chat_bg_light dark:bg-chat_bg_dark"
@@ -257,10 +302,10 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
         )}
       >
         <div
-          data-tauri-drag-region
+          data-tauri-drag-region={isTauri}
           className={`p-2 pb-0 absolute w-full flex items-center justify-center transition-all duration-500 ${
             isTransitioned
-              ? "top-[calc(100vh-90px)] h-[90px] border-t"
+              ? "top-[calc(100%-90px)] h-[90px] border-t"
               : "top-0 h-[90px] border-b"
           } border-[#E6E6E6] dark:border-[#272626]`}
         >
@@ -289,18 +334,22 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
             openFileDialog={openFileDialog}
             getFileMetadata={getFileMetadata}
             getFileIcon={getFileIcon}
+            hasModules={hasModules}
+            searchPlaceholder={searchPlaceholder}
+            chatPlaceholder={chatPlaceholder}
           />
         </div>
 
         <div
-          data-tauri-drag-region
+          data-tauri-drag-region={isTauri}
           className={`absolute w-full transition-opacity duration-500 ${
             isTransitioned ? "opacity-0 pointer-events-none" : "opacity-100"
-          } bottom-0 h-[calc(100vh-90px)] `}
+          } bottom-0 h-[calc(100%-90px)] `}
         >
           <Suspense fallback={<LoadingFallback />}>
             <Search
               key="Search"
+              isTauri={isTauri}
               input={input}
               isChatMode={isChatMode}
               changeInput={setInput}
@@ -314,12 +363,12 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
         </div>
 
         <div
-          data-tauri-drag-region
+          data-tauri-drag-region={isTauri}
           className={`absolute w-full transition-all duration-500 select-auto ${
             isTransitioned
               ? "top-0 opacity-100 pointer-events-auto"
               : "-top-[506px] opacity-0 pointer-events-none"
-          } h-[calc(100vh-90px)]`}
+          } h-[calc(100%-90px)]`}
         >
           {isTransitioned && isChatMode ? (
             <Suspense fallback={<LoadingFallback />}>

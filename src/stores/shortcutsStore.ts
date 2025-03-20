@@ -27,7 +27,7 @@ export const useShortcutsStore = create<IShortcutsStore>()(
       (set) => ({
         modifierKey: isMac ? "Command" : "Control",
         setModifierKey: (modifierKey: ModifierKey) => set({ modifierKey }),
-        modeSwitch: "T",
+        modeSwitch: "S",
         setModeSwitch: (modeSwitch: string) => set({ modeSwitch }),
         returnToInput: "I",
         setReturnToInput: (returnToInput: string) => set({ returnToInput }),

@@ -69,7 +69,7 @@ const UpdateApp = ({ checkUpdate, relaunchApp }: UpdateAppProps) => {
 
     state.loading = true;
 
-    await updateInfo?.downloadAndInstall((progress) => {
+    await updateInfo?.downloadAndInstall((progress: any) => {
       switch (progress.event) {
         case "Started":
           state.total = progress.data.contentLength;

@@ -3,18 +3,22 @@ import { writeFileSync, readFileSync } from 'fs';
 import { join, resolve } from 'path';
 
 export default defineConfig({
-  entry: ['src/pages/web/SearchChat.tsx'],
+  entry: ['src/pages/web/index.tsx'],
   format: ['esm', 'cjs'],
   dts: true,
   splitting: false,
-  sourcemap: true,
+  sourcemap: false,
   clean: true,
+  injectStyle: true,
+  treeshake: true,
+  minify: true,
+  env: {
+    BUILD_TARGET: 'web',
+  },
   external: [
     'react',
     'react-dom',
   ],
-  treeshake: true,
-  minify: true,
   esbuildOptions(options) {
     options.bundle = true;
     options.platform = 'browser';
@@ -28,6 +32,16 @@ export default defineConfig({
     options.alias = {
       '@': resolve(__dirname, './src')
     }
+    // options.external = [
+    //   '@tauri-apps/api',
+    //   '@tauri-apps/plugin-*',
+    //   'tauri-plugin-*',
+    // ];
+    options.treeShaking = true;
+    options.define = {
+      'process.env.BUILD_TARGET': '"web"',
+    };
+    options.pure = ['console.log'];
   },
   esbuildPlugins: [
     {
@@ -38,7 +52,7 @@ export default defineConfig({
       },
     },
   ],
-  outDir: 'dist/search-chat',
+  outDir: 'out/search-chat',
   async onSuccess() {
     const projectPackageJson = JSON.parse(
       readFileSync(join(__dirname, 'package.json'), 'utf-8')
@@ -46,10 +60,10 @@ export default defineConfig({
 
     const packageJson = {
       name: "search-chat",
-      version: "1.0.0",
-      main: "SearchChat.cjs",
-      module: "SearchChat.js",
-      types: "SearchChat.d.ts",
+      version: "0.0.12",
+      main: "index.cjs",
+      module: "index.js",
+      types: "index.d.ts",
       dependencies: projectPackageJson.dependencies,
       peerDependencies: {
         "react": "^18.0.0",
@@ -57,16 +71,16 @@ export default defineConfig({
       }
     };
 
-    const tauriDeps = Object.keys(packageJson.dependencies).filter(dep => 
-      dep.includes('@tauri-apps') || 
-      dep.includes('tauri-plugin')
-    );
-    tauriDeps.forEach(dep => {
-      delete packageJson.dependencies[dep];
-    });
+    // const tauriDeps = Object.keys(packageJson.dependencies).filter(dep => 
+    //   dep.includes('@tauri-apps') || 
+    //   dep.includes('tauri-plugin')
+    // );
+    // tauriDeps.forEach(dep => {
+    //   delete packageJson.dependencies[dep];
+    // });
 
     writeFileSync(
-      join(__dirname, 'dist/search-chat/package.json'),
+      join(__dirname, 'out/search-chat/package.json'),
       JSON.stringify(packageJson, null, 2)
     );
   }

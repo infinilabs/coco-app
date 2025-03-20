@@ -286,7 +286,7 @@ const ChatAI = memo(
       return (
         <div
           data-tauri-drag-region
-          className={`h-full flex flex-col rounded-xl overflow-hidden`}
+          className={`h-full flex flex-col rounded-xl relative`}
         >
           {!setIsSidebarOpen && (
             <ChatSidebar

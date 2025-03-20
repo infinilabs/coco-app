@@ -12,7 +12,8 @@ const host = process.env.TAURI_DEV_HOST;
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
   define: {
-    'process.env.VERSION': JSON.stringify(packageJson.version),
+    'VERSION': JSON.stringify(packageJson.version),
+    'BUILD_TARGET': JSON.stringify(process.env.BUILD_TARGET)
   },
   plugins: [react()],
   resolve: {
@@ -52,6 +53,11 @@ export default defineConfig(async () => ({
         secure: false,
       },
       "/connector": {
+        target: process.env.COCO_SERVER_URL,
+        changeOrigin: true,
+        secure: false,
+      },
+      "/datasource": {
         target: process.env.COCO_SERVER_URL,
         changeOrigin: true,
         secure: false,

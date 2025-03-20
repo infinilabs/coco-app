@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { produce } from "immer";
-import { listen, emit } from "@tauri-apps/api/event";
+
+import platformAdapter from "@/utils/platformAdapter";
 
 const CONNECTOR_CHANGE_EVENT = "connector_data_change";
 const DATASOURCE_CHANGE_EVENT = "datasourceData_change";
@@ -51,7 +52,7 @@ export const useConnectStore = create<IConnectStore>()(
             draft.connector_data[key] = connector_data;
           })
         );
-        await emit(CONNECTOR_CHANGE_EVENT, {
+        await platformAdapter.emitEvent(CONNECTOR_CHANGE_EVENT, {
           connector_data,
         });
       },
@@ -62,16 +63,16 @@ export const useConnectStore = create<IConnectStore>()(
             draft.datasourceData[key] = datasourceData;
           })
         );
-        await emit(DATASOURCE_CHANGE_EVENT, {
+        await platformAdapter.emitEvent(DATASOURCE_CHANGE_EVENT, {
           datasourceData,
         });
       },
       initializeListeners: () => {
-        listen(CONNECTOR_CHANGE_EVENT, (event: any) => {
+        platformAdapter.listenEvent(CONNECTOR_CHANGE_EVENT, (event: any) => {
           const { connector_data } = event.payload;
           set({ connector_data });
         });
-        listen(DATASOURCE_CHANGE_EVENT, (event: any) => {
+        platformAdapter.listenEvent(DATASOURCE_CHANGE_EVENT, (event: any) => {
           const { datasourceData } = event.payload;
           set({ datasourceData });
         });

@@ -109,7 +109,7 @@ const Footer = () => {
 
                 <div className="flex items-center space-x-4">
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            Version {process.env.VERSION || "v1.0.0"}
+            Version {(window as any).VERSION || "v1.0.0"}
           </span>
                     {/* <div className="h-4 w-px bg-gray-200 dark:bg-gray-700" />
           <button className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
