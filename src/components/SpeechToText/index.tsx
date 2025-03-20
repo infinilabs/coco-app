@@ -1,63 +1,99 @@
+import { useAppStore } from "@/stores/appStore";
+import { useReactive } from "ahooks";
 import clsx from "clsx";
 import { Check, Loader, Mic, X } from "lucide-react";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
+import {
+  checkMicrophonePermission,
+  requestMicrophonePermission,
+} from "tauri-plugin-macos-permissions-api";
 
 interface SpeechToTextProps {
   onChange?: (text: string) => void;
 }
 
+interface State {
+  speaking: boolean;
+  converting: boolean;
+  countdown: number;
+}
+
+const INITIAL_STATE: State = {
+  speaking: false,
+  converting: false,
+  countdown: 30,
+};
+
 let interval: ReturnType<typeof setInterval>;
 
 const SpeechToText: FC<SpeechToTextProps> = (props) => {
   const { onChange } = props;
-  const [speaking, setSpeaking] = useState(false);
-  const [converting, setConverting] = useState(false);
-  const [countdown, setCountdown] = useState(30);
+  const state = useReactive({ ...INITIAL_STATE });
+  const withVisibility = useAppStore((state) => state.withVisibility);
 
   useEffect(() => {
     return reset;
   }, []);
 
   useEffect(() => {
-    if (speaking) {
+    if (state.speaking) {
       interval = setInterval(() => {
-        setCountdown((prev) => prev - 1);
+        state.countdown--;
       }, 1000);
     } else {
       reset();
     }
-  }, [speaking]);
+  }, [state.speaking]);
 
   useEffect(() => {
-    if (countdown > 0) return;
+    if (state.countdown > 0) return;
 
     handleOk();
-  }, [countdown]);
+  }, [state.countdown]);
 
   const reset = () => {
     clearInterval(interval);
 
-    setSpeaking(false);
-    setConverting(false);
-    setCountdown(30);
+    Object.assign(state, INITIAL_STATE);
+  };
+
+  const checkPermission = async () => {
+    return new Promise(async (resolved) => {
+      const authorized = await checkMicrophonePermission();
+
+      if (authorized) {
+        return resolved(true);
+      }
+
+      requestMicrophonePermission();
+
+      const timer = setInterval(async () => {
+        const authorized = await checkMicrophonePermission();
+
+        if (!authorized) return;
+
+        clearInterval(timer);
+
+        resolved(true);
+      }, 1000);
+    });
   };
 
   const handleCancel = () => {
-    if (converting) return;
+    if (state.converting) return;
 
-    setSpeaking(false);
+    reset();
   };
 
   const handleOk = () => {
     clearInterval(interval);
 
-    setConverting(true);
+    state.converting = true;
 
     setTimeout(() => {
       onChange?.("");
 
-      setConverting(false);
-      setSpeaking(false);
+      reset();
     }, 3000);
   };
 
@@ -70,8 +106,10 @@ const SpeechToText: FC<SpeechToTextProps> = (props) => {
       >
         <Mic
           className="size-4 text-[#999]"
-          onClick={() => {
-            setSpeaking(true);
+          onClick={async () => {
+            await withVisibility(checkPermission);
+
+            state.speaking = true;
           }}
         />
       </div>
@@ -80,7 +118,7 @@ const SpeechToText: FC<SpeechToTextProps> = (props) => {
         className={clsx(
           "absolute inset-0 left-full flex items-center gap-1 px-1 rounded transition-all bg-[#ededed] dark:bg-[#202126]",
           {
-            "!left-0": speaking,
+            "!left-0": state.speaking,
           }
         )}
       >
@@ -88,7 +126,7 @@ const SpeechToText: FC<SpeechToTextProps> = (props) => {
           className={clsx(
             "flex items-center justify-center size-6 bg-white dark:bg-black rounded-full transition cursor-pointer",
             {
-              "!cursor-not-allowed opacity-50": converting,
+              "!cursor-not-allowed opacity-50": state.converting,
             }
           )}
           onClick={handleCancel}
@@ -100,7 +138,7 @@ const SpeechToText: FC<SpeechToTextProps> = (props) => {
           <div className="flex-1">...</div>
 
           <span className="text-xs text-[#333] dark:text-[#999]">
-            {countdown}
+            {state.countdown}
           </span>
         </div>
 
@@ -108,7 +146,7 @@ const SpeechToText: FC<SpeechToTextProps> = (props) => {
           className="flex items-center justify-center size-6 text-white  bg-[#0072FF] rounded-full transition cursor-pointer"
           onClick={handleOk}
         >
-          {converting ? (
+          {state.converting ? (
             <Loader className="size-4 animate-spin" />
           ) : (
             <Check className="size-4" />
