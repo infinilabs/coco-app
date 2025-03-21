@@ -68,6 +68,7 @@ url = "2.5.2"
 http = "1.1.0"
 tungstenite = "0.24.0"
 env_logger = "0.11.5"
+tauri-plugin-mic-recorder = "2"
 
 [target."cfg(target_os = \"macos\")".dependencies]
 tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }

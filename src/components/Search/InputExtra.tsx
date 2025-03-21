@@ -40,7 +40,9 @@ interface InputExtraProps {
   getScreenWindows: () => Promise<any[]>;
   captureMonitorScreenshot: (id: number) => Promise<string>;
   captureWindowScreenshot: (id: number) => Promise<string>;
-  openFileDialog: (options: { multiple: boolean }) => Promise<string | string[] | null>;
+  openFileDialog: (options: {
+    multiple: boolean;
+  }) => Promise<string | string[] | null>;
   getFileMetadata: (path: string) => Promise<any>;
   getFileIcon: (path: string, size: number) => Promise<string>;
 }
@@ -59,7 +61,7 @@ const InputExtra = ({
   const { t, i18n } = useTranslation();
   const uploadFiles = useChatStore((state) => state.uploadFiles);
   const setUploadFiles = useChatStore((state) => state.setUploadFiles);
-  const setIsPinned = useAppStore((state) => state.setIsPinned);
+  const withVisibility = useAppStore((state) => state.withVisibility);
 
   const state = useReactive<State>({
     screenshotableMonitors: [],
@@ -98,13 +100,11 @@ const InputExtra = ({
       {
         label: t("search.input.uploadFile"),
         clickEvent: async () => {
-          setIsPinned(true);
-
-          const selectedFiles = await openFileDialog({
-            multiple: true,
+          const selectedFiles = await withVisibility(() => {
+            return openFileDialog({
+              multiple: true,
+            });
           });
-
-          setIsPinned(false);
 
           if (isNil(selectedFiles)) return;
 

@@ -51,6 +51,9 @@ export type IAppStore = {
 
   showCocoShortcuts: string[];
   setShowCocoShortcuts: (showCocoShortcuts: string[]) => void;
+
+  visible: boolean;
+  withVisibility: <T>(fn: () => Promise<T>) => Promise<T>;
 };
 
 export const useAppStore = create<IAppStore>()(
@@ -103,6 +106,16 @@ export const useAppStore = create<IAppStore>()(
         console.log("set showCocoShortcuts", showCocoShortcuts);
 
         return set({ showCocoShortcuts });
+      },
+      visible: false,
+      withVisibility: async <T>(fn: () => Promise<T>) => {
+        set({ visible: true });
+
+        const result = await fn();
+
+        set({ visible: false });
+
+        return result;
       },
     }),
     {
