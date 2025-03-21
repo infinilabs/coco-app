@@ -4,14 +4,14 @@ import {
   useCallback,
   useReducer,
   Suspense,
-  lazy,
   memo,
 } from "react";
 import clsx from "clsx";
 
 import ErrorBoundary from "@/components/Common/ErrorBoundary";
+import Search from "@/components/Search/Search";
 import InputBox from "@/components/Search/InputBox";
-import { ChatAIRef } from "@/components/Assistant/Chat";
+import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
 import UpdateApp from "@/components/UpdateApp";
 import { isLinux, isWin } from "@/utils/platform";
 import { appReducer, initialAppState } from "@/reducers/appReducer";
@@ -21,10 +21,6 @@ import { useAuthStore } from "@/stores/authStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { DataSource } from "@/components/Assistant/types";
 import { useStartupStore } from "@/stores/startupStore";
-
-const Search = lazy(() => import("@/components/Search/Search"));
-const ChatAI = lazy(() => import("@/components/Assistant/Chat"));
-
 interface SearchChatProps {
   querySearch: (input: string) => Promise<any>;
   queryDocuments: (
