@@ -59,6 +59,8 @@ function App() {
       hasModules={['search', 'chat']}
       hideCoco={() => console.log('hide')}
       theme="auto"
+      searchPlaceholder=""
+      chatPlaceholder=""
     />
   );
 }

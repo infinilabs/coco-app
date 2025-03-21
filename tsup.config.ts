@@ -1,6 +1,6 @@
 import { defineConfig } from 'tsup';
-import { writeFileSync, readFileSync } from 'fs';
-import { join, resolve } from 'path';
+import { writeFileSync, readFileSync, copyFileSync, mkdirSync, existsSync } from 'fs';
+import { join, resolve, dirname } from 'path';
 
 export default defineConfig({
   entry: ['src/pages/web/index.tsx'],
@@ -9,7 +9,6 @@ export default defineConfig({
   splitting: false,
   sourcemap: false,
   clean: true,
-  injectStyle: true,
   treeshake: true,
   minify: true,
   env: {
@@ -29,14 +28,14 @@ export default defineConfig({
       '.png': 'dataurl',
       '.jpg': 'dataurl',
     },
-    options.alias = {
-      '@': resolve(__dirname, './src')
-    }
-    // options.external = [
-    //   '@tauri-apps/api',
-    //   '@tauri-apps/plugin-*',
-    //   'tauri-plugin-*',
-    // ];
+      options.alias = {
+        '@': resolve(__dirname, './src')
+      }
+    options.external = [
+      '@tauri-apps/api',
+      '@tauri-apps/plugin-*',
+      'tauri-plugin-*',
+    ];
     options.treeShaking = true;
     options.define = {
       'process.env.BUILD_TARGET': '"web"',
@@ -60,7 +59,7 @@ export default defineConfig({
 
     const packageJson = {
       name: "search-chat",
-      version: "0.0.12",
+      version: "0.0.20",
       main: "index.cjs",
       module: "index.js",
       types: "index.d.ts",
@@ -71,13 +70,13 @@ export default defineConfig({
       }
     };
 
-    // const tauriDeps = Object.keys(packageJson.dependencies).filter(dep => 
-    //   dep.includes('@tauri-apps') || 
-    //   dep.includes('tauri-plugin')
-    // );
-    // tauriDeps.forEach(dep => {
-    //   delete packageJson.dependencies[dep];
-    // });
+    const tauriDeps = Object.keys(packageJson.dependencies).filter(dep =>
+      dep.includes('@tauri-apps') ||
+      dep.includes('tauri-plugin')
+    );
+    tauriDeps.forEach(dep => {
+      delete packageJson.dependencies[dep];
+    });
 
     writeFileSync(
       join(__dirname, 'out/search-chat/package.json'),

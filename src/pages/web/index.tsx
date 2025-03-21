@@ -1,11 +1,12 @@
-import { useEffect, useCallback } from "react";
-
+import { useEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import SearchChat from "./SearchChat";
 import {useAppStore} from "@/stores/appStore";
 import { Get } from "@/api/axiosRequest";
 
 import "@/i18n";
-import "@/main.css";
+// 不再全局导入样式，而是在Shadow DOM中应用
+// import "@/main.css";
 
 interface WebAppProps {
   token?: string;
@@ -34,13 +35,56 @@ function WebApp({
 }: WebAppProps) {
   const setIsTauri = useAppStore((state) => state.setIsTauri);
   const setEndpoint = useAppStore((state) => state.setEndpoint);
+  const shadowRootRef = useRef<ShadowRoot | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setIsTauri(false);
-
     setEndpoint(serverUrl);
-
     localStorage.setItem("token", token);
+
+    // 创建Shadow DOM
+    if (containerRef.current && !shadowRootRef.current) {
+      shadowRootRef.current = containerRef.current.attachShadow({ mode: 'open' });
+      
+      // 创建样式元素并添加到Shadow DOM
+      const styleElement = document.createElement('style');
+      
+      // 使用fetch直接获取CSS内容
+      fetch(new URL('@/main.css', import.meta.url).toString())
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Failed to load CSS: ${response.statusText}`);
+          }
+          return response.text();
+        })
+        .then(css => {
+          styleElement.textContent = css;
+        })
+        .catch(err => {
+          console.error('Failed to load CSS:', err);
+          
+          // 备选方案：直接嵌入Tailwind基础样式
+          const cssText = `
+            /* 基础样式 */
+            @tailwind base;
+            @tailwind components;
+            @tailwind utilities;
+            
+            /* 可以在这里添加其他必要的样式 */
+          `;
+          styleElement.textContent = cssText;
+        });
+      
+      shadowRootRef.current.appendChild(styleElement);
+      
+      // 创建内容容器
+      const contentContainer = document.createElement('div');
+      contentContainer.id = 'shadow-content';
+      contentContainer.style.width = `${width}px`;
+      contentContainer.style.height = `${height}px`;
+      shadowRootRef.current.appendChild(contentContainer);
+    }
   }, []);
 
   const query_coco_fusion = useCallback(
@@ -99,19 +143,30 @@ function WebApp({
     []
   );
 
-  return (
-    <div style={{ width: `${width}px`, height: `${height}px` }}>
-      <SearchChat
-        isTauri={false}
-        hideCoco={hideCoco}
-        hasModules={hasModules}
-        theme={theme}
-        searchPlaceholder={searchPlaceholder}
-        chatPlaceholder={chatPlaceholder}
-        querySearch={querySearch}
-        queryDocuments={queryDocuments}
-      />
-    </div>
+  // 使用createPortal将内容渲染到Shadow DOM中
+  if (!shadowRootRef.current) {
+    return <div ref={containerRef} id="searchChat-container" style={{ width: `${width}px`, height: `${height}px` }}></div>;
+  }
+
+  // 找到Shadow DOM中的内容容器
+  const shadowContent = shadowRootRef.current.getElementById('shadow-content');
+  
+  if (!shadowContent) {
+    return null;
+  }
+
+  return createPortal(
+    <SearchChat
+      isTauri={false}
+      hideCoco={hideCoco}
+      hasModules={hasModules}
+      theme={theme}
+      searchPlaceholder={searchPlaceholder}
+      chatPlaceholder={chatPlaceholder}
+      querySearch={querySearch}
+      queryDocuments={queryDocuments}
+    />,
+    shadowContent
   );
 }
 
