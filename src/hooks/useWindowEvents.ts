@@ -14,7 +14,7 @@ export function useWindowEvents() {
         return;
       }
 
-      await platformAdapter.hideWindow();
+      // await platformAdapter.hideWindow();
       console.log("Hide Coco");
     };
 

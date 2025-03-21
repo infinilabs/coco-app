@@ -131,6 +131,9 @@ importers:
       uuid:
         specifier: ^11.1.0
         version: 11.1.0
+      wavesurfer.js:
+        specifier: ^7.9.2
+        version: 7.9.2
       zustand:
         specifier: ^5.0.3
         version: 5.0.3(@types/react@18.3.19)(immer@10.1.1)(react@18.3.1)
@@ -3402,6 +3405,9 @@ packages:
 
   vscode-uri@3.0.8:
     resolution: {integrity: sha512-AyFQ0EVmsOZOlAnxoFOGOq1SQDWAB7C6aqMGS23svWAllfOaxbuFvcT8D1i8z3Gyn8fraVeZNNmN6e9bxxXkKw==}
+
+  wavesurfer.js@7.9.2:
+    resolution: {integrity: sha512-Yqm8JvejYTBytDd7WkNhJ68U+pf1vlICuph1Ww/WhVyuUCFWX0syOBxoHFpJQgsAQUwVX99Ko1+qf5h6ElbMkw==}
 
   web-namespaces@2.0.1:
     resolution: {integrity: sha512-bKr1DkiNa2krS7qxNtdrtHAmzuYGFQLiQ13TsorsdT6ULTkPLKuu5+GsFpDlg6JFjUTwX2DyhMPG2be8uPrqsQ==}
@@ -6969,6 +6975,8 @@ snapshots:
       vscode-languageserver-protocol: 3.17.5
 
   vscode-uri@3.0.8: {}
+
+  wavesurfer.js@7.9.2: {}
 
   web-namespaces@2.0.1: {}
 
