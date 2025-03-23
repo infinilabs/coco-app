@@ -68,7 +68,6 @@
     "screenshots:default",
     "core:window:allow-set-theme",
     "process:default",
-    "updater:default",
-    "mic-recorder:default"
+    "updater:default"
   ]
 }

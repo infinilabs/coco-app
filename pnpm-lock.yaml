@@ -12,8 +12,8 @@ importers:
         specifier: ^2.2.0
         version: 2.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tauri-apps/api':
-        specifier: ^2.3.0
-        version: 2.3.0
+        specifier: ^2.4.0
+        version: 2.4.0
       '@tauri-apps/plugin-autostart':
         specifier: ~2.2.0
         version: 2.2.0
@@ -122,9 +122,6 @@ importers:
       tauri-plugin-macos-permissions-api:
         specifier: ^2.2.0
         version: 2.2.0
-      tauri-plugin-mic-recorder-api:
-        specifier: ^2.0.0
-        version: 2.0.0
       tauri-plugin-screenshots-api:
         specifier: ^2.1.0
         version: 2.1.0
@@ -142,8 +139,8 @@ importers:
         version: 5.0.3(@types/react@18.3.19)(immer@10.1.1)(react@18.3.1)
     devDependencies:
       '@tauri-apps/cli':
-        specifier: ^2.3.1
-        version: 2.3.1
+        specifier: ^2.4.0
+        version: 2.4.0
       '@types/dom-speech-recognition':
         specifier: ^0.0.4
         version: 0.0.4
@@ -154,8 +151,8 @@ importers:
         specifier: ^14.1.2
         version: 14.1.2
       '@types/node':
-        specifier: ^22.13.10
-        version: 22.13.10
+        specifier: ^22.13.11
+        version: 22.13.11
       '@types/react':
         specifier: ^18.3.19
         version: 18.3.19
@@ -170,7 +167,7 @@ importers:
         version: 1.8.8
       '@vitejs/plugin-react':
         specifier: ^4.3.4
-        version: 4.3.4(vite@5.4.14(@types/node@22.13.10))
+        version: 4.3.4(vite@5.4.14(@types/node@22.13.11))
       autoprefixer:
         specifier: ^10.4.21
         version: 10.4.21(postcss@8.5.3)
@@ -182,7 +179,7 @@ importers:
         version: 8.5.3
       release-it:
         specifier: ^18.1.2
-        version: 18.1.2(@types/node@22.13.10)(typescript@5.8.2)
+        version: 18.1.2(@types/node@22.13.11)(typescript@5.8.2)
       tailwindcss:
         specifier: ^3.4.17
         version: 3.4.17
@@ -197,7 +194,7 @@ importers:
         version: 5.8.2
       vite:
         specifier: ^5.4.14
-        version: 5.4.14(@types/node@22.13.10)
+        version: 5.4.14(@types/node@22.13.11)
 
 packages:
 
@@ -1030,71 +1027,77 @@ packages:
     resolution: {integrity: sha512-ZMOc3eu9amwvkC6M69h3hWt4/EsFaAXmtkiw4xd2LN59/lTb4ZQiVfq2QKlRcu1rj3n/Tcr7U30ZopvHwXBGIg==}
     engines: {node: '>= 14.6.0', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
 
-  '@tauri-apps/api@2.3.0':
-    resolution: {integrity: sha512-33Z+0lX2wgZbx1SPFfqvzI6su63hCBkbzv+5NexeYjIx7WA9htdOKoRR7Dh3dJyltqS5/J8vQFyybiRoaL0hlA==}
+  '@tauri-apps/api@2.4.0':
+    resolution: {integrity: sha512-F1zXTsmwcCp+ocg6fbzD/YL0OHeSG1eynCag1UNlX2tD5+dlXy7eRbTu9cAcscPjcR7Nix7by2wiv/+VfWUieg==}
 
-  '@tauri-apps/cli-darwin-arm64@2.3.1':
-    resolution: {integrity: sha512-TOhSdsXYt+f+asRU+Dl+Wufglj/7+CX9h8RO4hl5k7D6lR4L8yTtdhpS7btaclOMmjYC4piNfJE70GoxhOoYWw==}
+  '@tauri-apps/cli-darwin-arm64@2.4.0':
+    resolution: {integrity: sha512-MVzYrahJBgDyzUJ2gNEU8H+0oCVEucN115+CVorFnidHcJ6DtDRMCaKLkpjOZNfJyag1WQ25fu7imvZSe0mz/g==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
 
-  '@tauri-apps/cli-darwin-x64@2.3.1':
-    resolution: {integrity: sha512-LDwGg3AuBQ3aCeMAFaFwt0MSGOVFoXuXEe0z4QxQ7jZE5tdAOhKABaq4i569V5lShCgQZ6nLD/tmA5+GipvHnA==}
+  '@tauri-apps/cli-darwin-x64@2.4.0':
+    resolution: {integrity: sha512-/4IdbWv6IWSuBn0WVe5JkiSIP1gZhXCZRcumSsYq3ZmOlq4BqXeXT36Oig5mlDnS/2/UpNS94kd8gOA1DNdIeQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
 
-  '@tauri-apps/cli-linux-arm-gnueabihf@2.3.1':
-    resolution: {integrity: sha512-hu3HpbbtJBvHXw5i54QHwLxOUoXWqhf7CL2YYSPOrWEEQo10NKddulP61L5gfr5z+bSSaitfLwqgTidgnaNJCA==}
+  '@tauri-apps/cli-linux-arm-gnueabihf@2.4.0':
+    resolution: {integrity: sha512-rOjlk3Vd6R847LXds4pOAFKUL5NVdSWlaiQvr4H9WDUwIWWoxnj7SQfpryTtElDb2wV7a0BNaOCXCpyFEAXjkw==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
 
-  '@tauri-apps/cli-linux-arm64-gnu@2.3.1':
-    resolution: {integrity: sha512-mEGgwkiGSKYXWHhGodo7zU9PCd2I/d6KkR+Wp1nzK+DxsCrEK6yJ5XxYLSQSDcKkM4dCxpVEPUiVMbDhmn08jg==}
+  '@tauri-apps/cli-linux-arm64-gnu@2.4.0':
+    resolution: {integrity: sha512-X/uCwao6R/weWT2y4f3JKJMeUsujo9H4nBMAv9RZhRsz93n9Amw9ETavAOP11pyhl57YkasvKTCRQN6FwsaoXg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  '@tauri-apps/cli-linux-arm64-musl@2.3.1':
-    resolution: {integrity: sha512-tqQkafikGfnc7ISnGjSYkbpnzJKEyO8XSa0YOXTAL3J8R5Pss5ZIZY7G8kq1mwQSR/dPVR1ZLTVXgZGuysjP8w==}
+  '@tauri-apps/cli-linux-arm64-musl@2.4.0':
+    resolution: {integrity: sha512-GhvQtrTjadW3eLSmfrSfybSqgJMZzUXC+0WqDzFovLug3a1a1go0m9QK9YGvYLkyEpTY5zRxLtwv+tbZXN4tZw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  '@tauri-apps/cli-linux-x64-gnu@2.3.1':
-    resolution: {integrity: sha512-I3puDJ2wGEauXlXbzIHn2etz78TaWs1cpN6zre02maHr6ZR7nf7euTCOGPhhfoMG0opA5mT/eLuYpVw648/VAA==}
+  '@tauri-apps/cli-linux-riscv64-gnu@2.4.0':
+    resolution: {integrity: sha512-NgeNihQ9uHS/ibMWLge5VA/BgsS/g8VPSVtCp8DSPyub3bBuCy79A8V+bzNKlMOiDVrqK4vQ//FS9kSxoJOtXw==}
+    engines: {node: '>= 10'}
+    cpu: [riscv64]
+    os: [linux]
+
+  '@tauri-apps/cli-linux-x64-gnu@2.4.0':
+    resolution: {integrity: sha512-ebRmV2HLIVms1KlNNueQCp3OrXBv6cimU3mYEh5NbZ8dH88f2sF46dFCyPq8Qr/Zti4qPEaAArVG7RYFjfECPw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  '@tauri-apps/cli-linux-x64-musl@2.3.1':
-    resolution: {integrity: sha512-rbWiCOBuQN7tPySkUyBs914uUikE3mEUOqV/IFospvKESw4UC3G1DL5+ybfXH7Orb8/in3JpJuVzYQjo+OSbBA==}
+  '@tauri-apps/cli-linux-x64-musl@2.4.0':
+    resolution: {integrity: sha512-FOp2cBFyq5LnUr3he95Z99PQm3nCSJv2GZNeH7UqmUpeHwdcYuhBERU7C+8VDJJPR98Q5fkcoV00Pc4nw0v5KQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  '@tauri-apps/cli-win32-arm64-msvc@2.3.1':
-    resolution: {integrity: sha512-PdTmUzSeTHjJuBpCV7L+V29fPhPtToU+NZU46slHKSA1aT38MiFDXBZ/6P5Zudrt9QPMfIubqnJKbK8Ivvv7Ww==}
+  '@tauri-apps/cli-win32-arm64-msvc@2.4.0':
+    resolution: {integrity: sha512-SVf1wDagYsaFM+mpUYKmjNveKodcUSGPEM27WmMW4Enh6aXGzTJi4IYOE3GEFOJF1BpRNscslwE1Rd064kfpcg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
 
-  '@tauri-apps/cli-win32-ia32-msvc@2.3.1':
-    resolution: {integrity: sha512-K/Xa97kspWT4UWj3t26lL2D3QsopTAxS7kWi5kObdqtAGn3qD52qBi24FH38TdvHYz4QlnLIb30TukviCgh4gw==}
+  '@tauri-apps/cli-win32-ia32-msvc@2.4.0':
+    resolution: {integrity: sha512-j+fOFVeSSejk9hrUePY7bJuaYr+80xr+ftjXzxCj0CS0d2oSbq+lT8/zS514WemJk9e9yxUus+2ke/Ng17wkkQ==}
     engines: {node: '>= 10'}
     cpu: [ia32]
     os: [win32]
 
-  '@tauri-apps/cli-win32-x64-msvc@2.3.1':
-    resolution: {integrity: sha512-RgwzXbP8gAno3kQEsybMtgLp6D1Z1Nec2cftryYbPTJmoMJs6e4qgtxuTSbUz5SKnHe8rGgMiFSvEGoHvbG72Q==}
+  '@tauri-apps/cli-win32-x64-msvc@2.4.0':
+    resolution: {integrity: sha512-nv84b3a8eI5Y7ksTLBKjjvtr9NOlAGGGo7OJbjKT+xZLdiPOZ0nJ2cT+4IdfnNAZ33pKJugAfuj1fBvQKeTy0w==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
 
-  '@tauri-apps/cli@2.3.1':
-    resolution: {integrity: sha512-xewcw/ZsCqgilTy2h7+pp2Baxoy7zLR2wXOV7SZLzkb6SshHVbm1BFAjn8iFATURRW85KLzl6wSGJ2dQHjVHqw==}
+  '@tauri-apps/cli@2.4.0':
+    resolution: {integrity: sha512-Esg7s20tuSULd2YF3lmtMa1vF7yr5eh/TlBHXjEyrC+XSD9aBxHVoXb6oz7oKybDY9Jf9OiBa0bf2PbybcmOLA==}
     engines: {node: '>= 10'}
     hasBin: true
 
@@ -1281,8 +1284,8 @@ packages:
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
-  '@types/node@22.13.10':
-    resolution: {integrity: sha512-I6LPUvlRH+O6VRUqYOcMudhaIdUVWfsjnZavnsraHvpBwaEyMN29ry+0UVJhImYL16xsscu0aske3yA+uPOWfw==}
+  '@types/node@22.13.11':
+    resolution: {integrity: sha512-iEUCUJoU0i3VnrCmgoWCXttklWcvoCIx4jzcP22fioIVSdTmjgoEvmAO/QPw6TcS9k5FrNgn4w7q5lGOd1CT5g==}
 
   '@types/parse-path@7.0.3':
     resolution: {integrity: sha512-LriObC2+KYZD3FzCrgWGv/qufdUy4eXrxcLgQMfYXgPbLIecKIsVBaQgUPmxSSLcjmYbDTQbMgr6qr6l/eb7Bg==}
@@ -1458,8 +1461,8 @@ packages:
     resolution: {integrity: sha512-8WB3Jcas3swSvjIeA2yvCJ+Miyz5l1ZmB6HFb9R1317dt9LCQoswg/BGrmAmkWVEszSrrg4RwmO46qIm2OEnSA==}
     engines: {node: '>=16'}
 
-  caniuse-lite@1.0.30001706:
-    resolution: {integrity: sha512-3ZczoTApMAZwPKYWmwVbQMFpXBDds3/0VciVoUwPUbldlYyVLmRVuRs/PcUZtHpbLRpzzDvrvnFuREsGt6lUug==}
+  caniuse-lite@1.0.30001707:
+    resolution: {integrity: sha512-3qtRjw/HQSMlDWf+X79N206fepf4SOOU6SQLMaq/0KkZLmSjPxAkBOQQ+FxbHKfHmYLZFfdWsO3KA90ceHPSnw==}
 
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
@@ -1820,8 +1823,8 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  electron-to-chromium@1.5.121:
-    resolution: {integrity: sha512-gpIEzIb3uvm6V8IK452TvzOvZ3EAF8D5i11SMUG7BjpF2aalh5KyKX5dO+GDW5m9Qdia1ejLm6WM5NOIOd7sbQ==}
+  electron-to-chromium@1.5.123:
+    resolution: {integrity: sha512-refir3NlutEZqlKaBLK0tzlVLe5P2wDKS7UQt/3SpibizgsRAPOsqQC3ffw1nlv3ze5gjRQZYHoPymgVZkplFA==}
 
   emoji-regex@10.4.0:
     resolution: {integrity: sha512-EC+0oUMY1Rqm4O6LLrgjtYDvcVYTy7chDnM4Q7030tP4Kwj3u/pR6gP9ygnp2CJMK5Gq+9Q2oqmrFJAz01DXjw==}
@@ -3187,9 +3190,6 @@ packages:
   tauri-plugin-macos-permissions-api@2.2.0:
     resolution: {integrity: sha512-pgcBqtUMucSColUJ/HcLOBOr+Z+sma2o0nAuobG1uSGBwFJXwltGKE4XsYynktzfzyTpha/xwta2eLezH+EqLg==}
 
-  tauri-plugin-mic-recorder-api@2.0.0:
-    resolution: {integrity: sha512-04wqYCX4WIlYd6KUY7aS3+W4B5RtnSoVczaQCBSXKpQkEx9XdaaBN05XCee2unxGva0btSXBItFqQSdosnS4jQ==}
-
   tauri-plugin-screenshots-api@2.1.0:
     resolution: {integrity: sha512-lknHlq7truhBCO4lVlHBWkk/YYrKXNef0mveUftHC3U0LBI/GTNzOFbyZk+VhHAcztTB5BPpZA0TSbuLd9zgQA==}
 
@@ -3854,27 +3854,27 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@inquirer/checkbox@4.1.4(@types/node@22.13.10)':
+  '@inquirer/checkbox@4.1.4(@types/node@22.13.11)':
     dependencies:
-      '@inquirer/core': 10.1.9(@types/node@22.13.10)
+      '@inquirer/core': 10.1.9(@types/node@22.13.11)
       '@inquirer/figures': 1.0.11
-      '@inquirer/type': 3.0.5(@types/node@22.13.10)
+      '@inquirer/type': 3.0.5(@types/node@22.13.11)
       ansi-escapes: 4.3.2
       yoctocolors-cjs: 2.1.2
     optionalDependencies:
-      '@types/node': 22.13.10
+      '@types/node': 22.13.11
 
-  '@inquirer/confirm@5.1.8(@types/node@22.13.10)':
+  '@inquirer/confirm@5.1.8(@types/node@22.13.11)':
     dependencies:
-      '@inquirer/core': 10.1.9(@types/node@22.13.10)
-      '@inquirer/type': 3.0.5(@types/node@22.13.10)
+      '@inquirer/core': 10.1.9(@types/node@22.13.11)
+      '@inquirer/type': 3.0.5(@types/node@22.13.11)
     optionalDependencies:
-      '@types/node': 22.13.10
+      '@types/node': 22.13.11
 
-  '@inquirer/core@10.1.9(@types/node@22.13.10)':
+  '@inquirer/core@10.1.9(@types/node@22.13.11)':
     dependencies:
       '@inquirer/figures': 1.0.11
-      '@inquirer/type': 3.0.5(@types/node@22.13.10)
+      '@inquirer/type': 3.0.5(@types/node@22.13.11)
       ansi-escapes: 4.3.2
       cli-width: 4.1.0
       mute-stream: 2.0.0
@@ -3882,93 +3882,93 @@ snapshots:
       wrap-ansi: 6.2.0
       yoctocolors-cjs: 2.1.2
     optionalDependencies:
-      '@types/node': 22.13.10
+      '@types/node': 22.13.11
 
-  '@inquirer/editor@4.2.9(@types/node@22.13.10)':
+  '@inquirer/editor@4.2.9(@types/node@22.13.11)':
     dependencies:
-      '@inquirer/core': 10.1.9(@types/node@22.13.10)
-      '@inquirer/type': 3.0.5(@types/node@22.13.10)
+      '@inquirer/core': 10.1.9(@types/node@22.13.11)
+      '@inquirer/type': 3.0.5(@types/node@22.13.11)
       external-editor: 3.1.0
     optionalDependencies:
-      '@types/node': 22.13.10
+      '@types/node': 22.13.11
 
-  '@inquirer/expand@4.0.11(@types/node@22.13.10)':
+  '@inquirer/expand@4.0.11(@types/node@22.13.11)':
     dependencies:
-      '@inquirer/core': 10.1.9(@types/node@22.13.10)
-      '@inquirer/type': 3.0.5(@types/node@22.13.10)
+      '@inquirer/core': 10.1.9(@types/node@22.13.11)
+      '@inquirer/type': 3.0.5(@types/node@22.13.11)
       yoctocolors-cjs: 2.1.2
     optionalDependencies:
-      '@types/node': 22.13.10
+      '@types/node': 22.13.11
 
   '@inquirer/figures@1.0.11': {}
 
-  '@inquirer/input@4.1.8(@types/node@22.13.10)':
+  '@inquirer/input@4.1.8(@types/node@22.13.11)':
     dependencies:
-      '@inquirer/core': 10.1.9(@types/node@22.13.10)
-      '@inquirer/type': 3.0.5(@types/node@22.13.10)
+      '@inquirer/core': 10.1.9(@types/node@22.13.11)
+      '@inquirer/type': 3.0.5(@types/node@22.13.11)
     optionalDependencies:
-      '@types/node': 22.13.10
+      '@types/node': 22.13.11
 
-  '@inquirer/number@3.0.11(@types/node@22.13.10)':
+  '@inquirer/number@3.0.11(@types/node@22.13.11)':
     dependencies:
-      '@inquirer/core': 10.1.9(@types/node@22.13.10)
-      '@inquirer/type': 3.0.5(@types/node@22.13.10)
+      '@inquirer/core': 10.1.9(@types/node@22.13.11)
+      '@inquirer/type': 3.0.5(@types/node@22.13.11)
     optionalDependencies:
-      '@types/node': 22.13.10
+      '@types/node': 22.13.11
 
-  '@inquirer/password@4.0.11(@types/node@22.13.10)':
+  '@inquirer/password@4.0.11(@types/node@22.13.11)':
     dependencies:
-      '@inquirer/core': 10.1.9(@types/node@22.13.10)
-      '@inquirer/type': 3.0.5(@types/node@22.13.10)
+      '@inquirer/core': 10.1.9(@types/node@22.13.11)
+      '@inquirer/type': 3.0.5(@types/node@22.13.11)
       ansi-escapes: 4.3.2
     optionalDependencies:
-      '@types/node': 22.13.10
+      '@types/node': 22.13.11
 
-  '@inquirer/prompts@7.4.0(@types/node@22.13.10)':
+  '@inquirer/prompts@7.4.0(@types/node@22.13.11)':
     dependencies:
-      '@inquirer/checkbox': 4.1.4(@types/node@22.13.10)
-      '@inquirer/confirm': 5.1.8(@types/node@22.13.10)
-      '@inquirer/editor': 4.2.9(@types/node@22.13.10)
-      '@inquirer/expand': 4.0.11(@types/node@22.13.10)
-      '@inquirer/input': 4.1.8(@types/node@22.13.10)
-      '@inquirer/number': 3.0.11(@types/node@22.13.10)
-      '@inquirer/password': 4.0.11(@types/node@22.13.10)
-      '@inquirer/rawlist': 4.0.11(@types/node@22.13.10)
-      '@inquirer/search': 3.0.11(@types/node@22.13.10)
-      '@inquirer/select': 4.1.0(@types/node@22.13.10)
+      '@inquirer/checkbox': 4.1.4(@types/node@22.13.11)
+      '@inquirer/confirm': 5.1.8(@types/node@22.13.11)
+      '@inquirer/editor': 4.2.9(@types/node@22.13.11)
+      '@inquirer/expand': 4.0.11(@types/node@22.13.11)
+      '@inquirer/input': 4.1.8(@types/node@22.13.11)
+      '@inquirer/number': 3.0.11(@types/node@22.13.11)
+      '@inquirer/password': 4.0.11(@types/node@22.13.11)
+      '@inquirer/rawlist': 4.0.11(@types/node@22.13.11)
+      '@inquirer/search': 3.0.11(@types/node@22.13.11)
+      '@inquirer/select': 4.1.0(@types/node@22.13.11)
     optionalDependencies:
-      '@types/node': 22.13.10
+      '@types/node': 22.13.11
 
-  '@inquirer/rawlist@4.0.11(@types/node@22.13.10)':
+  '@inquirer/rawlist@4.0.11(@types/node@22.13.11)':
     dependencies:
-      '@inquirer/core': 10.1.9(@types/node@22.13.10)
-      '@inquirer/type': 3.0.5(@types/node@22.13.10)
+      '@inquirer/core': 10.1.9(@types/node@22.13.11)
+      '@inquirer/type': 3.0.5(@types/node@22.13.11)
       yoctocolors-cjs: 2.1.2
     optionalDependencies:
-      '@types/node': 22.13.10
+      '@types/node': 22.13.11
 
-  '@inquirer/search@3.0.11(@types/node@22.13.10)':
+  '@inquirer/search@3.0.11(@types/node@22.13.11)':
     dependencies:
-      '@inquirer/core': 10.1.9(@types/node@22.13.10)
+      '@inquirer/core': 10.1.9(@types/node@22.13.11)
       '@inquirer/figures': 1.0.11
-      '@inquirer/type': 3.0.5(@types/node@22.13.10)
+      '@inquirer/type': 3.0.5(@types/node@22.13.11)
       yoctocolors-cjs: 2.1.2
     optionalDependencies:
-      '@types/node': 22.13.10
+      '@types/node': 22.13.11
 
-  '@inquirer/select@4.1.0(@types/node@22.13.10)':
+  '@inquirer/select@4.1.0(@types/node@22.13.11)':
     dependencies:
-      '@inquirer/core': 10.1.9(@types/node@22.13.10)
+      '@inquirer/core': 10.1.9(@types/node@22.13.11)
       '@inquirer/figures': 1.0.11
-      '@inquirer/type': 3.0.5(@types/node@22.13.10)
+      '@inquirer/type': 3.0.5(@types/node@22.13.11)
       ansi-escapes: 4.3.2
       yoctocolors-cjs: 2.1.2
     optionalDependencies:
-      '@types/node': 22.13.10
+      '@types/node': 22.13.11
 
-  '@inquirer/type@3.0.5(@types/node@22.13.10)':
+  '@inquirer/type@3.0.5(@types/node@22.13.11)':
     optionalDependencies:
-      '@types/node': 22.13.10
+      '@types/node': 22.13.11
 
   '@isaacs/cliui@8.0.2':
     dependencies:
@@ -4217,90 +4217,94 @@ snapshots:
 
   '@tauri-apps/api@2.0.0-alpha.6': {}
 
-  '@tauri-apps/api@2.3.0': {}
+  '@tauri-apps/api@2.4.0': {}
 
-  '@tauri-apps/cli-darwin-arm64@2.3.1':
+  '@tauri-apps/cli-darwin-arm64@2.4.0':
     optional: true
 
-  '@tauri-apps/cli-darwin-x64@2.3.1':
+  '@tauri-apps/cli-darwin-x64@2.4.0':
     optional: true
 
-  '@tauri-apps/cli-linux-arm-gnueabihf@2.3.1':
+  '@tauri-apps/cli-linux-arm-gnueabihf@2.4.0':
     optional: true
 
-  '@tauri-apps/cli-linux-arm64-gnu@2.3.1':
+  '@tauri-apps/cli-linux-arm64-gnu@2.4.0':
     optional: true
 
-  '@tauri-apps/cli-linux-arm64-musl@2.3.1':
+  '@tauri-apps/cli-linux-arm64-musl@2.4.0':
     optional: true
 
-  '@tauri-apps/cli-linux-x64-gnu@2.3.1':
+  '@tauri-apps/cli-linux-riscv64-gnu@2.4.0':
     optional: true
 
-  '@tauri-apps/cli-linux-x64-musl@2.3.1':
+  '@tauri-apps/cli-linux-x64-gnu@2.4.0':
     optional: true
 
-  '@tauri-apps/cli-win32-arm64-msvc@2.3.1':
+  '@tauri-apps/cli-linux-x64-musl@2.4.0':
     optional: true
 
-  '@tauri-apps/cli-win32-ia32-msvc@2.3.1':
+  '@tauri-apps/cli-win32-arm64-msvc@2.4.0':
     optional: true
 
-  '@tauri-apps/cli-win32-x64-msvc@2.3.1':
+  '@tauri-apps/cli-win32-ia32-msvc@2.4.0':
     optional: true
 
-  '@tauri-apps/cli@2.3.1':
+  '@tauri-apps/cli-win32-x64-msvc@2.4.0':
+    optional: true
+
+  '@tauri-apps/cli@2.4.0':
     optionalDependencies:
-      '@tauri-apps/cli-darwin-arm64': 2.3.1
-      '@tauri-apps/cli-darwin-x64': 2.3.1
-      '@tauri-apps/cli-linux-arm-gnueabihf': 2.3.1
-      '@tauri-apps/cli-linux-arm64-gnu': 2.3.1
-      '@tauri-apps/cli-linux-arm64-musl': 2.3.1
-      '@tauri-apps/cli-linux-x64-gnu': 2.3.1
-      '@tauri-apps/cli-linux-x64-musl': 2.3.1
-      '@tauri-apps/cli-win32-arm64-msvc': 2.3.1
-      '@tauri-apps/cli-win32-ia32-msvc': 2.3.1
-      '@tauri-apps/cli-win32-x64-msvc': 2.3.1
+      '@tauri-apps/cli-darwin-arm64': 2.4.0
+      '@tauri-apps/cli-darwin-x64': 2.4.0
+      '@tauri-apps/cli-linux-arm-gnueabihf': 2.4.0
+      '@tauri-apps/cli-linux-arm64-gnu': 2.4.0
+      '@tauri-apps/cli-linux-arm64-musl': 2.4.0
+      '@tauri-apps/cli-linux-riscv64-gnu': 2.4.0
+      '@tauri-apps/cli-linux-x64-gnu': 2.4.0
+      '@tauri-apps/cli-linux-x64-musl': 2.4.0
+      '@tauri-apps/cli-win32-arm64-msvc': 2.4.0
+      '@tauri-apps/cli-win32-ia32-msvc': 2.4.0
+      '@tauri-apps/cli-win32-x64-msvc': 2.4.0
 
   '@tauri-apps/plugin-autostart@2.2.0':
     dependencies:
-      '@tauri-apps/api': 2.3.0
+      '@tauri-apps/api': 2.4.0
 
   '@tauri-apps/plugin-deep-link@2.2.0':
     dependencies:
-      '@tauri-apps/api': 2.3.0
+      '@tauri-apps/api': 2.4.0
 
   '@tauri-apps/plugin-dialog@2.2.0':
     dependencies:
-      '@tauri-apps/api': 2.3.0
+      '@tauri-apps/api': 2.4.0
 
   '@tauri-apps/plugin-global-shortcut@2.0.0':
     dependencies:
-      '@tauri-apps/api': 2.3.0
+      '@tauri-apps/api': 2.4.0
 
   '@tauri-apps/plugin-http@2.0.2':
     dependencies:
-      '@tauri-apps/api': 2.3.0
+      '@tauri-apps/api': 2.4.0
 
   '@tauri-apps/plugin-os@2.2.1':
     dependencies:
-      '@tauri-apps/api': 2.3.0
+      '@tauri-apps/api': 2.4.0
 
   '@tauri-apps/plugin-process@2.2.0':
     dependencies:
-      '@tauri-apps/api': 2.3.0
+      '@tauri-apps/api': 2.4.0
 
   '@tauri-apps/plugin-shell@2.2.0':
     dependencies:
-      '@tauri-apps/api': 2.3.0
+      '@tauri-apps/api': 2.4.0
 
   '@tauri-apps/plugin-updater@2.6.1':
     dependencies:
-      '@tauri-apps/api': 2.3.0
+      '@tauri-apps/api': 2.4.0
 
   '@tauri-apps/plugin-websocket@2.3.0':
     dependencies:
-      '@tauri-apps/api': 2.3.0
+      '@tauri-apps/api': 2.4.0
 
   '@tauri-apps/plugin-window@2.0.0-alpha.1':
     dependencies:
@@ -4487,7 +4491,7 @@ snapshots:
 
   '@types/ms@2.1.0': {}
 
-  '@types/node@22.13.10':
+  '@types/node@22.13.11':
     dependencies:
       undici-types: 6.20.0
 
@@ -4521,14 +4525,14 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@vitejs/plugin-react@4.3.4(vite@5.4.14(@types/node@22.13.10))':
+  '@vitejs/plugin-react@4.3.4(vite@5.4.14(@types/node@22.13.11))':
     dependencies:
       '@babel/core': 7.26.10
       '@babel/plugin-transform-react-jsx-self': 7.25.9(@babel/core@7.26.10)
       '@babel/plugin-transform-react-jsx-source': 7.25.9(@babel/core@7.26.10)
       '@types/babel__core': 7.20.5
       react-refresh: 0.14.2
-      vite: 5.4.14(@types/node@22.13.10)
+      vite: 5.4.14(@types/node@22.13.11)
     transitivePeerDependencies:
       - supports-color
 
@@ -4599,7 +4603,7 @@ snapshots:
   autoprefixer@10.4.21(postcss@8.5.3):
     dependencies:
       browserslist: 4.24.4
-      caniuse-lite: 1.0.30001706
+      caniuse-lite: 1.0.30001707
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.1.1
@@ -4642,8 +4646,8 @@ snapshots:
 
   browserslist@4.24.4:
     dependencies:
-      caniuse-lite: 1.0.30001706
-      electron-to-chromium: 1.5.121
+      caniuse-lite: 1.0.30001707
+      electron-to-chromium: 1.5.123
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.24.4)
 
@@ -4664,7 +4668,7 @@ snapshots:
 
   camelcase@8.0.0: {}
 
-  caniuse-lite@1.0.30001706: {}
+  caniuse-lite@1.0.30001707: {}
 
   ccount@2.0.1: {}
 
@@ -5026,7 +5030,7 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  electron-to-chromium@1.5.121: {}
+  electron-to-chromium@1.5.123: {}
 
   emoji-regex@10.4.0: {}
 
@@ -5426,12 +5430,12 @@ snapshots:
 
   inline-style-parser@0.2.4: {}
 
-  inquirer@12.3.0(@types/node@22.13.10):
+  inquirer@12.3.0(@types/node@22.13.11):
     dependencies:
-      '@inquirer/core': 10.1.9(@types/node@22.13.10)
-      '@inquirer/prompts': 7.4.0(@types/node@22.13.10)
-      '@inquirer/type': 3.0.5(@types/node@22.13.10)
-      '@types/node': 22.13.10
+      '@inquirer/core': 10.1.9(@types/node@22.13.11)
+      '@inquirer/prompts': 7.4.0(@types/node@22.13.11)
+      '@inquirer/type': 3.0.5(@types/node@22.13.11)
+      '@types/node': 22.13.11
       ansi-escapes: 4.3.2
       mute-stream: 2.0.0
       run-async: 3.0.0
@@ -6466,7 +6470,7 @@ snapshots:
       unist-util-visit-parents: 6.0.1
       vfile: 6.0.3
 
-  release-it@18.1.2(@types/node@22.13.10)(typescript@5.8.2):
+  release-it@18.1.2(@types/node@22.13.11)(typescript@5.8.2):
     dependencies:
       '@iarna/toml': 2.2.5
       '@octokit/rest': 21.0.2
@@ -6477,7 +6481,7 @@ snapshots:
       execa: 9.5.2
       git-url-parse: 16.0.0
       globby: 14.0.2
-      inquirer: 12.3.0(@types/node@22.13.10)
+      inquirer: 12.3.0(@types/node@22.13.11)
       issue-parser: 7.0.1
       lodash: 4.17.21
       mime-types: 2.1.35
@@ -6768,19 +6772,15 @@ snapshots:
 
   tauri-plugin-fs-pro-api@2.3.1:
     dependencies:
-      '@tauri-apps/api': 2.3.0
+      '@tauri-apps/api': 2.4.0
 
   tauri-plugin-macos-permissions-api@2.2.0:
     dependencies:
-      '@tauri-apps/api': 2.3.0
-
-  tauri-plugin-mic-recorder-api@2.0.0:
-    dependencies:
-      '@tauri-apps/api': 2.3.0
+      '@tauri-apps/api': 2.4.0
 
   tauri-plugin-screenshots-api@2.1.0:
     dependencies:
-      '@tauri-apps/api': 2.3.0
+      '@tauri-apps/api': 2.4.0
 
   thenify-all@1.6.0:
     dependencies:
@@ -6962,13 +6962,13 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.2
 
-  vite@5.4.14(@types/node@22.13.10):
+  vite@5.4.14(@types/node@22.13.11):
     dependencies:
       esbuild: 0.21.5
       postcss: 8.5.3
       rollup: 4.36.0
     optionalDependencies:
-      '@types/node': 22.13.10
+      '@types/node': 22.13.11
       fsevents: 2.3.3
 
   void-elements@3.1.0: {}
