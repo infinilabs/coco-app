@@ -12,7 +12,7 @@ import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import SearchPopover from "./SearchPopover";
 import { DataSource } from "@/components/Assistant/types";
-import SpeechToText from "../SpeechToText";
+import AudioRecording from "../AudioRecording";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -292,7 +292,7 @@ ChatInputProps) {
           ) : null}
         </div>
 
-        <SpeechToText
+        <AudioRecording
           key={isChatMode ? "chat" : "search"}
           onChange={(text) => {
             changeInput(inputValue + text);

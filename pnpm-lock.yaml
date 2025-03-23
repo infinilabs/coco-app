@@ -47,6 +47,9 @@ importers:
       '@tauri-apps/plugin-window':
         specifier: 2.0.0-alpha.1
         version: 2.0.0-alpha.1
+      '@wavesurfer/react':
+        specifier: ^1.0.9
+        version: 1.0.9(react@18.3.1)(wavesurfer.js@7.9.3)
       ahooks:
         specifier: ^3.8.4
         version: 3.8.4(react@18.3.1)
@@ -131,6 +134,9 @@ importers:
       uuid:
         specifier: ^11.1.0
         version: 11.1.0
+      wavesurfer.js:
+        specifier: ^7.9.3
+        version: 7.9.3
       zustand:
         specifier: ^5.0.3
         version: 5.0.3(@types/react@18.3.19)(immer@10.1.1)(react@18.3.1)
@@ -1315,6 +1321,12 @@ packages:
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
       vite: ^4.2.0 || ^5.0.0 || ^6.0.0
+
+  '@wavesurfer/react@1.0.9':
+    resolution: {integrity: sha512-HD3x+p48kWITd3tCOA7KG+6zae8btulNjSTdnRmgrtp9/XPzXc61ZCaPgbqT0gioPGhIcvBcpXZAmnhE8lUDBw==}
+    peerDependencies:
+      react: ^18.2.0 || ^19.0.0
+      wavesurfer.js: '>=7.7.14'
 
   acorn@8.14.1:
     resolution: {integrity: sha512-OvQ/2pUDKmgfCg++xsTX1wGxfTaszcHVcTctW4UJB4hibJx2HXxxO5UmVgyjMa+ZDsiaf5wWLXYpRWMmBI0QHg==}
@@ -3403,6 +3415,9 @@ packages:
   vscode-uri@3.0.8:
     resolution: {integrity: sha512-AyFQ0EVmsOZOlAnxoFOGOq1SQDWAB7C6aqMGS23svWAllfOaxbuFvcT8D1i8z3Gyn8fraVeZNNmN6e9bxxXkKw==}
 
+  wavesurfer.js@7.9.3:
+    resolution: {integrity: sha512-GgYIQjZYu4Q2tm+qrFhBCoQm+K7+SGqulEsKXndIjmJ4b/drA1umjgQlDc+wGotGAef/8hH/gu5f3bf19yDyxw==}
+
   web-namespaces@2.0.1:
     resolution: {integrity: sha512-bKr1DkiNa2krS7qxNtdrtHAmzuYGFQLiQ13TsorsdT6ULTkPLKuu5+GsFpDlg6JFjUTwX2DyhMPG2be8uPrqsQ==}
 
@@ -4516,6 +4531,11 @@ snapshots:
       vite: 5.4.14(@types/node@22.13.10)
     transitivePeerDependencies:
       - supports-color
+
+  '@wavesurfer/react@1.0.9(react@18.3.1)(wavesurfer.js@7.9.3)':
+    dependencies:
+      react: 18.3.1
+      wavesurfer.js: 7.9.3
 
   acorn@8.14.1: {}
 
@@ -6969,6 +6989,8 @@ snapshots:
       vscode-languageserver-protocol: 3.17.5
 
   vscode-uri@3.0.8: {}
+
+  wavesurfer.js@7.9.3: {}
 
   web-namespaces@2.0.1: {}
 
