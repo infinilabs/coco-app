@@ -95,7 +95,6 @@ pub async fn change_shortcut<R: Runtime>(
 fn _register_shortcut<R: Runtime>(app: &AppHandle<R>, shortcut: Shortcut) {
     app.global_shortcut()
         .on_shortcut(shortcut, move |app, scut, event| {
-            // 添加返回类型标注
             if scut == &shortcut {
                 dbg!("shortcut pressed");
                 let main_window = app.get_window(MAIN_WINDOW_LABEL).unwrap();
