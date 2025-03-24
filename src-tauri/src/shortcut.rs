@@ -55,14 +55,14 @@ pub fn enable_shortcut(app: &App) {
 /// Get the stored shortcut as a string, same as [`_get_shortcut()`], except that
 /// this is a `tauri::command` interface.
 #[tauri::command]
-pub fn get_current_shortcut<R: Runtime>(app: AppHandle<R>) -> Result<String, String> {
+pub async fn get_current_shortcut<R: Runtime>(app: AppHandle<R>) -> Result<String, String> {
     let shortcut = _get_shortcut(&app);
     Ok(shortcut)
 }
 
 /// Get the current shortcut and unregister it on the tauri side.
 #[tauri::command]
-pub fn unregister_shortcut<R: Runtime>(app: AppHandle<R>) {
+pub async fn unregister_shortcut<R: Runtime>(app: AppHandle<R>) {
     let shortcut_str = _get_shortcut(&app);
     let shortcut = shortcut_str
         .parse::<Shortcut>()
@@ -75,7 +75,7 @@ pub fn unregister_shortcut<R: Runtime>(app: AppHandle<R>) {
 
 /// Change the global shortcut to `key`.
 #[tauri::command]
-pub fn change_shortcut<R: Runtime>(
+pub async fn change_shortcut<R: Runtime>(
     app: AppHandle<R>,
     _window: tauri::Window<R>,
     key: String,
