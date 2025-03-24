@@ -74,7 +74,9 @@ pub async fn connect_to_server(
     let endpoint = convert_to_websocket(server.endpoint.as_str())?;
 
     // Retrieve the token for the server (token is optional)
-    let token = get_server_token(id.as_str()).map(|t| t.access_token.clone());
+    let token = get_server_token(id.as_str())
+        .await?
+        .map(|t| t.access_token.clone());
 
     // Create the WebSocket request
     let mut request =

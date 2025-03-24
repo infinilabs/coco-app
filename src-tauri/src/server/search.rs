@@ -79,28 +79,37 @@ impl CocoSearchSource {
         CocoSearchSource { server, client }
     }
 
-    fn build_request_from_query(&self, query: &SearchQuery) -> RequestBuilder {
+    async fn build_request_from_query(
+        &self,
+        query: &SearchQuery,
+    ) -> Result<RequestBuilder, String> {
         self.build_request(query.from, query.size, &query.query_strings)
+            .await
     }
 
-    fn build_request(
+    async fn build_request(
         &self,
         from: u64,
         size: u64,
         query_strings: &HashMap<String, String>,
-    ) -> RequestBuilder {
+    ) -> Result<RequestBuilder, String> {
         let url = HttpClient::join_url(&self.server.endpoint, "/query/_search");
         let mut request_builder = self.client.request(Method::GET, url);
 
         if !self.server.public {
-            if let Some(token) = get_server_token(&self.server.id).map(|t| t.access_token) {
+            if let Some(token) = get_server_token(&self.server.id)
+                .await?
+                .map(|t| t.access_token)
+            {
                 request_builder = request_builder.header("X-API-TOKEN", token);
             }
         }
 
-        request_builder
+        let result = request_builder
             .query(&[("from", &from.to_string()), ("size", &size.to_string())])
-            .query(query_strings)
+            .query(query_strings);
+
+        Ok(result)
     }
 }
 
@@ -118,7 +127,7 @@ impl SearchSource for CocoSearchSource {
     async fn search(&self, query: SearchQuery) -> Result<QueryResponse, SearchError> {
         let _server_id = self.server.id.clone();
         let _server_name = self.server.name.clone();
-        let request_builder = self.build_request_from_query(&query);
+        let request_builder = self.build_request_from_query(&query).await.unwrap();
 
         // Send the HTTP request asynchronously
         let response = request_builder.send().await;

@@ -32,7 +32,9 @@
         "windowEffects": {
           "effects": [],
           "radius": 12
-        }
+        },
+        "visibleOnAllWorkspaces": true,
+        "alwaysOnTop": true
       },
       {
         "label": "settings",

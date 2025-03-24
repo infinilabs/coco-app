@@ -32,7 +32,7 @@ lazy_static! {
 }
 
 #[tauri::command]
-fn change_window_height(handle: AppHandle, height: u32) {
+async fn change_window_height(handle: AppHandle, height: u32) {
     let window: WebviewWindow = handle.get_webview_window(MAIN_WINDOW_LABEL).unwrap();
 
     let mut size = window.outer_size().unwrap();
@@ -246,7 +246,7 @@ async fn show_coco(app_handle: AppHandle) {
 }
 
 #[tauri::command]
-fn hide_coco(app: tauri::AppHandle) {
+async fn hide_coco(app: tauri::AppHandle) {
     if let Some(window) = app.get_window(MAIN_WINDOW_LABEL) {
         match window.is_visible() {
             Ok(true) => {
