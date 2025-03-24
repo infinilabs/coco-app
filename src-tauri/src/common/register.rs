@@ -16,6 +16,7 @@ impl SearchSourceRegistry {
         sources.insert(source_id, Arc::new(source));
     }
 
+    #[allow(dead_code)]
     pub async fn clear(&self) {
         let mut sources = self.sources.write().await;
         sources.clear();
@@ -26,6 +27,7 @@ impl SearchSourceRegistry {
         sources.remove(id);
     }
 
+    #[allow(dead_code)]
     pub async fn get_source(&self, id: &str) -> Option<Arc<dyn SearchSource>> {
         let sources = self.sources.read().await;
         sources.get(id).cloned()

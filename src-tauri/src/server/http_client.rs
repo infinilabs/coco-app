@@ -5,7 +5,6 @@ use reqwest::{Client, Method, RequestBuilder};
 use serde_json::Value;
 use std::collections::HashMap;
 use std::time::Duration;
-use tauri::ipc::RuntimeCapability;
 use tokio::sync::Mutex;
 
 pub static HTTP_CLIENT: Lazy<Mutex<Client>> = Lazy::new(|| {
@@ -102,7 +101,7 @@ impl HttpClient {
             let mut headers = if let Some(custom_headers) = custom_headers {
                 custom_headers
             } else {
-                let mut headers = HashMap::new();
+                let headers = HashMap::new();
                 headers
             };
 
@@ -158,6 +157,7 @@ impl HttpClient {
     }
 
     // Convenience method for PUT requests
+    #[allow(dead_code)]
     pub async fn put(
         server_id: &str,
         path: &str,
@@ -177,6 +177,7 @@ impl HttpClient {
     }
 
     // Convenience method for DELETE requests
+    #[allow(dead_code)]
     pub async fn delete(
         server_id: &str,
         path: &str,

@@ -80,6 +80,7 @@ where
         .collect())
 }
 
+#[allow(dead_code)]
 pub async fn parse_search_results_with_score<T>(
     response: Response,
 ) -> Result<Vec<(T, Option<f64>)>, Box<dyn Error>>

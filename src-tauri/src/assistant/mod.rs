@@ -8,7 +8,7 @@ use tauri::{AppHandle, Runtime};
 
 #[tauri::command]
 pub async fn chat_history<R: Runtime>(
-    app_handle: AppHandle<R>,
+    _app_handle: AppHandle<R>,
     server_id: String,
     from: u32,
     size: u32,
@@ -44,7 +44,7 @@ async fn handle_raw_response(response: Response) -> Result<Result<String, String
 
 #[tauri::command]
 pub async fn session_chat_history<R: Runtime>(
-    app_handle: AppHandle<R>,
+    _app_handle: AppHandle<R>,
     server_id: String,
     session_id: String,
     from: u32,
@@ -69,11 +69,11 @@ pub async fn session_chat_history<R: Runtime>(
 
 #[tauri::command]
 pub async fn open_session_chat<R: Runtime>(
-    app_handle: AppHandle<R>,
+    _app_handle: AppHandle<R>,
     server_id: String,
     session_id: String,
 ) -> Result<String, String> {
-    let mut query_params = HashMap::new();
+    let query_params = HashMap::new();
     let path = format!("/chat/{}/_open", session_id);
 
     let response = HttpClient::post(&server_id, path.as_str(), Some(query_params), None)
@@ -85,11 +85,11 @@ pub async fn open_session_chat<R: Runtime>(
 
 #[tauri::command]
 pub async fn close_session_chat<R: Runtime>(
-    app_handle: AppHandle<R>,
+    _app_handle: AppHandle<R>,
     server_id: String,
     session_id: String,
 ) -> Result<String, String> {
-    let mut query_params = HashMap::new();
+    let query_params = HashMap::new();
     let path = format!("/chat/{}/_close", session_id);
 
     let response = HttpClient::post(&server_id, path.as_str(), Some(query_params), None)
@@ -100,11 +100,11 @@ pub async fn close_session_chat<R: Runtime>(
 }
 #[tauri::command]
 pub async fn cancel_session_chat<R: Runtime>(
-    app_handle: AppHandle<R>,
+    _app_handle: AppHandle<R>,
     server_id: String,
     session_id: String,
 ) -> Result<String, String> {
-    let mut query_params = HashMap::new();
+    let query_params = HashMap::new();
     let path = format!("/chat/{}/_cancel", session_id);
 
     let response = HttpClient::post(&server_id, path.as_str(), Some(query_params), None)
@@ -116,7 +116,7 @@ pub async fn cancel_session_chat<R: Runtime>(
 
 #[tauri::command]
 pub async fn new_chat<R: Runtime>(
-    app_handle: AppHandle<R>,
+    _app_handle: AppHandle<R>,
     server_id: String,
     message: String,
     query_params: Option<HashMap<String, Value>>, //search,deep_thinking
@@ -154,7 +154,7 @@ pub async fn new_chat<R: Runtime>(
 
 #[tauri::command]
 pub async fn send_message<R: Runtime>(
-    app_handle: AppHandle<R>,
+    _app_handle: AppHandle<R>,
     server_id: String,
     session_id: String,
     message: String,

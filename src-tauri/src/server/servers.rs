@@ -24,6 +24,7 @@ lazy_static! {
         Arc::new(RwLock::new(HashMap::new()));
 }
 
+#[allow(dead_code)]
 fn check_server_exists(id: &str) -> bool {
     let cache = SERVER_CACHE.read().unwrap(); // Acquire read lock
     cache.contains_key(id)
@@ -268,6 +269,7 @@ pub async fn list_coco_servers<R: Runtime>(
     Ok(servers)
 }
 
+#[allow(dead_code)]
 pub fn get_servers_as_hashmap() -> HashMap<String, Server> {
     let cache = SERVER_CACHE.read().unwrap();
     cache.clone()
