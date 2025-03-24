@@ -87,8 +87,6 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
 
   const getAvailableAudioDevices = async () => {
     state.audioDevices = await RecordPlugin.getAvailableAudioDevices();
-
-    console.log("state.audioDevices ", state.audioDevices);
   };
 
   const resetState = (otherState: Partial<State> = {}) => {
