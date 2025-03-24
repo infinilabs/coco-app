@@ -242,25 +242,28 @@ async fn init_app_search_source<R: Runtime>(app_handle: &AppHandle<R>) -> Result
 }
 
 #[tauri::command]
-async fn show_coco(app_handle: AppHandle) {
-    handle_open_coco(&app_handle);
-}
-
-#[tauri::command]
-async fn hide_coco(app: tauri::AppHandle) {
-    handle_hide_coco(&app);
-}
-
-fn handle_open_coco(app: &AppHandle) {
-    if let Some(window) = app.get_window(MAIN_WINDOW_LABEL) {
-        let _ = app.emit("show-coco", ());
+async fn show_coco<R: Runtime>(app_handle: AppHandle<R>) {
+    if let Some(window) = app_handle.get_window(MAIN_WINDOW_LABEL) {
+        let _ = app_handle.emit("show-coco", ());
 
         move_window_to_active_monitor(&window);
 
-        window.show().unwrap();
-        window.set_visible_on_all_workspaces(true).unwrap();
-        window.set_always_on_top(true).unwrap();
-        window.set_focus().unwrap();
+        let _ = window.show();
+        let _ = window.unminimize();
+        let _ = window.set_focus();
+    }
+}
+
+#[tauri::command]
+async fn hide_coco<R: Runtime>(app: AppHandle<R>) {
+    if let Some(window) = app.get_window(MAIN_WINDOW_LABEL) {
+        if let Err(err) = window.hide() {
+            eprintln!("Failed to hide the window: {}", err);
+        } else {
+            println!("Window successfully hidden.");
+        }
+    } else {
+        eprintln!("Main window not found.");
     }
 }
 
@@ -357,26 +360,15 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
     }
 }
 
-fn handle_hide_coco(app: &AppHandle) {
-    if let Some(window) = app.get_window(MAIN_WINDOW_LABEL) {
-        if let Err(err) = window.hide() {
-            eprintln!("Failed to hide the window: {}", err);
-        } else {
-            println!("Window successfully hidden.");
-        }
-    } else {
-        eprintln!("Main window not found.");
-    }
-}
-
 #[allow(dead_code)]
 fn open_settings(app: &tauri::AppHandle) {
     use tauri::webview::WebviewBuilder;
     println!("settings menu item was clicked");
     let window = app.get_webview_window("settings");
     if let Some(window) = window {
-        window.show().unwrap();
-        window.set_focus().unwrap();
+        let _ = window.show();
+        let _ = window.unminimize();
+        let _ = window.set_focus();
     } else {
         let window = tauri::window::WindowBuilder::new(app, "settings")
             .title("Settings Window")

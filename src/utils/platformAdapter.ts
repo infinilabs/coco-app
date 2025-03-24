@@ -2,33 +2,33 @@ import { useState } from "react";
 import { isTauri } from "@tauri-apps/api/core";
 
 export interface EventPayloads {
-  'language-changed': {
+  "language-changed": {
     language: string;
   };
-  'theme-changed': string;
-  'tauri://focus': void;
-  'endpoint-changed': {
+  "theme-changed": string;
+  "tauri://focus": void;
+  "endpoint-changed": {
     endpoint: string;
     endpoint_http: string;
     endpoint_websocket: string;
   };
-  'auth-changed': {
+  "auth-changed": {
     auth: {
       [key: string]: any;
     };
   };
-  'userInfo-changed': {
+  "userInfo-changed": {
     userInfo: {
       [key: string]: any;
     };
   };
-  'open_settings': string | '';
-  'tab_index': string | '';
-  'login_or_logout': any;
-  'change-startup-store': {
+  open_settings: string | "";
+  tab_index: string | "";
+  login_or_logout: any;
+  "change-startup-store": {
     defaultStartupWindow: string;
   };
-  'show-coco': void;
+  "show-coco": void;
 }
 
 // Platform adapter interface
@@ -51,7 +51,9 @@ export interface PlatformAdapter {
   getScreenshotableWindows: () => Promise<any[]>;
   captureMonitorScreenshot: (id: number) => Promise<string>;
   captureWindowScreenshot: (id: number) => Promise<string>;
-  openFileDialog: (options: { multiple: boolean }) => Promise<string | string[] | null>;
+  openFileDialog: (options: {
+    multiple: boolean;
+  }) => Promise<string | string[] | null>;
   getFileMetadata: (path: string) => Promise<any>;
   getFileIcon: (path: string, size: number) => Promise<string>;
   checkUpdate: () => Promise<any>;
@@ -60,7 +62,9 @@ export interface PlatformAdapter {
   getWebviewWindow: () => Promise<any>;
   setWindowTheme: (theme: string | null) => Promise<void>;
   getWindowTheme: () => Promise<string>;
-  onThemeChanged: (callback: (payload: { payload: string }) => void) => Promise<void>;
+  onThemeChanged: (
+    callback: (payload: { payload: string }) => void
+  ) => Promise<void>;
   getWindowByLabel: (label: string) => Promise<{
     show: () => Promise<void>;
     setFocus: () => Promise<void>;
@@ -82,7 +86,9 @@ export const createTauriAdapter = (): PlatformAdapter => {
 
     async setWindowSize(width: number, height: number): Promise<void> {
       if (isTauri()) {
-        const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+        const { getCurrentWebviewWindow } = await import(
+          "@tauri-apps/api/webviewWindow"
+        );
         const { LogicalSize } = await import("@tauri-apps/api/dpi");
         const window = await getCurrentWebviewWindow();
         if (window) {
@@ -100,10 +106,14 @@ export const createTauriAdapter = (): PlatformAdapter => {
 
     async showWindow(): Promise<void> {
       if (isTauri()) {
-        const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+        const { getCurrentWebviewWindow } = await import(
+          "@tauri-apps/api/webviewWindow"
+        );
         const window = await getCurrentWebviewWindow();
         if (window) {
           await window.show();
+          await window.unminimize();
+          await window.setFocus();
         }
       }
     },
@@ -148,7 +158,9 @@ export const createTauriAdapter = (): PlatformAdapter => {
 
     async checkScreenRecordingPermission() {
       if (isTauri()) {
-        const { checkScreenRecordingPermission } = await import("tauri-plugin-macos-permissions-api");
+        const { checkScreenRecordingPermission } = await import(
+          "tauri-plugin-macos-permissions-api"
+        );
         return checkScreenRecordingPermission();
       }
       return false;
@@ -156,14 +168,18 @@ export const createTauriAdapter = (): PlatformAdapter => {
 
     async requestScreenRecordingPermission() {
       if (isTauri()) {
-        const { requestScreenRecordingPermission } = await import("tauri-plugin-macos-permissions-api"); 
+        const { requestScreenRecordingPermission } = await import(
+          "tauri-plugin-macos-permissions-api"
+        );
         return requestScreenRecordingPermission();
       }
     },
 
     async getScreenshotableMonitors() {
       if (isTauri()) {
-        const { getScreenshotableMonitors } = await import("tauri-plugin-screenshots-api");
+        const { getScreenshotableMonitors } = await import(
+          "tauri-plugin-screenshots-api"
+        );
         return getScreenshotableMonitors();
       }
       return [];
@@ -171,7 +187,9 @@ export const createTauriAdapter = (): PlatformAdapter => {
 
     async getScreenshotableWindows() {
       if (isTauri()) {
-        const { getScreenshotableWindows } = await import("tauri-plugin-screenshots-api");
+        const { getScreenshotableWindows } = await import(
+          "tauri-plugin-screenshots-api"
+        );
         return getScreenshotableWindows();
       }
       return [];
@@ -179,7 +197,9 @@ export const createTauriAdapter = (): PlatformAdapter => {
 
     async captureMonitorScreenshot(id: number) {
       if (isTauri()) {
-        const { getMonitorScreenshot } = await import("tauri-plugin-screenshots-api");
+        const { getMonitorScreenshot } = await import(
+          "tauri-plugin-screenshots-api"
+        );
         return getMonitorScreenshot(id);
       }
       return "";
@@ -187,7 +207,9 @@ export const createTauriAdapter = (): PlatformAdapter => {
 
     async captureWindowScreenshot(id: number) {
       if (isTauri()) {
-        const { getWindowScreenshot } = await import("tauri-plugin-screenshots-api");
+        const { getWindowScreenshot } = await import(
+          "tauri-plugin-screenshots-api"
+        );
         return getWindowScreenshot(id);
       }
       return "";
@@ -244,7 +266,9 @@ export const createTauriAdapter = (): PlatformAdapter => {
 
     async getWebviewWindow() {
       if (isTauri()) {
-        const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+        const { getCurrentWebviewWindow } = await import(
+          "@tauri-apps/api/webviewWindow"
+        );
         return getCurrentWebviewWindow();
       }
       return null;
@@ -262,7 +286,7 @@ export const createTauriAdapter = (): PlatformAdapter => {
       if (window) {
         return window.theme();
       }
-      return 'light';
+      return "light";
     },
 
     async onThemeChanged(callback) {
@@ -407,7 +431,7 @@ export const createWebAdapter = (): PlatformAdapter => {
 
     async getWindowTheme() {
       console.log("Web mode simulated get window theme");
-      return 'light';
+      return "light";
     },
 
     async onThemeChanged(callback) {
@@ -446,6 +470,6 @@ export default platformAdapter;
 // Custom hook for using platform adapter
 export const usePlatformAdapter = () => {
   const [adapter] = useState<PlatformAdapter>(platformAdapter);
-  
+
   return adapter;
 };
