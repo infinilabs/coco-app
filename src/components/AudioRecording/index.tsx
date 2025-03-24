@@ -9,19 +9,20 @@ import {
 } from "tauri-plugin-macos-permissions-api";
 import { useWavesurfer } from "@wavesurfer/react";
 import RecordPlugin from "wavesurfer.js/dist/plugins/record.esm.js";
-import { pick } from "lodash-es";
 
 interface AudioRecordingProps {
   onChange?: (text: string) => void;
 }
 
 interface State {
+  audioDevices: MediaDeviceInfo[];
   isRecording: boolean;
   converting: boolean;
   countdown: number;
 }
 
 const INITIAL_STATE: State = {
+  audioDevices: [],
   isRecording: false,
   converting: false,
   countdown: 30,
@@ -47,6 +48,12 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
   });
 
   useEffect(() => {
+    getAvailableAudioDevices();
+
+    return resetState;
+  }, []);
+
+  useEffect(() => {
     if (!wavesurfer) return;
 
     const record = wavesurfer.registerPlugin(
@@ -64,8 +71,6 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
     });
 
     recordRef.current = record;
-
-    return resetState;
   }, [wavesurfer]);
 
   useEffect(() => {
@@ -79,6 +84,12 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
       state.countdown--;
     }, 1000);
   }, [state.isRecording]);
+
+  const getAvailableAudioDevices = async () => {
+    state.audioDevices = await RecordPlugin.getAvailableAudioDevices();
+
+    console.log("state.audioDevices ", state.audioDevices);
+  };
 
   const resetState = (otherState: Partial<State> = {}) => {
     clearInterval(interval);
@@ -126,7 +137,10 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
     <>
       <div
         className={clsx(
-          "p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition cursor-pointer"
+          "p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition cursor-pointer",
+          {
+            hidden: state.audioDevices.length === 0,
+          }
         )}
       >
         <Mic className="size-4 text-[#999]" onClick={startRecording} />
