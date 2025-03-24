@@ -65,6 +65,7 @@ pub async fn refresh_all_connectors<R: Runtime>(app_handle: &AppHandle<R>) -> Re
     Ok(())
 }
 
+#[allow(dead_code)]
 pub async fn get_connectors_from_cache_or_remote(
     server_id: &str,
 ) -> Result<Vec<Connector>, String> {
@@ -96,7 +97,7 @@ pub async fn get_connectors_from_cache_or_remote(
 
 pub async fn fetch_connectors_by_server(id: &str) -> Result<Vec<Connector>, String> {
     // Use the generic GET method from HttpClient
-    let resp = HttpClient::get(&id, "/connector/_search",None)
+    let resp = HttpClient::get(&id, "/connector/_search", None)
         .await
         .map_err(|e| {
             // dbg!("Error fetching connector for id {}: {}", &id, &e);
@@ -104,9 +105,9 @@ pub async fn fetch_connectors_by_server(id: &str) -> Result<Vec<Connector>, Stri
         })?;
 
     // Parse the search results directly from the response body
-    let datasource: Vec<Connector> = parse_search_results(resp).await.map_err(|e| {
-        e.to_string()
-    })?;
+    let datasource: Vec<Connector> = parse_search_results(resp)
+        .await
+        .map_err(|e| e.to_string())?;
 
     // Save the connectors to the cache
     save_connectors_to_cache(&id, datasource.clone());

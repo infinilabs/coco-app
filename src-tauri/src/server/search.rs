@@ -12,6 +12,8 @@ use ordered_float::OrderedFloat;
 use reqwest::{Client, Method, RequestBuilder};
 use std::collections::HashMap;
 // use std::hash::Hash;
+
+#[allow(dead_code)]
 pub(crate) struct DocumentsSizedCollector {
     size: u64,
     /// Documents and scores
@@ -20,6 +22,7 @@ pub(crate) struct DocumentsSizedCollector {
     docs: Vec<(String, Document, OrderedFloat<f64>)>,
 }
 
+#[allow(dead_code)]
 impl DocumentsSizedCollector {
     pub(crate) fn new(size: u64) -> Self {
         // there will be size + 1 documents in docs at max

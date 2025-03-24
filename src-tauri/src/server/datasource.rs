@@ -22,14 +22,15 @@ pub fn save_datasource_to_cache(server_id: &str, datasources: Vec<DataSource>) {
     cache.insert(server_id.to_string(), datasources_map);
 }
 
+#[allow(dead_code)]
 pub fn get_datasources_from_cache(server_id: &str) -> Option<HashMap<String, DataSource>> {
     let cache = DATASOURCE_CACHE.read().unwrap(); // Acquire read lock
-    // dbg!("cache: {:?}", &cache);
+                                                  // dbg!("cache: {:?}", &cache);
     let server_cache = cache.get(server_id)?; // Get the server's cache
     Some(server_cache.clone())
 }
 
-pub async fn refresh_all_datasources<R: Runtime>(app_handle: &AppHandle<R>) -> Result<(), String> {
+pub async fn refresh_all_datasources<R: Runtime>(_app_handle: &AppHandle<R>) -> Result<(), String> {
     // dbg!("Attempting to refresh all datasources");
 
     let servers = get_all_servers();
@@ -40,22 +41,21 @@ pub async fn refresh_all_datasources<R: Runtime>(app_handle: &AppHandle<R>) -> R
         // dbg!("fetch datasources for server: {}", &server.id);
 
         // Attempt to get datasources by server, and continue even if it fails
-        let connectors =
-            match get_datasources_by_server(server.id.as_str()).await {
-                Ok(connectors) => {
-                    // Process connectors only after fetching them
-                    let connectors_map: HashMap<String, DataSource> = connectors
-                        .into_iter()
-                        .map(|connector| (connector.id.clone(), connector))
-                        .collect();
-                    // dbg!("connectors_map: {:?}", &connectors_map);
-                    connectors_map
-                }
-                Err(_e) => {
-                    // dbg!("Failed to get dataSources for server {}: {}", &server.id, e);
-                    HashMap::new()
-                }
-            };
+        let connectors = match get_datasources_by_server(server.id.as_str()).await {
+            Ok(connectors) => {
+                // Process connectors only after fetching them
+                let connectors_map: HashMap<String, DataSource> = connectors
+                    .into_iter()
+                    .map(|connector| (connector.id.clone(), connector))
+                    .collect();
+                // dbg!("connectors_map: {:?}", &connectors_map);
+                connectors_map
+            }
+            Err(_e) => {
+                // dbg!("Failed to get dataSources for server {}: {}", &server.id, e);
+                HashMap::new()
+            }
+        };
 
         let mut new_map = HashMap::new();
         for (id, datasource) in connectors.iter() {
@@ -85,10 +85,7 @@ pub async fn refresh_all_datasources<R: Runtime>(app_handle: &AppHandle<R>) -> R
 }
 
 #[tauri::command]
-pub async fn get_datasources_by_server(
-    id: &str,
-) -> Result<Vec<DataSource>, String> {
-
+pub async fn get_datasources_by_server(id: &str) -> Result<Vec<DataSource>, String> {
     // Perform the async HTTP request outside the cache lock
     let resp = HttpClient::get(id, "/datasource/_search", None)
         .await

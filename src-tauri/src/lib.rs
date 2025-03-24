@@ -18,8 +18,7 @@ use std::sync::Mutex;
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
 use tauri::{
-    AppHandle, Emitter, Manager, PhysicalPosition, Runtime, State, WebviewWindow, Window,
-    WindowEvent,
+    AppHandle, Emitter, Manager, PhysicalPosition, Runtime, WebviewWindow, Window, WindowEvent,
 };
 use tauri_plugin_autostart::MacosLauncher;
 use tokio::runtime::Runtime as RT;
@@ -42,10 +41,12 @@ async fn change_window_height(handle: AppHandle, height: u32) {
 
 #[derive(serde::Deserialize)]
 struct ThemeChangedPayload {
+    #[allow(dead_code)]
     is_dark_mode: bool,
 }
 
 #[derive(Clone, serde::Serialize)]
+#[allow(dead_code)]
 struct Payload {
     args: Vec<String>,
     cwd: String,
@@ -53,7 +54,7 @@ struct Payload {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let mut ctx = tauri::generate_context!();
+    let ctx = tauri::generate_context!();
     // Initialize logger
     env_logger::init();
 
@@ -132,7 +133,7 @@ pub fn run() {
             app.manage(server::websocket::WebSocketManager::default());
 
             // Get app handle
-            let app_handle = app.handle().clone();
+            // let app_handle = app.handle().clone();
 
             // Create a single Tokio runtime instance
             let rt = RT::new().expect("Failed to create Tokio runtime");
@@ -144,7 +145,7 @@ pub fn run() {
             });
 
             shortcut::enable_shortcut(&app);
-            // enable_tray(app);
+
             enable_autostart(app);
 
             #[cfg(target_os = "macos")]
@@ -221,7 +222,7 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
     let coco_servers = server::servers::get_all_servers();
 
     // Get the registry from Tauri's state
-    let registry: State<SearchSourceRegistry> = app_handle.state::<SearchSourceRegistry>();
+    // let registry: State<SearchSourceRegistry> = app_handle.state::<SearchSourceRegistry>();
 
     for server in coco_servers {
         crate::server::servers::try_register_server_to_search_source(app_handle.clone(), &server)
@@ -247,21 +248,7 @@ async fn show_coco(app_handle: AppHandle) {
 
 #[tauri::command]
 async fn hide_coco(app: tauri::AppHandle) {
-    if let Some(window) = app.get_window(MAIN_WINDOW_LABEL) {
-        match window.is_visible() {
-            Ok(true) => {
-                if let Err(err) = window.hide() {
-                    eprintln!("Failed to hide the window: {}", err);
-                }
-            }
-            Ok(false) => {
-                println!("Window is already hidden.");
-            }
-            Err(err) => {
-                eprintln!("Failed to check window visibility: {}", err);
-            }
-        }
-    }
+    handle_hide_coco(&app);
 }
 
 fn handle_open_coco(app: &AppHandle) {
@@ -380,68 +367,6 @@ fn handle_hide_coco(app: &AppHandle) {
     } else {
         eprintln!("Main window not found.");
     }
-}
-
-fn enable_tray(app: &mut tauri::App) {
-    use tauri::{
-        image::Image,
-        menu::{MenuBuilder, MenuItem},
-        tray::TrayIconBuilder,
-    };
-
-    let quit_i = MenuItem::with_id(app, "quit", "Quit Coco", true, None::<&str>).unwrap();
-    let settings_i = MenuItem::with_id(app, "settings", "Settings...", true, None::<&str>).unwrap();
-    let open_i = MenuItem::with_id(app, "open", "Show Coco", true, None::<&str>).unwrap();
-    // let about_i = MenuItem::with_id(app, "about", "About Coco", true, None::<&str>).unwrap();
-    // let hide_i = MenuItem::with_id(app, "hide", "Hide Coco", true, None::<&str>).unwrap();
-
-    let menu = MenuBuilder::new(app)
-        .item(&open_i)
-        .separator()
-        // .item(&hide_i)
-        // .item(&about_i)
-        .item(&settings_i)
-        .separator()
-        .item(&quit_i)
-        .build()
-        .unwrap();
-
-    let _tray = TrayIconBuilder::with_id("tray")
-        .icon_as_template(true)
-        // .icon(app.default_window_icon().unwrap().clone())
-        .icon(
-            Image::from_bytes(include_bytes!("../assets/tray-mac.ico"))
-                .expect("Failed to load icon"),
-        )
-        .menu(&menu)
-        .on_menu_event(|app, event| match event.id.as_ref() {
-            "open" => {
-                handle_open_coco(app);
-            }
-            "hide" => {
-                handle_hide_coco(app);
-            }
-            "about" => {
-                let _ = app.emit("open_settings", "about");
-            }
-            "settings" => {
-                // windows failed to open second window, issue: https://github.com/tauri-apps/tauri/issues/11144 https://github.com/tauri-apps/tauri/issues/8196
-                //#[cfg(windows)]
-                let _ = app.emit("open_settings", "settings");
-
-                // #[cfg(not(windows))]
-                // open_settings(&app);
-            }
-            "quit" => {
-                println!("quit menu item was clicked");
-                app.exit(0);
-            }
-            _ => {
-                println!("menu item {:?} not handled", event.id);
-            }
-        })
-        .build(app)
-        .unwrap();
 }
 
 #[allow(dead_code)]
