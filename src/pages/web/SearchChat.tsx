@@ -19,8 +19,9 @@ import { useWindowEvents } from "@/hooks/useWindowEvents";
 import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
 import platformAdapter from "@/utils/platformAdapter";
-import { DataSource } from "@/components/Assistant/types";
 import { useStartupStore } from "@/stores/startupStore";
+import { DataSource } from "@/types/commands"
+
 interface SearchChatProps {
   querySearch: (input: string) => Promise<any>;
   queryDocuments: (
@@ -275,7 +276,6 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
             setIsDeepThinkActive={toggleDeepThinkActive}
             getDataSourcesByServer={getDataSourcesByServer}
             setupWindowFocusListener={setupWindowFocusListener}
-            hideCoco={hideCoco}
             checkScreenPermission={checkScreenPermission}
             requestScreenPermission={requestScreenPermission}
             getScreenMonitors={getScreenMonitors}

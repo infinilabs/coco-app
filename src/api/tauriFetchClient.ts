@@ -1,9 +1,8 @@
 import { fetch } from "@tauri-apps/plugin-http";
-import { invoke } from "@tauri-apps/api/core";
 
 import { clientEnv } from "@/utils/env";
 import { useLogStore } from "@/stores/logStore";
-
+import { get_server_token } from "@/commands";
 interface FetchRequestConfig {
   url: string;
   method?: "GET" | "POST" | "PUT" | "DELETE";
@@ -63,8 +62,8 @@ export const tauriFetch = async <T = any>({
     }
 
     const server_id = connectStore.state?.currentService?.id || "default_coco_server"
-    const res: any = await invoke("get_server_token", {id: server_id});
-    
+    const res: any = await get_server_token(server_id);
+
     headers["X-API-TOKEN"] = headers["X-API-TOKEN"] || res?.access_token || undefined;
 
     // debug API

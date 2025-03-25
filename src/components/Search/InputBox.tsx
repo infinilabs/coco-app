@@ -11,8 +11,9 @@ import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import SearchPopover from "./SearchPopover";
-import { DataSource } from "@/components/Assistant/types";
 import AudioRecording from "../AudioRecording";
+import { hide_coco } from "@/commands";
+import { DataSource } from "@/types/commands";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -30,7 +31,6 @@ interface ChatInputProps {
   isChatPage?: boolean;
   getDataSourcesByServer: (serverId: string) => Promise<DataSource[]>;
   setupWindowFocusListener: (callback: () => void) => Promise<() => void>;
-  hideCoco: () => Promise<any>;
   checkScreenPermission: () => Promise<boolean>;
   requestScreenPermission: () => void;
   getScreenMonitors: () => Promise<any[]>;
@@ -60,7 +60,6 @@ export default function ChatInput({
   isChatPage = false,
   getDataSourcesByServer,
   setupWindowFocusListener,
-  hideCoco,
 }: // checkScreenPermission,
 // requestScreenPermission,
 // getScreenMonitors,
@@ -124,7 +123,7 @@ ChatInputProps) {
     if (inputValue) {
       changeInput("");
     } else if (!isPinned) {
-      hideCoco();
+      hide_coco();
     }
   }, [inputValue, isPinned]);
 
