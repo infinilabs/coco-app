@@ -1,11 +1,14 @@
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { RefreshCcw } from "lucide-react";
-import { invoke } from "@tauri-apps/api/core";
 
 import { DataSourceItem } from "./DataSourceItem";
 import { useConnectStore } from "@/stores/connectStore";
 import { useAppStore } from "@/stores/appStore";
+import {
+  get_connectors_by_server,
+  get_datasources_by_server,
+} from "@/commands";
 
 export function DataSourcesList({ server }: { server: string }) {
   const { t } = useTranslation();
@@ -17,7 +20,7 @@ export function DataSourcesList({ server }: { server: string }) {
 
   function initServerAppData({ server }: { server: string }) {
     //fetch datasource data
-    invoke("get_connectors_by_server", { id: server })
+    get_connectors_by_server(server)()
       .then((res: any) => {
         // console.log("get_connectors_by_server", res);
         setConnectorData(res, server);
@@ -29,7 +32,7 @@ export function DataSourcesList({ server }: { server: string }) {
       .finally(() => {});
 
     //fetch datasource data
-    invoke("get_datasources_by_server", { id: server })
+    get_datasources_by_server(server)()
       .then((res: any) => {
         // console.log("get_datasources_by_server", res);
         setDatasourceData(res, server);

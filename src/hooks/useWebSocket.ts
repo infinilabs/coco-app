@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
 import { IServer } from "@/stores/appStore";
+import { connect_to_server } from "@/commands"
 
 interface WebSocketProps {
   connected: boolean;
@@ -24,7 +24,7 @@ export default function useWebSocket({
     if (!targetServer?.id) return;
     try {
       console.log("reconnect", targetServer.id);
-      await invoke("connect_to_server", { id: targetServer.id });
+      await connect_to_server(targetServer.id);
       setConnected(true);
     } catch (error) {
       setConnected(false);

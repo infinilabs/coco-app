@@ -1,7 +1,8 @@
 import { useCallback } from "react";
-import { invoke, isTauri } from "@tauri-apps/api/core";
+import { isTauri } from "@tauri-apps/api/core";
 
 import type { Chat } from "@/components/Assistant/types";
+import { close_session_chat, cancel_session_chat, session_chat_history, new_chat, send_message, open_session_chat, chat_history } from "@/commands"
 
 export function useChatActions(
   currentServiceId: string | undefined,
@@ -18,9 +19,9 @@ export function useChatActions(
   changeInput?: (val: string) => void,
 ) {
   const chatClose = useCallback(async (activeChat?: Chat) => {
-    if (!activeChat?._id) return;
+    if (!activeChat?._id || !currentServiceId) return;
     try {
-      let response: any = await invoke("close_session_chat", {
+      let response: any = await close_session_chat({
         serverId: currentServiceId,
         sessionId: activeChat?._id,
       });
@@ -33,9 +34,9 @@ export function useChatActions(
 
   const cancelChat = useCallback(async (activeChat?: Chat) => {
     setCurChatEnd(true);
-    if (!activeChat?._id) return;
+    if (!activeChat?._id || !currentServiceId) return;
     try {
-      let response: any = await invoke("cancel_session_chat", {
+      let response: any = await cancel_session_chat({
         serverId: currentServiceId,
         sessionId: activeChat?._id,
       });
@@ -50,8 +51,9 @@ export function useChatActions(
     chat: Chat,
     callback?: (chat: Chat) => void
   ) => {
+    if (!chat?._id || !currentServiceId) return;
     try {
-      let response: any = await invoke("session_chat_history", {
+      let response: any = await session_chat_history({
         serverId: currentServiceId,
         sessionId: chat?._id,
         from: 0,
@@ -78,9 +80,10 @@ export function useChatActions(
       chatClose(activeChat);
       clearAllChunkData();
       setQuestion(value);
+      if (!currentServiceId) return;
       try {
         console.log("sourceDataIds", sourceDataIds);
-        let response: any = await invoke("new_chat", {
+        let response: any = await new_chat({
           serverId: currentServiceId,
           message: value,
           queryParams: {
@@ -114,10 +117,10 @@ export function useChatActions(
 
   const sendMessage = useCallback(
     async (content: string, newChat: Chat) => {
-      if (!newChat?._id || !content) return;
+      if (!newChat?._id || !currentServiceId || !content) return;
       clearAllChunkData();
       try {
-        let response: any = await invoke("send_message", {
+        let response: any = await send_message({
           serverId: currentServiceId,
           sessionId: newChat?._id,
           queryParams: {
@@ -161,8 +164,9 @@ export function useChatActions(
   );
 
   const openSessionChat = useCallback(async (chat: Chat) => {
+    if (!chat?._id || !currentServiceId) return;
     try {
-      let response: any = await invoke("open_session_chat", {
+      let response: any = await open_session_chat({
         serverId: currentServiceId,
         sessionId: chat?._id,
       });
@@ -178,7 +182,7 @@ export function useChatActions(
   const getChatHistory = useCallback(async () => {
     if (!currentServiceId) return [];
     try {
-      let response: any = await invoke("chat_history", {
+      let response: any = await chat_history({
         serverId: currentServiceId,
         from: 0,
         size: 20,

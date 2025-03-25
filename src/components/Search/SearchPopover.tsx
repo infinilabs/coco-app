@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import { useConnectStore } from "@/stores/connectStore";
 import { useSearchStore } from "@/stores/searchStore";
-import { DataSource } from "@/components/Assistant/types"
+import { DataSource } from "@/types/commands";
 
 interface SearchPopoverProps {
   isSearchActive: boolean;
@@ -42,7 +42,9 @@ export default function SearchPopover({
 
   const getDataSourceList = useCallback(async () => {
     try {
-      const res: DataSource[] = await getDataSourcesByServer(currentService?.id);
+      const res: DataSource[] = await getDataSourcesByServer(
+        currentService?.id
+      );
       const data = [
         {
           id: "all",
@@ -180,7 +182,7 @@ export default function SearchPopover({
                               <TypeIcon item={item} className="size-[16px]" />
                             )}
 
-                            <span>{isAll ? t(name) : name}</span>
+                            <span>{isAll && name ? t(name) : name}</span>
                           </div>
 
                           <div className="flex justify-center items-center size-[24px]">

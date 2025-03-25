@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { invoke, convertFileSrc } from "@tauri-apps/api/core";
+import { convertFileSrc } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import {
   checkScreenRecordingPermission,
@@ -19,7 +19,14 @@ import { Sidebar } from "@/components/Assistant/Sidebar";
 import type { Chat } from "@/components/Assistant/types";
 import { useConnectStore } from "@/stores/connectStore";
 import InputBox from "@/components/Search/InputBox";
-import { DataSource } from "@/components/Assistant/types";
+import {
+  chat_history,
+  session_chat_history,
+  close_session_chat,
+  open_session_chat,
+  get_datasources_by_server,
+} from "@/commands";
+import { DataSource } from "@/types/commands"
 
 interface ChatProps {}
 
@@ -38,7 +45,7 @@ export default function Chat({}: ChatProps) {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isDeepThinkActive, setIsDeepThinkActive] = useState(false);
 
-  const isChatPage = true
+  const isChatPage = true;
 
   useEffect(() => {
     getChatHistory();
@@ -46,7 +53,7 @@ export default function Chat({}: ChatProps) {
 
   const getChatHistory = async () => {
     try {
-      let response: any = await invoke("chat_history", {
+      let response: any = await chat_history({
         serverId: currentService?.id,
         from: 0,
         size: 20,
@@ -84,7 +91,7 @@ export default function Chat({}: ChatProps) {
 
   const chatHistory = async (chat: Chat) => {
     try {
-      let response: any = await invoke("session_chat_history", {
+      let response: any = await session_chat_history({
         serverId: currentService?.id,
         sessionId: chat?._id,
         from: 0,
@@ -106,7 +113,7 @@ export default function Chat({}: ChatProps) {
   const chatClose = async () => {
     if (!activeChat?._id) return;
     try {
-      let response: any = await invoke("close_session_chat", {
+      let response: any = await close_session_chat({
         serverId: currentService?.id,
         sessionId: activeChat?._id,
       });
@@ -120,7 +127,7 @@ export default function Chat({}: ChatProps) {
   const onSelectChat = async (chat: any) => {
     chatClose();
     try {
-      let response: any = await invoke("open_session_chat", {
+      let response: any = await open_session_chat({
         serverId: currentService?.id,
         sessionId: chat?._id,
       });
@@ -145,19 +152,13 @@ export default function Chat({}: ChatProps) {
     chatAIRef.current?.reconnect();
   };
 
-  const hideCoco = useCallback(() => {
-    return invoke("hide_coco");
-  }, []);
-
   const getFileUrl = useCallback((path: string) => {
     return convertFileSrc(path);
   }, []);
 
   const getDataSourcesByServer = useCallback(
     async (serverId: string): Promise<DataSource[]> => {
-      return invoke("get_datasources_by_server", {
-        id: serverId,
-      });
+      return get_datasources_by_server(serverId)();
     },
     []
   );
@@ -244,7 +245,9 @@ export default function Chat({}: ChatProps) {
           />
 
           {/* Input area */}
-          <div className={`border-t p-4 pb-0 border-gray-200 dark:border-gray-800`}>
+          <div
+            className={`border-t p-4 pb-0 border-gray-200 dark:border-gray-800`}
+          >
             <InputBox
               isChatMode={true}
               inputValue={input}
@@ -260,7 +263,6 @@ export default function Chat({}: ChatProps) {
               isChatPage={isChatPage}
               getDataSourcesByServer={getDataSourcesByServer}
               setupWindowFocusListener={setupWindowFocusListener}
-              hideCoco={hideCoco}
               checkScreenPermission={checkScreenPermission}
               requestScreenPermission={requestScreenPermission}
               getScreenMonitors={getScreenMonitors}

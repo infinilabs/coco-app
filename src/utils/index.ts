@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { invoke, isTauri } from "@tauri-apps/api/core";
+import { isTauri } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-shell";
+
+import { hide_coco } from "@/commands"
 
 // 1
 export async function copyToClipboard(text: string) {
@@ -66,7 +68,7 @@ export const OpenURLWithBrowser = async (url: string) => {
   if (isTauri()) {
     try {
       await open(url);
-      await invoke("hide_coco");
+      await hide_coco();
       console.log("URL opened in default browser");
     } catch (error) {
       console.error("Failed to open URL:", error);

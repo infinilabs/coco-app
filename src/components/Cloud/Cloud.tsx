@@ -14,7 +14,6 @@ import {
   getCurrent as getCurrentDeepLinkUrls,
   onOpenUrl,
 } from "@tauri-apps/plugin-deep-link";
-import { invoke } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 import { emit } from "@tauri-apps/api/event";
@@ -29,6 +28,16 @@ import { useConnectStore } from "@/stores/connectStore";
 import bannerImg from "@/assets/images/coco-cloud-banner.jpeg";
 import SettingsToggle from "@/components/Settings/SettingsToggle";
 import Tooltip from "@/components/Common/Tooltip";
+import {
+  list_coco_servers,
+  add_coco_server,
+  enable_server,
+  disable_server,
+  logout_coco_server,
+  remove_coco_server,
+  refresh_coco_server_info,
+  handle_sso_callback,
+} from "@/commands";
 
 export default function Cloud() {
   const { t } = useTranslation();
@@ -66,7 +75,7 @@ export default function Cloud() {
   }, [JSON.stringify(currentService)]);
 
   const fetchServers = async (resetSelection: boolean) => {
-    invoke("list_coco_servers")
+    list_coco_servers()()
       .then((res: any) => {
         if (error) {
           res = (res || []).map((item: any) => {
@@ -98,7 +107,7 @@ export default function Cloud() {
       });
   };
 
-  const add_coco_server = (endpointLink: string) => {
+  const addServer = (endpointLink: string) => {
     if (!endpointLink) {
       throw new Error("Endpoint is required");
     }
@@ -111,7 +120,7 @@ export default function Cloud() {
 
     setRefreshLoading(true);
 
-    return invoke("add_coco_server", { endpoint: endpointLink })
+    return add_coco_server(endpointLink)()
       .then((res: any) => {
         // console.log("add_coco_server", res);
         fetchServers(false)
@@ -126,7 +135,6 @@ export default function Cloud() {
           });
       })
       .catch((err: any) => {
-        // Handle the invoke error
         console.error("add coco server failed:", err);
         setError(err);
         throw err; // Propagate error back up
@@ -138,14 +146,14 @@ export default function Cloud() {
 
   const handleOAuthCallback = useCallback(
     async (code: string | null, serverId: string | null) => {
-      if (!code) {
+      if (!code || !serverId) {
         setError("No authorization code received");
         return;
       }
 
       try {
         console.log("Handling OAuth callback:", { code, serverId });
-        await invoke("handle_sso_callback", {
+        await handle_sso_callback({
           serverId: serverId, // Make sure 'server_id' is the correct argument
           requestId: ssoRequestID, // Make sure 'request_id' is the correct argument
           code: code,
@@ -257,7 +265,7 @@ export default function Cloud() {
 
   const refreshClick = (id: string) => {
     setRefreshLoading(true);
-    invoke("refresh_coco_server_info", { id })
+    refresh_coco_server_info(id)()
       .then((res: any) => {
         console.log("refresh_coco_server_info", id, res);
         fetchServers(false).then((r) => {
@@ -283,7 +291,7 @@ export default function Cloud() {
   function onLogout(id: string) {
     console.log("onLogout", id);
     setRefreshLoading(true);
-    invoke("logout_coco_server", { id })
+    logout_coco_server(id)()
       .then((res: any) => {
         console.log("logout_coco_server", id, JSON.stringify(res));
         refreshClick(id);
@@ -298,8 +306,8 @@ export default function Cloud() {
       });
   }
 
-  const remove_coco_server = (id: string) => {
-    invoke("remove_coco_server", { id })
+  const removeServer = (id: string) => {
+    remove_coco_server(id)()
       .then((res: any) => {
         console.log("remove_coco_server", id, JSON.stringify(res));
         fetchServers(true).then((r) => {
@@ -316,9 +324,11 @@ export default function Cloud() {
   const enable_coco_server = useCallback(
     async (enabled: boolean) => {
       try {
-        const command = enabled ? "enable_server" : "disable_server";
-
-        await invoke(command, { id: currentService?.id });
+        if (enabled) {
+          await enable_server(currentService?.id);
+        } else {
+          await disable_server(currentService?.id);
+        }
 
         setCurrentService({ ...currentService, enabled });
 
@@ -391,7 +401,7 @@ export default function Cloud() {
                 {!currentService?.builtin && (
                   <button
                     className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-[6px] bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
-                    onClick={() => remove_coco_server(currentService?.id)}
+                    onClick={() => removeServer(currentService?.id)}
                   >
                     <Trash2 className="w-3.5 h-3.5 text-[#ff4747]" />
                   </button>
@@ -490,7 +500,7 @@ export default function Cloud() {
             ) : null}
           </div>
         ) : (
-          <Connect setIsConnect={setIsConnect} onAddServer={add_coco_server} />
+          <Connect setIsConnect={setIsConnect} onAddServer={addServer} />
         )}
       </main>
     </div>
