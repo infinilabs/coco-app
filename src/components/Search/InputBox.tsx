@@ -11,8 +11,8 @@ import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import SearchPopover from "./SearchPopover";
-// import SpeechToText from "../SpeechToText";
 import { DataSource } from "@/components/Assistant/types";
+// import AudioRecording from "../AudioRecording";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -27,6 +27,7 @@ interface ChatInputProps {
   setIsSearchActive: () => void;
   isDeepThinkActive: boolean;
   setIsDeepThinkActive: () => void;
+  hasFeature?: string[];
   isChatPage?: boolean;
   getDataSourcesByServer: (serverId: string) => Promise<DataSource[]>;
   setupWindowFocusListener: (callback: () => void) => Promise<() => void>;
@@ -60,6 +61,7 @@ export default function ChatInput({
   setIsSearchActive,
   isDeepThinkActive,
   setIsDeepThinkActive,
+  hasFeature = ["think", "search"],
   isChatPage = false,
   getDataSourcesByServer,
   setupWindowFocusListener,
@@ -235,11 +237,9 @@ export default function ChatInput({
   };
 
   return (
-    <div
-      className={`w-full relative`}
-    >
+    <div className={`w-full relative`}>
       <div
-        className={`p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded transition-all relative `}
+        className={`p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded transition-all relative overflow-hidden`}
       >
         <div className="flex flex-wrap gap-2 flex-1 items-center relative">
           {!isChatMode && !sourceData ? (
@@ -276,7 +276,9 @@ export default function ChatInput({
               autoCapitalize="none"
               spellCheck="false"
               className="text-base font-normal flex-1 outline-none min-w-[200px] text-[#333] dark:text-[#d8d8d8] placeholder-text-xs placeholder-[#999] dark:placeholder-gray-500 bg-transparent"
-              placeholder={searchPlaceholder || t("search.input.searchPlaceholder")}
+              placeholder={
+                searchPlaceholder || t("search.input.searchPlaceholder")
+              }
               value={inputValue}
               onChange={(e) => {
                 onSend(e.target.value);
@@ -301,13 +303,12 @@ export default function ChatInput({
           ) : null}
         </div>
 
-        {/* {isChatMode && (
-          <SpeechToText
-            onChange={(transcript) => {
-              changeInput(inputValue + transcript);
-            }}
-          />
-        )} */}
+        {/* <AudioRecording
+          key={isChatMode ? "chat" : "search"}
+          onChange={(text) => {
+            changeInput(inputValue + text);
+          }}
+        /> */}
 
         {isChatMode && curChatEnd ? (
           <button
@@ -383,51 +384,51 @@ export default function ChatInput({
               getFileIcon={getFileIcon}
             /> */}
 
-            <button
-              className={clsx(
-                "flex items-center gap-1 p-1 h-6 rounded-lg transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
-                {
-                  "!bg-[rgba(0,114,255,0.3)]": isDeepThinkActive,
-                }
-              )}
-              onClick={DeepThinkClick}
-            >
-              <Brain
-                className={`size-4 ${
-                  isDeepThinkActive
-                    ? "text-[#0072FF] dark:text-[#0072FF]"
-                    : "text-[#333] dark:text-white"
-                }`}
-              />
-              {isDeepThinkActive && (
-                <span
-                  className={
-                    isDeepThinkActive ? "text-[#0072FF]" : "dark:text-white"
+            {hasFeature.includes("think") && (
+              <button
+                className={clsx(
+                  "flex items-center gap-1 p-1 h-6 rounded-lg transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
+                  {
+                    "!bg-[rgba(0,114,255,0.3)]": isDeepThinkActive,
                   }
-                >
-                  {t("search.input.deepThink")}
-                </span>
-              )}
-            </button>
+                )}
+                onClick={DeepThinkClick}
+              >
+                <Brain
+                  className={`size-4 ${
+                    isDeepThinkActive
+                      ? "text-[#0072FF] dark:text-[#0072FF]"
+                      : "text-[#333] dark:text-white"
+                  }`}
+                />
+                {isDeepThinkActive && (
+                  <span
+                    className={
+                      isDeepThinkActive ? "text-[#0072FF]" : "dark:text-white"
+                    }
+                  >
+                    {t("search.input.deepThink")}
+                  </span>
+                )}
+              </button>
+            )}
 
-            <SearchPopover
-              isSearchActive={isSearchActive}
-              setIsSearchActive={setIsSearchActive}
-              getDataSourcesByServer={getDataSourcesByServer}
-            />
+            {hasFeature.includes("search") && (
+              <SearchPopover
+                isSearchActive={isSearchActive}
+                setIsSearchActive={setIsSearchActive}
+                getDataSourcesByServer={getDataSourcesByServer}
+              />
+            )}
           </div>
         ) : (
-          <div data-tauri-drag-region className="w-28 flex gap-2 relative">
-            {/* <SpeechToText
-              Icon={AudioLines}
-              onChange={(transcript) => {
-                changeInput(inputValue + transcript);
-              }}
-            /> */}
-          </div>
+          <div
+            data-tauri-drag-region
+            className="w-28 flex gap-2 relative"
+          ></div>
         )}
 
-        {isChatPage || hasModules?.length !==2  ? null : (
+        {isChatPage || hasModules?.length !== 2 ? null : (
           <div className="relative w-16 flex justify-end items-center">
             {showTooltip && isCommandPressed ? (
               <div

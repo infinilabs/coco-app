@@ -4,7 +4,17 @@ export const handleChangeRequestHeader = (config: any) => {
 };
 
 export const handleConfigureAuth = (config: any) => {
-  config.headers["X-API-TOKEN"] = localStorage.getItem("token") || "";
+  // config.headers["X-API-TOKEN"] = localStorage.getItem("token") || "";
+
+  const headersStr = localStorage.getItem("headers") || "{}";
+    const headers = JSON.parse(headersStr);
+    console.log("headers:", headers);
+
+  config.headers = {
+    ...config.headers,
+    ...headers,
+  }
+  console.log("config.headers", config.headers)
   return config;
 };
 

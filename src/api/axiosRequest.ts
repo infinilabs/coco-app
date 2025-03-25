@@ -23,6 +23,7 @@ interface FcResponse<T> {
 axios.interceptors.request.use((config) => {
   config = handleChangeRequestHeader(config);
   config = handleConfigureAuth(config);
+  console.log("config", config);
   return config;
 });
 
@@ -34,8 +35,8 @@ axios.interceptors.response.use(
     return response;
   },
   (err) => {
-    handleNetworkError(err.response.status);
-    Promise.reject(err.response);
+    handleNetworkError(err?.response?.status);
+    return Promise.reject(err?.response);
   }
 );
 
@@ -48,15 +49,15 @@ export const Get = <T,>(
     const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
     console.log("baseURL", appStore.state?.endpoint_http)
 
-    const baseURL = appStore.state?.endpoint_http;
+    // let baseURL = appStore.state?.endpoint_http;
     axios
-      .get(baseURL + url, { params })
+      .get(url, { params })
       .then((result) => {
         let res: FcResponse<T>;
         if (clearFn !== undefined) {
-          res = clearFn(result.data) as unknown as FcResponse<T>;
+          res = clearFn(result?.data) as unknown as FcResponse<T>;
         } else {
-          res = result.data as FcResponse<T>;
+          res = result?.data as FcResponse<T>;
         }
         resolve([null, res as FcResponse<T>]);
       })

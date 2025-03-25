@@ -1,14 +1,7 @@
-use crate::{move_window_to_active_monitor, COCO_TAURI_STORE};
-use tauri::App;
-use tauri::AppHandle;
-use tauri::Emitter;
-use tauri::Manager;
-use tauri::Runtime;
-use tauri_plugin_global_shortcut::GlobalShortcutExt;
-use tauri_plugin_global_shortcut::Shortcut;
-use tauri_plugin_global_shortcut::ShortcutState;
-use tauri_plugin_store::JsonValue;
-use tauri_plugin_store::StoreExt;
+use crate::{hide_coco, show_coco, COCO_TAURI_STORE};
+use tauri::{async_runtime, App, AppHandle, Manager, Runtime};
+use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
+use tauri_plugin_store::{JsonValue, StoreExt};
 
 /// Tauri's store is a key-value database, we use it to store our registered
 /// global shortcut.
@@ -55,14 +48,14 @@ pub fn enable_shortcut(app: &App) {
 /// Get the stored shortcut as a string, same as [`_get_shortcut()`], except that
 /// this is a `tauri::command` interface.
 #[tauri::command]
-pub fn get_current_shortcut<R: Runtime>(app: AppHandle<R>) -> Result<String, String> {
+pub async fn get_current_shortcut<R: Runtime>(app: AppHandle<R>) -> Result<String, String> {
     let shortcut = _get_shortcut(&app);
     Ok(shortcut)
 }
 
 /// Get the current shortcut and unregister it on the tauri side.
 #[tauri::command]
-pub fn unregister_shortcut<R: Runtime>(app: AppHandle<R>) {
+pub async fn unregister_shortcut<R: Runtime>(app: AppHandle<R>) {
     let shortcut_str = _get_shortcut(&app);
     let shortcut = shortcut_str
         .parse::<Shortcut>()
@@ -75,7 +68,7 @@ pub fn unregister_shortcut<R: Runtime>(app: AppHandle<R>) {
 
 /// Change the global shortcut to `key`.
 #[tauri::command]
-pub fn change_shortcut<R: Runtime>(
+pub async fn change_shortcut<R: Runtime>(
     app: AppHandle<R>,
     _window: tauri::Window<R>,
     key: String,
@@ -106,18 +99,15 @@ fn _register_shortcut<R: Runtime>(app: &AppHandle<R>, shortcut: Shortcut) {
                 dbg!("shortcut pressed");
                 let main_window = app.get_window(MAIN_WINDOW_LABEL).unwrap();
                 if let ShortcutState::Pressed = event.state() {
+                    let app_handle = app.clone();
                     if main_window.is_visible().unwrap() {
-                        dbg!("hiding window");
-                        main_window.hide().unwrap();
+                        async_runtime::spawn(async move {
+                            hide_coco(app_handle).await;
+                        });
                     } else {
-                        let _ = app.emit("show-coco", ());
-
-                        dbg!("showing window");
-                        move_window_to_active_monitor(&main_window);
-                        main_window.set_visible_on_all_workspaces(true).unwrap();
-                        main_window.set_always_on_top(true).unwrap();
-                        main_window.set_focus().unwrap();
-                        main_window.show().unwrap();
+                        async_runtime::spawn(async move {
+                            show_coco(app_handle).await;
+                        });
                     }
                 }
             }
@@ -138,17 +128,16 @@ fn _register_shortcut_upon_start(app: &App, shortcut: Shortcut) {
                     if scut == &shortcut {
                         let window = app.get_window(MAIN_WINDOW_LABEL).unwrap();
                         if let ShortcutState::Pressed = event.state() {
-                            if window.is_visible().unwrap() {
-                                window.hide().unwrap();
-                            } else {
-                                let _ = app.emit("show-coco", ());
+                            let app_handle = app.clone();
 
-                                // dbg!("showing window");
-                                move_window_to_active_monitor(&window);
-                                window.set_visible_on_all_workspaces(true).unwrap();
-                                window.set_always_on_top(true).unwrap();
-                                window.set_focus().unwrap();
-                                window.show().unwrap();
+                            if window.is_visible().unwrap() {
+                                async_runtime::spawn(async move {
+                                    hide_coco(app_handle).await;
+                                });
+                            } else {
+                                async_runtime::spawn(async move {
+                                    show_coco(app_handle).await;
+                                });
                             }
                         }
                     }

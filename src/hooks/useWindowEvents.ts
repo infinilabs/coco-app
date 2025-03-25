@@ -1,15 +1,16 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
-import { useAppStore } from '@/stores/appStore';
-import platformAdapter from '@/utils/platformAdapter';
+import { useAppStore } from "@/stores/appStore";
+import platformAdapter from "@/utils/platformAdapter";
 
 export function useWindowEvents() {
   const isPinned = useAppStore((state) => state.isPinned);
+  const visible = useAppStore((state) => state.visible);
 
   useEffect(() => {
     const handleBlur = async () => {
       console.log("Window blurred");
-      if (isPinned) {
+      if (isPinned || visible) {
         return;
       }
 
@@ -23,5 +24,5 @@ export function useWindowEvents() {
     return () => {
       window.removeEventListener("blur", handleBlur);
     };
-  }, [isPinned]);
+  }, [isPinned, visible]);
 }

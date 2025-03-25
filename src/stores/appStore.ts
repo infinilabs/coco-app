@@ -54,6 +54,8 @@ export type IAppStore = {
 
   isTauri: boolean;
   setIsTauri: (isTauri: boolean) => void;
+  visible: boolean;
+  withVisibility: <T>(fn: () => Promise<T>) => Promise<T>;
 };
 
 export const useAppStore = create<IAppStore>()(
@@ -109,6 +111,16 @@ export const useAppStore = create<IAppStore>()(
       },
       isTauri: true,
       setIsTauri: (isTauri: boolean) => set({ isTauri }),
+      visible: false,
+      withVisibility: async <T>(fn: () => Promise<T>) => {
+        set({ visible: true });
+
+        const result = await fn();
+
+        set({ visible: false });
+
+        return result;
+      },
     }),
     {
       name: "app-store",

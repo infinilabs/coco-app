@@ -2,30 +2,30 @@ import { createWebAdapter } from './webAdapter';
 // import { createTauriAdapter } from './tauriAdapter';
 
 export interface EventPayloads {
-  'language-changed': {
+  "language-changed": {
     language: string;
   };
-  'theme-changed': string;
-  'tauri://focus': void;
-  'endpoint-changed': {
+  "theme-changed": string;
+  "tauri://focus": void;
+  "endpoint-changed": {
     endpoint: string;
     endpoint_http: string;
     endpoint_websocket: string;
   };
-  'auth-changed': {
+  "auth-changed": {
     auth: {
       [key: string]: any;
     };
   };
-  'userInfo-changed': {
+  "userInfo-changed": {
     userInfo: {
       [key: string]: any;
     };
   };
-  'open_settings': string | '';
-  'tab_index': string | '';
-  'login_or_logout': any;
-  'change-startup-store': {
+  open_settings: string | "";
+  tab_index: string | "";
+  login_or_logout: any;
+  "change-startup-store": {
     defaultStartupWindow: string;
   };
   'show-coco': void;
@@ -54,7 +54,9 @@ export interface PlatformAdapter {
   getScreenshotableWindows: () => Promise<any[]>;
   captureMonitorScreenshot: (id: number) => Promise<string>;
   captureWindowScreenshot: (id: number) => Promise<string>;
-  openFileDialog: (options: { multiple: boolean }) => Promise<string | string[] | null>;
+  openFileDialog: (options: {
+    multiple: boolean;
+  }) => Promise<string | string[] | null>;
   getFileMetadata: (path: string) => Promise<any>;
   getFileIcon: (path: string, size: number) => Promise<string>;
   checkUpdate: () => Promise<any>;
@@ -63,7 +65,9 @@ export interface PlatformAdapter {
   getWebviewWindow: () => Promise<any>;
   setWindowTheme: (theme: string | null) => Promise<void>;
   getWindowTheme: () => Promise<string>;
-  onThemeChanged: (callback: (payload: { payload: string }) => void) => Promise<void>;
+  onThemeChanged: (
+    callback: (payload: { payload: string }) => void
+  ) => Promise<void>;
   getWindowByLabel: (label: string) => Promise<{
     show: () => Promise<void>;
     setFocus: () => Promise<void>;

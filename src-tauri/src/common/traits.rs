@@ -25,9 +25,11 @@ pub enum SearchError {
     Timeout,
 
     #[error("Unknown error: {0}")]
+    #[allow(dead_code)]
     Unknown(String),
 
     #[error("InternalError error: {0}")]
+    #[allow(dead_code)]
     InternalError(String),
 }
 

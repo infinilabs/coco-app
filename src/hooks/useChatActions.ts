@@ -184,6 +184,9 @@ export function useChatActions(
               datasource: sourceDataIds?.join(",") || "",
             },
             message: content,
+            // headers: {
+            //   "WEBSOCKET-SESSION-ID": websocketIdRef.current,
+            // },
           });
           response = JSON.parse(response || "");
         } else {

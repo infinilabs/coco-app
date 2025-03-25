@@ -24,6 +24,7 @@ lazy_static! {
         Arc::new(RwLock::new(HashMap::new()));
 }
 
+#[allow(dead_code)]
 fn check_server_exists(id: &str) -> bool {
     let cache = SERVER_CACHE.read().unwrap(); // Acquire read lock
     cache.contains_key(id)
@@ -35,9 +36,10 @@ pub fn get_server_by_id(id: &str) -> Option<Server> {
 }
 
 #[tauri::command]
-pub fn get_server_token(id: &str) -> Option<ServerAccessToken> {
-    let cache = SERVER_TOKEN.read().unwrap(); // Acquire read lock
-    cache.get(id).cloned()
+pub async fn get_server_token(id: &str) -> Result<Option<ServerAccessToken>, String> {
+    let cache = SERVER_TOKEN.read().map_err(|err| err.to_string())?;
+
+    Ok(cache.get(id).cloned())
 }
 
 pub fn save_access_token(server_id: String, token: ServerAccessToken) -> bool {
@@ -267,6 +269,7 @@ pub async fn list_coco_servers<R: Runtime>(
     Ok(servers)
 }
 
+#[allow(dead_code)]
 pub fn get_servers_as_hashmap() -> HashMap<String, Server> {
     let cache = SERVER_CACHE.read().unwrap();
     cache.clone()
@@ -513,7 +516,7 @@ pub async fn logout_coco_server<R: Runtime>(
     dbg!("Attempting to log out server by id:", &id);
 
     // Check if server token exists
-    if let Some(_token) = get_server_token(id.as_str()) {
+    if let Some(_token) = get_server_token(id.as_str()).await? {
         dbg!("Found server token for id:", &id);
 
         // Remove the server token from cache

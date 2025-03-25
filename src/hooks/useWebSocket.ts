@@ -41,6 +41,11 @@ export default function useWebSocket({
     if (readyState === ReadyState.Open) {
       setConnected(true);
       console.log(12121212)
+      // if (latestMessage?.data.includes("websocket-session-id")) {
+      //   const array = msg.split(" ");
+      //   websocketIdRef.current = array[2];
+      //   return "";
+      // } else 
       latestMessage?.data && dealMsgRef.current && dealMsgRef.current(latestMessage?.data || "");
     } else {
       setConnected(false);

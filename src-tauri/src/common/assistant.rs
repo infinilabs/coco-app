@@ -6,6 +6,7 @@ pub struct ChatRequestMessage {
     pub message: Option<String>,
 }
 
+#[allow(dead_code)]
 pub struct NewChatResponse {
     pub _id: String,
     pub _source: Source,

@@ -1,11 +1,10 @@
 use crate::server::servers::{get_server_by_id, get_server_token};
-use futures_util::{SinkExt, StreamExt};
+use futures_util::StreamExt;
 use http::{HeaderMap, HeaderName, HeaderValue};
 use std::sync::Arc;
 use tauri::Emitter;
 use tokio::net::TcpStream;
 use tokio::sync::{mpsc, Mutex};
-use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 use tokio_tungstenite::tungstenite::Error;
 use tokio_tungstenite::tungstenite::Error as WsError;
 use tokio_tungstenite::{
@@ -47,6 +46,7 @@ fn convert_to_websocket(endpoint: &str) -> Result<String, String> {
 }
 
 // Function to build a HeaderMap from a vector of key-value pairs
+#[allow(dead_code)]
 fn build_header_map(headers: Vec<(String, String)>) -> Result<HeaderMap, String> {
     let mut header_map = HeaderMap::new();
     for (key, value) in headers {
@@ -74,7 +74,9 @@ pub async fn connect_to_server(
     let endpoint = convert_to_websocket(server.endpoint.as_str())?;
 
     // Retrieve the token for the server (token is optional)
-    let token = get_server_token(id.as_str()).map(|t| t.access_token.clone());
+    let token = get_server_token(id.as_str())
+        .await?
+        .map(|t| t.access_token.clone());
 
     // Create the WebSocket request
     let mut request =
@@ -104,7 +106,7 @@ pub async fn connect_to_server(
 
     // Establish the WebSocket connection
     // dbg!(&request);
-    let (mut ws_remote, _) = connect_async(request).await.map_err(|e| match e {
+    let (ws_remote, _) = connect_async(request).await.map_err(|e| match e {
         Error::ConnectionClosed => "WebSocket connection was closed".to_string(),
         Error::Protocol(protocol_error) => format!("Protocol error: {}", protocol_error),
         Error::Utf8 => "UTF-8 error in WebSocket data".to_string(),

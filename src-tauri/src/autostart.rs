@@ -60,7 +60,10 @@ fn current_autostart<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<bool, Stri
 }
 
 #[tauri::command]
-pub fn change_autostart<R: Runtime>(app: tauri::AppHandle<R>, open: bool) -> Result<(), String> {
+pub async fn change_autostart<R: Runtime>(
+    app: tauri::AppHandle<R>,
+    open: bool,
+) -> Result<(), String> {
     use std::fs::File;
     use std::io::Write;
 

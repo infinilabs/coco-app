@@ -2,17 +2,17 @@
 
 ## Props
 
-### `token`
+### `serverUrl`
 - **类型**: `string`
 - **可选**: 是
-- **默认值**: `无`
-- **描述**: 用于认证的令牌
+- **默认值**: `"https://coco.infini.cloud"`
+- **描述**: 设置服务器地址
 
-### serverUrl
-- 类型: `string`
-- 默认值: `"https://coco.infini.cloud"`
-- 说明: 设置服务器地址
-
+### `headers`
+- **类型**: `Record<string, unknown>`
+- **可选**: 是
+- **默认值**: `{}`
+- **描述**: 请求头配置
 
 ### `width`
 - **类型**: `number`
@@ -30,7 +30,13 @@
 - **类型**: `string[]`
 - **可选**: 是
 - **默认值**: `['search', 'chat']`
-- **描述**: 启用的功能模块列表，目前支持 'search' 模块
+- **描述**: 启用的功能模块列表，目前支持 'search' 和 'chat' 模块
+
+### `hasFeature`
+- **类型**: `string[]`
+- **可选**: 是
+- **默认值**: `['think', 'search']`
+- **描述**: 启用的特性列表，目前支持 'think' 和 'search' 特性
 
 ### `hideCoco`
 - **类型**: `() => void`
@@ -44,6 +50,18 @@
 - **默认值**: `undefined`
 - **描述**: 主题设置，支持自动（跟随系统）、亮色和暗色三种模式
 
+### `searchPlaceholder`
+- **类型**: `string`
+- **可选**: 是
+- **默认值**: `""`
+- **描述**: 搜索框的占位文本
+
+### `chatPlaceholder`
+- **类型**: `string`
+- **可选**: 是
+- **默认值**: `""`
+- **描述**: 聊天输入框的占位文本
+
 ## 使用示例
 
 ```tsx
@@ -52,11 +70,12 @@ import SearchChat from 'search-chat';
 function App() {
   return (
     <SearchChat
-      token="your-token"
-      serverUrl=""
+      serverUrl="https://coco.infini.cloud"
+      headers={{}}
       width={680}
       height={590}
       hasModules={['search', 'chat']}
+      hasFeature={['think', 'search']}
       hideCoco={() => console.log('hide')}
       theme="auto"
       searchPlaceholder=""

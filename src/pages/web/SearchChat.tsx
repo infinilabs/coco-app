@@ -4,14 +4,14 @@ import {
   useCallback,
   useReducer,
   Suspense,
-  lazy,
   memo,
 } from "react";
 import clsx from "clsx";
 
 import ErrorBoundary from "@/components/Common/ErrorBoundary";
+import Search from "@/components/Search/Search";
 import InputBox from "@/components/Search/InputBox";
-import { ChatAIRef } from "@/components/Assistant/Chat";
+import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
 import UpdateApp from "@/components/UpdateApp";
 import { isLinux, isWin } from "@/utils/platform";
 import { appReducer, initialAppState } from "@/reducers/appReducer";
@@ -24,12 +24,10 @@ import { useStartupStore } from "@/stores/startupStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { Get } from "@/api/axiosRequest";
 
-const Search = lazy(() => import("@/components/Search/Search"));
-const ChatAI = lazy(() => import("@/components/Assistant/Chat"));
-
 interface SearchChatProps {
   isTauri: boolean;
   hasModules: string[];
+  hasFeature?: string[];
   theme?: "auto" | "light" | "dark";
   hideCoco: () => void;
   searchPlaceholder?: string;
@@ -45,6 +43,7 @@ interface SearchChatProps {
 function SearchChat({
   isTauri = true,
   hasModules = ["search", "chat"],
+  hasFeature = ["think", "search"],
   theme,
   hideCoco,
   querySearch,
@@ -322,6 +321,7 @@ function SearchChat({
             setIsSearchActive={toggleSearchActive}
             isDeepThinkActive={isDeepThinkActive}
             setIsDeepThinkActive={toggleDeepThinkActive}
+            hasFeature={hasFeature}
             getDataSourcesByServer={getDataSourcesByServer}
             setupWindowFocusListener={setupWindowFocusListener}
             hideCoco={hideCoco}
