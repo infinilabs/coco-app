@@ -19,6 +19,8 @@ Information about release notes of Coco Server is provided here.
 
 ### Improvements
 
+- refactor: refactor invoke related code #309
+
 ## 0.2.1 (2025-03-14)
 
 ### Features
