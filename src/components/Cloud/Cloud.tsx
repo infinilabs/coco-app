@@ -75,7 +75,7 @@ export default function Cloud() {
   }, [JSON.stringify(currentService)]);
 
   const fetchServers = async (resetSelection: boolean) => {
-    list_coco_servers()()
+    list_coco_servers()
       .then((res: any) => {
         if (error) {
           res = (res || []).map((item: any) => {
@@ -120,7 +120,7 @@ export default function Cloud() {
 
     setRefreshLoading(true);
 
-    return add_coco_server(endpointLink)()
+    return add_coco_server(endpointLink)
       .then((res: any) => {
         // console.log("add_coco_server", res);
         fetchServers(false)
@@ -265,7 +265,7 @@ export default function Cloud() {
 
   const refreshClick = (id: string) => {
     setRefreshLoading(true);
-    refresh_coco_server_info(id)()
+    refresh_coco_server_info(id)
       .then((res: any) => {
         console.log("refresh_coco_server_info", id, res);
         fetchServers(false).then((r) => {
@@ -291,7 +291,7 @@ export default function Cloud() {
   function onLogout(id: string) {
     console.log("onLogout", id);
     setRefreshLoading(true);
-    logout_coco_server(id)()
+    logout_coco_server(id)
       .then((res: any) => {
         console.log("logout_coco_server", id, JSON.stringify(res));
         refreshClick(id);
@@ -307,7 +307,7 @@ export default function Cloud() {
   }
 
   const removeServer = (id: string) => {
-    remove_coco_server(id)()
+    remove_coco_server(id)
       .then((res: any) => {
         console.log("remove_coco_server", id, JSON.stringify(res));
         fetchServers(true).then((r) => {

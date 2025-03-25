@@ -20,7 +20,7 @@ export function DataSourcesList({ server }: { server: string }) {
 
   function initServerAppData({ server }: { server: string }) {
     //fetch datasource data
-    get_connectors_by_server(server)()
+    get_connectors_by_server(server)
       .then((res: any) => {
         // console.log("get_connectors_by_server", res);
         setConnectorData(res, server);
@@ -32,7 +32,7 @@ export function DataSourcesList({ server }: { server: string }) {
       .finally(() => {});
 
     //fetch datasource data
-    get_datasources_by_server(server)()
+    get_datasources_by_server(server)
       .then((res: any) => {
         // console.log("get_datasources_by_server", res);
         setDatasourceData(res, server);

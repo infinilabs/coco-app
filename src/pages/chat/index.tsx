@@ -158,7 +158,7 @@ export default function Chat({}: ChatProps) {
 
   const getDataSourcesByServer = useCallback(
     async (serverId: string): Promise<DataSource[]> => {
-      return get_datasources_by_server(serverId)();
+      return get_datasources_by_server(serverId);
     },
     []
   );

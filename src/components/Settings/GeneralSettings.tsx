@@ -141,7 +141,7 @@ export default function GeneralSettings() {
     setShortcut(key);
     //
     if (key.length === 0) return;
-    change_shortcut(key?.join("+"))().catch((err) => {
+    change_shortcut(key?.join("+")).catch((err) => {
       console.error("Failed to save hotkey:", err);
     });
   };
@@ -152,7 +152,7 @@ export default function GeneralSettings() {
   const onEditShortcut = async () => {
     startEditing();
     //
-    unregister_shortcut()().catch((err) => {
+    unregister_shortcut().catch((err) => {
       console.error("Failed to save hotkey:", err);
     });
   };
@@ -160,7 +160,7 @@ export default function GeneralSettings() {
   const onCancelShortcut = async () => {
     cancelEditing();
     //
-    change_shortcut(shortcut?.join("+"))().catch((err) => {
+    change_shortcut(shortcut?.join("+")).catch((err) => {
       console.error("Failed to save hotkey:", err);
     });
   };

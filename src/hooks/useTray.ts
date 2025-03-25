@@ -51,7 +51,7 @@ export const useTray = () => {
         text: t("tray.showCoco"),
         accelerator: showCocoShortcuts.join("+"),
         action: () => {
-          show_coco()()
+          show_coco()
         },
       }),
       PredefinedMenuItem.new({ item: "Separator" }),
@@ -59,7 +59,7 @@ export const useTray = () => {
         text: t("tray.settings"),
         // accelerator: "CommandOrControl+,",
         action: () => {
-          show_settings()()
+          show_settings()
         },
       }),
       PredefinedMenuItem.new({ item: "Separator" }),
