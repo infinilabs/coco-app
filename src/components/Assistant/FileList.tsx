@@ -2,12 +2,12 @@ import { useEffect } from "react";
 import { filesize } from "filesize";
 import { X } from "lucide-react";
 import { useAsyncEffect } from "ahooks";
+import { useTranslation } from "react-i18next";
 
 import { useChatStore } from "@/stores/chatStore";
 import { isImage } from "@/utils";
-import { invoke } from "@tauri-apps/api/core";
 import { useConnectStore } from "@/stores/connectStore";
-import { useTranslation } from "react-i18next";
+import { uploadAttachment } from "@/api/attachment";
 
 interface FileListProps {
   sessionId: string;
@@ -40,23 +40,20 @@ const FileList = (props: FileListProps) => {
 
       if (uploaded) continue;
 
-      const response = await invoke<{
-        acknowledged: boolean;
-        attachments: string[];
-      }>("upload_attachment", {
-        serverId: currentService.id,
+      const attachmentIds = await uploadAttachment({
+        serverId,
         sessionId,
         filePaths: [path],
       });
 
-      console.log("response", response);
+      if (!attachmentIds) continue;
 
-      if (response.acknowledged) {
-        item.uploaded = true;
-        item.attachmentId = response.attachments[0];
+      Object.assign(item, {
+        uploaded: true,
+        attachmentId: attachmentIds[0],
+      });
 
-        setUploadFiles(uploadFiles);
-      }
+      setUploadFiles(uploadFiles);
     }
   }, [uploadFiles]);
 
