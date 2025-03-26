@@ -97,7 +97,7 @@ const FileList = (props: FileListProps) => {
                       </span>
                     </div>
                   ) : (
-                    <span>{t("fileList.uploading")}</span>
+                    <span>{t("assistant.fileList.uploading")}</span>
                   )}
                 </div>
               </div>

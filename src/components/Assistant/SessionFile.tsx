@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { filesize } from "filesize";
 import { Files, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface SessionFileProps {
   sessionId: string;
@@ -11,6 +12,7 @@ interface SessionFileProps {
 
 const SessionFile = (props: SessionFileProps) => {
   const { sessionId } = props;
+  const { t } = useTranslation();
   const currentService = useConnectStore((state) => state.currentService);
   const [uploadedFiles, setUploadedFiles] = useState<AttachmentHit[]>([]);
   const [visible, setVisible] = useState(false);
@@ -66,10 +68,10 @@ const SessionFile = (props: SessionFileProps) => {
         />
 
         <div className="mb-2 text-sm text-[#333] dark:text-[#D8D8D8] font-bold">
-          Files in the conversation
+          {t("assistant.sessionFile.title")}
         </div>
         <span className="text-sm leading-4 text-[#999]">
-          Only the selected files will participate in the current conversation
+          {t("assistant.sessionFile.description")}
         </span>
         <ul className="flex-1 overflow-auto flex flex-col gap-2 mt-6">
           {uploadedFiles.map((item) => {
