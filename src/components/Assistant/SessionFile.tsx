@@ -5,6 +5,7 @@ import { filesize } from "filesize";
 import { Files, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import Checkbox from "../Common/Checkbox";
 
 interface SessionFileProps {
   sessionId: string;
@@ -70,9 +71,13 @@ const SessionFile = (props: SessionFileProps) => {
         <div className="mb-2 text-sm text-[#333] dark:text-[#D8D8D8] font-bold">
           {t("assistant.sessionFile.title")}
         </div>
-        <span className="text-sm leading-4 text-[#999]">
-          {t("assistant.sessionFile.description")}
-        </span>
+        <div className="flex items-center justify-between pr-2">
+          <span className="text-sm text-[#999]">
+            {t("assistant.sessionFile.description")}
+          </span>
+
+          <Checkbox indeterminate />
+        </div>
         <ul className="flex-1 overflow-auto flex flex-col gap-2 mt-6">
           {uploadedFiles.map((item) => {
             const { id, name, icon, size } = item._source;
@@ -98,8 +103,10 @@ const SessionFile = (props: SessionFileProps) => {
                   </div>
                 </div>
 
-                <div>
+                <div className="flex items-center gap-2">
                   <Trash2 className="size-4 text-[#999] cursor-pointer" />
+
+                  <Checkbox />
                 </div>
               </li>
             );

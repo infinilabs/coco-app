@@ -16,17 +16,17 @@ const Checkbox = (props: CheckboxProps) => {
     <HeadlessCheckbox
       {...rest}
       className={clsx(
-        "group size-[14px] rounded-sm border border-black/30 dark:border-white/30 data-[checked]:bg-[#2F54EB] data-[checked]:!border-[#2F54EB] transition cursor-pointer",
+        "group size-4 rounded-sm border border-black/30 dark:border-white/30 data-[checked]:bg-[#2F54EB] data-[checked]:!border-[#2F54EB] transition cursor-pointer",
         className
       )}
     >
       {indeterminate && (
         <div className="size-full flex items-center justify-center group-data-[checked]:hidden">
-          <div className="size-[6px] bg-[#2F54EB]"></div>
+          <div className="size-2 bg-[#2F54EB]"></div>
         </div>
       )}
 
-      <CheckIcon className="hidden size-[12px] text-white group-data-[checked]:block" />
+      <CheckIcon className="hidden size-[14px] text-white group-data-[checked]:block" />
     </HeadlessCheckbox>
   );
 };
