@@ -24,12 +24,12 @@ function WebApp({
   width = 680,
   height = 590,
   headers = {
-    "X-API-TOKEN": "cva1j5ehpcenic3ir7k0h8fb8qtv35iwtywze248oscrej8yoivhb5b1hyovp24xejjk27jy9ddt69ewfi3n",
+    "X-API-TOKEN": "cv97ieo2sdbbru4vtha094eyxuzxdj6pvp9fbdzxb66dff0djy4rsjyju6yymypxe42lg2h7jl6ohdksecth",
   },
   // token = "cva1j5ehpcenic3ir7k0h8fb8qtv35iwtywze248oscrej8yoivhb5b1hyovp24xejjk27jy9ddt69ewfi3n",   // https://coco.infini.cloud
   // token = "cv97ieo2sdbbru4vtha094eyxuzxdj6pvp9fbdzxb66dff0djy4rsjyju6yymypxe42lg2h7jl6ohdksecth",  // http://localhost:9000
   // token = "cv5djeb9om602jdvtnmg6kc1muyn2vcadr6te48j9t9pvt59ewrnwj7fwvxrw3va84j2a0lb5y8194fbr3jd",  // http://43.153.113.88:9000
-  serverUrl = "https://coco.infini.cloud",
+  serverUrl = "http://localhost:9000",
   hideCoco = () => {},
   hasModules = ["search", "chat"],
   hasFeature = ["think", "search"],
@@ -103,6 +103,7 @@ function WebApp({
   return (
     <div
       id="searchChat-container"
+      data-theme={theme}
       style={{ width: `${width}px`, height: `${height}px` }}
     >
       <SearchChat
