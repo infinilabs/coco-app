@@ -284,5 +284,9 @@
   },
   "error": {
     "message": "抱歉，Coco 应用出现了错误。请联系管理员。"
+  },
+  "fileList": {
+    "uploading": "上传中...",
+    "uploaded": "已上传"
   }
 }

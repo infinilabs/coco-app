@@ -7,6 +7,7 @@ import { useChatStore } from "@/stores/chatStore";
 import { isImage } from "@/utils";
 import { invoke } from "@tauri-apps/api/core";
 import { useConnectStore } from "@/stores/connectStore";
+import { useTranslation } from "react-i18next";
 
 interface FileListProps {
   sessionId: string;
@@ -15,6 +16,7 @@ interface FileListProps {
 
 const FileList = (props: FileListProps) => {
   const { sessionId, getFileUrl } = props;
+  const { t } = useTranslation();
   const uploadFiles = useChatStore((state) => state.uploadFiles);
   const setUploadFiles = useChatStore((state) => state.setUploadFiles);
   const currentService = useConnectStore((state) => state.currentService);
@@ -98,7 +100,7 @@ const FileList = (props: FileListProps) => {
                       </span>
                     </div>
                   ) : (
-                    <span>上传中...</span>
+                    <span>{t("fileList.uploading")}</span>
                   )}
                 </div>
               </div>

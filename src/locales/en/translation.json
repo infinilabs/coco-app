@@ -285,5 +285,9 @@
   },
   "error": {
     "message": "Sorry, there is an error in your Coco App. Please contact the administrator."
+  },
+  "fileList": {
+    "uploading": "Uploading...",
+    "uploaded": "Uploaded"
   }
 }
