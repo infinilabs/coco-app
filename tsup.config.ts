@@ -59,7 +59,7 @@ export default defineConfig({
 
     const packageJson = {
       name: "search-chat",
-      version: "0.0.23",
+      version: "0.0.24",
       main: "index.cjs",
       module: "index.js",
       types: "index.d.ts",

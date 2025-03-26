@@ -33,7 +33,7 @@ function WebApp({
   hideCoco = () => {},
   hasModules = ["search", "chat"],
   hasFeature = ["think", "search"],
-  theme,
+  theme="dark",
   searchPlaceholder = "",
   chatPlaceholder = "",
 }: WebAppProps) {

@@ -49,9 +49,9 @@ export const Get = <T,>(
     const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
     console.log("baseURL", appStore.state?.endpoint_http)
 
-    // let baseURL = appStore.state?.endpoint_http;
+    let baseURL = appStore.state?.endpoint_http;
     axios
-      .get(url, { params })
+      .get(baseURL + url, { params })
       .then((result) => {
         let res: FcResponse<T>;
         if (clearFn !== undefined) {
