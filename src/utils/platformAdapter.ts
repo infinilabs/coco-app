@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { isTauri } from "@tauri-apps/api/core";
+import { convertFileSrc as tauriConvertFileSrc } from "@tauri-apps/api/core";
+import type { OpenDialogOptions } from "@tauri-apps/plugin-dialog";
 
 export interface EventPayloads {
   "language-changed": {
@@ -51,9 +53,9 @@ export interface PlatformAdapter {
   getScreenshotableWindows: () => Promise<any[]>;
   captureMonitorScreenshot: (id: number) => Promise<string>;
   captureWindowScreenshot: (id: number) => Promise<string>;
-  openFileDialog: (options: {
-    multiple: boolean;
-  }) => Promise<string | string[] | null>;
+  openFileDialog: (
+    options: OpenDialogOptions
+  ) => Promise<string | string[] | null>;
   getFileMetadata: (path: string) => Promise<any>;
   getFileIcon: (path: string, size: number) => Promise<string>;
   checkUpdate: () => Promise<any>;
@@ -124,8 +126,7 @@ export const createTauriAdapter = (): PlatformAdapter => {
 
     convertFileSrc(path: string): string {
       if (isTauri()) {
-        const { convertFileSrc } = require("@tauri-apps/api/core");
-        return convertFileSrc(path);
+        return tauriConvertFileSrc(path);
       }
       return path;
     },
@@ -215,7 +216,7 @@ export const createTauriAdapter = (): PlatformAdapter => {
       return "";
     },
 
-    async openFileDialog(options: { multiple: boolean }) {
+    async openFileDialog(options: OpenDialogOptions) {
       if (isTauri()) {
         const { open } = await import("@tauri-apps/plugin-dialog");
         return open(options);
@@ -391,7 +392,7 @@ export const createWebAdapter = (): PlatformAdapter => {
       return "";
     },
 
-    async openFileDialog(options: { multiple: boolean }): Promise<null> {
+    async openFileDialog(options: OpenDialogOptions): Promise<null> {
       console.log("Web mode simulated open file dialog", options);
       return null;
     },

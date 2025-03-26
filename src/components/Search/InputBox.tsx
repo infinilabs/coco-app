@@ -14,6 +14,7 @@ import SearchPopover from "./SearchPopover";
 import AudioRecording from "../AudioRecording";
 import { hide_coco } from "@/commands";
 import { DataSource } from "@/types/commands";
+import InputExtra from "./InputExtra";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -60,16 +61,16 @@ export default function ChatInput({
   isChatPage = false,
   getDataSourcesByServer,
   setupWindowFocusListener,
-}: // checkScreenPermission,
-// requestScreenPermission,
-// getScreenMonitors,
-// getScreenWindows,
-// captureMonitorScreenshot,
-// captureWindowScreenshot,
-// openFileDialog,
-// getFileMetadata,
-// getFileIcon,
-ChatInputProps) {
+  checkScreenPermission,
+  requestScreenPermission,
+  getScreenMonitors,
+  getScreenWindows,
+  captureMonitorScreenshot,
+  captureWindowScreenshot,
+  openFileDialog,
+  getFileMetadata,
+  getFileIcon,
+}: ChatInputProps) {
   const { t } = useTranslation();
 
   const showTooltip = useAppStore(
@@ -360,7 +361,7 @@ ChatInputProps) {
       >
         {isChatMode ? (
           <div className="flex gap-2 text-sm text-[#333] dark:text-[#d8d8d8]">
-            {/* <InputExtra
+            <InputExtra
               checkScreenPermission={checkScreenPermission}
               requestScreenPermission={requestScreenPermission}
               getScreenMonitors={getScreenMonitors}
@@ -370,7 +371,7 @@ ChatInputProps) {
               openFileDialog={openFileDialog}
               getFileMetadata={getFileMetadata}
               getFileIcon={getFileIcon}
-            /> */}
+            />
 
             <button
               className={clsx(

@@ -124,7 +124,8 @@ pub fn run() {
             // server::get_coco_server_connectors,
             server::websocket::connect_to_server,
             server::websocket::disconnect,
-            get_app_search_source
+            get_app_search_source,
+            server::attachment::upload_attachment
         ])
         .setup(|app| {
             let registry = SearchSourceRegistry::default();

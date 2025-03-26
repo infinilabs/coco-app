@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ChatMessage } from "@/components/ChatMessage";
@@ -41,12 +41,14 @@ export const ChatContent = ({
   handleSendMessage,
   getFileUrl,
 }: ChatContentProps) => {
+  const sessionId = useMemo(() => activeChat?._id, [activeChat]);
+
   const { t } = useTranslation();
 
   const uploadFiles = useChatStore((state) => state.uploadFiles);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+
   const { scrollToBottom } = useChatScroll(messagesEndRef);
 
   useEffect(() => {
@@ -143,9 +145,9 @@ export const ChatContent = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {uploadFiles.length > 0 && (
-        <div className="max-h-[120px] overflow-auto p-2">
-          <FileList getFileUrl={getFileUrl}/>
+      {sessionId && uploadFiles.length > 0 && (
+        <div key={sessionId} className="max-h-[120px] overflow-auto p-2">
+          <FileList sessionId={sessionId} getFileUrl={getFileUrl} />
         </div>
       )}
     </div>
