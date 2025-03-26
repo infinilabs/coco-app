@@ -72,7 +72,7 @@ export const ChatContent = ({
   }, [scrollToBottom]);
 
   return (
-    <div className="flex flex-col h-full justify-between overflow-hidden">
+    <div className="relative flex flex-col h-full justify-between overflow-hidden">
       <div className="flex-1 w-full overflow-x-hidden overflow-y-auto border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.15)] custom-scrollbar relative">
         <Greetings />
 
