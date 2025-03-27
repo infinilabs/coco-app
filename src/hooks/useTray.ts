@@ -1,12 +1,13 @@
 import { useTranslation } from "react-i18next";
 import { TrayIcon, type TrayIconOptions } from "@tauri-apps/api/tray";
 import { Menu, MenuItem, PredefinedMenuItem } from "@tauri-apps/api/menu";
-import { isMac } from "@/utils/platform";
 import { resolveResource } from "@tauri-apps/api/path";
 import { useUpdateEffect } from "ahooks";
 import { exit } from "@tauri-apps/plugin-process";
-import { invoke } from "@tauri-apps/api/core";
+
+import { isMac } from "@/utils/platform";
 import { useAppStore } from "@/stores/appStore";
+import { show_coco, show_settings } from "@/commands";
 
 const TRAY_ID = "COCO_TRAY";
 
@@ -50,7 +51,7 @@ export const useTray = () => {
         text: t("tray.showCoco"),
         accelerator: showCocoShortcuts.join("+"),
         action: () => {
-          invoke("show_coco");
+          show_coco()
         },
       }),
       PredefinedMenuItem.new({ item: "Separator" }),
@@ -58,7 +59,7 @@ export const useTray = () => {
         text: t("tray.settings"),
         // accelerator: "CommandOrControl+,",
         action: () => {
-          invoke("show_settings");
+          show_settings()
         },
       }),
       PredefinedMenuItem.new({ item: "Separator" }),

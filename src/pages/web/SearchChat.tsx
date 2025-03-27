@@ -19,10 +19,10 @@ import { useWindowEvents } from "@/hooks/useWindowEvents";
 import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
 import platformAdapter from "@/utils/platformAdapter";
-import { DataSource } from "@/components/Assistant/types";
 import { useStartupStore } from "@/stores/startupStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { Get } from "@/api/axiosRequest";
+import { DataSource } from "@/types/commands";
 
 interface SearchChatProps {
   isTauri: boolean;
@@ -335,7 +335,6 @@ function SearchChat({
             hasFeature={hasFeature}
             getDataSourcesByServer={getDataSourcesByServer}
             setupWindowFocusListener={setupWindowFocusListener}
-            hideCoco={hideCoco}
             checkScreenPermission={checkScreenPermission}
             requestScreenPermission={requestScreenPermission}
             getScreenMonitors={getScreenMonitors}
@@ -348,6 +347,7 @@ function SearchChat({
             hasModules={hasModules}
             searchPlaceholder={searchPlaceholder}
             chatPlaceholder={chatPlaceholder}
+            hideCoco={hideCoco}
           />
         </div>
 

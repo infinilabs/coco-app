@@ -11,10 +11,9 @@ import {
   Globe,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { isTauri, invoke } from "@tauri-apps/api/core";
+import { isTauri } from "@tauri-apps/api/core";
 import {
   isEnabled,
-  // enable, disable
 } from "@tauri-apps/plugin-autostart";
 import { emit } from "@tauri-apps/api/event";
 import { useCreation } from "ahooks";
@@ -27,6 +26,7 @@ import { useShortcutEditor } from "@/hooks/useShortcutEditor";
 import { useAppStore } from "@/stores/appStore";
 import { AppTheme } from "@/utils/tauri";
 import { useThemeStore } from "@/stores/themeStore";
+import { change_autostart, get_current_shortcut, change_shortcut, unregister_shortcut } from "@/commands"
 
 export function ThemeOption({
   icon: Icon,
@@ -90,8 +90,7 @@ export default function GeneralSettings() {
   const enableAutoStart = async () => {
     if (isTauri()) {
       try {
-        // await enable();
-        invoke("change_autostart", { open: true });
+        await change_autostart(true);
       } catch (error) {
         console.error("Failed to enable autostart:", error);
       }
@@ -102,8 +101,7 @@ export default function GeneralSettings() {
   const disableAutoStart = async () => {
     if (isTauri()) {
       try {
-        // await disable();
-        invoke("change_autostart", { open: false });
+        await change_autostart(false);
       } catch (error) {
         console.error("Failed to disable autostart:", error);
       }
@@ -123,7 +121,7 @@ export default function GeneralSettings() {
 
   async function getCurrentShortcut() {
     try {
-      const res: any = await invoke("get_current_shortcut");
+      const res: any = await get_current_shortcut();
       // console.log("get_current_shortcut: ", res);
       setShortcut(res?.split("+"));
     } catch (err) {
@@ -143,7 +141,7 @@ export default function GeneralSettings() {
     setShortcut(key);
     //
     if (key.length === 0) return;
-    invoke("change_shortcut", { key: key?.join("+") }).catch((err) => {
+    change_shortcut(key?.join("+")).catch((err) => {
       console.error("Failed to save hotkey:", err);
     });
   };
@@ -154,7 +152,7 @@ export default function GeneralSettings() {
   const onEditShortcut = async () => {
     startEditing();
     //
-    invoke("unregister_shortcut").catch((err) => {
+    unregister_shortcut().catch((err) => {
       console.error("Failed to save hotkey:", err);
     });
   };
@@ -162,7 +160,7 @@ export default function GeneralSettings() {
   const onCancelShortcut = async () => {
     cancelEditing();
     //
-    invoke("change_shortcut", { key: shortcut?.join("+") }).catch((err) => {
+    change_shortcut(shortcut?.join("+")).catch((err) => {
       console.error("Failed to save hotkey:", err);
     });
   };
