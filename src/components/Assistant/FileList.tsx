@@ -8,6 +8,7 @@ import { useChatStore } from "@/stores/chatStore";
 import { isImage } from "@/utils";
 import { useConnectStore } from "@/stores/connectStore";
 import { deleteAttachment, uploadAttachment } from "@/api/attachment";
+import FileIcon from "../Common/Icons/FileIcon";
 
 interface FileListProps {
   sessionId: string;
@@ -15,7 +16,7 @@ interface FileListProps {
 }
 
 const FileList = (props: FileListProps) => {
-  const { sessionId, getFileUrl } = props;
+  const { sessionId } = props;
   const { t } = useTranslation();
   const uploadFiles = useChatStore((state) => state.uploadFiles);
   const setUploadFiles = useChatStore((state) => state.setUploadFiles);
@@ -65,8 +66,7 @@ const FileList = (props: FileListProps) => {
   return (
     <div className="flex flex-wrap gap-y-2 -mx-1 text-sm">
       {uploadFiles.map((file) => {
-        const { id, path, icon, name, extname, size, uploaded, attachmentId } =
-          file;
+        const { id, name, extname, size, uploaded, attachmentId } = file;
 
         return (
           <div key={id} className="w-1/3 px-1">
@@ -82,10 +82,7 @@ const FileList = (props: FileListProps) => {
                 </div>
               )}
 
-              <img
-                src={getFileUrl(isImage(path) ? path : icon)}
-                className="size-[40px]"
-              />
+              <FileIcon extname={extname} />
 
               <div className="flex flex-col justify-between overflow-hidden">
                 <div className="truncate text-[#333333] dark:text-[#D8D8D8]">

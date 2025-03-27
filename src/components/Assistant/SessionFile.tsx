@@ -10,6 +10,7 @@ import { Files, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Checkbox from "../Common/Checkbox";
+import FileIcon from "../Common/Icons/FileIcon";
 
 interface SessionFileProps {
   sessionId: string;
@@ -21,7 +22,7 @@ const SessionFile = (props: SessionFileProps) => {
   const currentService = useConnectStore((state) => state.currentService);
   const [uploadedFiles, setUploadedFiles] = useState<AttachmentHit[]>([]);
   const [visible, setVisible] = useState(false);
-  const [checkedIds, setCheckedIds] = useState<string[]>([]);
+  const [checkList, setCheckList] = useState<string[]>([]);
 
   const serverId = useMemo(() => {
     return currentService.id;
@@ -49,17 +50,17 @@ const SessionFile = (props: SessionFileProps) => {
 
   const handleCheckAll = (checked: boolean) => {
     if (checked) {
-      setCheckedIds(uploadedFiles.map((item) => item._source.id));
+      setCheckList(uploadedFiles.map((item) => item._source.id));
     } else {
-      setCheckedIds([]);
+      setCheckList([]);
     }
   };
 
   const handleCheck = (checked: boolean, id: string) => {
     if (checked) {
-      setCheckedIds([...checkedIds, id]);
+      setCheckList([...checkList, id]);
     } else {
-      setCheckedIds(checkedIds.filter((item) => item !== id));
+      setCheckList(checkList.filter((item) => item !== id));
     }
   };
 
@@ -107,7 +108,7 @@ const SessionFile = (props: SessionFileProps) => {
 
           <Checkbox
             indeterminate
-            checked={checkedIds.length === uploadedFiles.length}
+            checked={checkList.length === uploadedFiles.length}
             onChange={handleCheckAll}
           />
         </div>
@@ -121,7 +122,7 @@ const SessionFile = (props: SessionFileProps) => {
                 className="flex items-center justify-between min-h-12 px-2  rounded-[4px] bg-[#ededed] dark:bg-[#202126]"
               >
                 <div className="flex items-center gap-2">
-                  <img className="size-8" />
+                  <FileIcon extname={icon} />
 
                   <div>
                     <div className="text-sm leading-4 text-[#333] dark:text-[#D8D8D8]">
@@ -143,7 +144,7 @@ const SessionFile = (props: SessionFileProps) => {
                   />
 
                   <Checkbox
-                    checked={checkedIds.includes(id)}
+                    checked={checkList.includes(id)}
                     onChange={(checked) => handleCheck(checked, id)}
                   />
                 </div>
