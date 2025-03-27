@@ -57,11 +57,9 @@ const FileList = (props: FileListProps) => {
   }, [uploadFiles]);
 
   const deleteFile = async (id: string, attachmentId: string) => {
-    const result = await deleteAttachment({ serverId, id: attachmentId });
-
-    if (!result) return;
-
     setUploadFiles(uploadFiles.filter((file) => file.id !== id));
+
+    deleteAttachment({ serverId, id: attachmentId });
   };
 
   return (

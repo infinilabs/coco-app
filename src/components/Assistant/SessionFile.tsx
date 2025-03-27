@@ -21,12 +21,15 @@ const SessionFile = (props: SessionFileProps) => {
   const currentService = useConnectStore((state) => state.currentService);
   const [uploadedFiles, setUploadedFiles] = useState<AttachmentHit[]>([]);
   const [visible, setVisible] = useState(false);
+  const [checkedIds, setCheckedIds] = useState<string[]>([]);
 
   const serverId = useMemo(() => {
     return currentService.id;
   }, [currentService]);
 
   useEffect(() => {
+    setUploadedFiles([]);
+
     getUploadedFiles();
   }, [sessionId]);
 
@@ -42,6 +45,22 @@ const SessionFile = (props: SessionFileProps) => {
     if (!result) return;
 
     getUploadedFiles();
+  };
+
+  const handleCheckAll = (checked: boolean) => {
+    if (checked) {
+      setCheckedIds(uploadedFiles.map((item) => item._source.id));
+    } else {
+      setCheckedIds([]);
+    }
+  };
+
+  const handleCheck = (checked: boolean, id: string) => {
+    if (checked) {
+      setCheckedIds([...checkedIds, id]);
+    } else {
+      setCheckedIds(checkedIds.filter((item) => item !== id));
+    }
   };
 
   return (
@@ -86,7 +105,11 @@ const SessionFile = (props: SessionFileProps) => {
             {t("assistant.sessionFile.description")}
           </span>
 
-          <Checkbox indeterminate />
+          <Checkbox
+            indeterminate
+            checked={checkedIds.length === uploadedFiles.length}
+            onChange={handleCheckAll}
+          />
         </div>
         <ul className="flex-1 overflow-auto flex flex-col gap-2 mt-6">
           {uploadedFiles.map((item) => {
@@ -119,7 +142,10 @@ const SessionFile = (props: SessionFileProps) => {
                     onClick={() => handleDelete(id)}
                   />
 
-                  <Checkbox />
+                  <Checkbox
+                    checked={checkedIds.includes(id)}
+                    onChange={(checked) => handleCheck(checked, id)}
+                  />
                 </div>
               </li>
             );
