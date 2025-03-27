@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "build:web": "cross-env BUILD_TARGET=web tsc && cross-env BUILD_TARGET=web tsup",
+    "build:web": "cross-env BUILD_TARGET=web tsc && cross-env BUILD_TARGET=web tsup --format esm",
     "publish:web": "cd out/search-chat && npm publish",
     "publish:web:beta": "cd out/search-chat && npm publish --tag beta",
     "publish:web:alpha": "cd out/search-chat && npm publish --tag alpha",
@@ -78,6 +78,7 @@
     "immer": "^10.1.1",
     "postcss": "^8.5.3",
     "release-it": "^18.1.2",
+    "rollup-plugin-visualizer": "^5.14.0",
     "tailwindcss": "^3.4.17",
     "tsup": "^8.4.0",
     "tsx": "^4.19.3",

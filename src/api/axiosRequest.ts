@@ -69,11 +69,20 @@ export const Get = <T,>(
 export const Post = <T,>(
   url: string,
   data: IAnyObj,
-  params: IAnyObj = {}
+  params: IAnyObj = {},
+  headers: IAnyObj = {}
 ): Promise<[any, FcResponse<T> | undefined]> => {
   return new Promise((resolve) => {
+    const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
+    console.log("baseURL", appStore.state?.endpoint_http)
+
+    let baseURL = appStore.state?.endpoint_http;
+    
     axios
-      .post(url, data, { params })
+      .post(baseURL + url, data, {
+        params,
+        headers
+      } as any)
       .then((result) => {
         resolve([null, result.data as FcResponse<T>]);
       })

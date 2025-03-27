@@ -33,6 +33,7 @@ interface ChatAIProps {
   clearChatPage?: () => void;
   isChatPage?: boolean;
   getFileUrl: (path: string) => string;
+  showChatHistory?: boolean;
 }
 
 export interface ChatAIRef {
@@ -56,6 +57,7 @@ const ChatAI = memo(
         clearChatPage,
         isChatPage = false,
         getFileUrl,
+        showChatHistory = true,
       },
       ref
     ) => {
@@ -88,6 +90,12 @@ const ChatAI = memo(
       }, [activeChatProp]);
 
       const [Question, setQuestion] = useState<string>("");
+
+      const [websocketSessionId, setWebsocketSessionId] = useState('');
+
+      const onWebsocketSessionId = useCallback((sessionId: string) => {
+        setWebsocketSessionId(sessionId);
+      }, []);
 
       const {
         data: {
@@ -142,7 +150,8 @@ const ChatAI = memo(
         isSearchActive,
         isDeepThinkActive,
         sourceDataIds,
-        changeInput
+        changeInput,
+        websocketSessionId
       );
 
       const { dealMsg, messageTimeoutRef } = useMessageHandler(
@@ -151,7 +160,8 @@ const ChatAI = memo(
         setTimedoutShow,
         (chat) => cancelChat(chat || activeChat),
         setLoadingStep,
-        handlers
+        handlers,
+        onWebsocketSessionId,
       );
 
       useEffect(() => {
@@ -291,7 +301,7 @@ const ChatAI = memo(
           data-tauri-drag-region
           className={`h-full flex flex-col rounded-xl relative`}
         >
-          {!setIsSidebarOpen && (
+          {showChatHistory && !setIsSidebarOpen && (
             <ChatSidebar
               isSidebarOpen={isSidebarOpenChat}
               chats={chats}
@@ -312,6 +322,7 @@ const ChatAI = memo(
             reconnect={reconnect}
             isChatPage={isChatPage}
             setIsLogin={setIsLoginChat}
+            showChatHistory={showChatHistory}
           />
           {isLogin ? (
             <ChatContent

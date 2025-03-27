@@ -5,7 +5,7 @@
 ### `serverUrl`
 - **类型**: `string`
 - **可选**: 是
-- **默认值**: `"https://coco.infini.cloud"`
+- **默认值**: `""`
 - **描述**: 设置服务器地址
 
 ### `headers`
@@ -35,8 +35,8 @@
 ### `hasFeature`
 - **类型**: `string[]`
 - **可选**: 是
-- **默认值**: `['think', 'search']`
-- **描述**: 启用的特性列表，目前支持 'think' 和 'search' 特性
+- **默认值**: `['think', 'search', 'think_active', 'search_active']`
+- **描述**: 启用的特性列表，支持 'think'、'search'、'think_active'、'search_active' 特性。其中 'think_active' 表示默认开启深度思考，'search_active' 表示默认开启搜索
 
 ### `hideCoco`
 - **类型**: `() => void`
@@ -47,7 +47,7 @@
 ### `theme`
 - **类型**: `"auto" | "light" | "dark"`
 - **可选**: 是
-- **默认值**: `undefined`
+- **默认值**: `"dark"`
 - **描述**: 主题设置，支持自动（跟随系统）、亮色和暗色三种模式
 
 ### `searchPlaceholder`
@@ -62,6 +62,18 @@
 - **默认值**: `""`
 - **描述**: 聊天输入框的占位文本
 
+### `showChatHistory`
+- **类型**: `boolean`
+- **可选**: 是
+- **默认值**: `true`
+- **描述**: 是否显示聊天历史记录
+
+### `setIsPinned`
+- **类型**: `(value: boolean) => void`
+- **可选**: 是
+- **默认值**: `undefined`
+- **描述**: 设置窗口置顶状态的回调函数
+
 ## 使用示例
 
 ```tsx
@@ -70,16 +82,19 @@ import SearchChat from 'search-chat';
 function App() {
   return (
     <SearchChat
-      serverUrl="https://coco.infini.cloud"
+      serverUrl=""
       headers={{}}
       width={680}
       height={590}
       hasModules={['search', 'chat']}
-      hasFeature={['think', 'search']}
+      hasFeature={['think', 'search', 'think_active', 'search_active']}
       hideCoco={() => console.log('hide')}
-      theme="auto"
+      theme="dark"
       searchPlaceholder=""
       chatPlaceholder=""
+      showChatHistory={true}
+      setIsPinned={(isPinned) => console.log('isPinned:', isPinned)}
     />
   );
 }
+```

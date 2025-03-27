@@ -18,6 +18,7 @@ export function useChatActions(
   isDeepThinkActive?: boolean,
   sourceDataIds?: string[],
   changeInput?: (val: string) => void,
+  websocketSessionId?: string
 ) {
   const isTauri = useAppStore((state) => state.isTauri);
 
@@ -39,7 +40,7 @@ export function useChatActions(
         }
         response = res
       }
-      
+
       console.log("_close", response);
     } catch (error) {
       console.error("chatClose:", error);
@@ -96,7 +97,7 @@ export function useChatActions(
         }
         response = res
       }
-      
+
       const hits = response?.hits?.hits || [];
       const updatedChat: Chat = {
         ...chat,
@@ -137,6 +138,8 @@ export function useChatActions(
             search: isSearchActive,
             deep_thinking: isDeepThinkActive,
             datasource: sourceDataIds?.join(",") || "",
+          }, {
+            "WEBSOCKET-SESSION-ID": websocketSessionId,
           })
           if (error) {
             console.error('_new', error);
@@ -184,9 +187,6 @@ export function useChatActions(
               datasource: sourceDataIds?.join(",") || "",
             },
             message: content,
-            // headers: {
-            //   "WEBSOCKET-SESSION-ID": websocketIdRef.current,
-            // },
           });
           response = JSON.parse(response || "");
         } else {
@@ -196,14 +196,17 @@ export function useChatActions(
             search: isSearchActive,
             deep_thinking: isDeepThinkActive,
             datasource: sourceDataIds?.join(",") || "",
+          }, {
+            "WEBSOCKET-SESSION-ID": websocketSessionId,
           })
+
           if (error) {
             console.error('_cancel', error);
             return
           }
           response = res
         }
-        
+
         console.log("_send", response);
         curIdRef.current = response[0]?._id;
 
@@ -220,7 +223,7 @@ export function useChatActions(
         console.error("sendMessage:", error);
       }
     },
-    [currentServiceId, sourceDataIds, isSearchActive, isDeepThinkActive, curIdRef, setActiveChat, setCurChatEnd, setErrorShow, changeInput]
+    [currentServiceId, sourceDataIds, isSearchActive, isDeepThinkActive, curIdRef, setActiveChat, setCurChatEnd, setErrorShow, changeInput, websocketSessionId]
   );
 
   const handleSendMessage = useCallback(
@@ -253,7 +256,7 @@ export function useChatActions(
         }
         response = res
       }
-      
+
       console.log("_open", response);
       return response;
     } catch (error) {

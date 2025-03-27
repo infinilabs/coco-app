@@ -18,6 +18,8 @@ interface WebAppProps {
   theme?: "auto" | "light" | "dark";
   searchPlaceholder?: string;
   chatPlaceholder?: string;
+  showChatHistory?: boolean;
+  setIsPinned?: (value: boolean) => void;
 }
 
 function WebApp({
@@ -32,10 +34,12 @@ function WebApp({
   serverUrl = "http://localhost:9000",
   hideCoco = () => {},
   hasModules = ["search", "chat"],
-  hasFeature = ["think", "search"],
-  theme="dark",
+  hasFeature = ["think", "search", 'think_active', 'search_active'],
+  theme="light",
   searchPlaceholder = "",
   chatPlaceholder = "",
+  showChatHistory = true,
+  setIsPinned,
 }: WebAppProps) {
   const setIsTauri = useAppStore((state) => state.setIsTauri);
   const setEndpoint = useAppStore((state) => state.setEndpoint);
@@ -103,6 +107,7 @@ function WebApp({
   return (
     <div
       id="searchChat-container"
+      className="coco-container"
       data-theme={theme}
       style={{ width: `${width}px`, height: `${height}px` }}
     >
@@ -116,6 +121,8 @@ function WebApp({
         chatPlaceholder={chatPlaceholder}
         querySearch={querySearch}
         queryDocuments={queryDocuments}
+        showChatHistory={showChatHistory}
+        setIsPinned={setIsPinned}
       />
     </div>
   );

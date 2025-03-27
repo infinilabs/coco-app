@@ -61,7 +61,7 @@ export default function ChatInput({
   setIsSearchActive,
   isDeepThinkActive,
   setIsDeepThinkActive,
-  hasFeature = ["think", "search"],
+  hasFeature = ["think", "search", 'think_icon', 'search_icon'],
   isChatPage = false,
   getDataSourcesByServer,
   setupWindowFocusListener,

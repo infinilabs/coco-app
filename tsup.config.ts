@@ -1,18 +1,19 @@
 import { defineConfig } from 'tsup';
-import { writeFileSync, readFileSync, copyFileSync, mkdirSync, existsSync } from 'fs';
-import { join, resolve, dirname } from 'path';
+import { writeFileSync, readFileSync } from 'fs';
+import { join, resolve } from 'path';
 
 export default defineConfig({
   entry: ['src/pages/web/index.tsx'],
-  format: ['esm', 'cjs'],
+  format: ['esm'],
   dts: true,
-  splitting: false,
+  splitting: true,
   sourcemap: false,
   clean: true,
   treeshake: true,
   minify: true,
   env: {
     BUILD_TARGET: 'web',
+    NODE_ENV: 'production',
   },
   external: [
     'react',
@@ -28,9 +29,9 @@ export default defineConfig({
       '.png': 'dataurl',
       '.jpg': 'dataurl',
     },
-      options.alias = {
-        '@': resolve(__dirname, './src')
-      }
+    options.alias = {
+      '@': resolve(__dirname, './src')
+    }
     options.external = [
       '@tauri-apps/api',
       '@tauri-apps/plugin-*',
@@ -39,8 +40,14 @@ export default defineConfig({
     options.treeShaking = true;
     options.define = {
       'process.env.BUILD_TARGET': '"web"',
+      'process.env.NODE_ENV': '"production"',
+      'process.env.DEBUG': 'false',
+      'process.env.IS_DEV': 'false',
     };
     options.pure = ['console.log'];
+    options.target = 'es2020';
+    options.legalComments = 'none';
+    options.ignoreAnnotations = false;
   },
   esbuildPlugins: [
     {
@@ -52,6 +59,7 @@ export default defineConfig({
     },
   ],
   outDir: 'out/search-chat',
+
   async onSuccess() {
     const projectPackageJson = JSON.parse(
       readFileSync(join(__dirname, 'package.json'), 'utf-8')
@@ -59,20 +67,33 @@ export default defineConfig({
 
     const packageJson = {
       name: "search-chat",
-      version: "0.0.25",
-      main: "index.cjs",
+      version: "0.0.32",
+      main: "index.js",
       module: "index.js",
+      type: "module",
       types: "index.d.ts",
       dependencies: projectPackageJson.dependencies,
       peerDependencies: {
         "react": "^18.0.0",
         "react-dom": "^18.0.0"
-      }
+      },
+      "sideEffects": [
+        "*.css",
+        "*.scss"
+      ]
     };
+    
+    const noNeedDeps = [
+        "@wavesurfer/react",
+        "dotenv",
+        "uuid",
+        "wavesurfer.js",
+    ]
 
     const tauriDeps = Object.keys(packageJson.dependencies).filter(dep =>
       dep.includes('@tauri-apps') ||
-      dep.includes('tauri-plugin')
+      dep.includes('tauri-plugin') ||
+      noNeedDeps.includes(dep)
     );
     tauriDeps.forEach(dep => {
       delete packageJson.dependencies[dep];

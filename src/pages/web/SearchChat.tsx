@@ -38,20 +38,30 @@ interface SearchChatProps {
     size: number,
     queryStrings: any
   ) => Promise<any>;
+  showChatHistory?: boolean,
+  setIsPinned?: (value: boolean) => void;
 }
 
 function SearchChat({
   isTauri = true,
   hasModules = ["search", "chat"],
-  hasFeature = ["think", "search"],
+  hasFeature = ["think", "search", 'think_active', 'search_active'],
   theme,
   hideCoco,
   querySearch,
   queryDocuments,
   searchPlaceholder,
   chatPlaceholder,
+  showChatHistory,
+  setIsPinned,
 }: SearchChatProps) {
-  const [state, dispatch] = useReducer(appReducer, initialAppState);
+  const customInitialState = {
+    ...initialAppState,
+    isDeepThinkActive: hasFeature.includes('think_active'),
+    isSearchActive: hasFeature.includes('search_active')
+  };
+
+  const [state, dispatch] = useReducer(appReducer, customInitialState);
   const {
     isChatMode,
     input,
@@ -129,6 +139,7 @@ function SearchChat({
   }, []);
 
   const setWindowAlwaysOnTop = useCallback(async (isPinned: boolean) => {
+    setIsPinned && setIsPinned(isPinned)
     return platformAdapter.setAlwaysOnTop(isPinned);
   }, []);
 
@@ -380,6 +391,7 @@ function SearchChat({
                 isSearchActive={isSearchActive}
                 isDeepThinkActive={isDeepThinkActive}
                 getFileUrl={getFileUrl}
+                showChatHistory={showChatHistory}
               />
             </Suspense>
           ) : null}

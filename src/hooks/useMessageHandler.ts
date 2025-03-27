@@ -15,13 +15,25 @@ export function useMessageHandler(
     deal_deep_read: (data: IChunkData) => void;
     deal_think: (data: IChunkData) => void;
     deal_response: (data: IChunkData) => void;
-  }
+  },
+  onWebsocketSessionId?: (sessionId: string) => void
 ) {
   const messageTimeoutRef = useRef<NodeJS.Timeout>();
+
+  const websocketIdRef = useRef<string>('')
 
   const dealMsg = useCallback(
     (msg: string) => {
       console.log("AI response:", msg);
+      if (msg.includes("websocket-session-id")) {
+        const array = msg.split(" ");
+        websocketIdRef.current = array[2];
+        if (onWebsocketSessionId) {
+          onWebsocketSessionId(array[2]);
+        }
+        return;
+      } 
+
       if (messageTimeoutRef.current) {
         clearTimeout(messageTimeoutRef.current);
       }
@@ -79,6 +91,7 @@ export function useMessageHandler(
 
   return {
     dealMsg,
-    messageTimeoutRef
+    messageTimeoutRef,
+    websocketIdRef
   };
 }

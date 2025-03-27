@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   Checkbox,
   Popover,
@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import { useConnectStore } from "@/stores/connectStore";
 import { useSearchStore } from "@/stores/searchStore";
-import { DataSource } from "@/components/Assistant/types"
+import { DataSource } from "@/components/Assistant/types";
 
 interface SearchPopoverProps {
   isSearchActive: boolean;
@@ -40,9 +40,13 @@ export default function SearchPopover({
 
   const currentService = useConnectStore((state) => state.currentService);
 
+  const [showDataSource, setShowDataSource] = useState(false);
+
   const getDataSourceList = useCallback(async () => {
     try {
-      const res: DataSource[] = await getDataSourcesByServer(currentService?.id);
+      const res: DataSource[] = await getDataSourcesByServer(
+        currentService?.id
+      );
       const data = [
         {
           id: "all",
@@ -92,6 +96,29 @@ export default function SearchPopover({
     [dataSourceList, memoizedDataSourceIds]
   );
 
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  
+  useEffect(() => {
+    if (!showDataSource) return;
+    
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        popoverRef.current && 
+        !popoverRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setShowDataSource(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDataSource]);
+  
   return (
     <div
       className={clsx(
@@ -119,8 +146,16 @@ export default function SearchPopover({
           </span>
 
           {dataSourceList?.length > 0 && (
-            <Popover>
-              <PopoverButton as="span" className={clsx("flex items-center")}>
+            <Popover className="relative">
+              <PopoverButton
+                as="span"
+                ref={buttonRef}
+                className={clsx("flex items-center")}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDataSource((prev) => !prev);
+                }}
+              >
                 <ChevronDownIcon
                   className={clsx("size-5", [
                     isSearchActive
@@ -130,87 +165,90 @@ export default function SearchPopover({
                 />
               </PopoverButton>
 
-              <PopoverPanel
-                anchor="top start"
-                className="min-w-[220px] bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
-              >
-                <div
-                  className="text-sm px-[12px] py-[18px]"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
+              {showDataSource ? (
+                <PopoverPanel
+                  static
+                  ref={popoverRef}
+                  className="absolute z-50 left-0 bottom-6 min-w-[220px] bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
                 >
-                  <div className="flex justify-between mb-[18px]">
-                    <span>{t("search.input.searchPopover.title")}</span>
+                  <div
+                    className="text-sm px-[12px] py-[18px]"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                  >
+                    <div className="flex justify-between mb-[18px]">
+                      <span>{t("search.input.searchPopover.title")}</span>
 
-                    <div
-                      onClick={async () => {
-                        setIsRefreshDataSource(true);
+                      <div
+                        onClick={async () => {
+                          setIsRefreshDataSource(true);
 
-                        getDataSourceList();
+                          getDataSourceList();
 
-                        setTimeout(() => {
-                          setIsRefreshDataSource(false);
-                        }, 1000);
-                      }}
-                      className="size-[24px] flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10 cursor-pointer"
-                    >
-                      <RefreshCw
-                        className={`size-3 text-[#0287FF] transition-transform duration-1000 ${
-                          isRefreshDataSource ? "animate-spin" : ""
-                        }`}
-                      />
+                          setTimeout(() => {
+                            setIsRefreshDataSource(false);
+                          }, 1000);
+                        }}
+                        className="size-[24px] flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10 cursor-pointer"
+                      >
+                        <RefreshCw
+                          className={`size-3 text-[#0287FF] transition-transform duration-1000 ${
+                            isRefreshDataSource ? "animate-spin" : ""
+                          }`}
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <ul className="flex flex-col gap-[16px]">
-                    {dataSourceList?.map((item, index) => {
-                      const { id, name } = item;
+                    <ul className="flex flex-col gap-[16px]">
+                      {dataSourceList?.map((item, index) => {
+                        const { id, name } = item;
 
-                      const isAll = index === 0;
+                        const isAll = index === 0;
 
-                      return (
-                        <li
-                          key={id}
-                          className="flex justify-between items-center"
-                        >
-                          <div className="flex items-center gap-[8px]">
-                            {isAll ? (
-                              <Layers className="size-[16px] text-[#0287FF]" />
-                            ) : (
-                              <TypeIcon item={item} className="size-[16px]" />
-                            )}
-
-                            <span>{isAll ? t(name) : name}</span>
-                          </div>
-
-                          <div className="flex justify-center items-center size-[24px]">
-                            <Checkbox
-                              checked={
-                                isAll
-                                  ? sourceDataIds.length ===
-                                    dataSourceList.length - 1
-                                  : sourceDataIds?.includes(id)
-                              }
-                              onChange={(value) =>
-                                onSelectDataSource(id, value, isAll)
-                              }
-                              className="group size-[14px] rounded-sm border border-black/30 dark:border-white/30 data-[checked]:bg-[#2F54EB] data-[checked]:!border-[#2F54EB] transition cursor-pointer"
-                            >
-                              {isAll && (
-                                <div className="size-full flex items-center justify-center group-data-[checked]:hidden">
-                                  <div className="size-[6px] bg-[#2F54EB]"></div>
-                                </div>
+                        return (
+                          <li
+                            key={id}
+                            className="flex justify-between items-center"
+                          >
+                            <div className="flex items-center gap-[8px]">
+                              {isAll ? (
+                                <Layers className="size-[16px] text-[#0287FF]" />
+                              ) : (
+                                <TypeIcon item={item} className="size-[16px]" />
                               )}
 
-                              <CheckIcon className="hidden size-[12px] text-white group-data-[checked]:block" />
-                            </Checkbox>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              </PopoverPanel>
+                              <span>{isAll ? t(name) : name}</span>
+                            </div>
+
+                            <div className="flex justify-center items-center size-[24px]">
+                              <Checkbox
+                                checked={
+                                  isAll
+                                    ? sourceDataIds.length ===
+                                      dataSourceList.length - 1
+                                    : sourceDataIds?.includes(id)
+                                }
+                                onChange={(value) =>
+                                  onSelectDataSource(id, value, isAll)
+                                }
+                                className="group size-[14px] rounded-sm border border-black/30 dark:border-white/30 data-[checked]:bg-[#2F54EB] data-[checked]:!border-[#2F54EB] transition cursor-pointer"
+                              >
+                                {isAll && (
+                                  <div className="size-full flex items-center justify-center group-data-[checked]:hidden">
+                                    <div className="size-[6px] bg-[#2F54EB]"></div>
+                                  </div>
+                                )}
+
+                                <CheckIcon className="hidden size-[12px] text-white group-data-[checked]:block" />
+                              </Checkbox>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                </PopoverPanel>
+              ) : null}
             </Popover>
           )}
         </>

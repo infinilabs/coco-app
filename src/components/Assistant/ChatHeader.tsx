@@ -39,6 +39,7 @@ interface ChatHeaderProps {
   reconnect: (server?: IServer) => void;
   setIsLogin: (isLogin: boolean) => void;
   isChatPage?: boolean;
+  showChatHistory?: boolean;
 }
 
 export function ChatHeader({
@@ -49,6 +50,7 @@ export function ChatHeader({
   reconnect,
   setIsLogin,
   isChatPage = false,
+  showChatHistory,
 }: ChatHeaderProps) {
   const { t } = useTranslation();
 
@@ -163,7 +165,7 @@ export function ChatHeader({
       data-tauri-drag-region
     >
       <div className="flex items-center gap-2">
-        <button
+        {showChatHistory ? <button
           data-sidebar-button
           onClick={(e) => {
             e.stopPropagation();
@@ -172,7 +174,7 @@ export function ChatHeader({
           className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
         >
           <HistoryIcon />
-        </button>
+        </button>:null}
 
         <Menu>
           <MenuButton className="flex items-center gap-1 rounded-full bg-white dark:bg-[#202126] p-1 text-sm/6 font-semibold text-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none">
