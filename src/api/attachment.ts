@@ -49,6 +49,11 @@ interface GetAttachmentResponse {
   };
 }
 
+interface DeleteAttachmentPayload {
+  serverId: string;
+  id: string;
+}
+
 export const uploadAttachment = async (payload: UploadAttachmentPayload) => {
   const response = await invoke<UploadAttachmentResponse>("upload_attachment", {
     ...payload,
@@ -61,4 +66,8 @@ export const uploadAttachment = async (payload: UploadAttachmentPayload) => {
 
 export const getAttachment = (payload: GetAttachmentPayload) => {
   return invoke<GetAttachmentResponse>("get_attachment", { ...payload });
+};
+
+export const deleteAttachment = (payload: DeleteAttachmentPayload) => {
+  return invoke<boolean>("delete_attachment", { ...payload });
 };

@@ -50,6 +50,12 @@ pub struct GetAttachmentResponse {
     pub hits: AttachmentHits,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DeleteAttachmentResponse {
+    pub _id: String,
+    pub result: String,
+}
+
 #[command]
 pub async fn upload_attachment(
     server_id: String,
@@ -122,5 +128,24 @@ pub async fn get_attachment(
             .map_err(|e| e.to_string())
     } else {
         Err(format!("Request failed with status: {}", response.status()))
+    }
+}
+
+#[command]
+pub async fn delete_attachment(server_id: String, id: String) -> Result<bool, String> {
+    let response =
+        HttpClient::delete(&server_id, &format!("/attachment/{}", id), None, None).await?;
+
+    if response.status().is_success() {
+        response
+            .json::<DeleteAttachmentResponse>()
+            .await
+            .map_err(|e| e.to_string())?
+            .result
+            .eq("deleted")
+            .then_some(true)
+            .ok_or("Delete operation was not successful".to_string())
+    } else {
+        Err(format!("Delete failed with status: {}", response.status()))
     }
 }

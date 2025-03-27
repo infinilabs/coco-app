@@ -1,9 +1,13 @@
-import { AttachmentHit, getAttachment } from "@/api/attachment";
+import {
+  AttachmentHit,
+  deleteAttachment,
+  getAttachment,
+} from "@/api/attachment";
 import { useConnectStore } from "@/stores/connectStore";
 import clsx from "clsx";
 import { filesize } from "filesize";
 import { Files, Trash2, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Checkbox from "../Common/Checkbox";
 
@@ -18,20 +22,26 @@ const SessionFile = (props: SessionFileProps) => {
   const [uploadedFiles, setUploadedFiles] = useState<AttachmentHit[]>([]);
   const [visible, setVisible] = useState(false);
 
+  const serverId = useMemo(() => {
+    return currentService.id;
+  }, [currentService]);
+
   useEffect(() => {
     getUploadedFiles();
   }, [sessionId]);
 
   const getUploadedFiles = async () => {
-    const serverId = currentService.id;
-
-    setUploadedFiles([]);
-
     const response = await getAttachment({ serverId, sessionId });
 
-    console.log("response", response);
-
     setUploadedFiles(response.hits.hits);
+  };
+
+  const handleDelete = async (id: string) => {
+    const result = await deleteAttachment({ serverId, id });
+
+    if (!result) return;
+
+    getUploadedFiles();
   };
 
   return (
@@ -104,7 +114,10 @@ const SessionFile = (props: SessionFileProps) => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Trash2 className="size-4 text-[#999] cursor-pointer" />
+                  <Trash2
+                    className="size-4 text-[#999] cursor-pointer"
+                    onClick={() => handleDelete(id)}
+                  />
 
                   <Checkbox />
                 </div>

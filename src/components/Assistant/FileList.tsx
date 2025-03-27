@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { filesize } from "filesize";
 import { X } from "lucide-react";
 import { useAsyncEffect } from "ahooks";
@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { useChatStore } from "@/stores/chatStore";
 import { isImage } from "@/utils";
 import { useConnectStore } from "@/stores/connectStore";
-import { uploadAttachment } from "@/api/attachment";
+import { deleteAttachment, uploadAttachment } from "@/api/attachment";
 
 interface FileListProps {
   sessionId: string;
@@ -21,6 +21,10 @@ const FileList = (props: FileListProps) => {
   const setUploadFiles = useChatStore((state) => state.setUploadFiles);
   const currentService = useConnectStore((state) => state.currentService);
 
+  const serverId = useMemo(() => {
+    return currentService.id;
+  }, [currentService]);
+
   useEffect(() => {
     return () => {
       setUploadFiles([]);
@@ -28,12 +32,7 @@ const FileList = (props: FileListProps) => {
   }, []);
 
   useAsyncEffect(async () => {
-    const serverId = currentService.id;
-
     if (uploadFiles.length === 0) return;
-
-    console.log("sessionId", sessionId);
-    console.log("serverId", serverId);
 
     for await (const item of uploadFiles) {
       const { uploaded, path } = item;
@@ -57,26 +56,33 @@ const FileList = (props: FileListProps) => {
     }
   }, [uploadFiles]);
 
-  const deleteFile = (id: string) => {
+  const deleteFile = async (id: string, attachmentId: string) => {
+    const result = await deleteAttachment({ serverId, id: attachmentId });
+
+    if (!result) return;
+
     setUploadFiles(uploadFiles.filter((file) => file.id !== id));
   };
 
   return (
     <div className="flex flex-wrap gap-y-2 -mx-1 text-sm">
       {uploadFiles.map((file) => {
-        const { id, path, icon, name, extname, size, uploaded } = file;
+        const { id, path, icon, name, extname, size, uploaded, attachmentId } =
+          file;
 
         return (
           <div key={id} className="w-1/3 px-1">
             <div className="relative group flex items-center gap-1 p-1 rounded-[4px] bg-[#dedede] dark:bg-[#202126]">
-              <div
-                className="absolute flex justify-center items-center size-[14px] bg-red-600 top-0 right-0 rounded-full cursor-pointer translate-x-[5px] -translate-y-[5px] transition opacity-0 group-hover:opacity-100 "
-                onClick={() => {
-                  deleteFile(id);
-                }}
-              >
-                <X className="size-[10px] text-white" />
-              </div>
+              {attachmentId && (
+                <div
+                  className="absolute flex justify-center items-center size-[14px] bg-red-600 top-0 right-0 rounded-full cursor-pointer translate-x-[5px] -translate-y-[5px] transition opacity-0 group-hover:opacity-100 "
+                  onClick={() => {
+                    deleteFile(id, attachmentId);
+                  }}
+                >
+                  <X className="size-[10px] text-white" />
+                </div>
+              )}
 
               <img
                 src={getFileUrl(isImage(path) ? path : icon)}
