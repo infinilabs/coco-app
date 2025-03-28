@@ -31,6 +31,10 @@ impl ApplicationSearchSource {
         let apps = ctx.get_all_apps();
 
         for app in &apps {
+            if app.icon_path.is_none() {
+                continue;
+            }
+
             let path = if cfg!(target_os = "macos") {
                 app.app_desktop_path.clone()
             } else {

@@ -15,11 +15,14 @@ Information about release notes of Coco Server is provided here.
 
 ### Features
 
+- feat: chat mode support for uploading files #310
+
 ### Bug fix
 
 ### Improvements
 
 - refactor: refactor invoke related code #309
+- refactor: hide apps without icon #312
 
 ## 0.2.1 (2025-03-14)
 
