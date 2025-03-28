@@ -66,8 +66,8 @@ export default defineConfig({
     );
 
     const packageJson = {
-      name: "search-chat",
-      version: "0.0.32",
+      name: "@infinilabs/search-chat",
+      version: "1.0.0",
       main: "index.js",
       module: "index.js",
       type: "module",
@@ -80,7 +80,11 @@ export default defineConfig({
       "sideEffects": [
         "*.css",
         "*.scss"
-      ]
+      ],
+      "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
+      }    
     };
     
     const noNeedDeps = [

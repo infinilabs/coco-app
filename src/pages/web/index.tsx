@@ -35,7 +35,7 @@ function WebApp({
   hideCoco = () => {},
   hasModules = ["search", "chat"],
   hasFeature = ["think", "search", 'think_active', 'search_active'],
-  theme="light",
+  theme="dark",
   searchPlaceholder = "",
   chatPlaceholder = "",
   showChatHistory = true,
@@ -107,7 +107,7 @@ function WebApp({
   return (
     <div
       id="searchChat-container"
-      className="coco-container"
+      className={`coco-container ${theme}`}
       data-theme={theme}
       style={{ width: `${width}px`, height: `${height}px` }}
     >

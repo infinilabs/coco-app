@@ -75,7 +75,7 @@
   --coco-icon-color: rgb(255, 255, 255);
 }
 
-html,
+/* html,
 :host {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
@@ -87,9 +87,9 @@ html,
   font-feature-settings: normal;
   font-variation-settings: normal;
   -webkit-tap-highlight-color: transparent;
-}
+} */
 
-html {
+/* html {
   height: 100%;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -104,17 +104,19 @@ body,
   color: rgb(17 24 39 / var(--tw-text-opacity, 1));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
+} */
 
-.dark body,
-.dark #root {
-  --tw-text-opacity: 1;
-  color: rgb(243 244 246 / var(--tw-text-opacity, 1));
-}
-
-body {
+/* body {
   margin: 0;
   line-height: inherit;
+} */
+
+.dark body,
+.dark #root,
+.dark.coco-container,
+.dark.coco-container {
+  --tw-text-opacity: 1;
+  color: rgb(243 244 246 / var(--tw-text-opacity, 1));
 }
 
 .input-body {
@@ -170,6 +172,17 @@ body {
 }
 
 .coco-container {
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -moz-tab-size: 4;
+  -o-tab-size: 4;
+  tab-size: 4;
+  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", Segoe UI Symbol, "Noto Color Emoji";
+  font-feature-settings: normal;
+  font-variation-settings: normal;
+  -webkit-tap-highlight-color: transparent;
+
   *,
   :before,
   :after {

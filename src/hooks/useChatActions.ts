@@ -1,9 +1,9 @@
 import { useCallback } from "react";
 
 import type { Chat } from "@/components/Assistant/types";
+import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore } from "@/stores/appStore";
 import { Get, Post } from "@/api/axiosRequest";
-import { close_session_chat, cancel_session_chat, session_chat_history, new_chat, send_message, open_session_chat, chat_history } from "@/commands"
 
 export function useChatActions(
   currentServiceId: string | undefined,
@@ -23,11 +23,11 @@ export function useChatActions(
   const isTauri = useAppStore((state) => state.isTauri);
 
   const chatClose = useCallback(async (activeChat?: Chat) => {
-    if (!activeChat?._id || !currentServiceId) return;
+    if (!activeChat?._id) return;
     try {
       let response: any
       if (isTauri) {
-        response = await await close_session_chat({
+        response = await platformAdapter.invokeBackend("close_session_chat", {
           serverId: currentServiceId,
           sessionId: activeChat?._id,
         });
@@ -40,6 +40,7 @@ export function useChatActions(
         }
         response = res
       }
+
       console.log("_close", response);
     } catch (error) {
       console.error("chatClose:", error);
@@ -48,11 +49,11 @@ export function useChatActions(
 
   const cancelChat = useCallback(async (activeChat?: Chat) => {
     setCurChatEnd(true);
-    if (!activeChat?._id || !currentServiceId) return;
+    if (!activeChat?._id) return;
     try {
       let response: any
       if (isTauri) {
-        response = await await cancel_session_chat({
+        response = await platformAdapter.invokeBackend("cancel_session_chat", {
           serverId: currentServiceId,
           sessionId: activeChat?._id,
         });
@@ -75,11 +76,10 @@ export function useChatActions(
     chat: Chat,
     callback?: (chat: Chat) => void
   ) => {
-    if (!chat?._id || !currentServiceId) return;
     try {
       let response: any
       if (isTauri) {
-        response = await await session_chat_history({
+        response = await platformAdapter.invokeBackend("session_chat_history", {
           serverId: currentServiceId,
           sessionId: chat?._id,
           from: 0,
@@ -118,11 +118,10 @@ export function useChatActions(
       chatClose(activeChat);
       clearAllChunkData();
       setQuestion(value);
-      if (!currentServiceId) return;
       try {
         let response: any
         if (isTauri) {
-          response = await await new_chat({
+          response = await platformAdapter.invokeBackend("new_chat", {
             serverId: currentServiceId,
             message: value,
             queryParams: {
@@ -135,6 +134,10 @@ export function useChatActions(
         } else {
           const [error, res] = await Post('/chat/_new', {
             message: value,
+          }, {
+            search: isSearchActive,
+            deep_thinking: isDeepThinkActive,
+            datasource: sourceDataIds?.join(",") || "",
           }, {
             "WEBSOCKET-SESSION-ID": websocketSessionId,
           })
@@ -170,12 +173,12 @@ export function useChatActions(
 
   const sendMessage = useCallback(
     async (content: string, newChat: Chat) => {
-      if (!newChat?._id || !currentServiceId || !content) return;
+      if (!newChat?._id || !content) return;
       clearAllChunkData();
       try {
         let response: any
         if (isTauri) {
-          response = await send_message({
+          response = await platformAdapter.invokeBackend("send_message", {
             serverId: currentServiceId,
             sessionId: newChat?._id,
             queryParams: {
@@ -189,6 +192,10 @@ export function useChatActions(
         } else {
           const [error, res] = await Post(`/chat/${newChat?._id}/_send`, {
             message: content
+          }, {
+            search: isSearchActive,
+            deep_thinking: isDeepThinkActive,
+            datasource: sourceDataIds?.join(",") || "",
           }, {
             "WEBSOCKET-SESSION-ID": websocketSessionId,
           })
@@ -233,11 +240,10 @@ export function useChatActions(
   );
 
   const openSessionChat = useCallback(async (chat: Chat) => {
-    if (!chat?._id || !currentServiceId) return;
     try {
       let response: any
       if (isTauri) {
-        response = await await open_session_chat({
+        response = await platformAdapter.invokeBackend("open_session_chat", {
           serverId: currentServiceId,
           sessionId: chat?._id,
         });
@@ -264,7 +270,7 @@ export function useChatActions(
       let response: any
       if (isTauri) {
         if (!currentServiceId) return [];
-        response = await await chat_history({
+        response = await platformAdapter.invokeBackend("chat_history", {
           serverId: currentServiceId,
           from: 0,
           size: 20,
