@@ -16,8 +16,8 @@ pub async fn transcription(
     audio_content: String,
 ) -> Result<TranscriptionResponse, String> {
     let mut query_params = HashMap::new();
-    query_params.insert("AudioType".to_string(), JsonValue::String(audio_type));
-    query_params.insert("AudioContent".to_string(), JsonValue::String(audio_content));
+    query_params.insert("type".to_string(), JsonValue::String(audio_type));
+    query_params.insert("content".to_string(), JsonValue::String(audio_content));
 
     let response = HttpClient::post(
         &server_id,
