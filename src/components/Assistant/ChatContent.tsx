@@ -8,6 +8,7 @@ import { useChatScroll } from "@/hooks/useChatScroll";
 import { useChatStore } from "@/stores/chatStore";
 import type { Chat, IChunkData } from "./types";
 import SessionFile from "./SessionFile";
+import { useConnectStore } from "@/stores/connectStore";
 
 interface ChatContentProps {
   activeChat?: Chat;
@@ -42,7 +43,14 @@ export const ChatContent = ({
   handleSendMessage,
   getFileUrl,
 }: ChatContentProps) => {
-  const sessionId = useMemo(() => activeChat?._id, [activeChat]);
+  const sessionId = useConnectStore((state) => state.currentSessionId);
+  const setCurrentSessionId = useConnectStore((state) => {
+    return state.setCurrentSessionId;
+  });
+
+  useEffect(() => {
+    setCurrentSessionId(activeChat?._id);
+  }, [activeChat]);
 
   const { t } = useTranslation();
 

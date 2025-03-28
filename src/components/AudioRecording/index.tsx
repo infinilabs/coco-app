@@ -67,6 +67,13 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
       const recordedUrl = URL.createObjectURL(blob);
       console.log("recorded:", recordedUrl);
 
+      // 获取文件大小（单位：字节）
+      const fileSizeInBytes = blob.size;
+      // 转换为 MB，保留两位小数
+      const fileSizeInMB = (fileSizeInBytes / (1024 * 1024)).toFixed(2);
+
+      console.log("recorded:", recordedUrl, `size: ${fileSizeInMB}MB`);
+
       // setAudioUrl(recordedUrl);
     });
 
