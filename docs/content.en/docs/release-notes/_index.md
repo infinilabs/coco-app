@@ -15,6 +15,8 @@ Information about release notes of Coco Server is provided here.
 
 ### Features
 
+- feat: chat mode support for uploading files #310
+
 ### Bug fix
 
 ### Improvements
