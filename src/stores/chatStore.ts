@@ -9,6 +9,8 @@ interface UploadFile extends Metadata {
   id: string;
   path: string;
   icon: string;
+  uploaded?: boolean;
+  attachmentId?: string;
 }
 
 export type IChatStore = {

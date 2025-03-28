@@ -1,10 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import {
-  Checkbox,
-  Popover,
-  PopoverButton,
-  PopoverPanel,
-} from "@headlessui/react";
+import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import {
   ChevronDownIcon,
   RefreshCw,
@@ -19,6 +14,7 @@ import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import { useConnectStore } from "@/stores/connectStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { DataSource } from "@/types/commands";
+import Checkbox from "../Common/Checkbox";
 
 interface SearchPopoverProps {
   isSearchActive: boolean;
@@ -193,19 +189,11 @@ export default function SearchPopover({
                                     dataSourceList.length - 1
                                   : sourceDataIds?.includes(id)
                               }
+                              indeterminate={isAll}
                               onChange={(value) =>
                                 onSelectDataSource(id, value, isAll)
                               }
-                              className="group size-[14px] rounded-sm border border-black/30 dark:border-white/30 data-[checked]:bg-[#2F54EB] data-[checked]:!border-[#2F54EB] transition cursor-pointer"
-                            >
-                              {isAll && (
-                                <div className="size-full flex items-center justify-center group-data-[checked]:hidden">
-                                  <div className="size-[6px] bg-[#2F54EB]"></div>
-                                </div>
-                              )}
-
-                              <CheckIcon className="hidden size-[12px] text-white group-data-[checked]:block" />
-                            </Checkbox>
+                            />
                           </div>
                         </li>
                       );

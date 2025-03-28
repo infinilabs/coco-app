@@ -18,6 +18,7 @@
     "release-beta": "release-it --preRelease=beta --preReleaseBase=1"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.0.0",
     "@headlessui/react": "^2.2.0",
     "@tauri-apps/api": "^2.4.0",
     "@tauri-apps/plugin-autostart": "~2.2.0",

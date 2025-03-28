@@ -14,6 +14,8 @@ import SearchPopover from "./SearchPopover";
 import AudioRecording from "../AudioRecording";
 import { hide_coco } from "@/commands";
 import { DataSource } from "@/types/commands";
+import InputExtra from "./InputExtra";
+import { useConnectStore } from "@/stores/connectStore";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -60,16 +62,16 @@ export default function ChatInput({
   isChatPage = false,
   getDataSourcesByServer,
   setupWindowFocusListener,
-}: // checkScreenPermission,
-// requestScreenPermission,
-// getScreenMonitors,
-// getScreenWindows,
-// captureMonitorScreenshot,
-// captureWindowScreenshot,
-// openFileDialog,
-// getFileMetadata,
-// getFileIcon,
-ChatInputProps) {
+  checkScreenPermission,
+  requestScreenPermission,
+  getScreenMonitors,
+  getScreenWindows,
+  captureMonitorScreenshot,
+  captureWindowScreenshot,
+  openFileDialog,
+  getFileMetadata,
+  getFileIcon,
+}: ChatInputProps) {
   const { t } = useTranslation();
 
   const showTooltip = useAppStore(
@@ -84,6 +86,8 @@ ChatInputProps) {
   const setSourceData = useSearchStore(
     (state: { setSourceData: any }) => state.setSourceData
   );
+
+  const sessionId = useConnectStore((state) => state.currentSessionId);
 
   useEffect(() => {
     return () => {
@@ -360,17 +364,19 @@ ChatInputProps) {
       >
         {isChatMode ? (
           <div className="flex gap-2 text-sm text-[#333] dark:text-[#d8d8d8]">
-            {/* <InputExtra
-              checkScreenPermission={checkScreenPermission}
-              requestScreenPermission={requestScreenPermission}
-              getScreenMonitors={getScreenMonitors}
-              getScreenWindows={getScreenWindows}
-              captureMonitorScreenshot={captureMonitorScreenshot}
-              captureWindowScreenshot={captureWindowScreenshot}
-              openFileDialog={openFileDialog}
-              getFileMetadata={getFileMetadata}
-              getFileIcon={getFileIcon}
-            /> */}
+            {sessionId && (
+              <InputExtra
+                checkScreenPermission={checkScreenPermission}
+                requestScreenPermission={requestScreenPermission}
+                getScreenMonitors={getScreenMonitors}
+                getScreenWindows={getScreenWindows}
+                captureMonitorScreenshot={captureMonitorScreenshot}
+                captureWindowScreenshot={captureWindowScreenshot}
+                openFileDialog={openFileDialog}
+                getFileMetadata={getFileMetadata}
+                getFileIcon={getFileIcon}
+              />
+            )}
 
             <button
               className={clsx(

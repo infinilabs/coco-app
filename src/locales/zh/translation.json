@@ -233,6 +233,14 @@
     "source": {
       "fetch_source": "找到 {{count}} 个结果",
       "pick_source": "{{count}} 个结果"
+    },
+    "fileList": {
+      "uploading": "上传中...",
+      "uploaded": "已上传"
+    },
+    "sessionFile": {
+      "title": "对话中的文件",
+      "description": "只有选中的文件才会参与当前对话"
     }
   },
   "cloud": {

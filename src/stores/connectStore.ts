@@ -21,6 +21,8 @@ export type IConnectStore = {
   setDatasourceData: (datasourceData: any[], key: string) => void;
   connectionTimeout: number;
   setConnectionTimeout: (connectionTimeout: number) => void;
+  currentSessionId?: string;
+  setCurrentSessionId: (currentSessionId?: string) => void;
 };
 
 export const useConnectStore = create<IConnectStore>()(
@@ -79,6 +81,9 @@ export const useConnectStore = create<IConnectStore>()(
       connectionTimeout: 120,
       setConnectionTimeout: (connectionTimeout: number) => {
         return set(() => ({ connectionTimeout }));
+      },
+      setCurrentSessionId(currentSessionId) {
+        return set(() => ({ currentSessionId }));
       },
     }),
     {

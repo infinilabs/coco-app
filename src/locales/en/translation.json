@@ -233,6 +233,14 @@
     "source": {
       "fetch_source": "Found {{count}} results",
       "pick_source": "{{count}} results"
+    },
+    "fileList": {
+      "uploading": "Uploading...",
+      "uploaded": "Uploaded"
+    },
+    "sessionFile": {
+      "title": "Files in the conversation",
+      "description": "Only the selected files will participate in the current conversation"
     }
   },
   "cloud": {
