@@ -1,12 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
-import {
-  ChevronDownIcon,
-  RefreshCw,
-  Layers,
-  CheckIcon,
-  Globe,
-} from "lucide-react";
+import { ChevronDownIcon, RefreshCw, Layers, Globe } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 

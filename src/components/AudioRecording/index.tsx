@@ -9,6 +9,8 @@ import {
 } from "tauri-plugin-macos-permissions-api";
 import { useWavesurfer } from "@wavesurfer/react";
 import RecordPlugin from "wavesurfer.js/dist/plugins/record.esm.js";
+import { transcription } from "@/api/transcription";
+import { useConnectStore } from "@/stores/connectStore";
 
 interface AudioRecordingProps {
   onChange?: (text: string) => void;
@@ -36,6 +38,7 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const recordRef = useRef<RecordPlugin>();
   const withVisibility = useAppStore((state) => state.withVisibility);
+  const currentService = useConnectStore((state) => state.currentService);
 
   const { wavesurfer } = useWavesurfer({
     container: containerRef,
@@ -64,17 +67,25 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
     );
 
     record.on("record-end", (blob) => {
-      const recordedUrl = URL.createObjectURL(blob);
-      console.log("recorded:", recordedUrl);
+      const reader = new FileReader();
 
-      // 获取文件大小（单位：字节）
-      const fileSizeInBytes = blob.size;
-      // 转换为 MB，保留两位小数
-      const fileSizeInMB = (fileSizeInBytes / (1024 * 1024)).toFixed(2);
+      reader.onloadend = async () => {
+        const base64Audio = (reader.result as string).split(",")[1];
 
-      console.log("recorded:", recordedUrl, `size: ${fileSizeInMB}MB`);
+        const response = await transcription({
+          serverId: currentService.id,
+          audioType: "mp3",
+          audioContent: base64Audio,
+        });
 
-      // setAudioUrl(recordedUrl);
+        if (!response) return;
+
+        onChange?.(response.text);
+
+        resetState();
+      };
+
+      reader.readAsDataURL(blob);
     });
 
     recordRef.current = record;
@@ -130,12 +141,6 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
 
   const handleOk = () => {
     resetState({ converting: true, countdown: state.countdown });
-
-    setTimeout(() => {
-      onChange?.("");
-
-      resetState();
-    }, 3000);
   };
 
   return (

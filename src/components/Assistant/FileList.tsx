@@ -5,7 +5,6 @@ import { useAsyncEffect } from "ahooks";
 import { useTranslation } from "react-i18next";
 
 import { useChatStore } from "@/stores/chatStore";
-import { isImage } from "@/utils";
 import { useConnectStore } from "@/stores/connectStore";
 import { deleteAttachment, uploadAttachment } from "@/api/attachment";
 import FileIcon from "../Common/Icons/FileIcon";

@@ -11,7 +11,7 @@ import {
 
 import AudioIcon from "./AudioIcon";
 import VideoIcon from "./VideoIcon";
-import { cloneElement, FC, useMemo } from "react";
+import { FC, useMemo } from "react";
 import clsx from "clsx";
 
 interface FileIconProps {
