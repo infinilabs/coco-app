@@ -112,7 +112,7 @@ export function useChatActions(
   }, [currentServiceId, setActiveChat]);
 
   const createNewChat = useCallback(
-    async (value: string = "", activeChat?: Chat) => {
+    async (value: string = "", activeChat?: Chat, id?: string) => { 
       setTimedoutShow(false);
       setErrorShow(false);
       chatClose(activeChat);
@@ -132,6 +132,7 @@ export function useChatActions(
           });
 
         } else {
+          console.log('websocketSessionId', websocketSessionId, id)
           const [error, res] = await Post('/chat/_new', {
             message: value,
           }, {
@@ -139,9 +140,10 @@ export function useChatActions(
             deep_thinking: isDeepThinkActive,
             datasource: sourceDataIds?.join(",") || "",
           }, {
-            "WEBSOCKET-SESSION-ID": websocketSessionId,
+            "WEBSOCKET-SESSION-ID": websocketSessionId || id,
           })
           if (error) {
+            setErrorShow(true);
             console.error('_new', error);
             return
           }
@@ -172,7 +174,7 @@ export function useChatActions(
   );
 
   const sendMessage = useCallback(
-    async (content: string, newChat: Chat) => {
+    async (content: string, newChat: Chat, id?: string) => {
       if (!newChat?._id || !content) return;
       clearAllChunkData();
       try {
@@ -190,6 +192,7 @@ export function useChatActions(
           });
           response = JSON.parse(response || "");
         } else {
+          console.log('websocketSessionId', websocketSessionId, id)
           const [error, res] = await Post(`/chat/${newChat?._id}/_send`, {
             message: content
           }, {
@@ -197,10 +200,11 @@ export function useChatActions(
             deep_thinking: isDeepThinkActive,
             datasource: sourceDataIds?.join(",") || "",
           }, {
-            "WEBSOCKET-SESSION-ID": websocketSessionId,
+            "WEBSOCKET-SESSION-ID": websocketSessionId || id,
           })
 
           if (error) {
+            setErrorShow(true);
             console.error('_cancel', error);
             return
           }
@@ -227,14 +231,14 @@ export function useChatActions(
   );
 
   const handleSendMessage = useCallback(
-    async (content: string, activeChat?: Chat) => {
+    async (content: string, activeChat?: Chat, id?: string) => {
       if (!activeChat?._id || !content) return;
       setQuestion(content);
 
       setTimedoutShow(false);
       setErrorShow(false);
 
-      await chatHistory(activeChat, (chat) => sendMessage(content, chat));
+      await chatHistory(activeChat, (chat) => sendMessage(content, chat, id));
     },
     [chatHistory, sendMessage, setQuestion, setTimedoutShow, setErrorShow, clearAllChunkData]
   );
@@ -252,7 +256,7 @@ export function useChatActions(
         const [error, res] = await Post(`/chat/${chat?._id}/_open`, {})
         if (error) {
           console.error('_open', error);
-          return
+          return null
         }
         response = res
       }
@@ -283,7 +287,7 @@ export function useChatActions(
         })
         if (error) {
           console.error('_history', error);
-          return
+          return []
         }
         response = res
       }

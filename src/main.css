@@ -3,7 +3,10 @@
 @tailwind utilities;
 
 /* Base variables */
-:root {
+:host,
+:root,
+.searchbox-container,
+.coco-container {
   --spacing-base: 12px;
   --modal-width: 560px;
   --modal-height: 600px;
@@ -18,7 +21,7 @@
 }
 
 /* Light theme */
-[data-theme="light"] {
+.light.coco-container{
   --coco-primary-color: rgb(149, 5, 153);
   --coco-text-color: rgb(28, 30, 33);
   --coco-muted-color: rgb(150, 159, 175);
@@ -46,7 +49,7 @@
 }
 
 /* Dark theme */
-[data-theme="dark"] {
+.dark.coco-container  {
   --coco-primary-color: rgb(149, 5, 153);
   --background: #09090b;
   --foreground: #f9f9f9;
@@ -73,6 +76,37 @@
     0 -4px 8px 0 rgba(0, 0, 0, 0.2);
   --coco-muted-color: rgb(127, 132, 151);
   --coco-icon-color: rgb(255, 255, 255);
+}
+
+@media (prefers-color-scheme: dark) {
+  .dark.coco-container {
+    --coco-primary-color: rgb(149, 5, 153);
+  --background: #09090b;
+  --foreground: #f9f9f9;
+  --border: #27272a;
+  --coco-text-color: rgb(245, 246, 247);
+  --coco-modal-container-background: rgba(9, 10, 17, 0.8);
+  --coco-modal-background: rgb(21, 23, 42);
+  --coco-modal-shadow: inset 1px 1px 0 0 rgb(44, 46, 64),
+    0 3px 8px 0 rgb(0, 3, 9);
+  --coco-searchbox-background: rgb(9, 10, 17);
+  --coco-searchbox-focus-background: #000;
+  --coco-hit-color: rgb(190, 195, 201);
+  --coco-hit-shadow: none;
+  --coco-hit-background: rgb(9, 10, 17);
+  --coco-key-gradient: linear-gradient(
+    -26.5deg,
+    rgb(86, 88, 114) 0%,
+    rgb(49, 53, 91) 100%
+  );
+  --coco-key-shadow: inset 0 -2px 0 0 rgb(40, 45, 85),
+    inset 0 0 1px 1px rgb(81, 87, 125), 0 2px 2px 0 rgba(3, 4, 9, 0.3);
+  --coco-footer-background: rgb(30, 33, 54);
+  --coco-footer-shadow: inset 0 1px 0 0 rgba(73, 76, 106, 0.5),
+    0 -4px 8px 0 rgba(0, 0, 0, 0.2);
+  --coco-muted-color: rgb(127, 132, 151);
+  --coco-icon-color: rgb(255, 255, 255);
+  }
 }
 
 /* html,

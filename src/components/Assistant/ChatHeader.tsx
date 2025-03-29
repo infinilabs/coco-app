@@ -1,6 +1,6 @@
 import {
   MessageSquarePlus,
-  ChevronDownIcon,
+  // ChevronDownIcon,
   Settings,
   RefreshCw,
   Check,
@@ -10,8 +10,8 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Menu,
   MenuButton,
-  MenuItem,
-  MenuItems,
+  // MenuItem,
+  // MenuItems,
   Popover,
   PopoverButton,
   PopoverPanel,
@@ -184,10 +184,10 @@ export function ChatHeader({
               alt={t("assistant.message.logo")}
             />
             Coco AI
-            <ChevronDownIcon className="size-4 text-gray-500 dark:text-gray-400" />
+            {/* <ChevronDownIcon className="size-4 text-gray-500 dark:text-gray-400" /> */}
           </MenuButton>
 
-          <MenuItems
+          {/* <MenuItems
             transition
             anchor="bottom end"
             className="w-28 origin-top-right rounded-xl bg-white dark:bg-[#202126] p-1 text-sm/6 text-gray-800 dark:text-white shadow-lg border border-gray-200 dark:border-gray-700 focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0"
@@ -202,15 +202,15 @@ export function ChatHeader({
                 Coco AI
               </button>
             </MenuItem>
-          </MenuItems>
+          </MenuItems> */}
         </Menu>
 
-        <button
+        {showChatHistory ? <button
           onClick={onCreateNewChat}
           className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
         >
           <MessageSquarePlus className="h-4 w-4" />
-        </button>
+        </button>: null}
       </div>
 
       <div>

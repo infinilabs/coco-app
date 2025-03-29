@@ -13,6 +13,7 @@ interface WebAppProps {
   width?: number;
   height?: number;
   hasModules?: string[];
+  defaultModule?: "search" | "chat";
   hasFeature?: string[];
   hideCoco?: () => void;
   theme?: "auto" | "light" | "dark";
@@ -34,7 +35,8 @@ function WebApp({
   serverUrl = "http://localhost:9000",
   hideCoco = () => {},
   hasModules = ["search", "chat"],
-  hasFeature = ["think", "search", 'think_active', 'search_active'],
+  defaultModule = "search",
+  hasFeature = ['think_active', 'search_active'],
   theme="dark",
   searchPlaceholder = "",
   chatPlaceholder = "",
@@ -115,6 +117,7 @@ function WebApp({
         isTauri={false}
         hideCoco={hideCoco}
         hasModules={hasModules}
+        defaultModule={defaultModule}
         hasFeature={hasFeature}
         theme={theme}
         searchPlaceholder={searchPlaceholder}

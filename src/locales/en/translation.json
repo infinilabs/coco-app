@@ -147,7 +147,8 @@
       "version": "{{version}}",
       "updateAvailable": "Update available",
       "select": "Select",
-      "open": "Open"
+      "open": "Open",
+      "powered": "Powered by Coco AI"
     },
     "input": {
       "searchPlaceholder": "Search whatever you want ...",

@@ -169,7 +169,7 @@ export default function SearchPopover({
                 <PopoverPanel
                   static
                   ref={popoverRef}
-                  className="absolute z-50 left-0 bottom-6 min-w-[220px] bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+                  className="absolute z-50 left-0 bottom-6 min-w-[220px] max-h-[400px] overflow-y-auto bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
                 >
                   <div
                     className="text-sm px-[12px] py-[18px]"

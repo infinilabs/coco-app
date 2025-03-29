@@ -193,12 +193,12 @@ const ChatAI = memo(
           if (!isLogin) return;
           if (!curChatEnd) return;
           if (!activeChat?._id) {
-            createNewChat(value, activeChat);
+            createNewChat(value, activeChat, websocketSessionId);
           } else {
-            handleSendMessage(value, activeChat);
+            handleSendMessage(value, activeChat, websocketSessionId);
           }
         },
-        [isLogin, curChatEnd, activeChat, createNewChat, handleSendMessage]
+        [isLogin, curChatEnd, activeChat, createNewChat, handleSendMessage, websocketSessionId]
       );
 
       const { createWin } = useWindows();
@@ -207,6 +207,7 @@ const ChatAI = memo(
       }, [createChatWindow, createWin]);
 
       useEffect(() => {
+        setCurChatEnd(true);
         return () => {
           if (messageTimeoutRef.current) {
             clearTimeout(messageTimeoutRef.current);

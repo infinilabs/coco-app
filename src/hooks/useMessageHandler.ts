@@ -25,14 +25,17 @@ export function useMessageHandler(
   const dealMsg = useCallback(
     (msg: string) => {
       console.log("AI response:", msg);
+      // CONFIG websocket-session-id: cvjaa0bq50k4j533k77g
       if (msg.includes("websocket-session-id")) {
-        const array = msg.split(" ");
-        websocketIdRef.current = array[2];
+        console.log("websocket-session-id:", msg);
+        const sessionId = msg.split(":")[1].trim();
+        websocketIdRef.current = sessionId;
+        console.log("sessionId:", sessionId);
         if (onWebsocketSessionId) {
-          onWebsocketSessionId(array[2]);
+          onWebsocketSessionId(sessionId);
         }
         return;
-      } 
+      }
 
       if (messageTimeoutRef.current) {
         clearTimeout(messageTimeoutRef.current);
@@ -83,6 +86,7 @@ export function useMessageHandler(
           return;
         }
       } catch (error) {
+        setCurChatEnd(true);
         console.error("parse error:", error);
       }
     },

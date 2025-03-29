@@ -67,7 +67,7 @@ export default defineConfig({
 
     const packageJson = {
       name: "@infinilabs/search-chat",
-      version: "1.0.0",
+      version: "1.0.5",
       main: "index.js",
       module: "index.js",
       type: "module",
@@ -107,5 +107,16 @@ export default defineConfig({
       join(__dirname, 'out/search-chat/package.json'),
       JSON.stringify(packageJson, null, 2)
     );
+
+    try {
+      const readmePath = join(__dirname, 'src/pages/web/README.md');
+      const readmeContent = readFileSync(readmePath, 'utf-8');
+      writeFileSync(
+        join(__dirname, 'out/search-chat/README.md'),
+        readmeContent
+      );
+    } catch (error) {
+      console.error('Failed to copy README.md:', error);
+    }
   }
 });

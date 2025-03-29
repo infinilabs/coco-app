@@ -27,6 +27,7 @@ import { DataSource } from "@/types/commands";
 interface SearchChatProps {
   isTauri: boolean;
   hasModules: string[];
+  defaultModule?: "search" | "chat";
   hasFeature?: string[];
   theme?: "auto" | "light" | "dark";
   hideCoco: () => void;
@@ -45,6 +46,7 @@ interface SearchChatProps {
 function SearchChat({
   isTauri = true,
   hasModules = ["search", "chat"],
+  defaultModule = "search",
   hasFeature = ["think", "search", 'think_active', 'search_active'],
   theme,
   hideCoco,
@@ -228,6 +230,8 @@ function SearchChat({
   useEffect(() => {
     if (hasModules?.length === 1 && hasModules?.includes("chat")) {
       changeMode(true);
+    } else {
+      changeMode(defaultModule === "chat");
     }
 
     let unlistenChangeStartupStore: (() => void) | undefined;
