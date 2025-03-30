@@ -124,6 +124,7 @@ impl SearchSource for ApplicationSearchSource {
                         r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
                         name: Some("Applications".into()),
                         id: Some(file_name_str.clone()),
+                        icon: None,
                     }),
                     file_path_str.clone(),
                     "Application".to_string(),

@@ -8,7 +8,7 @@ use std::error::Error;
 pub struct SearchResponse<T> {
     pub took: u64,
     pub timed_out: bool,
-    pub _shards: Shards,
+    pub _shards: Option<Shards>,
     pub hits: Hits<T>,
 }
 
