@@ -5,14 +5,14 @@ import { IServer } from "@/stores/appStore";
 import { connect_to_server } from "@/commands"
 
 interface WebSocketProps {
+  clientId: String;
   connected: boolean;
   setConnected: (connected: boolean) => void;
   currentService: IServer | null;
   dealMsgRef: React.MutableRefObject<((msg: string) => void) | null>;
 }
 
-export default function useWebSocket({
-  connected,
+export default function useWebSocket({clientId,connected,
   setConnected,
   currentService,
   dealMsgRef,
@@ -23,8 +23,8 @@ export default function useWebSocket({
     const targetServer = server || currentService;
     if (!targetServer?.id) return;
     try {
-      console.log("reconnect", targetServer.id);
-      await connect_to_server(targetServer.id);
+      console.log("reconnect", targetServer.id,",clientId:",clientId);
+      await connect_to_server(targetServer.id,clientId);
       setConnected(true);
     } catch (error) {
       setConnected(false);

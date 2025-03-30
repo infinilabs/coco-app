@@ -115,6 +115,7 @@ const ChatAI = memo(
 
       const { errorShow, setErrorShow, reconnect, updateDealMsg } =
         useWebSocket({
+          clientId,
           connected,
           setConnected,
           currentService,

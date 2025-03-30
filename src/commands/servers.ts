@@ -58,8 +58,8 @@ export function get_datasources_by_server(id: string): Promise<DataSource[]> {
   return invoke(`get_datasources_by_server`, { id });
 }
 
-export function connect_to_server(id: string): Promise<void> {
-  return invoke(`connect_to_server`, { id });
+export function connect_to_server(id: string, clientId: string): Promise<void> {
+  return invoke(`connect_to_server`, { id,clientId });
 }
 
 export function chat_history({
