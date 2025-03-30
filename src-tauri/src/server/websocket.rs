@@ -42,6 +42,8 @@ pub async fn connect_to_server(
     state: tauri::State<'_, WebSocketManager>,
     app_handle: AppHandle,
 ) -> Result<(), String> {
+    dbg!("Connecting client_id: {}", &client_id);
+
     let mut connections = state.connections.lock().await;
 
     // Disconnect existing instance for the client_id if it exists
@@ -114,6 +116,8 @@ pub async fn connect_to_server(
 
 #[tauri::command]
 pub async fn disconnect(client_id: String, state: tauri::State<'_, WebSocketManager>) -> Result<(), String> {
+    dbg!("Disconnecting client_id: {}", &client_id);
+
     let mut connections = state.connections.lock().await;
     if let Some(mut instance) = connections.remove(&client_id) {
         let _ = instance.cancel_tx.send(()).await;
