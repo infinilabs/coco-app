@@ -118,6 +118,7 @@ pub async fn cancel_session_chat<R: Runtime>(
 pub async fn new_chat<R: Runtime>(
     _app_handle: AppHandle<R>,
     server_id: String,
+    websocket_id: String,
     message: String,
     query_params: Option<HashMap<String, Value>>, //search,deep_thinking
 ) -> Result<GetResponse, String> {
@@ -131,7 +132,10 @@ pub async fn new_chat<R: Runtime>(
         None
     };
 
-    let response = HttpClient::post(&server_id, "/chat/_new", query_params, body)
+    let mut headers = HashMap::new();
+    headers.insert("WEBSOCKET-SESSION-ID".to_string(), websocket_id.into());
+
+    let response = HttpClient::advanced_post(&server_id, "/chat/_new", Some(headers), query_params, body)
         .await
         .map_err(|e| format!("Error sending message: {}", e))?;
 
@@ -156,6 +160,7 @@ pub async fn new_chat<R: Runtime>(
 pub async fn send_message<R: Runtime>(
     _app_handle: AppHandle<R>,
     server_id: String,
+    websocket_id: String,
     session_id: String,
     message: String,
     query_params: Option<HashMap<String, Value>>, //search,deep_thinking
@@ -165,9 +170,12 @@ pub async fn send_message<R: Runtime>(
         message: Some(message),
     };
 
+    let mut headers = HashMap::new();
+    headers.insert("WEBSOCKET-SESSION-ID".to_string(), websocket_id.into());
+
     let body = reqwest::Body::from(serde_json::to_string(&msg).unwrap());
     let response =
-        HttpClient::advanced_post(&server_id, path.as_str(), None, query_params, Some(body))
+        HttpClient::advanced_post(&server_id, path.as_str(), Some(headers), query_params, Some(body))
             .await
             .map_err(|e| format!("Error cancel session: {}", e))?;
 
