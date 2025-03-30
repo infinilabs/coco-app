@@ -90,6 +90,7 @@ pub async fn connect_to_server(
                     msg = ws.next() => {
                         match msg {
                             Some(Ok(Message::Text(text))) => {
+                                println!("client_id: {}, text: {}", client_id, text);
                                 let _ = app_handle_clone.emit(&format!("ws-message-{}", client_id), text);
                             },
                             Some(Err(_)) | None => {

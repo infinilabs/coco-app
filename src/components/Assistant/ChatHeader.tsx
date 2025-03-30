@@ -37,7 +37,6 @@ interface ChatHeaderProps {
   activeChat: Chat | undefined;
   reconnect: (server?: IServer) => void;
   setIsLogin: (isLogin: boolean) => void;
-  disconnectWS: () => void;
   isChatPage?: boolean;
 }
 
@@ -48,7 +47,6 @@ export function ChatHeader({
   activeChat,
   reconnect,
   setIsLogin,
-  disconnectWS,
   isChatPage = false,
 }: ChatHeaderProps) {
   const { t } = useTranslation();
@@ -101,7 +99,6 @@ export function ChatHeader({
 
     return () => {
       // Cleanup logic if needed
-      disconnectWS();
       unlisten.then((fn) => fn());
     };
   }, []);
@@ -122,8 +119,9 @@ export function ChatHeader({
         return;
       }
       setIsLogin(true);
-      //
-      await disconnectWS();
+      // The Rust backend will automatically disconnect, 
+      // so we don't need to handle disconnection on the frontend
+      // src-tauri/src/server/websocket.rs
       reconnect && reconnect(server);
     } catch (error) {
       console.error("switchServer:", error);

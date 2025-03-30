@@ -15,12 +15,26 @@ export function useMessageHandler(
     deal_deep_read: (data: IChunkData) => void;
     deal_think: (data: IChunkData) => void;
     deal_response: (data: IChunkData) => void;
-  }
+  },
+  onWebsocketSessionId?: (sessionId: string) => void
 ) {
   const messageTimeoutRef = useRef<NodeJS.Timeout>();
 
+  const websocketIdRef = useRef<string>('')
+
   const dealMsg = useCallback(
     (msg: string) => {
+      if (msg.includes("websocket-session-id")) {
+        console.log("websocket-session-id:", msg);
+        const sessionId = msg.split(":")[1].trim();
+        websocketIdRef.current = sessionId;
+        console.log("sessionId:", sessionId);
+        if (onWebsocketSessionId) {
+          onWebsocketSessionId(sessionId);
+        }
+        return;
+      }
+
       if (messageTimeoutRef.current) {
         clearTimeout(messageTimeoutRef.current);
       }

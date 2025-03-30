@@ -142,15 +142,18 @@ export function cancel_session_chat({
 
 export function new_chat({
   serverId,
+  websocketId,
   message,
   queryParams,
 }: {
   serverId: string;
+  websocketId?: string;
   message: string;
   queryParams?: Record<string, any>;
 }): Promise<GetResponse> {
   return invoke(`new_chat`, {
     serverId,
+    websocketId,
     message,
     queryParams,
   });
@@ -158,17 +161,20 @@ export function new_chat({
 
 export function send_message({
   serverId,
+  websocketId,
   sessionId,
   message,
   queryParams,
 }: {
   serverId: string;
+  websocketId?: string;
   sessionId: string;
   message: string;
   queryParams?: Record<string, any>;
 }): Promise<string> {
   return invoke(`send_message`, {
     serverId,
+    websocketId,
     sessionId,
     message,
     queryParams,

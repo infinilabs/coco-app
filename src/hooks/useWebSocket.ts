@@ -21,8 +21,13 @@ export default function useWebSocket({
 }: WebSocketProps) {
   const [errorShow, setErrorShow] = useState(false);
 
+  // 1. WebSocket connects when loading or switching services
+  // src/components/Assistant/ChatHeader.tsx
+  // 2. If not connected or disconnected, input box has a connect button, clicking it will connect to WebSocket
+  // src/components/Search/InputBox.tsx
   const reconnect = useCallback(async (server?: IServer) => {
     const targetServer = server || currentService;
+    console.log("reconnect_targetServer", targetServer?.id);
     if (!targetServer?.id) return;
     try {
       console.log("reconnect", targetServer.id, clientId);
@@ -39,6 +44,7 @@ export default function useWebSocket({
     try {
       console.log("disconnect");
       await disconnect(clientId);
+      setConnected(false);
     } catch (error) {
       console.error("Failed to disconnect:", error);
     }

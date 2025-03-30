@@ -89,6 +89,12 @@ const ChatAI = memo(
 
       const [Question, setQuestion] = useState<string>("");
 
+      const [websocketSessionId, setWebsocketSessionId] = useState('');
+
+      const onWebsocketSessionId = useCallback((sessionId: string) => {
+        setWebsocketSessionId(sessionId);
+      }, []);
+
       const {
         data: {
           query_intent,
@@ -144,7 +150,8 @@ const ChatAI = memo(
         isSearchActive,
         isDeepThinkActive,
         sourceDataIds,
-        changeInput
+        changeInput,
+        websocketSessionId
       );
 
       const { dealMsg, messageTimeoutRef } = useMessageHandler(
@@ -153,7 +160,8 @@ const ChatAI = memo(
         setTimedoutShow,
         (chat) => cancelChat(chat || activeChat),
         setLoadingStep,
-        handlers
+        handlers,
+        onWebsocketSessionId
       );
 
       useEffect(() => {
@@ -185,12 +193,12 @@ const ChatAI = memo(
           if (!isLogin) return;
           if (!curChatEnd) return;
           if (!activeChat?._id) {
-            createNewChat(value, activeChat);
+            createNewChat(value, activeChat, websocketSessionId);
           } else {
-            handleSendMessage(value, activeChat);
+            handleSendMessage(value, activeChat, websocketSessionId);
           }
         },
-        [isLogin, curChatEnd, activeChat, createNewChat, handleSendMessage]
+        [isLogin, curChatEnd, activeChat, createNewChat, handleSendMessage, websocketSessionId]
       );
 
       const { createWin } = useWindows();
@@ -206,6 +214,7 @@ const ChatAI = memo(
           chatClose(activeChat);
           setActiveChat(undefined);
           setCurChatEnd(true);
+          disconnectWS();
         };
       }, [chatClose, setCurChatEnd]);
 
@@ -311,7 +320,6 @@ const ChatAI = memo(
             reconnect={reconnect}
             isChatPage={isChatPage}
             setIsLogin={setIsLoginChat}
-            disconnectWS={disconnectWS}
           />
           {isLogin ? (
             <ChatContent
