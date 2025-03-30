@@ -2,17 +2,19 @@ import { useState, useEffect, useCallback } from "react";
 import { listen } from "@tauri-apps/api/event";
 
 import { IServer } from "@/stores/appStore";
-import { connect_to_server } from "@/commands"
+import { connect_to_server, disconnect } from "@/commands"
 
 interface WebSocketProps {
-  clientId: String;
+  clientId: string;
   connected: boolean;
   setConnected: (connected: boolean) => void;
   currentService: IServer | null;
   dealMsgRef: React.MutableRefObject<((msg: string) => void) | null>;
 }
 
-export default function useWebSocket({clientId,connected,
+export default function useWebSocket({
+  clientId,
+  connected,
   setConnected,
   currentService,
   dealMsgRef,
@@ -23,14 +25,24 @@ export default function useWebSocket({clientId,connected,
     const targetServer = server || currentService;
     if (!targetServer?.id) return;
     try {
-      console.log("reconnect", targetServer.id,",clientId:",clientId);
-      await connect_to_server(targetServer.id,clientId);
+      console.log("reconnect", targetServer.id, clientId);
+      await connect_to_server(targetServer.id, clientId);
       setConnected(true);
     } catch (error) {
       setConnected(false);
       console.error("Failed to connect:", error);
     }
   }, [currentService]);
+
+  const disconnectWS = async () => {
+    if (!connected) return;
+    try {
+      console.log("disconnect");
+      await disconnect(clientId);
+    } catch (error) {
+      console.error("Failed to disconnect:", error);
+    }
+  };
 
   const updateDealMsg = useCallback((newDealMsg: (msg: string) => void) => {
     dealMsgRef.current = newDealMsg;
@@ -44,20 +56,20 @@ export default function useWebSocket({clientId,connected,
 
     if (connected) {
       setErrorShow(false);
-      unlisten_error = listen("ws-error", (event) => {
+      unlisten_error = listen(`ws-error-${clientId}`, (event) => {
         // {
         //   "error": {
         //      "reason": "invalid login"
         //   },
         //   "status": 401
         // }
-        console.log("ws-error", event.payload);
+        console.log(`ws-error-${clientId}`, event.payload);
         console.error("WebSocket error:", event.payload);
         setConnected(false);
         setErrorShow(true);
       });
-      
-      unlisten_message = listen("ws-message", (event) => {
+
+      unlisten_message = listen(`ws-message-${clientId}`, (event) => {
         const msg = event.payload as string;
         dealMsgRef.current && dealMsgRef.current(msg);
       });
@@ -69,5 +81,5 @@ export default function useWebSocket({clientId,connected,
     };
   }, [connected, dealMsgRef]);
 
-  return { errorShow, setErrorShow, reconnect, updateDealMsg };
+  return { errorShow, setErrorShow, reconnect, disconnectWS, updateDealMsg };
 }

@@ -4,7 +4,6 @@ import {
   ChevronDownIcon,
   RefreshCw,
   Layers,
-  CheckIcon,
   Globe,
 } from "lucide-react";
 import clsx from "clsx";

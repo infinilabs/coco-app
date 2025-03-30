@@ -59,7 +59,11 @@ export function get_datasources_by_server(id: string): Promise<DataSource[]> {
 }
 
 export function connect_to_server(id: string, clientId: string): Promise<void> {
-  return invoke(`connect_to_server`, { id,clientId });
+  return invoke(`connect_to_server`, { id, clientId });
+}
+
+export function disconnect(clientId: string): Promise<void> {
+  return invoke(`disconnect`, { clientId });
 }
 
 export function chat_history({

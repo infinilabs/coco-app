@@ -29,7 +29,6 @@ import { useChatStore } from "@/stores/chatStore";
 import type { Chat } from "./types";
 import { useConnectStore } from "@/stores/connectStore";
 import platformAdapter from "@/utils/platformAdapter";
-
 interface ChatHeaderProps {
   onCreateNewChat: () => void;
   onOpenChatAI: () => void;
@@ -38,6 +37,7 @@ interface ChatHeaderProps {
   activeChat: Chat | undefined;
   reconnect: (server?: IServer) => void;
   setIsLogin: (isLogin: boolean) => void;
+  disconnectWS: () => void;
   isChatPage?: boolean;
 }
 
@@ -48,6 +48,7 @@ export function ChatHeader({
   activeChat,
   reconnect,
   setIsLogin,
+  disconnectWS,
   isChatPage = false,
 }: ChatHeaderProps) {
   const { t } = useTranslation();
@@ -56,7 +57,7 @@ export function ChatHeader({
   const isPinned = useAppStore((state) => state.isPinned);
   const setIsPinned = useAppStore((state) => state.setIsPinned);
 
-  const { connected, setMessages } = useChatStore();
+  const { setMessages } = useChatStore();
 
   const [serverList, setServerList] = useState<IServer[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -100,20 +101,12 @@ export function ChatHeader({
 
     return () => {
       // Cleanup logic if needed
-      disconnect();
+      disconnectWS();
       unlisten.then((fn) => fn());
     };
   }, []);
 
-  const disconnect = async () => {
-    if (!connected) return;
-    try {
-      console.log("disconnect");
-      await platformAdapter.invokeBackend("disconnect");
-    } catch (error) {
-      console.error("Failed to disconnect:", error);
-    }
-  };
+  
 
   const switchServer = async (server: IServer) => {
     if (!server) return;
@@ -130,7 +123,7 @@ export function ChatHeader({
       }
       setIsLogin(true);
       //
-      await disconnect();
+      await disconnectWS();
       reconnect && reconnect(server);
     } catch (error) {
       console.error("switchServer:", error);

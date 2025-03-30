@@ -113,7 +113,8 @@ const ChatAI = memo(
 
       const dealMsgRef = useRef<((msg: string) => void) | null>(null);
 
-      const { errorShow, setErrorShow, reconnect, updateDealMsg } =
+      const clientId = isChatPage ? "standalone" : "popup"
+      const { errorShow, setErrorShow, reconnect, disconnectWS, updateDealMsg } =
         useWebSocket({
           clientId,
           connected,
@@ -310,6 +311,7 @@ const ChatAI = memo(
             reconnect={reconnect}
             isChatPage={isChatPage}
             setIsLogin={setIsLoginChat}
+            disconnectWS={disconnectWS}
           />
           {isLogin ? (
             <ChatContent
