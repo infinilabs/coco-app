@@ -13,6 +13,7 @@ pub struct DataSourceReference {
     pub r#type: Option<String>,
     pub name: Option<String>,
     pub id: Option<String>,
+    pub icon: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
