@@ -1,26 +1,25 @@
 use crate::server::servers::{get_server_by_id, get_server_token};
-use futures_util::StreamExt;
+use futures::StreamExt;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter};
 use tokio::net::TcpStream;
 use tokio::sync::{mpsc, Mutex};
-use tokio_tungstenite::{
-    connect_async, tungstenite::protocol::Message, MaybeTlsStream, WebSocketStream,
-};
-use tungstenite::handshake::client::generate_key;
+use tokio_tungstenite::tungstenite::handshake::client::generate_key;
+use tokio_tungstenite::tungstenite::Message;
+use tokio_tungstenite::WebSocketStream;
+use tokio_tungstenite::{connect_async, MaybeTlsStream};
 
 #[derive(Default)]
 pub struct WebSocketManager {
-    connections: Arc<Mutex<HashMap<String, WebSocketInstance>>>,
+    connections: Arc<Mutex<HashMap<String, Arc<WebSocketInstance>>>>,
 }
 
 struct WebSocketInstance {
-    ws_connection: WebSocketStream<MaybeTlsStream<TcpStream>>,
+    ws_connection: Mutex<WebSocketStream<MaybeTlsStream<TcpStream>>>, // No need to lock the entire map
     cancel_tx: mpsc::Sender<()>,
 }
 
-// Convert HTTP endpoint to WebSocket endpoint
 fn convert_to_websocket(endpoint: &str) -> Result<String, String> {
     let url = url::Url::parse(endpoint).map_err(|e| format!("Invalid URL: {}", e))?;
     let ws_protocol = if url.scheme() == "https" { "wss://" } else { "ws://" };
@@ -42,23 +41,15 @@ pub async fn connect_to_server(
     state: tauri::State<'_, WebSocketManager>,
     app_handle: AppHandle,
 ) -> Result<(), String> {
-    dbg!("Connecting client_id: {}", &client_id);
+    let connections_clone = state.connections.clone();
 
-    let mut connections = state.connections.lock().await;
+    // Disconnect old connection first
+    disconnect(client_id.clone(), state.clone()).await.ok();
 
-    // Disconnect existing instance for the client_id if it exists
-    if connections.contains_key(&client_id) {
-        disconnect(client_id.clone(), state.clone()).await?;
-    }
-
-    // Retrieve server details
     let server = get_server_by_id(&id).ok_or(format!("Server with ID {} not found", id))?;
     let endpoint = convert_to_websocket(&server.endpoint)?;
-
-    // Retrieve optional token
     let token = get_server_token(&id).await?.map(|t| t.access_token.clone());
 
-    // Create WebSocket request
     let mut request =
         tokio_tungstenite::tungstenite::client::IntoClientRequest::into_client_request(&endpoint)
             .map_err(|e| format!("Failed to create WebSocket request: {}", e))?;
@@ -73,55 +64,69 @@ pub async fn connect_to_server(
     }
 
     let (ws_stream, _) = connect_async(request).await.map_err(|e| format!("WebSocket error: {:?}", e))?;
-
-    // Create cancellation channel
     let (cancel_tx, mut cancel_rx) = mpsc::channel(1);
 
-    // Store new connection
-    connections.insert(client_id.clone(), WebSocketInstance { ws_connection: ws_stream, cancel_tx });
+    let instance = Arc::new(WebSocketInstance {
+        ws_connection: Mutex::new(ws_stream),
+        cancel_tx,
+    });
 
-    // Spawn task for receiving messages
-    let app_handle_clone = app_handle.clone();
-    let connections_clone = state.connections.clone();
-    tokio::spawn(async move {
+    // Insert connection into the map (lock is held briefly)
+    {
         let mut connections = connections_clone.lock().await;
-        if let Some(instance) = connections.get_mut(&client_id) {
-            let ws = &mut instance.ws_connection;
-            loop {
-                tokio::select! {
-                    msg = ws.next() => {
-                        match msg {
-                            Some(Ok(Message::Text(text))) => {
-                                println!("client_id: {}, text: {}", client_id, text);
-                                let _ = app_handle_clone.emit(&format!("ws-message-{}", client_id), text);
-                            },
-                            Some(Err(_)) | None => {
-                                let _ = app_handle_clone.emit(&format!("ws-error-{}", client_id), id.clone());
-                                break;
-                            }
-                        _ => {}}
-                    }
-                    _ = cancel_rx.recv() => {
-                        let _ = app_handle_clone.emit(&format!("ws-error-{}", client_id), id.clone());
-                        break;
+        connections.insert(client_id.clone(), instance.clone());
+    }
+
+    // Spawn WebSocket handler in a separate task
+    let app_handle_clone = app_handle.clone();
+    let client_id_clone = client_id.clone();
+    tokio::spawn(async move {
+        let ws = &mut *instance.ws_connection.lock().await;
+
+        loop {
+            tokio::select! {
+                msg = ws.next() => {
+                    match msg {
+                        Some(Ok(Message::Text(text))) => {
+                            let _ = app_handle_clone.emit(&format!("ws-message-{}", client_id_clone), text);
+                        },
+                        Some(Err(_)) | None => {
+                            let _ = app_handle_clone.emit(&format!("ws-error-{}", client_id_clone), id.clone());
+                            break;
+                        }
+                        _ => {}
                     }
                 }
+                _ = cancel_rx.recv() => {
+                    let _ = app_handle_clone.emit(&format!("ws-error-{}", client_id_clone), id.clone());
+                    break;
+                }
             }
-            connections.remove(&client_id);
         }
+
+        // Remove connection after it closes
+        let mut connections = connections_clone.lock().await;
+        connections.remove(&client_id_clone);
     });
 
     Ok(())
 }
 
+
 #[tauri::command]
 pub async fn disconnect(client_id: String, state: tauri::State<'_, WebSocketManager>) -> Result<(), String> {
-    dbg!("Disconnecting client_id: {}", &client_id);
+    let instance = {
+        let mut connections = state.connections.lock().await;
+        connections.remove(&client_id)
+    };
 
-    let mut connections = state.connections.lock().await;
-    if let Some(mut instance) = connections.remove(&client_id) {
+    if let Some(instance) = instance {
         let _ = instance.cancel_tx.send(()).await;
-        let _ = instance.ws_connection.close(None).await;
+
+        // Close WebSocket (lock only the connection, not the whole map)
+        let mut ws = instance.ws_connection.lock().await;
+        let _ = ws.close(None).await;
     }
+
     Ok(())
 }

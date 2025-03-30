@@ -122,8 +122,6 @@ pub async fn new_chat<R: Runtime>(
     message: String,
     query_params: Option<HashMap<String, Value>>, //search,deep_thinking
 ) -> Result<GetResponse, String> {
-    dbg!("new_chat",&websocket_id,&message,&query_params);
-
     let body = if !message.is_empty() {
         let message = ChatRequestMessage {
             message: Some(message),
@@ -167,8 +165,6 @@ pub async fn send_message<R: Runtime>(
     message: String,
     query_params: Option<HashMap<String, Value>>, //search,deep_thinking
 ) -> Result<String, String> {
-    dbg!("send_message",&websocket_id,&session_id,&message,&query_params);
-
     let path = format!("/chat/{}/_send", session_id);
     let msg = ChatRequestMessage {
         message: Some(message),
