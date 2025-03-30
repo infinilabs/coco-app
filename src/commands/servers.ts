@@ -58,8 +58,12 @@ export function get_datasources_by_server(id: string): Promise<DataSource[]> {
   return invoke(`get_datasources_by_server`, { id });
 }
 
-export function connect_to_server(id: string): Promise<void> {
-  return invoke(`connect_to_server`, { id });
+export function connect_to_server(id: string, clientId: string): Promise<void> {
+  return invoke(`connect_to_server`, { id, clientId });
+}
+
+export function disconnect(clientId: string): Promise<void> {
+  return invoke(`disconnect`, { clientId });
 }
 
 export function chat_history({
@@ -138,15 +142,18 @@ export function cancel_session_chat({
 
 export function new_chat({
   serverId,
+  websocketId,
   message,
   queryParams,
 }: {
   serverId: string;
+  websocketId?: string;
   message: string;
   queryParams?: Record<string, any>;
 }): Promise<GetResponse> {
   return invoke(`new_chat`, {
     serverId,
+    websocketId,
     message,
     queryParams,
   });
@@ -154,17 +161,20 @@ export function new_chat({
 
 export function send_message({
   serverId,
+  websocketId,
   sessionId,
   message,
   queryParams,
 }: {
   serverId: string;
+  websocketId?: string;
   sessionId: string;
   message: string;
   queryParams?: Record<string, any>;
 }): Promise<string> {
   return invoke(`send_message`, {
     serverId,
+    websocketId,
     sessionId,
     message,
     queryParams,

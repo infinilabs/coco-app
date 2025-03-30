@@ -29,7 +29,6 @@ import { useChatStore } from "@/stores/chatStore";
 import type { Chat } from "./types";
 import { useConnectStore } from "@/stores/connectStore";
 import platformAdapter from "@/utils/platformAdapter";
-
 interface ChatHeaderProps {
   onCreateNewChat: () => void;
   onOpenChatAI: () => void;
@@ -56,7 +55,7 @@ export function ChatHeader({
   const isPinned = useAppStore((state) => state.isPinned);
   const setIsPinned = useAppStore((state) => state.setIsPinned);
 
-  const { connected, setMessages } = useChatStore();
+  const { setMessages } = useChatStore();
 
   const [serverList, setServerList] = useState<IServer[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -100,20 +99,11 @@ export function ChatHeader({
 
     return () => {
       // Cleanup logic if needed
-      disconnect();
       unlisten.then((fn) => fn());
     };
   }, []);
 
-  const disconnect = async () => {
-    if (!connected) return;
-    try {
-      console.log("disconnect");
-      await platformAdapter.invokeBackend("disconnect");
-    } catch (error) {
-      console.error("Failed to disconnect:", error);
-    }
-  };
+  
 
   const switchServer = async (server: IServer) => {
     if (!server) return;
@@ -129,8 +119,9 @@ export function ChatHeader({
         return;
       }
       setIsLogin(true);
-      //
-      await disconnect();
+      // The Rust backend will automatically disconnect, 
+      // so we don't need to handle disconnection on the frontend
+      // src-tauri/src/server/websocket.rs
       reconnect && reconnect(server);
     } catch (error) {
       console.error("switchServer:", error);

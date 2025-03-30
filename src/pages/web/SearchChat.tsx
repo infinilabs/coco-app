@@ -20,7 +20,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { useStartupStore } from "@/stores/startupStore";
-import { DataSource } from "@/types/commands"
+import { DataSource } from "@/types/commands";
 
 interface SearchChatProps {
   querySearch: (input: string) => Promise<any>;
@@ -59,6 +59,7 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
 
   const changeMode = useCallback(async (value: boolean) => {
     dispatch({ type: "SET_CHAT_MODE", payload: value });
+    localStorage.setItem("coco-chat-mode", String(value));
   }, []);
 
   const handleSendMessage = useCallback(
@@ -174,20 +175,27 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
   const setDefaultStartupWindow = useStartupStore((state) => {
     return state.setDefaultStartupWindow;
   });
-  
+
   const showCocoListenRef = useRef<(() => void) | undefined>();
-  
+
   useEffect(() => {
     let unlistenChangeStartupStore: (() => void) | undefined;
-  
+
     const setupListener = async () => {
       try {
         unlistenChangeStartupStore = await platformAdapter.listenEvent(
           "change-startup-store",
           ({ payload }) => {
-            if (payload && typeof payload === 'object' && 'defaultStartupWindow' in payload) {
+            if (
+              payload &&
+              typeof payload === "object" &&
+              "defaultStartupWindow" in payload
+            ) {
               const startupWindow = payload.defaultStartupWindow;
-              if (startupWindow === "searchMode" || startupWindow === "chatMode") {
+              if (
+                startupWindow === "searchMode" ||
+                startupWindow === "chatMode"
+              ) {
                 setDefaultStartupWindow(startupWindow);
               }
             }
@@ -197,36 +205,39 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
         console.error("Error setting up change-startup-store listener:", error);
       }
     };
-  
+
     setupListener();
-  
+
     return () => {
       if (unlistenChangeStartupStore) {
         unlistenChangeStartupStore();
       }
     };
   }, []);
-  
+
   useEffect(() => {
     const setupShowCocoListener = async () => {
       if (showCocoListenRef.current) {
         showCocoListenRef.current();
         showCocoListenRef.current = undefined;
       }
-      
+
       try {
         const unlisten = await platformAdapter.listenEvent("show-coco", () => {
-          changeMode(defaultStartupWindow === "chatMode");
+          const chatMode = localStorage.getItem("coco-chat-mode");
+          changeMode(
+            chatMode ? chatMode === "true" : defaultStartupWindow === "chatMode"
+          );
         });
-        
+
         showCocoListenRef.current = unlisten;
       } catch (error) {
         console.error("Error setting up show-coco listener:", error);
       }
     };
-    
+
     setupShowCocoListener();
-    
+
     return () => {
       if (showCocoListenRef.current) {
         showCocoListenRef.current();
@@ -234,7 +245,6 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
       }
     };
   }, [defaultStartupWindow, changeMode]);
-
 
   return (
     <ErrorBoundary>

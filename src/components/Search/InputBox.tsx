@@ -73,7 +73,7 @@ export default function ChatInput({
   getFileIcon,
 }: ChatInputProps) {
   const { t } = useTranslation();
-
+  
   const showTooltip = useAppStore(
     (state: { showTooltip: boolean }) => state.showTooltip
   );
@@ -102,6 +102,21 @@ export default function ChatInput({
   const textareaRef = useRef<{ reset: () => void; focus: () => void }>(null);
 
   const { curChatEnd, connected } = useChatStore();
+
+  const [reconnectCountdown, setReconnectCountdown] = useState<number>(0);
+  useEffect(() => {
+    if (!reconnectCountdown || connected) {
+      setReconnectCountdown(0);
+      return;
+    }
+  
+    if (reconnectCountdown > 0) {
+      const timer = setTimeout(() => {
+        setReconnectCountdown(reconnectCountdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [reconnectCountdown, connected]);
 
   const [isCommandPressed, setIsCommandPressed] = useState(false);
 
@@ -349,10 +364,15 @@ export default function ChatInput({
           <div className="absolute top-0 right-0 bottom-0 left-0 px-2 py-4 bg-red-500/10 rounded-md font-normal text-xs text-gray-400 flex items-center gap-4">
             {t("search.input.connectionError")}
             <div
-              className="w-[96px] h-[24px] bg-[#0061FF] rounded-[12px] font-normal text-xs text-white flex items-center justify-center cursor-pointer"
-              onClick={reconnect}
+              className="h-[24px] px-2 bg-[#0061FF] rounded-[12px] font-normal text-xs text-white flex items-center justify-center cursor-pointer"
+              onClick={() => {
+                reconnect();
+                setReconnectCountdown(10);
+              }}
             >
-              {t("search.input.reconnect")}
+              {reconnectCountdown > 0
+                ? `${t("search.input.connecting")}(${reconnectCountdown}s)` 
+                : t("search.input.reconnect")}
             </div>
           </div>
         ) : null}

@@ -15,7 +15,7 @@ export function useMessageHandler(
     deal_deep_read: (data: IChunkData) => void;
     deal_think: (data: IChunkData) => void;
     deal_response: (data: IChunkData) => void;
-  }
+  },
 ) {
   const messageTimeoutRef = useRef<NodeJS.Timeout>();
 

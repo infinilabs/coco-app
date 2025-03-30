@@ -17,6 +17,7 @@ export function useChatActions(
   isDeepThinkActive?: boolean,
   sourceDataIds?: string[],
   changeInput?: (val: string) => void,
+  websocketSessionId?: string,
 ) {
   const chatClose = useCallback(async (activeChat?: Chat) => {
     if (!activeChat?._id || !currentServiceId) return;
@@ -74,7 +75,7 @@ export function useChatActions(
   }, [currentServiceId, setActiveChat]);
 
   const createNewChat = useCallback(
-    async (value: string = "", activeChat?: Chat) => {
+    async (value: string = "", activeChat?: Chat, id?: string) => {
       setTimedoutShow(false);
       setErrorShow(false);
       chatClose(activeChat);
@@ -82,9 +83,15 @@ export function useChatActions(
       setQuestion(value);
       if (!currentServiceId) return;
       try {
-        console.log("sourceDataIds", sourceDataIds);
+        if (!(websocketSessionId || id)){
+          setErrorShow(true);
+          console.error("websocketSessionId", websocketSessionId, id);
+          return;
+        }
+        console.log("sourceDataIds", sourceDataIds, websocketSessionId, id);
         let response: any = await new_chat({
           serverId: currentServiceId,
+          websocketId: websocketSessionId || id,
           message: value,
           queryParams: {
             search: isSearchActive,
@@ -112,16 +119,23 @@ export function useChatActions(
         console.error("createNewChat:", error);
       }
     },
-    [currentServiceId, sourceDataIds, isSearchActive, isDeepThinkActive, curIdRef]
+    [currentServiceId, sourceDataIds, isSearchActive, isDeepThinkActive, curIdRef, websocketSessionId]
   );
 
   const sendMessage = useCallback(
-    async (content: string, newChat: Chat) => {
+    async (content: string, newChat: Chat, id?: string) => {
       if (!newChat?._id || !currentServiceId || !content) return;
+      
       clearAllChunkData();
       try {
+        if (!(websocketSessionId || id)){
+          setErrorShow(true);
+          console.error("websocketSessionId", websocketSessionId, id);
+          return;
+        }
         let response: any = await send_message({
           serverId: currentServiceId,
+          websocketId: websocketSessionId || id,
           sessionId: newChat?._id,
           queryParams: {
             search: isSearchActive,
@@ -147,18 +161,18 @@ export function useChatActions(
         console.error("sendMessage:", error);
       }
     },
-    [currentServiceId, sourceDataIds, isSearchActive, isDeepThinkActive, curIdRef, setActiveChat, setCurChatEnd, setErrorShow, changeInput]
+    [currentServiceId, sourceDataIds, isSearchActive, isDeepThinkActive, curIdRef, setActiveChat, setCurChatEnd, setErrorShow, changeInput, websocketSessionId]
   );
 
   const handleSendMessage = useCallback(
-    async (content: string, activeChat?: Chat) => {
+    async (content: string, activeChat?: Chat, id?: string) => {
       if (!activeChat?._id || !content) return;
       setQuestion(content);
 
       setTimedoutShow(false);
       setErrorShow(false);
 
-      await chatHistory(activeChat, (chat) => sendMessage(content, chat));
+      await chatHistory(activeChat, (chat) => sendMessage(content, chat, id));
     },
     [chatHistory, sendMessage, setQuestion, setTimedoutShow, setErrorShow, clearAllChunkData]
   );

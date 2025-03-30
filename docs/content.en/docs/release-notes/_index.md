@@ -16,6 +16,9 @@ Information about release notes of Coco Server is provided here.
 ### Features
 
 - feat: chat mode support for uploading files #310
+- feat: support multi websocket connections #314
+- feat: add support for embeddable web widget #277
+
 
 ### Bug fix
 
