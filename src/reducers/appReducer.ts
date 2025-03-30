@@ -16,10 +16,19 @@ export type AppAction =
   | { type: 'SET_TYPING'; payload: boolean }
   | { type: 'SET_LOADING'; payload: boolean };
 
+const getCachedChatMode = (): boolean => {
+  try {
+    const cached = localStorage.getItem('coco-chat-mode');
+    return cached === 'true';
+  } catch {
+    return false;
+  }
+};
+
 export const initialAppState: AppState = {
-  isChatMode: false,
+  isChatMode: getCachedChatMode(),
   input: "",
-  isTransitioned: false,
+  isTransitioned: getCachedChatMode(),
   isSearchActive: false,
   isDeepThinkActive: false,
   isTyping: false,

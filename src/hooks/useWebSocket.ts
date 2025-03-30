@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { listen } from "@tauri-apps/api/event";
 
 import { IServer } from "@/stores/appStore";
@@ -10,6 +10,7 @@ interface WebSocketProps {
   setConnected: (connected: boolean) => void;
   currentService: IServer | null;
   dealMsgRef: React.MutableRefObject<((msg: string) => void) | null>;
+  onWebsocketSessionId?: (sessionId: string) => void;
 }
 
 export default function useWebSocket({
@@ -18,6 +19,7 @@ export default function useWebSocket({
   setConnected,
   currentService,
   dealMsgRef,
+  onWebsocketSessionId,
 }: WebSocketProps) {
   const [errorShow, setErrorShow] = useState(false);
 
@@ -32,7 +34,6 @@ export default function useWebSocket({
     try {
       console.log("reconnect", targetServer.id, clientId);
       await connect_to_server(targetServer.id, clientId);
-      setConnected(true);
     } catch (error) {
       setConnected(false);
       console.error("Failed to connect:", error);
@@ -54,38 +55,50 @@ export default function useWebSocket({
     dealMsgRef.current = newDealMsg;
   }, [dealMsgRef]);
 
+  const websocketIdRef = useRef<string>('')
+
   useEffect(() => {
     if (!currentService?.id) return;
 
     let unlisten_error = null;
     let unlisten_message = null;
 
-    if (connected) {
-      setErrorShow(false);
-      unlisten_error = listen(`ws-error-${clientId}`, (event) => {
-        // {
-        //   "error": {
-        //      "reason": "invalid login"
-        //   },
-        //   "status": 401
-        // }
-        console.log(`ws-error-${clientId}`, event.payload);
-        console.error("WebSocket error:", event.payload);
-        setConnected(false);
-        setErrorShow(true);
-      });
+    setErrorShow(false);
+    unlisten_error = listen(`ws-error-${clientId}`, (event) => {
+      // {
+      //   "error": {
+      //      "reason": "invalid login"
+      //   },
+      //   "status": 401
+      // }
+      console.error(`ws-error-${clientId}`, event.payload);
+      setConnected(false);
+      setErrorShow(true);
+    });
 
-      unlisten_message = listen(`ws-message-${clientId}`, (event) => {
-        const msg = event.payload as string;
-        dealMsgRef.current && dealMsgRef.current(msg);
-      });
-    }
+    unlisten_message = listen(`ws-message-${clientId}`, (event) => {
+      const msg = event.payload as string;
+      console.log(`ws-message-${clientId}`, msg);
+      if (msg.includes("websocket-session-id")) {
+        console.log("websocket-session-id:", msg);
+        const sessionId = msg.split(":")[1].trim();
+        websocketIdRef.current = sessionId;
+        console.log("sessionId:", sessionId);
+        setConnected(true);
+        if (onWebsocketSessionId) {
+          onWebsocketSessionId(sessionId);
+        }
+        return;
+      }
+      dealMsgRef.current && dealMsgRef.current(msg);
+    });
+
 
     return () => {
       unlisten_error?.then((fn: any) => fn());
       unlisten_message?.then((fn: any) => fn());
     };
-  }, [connected, dealMsgRef]);
+  }, [dealMsgRef]);
 
   return { errorShow, setErrorShow, reconnect, disconnectWS, updateDealMsg };
 }

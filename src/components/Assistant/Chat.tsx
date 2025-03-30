@@ -127,6 +127,7 @@ const ChatAI = memo(
           setConnected,
           currentService,
           dealMsgRef,
+          onWebsocketSessionId,
         });
 
       const {
@@ -161,7 +162,6 @@ const ChatAI = memo(
         (chat) => cancelChat(chat || activeChat),
         setLoadingStep,
         handlers,
-        onWebsocketSessionId
       );
 
       useEffect(() => {
