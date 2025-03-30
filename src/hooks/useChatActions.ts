@@ -88,7 +88,7 @@ export function useChatActions(
           console.error("websocketSessionId", websocketSessionId, id);
           return;
         }
-        console.log("sourceDataIds", sourceDataIds);
+        console.log("sourceDataIds", sourceDataIds, websocketSessionId, id);
         let response: any = await new_chat({
           serverId: currentServiceId,
           websocketId: websocketSessionId || id,
@@ -119,7 +119,7 @@ export function useChatActions(
         console.error("createNewChat:", error);
       }
     },
-    [currentServiceId, sourceDataIds, isSearchActive, isDeepThinkActive, curIdRef]
+    [currentServiceId, sourceDataIds, isSearchActive, isDeepThinkActive, curIdRef, websocketSessionId]
   );
 
   const sendMessage = useCallback(
@@ -161,7 +161,7 @@ export function useChatActions(
         console.error("sendMessage:", error);
       }
     },
-    [currentServiceId, sourceDataIds, isSearchActive, isDeepThinkActive, curIdRef, setActiveChat, setCurChatEnd, setErrorShow, changeInput]
+    [currentServiceId, sourceDataIds, isSearchActive, isDeepThinkActive, curIdRef, setActiveChat, setCurChatEnd, setErrorShow, changeInput, websocketSessionId]
   );
 
   const handleSendMessage = useCallback(
