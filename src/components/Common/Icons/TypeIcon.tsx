@@ -18,10 +18,25 @@ function TypeIcon({
   onClick = () => {},
 }: TypeIconProps) {
   const endpoint_http = useAppStore((state) => state.endpoint_http);
+  if (item?.source?.icon) {
+    if (
+      item?.source?.icon.startsWith("http://") ||
+      item?.source?.icon.startsWith("https://")
+    ) {
+      return (
+        <IconWrapper className={className} onClick={onClick}>
+        <img className={className} src={item?.source?.icon} alt="icon" />
+      </IconWrapper>
+      );
+    }
+  }
+
   const connectorSource = useFindConnectorIcon(item);
+  console.log("connectorSource", connectorSource, item);
 
   // If the icon is a valid base64-encoded image
   const isBase64 = connectorSource?.icon?.startsWith("data:image/");
+  console.log("isBase64", isBase64);
   if (isBase64) {
     return (
       <IconWrapper className={className} onClick={onClick}>
@@ -31,6 +46,7 @@ function TypeIcon({
   }
 
   const selectedIcon = connectorSource?.icon;
+  console.log("selectedIcon", selectedIcon);
 
   if (!selectedIcon) {
     // console.log("go default folder:");

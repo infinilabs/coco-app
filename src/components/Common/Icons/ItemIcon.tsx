@@ -32,7 +32,11 @@ function ItemIcon({
     );
   }
 
-  const selectedIcon = icons[item?.icon];
+  let selectedIcon = icons[item?.icon];
+  if (!selectedIcon) {
+    selectedIcon=item?.icon
+  }
+  
   if (!selectedIcon) {
     return (
       <IconWrapper className={className} onClick={onClick}>

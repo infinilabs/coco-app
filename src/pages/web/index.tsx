@@ -2,6 +2,7 @@ import { useEffect, useCallback } from "react";
 
 import SearchChat from "./SearchChat";
 import { useAppStore } from "@/stores/appStore";
+import { useConnectStore } from "@/stores/connectStore";
 import { Get } from "@/api/axiosRequest";
 
 import "@/i18n";
@@ -27,7 +28,7 @@ function WebApp({
   width = 680,
   height = 590,
   headers = {
-    "X-API-TOKEN": "cv97ieo2sdbbru4vtha094eyxuzxdj6pvp9fbdzxb66dff0djy4rsjyju6yymypxe42lg2h7jl6ohdksecth",
+    "X-API-TOKEN": "cvjktc82sdb2viulfke03dzuacdj9oem1t2bocck7rnmzfwespd7zxt2g8hfts8dr5ijtfxr3wh94zyxd1y7",
   },
   // token = "cva1j5ehpcenic3ir7k0h8fb8qtv35iwtywze248oscrej8yoivhb5b1hyovp24xejjk27jy9ddt69ewfi3n",   // https://coco.infini.cloud
   // token = "cv97ieo2sdbbru4vtha094eyxuzxdj6pvp9fbdzxb66dff0djy4rsjyju6yymypxe42lg2h7jl6ohdksecth",  // http://localhost:9000
@@ -46,10 +47,15 @@ function WebApp({
   const setIsTauri = useAppStore((state) => state.setIsTauri);
   const setEndpoint = useAppStore((state) => state.setEndpoint);
 
+  const setDatasourceData = useConnectStore((state) => state.setDatasourceData);
+  const setConnectorData = useConnectStore((state) => state.setConnectorData);
+
   useEffect(() => {
     setIsTauri(false);
     setEndpoint(serverUrl);
     localStorage.setItem("headers", JSON.stringify(headers||{}));
+    getDataSourceList();
+    getConnectorList();
   }, []);
 
   const query_coco_fusion = useCallback(async (url: string) => {
@@ -105,6 +111,46 @@ function WebApp({
     },
     []
   );
+
+  const getDataSourceList = useCallback(async () => {
+    try {
+      const [error, response]: any = await Get("/datasource/_search");
+        if (error) {
+          console.error("_search", error);
+          return [];
+        }
+        const res = response?.hits?.hits?.map((item: any) => {
+          return {
+            ...item,
+            id: item._source.id,
+            name: item._source.name,
+          }
+        })
+        setDatasourceData(res, 'web');
+    } catch (err) {
+      console.error("get_datasources_by_server", err);
+    }
+  }, []);
+  
+  const getConnectorList = useCallback(async () => {
+    try {
+      const [error, response]: any = await Get("/connector/_search");
+        if (error) {
+          console.error("_search", error);
+          return [];
+        }
+        const res = response?.hits?.hits?.map((item: any) => {
+          return {
+            ...item,
+          }
+        })
+        setConnectorData(res, 'web');
+    } catch (err) {
+      console.error("get_datasources_by_server", err);
+    }
+  }, []);
+
+
 
   return (
     <div
