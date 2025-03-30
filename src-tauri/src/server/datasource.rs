@@ -25,7 +25,7 @@ pub fn save_datasource_to_cache(server_id: &str, datasources: Vec<DataSource>) {
 #[allow(dead_code)]
 pub fn get_datasources_from_cache(server_id: &str) -> Option<HashMap<String, DataSource>> {
     let cache = DATASOURCE_CACHE.read().unwrap(); // Acquire read lock
-                                                  // dbg!("cache: {:?}", &cache);
+    // dbg!("cache: {:?}", &cache);
     let server_cache = cache.get(server_id)?; // Get the server's cache
     Some(server_cache.clone())
 }
@@ -79,8 +79,6 @@ pub async fn refresh_all_datasources<R: Runtime>(_app_handle: &AppHandle<R>) -> 
         cache.extend(server_map);
         cache.len()
     };
-    // dbg!("datasource_map size: {:?}", cache_size);
-
     Ok(())
 }
 
@@ -90,7 +88,6 @@ pub async fn get_datasources_by_server(id: &str) -> Result<Vec<DataSource>, Stri
     let resp = HttpClient::get(id, "/datasource/_search", None)
         .await
         .map_err(|e| {
-            // dbg!("Error fetching datasource: {}", &e);
             format!("Error fetching datasource: {}", e)
         })?;
 
