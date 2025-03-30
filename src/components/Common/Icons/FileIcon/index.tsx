@@ -1,5 +1,3 @@
-import { FC, useMemo } from "react";
-import clsx from "clsx";
 import {
   FileExcelFilled,
   FileImageFilled,
@@ -13,7 +11,8 @@ import {
 
 import AudioIcon from "./AudioIcon";
 import VideoIcon from "./VideoIcon";
-
+import { FC, useMemo } from "react";
+import clsx from "clsx";
 
 interface FileIconProps {
   extname: string;
