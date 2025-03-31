@@ -129,6 +129,22 @@ export default function ChatInput({
   }, [reconnectCountdown, connected]);
 
   const [isCommandPressed, setIsCommandPressed] = useState(false);
+  const setModifierKeyPressed = useShortcutsStore((state) => {
+    return state.setModifierKeyPressed;
+  });
+
+  useEffect(() => {
+    const handleFocus = () => {
+      setIsCommandPressed(false);
+      setModifierKeyPressed(false);
+    };
+
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, []);
 
   const handleToggleFocus = useCallback(() => {
     if (isChatMode) {
@@ -394,7 +410,7 @@ export default function ChatInput({
       >
         {isChatMode ? (
           <div className="flex gap-2 text-sm text-[#333] dark:text-[#d8d8d8]">
-            {sessionId && (
+            {!sessionId && (
               <InputExtra
                 checkScreenPermission={checkScreenPermission}
                 requestScreenPermission={requestScreenPermission}
