@@ -5,8 +5,11 @@ import SettingsItem from "@/components/Settings/SettingsItem";
 import { Command } from "lucide-react";
 import { ChangeEvent, useEffect } from "react";
 import { emit } from "@tauri-apps/api/event";
+import { isMac } from "@/utils/platform";
 
-export const modifierKeys: ModifierKey[] = ["meta", "ctrl"];
+export const modifierKeys: ModifierKey[] = isMac
+  ? ["meta", "ctrl"]
+  : ["ctrl", "alt"];
 
 const Shortcuts = () => {
   const { t } = useTranslation();
