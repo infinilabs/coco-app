@@ -2,7 +2,7 @@ import { isMac } from "@/utils/platform";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type ModifierKey = "meta" | "ctrl" | "alt" | "shift";
+export type ModifierKey = "meta" | "ctrl" | "alt";
 
 export type IShortcutsStore = {
   modifierKey: ModifierKey;

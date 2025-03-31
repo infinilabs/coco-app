@@ -6,7 +6,7 @@ import { Command } from "lucide-react";
 import { ChangeEvent, useEffect } from "react";
 import { emit } from "@tauri-apps/api/event";
 
-export const modifierKeys = ["meta", "ctrl", "alt", "shift"];
+export const modifierKeys: ModifierKey[] = ["meta", "ctrl", "alt"];
 
 const Shortcuts = () => {
   const { t } = useTranslation();
