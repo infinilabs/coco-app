@@ -1,11 +1,9 @@
 import logoLight from "./imgs/logo-light.png";
 import logoDark from "./imgs/logo-dark.png";
 import { useThemeStore } from "@/stores/themeStore";
-import { useAppStore } from "@/stores/appStore";
 
 const Copyright = () => {
   const isDark = useThemeStore((state) => state.isDark);
-  const language = useAppStore((state) => state.language);
 
   const renderLogo = () => {
     return (
@@ -17,9 +15,8 @@ const Copyright = () => {
 
   return (
     <div className="flex items-center gap-[6px] text-xs text-[#666] dark:text-[#999]">
-      {language === "en" ? "Powered by" : "由"}
+      Powered by
       {renderLogo()}
-      {language === "zh" && "提供支持"}
     </div>
   );
 };

@@ -362,7 +362,7 @@ export default function ChatInput({
           <div className="absolute top-0 right-0 bottom-0 left-0 px-2 py-4 bg-red-500/10 rounded-md font-normal text-xs text-gray-400 flex items-center gap-4">
             {t("search.input.connectionError")}
             <div
-              className="w-[96px] h-[24px] bg-[#0061FF] rounded-[12px] font-normal text-xs text-white flex items-center justify-center cursor-pointer"
+              className="px-1 h-[24px] text-[#0061FF] font-normal text-xs flex items-center justify-center cursor-pointer underline"
               onClick={reconnect}
             >
               {t("search.input.reconnect")}
@@ -427,7 +427,7 @@ export default function ChatInput({
             )}
 
             {!hasFeature.includes("search") && !hasFeature.includes("think") ? (
-              <Copyright />
+              <div className="px-2"><Copyright /></div>
             ) : null}
           </div>
         ) : (
