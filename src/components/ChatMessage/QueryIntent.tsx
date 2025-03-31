@@ -43,28 +43,24 @@ export const QueryIntent = ({
   useEffect(() => {
     if (!ChunkData?.message_chunk) return;
     if (!loading) {
-      const cleanContent = ChunkData.message_chunk.replace(/^"|"$/g, "");
-      const allMatches = cleanContent.match(/<JSON>([\s\S]*?)<\/JSON>/g);
-      if (allMatches) {
-        const lastMatch = allMatches[allMatches.length - 1];
-        const jsonString = lastMatch.replace(/<JSON>|<\/JSON>/g, "");
-        const data = JSON.parse(jsonString);
-        //console.log("QueryIntent", data);
-        if (data?.suggestion && getSuggestion) {
-          getSuggestion(data?.suggestion);
+      try {
+        const cleanContent = ChunkData.message_chunk.replace(/^"|"$/g, "");
+        const allMatches = cleanContent.match(/<JSON>([\s\S]*?)<\/JSON>/g);
+        if (allMatches) {
+          const lastMatch = allMatches[allMatches.length - 1];
+          const jsonString = lastMatch.replace(/<JSON>|<\/JSON>/g, "").replace(/\\"/g, '"').replace(/^"|"$/g, "");
+          const data = JSON.parse(jsonString);
+          //console.log("QueryIntent", data);
+          if (data?.suggestion && getSuggestion) {
+            getSuggestion(data?.suggestion);
+          }
+          setData(data);
         }
-        setData(data);
+      } catch (e) {
+        console.error("Failed to parse query data:", e, ChunkData.message_chunk);
       }
     }
   }, [ChunkData?.message_chunk, loading]);
-
-  useEffect(() => {
-    if (!ChunkData?.message_chunk) return;
-    try {
-    } catch (e) {
-      console.error("Failed to parse query data:", e);
-    }
-  }, [ChunkData?.message_chunk]);
 
   // Must be after hooks ！！！
   if (!ChunkData && !Detail) return null;

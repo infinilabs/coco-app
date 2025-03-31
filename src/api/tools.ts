@@ -8,13 +8,13 @@ export const handleConfigureAuth = (config: any) => {
 
   const headersStr = localStorage.getItem("headers") || "{}";
     const headers = JSON.parse(headersStr);
-    console.log("headers:", headers);
+    // console.log("headers:", headers);
 
   config.headers = {
     ...config.headers,
     ...headers,
   }
-  console.log("config.headers", config.headers)
+  // console.log("config.headers", config.headers)
   return config;
 };
 

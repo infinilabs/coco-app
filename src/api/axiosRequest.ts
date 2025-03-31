@@ -23,7 +23,7 @@ interface FcResponse<T> {
 axios.interceptors.request.use((config) => {
   config = handleChangeRequestHeader(config);
   config = handleConfigureAuth(config);
-  console.log("config", config);
+  // console.log("config", config);
   return config;
 });
 
@@ -47,11 +47,11 @@ export const Get = <T,>(
 ): Promise<[any, FcResponse<T> | undefined]> =>
   new Promise((resolve) => {
     const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
-    console.log("baseURL", appStore.state?.endpoint_http)
+    // console.log("baseURL", appStore.state?.endpoint_http)
 
     let baseURL = appStore.state?.endpoint_http;
     axios
-      .get(baseURL + url, { params })
+      .get(url, { params })
       .then((result) => {
         let res: FcResponse<T>;
         if (clearFn !== undefined) {
@@ -74,12 +74,12 @@ export const Post = <T,>(
 ): Promise<[any, FcResponse<T> | undefined]> => {
   return new Promise((resolve) => {
     const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
-    console.log("baseURL", appStore.state?.endpoint_http)
+    // console.log("baseURL", appStore.state?.endpoint_http)
 
     let baseURL = appStore.state?.endpoint_http;
     
     axios
-      .post(baseURL + url, data, {
+      .post(url, data, {
         params,
         headers
       } as any)

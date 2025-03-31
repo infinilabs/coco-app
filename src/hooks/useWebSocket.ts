@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback,  } from "react";
+import { useState, useEffect, useCallback, useRef  } from "react";
 import { useWebSocket as useWebSocketAHook } from 'ahooks';
 
 import { IServer } from "@/stores/appStore";
@@ -17,6 +17,7 @@ interface WebSocketProps {
   setConnected: (connected: boolean) => void;
   currentService: IServer | null;
   dealMsgRef: React.MutableRefObject<((msg: string) => void) | null>;
+  onWebsocketSessionId?: (sessionId: string) => void;
 }
 
 export default function useWebSocket({
@@ -24,6 +25,7 @@ export default function useWebSocket({
   setConnected,
   currentService,
   dealMsgRef,
+  onWebsocketSessionId,
 }: WebSocketProps) {
   const isTauri = useAppStore((state) => state.isTauri);
   const endpoint_websocket = useAppStore((state) => state.endpoint_websocket);
@@ -31,30 +33,49 @@ export default function useWebSocket({
   const [errorShow, setErrorShow] = useState(false);
 
   const { readyState, latestMessage, disconnect, connect } = useWebSocketAHook(
-    // "wss://coco.infini.cloud/ws",
+    "wss://coco.infini.cloud/ws",
     // "ws://localhost:9000/ws",
-    endpoint_websocket
+    // endpoint_websocket
   );
 
+  const websocketIdRef = useRef<string>('')
+
   useEffect(() => {
-    console.log(readyState, latestMessage, disconnect, connect)
+    // console.log(readyState, latestMessage, disconnect, connect)
     if (readyState === ReadyState.Open) {
-      setConnected(true);
+      console.log("WebSocket message size:", latestMessage?.data?.length, "bytes");
+      if (latestMessage?.data?.length > 1024 * 10) { // 10KB
+        console.warn("Large message received:", latestMessage?.data?.substring(0, 100) + "...");
+      }
+      
       if (!latestMessage?.data) return;
-      latestMessage?.data && dealMsgRef.current && dealMsgRef.current(latestMessage?.data || "");
+      const msg = latestMessage?.data as unknown as string;
+      
+      console.log("55555", msg.includes("fetch_source"));
+      if (msg.includes("websocket-session-id")) {
+        console.log("websocket-session-id:", msg);
+        const sessionId = msg.split(":")[1].trim();
+        websocketIdRef.current = sessionId;
+        console.log("sessionId:", sessionId);
+        setConnected(true);
+        if (onWebsocketSessionId) {
+          onWebsocketSessionId(sessionId);
+        }
+        return;
+      }
+      dealMsgRef.current && dealMsgRef.current(msg);
     } else {
       setConnected(false);
     }
-  }, [readyState, latestMessage]);
+  }, [readyState, latestMessage?.data]);
 
   const reconnect = useCallback(async (server?: IServer) => {
     if (isTauri) {
       const targetServer = server || currentService;
       if (!targetServer?.id) return;
       try {
-        console.log("reconnect", targetServer.id);
+        // console.log("reconnect", targetServer.id);
         await platformAdapter.invokeBackend("connect_to_server", { id: targetServer.id });
-        setConnected(true);
       } catch (error) {
         setConnected(false);
         console.error("Failed to connect:", error);

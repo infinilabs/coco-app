@@ -16,27 +16,12 @@ export function useMessageHandler(
     deal_think: (data: IChunkData) => void;
     deal_response: (data: IChunkData) => void;
   },
-  onWebsocketSessionId?: (sessionId: string) => void
 ) {
   const messageTimeoutRef = useRef<NodeJS.Timeout>();
 
-  const websocketIdRef = useRef<string>('')
-
   const dealMsg = useCallback(
     (msg: string) => {
-      console.log("AI response:", msg);
-      // CONFIG websocket-session-id: cvjaa0bq50k4j533k77g
-      if (msg.includes("websocket-session-id")) {
-        console.log("websocket-session-id:", msg);
-        const sessionId = msg.split(":")[1].trim();
-        websocketIdRef.current = sessionId;
-        console.log("sessionId:", sessionId);
-        if (onWebsocketSessionId) {
-          onWebsocketSessionId(sessionId);
-        }
-        return;
-      }
-
+      // console.log("AI response:", msg);
       if (messageTimeoutRef.current) {
         clearTimeout(messageTimeoutRef.current);
       }
@@ -52,6 +37,7 @@ export function useMessageHandler(
       const cleanedData = msg.replace(/^PRIVATE /, "");
       try {
         const chunkData = JSON.parse(cleanedData);
+        console.log("2222222", chunkData.chunk_type);
 
         if (chunkData.reply_to_message !== curIdRef.current) return;
 
@@ -68,6 +54,7 @@ export function useMessageHandler(
         if (chunkData.chunk_type === "query_intent") {
           handlers.deal_query_intent(chunkData);
         } else if (chunkData.chunk_type === "fetch_source") {
+          console.log(1111111, "fetch_source", chunkData);
           handlers.deal_fetch_source(chunkData);
         } else if (chunkData.chunk_type === "pick_source") {
           handlers.deal_pick_source(chunkData);
@@ -95,7 +82,6 @@ export function useMessageHandler(
 
   return {
     dealMsg,
-    messageTimeoutRef,
-    websocketIdRef
+    messageTimeoutRef
   };
 }

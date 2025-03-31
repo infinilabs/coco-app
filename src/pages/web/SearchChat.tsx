@@ -8,7 +8,6 @@ import {
 } from "react";
 import clsx from "clsx";
 
-import ErrorBoundary from "@/components/Common/ErrorBoundary";
 import Search from "@/components/Search/Search";
 import InputBox from "@/components/Search/InputBox";
 import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
@@ -83,13 +82,23 @@ function SearchChat({
   const setTheme = useThemeStore((state) => state.setTheme);
 
   useEffect(() => {
-    initializeListeners();
-    initializeListeners_auth();
-    platformAdapter.invokeBackend("get_app_search_source");
-    //
-    if (theme) {
-      setTheme(theme);
-    }
+    let mounted = true;
+    
+    const init = async () => {
+      if (!mounted) return;
+      await initializeListeners();
+      await initializeListeners_auth();
+      await platformAdapter.invokeBackend("get_app_search_source");
+      if (theme && mounted) {
+        setTheme(theme);
+      }
+    };
+
+    init();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const chatAIRef = useRef<ChatAIRef>(null);
@@ -299,7 +308,6 @@ function SearchChat({
   }, [defaultStartupWindow, changeMode]);
 
   return (
-    <ErrorBoundary>
       <div
         data-tauri-drag-region={isTauri}
         className={clsx(
@@ -403,7 +411,6 @@ function SearchChat({
 
         <UpdateApp checkUpdate={checkUpdate} relaunchApp={relaunchApp} />
       </div>
-    </ErrorBoundary>
   );
 }
 

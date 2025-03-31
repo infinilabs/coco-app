@@ -48,17 +48,17 @@ export default defineConfig(async () => ({
         secure: false,
       },
       "/query": {
-        target: process.env.COCO_SERVER_URL,
+        target: "https://coco.infini.cloud",
         changeOrigin: true,
         secure: false,
       },
       "/connector": {
-        target: process.env.COCO_SERVER_URL,
+        target: "https://coco.infini.cloud",
         changeOrigin: true,
         secure: false,
       },
       "/datasource": {
-        target: process.env.COCO_SERVER_URL,
+        target: "https://coco.infini.cloud",
         changeOrigin: true,
         secure: false,
       },
