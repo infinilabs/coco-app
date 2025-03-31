@@ -12,11 +12,13 @@ import {
 } from "@headlessui/react";
 import { castArray, find, isNil } from "lodash-es";
 import { nanoid } from "nanoid";
-import { useCreation, useMount, useReactive } from "ahooks";
+import { useCreation, useKeyPress, useMount, useReactive } from "ahooks";
 
 import { useChatStore } from "@/stores/chatStore";
 import { useAppStore } from "@/stores/appStore";
 import Tooltip from "@/components/Common/Tooltip";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
+import clsx from "clsx";
 
 interface State {
   screenRecordingPermission?: boolean;
@@ -62,6 +64,15 @@ const InputExtra = ({
   const uploadFiles = useChatStore((state) => state.uploadFiles);
   const setUploadFiles = useChatStore((state) => state.setUploadFiles);
   const withVisibility = useAppStore((state) => state.withVisibility);
+  const modifierKey = useShortcutsStore((state) => {
+    return state.modifierKey;
+  });
+  const addFile = useShortcutsStore((state) => {
+    return state.addFile;
+  });
+  const modifierKeyPressed = useShortcutsStore((state) => {
+    return state.modifierKeyPressed;
+  });
 
   const state = useReactive<State>({
     screenshotableMonitors: [],
@@ -71,6 +82,18 @@ const InputExtra = ({
   useMount(async () => {
     state.screenRecordingPermission = await checkScreenPermission();
   });
+
+  const handleSelectFile = async () => {
+    const selectedFiles = await withVisibility(() => {
+      return openFileDialog({
+        multiple: true,
+      });
+    });
+
+    if (isNil(selectedFiles)) return;
+
+    handleUploadFiles(selectedFiles);
+  };
 
   const handleUploadFiles = async (paths: string | string[]) => {
     const files: typeof uploadFiles = [];
@@ -99,17 +122,7 @@ const InputExtra = ({
     const menuItems: MenuItem[] = [
       {
         label: t("search.input.uploadFile"),
-        clickEvent: async () => {
-          const selectedFiles = await withVisibility(() => {
-            return openFileDialog({
-              multiple: true,
-            });
-          });
-
-          if (isNil(selectedFiles)) return;
-
-          handleUploadFiles(selectedFiles);
-        },
+        clickEvent: handleSelectFile,
       },
       {
         label: t("search.input.screenshot"),
@@ -167,12 +180,29 @@ const InputExtra = ({
     i18n.language,
   ]);
 
+  useKeyPress(`${modifierKey}.${addFile}`, handleSelectFile);
+
   return (
     <Menu>
-      <MenuButton>
+      <MenuButton className="size-6">
         <Tooltip content="支持截图、上传文件，最多 50个，单个文件最大 100 MB。">
-          <div className="size-6 flex justify-center items-center rounded-lg transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]">
-            <Plus className="size-5" />
+          <div className="size-full flex justify-center items-center rounded-lg transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]">
+            <Plus
+              className={clsx("size-5", {
+                hidden: modifierKeyPressed,
+              })}
+            />
+
+            <div
+              className={clsx(
+                "size-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]",
+                {
+                  hidden: !modifierKeyPressed,
+                }
+              )}
+            >
+              {addFile}
+            </div>
           </div>
         </Tooltip>
       </MenuButton>
