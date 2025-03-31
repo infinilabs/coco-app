@@ -122,6 +122,9 @@ export default function ChatInput({
   }, [reconnectCountdown, connected]);
 
   const [isCommandPressed, setIsCommandPressed] = useState(false);
+  const modifierKeyPressed = useShortcutsStore((state) => {
+    return state.modifierKeyPressed;
+  });
 
   const handleToggleFocus = useCallback(() => {
     if (isChatMode) {
@@ -443,7 +446,7 @@ export default function ChatInput({
 
         {isChatPage ? null : (
           <div className="relative w-16 flex justify-end items-center">
-            {showTooltip && isCommandPressed ? (
+            {showTooltip && modifierKeyPressed ? (
               <div
                 className={`absolute left-1 z-10 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
               >

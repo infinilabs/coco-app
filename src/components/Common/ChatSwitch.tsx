@@ -2,6 +2,7 @@ import React, { useEffect, useCallback } from "react";
 import { Bot, Search } from "lucide-react";
 
 import { isMetaOrCtrlKey } from "@/utils/keyboardUtils";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 interface ChatSwitchProps {
   isChatMode: boolean;
@@ -9,19 +10,26 @@ interface ChatSwitchProps {
 }
 
 const ChatSwitch: React.FC<ChatSwitchProps> = ({ isChatMode, onChange }) => {
+  const modifierKeyPressed = useShortcutsStore((state) => {
+    return state.modifierKeyPressed;
+  });
+  const modeSwitch = useShortcutsStore((state) => {
+    return state.modeSwitch;
+  });
+
   const handleToggle = useCallback(() => {
     onChange?.(!isChatMode);
   }, [onChange, isChatMode]);
 
   const handleKeydown = useCallback(
     (event: KeyboardEvent) => {
-      if (isMetaOrCtrlKey(event) && event.key === "t") {
+      if (modifierKeyPressed && event.key === modeSwitch.toLowerCase()) {
         event.preventDefault();
         // console.log("Switch mode triggered");
         handleToggle();
       }
     },
-    [handleToggle]
+    [handleToggle, modifierKeyPressed, modeSwitch]
   );
 
   useEffect(() => {
