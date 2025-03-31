@@ -336,12 +336,12 @@ export default function ChatInput({
           ) : null}
         </div>
 
-        <AudioRecording
+        {/* <AudioRecording
           key={isChatMode ? "chat" : "search"}
           onChange={(text) => {
             changeInput(inputValue + text);
           }}
-        />
+        /> */}
 
         {isChatMode && curChatEnd ? (
           <button
@@ -410,7 +410,7 @@ export default function ChatInput({
       >
         {isChatMode ? (
           <div className="flex gap-2 text-sm text-[#333] dark:text-[#d8d8d8]">
-            {sessionId && (
+            {/* {sessionId && (
               <InputExtra
                 checkScreenPermission={checkScreenPermission}
                 requestScreenPermission={requestScreenPermission}
@@ -422,7 +422,7 @@ export default function ChatInput({
                 getFileMetadata={getFileMetadata}
                 getFileIcon={getFileIcon}
               />
-            )}
+            )} */}
 
             <button
               className={clsx(
