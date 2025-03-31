@@ -6,6 +6,8 @@ import { Command } from "lucide-react";
 import { ChangeEvent, useEffect } from "react";
 import { emit } from "@tauri-apps/api/event";
 
+export const modifierKeys: ModifierKey[] = ["meta", "ctrl"];
+
 const Shortcuts = () => {
   const { t } = useTranslation();
   const modifierKey = useShortcutsStore((state) => state.modifierKey);
@@ -106,7 +108,7 @@ const Shortcuts = () => {
               setModifierKey(event.target.value as ModifierKey);
             }}
           >
-            {["Command", "Control", "Option"].map((item) => {
+            {modifierKeys.map((item) => {
               return <option value={item}>{formatKey(item)}</option>;
             })}
           </select>
@@ -122,14 +124,18 @@ const Shortcuts = () => {
               title={t(title)}
               description={t(description)}
             >
-              <input
-                className="w-20 h-8 px-2 rounded-md border bg-transparent border-black/5 dark:border-white/10"
-                value={value}
-                maxLength={1}
-                onChange={(event) => {
-                  handleChange(event, setValue);
-                }}
-              />
+              <div className="flex items-center gap-2">
+                <span>{formatKey(modifierKey)}</span>
+                <span>+</span>
+                <input
+                  className="w-20 h-8 px-2 rounded-md border bg-transparent border-black/5 dark:border-white/10"
+                  value={value}
+                  maxLength={1}
+                  onChange={(event) => {
+                    handleChange(event, setValue);
+                  }}
+                />
+              </div>
             </SettingsItem>
           );
         })}

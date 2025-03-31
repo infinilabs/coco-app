@@ -172,48 +172,8 @@ function SearchChat({ querySearch, queryDocuments }: SearchChatProps) {
   const defaultStartupWindow = useStartupStore((state) => {
     return state.defaultStartupWindow;
   });
-  const setDefaultStartupWindow = useStartupStore((state) => {
-    return state.setDefaultStartupWindow;
-  });
 
   const showCocoListenRef = useRef<(() => void) | undefined>();
-
-  useEffect(() => {
-    let unlistenChangeStartupStore: (() => void) | undefined;
-
-    const setupListener = async () => {
-      try {
-        unlistenChangeStartupStore = await platformAdapter.listenEvent(
-          "change-startup-store",
-          ({ payload }) => {
-            if (
-              payload &&
-              typeof payload === "object" &&
-              "defaultStartupWindow" in payload
-            ) {
-              const startupWindow = payload.defaultStartupWindow;
-              if (
-                startupWindow === "searchMode" ||
-                startupWindow === "chatMode"
-              ) {
-                setDefaultStartupWindow(startupWindow);
-              }
-            }
-          }
-        );
-      } catch (error) {
-        console.error("Error setting up change-startup-store listener:", error);
-      }
-    };
-
-    setupListener();
-
-    return () => {
-      if (unlistenChangeStartupStore) {
-        unlistenChangeStartupStore();
-      }
-    };
-  }, []);
 
   useEffect(() => {
     const setupShowCocoListener = async () => {

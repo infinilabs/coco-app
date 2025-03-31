@@ -2,6 +2,8 @@ import { useState } from "react";
 import { isTauri } from "@tauri-apps/api/core";
 import { convertFileSrc as tauriConvertFileSrc } from "@tauri-apps/api/core";
 import type { OpenDialogOptions } from "@tauri-apps/plugin-dialog";
+import { IShortcutsStore } from "@/stores/shortcutsStore";
+import { IStartupStore } from "@/stores/startupStore";
 
 export interface EventPayloads {
   "language-changed": {
@@ -27,10 +29,9 @@ export interface EventPayloads {
   open_settings: string | "";
   tab_index: string | "";
   login_or_logout: any;
-  "change-startup-store": {
-    defaultStartupWindow: string;
-  };
+  "change-startup-store": IStartupStore
   "show-coco": void;
+  "change-shortcuts-store": IShortcutsStore;
 }
 
 // Platform adapter interface
