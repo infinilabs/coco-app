@@ -1,13 +1,18 @@
 import { useCallback, useRef } from "react";
 
 import type { IChunkData, Chat } from "@/components/Assistant/types";
+import { useConnectStore } from "@/stores/connectStore";
 
 export function useMessageHandler(
   curIdRef: React.MutableRefObject<string>,
   setCurChatEnd: (value: boolean) => void,
   setTimedoutShow: (value: boolean) => void,
   onCancel: (chat?: Chat) => void,
-  setLoadingStep: (value: Record<string, boolean> | ((prev: Record<string, boolean>) => Record<string, boolean>)) => void,
+  setLoadingStep: (
+    value:
+      | Record<string, boolean>
+      | ((prev: Record<string, boolean>) => Record<string, boolean>)
+  ) => void,
   handlers: {
     deal_query_intent: (data: IChunkData) => void;
     deal_fetch_source: (data: IChunkData) => void;
@@ -15,9 +20,10 @@ export function useMessageHandler(
     deal_deep_read: (data: IChunkData) => void;
     deal_think: (data: IChunkData) => void;
     deal_response: (data: IChunkData) => void;
-  },
+  }
 ) {
   const messageTimeoutRef = useRef<NodeJS.Timeout>();
+  const connectionTimeout = useConnectStore((state) => state.connectionTimeout);
 
   const dealMsg = useCallback(
     (msg: string) => {
@@ -31,7 +37,7 @@ export function useMessageHandler(
         console.log("AI response timeout");
         setTimedoutShow(true);
         onCancel();
-      }, 120000);
+      }, (connectionTimeout ?? 120) * 1000);
 
       const cleanedData = msg.replace(/^PRIVATE /, "");
       try {
@@ -73,11 +79,17 @@ export function useMessageHandler(
         console.error("parse error:", error);
       }
     },
-    [onCancel, setCurChatEnd, setTimedoutShow, curIdRef.current]
+    [
+      onCancel,
+      setCurChatEnd,
+      setTimedoutShow,
+      curIdRef.current,
+      connectionTimeout,
+    ]
   );
 
   return {
     dealMsg,
-    messageTimeoutRef
+    messageTimeoutRef,
   };
 }
