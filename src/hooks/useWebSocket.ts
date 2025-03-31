@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useWebSocket as useWebSocketAHook } from 'ahooks';
+import { useWebSocket as useWebSocketAHook } from "ahooks";
 
 import { IServer } from "@/stores/appStore";
 import platformAdapter from "@/utils/platformAdapter";
@@ -32,14 +32,14 @@ export default function useWebSocket({
 
   const [errorShow, setErrorShow] = useState(false);
 
-  const websocketIdRef = useRef<string>('');
+  const websocketIdRef = useRef<string>("");
   const messageQueue = useRef<string[]>([]);
   const processingRef = useRef(false);
 
   const { readyState, connect } = useWebSocketAHook(
-    // "wss://coco.infini.cloud/ws",
+    "wss://coco.infini.cloud/ws",
     // "ws://localhost:9000/ws",
-    endpoint_websocket,
+    // endpoint_websocket,
     {
       manual: false,
       reconnectLimit: 3,
@@ -52,20 +52,23 @@ export default function useWebSocket({
     }
   );
 
-  const processMessage = useCallback((msg: string) => {
-    try {
-      if (msg.includes("websocket-session-id")) {
-        const sessionId = msg.split(":")[1].trim();
-        websocketIdRef.current = sessionId;
-        setConnected(true);
-        onWebsocketSessionId?.(sessionId);
-      } else {
-        dealMsgRef.current?.(msg);
+  const processMessage = useCallback(
+    (msg: string) => {
+      try {
+        if (msg.includes("websocket-session-id")) {
+          const sessionId = msg.split(":")[1].trim();
+          websocketIdRef.current = sessionId;
+          setConnected(true);
+          onWebsocketSessionId?.(sessionId);
+        } else {
+          dealMsgRef.current?.(msg);
+        }
+      } catch (error) {
+        console.error("处理消息出错:", error, msg);
       }
-    } catch (error) {
-      console.error('处理消息出错:', error, msg);
-    }
-  }, [onWebsocketSessionId]);
+    },
+    [onWebsocketSessionId]
+  );
 
   const processQueue = useCallback(() => {
     if (processingRef.current || messageQueue.current.length === 0) return;
@@ -87,25 +90,33 @@ export default function useWebSocket({
     }
   }, [readyState]);
 
-  const reconnect = useCallback(async (server?: IServer) => {
-    if (isTauri) {
-      const targetServer = server || currentService;
-      if (!targetServer?.id) return;
-      try {
-        // console.log("reconnect", targetServer.id);
-        await platformAdapter.invokeBackend("connect_to_server", { id: targetServer.id });
-      } catch (error) {
-        setConnected(false);
-        console.error("Failed to connect:", error);
+  const reconnect = useCallback(
+    async (server?: IServer) => {
+      if (isTauri) {
+        const targetServer = server || currentService;
+        if (!targetServer?.id) return;
+        try {
+          // console.log("reconnect", targetServer.id);
+          await platformAdapter.invokeBackend("connect_to_server", {
+            id: targetServer.id,
+          });
+        } catch (error) {
+          setConnected(false);
+          console.error("Failed to connect:", error);
+        }
+      } else {
+        connect();
       }
-    } else {
-      connect();
-    }
-  }, [currentService]);
+    },
+    [currentService]
+  );
 
-  const updateDealMsg = useCallback((newDealMsg: (msg: string) => void) => {
-    dealMsgRef.current = newDealMsg;
-  }, [dealMsgRef]);
+  const updateDealMsg = useCallback(
+    (newDealMsg: (msg: string) => void) => {
+      dealMsgRef.current = newDealMsg;
+    },
+    [dealMsgRef]
+  );
 
   useEffect(() => {
     if (!currentService?.id) return;
@@ -130,14 +141,15 @@ export default function useWebSocket({
           setErrorShow(true);
         });
 
-        unlisten_message = platformAdapter.listenEvent("ws-message", (event) => {
-          const msg = event.payload as unknown as string;
-          dealMsgRef.current && dealMsgRef.current(msg);
-        });
+        unlisten_message = platformAdapter.listenEvent(
+          "ws-message",
+          (event) => {
+            const msg = event.payload as unknown as string;
+            dealMsgRef.current && dealMsgRef.current(msg);
+          }
+        );
       } else {
-
       }
-
     }
 
     return () => {

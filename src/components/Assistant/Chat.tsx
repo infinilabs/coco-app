@@ -21,6 +21,7 @@ import { ChatHeader } from "./ChatHeader";
 import { ChatContent } from "./ChatContent";
 import ConnectPrompt from "./ConnectPrompt";
 import type { Chat } from "./types";
+import PrevSuggestion from "../ChatMessage/PrevSuggestion";
 
 interface ChatAIProps {
   isTransitioned: boolean;
@@ -91,7 +92,7 @@ const ChatAI = memo(
 
       const [Question, setQuestion] = useState<string>("");
 
-      const [websocketSessionId, setWebsocketSessionId] = useState('');
+      const [websocketSessionId, setWebsocketSessionId] = useState("");
 
       const onWebsocketSessionId = useCallback((sessionId: string) => {
         setWebsocketSessionId(sessionId);
@@ -161,7 +162,7 @@ const ChatAI = memo(
         setTimedoutShow,
         (chat) => cancelChat(chat || activeChat),
         setLoadingStep,
-        handlers,
+        handlers
       );
 
       useEffect(() => {
@@ -198,7 +199,14 @@ const ChatAI = memo(
             handleSendMessage(value, activeChat, websocketSessionId);
           }
         },
-        [isLogin, curChatEnd, activeChat, createNewChat, handleSendMessage, websocketSessionId]
+        [
+          isLogin,
+          curChatEnd,
+          activeChat,
+          createNewChat,
+          handleSendMessage,
+          websocketSessionId,
+        ]
       );
 
       const { createWin } = useWindows();
@@ -347,6 +355,8 @@ const ChatAI = memo(
           ) : (
             <ConnectPrompt />
           )}
+
+          <PrevSuggestion id={websocketSessionId} />
         </div>
       );
     }
