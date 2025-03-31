@@ -53,7 +53,7 @@ export default defineConfig(async () => ({
         secure: false,
       },
       "/connector": {
-        target: "https://coco.infini.cloud0",
+        target: "https://coco.infini.cloud",
         changeOrigin: true,
         secure: false,
       },

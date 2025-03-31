@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef  } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useWebSocket as useWebSocketAHook } from 'ahooks';
 
 import { IServer } from "@/stores/appStore";
@@ -69,7 +69,7 @@ export default function useWebSocket({
 
   const processQueue = useCallback(() => {
     if (processingRef.current || messageQueue.current.length === 0) return;
-    
+
     processingRef.current = true;
     while (messageQueue.current.length > 0) {
       const msg = messageQueue.current.shift();
@@ -129,7 +129,7 @@ export default function useWebSocket({
           setConnected(false);
           setErrorShow(true);
         });
-  
+
         unlisten_message = platformAdapter.listenEvent("ws-message", (event) => {
           const msg = event.payload as unknown as string;
           dealMsgRef.current && dealMsgRef.current(msg);
@@ -137,7 +137,7 @@ export default function useWebSocket({
       } else {
 
       }
-      
+
     }
 
     return () => {
