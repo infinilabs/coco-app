@@ -1,7 +1,6 @@
 import React, { useEffect, useCallback } from "react";
 import { Bot, Search } from "lucide-react";
 
-import { isMetaOrCtrlKey } from "@/utils/keyboardUtils";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 interface ChatSwitchProps {
