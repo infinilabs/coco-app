@@ -5,7 +5,6 @@ import SettingsItem from "@/components/Settings/SettingsItem";
 import { Command } from "lucide-react";
 import { ChangeEvent, useEffect } from "react";
 import { emit } from "@tauri-apps/api/event";
-import { capitalize } from "lodash-es";
 
 export const modifierKeys: ModifierKey[] = ["meta", "ctrl"];
 
