@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 
-import logoImg from "@/assets/icon.svg";
 import ChatSwitch from "@/components/Common/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import { useChatStore } from "@/stores/chatStore";
@@ -13,6 +12,7 @@ import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import SearchPopover from "./SearchPopover";
 import { DataSource } from "@/types/commands";
+import Copyright from "../Common/Copyright";
 // import AudioRecording from "../AudioRecording";
 
 interface ChatInputProps {
@@ -237,9 +237,9 @@ export default function ChatInput({
     setIsDeepThinkActive();
   };
 
-  const openWebsite = () => {
-    window.open("https://coco.rs/");
-  };
+  // const openWebsite = () => {
+  //   window.open("https://coco.rs/");
+  // };
 
   return (
     <div className={`w-full relative`}>
@@ -427,17 +427,7 @@ export default function ChatInput({
             )}
 
             {!hasFeature.includes("search") && !hasFeature.includes("think") ? (
-              <div className="flex gap-2">
-                <img
-                  src={logoImg}
-                  className="w-4 h-4 cursor-pointer"
-                  onClick={openWebsite}
-                  alt={t("search.footer.logoAlt")}
-                />
-                <div className="relative text-xs text-gray-500 dark:text-gray-400">
-                  {t("search.footer.powered")}
-                </div>
-              </div>
+              <Copyright />
             ) : null}
           </div>
         ) : (
