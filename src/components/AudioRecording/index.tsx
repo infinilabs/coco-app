@@ -75,6 +75,8 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
     );
 
     record.on("record-end", (blob) => {
+      if (!state.converting) return;
+
       const reader = new FileReader();
 
       reader.onloadend = async () => {
@@ -122,7 +124,11 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
   const resetState = (otherState: Partial<State> = {}) => {
     clearInterval(interval);
     recordRef.current?.stopRecording();
-    Object.assign(state, { ...INITIAL_STATE, ...otherState });
+    Object.assign(state, {
+      ...INITIAL_STATE,
+      ...otherState,
+      audioDevices: state.audioDevices,
+    });
   };
 
   const checkPermission = async () => {
