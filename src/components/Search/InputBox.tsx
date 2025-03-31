@@ -163,11 +163,7 @@ export default function ChatInput({
 
       pressedKeys.add(e.key);
 
-      if (e.key === metaOrCtrlKey()) {
-        setIsCommandPressed(true);
-      }
-
-      if (pressedKeys.has(metaOrCtrlKey())) {
+      if (modifierKeyPressed) {
         // e.preventDefault();
         switch (e.code) {
           case "Comma":
@@ -210,6 +206,7 @@ export default function ChatInput({
       setIsCommandPressed,
       disabledChange,
       curChatEnd,
+      modifierKeyPressed,
     ]
   );
 
@@ -305,7 +302,7 @@ export default function ChatInput({
               ←
             </div>
           ) : null}
-          {showTooltip && isCommandPressed ? (
+          {showTooltip && modifierKeyPressed ? (
             <div
               className={`absolute ${
                 !isChatMode && sourceData ? "left-7" : ""
