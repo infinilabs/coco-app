@@ -17,6 +17,7 @@ import { DataSource } from "@/types/commands";
 import InputExtra from "./InputExtra";
 import { useConnectStore } from "@/stores/connectStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
+import { useKeyPress } from "ahooks";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -89,6 +90,12 @@ export default function ChatInput({
   );
 
   const sessionId = useConnectStore((state) => state.currentSessionId);
+  const modifierKey = useShortcutsStore((state) => {
+    return state.modifierKey;
+  });
+  const modifierKeyPressed = useShortcutsStore((state) => {
+    return state.modifierKeyPressed;
+  });
   const modeSwitch = useShortcutsStore((state) => state.modeSwitch);
   const returnToInput = useShortcutsStore((state) => state.returnToInput);
 
@@ -122,9 +129,6 @@ export default function ChatInput({
   }, [reconnectCountdown, connected]);
 
   const [isCommandPressed, setIsCommandPressed] = useState(false);
-  const modifierKeyPressed = useShortcutsStore((state) => {
-    return state.modifierKeyPressed;
-  });
 
   const handleToggleFocus = useCallback(() => {
     if (isChatMode) {
@@ -152,6 +156,8 @@ export default function ChatInput({
     }
   }, [inputValue, isPinned]);
 
+  useKeyPress(`${modifierKey}.${returnToInput}`, handleToggleFocus);
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       // console.log("handleKeyDown", e.code, e.key);
@@ -163,14 +169,16 @@ export default function ChatInput({
 
       pressedKeys.add(e.key);
 
-      if (modifierKeyPressed) {
+      if (e.key === metaOrCtrlKey()) {
+        setIsCommandPressed(true);
+      }
+
+      if (pressedKeys.has(metaOrCtrlKey())) {
         // e.preventDefault();
         switch (e.code) {
           case "Comma":
             setIsCommandPressed(false);
             break;
-          case `Key${returnToInput}`:
-            handleToggleFocus();
             break;
           case "ArrowLeft":
             setSourceData(undefined);
@@ -206,7 +214,6 @@ export default function ChatInput({
       setIsCommandPressed,
       disabledChange,
       curChatEnd,
-      modifierKeyPressed,
     ]
   );
 
