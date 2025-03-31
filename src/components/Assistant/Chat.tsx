@@ -92,6 +92,8 @@ const ChatAI = memo(
 
       const [Question, setQuestion] = useState<string>("");
 
+      const [showPrevSuggestion, setShowPrevSuggestion] = useState(true);
+
       const [websocketSessionId, setWebsocketSessionId] = useState("");
 
       const onWebsocketSessionId = useCallback((sessionId: string) => {
@@ -194,8 +196,10 @@ const ChatAI = memo(
           if (!isLogin) return;
           if (!curChatEnd) return;
           if (!activeChat?._id) {
+            setShowPrevSuggestion(false);
             createNewChat(value, activeChat, websocketSessionId);
           } else {
+            setShowPrevSuggestion(false);
             handleSendMessage(value, activeChat, websocketSessionId);
           }
         },
@@ -356,7 +360,9 @@ const ChatAI = memo(
             <ConnectPrompt />
           )}
 
-          <PrevSuggestion id={websocketSessionId} />
+          {showPrevSuggestion ? (
+            <PrevSuggestion id={websocketSessionId} sendMessage={init} />
+          ) : null}
         </div>
       );
     }
