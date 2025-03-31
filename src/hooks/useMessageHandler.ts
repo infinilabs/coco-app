@@ -54,7 +54,6 @@ export function useMessageHandler(
         if (chunkData.chunk_type === "query_intent") {
           handlers.deal_query_intent(chunkData);
         } else if (chunkData.chunk_type === "fetch_source") {
-          console.log(1111111, "fetch_source", chunkData);
           handlers.deal_fetch_source(chunkData);
         } else if (chunkData.chunk_type === "pick_source") {
           handlers.deal_pick_source(chunkData);

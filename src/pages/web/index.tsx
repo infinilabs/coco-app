@@ -2,7 +2,6 @@ import { useEffect, useCallback } from "react";
 
 import SearchChat from "./SearchChat";
 import { useAppStore } from "@/stores/appStore";
-import { useConnectStore } from "@/stores/connectStore";
 import { Get } from "@/api/axiosRequest";
 
 import "@/i18n";
@@ -47,15 +46,10 @@ function WebApp({
   const setIsTauri = useAppStore((state) => state.setIsTauri);
   const setEndpoint = useAppStore((state) => state.setEndpoint);
 
-  const setDatasourceData = useConnectStore((state) => state.setDatasourceData);
-  const setConnectorData = useConnectStore((state) => state.setConnectorData);
-
   useEffect(() => {
     setIsTauri(false);
     setEndpoint(serverUrl);
     localStorage.setItem("headers", JSON.stringify(headers||{}));
-    getDataSourceList();
-    getConnectorList();
   }, []);
 
   const query_coco_fusion = useCallback(async (url: string) => {
@@ -111,46 +105,6 @@ function WebApp({
     },
     []
   );
-
-  const getDataSourceList = useCallback(async () => {
-    try {
-      const [error, response]: any = await Get("/datasource/_search");
-        if (error) {
-          console.error("_search", error);
-          return [];
-        }
-        const res = response?.hits?.hits?.map((item: any) => {
-          return {
-            ...item,
-            id: item._source.id,
-            name: item._source.name,
-          }
-        })
-        setDatasourceData(res, 'web');
-    } catch (err) {
-      console.error("get_datasources_by_server", err);
-    }
-  }, []);
-  
-  const getConnectorList = useCallback(async () => {
-    try {
-      const [error, response]: any = await Get("/connector/_search");
-        if (error) {
-          console.error("_search", error);
-          return [];
-        }
-        const res = response?.hits?.hits?.map((item: any) => {
-          return {
-            ...item,
-          }
-        })
-        setConnectorData(res, 'web');
-    } catch (err) {
-      console.error("get_datasources_by_server", err);
-    }
-  }, []);
-
-
 
   return (
     <div

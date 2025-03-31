@@ -43,7 +43,7 @@ export default defineConfig(async () => ({
     },
     proxy: {
       "/chat": {
-        target: process.env.COCO_SERVER_URL,
+        target: "https://coco.infini.cloud",
         changeOrigin: true,
         secure: false,
       },
@@ -53,7 +53,7 @@ export default defineConfig(async () => ({
         secure: false,
       },
       "/connector": {
-        target: "https://coco.infini.cloud",
+        target: "https://coco.infini.cloud0",
         changeOrigin: true,
         secure: false,
       },

@@ -32,42 +32,60 @@ export default function useWebSocket({
 
   const [errorShow, setErrorShow] = useState(false);
 
-  const { readyState, latestMessage, disconnect, connect } = useWebSocketAHook(
-    "wss://coco.infini.cloud/ws",
+  const websocketIdRef = useRef<string>('');
+  const messageQueue = useRef<string[]>([]);
+  const processingRef = useRef(false);
+
+  const { readyState, connect } = useWebSocketAHook(
+    // "wss://coco.infini.cloud/ws",
     // "ws://localhost:9000/ws",
-    // endpoint_websocket
+    endpoint_websocket,
+    {
+      manual: false,
+      reconnectLimit: 3,
+      reconnectInterval: 3000,
+      onMessage: (event) => {
+        const msg = event.data as string;
+        messageQueue.current.push(msg);
+        processQueue();
+      },
+    }
   );
 
-  const websocketIdRef = useRef<string>('')
-
-  useEffect(() => {
-    // console.log(readyState, latestMessage, disconnect, connect)
-    if (readyState === ReadyState.Open) {
-      console.log("WebSocket message size:", latestMessage?.data?.length, "bytes");
-      if (latestMessage?.data?.length > 1024 * 10) { // 10KB
-        console.warn("Large message received:", latestMessage?.data?.substring(0, 100) + "...");
-      }
-      
-      if (!latestMessage?.data) return;
-      const msg = latestMessage?.data as unknown as string;
-      
-      console.log("55555", msg.includes("fetch_source"));
+  const processMessage = useCallback((msg: string) => {
+    try {
       if (msg.includes("websocket-session-id")) {
-        console.log("websocket-session-id:", msg);
         const sessionId = msg.split(":")[1].trim();
         websocketIdRef.current = sessionId;
-        console.log("sessionId:", sessionId);
         setConnected(true);
-        if (onWebsocketSessionId) {
-          onWebsocketSessionId(sessionId);
-        }
-        return;
+        onWebsocketSessionId?.(sessionId);
+      } else {
+        dealMsgRef.current?.(msg);
       }
-      dealMsgRef.current && dealMsgRef.current(msg);
-    } else {
+    } catch (error) {
+      console.error('处理消息出错:', error, msg);
+    }
+  }, [onWebsocketSessionId]);
+
+  const processQueue = useCallback(() => {
+    if (processingRef.current || messageQueue.current.length === 0) return;
+    
+    processingRef.current = true;
+    while (messageQueue.current.length > 0) {
+      const msg = messageQueue.current.shift();
+      if (msg) {
+        console.log("处理消息:", msg.substring(0, 100));
+        processMessage(msg);
+      }
+    }
+    processingRef.current = false;
+  }, [processMessage]);
+
+  useEffect(() => {
+    if (readyState !== ReadyState.Open) {
       setConnected(false);
     }
-  }, [readyState, latestMessage?.data]);
+  }, [readyState]);
 
   const reconnect = useCallback(async (server?: IServer) => {
     if (isTauri) {

@@ -11,6 +11,7 @@ interface DocumentDetailProps {
 export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
   const { t } = useTranslation();
 
+  console.log(11111, document)
   return (
     <div className="p-4">
       <div className="font-normal text-xs text-[#666] dark:text-[#999] mb-2">
