@@ -11,11 +11,11 @@ import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import SearchPopover from "./SearchPopover";
-import AudioRecording from "../AudioRecording";
+// import AudioRecording from "../AudioRecording";
 import { hide_coco } from "@/commands";
 import { DataSource } from "@/types/commands";
-import InputExtra from "./InputExtra";
-import { useConnectStore } from "@/stores/connectStore";
+// import InputExtra from "./InputExtra";
+// import { useConnectStore } from "@/stores/connectStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useKeyPress } from "ahooks";
 
@@ -64,16 +64,16 @@ export default function ChatInput({
   isChatPage = false,
   getDataSourcesByServer,
   setupWindowFocusListener,
-  checkScreenPermission,
-  requestScreenPermission,
-  getScreenMonitors,
-  getScreenWindows,
-  captureMonitorScreenshot,
-  captureWindowScreenshot,
-  openFileDialog,
-  getFileMetadata,
-  getFileIcon,
-}: ChatInputProps) {
+}: // checkScreenPermission,
+// requestScreenPermission,
+// getScreenMonitors,
+// getScreenWindows,
+// captureMonitorScreenshot,
+// captureWindowScreenshot,
+// openFileDialog,
+// getFileMetadata,
+// getFileIcon,
+ChatInputProps) {
   const { t } = useTranslation();
 
   const showTooltip = useAppStore(
@@ -89,7 +89,7 @@ export default function ChatInput({
     (state: { setSourceData: any }) => state.setSourceData
   );
 
-  const sessionId = useConnectStore((state) => state.currentSessionId);
+  // const sessionId = useConnectStore((state) => state.currentSessionId);
   const modifierKey = useShortcutsStore((state) => {
     return state.modifierKey;
   });
