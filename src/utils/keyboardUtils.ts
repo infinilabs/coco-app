@@ -21,6 +21,8 @@ export const KEY_SYMBOLS: Record<string, string> = {
   // Modifier keys
   Control: isMac ? "⌃" : "Ctrl",
   control: isMac ? "⌃" : "Ctrl",
+  Ctrl: isMac ? "⌃" : "Ctrl",
+  ctrl: isMac ? "⌃" : "Ctrl",
   Shift: isMac ? "⇧" : "Shift",
   shift: isMac ? "⇧" : "Shift",
   Alt: isMac ? "⌥" : "Alt",

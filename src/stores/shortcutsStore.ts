@@ -1,12 +1,14 @@
 import { isMac } from "@/utils/platform";
 import { create } from "zustand";
-import { persist, subscribeWithSelector } from "zustand/middleware";
+import { persist } from "zustand/middleware";
 
-export type ModifierKey = "Command" | "Control" | "Option";
+export type ModifierKey = "meta" | "ctrl" | "alt" | "shift";
 
 export type IShortcutsStore = {
   modifierKey: ModifierKey;
   setModifierKey: (modifierKey: ModifierKey) => void;
+  modifierKeyPressed: boolean;
+  setModifierKeyPressed: (modifierKeyPressed: boolean) => void;
   modeSwitch: string;
   setModeSwitch: (modeSwitch: string) => void;
   returnToInput: string;
@@ -22,36 +24,37 @@ export type IShortcutsStore = {
 };
 
 export const useShortcutsStore = create<IShortcutsStore>()(
-  subscribeWithSelector(
-    persist(
-      (set) => ({
-        modifierKey: isMac ? "Command" : "Control",
-        setModifierKey: (modifierKey: ModifierKey) => set({ modifierKey }),
-        modeSwitch: "T",
-        setModeSwitch: (modeSwitch: string) => set({ modeSwitch }),
-        returnToInput: "I",
-        setReturnToInput: (returnToInput: string) => set({ returnToInput }),
-        voiceInput: "N",
-        setVoiceInput: (voiceInput: string) => set({ voiceInput }),
-        addImage: "G",
-        setAddImage: (addImage: string) => set({ addImage }),
-        selectLlmModel: "O",
-        setSelectLlmModel: (selectLlmModel: string) => set({ selectLlmModel }),
-        addFile: "U",
-        setAddFile: (addFile: string) => set({ addFile }),
+  persist(
+    (set) => ({
+      modifierKey: isMac ? "meta" : "ctrl",
+      setModifierKey: (modifierKey: ModifierKey) => set({ modifierKey }),
+      modifierKeyPressed: false,
+      setModifierKeyPressed: (modifierKeyPressed: boolean) =>
+        set({ modifierKeyPressed }),
+      modeSwitch: "T",
+      setModeSwitch: (modeSwitch: string) => set({ modeSwitch }),
+      returnToInput: "I",
+      setReturnToInput: (returnToInput: string) => set({ returnToInput }),
+      voiceInput: "N",
+      setVoiceInput: (voiceInput: string) => set({ voiceInput }),
+      addImage: "G",
+      setAddImage: (addImage: string) => set({ addImage }),
+      selectLlmModel: "O",
+      setSelectLlmModel: (selectLlmModel: string) => set({ selectLlmModel }),
+      addFile: "U",
+      setAddFile: (addFile: string) => set({ addFile }),
+    }),
+    {
+      name: "shortcuts-store",
+      partialize: (state) => ({
+        modifierKey: state.modifierKey,
+        modeSwitch: state.modeSwitch,
+        returnToInput: state.returnToInput,
+        voiceInput: state.voiceInput,
+        addImage: state.addImage,
+        selectLlmModel: state.selectLlmModel,
+        addFile: state.addFile,
       }),
-      {
-        name: "shortcuts-store",
-        partialize: (state) => ({
-          modifierKey: state.modifierKey,
-          modeSwitch: state.modeSwitch,
-          returnToInput: state.returnToInput,
-          voiceInput: state.voiceInput,
-          addImage: state.addImage,
-          selectLlmModel: state.selectLlmModel,
-          addFile: state.addFile,
-        }),
-      }
-    )
+    }
   )
 );

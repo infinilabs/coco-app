@@ -16,6 +16,7 @@ import { hide_coco } from "@/commands";
 import { DataSource } from "@/types/commands";
 import InputExtra from "./InputExtra";
 import { useConnectStore } from "@/stores/connectStore";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -73,7 +74,7 @@ export default function ChatInput({
   getFileIcon,
 }: ChatInputProps) {
   const { t } = useTranslation();
-  
+
   const showTooltip = useAppStore(
     (state: { showTooltip: boolean }) => state.showTooltip
   );
@@ -88,6 +89,8 @@ export default function ChatInput({
   );
 
   const sessionId = useConnectStore((state) => state.currentSessionId);
+  const modeSwitch = useShortcutsStore((state) => state.modeSwitch);
+  const returnToInput = useShortcutsStore((state) => state.returnToInput);
 
   useEffect(() => {
     return () => {
@@ -109,7 +112,7 @@ export default function ChatInput({
       setReconnectCountdown(0);
       return;
     }
-  
+
     if (reconnectCountdown > 0) {
       const timer = setTimeout(() => {
         setReconnectCountdown(reconnectCountdown - 1);
@@ -167,7 +170,7 @@ export default function ChatInput({
           case "Comma":
             setIsCommandPressed(false);
             break;
-          case "KeyI":
+          case `Key${returnToInput}`:
             handleToggleFocus();
             break;
           case "ArrowLeft":
@@ -305,7 +308,7 @@ export default function ChatInput({
                 !isChatMode && sourceData ? "left-7" : ""
               } w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#ededed] dark:shadow-[-6px_0px_6px_2px_#202126]`}
             >
-              I
+              {returnToInput}
             </div>
           ) : null}
         </div>
@@ -344,13 +347,13 @@ export default function ChatInput({
           </button>
         ) : null}
 
-        {showTooltip && isChatMode && isCommandPressed ? (
+        {/* {showTooltip && isChatMode && isCommandPressed ? (
           <div
             className={`absolute right-10 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
           >
             M
           </div>
-        ) : null}
+        ) : null} */}
 
         {showTooltip && isChatMode && isCommandPressed ? (
           <div
@@ -371,7 +374,7 @@ export default function ChatInput({
               }}
             >
               {reconnectCountdown > 0
-                ? `${t("search.input.connecting")}(${reconnectCountdown}s)` 
+                ? `${t("search.input.connecting")}(${reconnectCountdown}s)`
                 : t("search.input.reconnect")}
             </div>
           </div>
@@ -444,7 +447,7 @@ export default function ChatInput({
               <div
                 className={`absolute left-1 z-10 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
               >
-                T
+                {modeSwitch}
               </div>
             ) : null}
             <ChatSwitch
