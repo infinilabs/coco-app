@@ -11,6 +11,16 @@ Information about release notes of Coco Server is provided here.
 
 ### Breaking changes
 
+### Features
+
+### Bug fix
+
+### Improvements
+
+## 0.3.0 (2025-03-31)
+
+### Breaking changes
+
 - feat: add web pages components #277
 - feat: support for customizing some of the preset shortcuts #316
 
