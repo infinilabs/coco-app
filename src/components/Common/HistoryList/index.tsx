@@ -7,7 +7,7 @@ import {
   MenuItems,
 } from "@headlessui/react";
 import { groupBy, isNil } from "lodash-es";
-import { FC, useMemo } from "react";
+import { cloneElement, FC, useMemo } from "react";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import clsx from "clsx";
@@ -58,27 +58,31 @@ const HistoryList: FC<HistoryListProps> = (props) => {
   const menuItems = [
     {
       label: "分享",
-      icon: <Share2 />,
+      icon: Share2,
       onClick: () => {},
     },
     {
       label: "重命名",
-      icon: <Pencil />,
+      icon: Pencil,
       onClick: () => {},
     },
     {
       label: "删除",
-      icon: <Trash2 />,
+      icon: Trash2,
+      iconColor: "#FF2018",
       onClick: () => {},
     },
   ];
 
   return (
     <div className={clsx("h-full overflow-auto px-3 py-2 text-sm")}>
-      <div className="flex items-center gap-2 h-8 mb-6 px-2">
-        <Search className="h-4 min-w-4" />
+      <div className="flex items-center gap-2 h-8 mb-6 px-2  dark:bg-[#2B3444] rounded-lg">
+        <Search className="h-4 min-w-4 dark:text-[#6B7280]" />
 
-        <Input className="bg-transparent outline-none" placeholder="Search" />
+        <Input
+          className="bg-transparent outline-none text-[#999]"
+          placeholder="Search"
+        />
       </div>
 
       <div>
@@ -99,7 +103,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
                       className={clsx(
                         "flex items-center h-10 rounded-lg cursor-pointer",
                         {
-                          "bg-black/5": isActive,
+                          "bg-[#2B3444]": isActive,
                         }
                       )}
                       onClick={() => onSelect(item)}
@@ -117,20 +121,32 @@ const HistoryList: FC<HistoryListProps> = (props) => {
 
                         <Menu>
                           <MenuButton>
-                            {isActive && <Ellipsis className="size-4" />}
+                            {isActive && (
+                              <Ellipsis className="size-4 dark:text-[#979797]" />
+                            )}
                           </MenuButton>
 
                           <MenuItems
                             anchor="bottom"
-                            className="flex flex-col rounded-lg shadow-md z-100"
+                            className="flex flex-col rounded-lg shadow-md z-100 dark:bg-[#202126] p-1 border dark:border-white/10"
                           >
                             {menuItems.map((item) => {
-                              const { label, icon, onClick } = item;
+                              const {
+                                label,
+                                icon: Icon,
+                                iconColor,
+                                onClick,
+                              } = item;
 
                               return (
                                 <MenuItem key={label}>
-                                  <button className="flex">
-                                    {icon}
+                                  <button className="flex items-center gap-2 px-3 py-2 text-sm">
+                                    <Icon
+                                      className="size-4"
+                                      style={{
+                                        color: iconColor,
+                                      }}
+                                    />
 
                                     <span>{label}</span>
                                   </button>
