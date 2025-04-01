@@ -26,7 +26,8 @@ import {
   open_session_chat,
   get_datasources_by_server,
 } from "@/commands";
-import { DataSource } from "@/types/commands"
+import { DataSource } from "@/types/commands";
+import HistoryList from "@/components/Common/HistoryList";
 
 interface ChatProps {}
 
@@ -213,7 +214,13 @@ export default function Chat({}: ChatProps) {
               isSidebarOpen ? "translate-x-0" : "-translate-x-full"
             } transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block bg-gray-100 dark:bg-gray-800`}
           >
-            <Sidebar
+            <HistoryList
+              list={chats}
+              active={activeChat}
+              onSelect={onSelectChat}
+              onRemove={deleteChat}
+            />
+            {/* <Sidebar
               chats={chats}
               activeChat={activeChat}
               onNewChat={() => {
@@ -222,7 +229,7 @@ export default function Chat({}: ChatProps) {
               onSelectChat={onSelectChat}
               onDeleteChat={deleteChat}
               fetchChatHistory={getChatHistory}
-            />
+            /> */}
           </div>
         ) : null}
 

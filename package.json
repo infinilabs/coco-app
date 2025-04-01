@@ -35,6 +35,7 @@
     "@wavesurfer/react": "^1.0.9",
     "ahooks": "^3.8.4",
     "clsx": "^2.1.1",
+    "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
     "filesize": "^10.1.6",
     "i18next": "^23.16.8",
