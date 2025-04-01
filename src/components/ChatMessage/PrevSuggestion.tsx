@@ -4,12 +4,16 @@ import { FC, useEffect, useState } from "react";
 import { Get } from "@/api/axiosRequest";
 
 interface PrevSuggestionProps {
-  id: string;
   sendMessage: (message: string) => void;
 }
 
 const PrevSuggestion: FC<PrevSuggestionProps> = (props) => {
-  const { id, sendMessage } = props;
+  const { sendMessage } = props;
+
+  const headersStr = localStorage.getItem("headers") || "{}";
+  const headers = JSON.parse(headersStr);
+  const id = headers['APP-INTEGRATION-ID'] || "cvkm9hmhpcemufsg3vug";
+  console.log("id", id);
 
   const [list, setList] = useState<string[]>([]);
 
@@ -26,13 +30,12 @@ const PrevSuggestion: FC<PrevSuggestionProps> = (props) => {
 
     if (error) {
       console.error(url, error);
-
       return setList([]);
     }
 
     console.log("res", res);
 
-    setList(res as any);
+    setList(Array.isArray(res) ? res : []);
   };
 
   console.log("id", id);

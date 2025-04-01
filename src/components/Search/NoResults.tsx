@@ -30,7 +30,7 @@ export const NoResults = () => {
           </span>
         )}
         <span className="ml-1 w-5 h-5 rounded-[6px] border border-[#D8D8D8] flex justify-center items-center">
-          T
+          S
         </span>
       </div>
     </div>

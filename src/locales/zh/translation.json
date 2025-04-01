@@ -153,7 +153,7 @@
     "input": {
       "searchPlaceholder": "搜索任何内容...",
       "connectionError": "无法连接到服务器",
-      "reconnect": "重新连接",
+      "reconnect": "点此重连",
       "deepThink": "深度思考",
       "search": "联网搜索",
       "uploadFile": "上传文件",

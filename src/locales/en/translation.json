@@ -153,7 +153,7 @@
     "input": {
       "searchPlaceholder": "Search whatever you want ...",
       "connectionError": "Unable to connect to the server",
-      "reconnect": "Reconnect",
+      "reconnect": "Click here to reconnect.",
       "deepThink": "Deep Think",
       "search": "Search",
       "uploadFile": "Upload File",

@@ -361,7 +361,7 @@ const ChatAI = memo(
           )}
 
           {showPrevSuggestion ? (
-            <PrevSuggestion id={websocketSessionId} sendMessage={init} />
+            <PrevSuggestion sendMessage={init} />
           ) : null}
         </div>
       );
