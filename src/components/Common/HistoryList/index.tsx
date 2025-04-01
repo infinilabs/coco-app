@@ -12,6 +12,9 @@ import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import clsx from "clsx";
 import { Ellipsis, Pencil, Search, Share2, Trash2 } from "lucide-react";
+import { t } from "i18next";
+import { useTranslation } from "react-i18next";
+import { useAppStore } from "@/stores/appStore";
 
 dayjs.extend(isSameOrAfter);
 
@@ -26,7 +29,7 @@ interface HistoryListProps {
 
 const HistoryList: FC<HistoryListProps> = (props) => {
   const { list, active, onSelect, onSearch, onRename, onRemove } = props;
-
+  const { t } = useTranslation();
   const [isEdit, setIsEdit] = useState(false);
 
   const sortedList = useMemo(() => {
@@ -38,19 +41,19 @@ const HistoryList: FC<HistoryListProps> = (props) => {
       const date = dayjs(chat._source?.updated);
 
       if (date.isSame(now, "day")) {
-        return "今天";
+        return "history_list.date.today";
       }
 
       if (date.isSame(now.subtract(1, "day"), "day")) {
-        return "昨天";
+        return "history_list.date.yesterday";
       }
 
       if (date.isSameOrAfter(now.subtract(7, "day"), "day")) {
-        return "过去 7 天";
+        return "history_list.date.last7Days";
       }
 
       if (date.isSameOrAfter(now.subtract(30, "day"), "day")) {
-        return "过去 30 天";
+        return "history_list.date.last30Days";
       }
 
       return date.format("YYYY-MM");
@@ -59,19 +62,19 @@ const HistoryList: FC<HistoryListProps> = (props) => {
 
   const menuItems = [
     {
-      label: "分享",
+      label: "history_list.menu.share",
       icon: Share2,
       onClick: () => {},
     },
     {
-      label: "重命名",
+      label: "history_list.menu.rename",
       icon: Pencil,
       onClick: () => {
         setIsEdit(true);
       },
     },
     {
-      label: "删除",
+      label: "history_list.menu.delete",
       icon: Trash2,
       iconColor: "#FF2018",
       onClick: () => {},
@@ -79,21 +82,25 @@ const HistoryList: FC<HistoryListProps> = (props) => {
   ];
 
   return (
-    <div className={clsx("h-full overflow-auto px-3 py-2 text-sm")}>
-      <div className="flex items-center gap-2 h-8 mb-6 px-2  dark:bg-[#2B3444] rounded-lg">
+    <div
+      className={clsx(
+        "h-full overflow-auto px-3 py-2 text-sm dark:bg-[#1F2937]"
+      )}
+    >
+      <div className="flex items-center gap-2 h-8 px-2  dark:bg-[#2B3444] rounded-lg">
         <Search className="h-4 min-w-4 dark:text-[#6B7280]" />
 
         <Input
           className="bg-transparent outline-none text-[#999]"
-          placeholder="Search"
+          placeholder={t("history_list.search.placeholder")}
         />
       </div>
 
-      <div>
+      <div className="mt-6">
         {Object.entries(sortedList).map(([label, list]) => {
           return (
             <div key={label}>
-              <span className="text-xs">{label}</span>
+              <span className="text-xs">{t(label)}</span>
 
               <ul className="mt-1">
                 {list.map((item) => {
@@ -167,7 +174,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
                                       }}
                                     />
 
-                                    <span>{label}</span>
+                                    <span>{t(label)}</span>
                                   </button>
                                 </MenuItem>
                               );
