@@ -7,7 +7,7 @@ import {
   MenuItems,
 } from "@headlessui/react";
 import { groupBy, isNil } from "lodash-es";
-import { cloneElement, FC, useMemo } from "react";
+import { cloneElement, FC, useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import clsx from "clsx";
@@ -26,6 +26,8 @@ interface HistoryListProps {
 
 const HistoryList: FC<HistoryListProps> = (props) => {
   const { list, active, onSelect, onSearch, onRename, onRemove } = props;
+
+  const [isEdit, setIsEdit] = useState(false);
 
   const sortedList = useMemo(() => {
     if (isNil(list)) return {};
@@ -64,7 +66,9 @@ const HistoryList: FC<HistoryListProps> = (props) => {
     {
       label: "重命名",
       icon: Pencil,
-      onClick: () => {},
+      onClick: () => {
+        setIsEdit(true);
+      },
     },
     {
       label: "删除",
@@ -96,6 +100,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
                   const { _id, _source } = item;
 
                   const isActive = _id === active?._id;
+                  const title = _source?.title ?? _id;
 
                   return (
                     <li
@@ -106,7 +111,13 @@ const HistoryList: FC<HistoryListProps> = (props) => {
                           "bg-[#2B3444]": isActive,
                         }
                       )}
-                      onClick={() => onSelect(item)}
+                      onClick={() => {
+                        if (!isActive) {
+                          setIsEdit(false);
+                        }
+
+                        onSelect(item);
+                      }}
                     >
                       <div
                         className={clsx("w-1 h-6 rounded-sm bg-[#0072FF]", {
@@ -115,16 +126,21 @@ const HistoryList: FC<HistoryListProps> = (props) => {
                       />
 
                       <div className="flex-1 flex items-center justify-between gap-2 px-2 overflow-hidden">
-                        <span className="truncate">
-                          {_source?.title ?? _id}
-                        </span>
+                        {isEdit && isActive ? (
+                          <Input
+                            defaultValue={title}
+                            className="flex-1 -mx-px outline-none bg-transparent border border-[#0061FF] rounded-[4px]"
+                          />
+                        ) : (
+                          <span className="truncate">{title}</span>
+                        )}
 
                         <Menu>
-                          <MenuButton>
-                            {isActive && (
+                          {isActive && !isEdit && (
+                            <MenuButton>
                               <Ellipsis className="size-4 dark:text-[#979797]" />
-                            )}
-                          </MenuButton>
+                            </MenuButton>
+                          )}
 
                           <MenuItems
                             anchor="bottom"
@@ -140,7 +156,10 @@ const HistoryList: FC<HistoryListProps> = (props) => {
 
                               return (
                                 <MenuItem key={label}>
-                                  <button className="flex items-center gap-2 px-3 py-2 text-sm">
+                                  <button
+                                    className="flex items-center gap-2 px-3 py-2 text-sm"
+                                    onClick={onClick}
+                                  >
                                     <Icon
                                       className="size-4"
                                       style={{
