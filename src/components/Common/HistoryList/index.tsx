@@ -97,7 +97,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
       )}
     >
       <div className="flex gap-1 children:h-8">
-        <div className="flex-1 flex items-center gap-2 px-2 rounded-lg border border-[#E6E6E6] bg-[#F8F9FA]">
+        <div className="flex-1 flex items-center gap-2 px-2 rounded-lg border border-[#E6E6E6] bg-[#F8F9FA] dark:bg-[#2B3444] dark:border-[#343D4D]">
           <Search className="size-4 text-[#6B7280]" />
 
           <Input
@@ -106,7 +106,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
           />
         </div>
 
-        <div className="size-8 flex items-center justify-center rounded-lg border text-[#0072FF] border-[#E6E6E6] bg-[#F3F4F6] hover:bg-[#F8F9FA] cursor-pointer transition">
+        <div className="size-8 flex items-center justify-center rounded-lg border text-[#0072FF] border-[#E6E6E6] bg-[#F3F4F6] dark:border-[#343D4D] dark:bg-[#1F2937] hover:bg-[#F8F9FA] dark:hover:bg-[#353F4D] cursor-pointer transition">
           <RefreshCcw className="size-4" />
         </div>
       </div>
@@ -128,9 +128,9 @@ const HistoryList: FC<HistoryListProps> = (props) => {
                     <li
                       key={_id}
                       className={clsx(
-                        "flex items-center mt-1 h-10 rounded-lg cursor-pointer hover:bg-[#F8F9FA] transition",
+                        "flex items-center mt-1 h-10 rounded-lg cursor-pointer hover:bg-[#F8F9FA] dark:hover:bg-[#353F4D] transition",
                         {
-                          "!bg-[#E5E7EB]": isActive,
+                          "!bg-[#E5E7EB] dark:!bg-[#2B3444]": isActive,
                         }
                       )}
                       onClick={() => {
@@ -179,7 +179,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
                               return (
                                 <MenuItem key={label}>
                                   <button
-                                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-[#EDEDED] transition"
+                                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-[#EDEDED] dark:hover:bg-[#2B2C31] transition"
                                     onClick={onClick}
                                   >
                                     <Icon
