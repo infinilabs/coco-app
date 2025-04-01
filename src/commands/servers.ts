@@ -1,6 +1,12 @@
-import { invoke } from '@tauri-apps/api/core';
+import { invoke } from "@tauri-apps/api/core";
 
-import { ServerTokenResponse, Server, Connector, DataSource, GetResponse } from "@/types/commands"
+import {
+  ServerTokenResponse,
+  Server,
+  Connector,
+  DataSource,
+  GetResponse,
+} from "@/types/commands";
 
 export function get_server_token(id: string): Promise<ServerTokenResponse> {
   return invoke(`get_server_token`, { id });
@@ -70,15 +76,18 @@ export function chat_history({
   serverId,
   from = 0,
   size = 20,
+  query = "",
 }: {
   serverId: string;
   from?: number;
   size?: number;
+  query?: string;
 }): Promise<string> {
   return invoke(`chat_history`, {
     serverId,
     from,
     size,
+    query,
   });
 }
 
@@ -180,3 +189,18 @@ export function send_message({
     queryParams,
   });
 }
+
+export const delete_session_chat = (serverId: string, sessionId: string) => {
+  return invoke<boolean>(`delete_session_chat`, { serverId, sessionId });
+};
+
+export const update_session_chat = (payload: {
+  serverId: string;
+  sessionId: string;
+  title?: string;
+  context?: {
+    attachments?: string[];
+  };
+}): Promise<boolean> => {
+  return invoke<boolean>("update_session_chat", payload);
+};

@@ -6,22 +6,13 @@ import {
   MenuItem,
   MenuItems,
 } from "@headlessui/react";
-import { groupBy, isNil } from "lodash-es";
-import { cloneElement, FC, useEffect, useMemo, useState } from "react";
+import { debounce, groupBy, isNil } from "lodash-es";
+import { FC, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import clsx from "clsx";
-import {
-  Ellipsis,
-  Pencil,
-  RefreshCcw,
-  Search,
-  Share2,
-  Trash2,
-} from "lucide-react";
-import { t } from "i18next";
+import { Ellipsis, Pencil, RefreshCcw, Search, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useAppStore } from "@/stores/appStore";
 
 dayjs.extend(isSameOrAfter);
 
@@ -31,7 +22,7 @@ interface HistoryListProps {
   onSearch: (keyword: string) => void;
   onRefresh: () => void;
   onSelect: (chat: Chat) => void;
-  onRename: (chat: Chat) => void;
+  onRename: (chat: Chat, title: string) => void;
   onRemove: (chatId: string) => void;
 }
 
@@ -70,11 +61,11 @@ const HistoryList: FC<HistoryListProps> = (props) => {
   }, [list]);
 
   const menuItems = [
-    {
-      label: "history_list.menu.share",
-      icon: Share2,
-      onClick: () => {},
-    },
+    // {
+    //   label: "history_list.menu.share",
+    //   icon: Share2,
+    //   onClick: () => {},
+    // },
     {
       label: "history_list.menu.rename",
       icon: Pencil,
@@ -90,6 +81,10 @@ const HistoryList: FC<HistoryListProps> = (props) => {
     },
   ];
 
+  const debouncedSearch = useMemo(() => {
+    return debounce((value: string) => onSearch(value), 500);
+  }, [onSearch]);
+
   return (
     <div
       className={clsx(
@@ -103,10 +98,16 @@ const HistoryList: FC<HistoryListProps> = (props) => {
           <Input
             className="bg-transparent outline-none"
             placeholder={t("history_list.search.placeholder")}
+            onChange={(event) => {
+              debouncedSearch(event.target.value);
+            }}
           />
         </div>
 
-        <div className="size-8 flex items-center justify-center rounded-lg border text-[#0072FF] border-[#E6E6E6] bg-[#F3F4F6] dark:border-[#343D4D] dark:bg-[#1F2937] hover:bg-[#F8F9FA] dark:hover:bg-[#353F4D] cursor-pointer transition">
+        <div
+          className="size-8 flex items-center justify-center rounded-lg border text-[#0072FF] border-[#E6E6E6] bg-[#F3F4F6] dark:border-[#343D4D] dark:bg-[#1F2937] hover:bg-[#F8F9FA] dark:hover:bg-[#353F4D] cursor-pointer transition"
+          onClick={onRefresh}
+        >
           <RefreshCcw className="size-4" />
         </div>
       </div>

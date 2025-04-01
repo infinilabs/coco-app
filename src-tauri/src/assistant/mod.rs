@@ -12,6 +12,7 @@ pub async fn chat_history<R: Runtime>(
     server_id: String,
     from: u32,
     size: u32,
+    query: String,
 ) -> Result<String, String> {
     let mut query_params: HashMap<String, Value> = HashMap::new();
     if from > 0 {
@@ -20,6 +21,8 @@ pub async fn chat_history<R: Runtime>(
     if size > 0 {
         query_params.insert("size".to_string(), size.into());
     }
+
+    query_params.insert("query".to_string(), query.into());
 
     let response = HttpClient::get(&server_id, "/chat/_history", Some(query_params))
         .await
@@ -135,9 +138,10 @@ pub async fn new_chat<R: Runtime>(
     let mut headers = HashMap::new();
     headers.insert("WEBSOCKET-SESSION-ID".to_string(), websocket_id.into());
 
-    let response = HttpClient::advanced_post(&server_id, "/chat/_new", Some(headers), query_params, body)
-        .await
-        .map_err(|e| format!("Error sending message: {}", e))?;
+    let response =
+        HttpClient::advanced_post(&server_id, "/chat/_new", Some(headers), query_params, body)
+            .await
+            .map_err(|e| format!("Error sending message: {}", e))?;
 
     if response.status().as_u16() < 200 || response.status().as_u16() >= 400 {
         return Err("Failed to send message".to_string());
@@ -174,10 +178,58 @@ pub async fn send_message<R: Runtime>(
     headers.insert("WEBSOCKET-SESSION-ID".to_string(), websocket_id.into());
 
     let body = reqwest::Body::from(serde_json::to_string(&msg).unwrap());
-    let response =
-        HttpClient::advanced_post(&server_id, path.as_str(), Some(headers), query_params, Some(body))
-            .await
-            .map_err(|e| format!("Error cancel session: {}", e))?;
+    let response = HttpClient::advanced_post(
+        &server_id,
+        path.as_str(),
+        Some(headers),
+        query_params,
+        Some(body),
+    )
+    .await
+    .map_err(|e| format!("Error cancel session: {}", e))?;
 
     handle_raw_response(response).await?
+}
+
+#[tauri::command]
+pub async fn delete_session_chat(server_id: String, session_id: String) -> Result<bool, String> {
+    let response =
+        HttpClient::delete(&server_id, &format!("/chat/{}", session_id), None, None).await?;
+
+    if response.status().is_success() {
+        Ok(true)
+    } else {
+        Err(format!("Delete failed with status: {}", response.status()))
+    }
+}
+
+#[tauri::command]
+pub async fn update_session_chat(
+    server_id: String,
+    session_id: String,
+    title: Option<String>,
+    context: Option<HashMap<String, Value>>,
+) -> Result<bool, String> {
+    let mut body = HashMap::new();
+    if let Some(title) = title {
+        body.insert("title".to_string(), Value::String(title));
+    }
+    if let Some(context) = context {
+        body.insert(
+            "context".to_string(),
+            Value::Object(context.into_iter().collect()),
+        );
+    }
+
+    let response = HttpClient::put(
+        &server_id,
+        &format!("/chat/{}", session_id),
+        None,
+        None,
+        Some(reqwest::Body::from(serde_json::to_string(&body).unwrap())),
+    )
+    .await
+    .map_err(|e| format!("Error updating session: {}", e))?;
+
+    Ok(response.status().is_success())
 }
