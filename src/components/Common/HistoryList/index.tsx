@@ -1,5 +1,9 @@
 import { Chat } from "@/components/Assistant/types";
 import {
+  Description,
+  Dialog,
+  DialogPanel,
+  DialogTitle,
   Input,
   Menu,
   MenuButton,
@@ -7,7 +11,7 @@ import {
   MenuItems,
 } from "@headlessui/react";
 import { debounce, groupBy, isNil } from "lodash-es";
-import { FC, KeyboardEvent, MouseEvent, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import clsx from "clsx";
@@ -31,6 +35,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
     props;
   const { t } = useTranslation();
   const [isEdit, setIsEdit] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const sortedList = useMemo(() => {
     if (isNil(list)) return {};
@@ -69,7 +74,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
     {
       label: "history_list.menu.rename",
       icon: Pencil,
-      onClick: (item: Chat) => {
+      onClick: () => {
         setIsEdit(true);
       },
     },
@@ -77,8 +82,8 @@ const HistoryList: FC<HistoryListProps> = (props) => {
       label: "history_list.menu.delete",
       icon: Trash2,
       iconColor: "#FF2018",
-      onClick: (item: Chat) => {
-        onRemove(item._id);
+      onClick: () => {
+        setIsOpen(true);
       },
     },
   ];
@@ -195,7 +200,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
                                 <MenuItem key={label}>
                                   <button
                                     className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-[#EDEDED] dark:hover:bg-[#2B2C31] transition"
-                                    onClick={() => onClick(item)}
+                                    onClick={() => onClick()}
                                   >
                                     <Icon
                                       className="size-4"
@@ -220,6 +225,46 @@ const HistoryList: FC<HistoryListProps> = (props) => {
           );
         })}
       </div>
+
+      <Dialog
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        className="relative z-1000"
+      >
+        <div className="fixed inset-0 flex items-center justify-center w-screen">
+          <DialogPanel className="flex flex-col justify-between w-[360px] h-[160px] p-3 border border-[#e6e6e6] bg-white dark:bg-[#202126] dark:border-white/10 shadow-xl rounded-lg">
+            <div className="flex flex-col gap-3">
+              <DialogTitle className="text-base font-bold text-[#333]">
+                Delete chat?
+              </DialogTitle>
+              <Description className="text-sm text-[#333]">
+                This will delete “{active?._source?.title || active?._id}”
+              </Description>
+            </div>
+
+            <div className="flex gap-4 self-end">
+              <button
+                className="h-8 px-4 text-[#666666] bg-[#F8F9FA] dark:text-white dark:bg-[#202126] border border-[#E6E6E6] dark:border-white/10 rounded-lg"
+                onClick={() => setIsOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="h-8 px-4 text-white bg-[#EF4444] rounded-lg"
+                onClick={() => {
+                  if (!active?._id) return;
+
+                  onRemove(active._id);
+
+                  setIsOpen(false);
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </DialogPanel>
+        </div>
+      </Dialog>
     </div>
   );
 };
