@@ -136,7 +136,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
                     <li
                       key={_id}
                       className={clsx(
-                        "flex items-center mt-1 h-10 rounded-lg cursor-pointer hover:bg-[#F8F9FA] dark:hover:bg-[#353F4D] transition",
+                        "flex items-center mt-1 h-10 rounded-lg cursor-pointer hover:bg-[#EDEDED] dark:hover:bg-[#353F4D] transition",
                         {
                           "!bg-[#E5E7EB] dark:!bg-[#2B3444]": isActive,
                         }
