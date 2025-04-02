@@ -6,6 +6,13 @@ import {
   Connector,
   DataSource,
   GetResponse,
+  UploadAttachmentPayload,
+  UploadAttachmentResponse,
+  GetAttachmentPayload,
+  GetAttachmentResponse,
+  DeleteAttachmentPayload,
+  TranscriptionPayload,
+  TranscriptionResponse,
 } from "@/types/commands";
 
 export function get_server_token(id: string): Promise<ServerTokenResponse> {
@@ -203,4 +210,26 @@ export const update_session_chat = (payload: {
   };
 }): Promise<boolean> => {
   return invoke<boolean>("update_session_chat", payload);
+};
+
+export const upload_attachment = async (payload: UploadAttachmentPayload) => {
+  const response = await invoke<UploadAttachmentResponse>("upload_attachment", {
+    ...payload,
+  });
+
+  if (response?.acknowledged) {
+    return response.attachments;
+  }
+};
+
+export const get_attachment = (payload: GetAttachmentPayload) => {
+  return invoke<GetAttachmentResponse>("get_attachment", { ...payload });
+};
+
+export const delete_attachment = (payload: DeleteAttachmentPayload) => {
+  return invoke<boolean>("delete_attachment", { ...payload });
+};
+
+export const transcription = (payload: TranscriptionPayload) => {
+  return invoke<TranscriptionResponse>("transcription", { ...payload });
 };

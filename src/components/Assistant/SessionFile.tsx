@@ -1,8 +1,3 @@
-import {
-  AttachmentHit,
-  deleteAttachment,
-  getAttachment,
-} from "@/api/attachment";
 import { useConnectStore } from "@/stores/connectStore";
 import clsx from "clsx";
 import { filesize } from "filesize";
@@ -11,6 +6,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Checkbox from "../Common/Checkbox";
 import FileIcon from "../Common/Icons/FileIcon";
+import { delete_attachment, get_attachment } from "@/commands";
+import { AttachmentHit } from "@/types/commands";
 
 interface SessionFileProps {
   sessionId: string;
@@ -35,13 +32,13 @@ const SessionFile = (props: SessionFileProps) => {
   }, [sessionId]);
 
   const getUploadedFiles = async () => {
-    const response = await getAttachment({ serverId, sessionId });
+    const response = await get_attachment({ serverId, sessionId });
 
     setUploadedFiles(response.hits.hits);
   };
 
   const handleDelete = async (id: string) => {
-    const result = await deleteAttachment({ serverId, id });
+    const result = await delete_attachment({ serverId, id });
 
     if (!result) return;
 
