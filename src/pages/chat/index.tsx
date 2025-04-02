@@ -15,8 +15,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { metadata, icon } from "tauri-plugin-fs-pro-api";
 
 import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
-import { Sidebar } from "@/components/Assistant/Sidebar";
-import type { Chat } from "@/components/Assistant/types";
+import type { Chat as typeChat } from "@/components/Assistant/types";
 import { useConnectStore } from "@/stores/connectStore";
 import InputBox from "@/components/Search/InputBox";
 import {
@@ -25,8 +24,11 @@ import {
   close_session_chat,
   open_session_chat,
   get_datasources_by_server,
+  delete_session_chat,
+  update_session_chat,
 } from "@/commands";
-import { DataSource } from "@/types/commands"
+import { DataSource } from "@/types/commands";
+import HistoryList from "@/components/Common/HistoryList";
 
 interface ChatProps {}
 
@@ -35,8 +37,8 @@ export default function Chat({}: ChatProps) {
 
   const chatAIRef = useRef<ChatAIRef>(null);
 
-  const [chats, setChats] = useState<Chat[]>([]);
-  const [activeChat, setActiveChat] = useState<Chat>();
+  const [chats, setChats] = useState<typeChat[]>([]);
+  const [activeChat, setActiveChat] = useState<typeChat>();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const isTyping = false;
 
@@ -44,12 +46,13 @@ export default function Chat({}: ChatProps) {
 
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isDeepThinkActive, setIsDeepThinkActive] = useState(false);
+  const [keyword, setKeyword] = useState("");
 
   const isChatPage = true;
 
   useEffect(() => {
     getChatHistory();
-  }, []);
+  }, [keyword]);
 
   const getChatHistory = async () => {
     try {
@@ -57,6 +60,7 @@ export default function Chat({}: ChatProps) {
         serverId: currentService?.id,
         from: 0,
         size: 20,
+        query: keyword,
       });
       response = JSON.parse(response || "");
       console.log("_history", response);
@@ -72,24 +76,24 @@ export default function Chat({}: ChatProps) {
     }
   };
 
-  const deleteChat = (chatId: string) => {
-    setChats((prev) => prev.filter((chat) => chat._id !== chatId));
-    if (activeChat?._id === chatId) {
-      const remainingChats = chats.filter((chat) => chat._id !== chatId);
-      if (remainingChats.length > 0) {
-        setActiveChat(remainingChats[0]);
-      } else {
-        chatAIRef.current?.init("");
-      }
-    }
-  };
+  // const deleteChat = (chatId: string) => {
+  //   setChats((prev) => prev.filter((chat) => chat._id !== chatId));
+  //   if (activeChat?._id === chatId) {
+  //     const remainingChats = chats.filter((chat) => chat._id !== chatId);
+  //     if (remainingChats.length > 0) {
+  //       setActiveChat(remainingChats[0]);
+  //     } else {
+  //       chatAIRef.current?.init("");
+  //     }
+  //   }
+  // };
 
   const handleSendMessage = async (content: string) => {
     setInput(content);
     chatAIRef.current?.init(content);
   };
 
-  const chatHistory = async (chat: Chat) => {
+  const chatHistory = async (chat: typeChat) => {
     try {
       let response: any = await session_chat_history({
         serverId: currentService?.id,
@@ -100,7 +104,7 @@ export default function Chat({}: ChatProps) {
       response = JSON.parse(response || "");
       console.log("id_history", response);
       const hits = response?.hits?.hits || [];
-      const updatedChat: Chat = {
+      const updatedChat: typeChat = {
         ...chat,
         messages: hits,
       };
@@ -203,6 +207,33 @@ export default function Chat({}: ChatProps) {
     return icon(path, size);
   }, []);
 
+  const handleSearch = (keyword: string) => {
+    setKeyword(keyword);
+  };
+
+  const handleRename = async (chat: typeChat, title: string) => {
+    if (!currentService?.id) return;
+
+    console.log("chat", chat);
+    console.log("title", title);
+
+    await update_session_chat({
+      serverId: currentService.id,
+      sessionId: chat?._id,
+      title,
+    });
+
+    getChatHistory();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!currentService?.id) return;
+
+    await delete_session_chat(currentService.id, id);
+
+    getChatHistory();
+  };
+
   return (
     <div className="h-screen">
       <div className="h-[100%] flex">
@@ -213,15 +244,14 @@ export default function Chat({}: ChatProps) {
               isSidebarOpen ? "translate-x-0" : "-translate-x-full"
             } transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block bg-gray-100 dark:bg-gray-800`}
           >
-            <Sidebar
-              chats={chats}
-              activeChat={activeChat}
-              onNewChat={() => {
-                chatAIRef.current?.clearChat();
-              }}
-              onSelectChat={onSelectChat}
-              onDeleteChat={deleteChat}
-              fetchChatHistory={getChatHistory}
+            <HistoryList
+              list={chats}
+              active={activeChat}
+              onSearch={handleSearch}
+              onRefresh={getChatHistory}
+              onSelect={onSelectChat}
+              onRename={handleRename}
+              onRemove={handleDelete}
             />
           </div>
         ) : null}

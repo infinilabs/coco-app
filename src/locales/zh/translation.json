@@ -293,5 +293,29 @@
   },
   "error": {
     "message": "抱歉，Coco 应用出现了错误。请联系管理员。"
+  },
+  "history_list": {
+    "search": {
+      "placeholder": "搜索"
+    },
+    "date": {
+      "today": "今天",
+      "yesterday": "昨天",
+      "last7Days": "最近 7 天",
+      "last30Days": "最近 30 天"
+    },
+    "menu": {
+      "share": "分享",
+      "rename": "重命名",
+      "delete": "删除"
+    },
+    "delete_modal": {
+      "title": "删除聊天？",
+      "description": "这将删除“{{0}}”",
+      "button": {
+        "delete": "删除",
+        "cancel": "取消"
+      }
+    }
   }
 }

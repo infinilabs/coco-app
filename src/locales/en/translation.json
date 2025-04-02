@@ -294,5 +294,29 @@
   },
   "error": {
     "message": "Sorry, there is an error in your Coco App. Please contact the administrator."
+  },
+  "history_list": {
+    "search": {
+      "placeholder": "Search"
+    },
+    "date": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "last7Days": "Last 7 Days",
+      "last30Days": "Last 30 Days"
+    },
+    "menu": {
+      "share": "Share",
+      "rename": "Rename",
+      "delete": "Delete"
+    },
+    "delete_modal": {
+      "title": "Delete chat?",
+      "description": "This will delete \"{{0}}\"",
+      "button": {
+        "delete": "Delete",
+        "cancel": "Cancel"
+      }
+    }
   }
 }
