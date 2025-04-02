@@ -78,7 +78,7 @@
 /* Base styles */
 @layer base {
   * {
-    @apply box-border border-[--border];
+    @apply box-border border-[--border] outline-none;
   }
 
   html {
