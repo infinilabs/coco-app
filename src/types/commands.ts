@@ -112,3 +112,66 @@ export interface GetResponse {
   payload?: Record<string, unknown>;
 }
 
+export interface UploadAttachmentPayload {
+  serverId: string;
+  sessionId: string;
+  filePaths: string[];
+}
+
+export interface UploadAttachmentResponse {
+  acknowledged: boolean;
+  attachments: string[];
+}
+
+export type GetAttachmentPayload = Omit<UploadAttachmentPayload, "filePaths">;
+
+export interface AttachmentHit {
+  _index: string;
+  _type: string;
+  _id: string;
+  _score: number;
+  _source: {
+    id: string;
+    created: string;
+    updated: string;
+    session: string;
+    name: string;
+    icon: string;
+    url: string;
+    size: number;
+  };
+}
+
+export interface GetAttachmentResponse {
+  took: number;
+  timed_out: boolean;
+  _shards: {
+    total: number;
+    successful: number;
+    skipped: number;
+    failed: number;
+  };
+  hits: {
+    total: {
+      value: number;
+      relation: string;
+    };
+    max_score: number;
+    hits: AttachmentHit[];
+  };
+}
+
+export interface DeleteAttachmentPayload {
+  serverId: string;
+  id: string;
+}
+
+export interface TranscriptionPayload {
+  serverId: string;
+  audioType: string;
+  audioContent: string;
+}
+
+export interface TranscriptionResponse {
+  text: string;
+}

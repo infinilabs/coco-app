@@ -9,9 +9,9 @@ import {
 } from "tauri-plugin-macos-permissions-api";
 import { useWavesurfer } from "@wavesurfer/react";
 import RecordPlugin from "wavesurfer.js/dist/plugins/record.esm.js";
-import { transcription } from "@/api/transcription";
 import { useConnectStore } from "@/stores/connectStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
+import { transcription } from "@/commands";
 
 interface AudioRecordingProps {
   onChange?: (text: string) => void;
