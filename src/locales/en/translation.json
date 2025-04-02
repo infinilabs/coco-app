@@ -309,6 +309,14 @@
       "share": "Share",
       "rename": "Rename",
       "delete": "Delete"
+    },
+    "delete_modal": {
+      "title": "Delete chat?",
+      "description": "This will delete \"{{0}}\"",
+      "button": {
+        "delete": "Delete",
+        "cancel": "Cancel"
+      }
     }
   }
 }

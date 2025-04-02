@@ -308,6 +308,14 @@
       "share": "分享",
       "rename": "重命名",
       "delete": "删除"
+    },
+    "delete_modal": {
+      "title": "删除聊天？",
+      "description": "这将删除“{{0}}”",
+      "button": {
+        "delete": "删除",
+        "cancel": "取消"
+      }
     }
   }
 }

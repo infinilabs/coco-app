@@ -235,22 +235,24 @@ const HistoryList: FC<HistoryListProps> = (props) => {
           <DialogPanel className="flex flex-col justify-between w-[360px] h-[160px] p-3 border border-[#e6e6e6] bg-white dark:bg-[#202126] dark:border-white/10 shadow-xl rounded-lg">
             <div className="flex flex-col gap-3">
               <DialogTitle className="text-base font-bold text-[#333]">
-                Delete chat?
+                {t("history_list.delete_modal.title")}
               </DialogTitle>
               <Description className="text-sm text-[#333]">
-                This will delete “{active?._source?.title || active?._id}”
+                {t("history_list.delete_modal.description", {
+                  replace: [active?._source?.title || active?._id],
+                })}
               </Description>
             </div>
 
             <div className="flex gap-4 self-end">
               <button
-                className="h-8 px-4 text-[#666666] bg-[#F8F9FA] dark:text-white dark:bg-[#202126] border border-[#E6E6E6] dark:border-white/10 rounded-lg"
+                className="h-8 px-4 text-sm text-[#666666] bg-[#F8F9FA] dark:text-white dark:bg-[#202126] border border-[#E6E6E6] dark:border-white/10 rounded-lg"
                 onClick={() => setIsOpen(false)}
               >
-                Cancel
+                {t("history_list.delete_modal.button.cancel")}
               </button>
               <button
-                className="h-8 px-4 text-white bg-[#EF4444] rounded-lg"
+                className="h-8 px-4 text-sm text-white bg-[#EF4444] rounded-lg"
                 onClick={() => {
                   if (!active?._id) return;
 
@@ -259,7 +261,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
                   setIsOpen(false);
                 }}
               >
-                Delete
+                {t("history_list.delete_modal.button.delete")}
               </button>
             </div>
           </DialogPanel>
