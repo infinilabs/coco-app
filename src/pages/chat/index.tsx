@@ -212,10 +212,13 @@ export default function Chat({}: ChatProps) {
   };
 
   const handleRename = async (chat: typeChat, title: string) => {
-    if (!currentService?._id) return;
+    if (!currentService?.id) return;
+
+    console.log("chat", chat);
+    console.log("title", title);
 
     await update_session_chat({
-      serverId: currentService._id,
+      serverId: currentService.id,
       sessionId: chat?._id,
       title,
     });
@@ -224,13 +227,11 @@ export default function Chat({}: ChatProps) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!currentService?._id) return;
+    if (!currentService?.id) return;
 
-    const result = await delete_session_chat(currentService._id, id);
+    await delete_session_chat(currentService.id, id);
 
-    if (result) {
-      getChatHistory();
-    }
+    getChatHistory();
   };
 
   return (

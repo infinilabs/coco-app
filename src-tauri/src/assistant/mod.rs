@@ -14,8 +14,6 @@ pub async fn chat_history<R: Runtime>(
     size: u32,
     query: Option<String>,
 ) -> Result<String, String> {
-    println!("chat_history: {} {} {} {:?}", server_id, from, size, query);
-
     let mut query_params: HashMap<String, Value> = HashMap::new();
     if from > 0 {
         query_params.insert("from".to_string(), from.into());

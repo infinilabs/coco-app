@@ -7,7 +7,7 @@ import {
   MenuItems,
 } from "@headlessui/react";
 import { debounce, groupBy, isNil } from "lodash-es";
-import { FC, useMemo, useState } from "react";
+import { FC, KeyboardEvent, MouseEvent, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import clsx from "clsx";
@@ -69,7 +69,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
     {
       label: "history_list.menu.rename",
       icon: Pencil,
-      onClick: () => {
+      onClick: (item: Chat) => {
         setIsEdit(true);
       },
     },
@@ -77,7 +77,9 @@ const HistoryList: FC<HistoryListProps> = (props) => {
       label: "history_list.menu.delete",
       icon: Trash2,
       iconColor: "#FF2018",
-      onClick: () => {},
+      onClick: (item: Chat) => {
+        onRemove(item._id);
+      },
     },
   ];
 
@@ -92,11 +94,11 @@ const HistoryList: FC<HistoryListProps> = (props) => {
       )}
     >
       <div className="flex gap-1 children:h-8">
-        <div className="flex-1 flex items-center gap-2 px-2 rounded-lg border border-[#E6E6E6] bg-[#F8F9FA] dark:bg-[#2B3444] dark:border-[#343D4D]">
+        <div className="flex-1 flex items-center gap-2 px-2 rounded-lg border transition border-[#E6E6E6] bg-[#F8F9FA] dark:bg-[#2B3444] dark:border-[#343D4D] focus-within:border-[#0061FF]">
           <Search className="size-4 text-[#6B7280]" />
 
           <Input
-            className="bg-transparent outline-none"
+            className="w-full bg-transparent outline-none"
             placeholder={t("history_list.search.placeholder")}
             onChange={(event) => {
               debouncedSearch(event.target.value);
@@ -153,6 +155,18 @@ const HistoryList: FC<HistoryListProps> = (props) => {
                           <Input
                             defaultValue={title}
                             className="flex-1 -mx-px outline-none bg-transparent border border-[#0061FF] rounded-[4px]"
+                            onKeyDown={(event) => {
+                              if (event.key !== "Enter") return;
+
+                              onRename(item, event.currentTarget.value);
+
+                              setIsEdit(false);
+                            }}
+                            onBlur={(event) => {
+                              onRename(item, event.target.value);
+
+                              setIsEdit(false);
+                            }}
                           />
                         ) : (
                           <span className="truncate">{title}</span>
@@ -169,19 +183,19 @@ const HistoryList: FC<HistoryListProps> = (props) => {
                             anchor="bottom"
                             className="flex flex-col rounded-lg shadow-md z-100 bg-white dark:bg-[#202126] p-1 border border-black/2 dark:border-white/10"
                           >
-                            {menuItems.map((item) => {
+                            {menuItems.map((menuItem) => {
                               const {
                                 label,
                                 icon: Icon,
                                 iconColor,
                                 onClick,
-                              } = item;
+                              } = menuItem;
 
                               return (
                                 <MenuItem key={label}>
                                   <button
                                     className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-[#EDEDED] dark:hover:bg-[#2B2C31] transition"
-                                    onClick={onClick}
+                                    onClick={() => onClick(item)}
                                   >
                                     <Icon
                                       className="size-4"
