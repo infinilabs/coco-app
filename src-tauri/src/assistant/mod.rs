@@ -12,8 +12,10 @@ pub async fn chat_history<R: Runtime>(
     server_id: String,
     from: u32,
     size: u32,
-    query: String,
+    query: Option<String>,
 ) -> Result<String, String> {
+    println!("chat_history: {} {} {} {:?}", server_id, from, size, query);
+
     let mut query_params: HashMap<String, Value> = HashMap::new();
     if from > 0 {
         query_params.insert("from".to_string(), from.into());
@@ -22,7 +24,9 @@ pub async fn chat_history<R: Runtime>(
         query_params.insert("size".to_string(), size.into());
     }
 
-    query_params.insert("query".to_string(), query.into());
+    if let Some(query) = query {
+        query_params.insert("query".to_string(), query.into());
+    }
 
     let response = HttpClient::get(&server_id, "/chat/_history", Some(query_params))
         .await
