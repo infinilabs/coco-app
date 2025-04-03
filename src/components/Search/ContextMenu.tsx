@@ -144,7 +144,7 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
       <div
         ref={containerRef}
         className={clsx(
-          "fixed bottom-[40px] right-[8px] min-w-[280px] scale-0 transition origin-bottom-right text-sm p-1 bg-white dark:bg-[#202126] rounded-lg shadow-xs border border-gray-200 dark:border-gray-700",
+          "absolute bottom-[40px] right-[8px] min-w-[280px] scale-0 transition origin-bottom-right text-sm p-1 bg-white dark:bg-[#202126] rounded-lg shadow-xs border border-gray-200 dark:border-gray-700",
           {
             "!scale-100": visibleContextMenu,
           }

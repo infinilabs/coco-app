@@ -35,17 +35,21 @@ impl ApplicationSearchSource {
                 continue;
             }
 
-            let path = if cfg!(target_os = "macos") {
-                app.app_desktop_path.clone()
-            } else {
+            let path = if cfg!(target_os = "windows") {
                 app.app_path_exe
                     .clone()
                     .unwrap_or(PathBuf::from("Path not found"))
+            } else {
+                app.app_desktop_path.clone()
             };
             let search_word = name(path.clone()).await;
-            let icon = icon(app_handle.clone(), path.clone(), Some(256))
-                .await
-                .map_err(|err| err.to_string())?;
+            let icon = if cfg!(target_os = "linux") {
+                app.icon_path.clone().unwrap_or(PathBuf::from(""))
+            } else {
+                icon(app_handle.clone(), path.clone(), Some(256))
+                    .await
+                    .map_err(|err| err.to_string())?
+            };
             let path_string = path.to_string_lossy().into_owned();
 
             if search_word.is_empty() || search_word.eq("coco-ai") {
