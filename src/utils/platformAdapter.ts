@@ -1,5 +1,6 @@
 import { createWebAdapter } from './webAdapter';
 // import { createTauriAdapter } from './tauriAdapter';
+
 import { IShortcutsStore } from "@/stores/shortcutsStore";
 import { IStartupStore } from "@/stores/startupStore";
 
@@ -92,7 +93,6 @@ export interface PlatformAdapter {
 }
 
 // Default adapter instance
-let platformAdapter: PlatformAdapter = createWebAdapter();
-//platformAdapter = createTauriAdapter();
+const platformAdapter: PlatformAdapter = typeof window !== 'undefined' ? createWebAdapter() : {} as PlatformAdapter;
 
 export default platformAdapter;

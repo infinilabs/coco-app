@@ -4,8 +4,6 @@ import { hide_coco } from "@/commands"
 import { useAppStore } from "@/stores/appStore";
 import platformAdapter from "./platformAdapter";
 
-const isTauri = useAppStore((state) => state.isTauri);
-
 // 1
 export async function copyToClipboard(text: string) {
   try {
@@ -67,6 +65,7 @@ export const IsTauri = () => {
 
 export const OpenURLWithBrowser = async (url: string) => {
   if (!url) return;
+  const isTauri = useAppStore((state) => state.isTauri);
   if (isTauri) {
     try {
       await open(url);
