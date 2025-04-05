@@ -13,6 +13,8 @@ Information about release notes of Coco Server is provided here.
 
 ### Features
 
+- Linux support for application search #330
+
 ### Bug fix
 
 ### Improvements

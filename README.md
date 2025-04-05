@@ -14,6 +14,10 @@ insights based on your enterprise's specific data.
 > **Note**: Backend services, including data indexing and search functionality, are handled in a
 > separate [repository](https://github.com/infinilabs/coco-server).
 
+
+![](./docs/static/img/coco-preview.gif)
+
+
 ## Vision
 
 At Coco AI, we aim to streamline workplace collaboration by centralizing access to enterprise data. The Coco
