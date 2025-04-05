@@ -29,6 +29,8 @@ import { useChatStore } from "@/stores/chatStore";
 import type { Chat } from "./types";
 import { useConnectStore } from "@/stores/connectStore";
 import platformAdapter from "@/utils/platformAdapter";
+import { list_coco_servers } from "@/commands";
+
 interface ChatHeaderProps {
   onCreateNewChat: () => void;
   onOpenChatAI: () => void;
@@ -38,6 +40,7 @@ interface ChatHeaderProps {
   reconnect: (server?: IServer) => void;
   setIsLogin: (isLogin: boolean) => void;
   isChatPage?: boolean;
+  showChatHistory?: boolean;
 }
 
 export function ChatHeader({
@@ -48,6 +51,7 @@ export function ChatHeader({
   reconnect,
   setIsLogin,
   isChatPage = false,
+  showChatHistory,
 }: ChatHeaderProps) {
   const { t } = useTranslation();
 
@@ -63,34 +67,39 @@ export function ChatHeader({
   const currentService = useConnectStore((state) => state.currentService);
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
 
-  const fetchServers = useCallback(async (resetSelection: boolean) => {
-    platformAdapter.invokeBackend("list_coco_servers")
-      .then((res: any) => {
-        const enabledServers = (res as IServer[]).filter(
-          (server) => server.enabled !== false
-        );
-        //console.log("list_coco_servers", enabledServers);
-        setServerList(enabledServers);
+  const isTauri = useAppStore((state) => state.isTauri);
 
-        if (resetSelection && enabledServers.length > 0) {
-          const currentServiceExists = enabledServers.find(
-            (server) => server.id === currentService?.id
+  const fetchServers = useCallback(
+    async (resetSelection: boolean) => {
+      list_coco_servers()
+        .then((res: any) => {
+          const enabledServers = (res as IServer[]).filter(
+            (server) => server.enabled !== false
           );
+          //console.log("list_coco_servers", enabledServers);
+          setServerList(enabledServers);
 
-          if (currentServiceExists) {
-            switchServer(currentServiceExists);
-          } else {
-            switchServer(enabledServers[enabledServers.length - 1]);
+          if (resetSelection && enabledServers.length > 0) {
+            const currentServiceExists = enabledServers.find(
+              (server) => server.id === currentService?.id
+            );
+
+            if (currentServiceExists) {
+              switchServer(currentServiceExists);
+            } else {
+              switchServer(enabledServers[enabledServers.length - 1]);
+            }
           }
-        }
-      })
-      .catch((err: any) => {
-        console.error(err);
-      });
-  }, [currentService?.id]);
+        })
+        .catch((err: any) => {
+          console.error(err);
+        });
+    },
+    [currentService?.id]
+  );
 
   useEffect(() => {
-    fetchServers(true);
+    isTauri && fetchServers(true);
 
     const unlisten = platformAdapter.listenEvent("login_or_logout", (event) => {
       console.log("Login or Logout:", currentService, event);
@@ -102,8 +111,6 @@ export function ChatHeader({
       unlisten.then((fn) => fn());
     };
   }, []);
-
-  
 
   const switchServer = async (server: IServer) => {
     if (!server) return;
@@ -119,7 +126,7 @@ export function ChatHeader({
         return;
       }
       setIsLogin(true);
-      // The Rust backend will automatically disconnect, 
+      // The Rust backend will automatically disconnect,
       // so we don't need to handle disconnection on the frontend
       // src-tauri/src/server/websocket.rs
       reconnect && reconnect(server);
@@ -149,16 +156,18 @@ export function ChatHeader({
       data-tauri-drag-region
     >
       <div className="flex items-center gap-2">
-        <button
-          data-sidebar-button
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsSidebarOpen();
-          }}
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          <HistoryIcon />
-        </button>
+        {isTauri && (
+          <button
+            data-sidebar-button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsSidebarOpen();
+            }}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <HistoryIcon />
+          </button>
+        )}
 
         <Menu>
           <MenuButton className="flex items-center gap-1 rounded-full bg-white dark:bg-[#202126] p-1 text-sm/6 font-semibold text-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none">
@@ -168,33 +177,39 @@ export function ChatHeader({
               alt={t("assistant.message.logo")}
             />
             Coco AI
-            <ChevronDownIcon className="size-4 text-gray-500 dark:text-gray-400" />
+            {showChatHistory ? (
+              <ChevronDownIcon className="size-4 text-gray-500 dark:text-gray-400" />
+            ) : null}
           </MenuButton>
 
-          <MenuItems
-            transition
-            anchor="bottom end"
-            className="w-28 origin-top-right rounded-xl bg-white dark:bg-[#202126] p-1 text-sm/6 text-gray-800 dark:text-white shadow-lg border border-gray-200 dark:border-gray-700 focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0"
-          >
-            <MenuItem>
-              <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 hover:bg-gray-100 dark:hover:bg-gray-700">
-                <img
-                  src={logoImg}
-                  className="w-4 h-4"
-                  alt={t("assistant.message.logo")}
-                />
-                Coco AI
-              </button>
-            </MenuItem>
-          </MenuItems>
+          {showChatHistory ? (
+            <MenuItems
+              transition
+              anchor="bottom end"
+              className="w-28 origin-top-right rounded-xl bg-white dark:bg-[#202126] p-1 text-sm/6 text-gray-800 dark:text-white shadow-lg border border-gray-200 dark:border-gray-700 focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0"
+            >
+              <MenuItem>
+                <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 hover:bg-gray-100 dark:hover:bg-gray-700">
+                  <img
+                    src={logoImg}
+                    className="w-4 h-4"
+                    alt={t("assistant.message.logo")}
+                  />
+                  Coco AI
+                </button>
+              </MenuItem>
+            </MenuItems>
+          ) : null}
         </Menu>
 
-        <button
-          onClick={onCreateNewChat}
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          <MessageSquarePlus className="h-4 w-4" />
-        </button>
+        {showChatHistory ? (
+          <button
+            onClick={onCreateNewChat}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <MessageSquarePlus className="h-4 w-4" />
+          </button>
+        ) : null}
       </div>
 
       <div>
@@ -205,7 +220,7 @@ export function ChatHeader({
         </h2>
       </div>
 
-      <div className="flex items-center gap-2">
+      {isTauri ? <div className="flex items-center gap-2">
         <button
           onClick={togglePin}
           className={`${isPinned ? "text-blue-500" : ""}`}
@@ -315,7 +330,7 @@ export function ChatHeader({
             <WindowsFullIcon className="rotate-30 scale-x-[-1]" />
           </button>
         )}
-      </div>
+      </div>: null}
     </header>
   );
 }

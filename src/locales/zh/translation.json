@@ -147,12 +147,13 @@
       "version": "{{version}}",
       "updateAvailable": "有可用更新",
       "select": "选择",
-      "open": "打开"
+      "open": "打开",
+      "powered": "由 Coco AI 提供支持"
     },
     "input": {
       "searchPlaceholder": "搜索任何内容...",
       "connectionError": "无法连接到服务器",
-      "reconnect": "重新连接",
+      "reconnect": "点此重连",
       "connecting": "连接中",
       "deepThink": "深度思考",
       "search": "联网搜索",

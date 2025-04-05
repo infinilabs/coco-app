@@ -1,8 +1,6 @@
 import { useEffect } from "react";
-import { isTauri } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
 
-import { hide_coco } from "@/commands"
+import platformAdapter from "@/utils/platformAdapter";
 
 const useEscape = () => {
   const handleEscape = async (event: KeyboardEvent) => {
@@ -12,16 +10,14 @@ const useEscape = () => {
       event.preventDefault();
 
       // Hide the Tauri app window when 'Esc' is pressed
-      await hide_coco()
+      await platformAdapter.invokeBackend("hide_coco");
 
       console.log("App window hidden successfully.");
     }
   };
 
   useEffect(() => {
-    if (!isTauri()) return;
-
-    const unlisten = listen("tauri://focus", () => {
+    const unlisten = platformAdapter.listenEvent("tauri://focus", () => {
       // Add event listener for keydown
       window.addEventListener("keydown", handleEscape);
     });

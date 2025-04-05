@@ -34,7 +34,7 @@ function ItemIcon({
 
   let selectedIcon = icons[item?.icon];
   if (!selectedIcon) {
-    selectedIcon=item?.icon
+    selectedIcon = item?.icon;
   }
 
   if (!selectedIcon) {

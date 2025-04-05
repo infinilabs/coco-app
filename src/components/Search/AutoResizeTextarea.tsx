@@ -6,13 +6,14 @@ interface AutoResizeTextareaProps {
   setInput: (value: string) => void;
   handleKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   connected: boolean;
+  chatPlaceholder?: string;
 }
 
 // Forward ref to allow parent to interact with this component
 const AutoResizeTextarea = forwardRef<
   { reset: () => void; focus: () => void },
   AutoResizeTextareaProps
->(({ input, setInput, handleKeyDown, connected }, ref) => {
+>(({ input, setInput, handleKeyDown, connected, chatPlaceholder }, ref) => {
   const { t } = useTranslation();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -34,8 +35,10 @@ const AutoResizeTextarea = forwardRef<
       autoCapitalize="none"
       spellCheck="false"
       className="text-base flex-1 outline-none min-w-[200px] text-[#333] dark:text-[#d8d8d8] placeholder-text-xs placeholder-[#999] dark:placeholder-gray-500 bg-transparent"
-      placeholder={connected ? t('search.textarea.placeholder') : ""}
-      aria-label={t('search.textarea.ariaLabel')}
+      placeholder={
+        connected ? chatPlaceholder || t("search.textarea.placeholder") : ""
+      }
+      aria-label={t("search.textarea.ariaLabel")}
       value={input}
       onChange={(e) => setInput(e.target.value)}
       onKeyDown={(e) => handleKeyDown?.(e)}

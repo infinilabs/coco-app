@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { ChevronDownIcon, RefreshCw, Layers, Globe } from "lucide-react";
 import clsx from "clsx";
@@ -8,7 +8,7 @@ import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import { useConnectStore } from "@/stores/connectStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { DataSource } from "@/types/commands";
-import Checkbox from "../Common/Checkbox";
+import Checkbox from "@/components/Common/Checkbox";
 
 interface SearchPopoverProps {
   isSearchActive: boolean;
@@ -30,24 +30,55 @@ export default function SearchPopover({
 
   const currentService = useConnectStore((state) => state.currentService);
 
+  const [showDataSource, setShowDataSource] = useState(false);
+
   const getDataSourceList = useCallback(async () => {
     try {
       const res: DataSource[] = await getDataSourcesByServer(
         currentService?.id
       );
-      const data = [
-        {
-          id: "all",
-          name: "search.input.searchPopover.allScope",
-        },
-        ...(res || []),
-      ];
+      if (res?.length === 0) {
+        setDataSourceList([]);
+        return;
+      }
+      const data = res?.length
+        ? [
+            {
+              id: "all",
+              name: "search.input.searchPopover.allScope",
+            },
+            ...res,
+          ]
+        : [];
       setDataSourceList(data);
     } catch (err) {
       setDataSourceList([]);
       console.error("get_datasources_by_server", err);
     }
   }, [currentService?.id]);
+
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!showDataSource) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        popoverRef.current &&
+        !popoverRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setShowDataSource(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDataSource]);
 
   useEffect(() => {
     if (dataSourceList.length > 0) {
@@ -111,8 +142,16 @@ export default function SearchPopover({
           </span>
 
           {dataSourceList?.length > 0 && (
-            <Popover>
-              <PopoverButton as="span" className={clsx("flex items-center")}>
+            <Popover className="relative">
+              <PopoverButton
+                as="span"
+                ref={buttonRef}
+                className={clsx("flex items-center")}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDataSource((prev) => !prev);
+                }}
+              >
                 <ChevronDownIcon
                   className={clsx("size-5", [
                     isSearchActive
@@ -122,79 +161,82 @@ export default function SearchPopover({
                 />
               </PopoverButton>
 
-              <PopoverPanel
-                anchor="top start"
-                className="min-w-[220px] bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
-              >
-                <div
-                  className="text-sm px-[12px] py-[18px]"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
+              {showDataSource ? (
+                <PopoverPanel
+                  static
+                  ref={popoverRef}
+                  className="absolute z-50 left-0 bottom-6 min-w-[220px] max-h-[400px] overflow-y-auto bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
                 >
-                  <div className="flex justify-between mb-[18px]">
-                    <span>{t("search.input.searchPopover.title")}</span>
+                  <div
+                    className="text-sm px-[12px] py-[18px]"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                  >
+                    <div className="flex justify-between mb-[18px]">
+                      <span>{t("search.input.searchPopover.title")}</span>
 
-                    <div
-                      onClick={async () => {
-                        setIsRefreshDataSource(true);
+                      <div
+                        onClick={async () => {
+                          setIsRefreshDataSource(true);
 
-                        getDataSourceList();
+                          getDataSourceList();
 
-                        setTimeout(() => {
-                          setIsRefreshDataSource(false);
-                        }, 1000);
-                      }}
-                      className="size-[24px] flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10 cursor-pointer"
-                    >
-                      <RefreshCw
-                        className={`size-3 text-[#0287FF] transition-transform duration-1000 ${
-                          isRefreshDataSource ? "animate-spin" : ""
-                        }`}
-                      />
+                          setTimeout(() => {
+                            setIsRefreshDataSource(false);
+                          }, 1000);
+                        }}
+                        className="size-[24px] flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10 cursor-pointer"
+                      >
+                        <RefreshCw
+                          className={`size-3 text-[#0287FF] transition-transform duration-1000 ${
+                            isRefreshDataSource ? "animate-spin" : ""
+                          }`}
+                        />
+                      </div>
                     </div>
+                    <ul className="flex flex-col gap-[16px]">
+                      {dataSourceList?.map((item, index) => {
+                        const { id, name } = item;
+
+                        const isAll = index === 0;
+
+                        return (
+                          <li
+                            key={id}
+                            className="flex justify-between items-center"
+                          >
+                            <div className="flex items-center gap-[8px]">
+                              {isAll ? (
+                                <Layers className="size-[16px] text-[#0287FF]" />
+                              ) : (
+                                <TypeIcon item={item} className="size-[16px]" />
+                              )}
+
+                              <span>{isAll && name ? t(name) : name}</span>
+                            </div>
+
+                            <div className="flex justify-center items-center size-[24px]">
+                              <Checkbox
+                                checked={
+                                  isAll
+                                    ? sourceDataIds.length ===
+                                      dataSourceList.length - 1
+                                    : sourceDataIds?.includes(id)
+                                }
+                                indeterminate={isAll}
+                                onChange={(value) =>
+                                  onSelectDataSource(id, value, isAll)
+                                }
+                              />
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
                   </div>
-                  <ul className="flex flex-col gap-[16px]">
-                    {dataSourceList?.map((item, index) => {
-                      const { id, name } = item;
-
-                      const isAll = index === 0;
-
-                      return (
-                        <li
-                          key={id}
-                          className="flex justify-between items-center"
-                        >
-                          <div className="flex items-center gap-[8px]">
-                            {isAll ? (
-                              <Layers className="size-[16px] text-[#0287FF]" />
-                            ) : (
-                              <TypeIcon item={item} className="size-[16px]" />
-                            )}
-
-                            <span>{isAll && name ? t(name) : name}</span>
-                          </div>
-
-                          <div className="flex justify-center items-center size-[24px]">
-                            <Checkbox
-                              checked={
-                                isAll
-                                  ? sourceDataIds.length ===
-                                    dataSourceList.length - 1
-                                  : sourceDataIds?.includes(id)
-                              }
-                              indeterminate={isAll}
-                              onChange={(value) =>
-                                onSelectDataSource(id, value, isAll)
-                              }
-                            />
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              </PopoverPanel>
+                </PopoverPanel>
+              ) : null}
             </Popover>
           )}
         </>

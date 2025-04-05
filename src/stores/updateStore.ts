@@ -1,4 +1,3 @@
-import { Update } from "@tauri-apps/plugin-updater";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -9,8 +8,8 @@ export type IUpdateStore = {
   setSkipVersion: (skipVersion?: string) => void;
   isOptional: boolean;
   setIsOptional: (isOptional: boolean) => void;
-  updateInfo?: Update;
-  setUpdateInfo: (updateInfo?: Update) => void;
+  updateInfo?: any;
+  setUpdateInfo: (updateInfo?: any) => void;
 };
 
 export const useUpdateStore = create<IUpdateStore>()(
@@ -27,7 +26,7 @@ export const useUpdateStore = create<IUpdateStore>()(
       setIsOptional: (isOptional: boolean) => {
         return set({ isOptional });
       },
-      setUpdateInfo: (updateInfo?: Update) => {
+      setUpdateInfo: (updateInfo?: any) => {
         return set({ updateInfo });
       },
     }),

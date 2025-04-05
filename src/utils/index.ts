@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { isTauri } from "@tauri-apps/api/core";
-import { open } from "@tauri-apps/plugin-shell";
 
 import { hide_coco } from "@/commands"
+import { useAppStore } from "@/stores/appStore";
+import platformAdapter from "./platformAdapter";
+
+const isTauri = useAppStore((state) => state.isTauri);
 
 // 1
 export async function copyToClipboard(text: string) {
@@ -65,10 +67,11 @@ export const IsTauri = () => {
 
 export const OpenURLWithBrowser = async (url: string) => {
   if (!url) return;
-  if (isTauri()) {
+  if (isTauri) {
     try {
       await open(url);
       await hide_coco();
+      await platformAdapter.invokeBackend("hide_coco");
       console.log("URL opened in default browser");
     } catch (error) {
       console.error("Failed to open URL:", error);

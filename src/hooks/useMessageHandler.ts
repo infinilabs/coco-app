@@ -76,6 +76,7 @@ export function useMessageHandler(
           return;
         }
       } catch (error) {
+        setCurChatEnd(true);
         console.error("parse error:", error);
       }
     },

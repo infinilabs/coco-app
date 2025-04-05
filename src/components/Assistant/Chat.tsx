@@ -21,6 +21,7 @@ import { ChatHeader } from "./ChatHeader";
 import { ChatContent } from "./ChatContent";
 import ConnectPrompt from "./ConnectPrompt";
 import type { Chat } from "./types";
+import PrevSuggestion from "@/components/ChatMessage/PrevSuggestion";
 
 interface ChatAIProps {
   isTransitioned: boolean;
@@ -33,6 +34,7 @@ interface ChatAIProps {
   clearChatPage?: () => void;
   isChatPage?: boolean;
   getFileUrl: (path: string) => string;
+  showChatHistory?: boolean;
 }
 
 export interface ChatAIRef {
@@ -56,6 +58,7 @@ const ChatAI = memo(
         clearChatPage,
         isChatPage = false,
         getFileUrl,
+        showChatHistory = true,
       },
       ref
     ) => {
@@ -89,7 +92,9 @@ const ChatAI = memo(
 
       const [Question, setQuestion] = useState<string>("");
 
-      const [websocketSessionId, setWebsocketSessionId] = useState('');
+      const [showPrevSuggestion, setShowPrevSuggestion] = useState(true);
+
+      const [websocketSessionId, setWebsocketSessionId] = useState("");
 
       const onWebsocketSessionId = useCallback((sessionId: string) => {
         setWebsocketSessionId(sessionId);
@@ -119,16 +124,21 @@ const ChatAI = memo(
 
       const dealMsgRef = useRef<((msg: string) => void) | null>(null);
 
-      const clientId = isChatPage ? "standalone" : "popup"
-      const { errorShow, setErrorShow, reconnect, disconnectWS, updateDealMsg } =
-        useWebSocket({
-          clientId,
-          connected,
-          setConnected,
-          currentService,
-          dealMsgRef,
-          onWebsocketSessionId,
-        });
+      const clientId = isChatPage ? "standalone" : "popup";
+      const {
+        errorShow,
+        setErrorShow,
+        reconnect,
+        disconnectWS,
+        updateDealMsg,
+      } = useWebSocket({
+        clientId,
+        connected,
+        setConnected,
+        currentService,
+        dealMsgRef,
+        onWebsocketSessionId,
+      });
 
       const {
         chatClose,
@@ -161,7 +171,7 @@ const ChatAI = memo(
         setTimedoutShow,
         (chat) => cancelChat(chat || activeChat),
         setLoadingStep,
-        handlers,
+        handlers
       );
 
       useEffect(() => {
@@ -193,12 +203,21 @@ const ChatAI = memo(
           if (!isLogin) return;
           if (!curChatEnd) return;
           if (!activeChat?._id) {
+            setShowPrevSuggestion(false);
             createNewChat(value, activeChat, websocketSessionId);
           } else {
+            setShowPrevSuggestion(false);
             handleSendMessage(value, activeChat, websocketSessionId);
           }
         },
-        [isLogin, curChatEnd, activeChat, createNewChat, handleSendMessage, websocketSessionId]
+        [
+          isLogin,
+          curChatEnd,
+          activeChat,
+          createNewChat,
+          handleSendMessage,
+          websocketSessionId,
+        ]
       );
 
       const { createWin } = useWindows();
@@ -207,6 +226,7 @@ const ChatAI = memo(
       }, [createChatWindow, createWin]);
 
       useEffect(() => {
+        setCurChatEnd(true);
         return () => {
           if (messageTimeoutRef.current) {
             clearTimeout(messageTimeoutRef.current);
@@ -240,17 +260,20 @@ const ChatAI = memo(
         ]
       );
 
-      const deleteChat = useCallback((chatId: string) => {
-        setChats((prev) => prev.filter((chat) => chat._id !== chatId));
-        if (activeChat?._id === chatId) {
-          const remainingChats = chats.filter((chat) => chat._id !== chatId);
-          if (remainingChats.length > 0) {
-            setActiveChat(remainingChats[0]);
-          } else {
-            init("");
+      const deleteChat = useCallback(
+        (chatId: string) => {
+          setChats((prev) => prev.filter((chat) => chat._id !== chatId));
+          if (activeChat?._id === chatId) {
+            const remainingChats = chats.filter((chat) => chat._id !== chatId);
+            if (remainingChats.length > 0) {
+              setActiveChat(remainingChats[0]);
+            } else {
+              init("");
+            }
           }
-        }
-      }, [activeChat, chats, init, setActiveChat]);
+        },
+        [activeChat, chats, init, setActiveChat]
+      );
 
       const handleOutsideClick = useCallback((e: MouseEvent) => {
         const sidebar = document.querySelector("[data-sidebar]");
@@ -297,9 +320,9 @@ const ChatAI = memo(
       return (
         <div
           data-tauri-drag-region
-          className={`h-full flex flex-col rounded-xl overflow-hidden`}
+          className={`h-full flex flex-col rounded-xl relative`}
         >
-          {!setIsSidebarOpen && (
+          {showChatHistory && !setIsSidebarOpen && (
             <ChatSidebar
               isSidebarOpen={isSidebarOpenChat}
               chats={chats}
@@ -320,6 +343,7 @@ const ChatAI = memo(
             reconnect={reconnect}
             isChatPage={isChatPage}
             setIsLogin={setIsLoginChat}
+            showChatHistory={showChatHistory}
           />
           {isLogin ? (
             <ChatContent
@@ -335,12 +359,16 @@ const ChatAI = memo(
               timedoutShow={timedoutShow}
               errorShow={errorShow}
               Question={Question}
-              handleSendMessage={(value) => handleSendMessage(value, activeChat)}
+              handleSendMessage={(value) =>
+                handleSendMessage(value, activeChat)
+              }
               getFileUrl={getFileUrl}
             />
           ) : (
             <ConnectPrompt />
           )}
+
+          {showPrevSuggestion ? <PrevSuggestion sendMessage={init} /> : null}
         </div>
       );
     }

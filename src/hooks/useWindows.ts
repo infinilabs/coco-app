@@ -1,8 +1,6 @@
-import { useEffect, useCallback } from "react";
-import { getAllWindows, getCurrentWindow } from "@tauri-apps/api/window";
-import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { listen } from "@tauri-apps/api/event";
-import { isTauri } from "@tauri-apps/api/core";
+import { useState, useEffect, useCallback } from "react";
+
+import platformAdapter from "@/utils/platformAdapter";
 
 const defaultWindowConfig = {
   label: "",
@@ -23,8 +21,20 @@ const defaultWindowConfig = {
 };
 
 export const useWindows = () => {
-  if (!isTauri()) return {}
-  const appWindow = getCurrentWindow();
+  const [appWindow, setAppWindow] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchWindow = async () => {
+      try {
+        const window = await platformAdapter.getCurrentWindow();
+        setAppWindow(window);
+      } catch (error) {
+        console.error("Failed to get current window:", error);
+      }
+    };
+
+    fetchWindow();
+  }, []);
 
   const createWin = useCallback(async (options: any) => {
     const args = { ...defaultWindowConfig, ...options };
@@ -39,23 +49,26 @@ export const useWindows = () => {
       return;
     }
 
-    const win = new WebviewWindow(args.label, args);
+    const win = await platformAdapter.createWebviewWindow(args.label, args);
 
-    win.once("tauri://created", async () => {
-      console.log("tauri://created");
-      // if (args.label.includes("main")) {
-      //
-      // }
+    if(win) {
+      win.once("tauri://created", async () => {
+        console.log("tauri://created");
+        // if (args.label.includes("main")) {
+        //
+        // }
 
-      if (args.maximized && args.resizable) {
-        console.log("is-maximized");
-        await win.maximize();
-      }
-    });
+        if (args.maximized && args.resizable) {
+          console.log("is-maximized");
+          await win.maximize();
+        }
+      });
 
-    win.once("tauri://error", (error) => {
-      console.error("error:", error);
-    });
+      win.once("tauri://error", (error: any) => {
+        console.error("error:", error);
+      });
+    }
+
   }, []);
 
   const closeWin = useCallback(async (label: string) => {
@@ -75,24 +88,24 @@ export const useWindows = () => {
   }, []);
 
   const getWin = useCallback(async (label: string) => {
-    return WebviewWindow.getByLabel(label);
+    return platformAdapter.getWindowByLabel(label);
   }, []);
 
   const getAllWin = useCallback(async () => {
-    return getAllWindows();
+    return platformAdapter.getAllWindows();
   }, []);
 
   const listenEvents = useCallback(() => {
     let unlistenHandlers: { (): void; (): void; (): void; (): void; }[] = [];
 
     const setupListeners = async () => {
-      const winCreateHandler = await listen("win-create", (event) => {
+      const winCreateHandler = await platformAdapter.listenWindowEvent("win-create", (event) => {
         console.log(event);
         createWin(event.payload);
       });
       unlistenHandlers.push(winCreateHandler);
 
-      const winShowHandler = await listen("win-show", async () => {
+      const winShowHandler = await platformAdapter.listenWindowEvent("win-show", async () => {
         if (!appWindow || !appWindow.label.includes("main")) return;
         await appWindow.show();
         await appWindow.unminimize();
@@ -100,13 +113,13 @@ export const useWindows = () => {
       });
       unlistenHandlers.push(winShowHandler);
 
-      const winHideHandler = await listen("win-hide", async () => {
+      const winHideHandler = await platformAdapter.listenWindowEvent("win-hide", async () => {
         if (!appWindow || !appWindow.label.includes("main")) return;
         await appWindow.hide();
       });
       unlistenHandlers.push(winHideHandler);
 
-      const winCloseHandler = await listen("win-close", async () => {
+      const winCloseHandler = await platformAdapter.listenWindowEvent("win-close", async () => {
         await appWindow.close();
       });
       unlistenHandlers.push(winCloseHandler);

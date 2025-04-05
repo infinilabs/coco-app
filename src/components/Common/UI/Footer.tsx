@@ -2,21 +2,24 @@ import { ArrowDown01, Command, CornerDownLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 
-import logoImg from "@/assets/icon.svg";
-import { useSearchStore } from "@/stores/searchStore";
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
-import { useAppStore } from "@/stores/appStore";
+import Copyright from "@/components/Common/Copyright";
 import { isMac } from "@/utils/platform";
 import PinOffIcon from "@/icons/PinOff";
 import PinIcon from "@/icons/Pin";
+import logoImg from "@/assets/icon.svg";
+import { useAppStore } from "@/stores/appStore";
+import { useSearchStore } from "@/stores/searchStore";
 import { useUpdateStore } from "@/stores/updateStore";
 
 interface FooterProps {
+  isTauri: boolean;
   openSetting: () => void;
   setWindowAlwaysOnTop: (isPinned: boolean) => Promise<void>;
 }
 
 export default function Footer({
+  isTauri,
   openSetting,
   setWindowAlwaysOnTop,
 }: FooterProps) {
@@ -41,7 +44,7 @@ export default function Footer({
 
   return (
     <div
-      data-tauri-drag-region
+      data-tauri-drag-region={isTauri}
       className="px-4 z-999 mx-[1px] h-8 absolute bottom-0 left-0 right-0 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between rounded-xl rounded-t-none overflow-hidden"
     >
       <div className="flex items-center">
@@ -81,6 +84,8 @@ export default function Footer({
           </button>
         </div>
       </div>
+
+      <Copyright />
 
       <div className="flex items-center gap-3">
         <div className="gap-1 flex items-center text-[#666] dark:text-[#666] text-xs">
