@@ -2,6 +2,7 @@ import { MoveRight } from "lucide-react";
 import { FC, useEffect, useState } from "react";
 
 import { Get } from "@/api/axiosRequest";
+import { useAppStore } from "@/stores/appStore";
 
 interface PrevSuggestionProps {
   sendMessage: (message: string) => void;
@@ -9,6 +10,8 @@ interface PrevSuggestionProps {
 
 const PrevSuggestion: FC<PrevSuggestionProps> = (props) => {
   const { sendMessage } = props;
+
+  const isTauri = useAppStore((state) => state.isTauri);
 
   const headersStr = localStorage.getItem("headers") || "{}";
   const headers = JSON.parse(headersStr);
@@ -18,7 +21,7 @@ const PrevSuggestion: FC<PrevSuggestionProps> = (props) => {
   const [list, setList] = useState<string[]>([]);
 
   useEffect(() => {
-    getList();
+    if (isTauri) getList();
   }, [id]);
 
   const getList = async () => {

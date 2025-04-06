@@ -3,6 +3,7 @@ import { useEffect, useCallback } from "react";
 import SearchChat from "@/components/SearchChat";
 import { useAppStore } from "@/stores/appStore";
 import { Get } from "@/api/axiosRequest";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 import "@/i18n";
 import "@/web.css";
@@ -46,10 +47,12 @@ function WebApp({
 }: WebAppProps) {
   const setIsTauri = useAppStore((state) => state.setIsTauri);
   const setEndpoint = useAppStore((state) => state.setEndpoint);
+  const setModeSwitch = useShortcutsStore((state) => state.setModeSwitch);
 
   useEffect(() => {
     setIsTauri(false);
     setEndpoint(serverUrl);
+    setModeSwitch("S");
     localStorage.setItem("headers", JSON.stringify(headers||{}));
   }, []);
 

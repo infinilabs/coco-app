@@ -65,8 +65,7 @@ export const IsTauri = () => {
 
 export const OpenURLWithBrowser = async (url: string) => {
   if (!url) return;
-  const isTauri = useAppStore((state) => state.isTauri);
-  if (isTauri) {
+  if (IsTauri()) {
     try {
       await open(url);
       await hide_coco();

@@ -1,11 +1,12 @@
-import { ModifierKey, useShortcutsStore } from "@/stores/shortcutsStore";
 import { useTranslation } from "react-i18next";
-import { formatKey } from "@/utils/keyboardUtils";
-import SettingsItem from "@/components/Settings/SettingsItem";
 import { Command } from "lucide-react";
 import { ChangeEvent, useEffect } from "react";
 import { emit } from "@tauri-apps/api/event";
+
+import { formatKey } from "@/utils/keyboardUtils";
+import SettingsItem from "@/components/Settings/SettingsItem";
 import { isMac } from "@/utils/platform";
+import { ModifierKey, useShortcutsStore } from "@/stores/shortcutsStore";
 
 export const modifierKeys: ModifierKey[] = isMac
   ? ["meta", "ctrl"]

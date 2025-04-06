@@ -170,19 +170,19 @@ export function ChatHeader({
         )}
 
         <Menu>
-          <MenuButton className="flex items-center gap-1 rounded-full bg-white dark:bg-[#202126] p-1 text-sm/6 font-semibold text-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none">
+          <MenuButton className="px-2 flex items-center gap-1 rounded-full bg-white dark:bg-[#202126] p-1 text-sm/6 font-semibold text-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none">
             <img
               src={logoImg}
               className="w-4 h-4"
               alt={t("assistant.message.logo")}
             />
             Coco AI
-            {showChatHistory ? (
+            {showChatHistory && isTauri ? (
               <ChevronDownIcon className="size-4 text-gray-500 dark:text-gray-400" />
             ) : null}
           </MenuButton>
 
-          {showChatHistory ? (
+          {showChatHistory && isTauri ? (
             <MenuItems
               transition
               anchor="bottom end"
@@ -202,7 +202,7 @@ export function ChatHeader({
           ) : null}
         </Menu>
 
-        {showChatHistory ? (
+        {showChatHistory && isTauri ? (
           <button
             onClick={onCreateNewChat}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"

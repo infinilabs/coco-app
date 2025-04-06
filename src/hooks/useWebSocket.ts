@@ -37,9 +37,9 @@ export default function useWebSocket({
   const processingRef = useRef(false);
 
   const { readyState, connect } = useWebSocketAHook(
-    // "wss://coco.infini.cloud/ws",
+    "wss://coco.infini.cloud/ws",
     // "ws://localhost:9000/ws",
-    endpoint_websocket,
+    // endpoint_websocket,
     {
       manual: false,
       reconnectLimit: 3,

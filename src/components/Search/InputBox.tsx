@@ -296,8 +296,12 @@ export default function ChatInput({
                 changeInput(value);
               }}
               connected={connected}
-              handleKeyDown={(e) => {
+              handleKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
                 if (e.key === "Enter") {
+                  if (e.nativeEvent.isComposing) {
+                    return;
+                  }
+                  console.log("handleKeyDown", e.nativeEvent.isComposing);
                   e.preventDefault();
                   handleSubmit();
                 }
