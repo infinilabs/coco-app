@@ -9,6 +9,8 @@ import { useConnectStore } from "@/stores/connectStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { DataSource } from "@/types/commands";
 import Checkbox from "@/components/Common/Checkbox";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
+import VisibleKey from "../Common/VisibleKey";
 
 interface SearchPopoverProps {
   isSearchActive: boolean;
@@ -59,6 +61,7 @@ export default function SearchPopover({
 
   const popoverRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const internetSearch = useShortcutsStore((state) => state.internetSearch);
 
   useEffect(() => {
     if (!showDataSource) return;
@@ -125,13 +128,15 @@ export default function SearchPopover({
       )}
       onClick={setIsSearchActive}
     >
-      <Globe
-        className={`size-4 ${
-          isSearchActive
-            ? "text-[#0072FF] dark:text-[#0072FF]"
-            : "text-[#333] dark:text-white"
-        }`}
-      />
+      <VisibleKey shortcut={internetSearch} onKeypress={setIsSearchActive}>
+        <Globe
+          className={`size-4 ${
+            isSearchActive
+              ? "text-[#0072FF] dark:text-[#0072FF]"
+              : "text-[#333] dark:text-white"
+          }`}
+        />
+      </VisibleKey>
 
       {isSearchActive && (
         <>

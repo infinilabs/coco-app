@@ -15,12 +15,22 @@ export type IShortcutsStore = {
   setReturnToInput: (returnToInput: string) => void;
   voiceInput: string;
   setVoiceInput: (voiceInput: string) => void;
-  addImage: string;
-  setAddImage: (addImage: string) => void;
-  selectLlmModel: string;
-  setSelectLlmModel: (selectLlmModel: string) => void;
   addFile: string;
   setAddFile: (addFile: string) => void;
+  deepThinking: string;
+  setDeepThinking: (deepThinking: string) => void;
+  internetSearch: string;
+  setInternetSearch: (internetSearch: string) => void;
+  historicalRecords: string;
+  setHistoricalRecords: (historicalRecords: string) => void;
+  newSession: string;
+  setNewSession: (newSession: string) => void;
+  fixedWindow: string;
+  setFixedWindow: (fixedWindow: string) => void;
+  serviceList: string;
+  setServiceList: (serviceList: string) => void;
+  external: string;
+  setExternal: (external: string) => void;
 };
 
 export const useShortcutsStore = create<IShortcutsStore>()(
@@ -35,14 +45,26 @@ export const useShortcutsStore = create<IShortcutsStore>()(
       setModeSwitch: (modeSwitch: string) => set({ modeSwitch }),
       returnToInput: "I",
       setReturnToInput: (returnToInput: string) => set({ returnToInput }),
-      voiceInput: "N",
+      voiceInput: "K",
       setVoiceInput: (voiceInput: string) => set({ voiceInput }),
-      addImage: "G",
-      setAddImage: (addImage: string) => set({ addImage }),
-      selectLlmModel: "O",
-      setSelectLlmModel: (selectLlmModel: string) => set({ selectLlmModel }),
-      addFile: "U",
+      addFile: "A",
       setAddFile: (addFile: string) => set({ addFile }),
+      deepThinking: "D",
+      setDeepThinking: (deepThinking: string) => set({ deepThinking }),
+      internetSearch: "G",
+      setInternetSearch: (internetSearch: string) => set({ internetSearch }),
+      historicalRecords: "Y",
+      setHistoricalRecords: (historicalRecords: string) => {
+        return set({ historicalRecords });
+      },
+      newSession: "N",
+      setNewSession: (newSession: string) => set({ newSession }),
+      fixedWindow: "F",
+      setFixedWindow: (fixedWindow: string) => set({ fixedWindow }),
+      serviceList: "S",
+      setServiceList: (serviceList: string) => set({ serviceList }),
+      external: "E",
+      setExternal: (external: string) => set({ external }),
     }),
     {
       name: "shortcuts-store",
@@ -51,9 +73,14 @@ export const useShortcutsStore = create<IShortcutsStore>()(
         modeSwitch: state.modeSwitch,
         returnToInput: state.returnToInput,
         voiceInput: state.voiceInput,
-        addImage: state.addImage,
-        selectLlmModel: state.selectLlmModel,
         addFile: state.addFile,
+        deepThinking: state.deepThinking,
+        internetSearch: state.internetSearch,
+        historicalRecords: state.historicalRecords,
+        newSession: state.newSession,
+        fixedWindow: state.fixedWindow,
+        serviceList: state.serviceList,
+        external: state.external,
       }),
     }
   )

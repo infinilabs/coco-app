@@ -71,9 +71,6 @@ function MainApp() {
   const setVoiceInput = useShortcutsStore((state) => {
     return state.setVoiceInput;
   });
-  const setAddImage = useShortcutsStore((state) => {
-    return state.setAddImage;
-  });
   const setAddFile = useShortcutsStore((state) => {
     return state.setAddFile;
   });
@@ -86,6 +83,27 @@ function MainApp() {
   const setDefaultContentForChatWindow = useStartupStore((state) => {
     return state.setDefaultContentForChatWindow;
   });
+  const setDeepThinking = useShortcutsStore((state) => {
+    return state.setDeepThinking;
+  });
+  const setInternetSearch = useShortcutsStore((state) => {
+    return state.setInternetSearch;
+  });
+  const setHistoricalRecords = useShortcutsStore((state) => {
+    return state.setHistoricalRecords;
+  });
+  const setNewSession = useShortcutsStore((state) => {
+    return state.setNewSession;
+  });
+  const setFixedWindow = useShortcutsStore((state) => {
+    return state.setFixedWindow;
+  });
+  const setServiceList = useShortcutsStore((state) => {
+    return state.setServiceList;
+  });
+  const setExternal = useShortcutsStore((state) => {
+    return state.setExternal;
+  });
 
   useEffect(() => {
     const unListeners = Promise.all([
@@ -95,15 +113,27 @@ function MainApp() {
           modeSwitch,
           returnToInput,
           voiceInput,
-          addImage,
           addFile,
+          deepThinking,
+          internetSearch,
+          historicalRecords,
+          newSession,
+          fixedWindow,
+          serviceList,
+          external,
         } = payload;
         setModifierKey(modifierKey);
         setModeSwitch(modeSwitch);
         setReturnToInput(returnToInput);
         setVoiceInput(voiceInput);
-        setAddImage(addImage);
         setAddFile(addFile);
+        setDeepThinking(deepThinking);
+        setInternetSearch(internetSearch);
+        setHistoricalRecords(historicalRecords);
+        setNewSession(newSession);
+        setFixedWindow(fixedWindow);
+        setServiceList(serviceList);
+        setExternal(external);
       }),
 
       platformAdapter.listenEvent("change-startup-store", ({ payload }) => {

@@ -22,14 +22,28 @@ const Shortcuts = () => {
   const setReturnToInput = useShortcutsStore((state) => state.setReturnToInput);
   const voiceInput = useShortcutsStore((state) => state.voiceInput);
   const setVoiceInput = useShortcutsStore((state) => state.setVoiceInput);
-  // const addImage = useShortcutsStore((state) => state.addImage);
-  // const setAddImage = useShortcutsStore((state) => state.setAddImage);
-  // const selectLlmModel = useShortcutsStore((state) => state.selectLlmModel);
-  // const setSelectLlmModel = useShortcutsStore((state) => {
-  //   return state.setSelectLlmModel;
-  // });
   const addFile = useShortcutsStore((state) => state.addFile);
   const setAddFile = useShortcutsStore((state) => state.setAddFile);
+  const deepThinking = useShortcutsStore((state) => state.deepThinking);
+  const setDeepThinking = useShortcutsStore((state) => state.setDeepThinking);
+  const internetSearch = useShortcutsStore((state) => state.internetSearch);
+  const setInternetSearch = useShortcutsStore(
+    (state) => state.setInternetSearch
+  );
+  const historicalRecords = useShortcutsStore(
+    (state) => state.historicalRecords
+  );
+  const setHistoricalRecords = useShortcutsStore(
+    (state) => state.setHistoricalRecords
+  );
+  const newSession = useShortcutsStore((state) => state.newSession);
+  const setNewSession = useShortcutsStore((state) => state.setNewSession);
+  const fixedWindow = useShortcutsStore((state) => state.fixedWindow);
+  const setFixedWindow = useShortcutsStore((state) => state.setFixedWindow);
+  const serviceList = useShortcutsStore((state) => state.serviceList);
+  const setServiceList = useShortcutsStore((state) => state.setServiceList);
+  const external = useShortcutsStore((state) => state.external);
+  const setExternal = useShortcutsStore((state) => state.setExternal);
 
   useEffect(() => {
     const unlisten = useShortcutsStore.subscribe((state) => {
@@ -58,23 +72,53 @@ const Shortcuts = () => {
       value: voiceInput,
       setValue: setVoiceInput,
     },
-    // {
-    //   title: "settings.advanced.shortcuts.addImage.title",
-    //   description: "settings.advanced.shortcuts.addImage.description",
-    //   value: addImage,
-    //   setValue: setAddImage,
-    // },
-    // {
-    //   title: "settings.advanced.shortcuts.selectLlmModel.title",
-    //   description: "settings.advanced.shortcuts.selectLlmModel.description",
-    //   value: selectLlmModel,
-    //   setValue: setSelectLlmModel,
-    // },
     {
       title: "settings.advanced.shortcuts.addFile.title",
       description: "settings.advanced.shortcuts.addFile.description",
       value: addFile,
       setValue: setAddFile,
+    },
+    {
+      title: "settings.advanced.shortcuts.deepThinking.title", // 深度思考
+      description: "settings.advanced.shortcuts.deepThinking.description", // 开启深度思考模式
+      value: deepThinking,
+      setValue: setDeepThinking,
+    },
+    {
+      title: "settings.advanced.shortcuts.internetSearch.title", // 网络搜索
+      description: "settings.advanced.shortcuts.internetSearch.description", // 启用网络搜索功能
+      value: internetSearch,
+      setValue: setInternetSearch,
+    },
+    {
+      title: "settings.advanced.shortcuts.historicalRecords.title", // 历史记录
+      description: "settings.advanced.shortcuts.historicalRecords.description", // 查看历史对话记录
+      value: historicalRecords,
+      setValue: setHistoricalRecords,
+    },
+    {
+      title: "settings.advanced.shortcuts.newSession.title", // 新建会话
+      description: "settings.advanced.shortcuts.newSession.description", // 创建一个新的对话
+      value: newSession,
+      setValue: setNewSession,
+    },
+    {
+      title: "settings.advanced.shortcuts.fixedWindow.title", // 固定窗口
+      description: "settings.advanced.shortcuts.fixedWindow.description", // 固定当前对话窗口
+      value: fixedWindow,
+      setValue: setFixedWindow,
+    },
+    {
+      title: "settings.advanced.shortcuts.serviceList.title", // 服务列表
+      description: "settings.advanced.shortcuts.serviceList.description", // 打开服务列表面板
+      value: serviceList,
+      setValue: setServiceList,
+    },
+    {
+      title: "settings.advanced.shortcuts.external.title", // 外部工具
+      description: "settings.advanced.shortcuts.external.description", // 打开外部工具面板
+      value: external,
+      setValue: setExternal,
     },
   ];
 

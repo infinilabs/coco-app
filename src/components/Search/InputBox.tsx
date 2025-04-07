@@ -13,11 +13,13 @@ import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import SearchPopover from "./SearchPopover";
 // import AudioRecording from "../AudioRecording";
+import { hide_coco } from "@/commands";
 import { DataSource } from "@/types/commands";
 // import InputExtra from "./InputExtra";
 // import { useConnectStore } from "@/stores/connectStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import Copyright from "@/components/Common/Copyright";
+import VisibleKey from "../Common/VisibleKey";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -99,6 +101,7 @@ export default function ChatInput({
   });
   const modeSwitch = useShortcutsStore((state) => state.modeSwitch);
   const returnToInput = useShortcutsStore((state) => state.returnToInput);
+  const deepThinking = useShortcutsStore((state) => state.deepThinking);
 
   useEffect(() => {
     return () => {
@@ -443,13 +446,15 @@ export default function ChatInput({
                 )}
                 onClick={DeepThinkClick}
               >
-                <Brain
-                  className={`size-4 ${
-                    isDeepThinkActive
-                      ? "text-[#0072FF] dark:text-[#0072FF]"
-                      : "text-[#333] dark:text-white"
-                  }`}
-                />
+                <VisibleKey shortcut={deepThinking} onKeypress={DeepThinkClick}>
+                  <Brain
+                    className={`size-4 ${
+                      isDeepThinkActive
+                        ? "text-[#0072FF] dark:text-[#0072FF]"
+                        : "text-[#333] dark:text-white"
+                    }`}
+                  />
+                </VisibleKey>
                 {isDeepThinkActive && (
                   <span
                     className={
