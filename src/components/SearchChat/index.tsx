@@ -314,13 +314,15 @@ function SearchChat({
     <div
       data-tauri-drag-region={isTauri}
       className={clsx(
-        "size-full m-auto overflow-hidden relative bg-no-repeat bg-cover bg-center bg-white dark:bg-black",
+        "m-auto overflow-hidden relative bg-no-repeat bg-cover bg-center bg-white dark:bg-black",
         [
           isTransitioned
             ? "bg-chat_bg_light dark:bg-chat_bg_dark"
             : "bg-search_bg_light dark:bg-search_bg_dark",
         ],
         {
+          "size-full": !isTauri,
+          "w-screen h-screen": isTauri,
           "rounded-xl": !isWin,
           "border border-[#E6E6E6] dark:border-[#272626]": isLinux,
         }
