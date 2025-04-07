@@ -84,7 +84,7 @@ export default function Layout() {
 
     const unlistenPromise = setupLanguageListener();
     return () => {
-      unlistenPromise.then(unlisten => unlisten());
+      unlistenPromise.then((unlisten) => unlisten());
     };
   }, []);
 
@@ -95,5 +95,9 @@ export default function Layout() {
     event.preventDefault();
   });
 
-  return <Outlet />;
+  return (
+    <div className="coco-container">
+      <Outlet />
+    </div>
+  );
 }
