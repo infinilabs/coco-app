@@ -322,7 +322,7 @@ function SearchChat({
         ],
         {
           "size-full": !isTauri,
-          "w-full h-screen": isTauri,
+          "w-screen h-screen": isTauri,
           "rounded-xl": !isWin,
           "border border-[#E6E6E6] dark:border-[#272626]": isLinux,
         }
