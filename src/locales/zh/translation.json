@@ -102,6 +102,34 @@
         "addFile": {
           "title": "添加文件",
           "description": "在聊天模式下方便地添加文件的快捷按键。"
+        },
+        "deepThinking": {
+          "title": "深度思考",
+          "description": "启用深度思考模式的快捷按键"
+        },
+        "internetSearch": {
+          "title": "网络搜索",
+          "description": "启用网络搜索功能的快捷按键"
+        },
+        "historicalRecords": {
+          "title": "历史记录",
+          "description": "查看历史对话记录的快捷按键"
+        },
+        "newSession": {
+          "title": "新建会话",
+          "description": "创建新对话的快捷按键"
+        },
+        "fixedWindow": {
+          "title": "固定窗口",
+          "description": "固定当前对话窗口的快捷按键"
+        },
+        "serviceList": {
+          "title": "服务列表",
+          "description": "打开服务列表面板的快捷按键"
+        },
+        "external": {
+          "title": "外部工具",
+          "description": "打开外部工具面板的快捷按键"
         }
       },
       "connect": {

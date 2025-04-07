@@ -102,6 +102,34 @@
         "addFile": {
           "title": "Add File",
           "description": "Shortcut to add files conveniently in Chat mode."
+        },
+        "deepThinking": {
+          "title": "Deep Thinking",
+          "description": "Shortcut to enable deep thinking mode"
+        },
+        "internetSearch": {
+          "title": "Internet Search",
+          "description": "Shortcut to enable internet search function"
+        },
+        "historicalRecords": {
+          "title": "History Records",
+          "description": "Shortcut to view historical conversation records"
+        },
+        "newSession": {
+          "title": "New Session",
+          "description": "Shortcut to create a new conversation"
+        },
+        "fixedWindow": {
+          "title": "Fixed Window",
+          "description": "Shortcut to pin current conversation window"
+        },
+        "serviceList": {
+          "title": "Service List",
+          "description": "Shortcut to open service list panel"
+        },
+        "external": {
+          "title": "External Tools",
+          "description": "Shortcut to open external tools panel"
         }
       },
       "connect": {

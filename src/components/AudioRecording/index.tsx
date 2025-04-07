@@ -12,6 +12,7 @@ import RecordPlugin from "wavesurfer.js/dist/plugins/record.esm.js";
 import { useConnectStore } from "@/stores/connectStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { transcription } from "@/commands";
+import VisibleKey from "../Common/VisibleKey";
 
 interface AudioRecordingProps {
   onChange?: (text: string) => void;
@@ -40,12 +41,6 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
   const recordRef = useRef<RecordPlugin>();
   const withVisibility = useAppStore((state) => state.withVisibility);
   const currentService = useConnectStore((state) => state.currentService);
-  const modifierKeyPressed = useShortcutsStore((state) => {
-    return state.modifierKeyPressed;
-  });
-  const modifierKey = useShortcutsStore((state) => {
-    return state.modifierKey;
-  });
   const voiceInput = useShortcutsStore((state) => state.voiceInput);
 
   const { wavesurfer } = useWavesurfer({
@@ -113,10 +108,6 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
     }, 1000);
   }, [state.isRecording]);
 
-  useKeyPress(`${modifierKey}.${voiceInput}`, () => {
-    startRecording();
-  });
-
   const getAvailableAudioDevices = async () => {
     state.audioDevices = await RecordPlugin.getAvailableAudioDevices();
   };
@@ -171,23 +162,9 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
           }
         )}
       >
-        <Mic
-          className={clsx("size-4 text-[#999]", {
-            hidden: modifierKeyPressed,
-          })}
-          onClick={startRecording}
-        />
-
-        <div
-          className={clsx(
-            "w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]",
-            {
-              hidden: !modifierKeyPressed,
-            }
-          )}
-        >
-          {voiceInput}
-        </div>
+        <VisibleKey shortcut={voiceInput} onKeypress={startRecording}>
+          <Mic className="size-4 text-[#999]" onClick={startRecording} />
+        </VisibleKey>
       </div>
 
       <div
