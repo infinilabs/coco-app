@@ -126,6 +126,7 @@ export const useAppStore = create<IAppStore>()(
     {
       name: "app-store",
       partialize: (state) => ({
+        isTauri: state.isTauri,
         showTooltip: state.showTooltip,
         ssoRequestID: state.ssoRequestID,
         // ssoServerID: state.ssoServerID,

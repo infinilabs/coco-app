@@ -92,7 +92,19 @@ export interface PlatformAdapter {
   openExternal: (url: string) => Promise<void>;
 }
 
+const loadAdapter = async () => {
+  const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
+  // console.log("baseURL", appStore.state?.endpoint_http)
+
+  let isTauri = appStore.state?.isTauri;
+  if (isTauri) {
+    const { createTauriAdapter } = await import('./tauriAdapter');
+    return createTauriAdapter();
+  }
+  return createWebAdapter();
+};
+
 // Default adapter instance
-const platformAdapter: PlatformAdapter = typeof window !== 'undefined' ? createWebAdapter() : {} as PlatformAdapter;
+const platformAdapter: PlatformAdapter = typeof window !== 'undefined' ? await loadAdapter() : {} as PlatformAdapter;
 
 export default platformAdapter;
