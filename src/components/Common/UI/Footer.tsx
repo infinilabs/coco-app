@@ -11,6 +11,8 @@ import logoImg from "@/assets/icon.svg";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useUpdateStore } from "@/stores/updateStore";
+import VisibleKey from "../VisibleKey";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 interface FooterProps {
   isTauri: boolean;
@@ -30,6 +32,9 @@ export default function Footer({
   const setIsPinned = useAppStore((state) => state.setIsPinned);
   const setVisible = useUpdateStore((state) => state.setVisible);
   const updateInfo = useUpdateStore((state) => state.updateInfo);
+  const fixedWindow = useShortcutsStore((state) => {
+    return state.fixedWindow;
+  });
 
   const togglePin = async () => {
     try {
@@ -84,7 +89,9 @@ export default function Footer({
                 "pl-2": updateInfo?.available,
               })}
             >
-              {isPinned ? <PinIcon /> : <PinOffIcon />}
+              <VisibleKey shortcut={fixedWindow} onKeypress={togglePin}>
+                {isPinned ? <PinIcon /> : <PinOffIcon />}
+              </VisibleKey>
             </button>
           </div>
         </div>
