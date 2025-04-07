@@ -1,35 +1,52 @@
-import type { PlatformAdapter, EventPayloads } from './platformAdapter';
-
 import type { OpenDialogOptions } from '@tauri-apps/plugin-dialog';
+
+import { windowWrapper, eventWrapper, systemWrapper } from './wrappers/tauriWrappers';
+import type { PlatformAdapter, EventPayloads } from './platformAdapter';
+import type { AppTheme } from "@/utils/tauri";
 
 // Create Tauri adapter functions
 export const createTauriAdapter = (): PlatformAdapter => {
   return {
+    async setWindowSize(width: number, height: number) {
+      return windowWrapper.setSize(width, height);
+    },
+
+    async hideWindow() {
+      const window = await windowWrapper.getWebviewWindow();
+      return window?.hide();
+    },
+
+    async showWindow() {
+      const window = await windowWrapper.getWebviewWindow();
+      return window?.show();
+    },
+
+    async emitEvent(event: string, payload?: any) {
+      return eventWrapper.emit(event, payload);
+    },
+
+    async listenEvent<K extends keyof EventPayloads>(
+      event: K,
+      callback: (event: { payload: EventPayloads[K] }) => void
+    ) {
+      return eventWrapper.listen(event, callback);
+    },
+
+    async checkScreenRecordingPermission() {
+      return systemWrapper.checkScreenPermission();
+    },
+
+    async captureMonitorScreenshot(id: number) {
+      return systemWrapper.captureScreen(id, 'monitor');
+    },
+
+    async captureWindowScreenshot(id: number) {
+      return systemWrapper.captureScreen(id, 'window');
+    },
+
     async invokeBackend(command: string, args?: any): Promise<any> {
       const { invoke } = await import("@tauri-apps/api/core");
       return invoke(command, args);
-    },
-
-    async setWindowSize(width: number, height: number): Promise<void> {
-      const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
-      const { LogicalSize } = await import("@tauri-apps/api/dpi");
-      const window = await getCurrentWebviewWindow();
-      if (window) {
-        await window.setSize(new LogicalSize(width, height));
-      }
-    },
-
-    async hideWindow(): Promise<void> {
-      const { invoke } = await import("@tauri-apps/api/core");
-      await invoke("hide_coco");
-    },
-
-    async showWindow(): Promise<void> {
-      const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
-      const window = await getCurrentWebviewWindow();
-      if (window) {
-        await window.show();
-      }
     },
 
     convertFileSrc(path: string): string {
@@ -37,28 +54,10 @@ export const createTauriAdapter = (): PlatformAdapter => {
       return convertFileSrc(path);
     },
 
-    async emitEvent(event: string, payload?: any) {
-      const { emit } = await import("@tauri-apps/api/event");
-      return emit(event, payload);
-    },
-
-    async listenEvent<K extends keyof EventPayloads>(
-      event: K,
-      callback: (event: { payload: EventPayloads[K] }) => void
-    ) {
-      const { listen } = await import("@tauri-apps/api/event");
-      return listen(event, callback);
-    },
-
     async setAlwaysOnTop(isPinned: boolean) {
       const { getCurrentWindow } = await import("@tauri-apps/api/window");
       const window = getCurrentWindow();
       return window.setAlwaysOnTop(isPinned);
-    },
-
-    async checkScreenRecordingPermission() {
-      const { checkScreenRecordingPermission } = await import("tauri-plugin-macos-permissions-api");
-      return checkScreenRecordingPermission();
     },
 
     async requestScreenRecordingPermission() {
@@ -74,16 +73,6 @@ export const createTauriAdapter = (): PlatformAdapter => {
     async getScreenshotableWindows() {
       const { getScreenshotableWindows } = await import("tauri-plugin-screenshots-api");
       return getScreenshotableWindows();
-    },
-
-    async captureMonitorScreenshot(id: number) {
-      const { getMonitorScreenshot } = await import("tauri-plugin-screenshots-api");
-      return getMonitorScreenshot(id);
-    },
-
-    async captureWindowScreenshot(id: number) {
-      const { getWindowScreenshot } = await import("tauri-plugin-screenshots-api");
-      return getWindowScreenshot(id);
     },
 
     async openFileDialog(options: OpenDialogOptions) {
@@ -111,9 +100,9 @@ export const createTauriAdapter = (): PlatformAdapter => {
       return relaunch();
     },
 
-    async listenThemeChanged(callback) {
+    async listenThemeChanged(callback: (theme: AppTheme) => void) {
       const { listen } = await import("@tauri-apps/api/event");
-      return listen("theme-changed", ({ payload }) => {
+      return listen<AppTheme>("theme-changed", ({ payload }) => {
         callback(payload);
       });
     },

@@ -66,7 +66,7 @@ export const QueryIntent = ({
     }
   }, [ChunkData?.message_chunk]);
 
-  // Must be after hooks ！！！
+  // Must be after hooks !!!
   if (!ChunkData && !Detail) return null;
 
   return (

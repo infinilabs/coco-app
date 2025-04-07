@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 
 import { hide_coco } from "@/commands"
-import { useAppStore } from "@/stores/appStore";
 import platformAdapter from "./platformAdapter";
 
 // 1

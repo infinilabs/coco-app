@@ -65,7 +65,7 @@ export const PickSource = ({
     }
   }, [ChunkData?.message_chunk, loading]);
 
-  // Must be after hooks ！！！
+  // Must be after hooks !!!
   if (!ChunkData && !Detail) return null;
 
   return (

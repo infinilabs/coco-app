@@ -59,10 +59,10 @@ Information about release notes of Coco Server is provided here.
 ### Improvements
 
 - Refactor: chat components #273
-- Feat：add endpoint display #282
+- Feat: add endpoint display #282
 - Chore: chat window min width & remove input bg #284
 - Chore: remove selected function & add hide_coco #286
-- Chore：websocket timeout increased to 2 minutes #289
+- Chore: websocket timeout increased to 2 minutes #289
 - Chore: remove chat input border & clear input #295
 
 ## 0.2.0 (2025-03-07)

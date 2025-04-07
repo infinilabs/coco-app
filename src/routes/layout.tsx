@@ -8,6 +8,7 @@ import useEscape from "@/hooks/useEscape";
 import useSettingsWindow from "@/hooks/useSettingsWindow";
 import { useThemeStore } from "@/stores/themeStore";
 import platformAdapter from "@/utils/platformAdapter";
+import { AppTheme } from "@/utils/tauri";
 
 export default function Layout() {
   const location = useLocation();
@@ -27,8 +28,8 @@ export default function Layout() {
   }
 
   useMount(async () => {
-    platformAdapter.listenThemeChanged((payload) => {
-      setTheme(payload);
+    const unlistenTheme = await platformAdapter.listenThemeChanged((theme: AppTheme) => {
+      setTheme(theme);
     });
 
     platformAdapter.onThemeChanged(({ payload }) => {
@@ -36,6 +37,10 @@ export default function Layout() {
 
       setIsDark(payload === "dark");
     });
+
+    return () => {
+      unlistenTheme();
+    };
   });
 
   useAsyncEffect(async () => {

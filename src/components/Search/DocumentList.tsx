@@ -26,7 +26,7 @@ interface DocumentListProps {
 }
 
 const PAGE_SIZE = 20;
-const ITEM_HEIGHT = 48; // SearchListItem height（padding + content）
+const ITEM_HEIGHT = 48; // SearchListItem height (padding + content)
 
 export const DocumentList: React.FC<DocumentListProps> = ({
   input,
