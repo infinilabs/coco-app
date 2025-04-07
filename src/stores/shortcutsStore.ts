@@ -45,7 +45,7 @@ export const useShortcutsStore = create<IShortcutsStore>()(
       setModeSwitch: (modeSwitch: string) => set({ modeSwitch }),
       returnToInput: "I",
       setReturnToInput: (returnToInput: string) => set({ returnToInput }),
-      voiceInput: "M",
+      voiceInput: "K",
       setVoiceInput: (voiceInput: string) => set({ voiceInput }),
       addFile: "A",
       setAddFile: (addFile: string) => set({ addFile }),
@@ -53,7 +53,7 @@ export const useShortcutsStore = create<IShortcutsStore>()(
       setDeepThinking: (deepThinking: string) => set({ deepThinking }),
       internetSearch: "G",
       setInternetSearch: (internetSearch: string) => set({ internetSearch }),
-      historicalRecords: "H",
+      historicalRecords: "Y",
       setHistoricalRecords: (historicalRecords: string) => {
         return set({ historicalRecords });
       },
