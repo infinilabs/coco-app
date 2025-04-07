@@ -94,7 +94,7 @@ export interface PlatformAdapter {
 
 const loadAdapter = async () => {
   const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
-  // console.log("baseURL", appStore.state?.endpoint_http)
+  console.log("isTauri", appStore.state?.isTauri)
 
   let isTauri = appStore.state?.isTauri;
   if (isTauri) {
