@@ -1,4 +1,5 @@
 import { File } from "lucide-react";
+import React from 'react';
 
 import IconWrapper from "./IconWrapper";
 import ThemedIcon from "./ThemedIcon";
@@ -11,7 +12,7 @@ interface ItemIconProps {
   onClick?: React.MouseEventHandler<HTMLDivElement>;
 }
 
-function ItemIcon({
+const ItemIcon = React.memo(function ItemIcon({
   item,
   className = "w-5 h-5 flex-shrink-0",
   onClick = () => {},
@@ -34,7 +35,7 @@ function ItemIcon({
 
   let selectedIcon = icons[item?.icon];
   if (!selectedIcon) {
-    selectedIcon=item?.icon
+    selectedIcon = item?.icon;
   }
 
   if (!selectedIcon) {
@@ -65,6 +66,6 @@ function ItemIcon({
       </IconWrapper>
     );
   }
-}
+})
 
 export default ItemIcon;

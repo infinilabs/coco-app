@@ -2,6 +2,7 @@ import { ArrowBigLeft, Search, Send, Brain } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
+import { useKeyPress } from "ahooks";
 
 import ChatSwitch from "@/components/Common/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
@@ -12,12 +13,11 @@ import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import SearchPopover from "./SearchPopover";
 // import AudioRecording from "../AudioRecording";
-import { hide_coco } from "@/commands";
 import { DataSource } from "@/types/commands";
 // import InputExtra from "./InputExtra";
 // import { useConnectStore } from "@/stores/connectStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
-import { useKeyPress } from "ahooks";
+import Copyright from "@/components/Common/Copyright";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -46,6 +46,11 @@ interface ChatInputProps {
   }) => Promise<string | string[] | null>;
   getFileMetadata: (path: string) => Promise<any>;
   getFileIcon: (path: string, size: number) => Promise<string>;
+  hideCoco?: () => void;
+  hasFeature?: string[];
+  hasModules?: string[];
+  searchPlaceholder?: string;
+  chatPlaceholder?: string;
 }
 
 export default function ChatInput({
@@ -64,16 +69,12 @@ export default function ChatInput({
   isChatPage = false,
   getDataSourcesByServer,
   setupWindowFocusListener,
-}: // checkScreenPermission,
-// requestScreenPermission,
-// getScreenMonitors,
-// getScreenWindows,
-// captureMonitorScreenshot,
-// captureWindowScreenshot,
-// openFileDialog,
-// getFileMetadata,
-// getFileIcon,
-ChatInputProps) {
+  hasFeature = ["think", "search", "think_icon", "search_icon"],
+  hideCoco,
+  hasModules = [],
+  searchPlaceholder,
+  chatPlaceholder,
+}: ChatInputProps) {
   const { t } = useTranslation();
 
   const showTooltip = useAppStore(
@@ -156,6 +157,7 @@ ChatInputProps) {
 
   const handleSubmit = useCallback(() => {
     const trimmedValue = inputValue.trim();
+    console.log("handleSubmit", trimmedValue, disabled);
     if (trimmedValue && !disabled) {
       changeInput("");
       onSend(trimmedValue);
@@ -168,7 +170,7 @@ ChatInputProps) {
     if (inputValue) {
       changeInput("");
     } else if (!isPinned) {
-      hide_coco();
+      hideCoco && hideCoco();
     }
   }, [inputValue, isPinned]);
 
@@ -295,12 +297,17 @@ ChatInputProps) {
                 changeInput(value);
               }}
               connected={connected}
-              handleKeyDown={(e) => {
+              handleKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
                 if (e.key === "Enter") {
+                  if (e.nativeEvent.isComposing) {
+                    return;
+                  }
+                  console.log("handleKeyDown", e.nativeEvent.isComposing);
                   e.preventDefault();
                   handleSubmit();
                 }
               }}
+              chatPlaceholder={chatPlaceholder}
             />
           ) : (
             <input
@@ -311,7 +318,9 @@ ChatInputProps) {
               autoCapitalize="none"
               spellCheck="false"
               className="text-base font-normal flex-1 outline-none min-w-[200px] text-[#333] dark:text-[#d8d8d8] placeholder-text-xs placeholder-[#999] dark:placeholder-gray-500 bg-transparent"
-              placeholder={t("search.input.searchPlaceholder")}
+              placeholder={
+                searchPlaceholder || t("search.input.searchPlaceholder")
+              }
               value={inputValue}
               onChange={(e) => {
                 onSend(e.target.value);
@@ -390,7 +399,7 @@ ChatInputProps) {
           <div className="absolute top-0 right-0 bottom-0 left-0 px-2 py-4 bg-red-500/10 rounded-md font-normal text-xs text-gray-400 flex items-center gap-4">
             {t("search.input.connectionError")}
             <div
-              className="h-[24px] px-2 bg-[#0061FF] rounded-[12px] font-normal text-xs text-white flex items-center justify-center cursor-pointer"
+              className="px-1 h-[24px] text-[#0061FF] font-normal text-xs flex items-center justify-center cursor-pointer underline"
               onClick={() => {
                 reconnect();
                 setReconnectCountdown(10);
@@ -424,38 +433,47 @@ ChatInputProps) {
               />
             )} */}
 
-            <button
-              className={clsx(
-                "flex items-center gap-1 p-1 h-6 rounded-lg transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
-                {
-                  "!bg-[rgba(0,114,255,0.3)]": isDeepThinkActive,
-                }
-              )}
-              onClick={DeepThinkClick}
-            >
-              <Brain
-                className={`size-4 ${
-                  isDeepThinkActive
-                    ? "text-[#0072FF] dark:text-[#0072FF]"
-                    : "text-[#333] dark:text-white"
-                }`}
-              />
-              {isDeepThinkActive && (
-                <span
-                  className={
-                    isDeepThinkActive ? "text-[#0072FF]" : "dark:text-white"
+            {hasFeature.includes("think") && (
+              <button
+                className={clsx(
+                  "flex items-center gap-1 p-1 h-6 rounded-lg transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
+                  {
+                    "!bg-[rgba(0,114,255,0.3)]": isDeepThinkActive,
                   }
-                >
-                  {t("search.input.deepThink")}
-                </span>
-              )}
-            </button>
+                )}
+                onClick={DeepThinkClick}
+              >
+                <Brain
+                  className={`size-4 ${
+                    isDeepThinkActive
+                      ? "text-[#0072FF] dark:text-[#0072FF]"
+                      : "text-[#333] dark:text-white"
+                  }`}
+                />
+                {isDeepThinkActive && (
+                  <span
+                    className={
+                      isDeepThinkActive ? "text-[#0072FF]" : "dark:text-white"
+                    }
+                  >
+                    {t("search.input.deepThink")}
+                  </span>
+                )}
+              </button>
+            )}
 
-            <SearchPopover
-              isSearchActive={isSearchActive}
-              setIsSearchActive={setIsSearchActive}
-              getDataSourcesByServer={getDataSourcesByServer}
-            />
+            {hasFeature.includes("search") && (
+              <SearchPopover
+                isSearchActive={isSearchActive}
+                setIsSearchActive={setIsSearchActive}
+                getDataSourcesByServer={getDataSourcesByServer}
+              />
+            )}
+            {!hasFeature.includes("search") && !hasFeature.includes("think") ? (
+              <div className="px-2">
+                <Copyright />
+              </div>
+            ) : null}
           </div>
         ) : (
           <div
@@ -464,7 +482,7 @@ ChatInputProps) {
           ></div>
         )}
 
-        {isChatPage ? null : (
+        {isChatPage || hasModules?.length !== 2 ? null : (
           <div className="relative w-16 flex justify-end items-center">
             {showTooltip && modifierKeyPressed ? (
               <div

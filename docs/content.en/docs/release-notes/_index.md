@@ -19,6 +19,8 @@ Information about release notes of Coco Server is provided here.
 
 ### Improvements
 
+- refactor: web components #331
+
 ## 0.3.0 (2025-03-31)
 
 ### Breaking changes

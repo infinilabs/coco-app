@@ -2,13 +2,13 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { debounce } from "lodash-es";
 
 import DropdownList from "./DropdownList";
-import Footer from "./Footer";
 import { SearchResults } from "@/components/Search/SearchResults";
 import { useSearchStore } from "@/stores/searchStore";
 import ContextMenu from "./ContextMenu";
-import { NoResults } from "./NoResults";
-
+import { NoResults } from "@/components/Common/UI/NoResults";
+import Footer from "@/components/Common/UI/Footer";
 interface SearchProps {
+  isTauri: boolean;
   changeInput: (val: string) => void;
   isChatMode: boolean;
   input: string;
@@ -18,12 +18,13 @@ interface SearchProps {
     size: number,
     queryStrings: any
   ) => Promise<any>;
-  hideCoco: () => Promise<any>;
+  hideCoco?: () => void;
   openSetting: () => void;
   setWindowAlwaysOnTop: (isPinned: boolean) => Promise<void>;
 }
 
 function Search({
+  isTauri,
   isChatMode,
   input,
   querySearch,
@@ -81,7 +82,7 @@ function Search({
   return (
     <div
       ref={mainWindowRef}
-      className={`h-[calc(100vh-90px)] pb-10 w-full relative`}
+      className={`h-full pb-10 w-full relative`}
     >
       {/* Search Results Panel */}
       {suggests.length > 0 ? (
@@ -105,6 +106,7 @@ function Search({
       )}
 
       <Footer
+        isTauri={isTauri}
         openSetting={openSetting}
         setWindowAlwaysOnTop={setWindowAlwaysOnTop}
       />

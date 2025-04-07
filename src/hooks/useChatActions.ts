@@ -1,8 +1,9 @@
 import { useCallback } from "react";
-import { isTauri } from "@tauri-apps/api/core";
 
 import type { Chat } from "@/components/Assistant/types";
 import { close_session_chat, cancel_session_chat, session_chat_history, new_chat, send_message, open_session_chat, chat_history } from "@/commands"
+import { useAppStore } from "@/stores/appStore";
+import { Get, Post } from "@/api/axiosRequest";
 
 export function useChatActions(
   currentServiceId: string | undefined,
@@ -19,14 +20,27 @@ export function useChatActions(
   changeInput?: (val: string) => void,
   websocketSessionId?: string,
 ) {
+  const isTauri = useAppStore((state) => state.isTauri);
+
   const chatClose = useCallback(async (activeChat?: Chat) => {
-    if (!activeChat?._id || !currentServiceId) return;
+    if (!activeChat?._id) return;
     try {
-      let response: any = await close_session_chat({
-        serverId: currentServiceId,
-        sessionId: activeChat?._id,
-      });
-      response = JSON.parse(response || "");
+      let response: any
+      if (isTauri) {
+        if (!currentServiceId) return;
+        response = await close_session_chat({
+          serverId: currentServiceId,
+          sessionId: activeChat?._id,
+        });
+        response = JSON.parse(response || "");
+      } else {
+        const [error, res] = await Post(`/chat/${activeChat?._id}/_close`, {})
+        if (error) {
+          console.error('_close', error);
+          return
+        }
+        response = res
+      }
       console.log("_close", response);
     } catch (error) {
       console.error("chatClose:", error);
@@ -35,13 +49,24 @@ export function useChatActions(
 
   const cancelChat = useCallback(async (activeChat?: Chat) => {
     setCurChatEnd(true);
-    if (!activeChat?._id || !currentServiceId) return;
+    if (!activeChat?._id) return;
     try {
-      let response: any = await cancel_session_chat({
-        serverId: currentServiceId,
-        sessionId: activeChat?._id,
-      });
-      response = JSON.parse(response || "");
+      let response: any
+      if (isTauri) {
+        if (!currentServiceId) return;
+        response = await cancel_session_chat({
+          serverId: currentServiceId,
+          sessionId: activeChat?._id,
+        });
+        response = JSON.parse(response || "");
+      } else {
+        const [error, res] = await Post(`/chat/${activeChat?._id}/_cancel`, {})
+        if (error) {
+          console.error('_cancel', error);
+          return
+        }
+        response = res
+      }
       console.log("_cancel", response);
     } catch (error) {
       console.error("cancelChat:", error);
@@ -52,15 +77,29 @@ export function useChatActions(
     chat: Chat,
     callback?: (chat: Chat) => void
   ) => {
-    if (!chat?._id || !currentServiceId) return;
+    if (!chat?._id) return;
     try {
-      let response: any = await session_chat_history({
-        serverId: currentServiceId,
-        sessionId: chat?._id,
-        from: 0,
-        size: 20,
-      });
-      response = JSON.parse(response || "");
+      let response: any
+      if (isTauri) {
+        if (!currentServiceId) return;
+        response = await session_chat_history({
+          serverId: currentServiceId,
+          sessionId: chat?._id,
+          from: 0,
+          size: 20,
+        });
+        response = JSON.parse(response || "");
+      } else {
+        const [error, res] = await Get(`/chat/${chat?._id}/_history`, {
+          from: 0,
+          size: 20,
+        })
+        if (error) {
+          console.error('_cancel', error);
+          return
+        }
+        response = res
+      }
       const hits = response?.hits?.hits || [];
       const updatedChat: Chat = {
         ...chat,
@@ -76,29 +115,50 @@ export function useChatActions(
 
   const createNewChat = useCallback(
     async (value: string = "", activeChat?: Chat, id?: string) => {
-      setTimedoutShow(false);
-      setErrorShow(false);
-      chatClose(activeChat);
-      clearAllChunkData();
-      setQuestion(value);
-      if (!currentServiceId) return;
       try {
-        if (!(websocketSessionId || id)){
+        setTimedoutShow(false);
+        setErrorShow(false);
+        await chatClose(activeChat);
+        clearAllChunkData();
+        setQuestion(value);  
+        if (!(websocketSessionId || id)) {
           setErrorShow(true);
           console.error("websocketSessionId", websocketSessionId, id);
           return;
         }
         console.log("sourceDataIds", sourceDataIds, websocketSessionId, id);
-        let response: any = await new_chat({
-          serverId: currentServiceId,
-          websocketId: websocketSessionId || id,
-          message: value,
-          queryParams: {
+        let response: any
+        if (isTauri) {
+          if (!currentServiceId) return;
+          response = await new_chat({
+            serverId: currentServiceId,
+            websocketId: websocketSessionId || id,
+            message: value,
+            queryParams: {
+              search: isSearchActive,
+              deep_thinking: isDeepThinkActive,
+              datasource: sourceDataIds?.join(",") || "",
+            },
+          });
+
+        } else {
+          console.log('websocketSessionId', websocketSessionId, id)
+          const [error, res] = await Post('/chat/_new', {
+            message: value,
+          }, {
             search: isSearchActive,
             deep_thinking: isDeepThinkActive,
             datasource: sourceDataIds?.join(",") || "",
-          },
-        });
+          }, {
+            "WEBSOCKET-SESSION-ID": websocketSessionId || id,
+          })
+          if (error) {
+            setErrorShow(true);
+            console.error('_new', error);
+            return
+          }
+          response = res
+        }
         console.log("_new", response);
         const newChat: Chat = response;
         curIdRef.current = response?.payload?.id;
@@ -124,27 +184,49 @@ export function useChatActions(
 
   const sendMessage = useCallback(
     async (content: string, newChat: Chat, id?: string) => {
-      if (!newChat?._id || !currentServiceId || !content) return;
-      
+      if (!newChat?._id || !content) return;
+
       clearAllChunkData();
       try {
-        if (!(websocketSessionId || id)){
+        if (!(websocketSessionId || id)) {
           setErrorShow(true);
           console.error("websocketSessionId", websocketSessionId, id);
           return;
         }
-        let response: any = await send_message({
-          serverId: currentServiceId,
-          websocketId: websocketSessionId || id,
-          sessionId: newChat?._id,
-          queryParams: {
+        let response: any
+        if (isTauri) {
+          if (!currentServiceId) return;
+          response = await send_message({
+            serverId: currentServiceId,
+            websocketId: websocketSessionId || id,
+            sessionId: newChat?._id,
+            queryParams: {
+              search: isSearchActive,
+              deep_thinking: isDeepThinkActive,
+              datasource: sourceDataIds?.join(",") || "",
+            },
+            message: content,
+          });
+          response = JSON.parse(response || "");
+        } else {
+          console.log('websocketSessionId', websocketSessionId, id)
+          const [error, res] = await Post(`/chat/${newChat?._id}/_send`, {
+            message: content
+          }, {
             search: isSearchActive,
             deep_thinking: isDeepThinkActive,
             datasource: sourceDataIds?.join(",") || "",
-          },
-          message: content,
-        });
-        response = JSON.parse(response || "");
+          }, {
+            "WEBSOCKET-SESSION-ID": websocketSessionId || id,
+          })
+
+          if (error) {
+            setErrorShow(true);
+            console.error('_cancel', error);
+            return
+          }
+          response = res
+        }
         console.log("_send", response);
         curIdRef.current = response[0]?._id;
 
@@ -178,13 +260,25 @@ export function useChatActions(
   );
 
   const openSessionChat = useCallback(async (chat: Chat) => {
-    if (!chat?._id || !currentServiceId) return;
+    if (!chat?._id) return;
     try {
-      let response: any = await open_session_chat({
-        serverId: currentServiceId,
-        sessionId: chat?._id,
-      });
-      response = JSON.parse(response || "");
+      let response: any
+      if (isTauri) {
+        if (!currentServiceId) return;
+        response = await open_session_chat({
+          serverId: currentServiceId,
+          sessionId: chat?._id,
+        });
+        response = JSON.parse(response || "");
+      } else {
+        const [error, res] = await Post(`/chat/${chat?._id}/_open`, {})
+        if (error) {
+          console.error('_open', error);
+          return null
+        }
+        response = res
+      }
+
       console.log("_open", response);
       return response;
     } catch (error) {
@@ -194,14 +288,27 @@ export function useChatActions(
   }, [currentServiceId]);
 
   const getChatHistory = useCallback(async () => {
-    if (!currentServiceId) return [];
     try {
-      let response: any = await chat_history({
-        serverId: currentServiceId,
-        from: 0,
-        size: 20,
-      });
-      response = JSON.parse(response || "");
+      let response: any
+      if (isTauri) {
+        if (!currentServiceId) return [];
+        response = await chat_history({
+          serverId: currentServiceId,
+          from: 0,
+          size: 20,
+        });
+        response = JSON.parse(response || "");
+      } else {
+        const [error, res] = await Get(`/chat/_history`, {
+          from: 0,
+          size: 20,
+        })
+        if (error) {
+          console.error('_history', error);
+          return []
+        }
+        response = res
+      }
       console.log("_history", response);
       const hits = response?.hits?.hits || [];
       return hits;
@@ -212,7 +319,7 @@ export function useChatActions(
   }, [currentServiceId]);
 
   const createChatWindow = useCallback(async (createWin: any) => {
-    if (isTauri()) {
+    if (isTauri) {
       createWin && createWin({
         label: "chat",
         title: "Coco Chat",

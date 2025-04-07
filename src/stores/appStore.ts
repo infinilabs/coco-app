@@ -52,6 +52,9 @@ export type IAppStore = {
   showCocoShortcuts: string[];
   setShowCocoShortcuts: (showCocoShortcuts: string[]) => void;
 
+  isTauri: boolean;
+  setIsTauri: (isTauri: boolean) => void;
+
   visible: boolean;
   withVisibility: <T>(fn: () => Promise<T>) => Promise<T>;
 };
@@ -107,6 +110,8 @@ export const useAppStore = create<IAppStore>()(
 
         return set({ showCocoShortcuts });
       },
+      isTauri: true,
+      setIsTauri: (isTauri: boolean) => set({ isTauri }),
       visible: false,
       withVisibility: async <T>(fn: () => Promise<T>) => {
         set({ visible: true });

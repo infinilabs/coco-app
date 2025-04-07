@@ -20,6 +20,19 @@ function TypeIcon({
   const endpoint_http = useAppStore((state) => state.endpoint_http);
   const connectorSource = useFindConnectorIcon(item);
 
+  if (item?.source?.icon) {
+    if (
+      item?.source?.icon.startsWith("http://") ||
+      item?.source?.icon.startsWith("https://")
+    ) {
+      return (
+        <IconWrapper className={className} onClick={onClick}>
+          <img className={className} src={item?.source?.icon} alt="icon" />
+        </IconWrapper>
+      );
+    }
+  }
+
   // If the icon is a valid base64-encoded image
   const isBase64 = connectorSource?.icon?.startsWith("data:image/");
   if (isBase64) {

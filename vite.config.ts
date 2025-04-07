@@ -56,6 +56,11 @@ export default defineConfig(async () => ({
         changeOrigin: true,
         secure: false,
       },
+      "/integration": {
+        target: process.env.COCO_SERVER_URL,
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
   build: {

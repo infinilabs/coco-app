@@ -2,10 +2,13 @@ import { Command } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { isMac } from "@/utils/platform";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
 import noDataImg from "@/assets/coconut-tree.png";
 
 export const NoResults = () => {
   const { t } = useTranslation();
+
+  const modeSwitch = useShortcutsStore((state) => state.modeSwitch);
 
   return (
     <div
@@ -30,7 +33,7 @@ export const NoResults = () => {
           </span>
         )}
         <span className="ml-1 w-5 h-5 rounded-[6px] border border-[#D8D8D8] flex justify-center items-center">
-          T
+          {modeSwitch}
         </span>
       </div>
     </div>

@@ -147,12 +147,13 @@
       "version": "{{version}}",
       "updateAvailable": "Update available",
       "select": "Select",
-      "open": "Open"
+      "open": "Open",
+      "powered": "Powered by Coco AI"
     },
     "input": {
       "searchPlaceholder": "Search whatever you want ...",
       "connectionError": "Unable to connect to the server",
-      "reconnect": "Reconnect",
+      "reconnect": "Click here to reconnect.",
       "connecting": "Connecting",
       "deepThink": "Deep Think",
       "search": "Search",

@@ -8,7 +8,7 @@ import SettingsPanel from "@/components/Settings/SettingsPanel";
 import GeneralSettings from "@/components/Settings/GeneralSettings";
 import AboutView from "@/components/Settings/AboutView";
 import Cloud from "@/components/Cloud/Cloud.tsx";
-import Footer from "@/components/Footer";
+import Footer from "@/components/Common/UI/SettingsFooter";
 import { useTray } from "@/hooks/useTray";
 import Advanced from "@/components/Settings/Advanced";
 

@@ -25,11 +25,14 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   return (
     <div
       data-sidebar
-      className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-all duration-300 ease-in-out 
-      ${isSidebarOpen ? "translate-x-0" : "-translate-x-[calc(100%)]"}
-      md:relative md:translate-x-0 bg-gray-100 dark:bg-gray-800
-      border-r border-gray-200 dark:border-gray-700 rounded-tl-xl rounded-bl-xl
-      overflow-hidden`}
+      className={`
+        h-[calc(100%+90px)] absolute top-0 left-0 z-10 w-64 
+        transform transition-all duration-300 ease-in-out 
+        ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        bg-gray-100 dark:bg-gray-800
+        border-r border-gray-200 dark:border-gray-700 rounded-tl-xl rounded-bl-xl
+        overflow-hidden
+      `}
     >
       <Sidebar
         chats={chats}

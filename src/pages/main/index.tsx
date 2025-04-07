@@ -1,13 +1,17 @@
 import { useCallback, useEffect } from "react";
+import { useKeyPress } from "ahooks";
 
-import SearchChat from "@/pages/web/SearchChat";
+import SearchChat from "@/components/SearchChat";
 import platformAdapter from "@/utils/platformAdapter";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useStartupStore } from "@/stores/startupStore";
-import { useKeyPress } from "ahooks";
 import { modifierKeys } from "@/components/Settings/Advanced/components/Shortcuts";
+import { useAppStore } from "@/stores/appStore";
 
 function MainApp() {
+  const setIsTauri = useAppStore((state) => state.setIsTauri);
+  setIsTauri(true);
+
   const querySearch = useCallback(async (input: string) => {
     try {
       const response: any = await platformAdapter.invokeBackend(
@@ -44,6 +48,11 @@ function MainApp() {
     },
     []
   );
+
+  const hideCoco = useCallback(() => {
+    return platformAdapter.hideWindow();
+  }, []);
+
   const modifierKey = useShortcutsStore((state) => {
     return state.modifierKey;
   });
@@ -129,7 +138,13 @@ function MainApp() {
   );
 
   return (
-    <SearchChat querySearch={querySearch} queryDocuments={queryDocuments} />
+    <SearchChat
+      isTauri={true}
+      querySearch={querySearch}
+      queryDocuments={queryDocuments}
+      hideCoco={hideCoco}
+      hasModules={["search", "chat"]}
+    />
   );
 }
 
