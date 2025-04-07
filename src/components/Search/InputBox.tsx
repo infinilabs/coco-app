@@ -12,7 +12,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import SearchPopover from "./SearchPopover";
-import AudioRecording from "../AudioRecording";
+// import AudioRecording from "../AudioRecording";
 import { hide_coco } from "@/commands";
 import { DataSource } from "@/types/commands";
 // import InputExtra from "./InputExtra";
@@ -348,12 +348,12 @@ export default function ChatInput({
           ) : null}
         </div>
 
-        <AudioRecording
+        {/* <AudioRecording
           key={isChatMode ? "chat" : "search"}
           onChange={(text) => {
             changeInput(inputValue + text);
           }}
-        />
+        /> */}
 
         {isChatMode && curChatEnd ? (
           <button
