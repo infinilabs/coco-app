@@ -33,6 +33,7 @@ import { list_coco_servers } from "@/commands";
 import VisibleKey from "../Common/VisibleKey";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useBoolean } from "ahooks";
+import clsx from "clsx";
 
 interface ChatHeaderProps {
   onCreateNewChat: () => void;
@@ -178,7 +179,7 @@ export function ChatHeader({
               e.stopPropagation();
               setIsSidebarOpen();
             }}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="inline-flex size-[34px] p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <VisibleKey
               shortcut={historicalRecords}
@@ -246,7 +247,9 @@ export function ChatHeader({
         <div className="flex items-center gap-2">
           <button
             onClick={togglePin}
-            className={`${isPinned ? "text-blue-500" : ""}`}
+            className={clsx("inline-flex", {
+              "text-blue-500": isPinned,
+            })}
           >
             <VisibleKey shortcut={fixedWindow} onKeypress={togglePin}>
               {isPinned ? <PinIcon /> : <PinOffIcon />}
@@ -361,7 +364,7 @@ export function ChatHeader({
           </Popover>
 
           {isChatPage ? null : (
-            <button onClick={onOpenChatAI}>
+            <button className="inline-flex" onClick={onOpenChatAI}>
               <VisibleKey shortcut={external} onKeypress={onOpenChatAI}>
                 <WindowsFullIcon className="rotate-30 scale-x-[-1]" />
               </VisibleKey>
