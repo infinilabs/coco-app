@@ -105,31 +105,31 @@
         },
         "deepThinking": {
           "title": "Deep Thinking",
-          "description": "Shortcut to enable deep thinking mode"
+          "description": "Shortcut to activate Deep Thinking Mode in chat mode."
         },
         "internetSearch": {
           "title": "Internet Search",
-          "description": "Shortcut to enable internet search function"
+          "description": "Shortcut button to enable networking search in chat mode."
         },
         "historicalRecords": {
-          "title": "History Records",
-          "description": "Shortcut to view historical conversation records"
+          "title": "Conversation History",
+          "description": "Shortcut to view past conversation history in chat mode."
         },
         "newSession": {
-          "title": "New Session",
-          "description": "Shortcut to create a new conversation"
+          "title": "New Conversation",
+          "description": "Shortcut to start a new conversation in chat mode."
         },
         "fixedWindow": {
           "title": "Fixed Window",
-          "description": "Shortcut to pin current conversation window"
+          "description": "Shortcut to keep the Coco window always on top of other windows."
         },
         "serviceList": {
-          "title": "Service List",
-          "description": "Shortcut to open service list panel"
+          "title": "Service Panel",
+          "description": "Shortcut to open the service panel in chat mode."
         },
         "external": {
-          "title": "External Tools",
-          "description": "Shortcut to open external tools panel"
+          "title": "Detach Window",
+          "description": "Shortcut to open the current conversation as an independent window in chat mode."
         }
       },
       "connect": {
