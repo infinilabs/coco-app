@@ -79,44 +79,44 @@ const Shortcuts = () => {
       setValue: setAddFile,
     },
     {
-      title: "settings.advanced.shortcuts.deepThinking.title", // 深度思考
-      description: "settings.advanced.shortcuts.deepThinking.description", // 开启深度思考模式
+      title: "settings.advanced.shortcuts.deepThinking.title",
+      description: "settings.advanced.shortcuts.deepThinking.description",
       value: deepThinking,
       setValue: setDeepThinking,
     },
     {
-      title: "settings.advanced.shortcuts.internetSearch.title", // 网络搜索
-      description: "settings.advanced.shortcuts.internetSearch.description", // 启用网络搜索功能
+      title: "settings.advanced.shortcuts.internetSearch.title",
+      description: "settings.advanced.shortcuts.internetSearch.description",
       value: internetSearch,
       setValue: setInternetSearch,
     },
     {
-      title: "settings.advanced.shortcuts.historicalRecords.title", // 历史记录
-      description: "settings.advanced.shortcuts.historicalRecords.description", // 查看历史对话记录
+      title: "settings.advanced.shortcuts.historicalRecords.title",
+      description: "settings.advanced.shortcuts.historicalRecords.description",
       value: historicalRecords,
       setValue: setHistoricalRecords,
     },
     {
-      title: "settings.advanced.shortcuts.newSession.title", // 新建会话
-      description: "settings.advanced.shortcuts.newSession.description", // 创建一个新的对话
+      title: "settings.advanced.shortcuts.newSession.title",
+      description: "settings.advanced.shortcuts.newSession.description",
       value: newSession,
       setValue: setNewSession,
     },
     {
-      title: "settings.advanced.shortcuts.fixedWindow.title", // 固定窗口
-      description: "settings.advanced.shortcuts.fixedWindow.description", // 固定当前对话窗口
+      title: "settings.advanced.shortcuts.fixedWindow.title",
+      description: "settings.advanced.shortcuts.fixedWindow.description",
       value: fixedWindow,
       setValue: setFixedWindow,
     },
     {
-      title: "settings.advanced.shortcuts.serviceList.title", // 服务列表
-      description: "settings.advanced.shortcuts.serviceList.description", // 打开服务列表面板
+      title: "settings.advanced.shortcuts.serviceList.title",
+      description: "settings.advanced.shortcuts.serviceList.description",
       value: serviceList,
       setValue: setServiceList,
     },
     {
-      title: "settings.advanced.shortcuts.external.title", // 外部工具
-      description: "settings.advanced.shortcuts.external.description", // 打开外部工具面板
+      title: "settings.advanced.shortcuts.external.title",
+      description: "settings.advanced.shortcuts.external.description",
       value: external,
       setValue: setExternal,
     },
