@@ -26,7 +26,7 @@ export const Think = ({ Detail, ChunkData, loading }: ThinkProps) => {
     setData(ChunkData?.message_chunk);
   }, [ChunkData?.message_chunk, Data]);
 
-  // Must be after hooks ！！！
+  // Must be after hooks !!!
   if (!ChunkData && !Detail) return null;
 
   return (

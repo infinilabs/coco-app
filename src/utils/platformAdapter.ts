@@ -1,8 +1,8 @@
 import { createWebAdapter } from './webAdapter';
-// import { createTauriAdapter } from './tauriAdapter';
 
 import { IShortcutsStore } from "@/stores/shortcutsStore";
 import { IStartupStore } from "@/stores/startupStore";
+import { AppTheme } from "@/utils/tauri";
 
 export interface EventPayloads {
   "language-changed": {
@@ -16,18 +16,14 @@ export interface EventPayloads {
     endpoint_websocket: string;
   };
   "auth-changed": {
-    auth: {
-      [key: string]: any;
-    };
+    auth: Record<string, unknown>;
   };
   "userInfo-changed": {
-    userInfo: {
-      [key: string]: any;
-    };
+    userInfo: Record<string, unknown>;
   };
   open_settings: string | "";
   tab_index: string | "";
-  login_or_logout: any;
+  login_or_logout: unknown;
   'show-coco': void;
   'connector_data_change': void;
   'datasourceData_change': void;
@@ -44,9 +40,12 @@ export interface EventPayloads {
   "change-shortcuts-store": IShortcutsStore;
 }
 
-// Platform adapter interface
+/**
+ * Platform adapter interface for handling platform-specific operations
+ * Supports both Tauri and Web environments
+ */
 export interface PlatformAdapter {
-  invokeBackend: (command: string, args?: any) => Promise<any>;
+  invokeBackend: <T = unknown>(command: string, args?: unknown) => Promise<T>;
   setWindowSize: (width: number, height: number) => Promise<void>;
   hideWindow: () => Promise<void>;
   showWindow: () => Promise<void>;
@@ -70,7 +69,7 @@ export interface PlatformAdapter {
   getFileIcon: (path: string, size: number) => Promise<string>;
   checkUpdate: () => Promise<any>;
   relaunchApp: () => Promise<void>;
-  listenThemeChanged: (callback: (theme: any) => void) => Promise<() => void>;
+  listenThemeChanged: (callback: (theme: AppTheme) => void) => Promise<() => void>;
   getWebviewWindow: () => Promise<any>;
   setWindowTheme: (theme: string | null) => Promise<void>;
   getWindowTheme: () => Promise<string>;
@@ -92,19 +91,38 @@ export interface PlatformAdapter {
   openExternal: (url: string) => Promise<void>;
 }
 
-const loadAdapter = async () => {
-  const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
-  console.log("isTauri", appStore.state?.isTauri)
+let adapter: PlatformAdapter | null = null;
 
-  let isTauri = appStore.state?.isTauri;
-  if (isTauri) {
-    const { createTauriAdapter } = await import('./tauriAdapter');
-    return createTauriAdapter();
+const loadAdapter = () => {
+  if (adapter) return adapter;
+
+  try {
+    const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
+    const isTauri = appStore.state?.isTauri ?? !!(window as any).__TAURI__;
+    
+    if (isTauri) {
+      const { createTauriAdapter } = require('./tauriAdapter');
+      adapter = createTauriAdapter();
+    } else {
+      adapter = createWebAdapter();
+    }
+  } catch (error) {
+    console.error('Failed to load adapter:', error);
+    adapter = createWebAdapter();
   }
-  return createWebAdapter();
+
+  return adapter;
 };
 
-// Default adapter instance
-const platformAdapter: PlatformAdapter = typeof window !== 'undefined' ? await loadAdapter() : {} as PlatformAdapter;
+// Use proxy to ensure lazy loading and singleton pattern
+const platformAdapter = new Proxy({} as PlatformAdapter, {
+  get: (_target, prop) => {
+    const currentAdapter = loadAdapter();
+    if (!currentAdapter) {
+      throw new Error('Platform adapter not initialized');
+    }
+    return currentAdapter[prop as keyof PlatformAdapter];
+  }
+});
 
 export default platformAdapter;

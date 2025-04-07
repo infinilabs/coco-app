@@ -69,7 +69,7 @@ export default function useWebSocket({
           dealMsgRef.current?.(msg);
         }
       } catch (error) {
-        console.error("处理消息出错:", error, msg);
+        console.error("Error processing message:", error, msg);
       }
     },
     [onWebsocketSessionId]
