@@ -1,13 +1,15 @@
-import { useConnectStore } from "@/stores/connectStore";
 import clsx from "clsx";
 import { filesize } from "filesize";
 import { Files, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import Checkbox from "../Common/Checkbox";
-import FileIcon from "../Common/Icons/FileIcon";
+
+import { useConnectStore } from "@/stores/connectStore";
+import Checkbox from "@/components/Common/Checkbox";
+import FileIcon from "@/components/Common/Icons/FileIcon";
 import { delete_attachment, get_attachment } from "@/commands";
 import { AttachmentHit } from "@/types/commands";
+import { useAppStore } from "@/stores/appStore";
 
 interface SessionFileProps {
   sessionId: string;
@@ -16,6 +18,8 @@ interface SessionFileProps {
 const SessionFile = (props: SessionFileProps) => {
   const { sessionId } = props;
   const { t } = useTranslation();
+
+  const isTauri = useAppStore((state) => state.isTauri);
   const currentService = useConnectStore((state) => state.currentService);
   const [uploadedFiles, setUploadedFiles] = useState<AttachmentHit[]>([]);
   const [visible, setVisible] = useState(false);
@@ -32,14 +36,20 @@ const SessionFile = (props: SessionFileProps) => {
   }, [sessionId]);
 
   const getUploadedFiles = async () => {
-    const response = await get_attachment({ serverId, sessionId });
+    if (isTauri) {
+      const response = await get_attachment({ serverId, sessionId });
 
-    setUploadedFiles(response.hits.hits);
+      setUploadedFiles(response.hits.hits);
+    } else {
+    }
   };
 
   const handleDelete = async (id: string) => {
-    const result = await delete_attachment({ serverId, id });
-
+    let result;
+    if (isTauri) {
+      result = await delete_attachment({ serverId, id });
+    } else {
+    }
     if (!result) return;
 
     getUploadedFiles();

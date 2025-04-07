@@ -21,7 +21,7 @@ const PrevSuggestion: FC<PrevSuggestionProps> = (props) => {
   const [list, setList] = useState<string[]>([]);
 
   useEffect(() => {
-    if (isTauri) getList();
+    if (!isTauri) getList();
   }, [id]);
 
   const getList = async () => {

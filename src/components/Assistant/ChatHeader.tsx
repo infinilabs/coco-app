@@ -330,7 +330,7 @@ export function ChatHeader({
             <WindowsFullIcon className="rotate-30 scale-x-[-1]" />
           </button>
         )}
-      </div>: null}
+      </div>: <div/>}
     </header>
   );
 }

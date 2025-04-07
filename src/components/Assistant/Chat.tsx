@@ -199,15 +199,18 @@ const ChatAI = memo(
       ]);
 
       const init = useCallback(
-        (value: string) => {
-          if (!isLogin) return;
-          if (!curChatEnd) return;
-          if (!activeChat?._id) {
+        async (value: string) => {
+          try {
+            console.log("init", isLogin, curChatEnd, activeChat?._id);
+            if (!isLogin || !curChatEnd) return;
             setShowPrevSuggestion(false);
-            createNewChat(value, activeChat, websocketSessionId);
-          } else {
-            setShowPrevSuggestion(false);
-            handleSendMessage(value, activeChat, websocketSessionId);
+            if (!activeChat?._id) {
+              await createNewChat(value, activeChat, websocketSessionId);
+            } else {
+              await handleSendMessage(value, activeChat, websocketSessionId);
+            }
+          } catch (error) {
+            console.error('Failed to initialize chat:', error);
           }
         },
         [
@@ -231,10 +234,12 @@ const ChatAI = memo(
           if (messageTimeoutRef.current) {
             clearTimeout(messageTimeoutRef.current);
           }
-          chatClose(activeChat);
-          setActiveChat(undefined);
-          setCurChatEnd(true);
-          disconnectWS();
+          Promise.resolve().then(() => {
+            chatClose(activeChat);
+            setActiveChat(undefined);
+            setCurChatEnd(true);
+            disconnectWS();
+          });
         };
       }, [chatClose, setCurChatEnd]);
 

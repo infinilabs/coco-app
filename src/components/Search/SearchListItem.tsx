@@ -16,7 +16,7 @@ interface SearchListItemProps {
   showListRight?: boolean;
 }
 
-const SearchListItem: React.FC<SearchListItemProps> = ({
+const SearchListItem: React.FC<SearchListItemProps> = React.memo(({
   item,
   isSelected,
   currentIndex,
@@ -68,6 +68,6 @@ const SearchListItem: React.FC<SearchListItemProps> = ({
       ) : null}
     </div>
   );
-};
+});
 
 export default SearchListItem;

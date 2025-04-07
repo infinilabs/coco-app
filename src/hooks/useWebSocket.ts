@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useWebSocket as useWebSocketAHook } from "ahooks";
 
 import { useAppStore, IServer } from "@/stores/appStore";
-import { connect_to_server, disconnect } from "@/commands"
+import { connect_to_server, disconnect as disconnectCommand } from "@/commands"
 import platformAdapter from "@/utils/platformAdapter";
 
 enum ReadyState {
@@ -36,12 +36,12 @@ export default function useWebSocket({
   const messageQueue = useRef<string[]>([]);
   const processingRef = useRef(false);
 
-  const { readyState, connect } = useWebSocketAHook(
-    "wss://coco.infini.cloud/ws",
+  const { readyState, connect, disconnect } = useWebSocketAHook(
+    // "wss://coco.infini.cloud/ws",
     // "ws://localhost:9000/ws",
-    // endpoint_websocket,
+    isTauri ? "" : endpoint_websocket,
     {
-      manual: false,
+      manual: true,
       reconnectLimit: 3,
       reconnectInterval: 3000,
       onMessage: (event) => {
@@ -51,6 +51,11 @@ export default function useWebSocket({
       },
     }
   );
+  useEffect(() => {
+    if (!isTauri) {
+      connect();
+    }
+  }, [isTauri, connect]);
 
   const processMessage = useCallback(
     (msg: string) => {
@@ -118,12 +123,16 @@ export default function useWebSocket({
 
   const disconnectWS = async () => {
     if (!connected) return;
-    try {
-      console.log("disconnect");
-      await disconnect(clientId);
-      setConnected(false);
-    } catch (error) {
-      console.error("Failed to disconnect:", error);
+    if (isTauri) {
+      try {
+        console.log("disconnect");
+        await disconnectCommand(clientId);
+        setConnected(false);
+      } catch (error) {
+        console.error("Failed to disconnect:", error);
+      }
+    } else {
+      disconnect();
     }
   };
 

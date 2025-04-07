@@ -77,10 +77,11 @@ export function useChatActions(
     chat: Chat,
     callback?: (chat: Chat) => void
   ) => {
-    if (!chat?._id || !currentServiceId) return;
+    if (!chat?._id) return;
     try {
       let response: any
       if (isTauri) {
+        if (!currentServiceId) return;
         response = await session_chat_history({
           serverId: currentServiceId,
           sessionId: chat?._id,
@@ -114,13 +115,12 @@ export function useChatActions(
 
   const createNewChat = useCallback(
     async (value: string = "", activeChat?: Chat, id?: string) => {
-      setTimedoutShow(false);
-      setErrorShow(false);
-      chatClose(activeChat);
-      clearAllChunkData();
-      setQuestion(value);
-      if (!currentServiceId) return;
       try {
+        setTimedoutShow(false);
+        setErrorShow(false);
+        await chatClose(activeChat);
+        clearAllChunkData();
+        setQuestion(value);  
         if (!(websocketSessionId || id)) {
           setErrorShow(true);
           console.error("websocketSessionId", websocketSessionId, id);
@@ -129,6 +129,7 @@ export function useChatActions(
         console.log("sourceDataIds", sourceDataIds, websocketSessionId, id);
         let response: any
         if (isTauri) {
+          if (!currentServiceId) return;
           response = await new_chat({
             serverId: currentServiceId,
             websocketId: websocketSessionId || id,
@@ -183,7 +184,7 @@ export function useChatActions(
 
   const sendMessage = useCallback(
     async (content: string, newChat: Chat, id?: string) => {
-      if (!newChat?._id || !currentServiceId || !content) return;
+      if (!newChat?._id || !content) return;
 
       clearAllChunkData();
       try {
@@ -194,6 +195,7 @@ export function useChatActions(
         }
         let response: any
         if (isTauri) {
+          if (!currentServiceId) return;
           response = await send_message({
             serverId: currentServiceId,
             websocketId: websocketSessionId || id,
@@ -258,10 +260,11 @@ export function useChatActions(
   );
 
   const openSessionChat = useCallback(async (chat: Chat) => {
-    if (!chat?._id || !currentServiceId) return;
+    if (!chat?._id) return;
     try {
       let response: any
       if (isTauri) {
+        if (!currentServiceId) return;
         response = await open_session_chat({
           serverId: currentServiceId,
           sessionId: chat?._id,
@@ -285,7 +288,6 @@ export function useChatActions(
   }, [currentServiceId]);
 
   const getChatHistory = useCallback(async () => {
-    if (!currentServiceId) return [];
     try {
       let response: any
       if (isTauri) {

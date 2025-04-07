@@ -74,7 +74,7 @@ function WebApp({
           score: hit._score || 0,
           source: hit._source.source || null,
         })) || [];
-      const total = response?.total || 0;
+      const total = response?.hits?.total?.value || 0;
 
       console.log("_suggest2", url, total, hits);
 
