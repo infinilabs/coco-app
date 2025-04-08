@@ -20,7 +20,7 @@ export default function Layout() {
 
   function updateBodyClass(path: string) {
     const body = document.body;
-    body.className = "";
+    body.classList.remove("input-body");
 
     if (path === "/ui") {
       body.classList.add("input-body");
@@ -28,9 +28,11 @@ export default function Layout() {
   }
 
   useMount(async () => {
-    const unlistenTheme = await platformAdapter.listenThemeChanged((theme: AppTheme) => {
-      setTheme(theme);
-    });
+    const unlistenTheme = await platformAdapter.listenThemeChanged(
+      (theme: AppTheme) => {
+        setTheme(theme);
+      }
+    );
 
     platformAdapter.onThemeChanged(({ payload }) => {
       if (activeTheme !== "auto") return;
@@ -100,9 +102,5 @@ export default function Layout() {
     event.preventDefault();
   });
 
-  return (
-    <div className="coco-container">
-      <Outlet />
-    </div>
-  );
+  return <Outlet />;
 }

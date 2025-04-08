@@ -149,6 +149,9 @@ const ChatAI = memo(
         openSessionChat,
         getChatHistory,
         createChatWindow,
+        handleSearch,
+        handleRename,
+        handleDelete,
       } = useChatActions(
         currentService?.id,
         setActiveChat,
@@ -158,6 +161,7 @@ const ChatAI = memo(
         clearAllChunkData,
         setQuestion,
         curIdRef,
+        setChats,
         isSearchActive,
         isDeepThinkActive,
         sourceDataIds,
@@ -210,7 +214,7 @@ const ChatAI = memo(
               await handleSendMessage(value, activeChat, websocketSessionId);
             }
           } catch (error) {
-            console.error('Failed to initialize chat:', error);
+            console.error("Failed to initialize chat:", error);
           }
         },
         [
@@ -265,20 +269,20 @@ const ChatAI = memo(
         ]
       );
 
-      const deleteChat = useCallback(
-        (chatId: string) => {
-          setChats((prev) => prev.filter((chat) => chat._id !== chatId));
-          if (activeChat?._id === chatId) {
-            const remainingChats = chats.filter((chat) => chat._id !== chatId);
-            if (remainingChats.length > 0) {
-              setActiveChat(remainingChats[0]);
-            } else {
-              init("");
-            }
-          }
-        },
-        [activeChat, chats, init, setActiveChat]
-      );
+      // const deleteChat = useCallback(
+      //   (chatId: string) => {
+      //     setChats((prev) => prev.filter((chat) => chat._id !== chatId));
+      //     if (activeChat?._id === chatId) {
+      //       const remainingChats = chats.filter((chat) => chat._id !== chatId);
+      //       if (remainingChats.length > 0) {
+      //         setActiveChat(remainingChats[0]);
+      //       } else {
+      //         init("");
+      //       }
+      //     }
+      //   },
+      //   [activeChat, chats, init, setActiveChat]
+      // );
 
       const handleOutsideClick = useCallback((e: MouseEvent) => {
         const sidebar = document.querySelector("[data-sidebar]");
@@ -302,25 +306,25 @@ const ChatAI = memo(
         };
       }, [isSidebarOpenChat, handleOutsideClick]);
 
-      const fetchChatHistory = useCallback(async () => {
-        const hits = await getChatHistory();
-        setChats(hits);
-      }, [getChatHistory]);
+      // const fetchChatHistory = useCallback(async () => {
+      //   const hits = await getChatHistory();
+      //   setChats(hits);
+      // }, [getChatHistory]);
 
       const setIsLoginChat = useCallback(
         (value: boolean) => {
           setIsLogin(value);
-          value && currentService && !setIsSidebarOpen && fetchChatHistory();
+          value && currentService && !setIsSidebarOpen && getChatHistory();
           !value && setChats([]);
         },
-        [currentService, setIsSidebarOpen, fetchChatHistory]
+        [currentService, setIsSidebarOpen, getChatHistory]
       );
 
       const toggleSidebar = useCallback(() => {
         setIsSidebarOpenChat(!isSidebarOpenChat);
         setIsSidebarOpen && setIsSidebarOpen(!isSidebarOpenChat);
-        !isSidebarOpenChat && fetchChatHistory();
-      }, [isSidebarOpenChat, setIsSidebarOpen, fetchChatHistory]);
+        !isSidebarOpenChat && getChatHistory();
+      }, [isSidebarOpenChat, setIsSidebarOpen, getChatHistory]);
 
       return (
         <div
@@ -332,10 +336,12 @@ const ChatAI = memo(
               isSidebarOpen={isSidebarOpenChat}
               chats={chats}
               activeChat={activeChat}
-              onNewChat={clearChat}
+              // onNewChat={clearChat}
               onSelectChat={onSelectChat}
-              onDeleteChat={deleteChat}
-              fetchChatHistory={fetchChatHistory}
+              onDeleteChat={handleDelete}
+              fetchChatHistory={getChatHistory}
+              onSearch={handleSearch}
+              onRename={handleRename}
             />
           )}
 
