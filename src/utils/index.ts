@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
+import { open } from "@tauri-apps/plugin-shell";
 
 import { hide_coco } from "@/commands";
 import platformAdapter from "./platformAdapter";
-import { open } from "@tauri-apps/plugin-shell";
 
 // 1
 export async function copyToClipboard(text: string) {
