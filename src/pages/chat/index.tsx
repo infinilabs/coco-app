@@ -214,9 +214,6 @@ export default function Chat({}: ChatProps) {
   const handleRename = async (chat: typeChat, title: string) => {
     if (!currentService?.id) return;
 
-    console.log("chat", chat);
-    console.log("title", title);
-
     await update_session_chat({
       serverId: currentService.id,
       sessionId: chat?._id,

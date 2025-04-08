@@ -1,7 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ["./index.html", "./src/**/*.{html,js,jsx,ts,tsx}", "./src/**/*.css"],
-  important: '.coco-container',
+  content: [
+    "./index.html",
+    "./src/**/*.{html,js,jsx,ts,tsx}",
+    "./src/**/*.css",
+  ],
+  important: ".coco-container",
   theme: {
     extend: {
       backgroundColor: {

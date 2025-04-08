@@ -1,26 +1,31 @@
 import React from "react";
 
-import { Sidebar } from "@/components/Assistant/Sidebar";
+// import { Sidebar } from "@/components/Assistant/Sidebar";
 import type { Chat } from "./types";
+import HistoryList from "../Common/HistoryList";
 
 interface ChatSidebarProps {
   isSidebarOpen: boolean;
   chats: Chat[];
   activeChat?: Chat;
-  onNewChat: () => void;
+  // onNewChat: () => void;
   onSelectChat: (chat: any) => void;
   onDeleteChat: (chatId: string) => void;
   fetchChatHistory: () => void;
+  onSearch: (keyword: string) => void;
+  onRename: (chat: any, title: string) => void;
 }
 
 export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   isSidebarOpen,
   chats,
   activeChat,
-  onNewChat,
+  // onNewChat,
   onSelectChat,
   onDeleteChat,
   fetchChatHistory,
+  onSearch,
+  onRename,
 }) => {
   return (
     <div
@@ -34,14 +39,23 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         overflow-hidden
       `}
     >
-      <Sidebar
+      <HistoryList
+        list={chats}
+        active={activeChat}
+        onSearch={onSearch}
+        onRefresh={fetchChatHistory}
+        onSelect={onSelectChat}
+        onRename={onRename}
+        onRemove={onDeleteChat}
+      />
+      {/* <Sidebar
         chats={chats}
         activeChat={activeChat}
         onNewChat={onNewChat}
         onSelectChat={onSelectChat}
         onDeleteChat={onDeleteChat}
         fetchChatHistory={fetchChatHistory}
-      />
+      /> */}
     </div>
   );
 };
