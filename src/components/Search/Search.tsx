@@ -7,6 +7,7 @@ import { useSearchStore } from "@/stores/searchStore";
 import ContextMenu from "./ContextMenu";
 import { NoResults } from "@/components/Common/UI/NoResults";
 import Footer from "@/components/Common/UI/Footer";
+
 interface SearchProps {
   isTauri: boolean;
   changeInput: (val: string) => void;
@@ -75,15 +76,12 @@ function Search({
   const debouncedSearch = useCallback(debounce(getSuggest, 500), [input]);
 
   useEffect(() => {
-    !isChatMode && !sourceData && debouncedSearch();
+    !isChatMode && debouncedSearch();
     if (!input) setSuggests([]);
   }, [input]);
 
   return (
-    <div
-      ref={mainWindowRef}
-      className={`h-full pb-10 w-full relative`}
-    >
+    <div ref={mainWindowRef} className={`h-full pb-10 w-full relative`}>
       {/* Search Results Panel */}
       {suggests.length > 0 ? (
         sourceData ? (
