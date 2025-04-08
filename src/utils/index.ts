@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import { open } from "@tauri-apps/plugin-shell";
 
-import { hide_coco } from "@/commands"
+import { hide_coco } from "@/commands";
 import platformAdapter from "./platformAdapter";
 
 // 1
@@ -57,8 +58,8 @@ export function useWindowSize() {
 export const IsTauri = () => {
   return Boolean(
     typeof window !== "undefined" &&
-    window !== undefined &&
-    (window as any).__TAURI_INTERNALS__ !== undefined
+      window !== undefined &&
+      (window as any).__TAURI_INTERNALS__ !== undefined
   );
 };
 
