@@ -14,8 +14,8 @@ Information about release notes of Coco Server is provided here.
 ### Features
 
 - Linux support for application search #330
-
 - Add shortcuts to most icon buttons #334
+- Add font icon for search list #342
 
 ### Bug fix
 
