@@ -19,6 +19,8 @@ Information about release notes of Coco Server is provided here.
 
 ### Bug fix
 
+- Fixed the problem of not being able to search in secondary directories #338
+
 ### Improvements
 
 - refactor: web components #331
