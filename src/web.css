@@ -158,6 +158,14 @@ body,
   border-radius: 0.75rem;
 }
 
+.icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}
+
 .\!container {
   width: 100% !important;
 }

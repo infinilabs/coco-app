@@ -1,5 +1,4 @@
-import { useAppStore } from "@/stores/appStore";
-import { useKeyPress, useReactive } from "ahooks";
+import { useReactive } from "ahooks";
 import clsx from "clsx";
 import { Check, Loader, Mic, X } from "lucide-react";
 import { FC, useEffect, useRef } from "react";
@@ -9,10 +8,12 @@ import {
 } from "tauri-plugin-macos-permissions-api";
 import { useWavesurfer } from "@wavesurfer/react";
 import RecordPlugin from "wavesurfer.js/dist/plugins/record.esm.js";
+
 import { useConnectStore } from "@/stores/connectStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { transcription } from "@/commands";
-import VisibleKey from "../Common/VisibleKey";
+import VisibleKey from "@/components/Common/VisibleKey";
+import { useAppStore } from "@/stores/appStore";
 
 interface AudioRecordingProps {
   onChange?: (text: string) => void;

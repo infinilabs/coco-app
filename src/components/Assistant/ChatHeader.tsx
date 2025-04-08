@@ -17,6 +17,7 @@ import {
   PopoverPanel,
 } from "@headlessui/react";
 import { useTranslation } from "react-i18next";
+import clsx from "clsx";
 
 import logoImg from "@/assets/icon.svg";
 import HistoryIcon from "@/icons/History";
@@ -32,8 +33,6 @@ import platformAdapter from "@/utils/platformAdapter";
 import { list_coco_servers } from "@/commands";
 import VisibleKey from "../Common/VisibleKey";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
-import { useBoolean } from "ahooks";
-import clsx from "clsx";
 
 interface ChatHeaderProps {
   onCreateNewChat: () => void;

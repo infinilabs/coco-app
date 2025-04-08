@@ -1,4 +1,5 @@
 import { createWebAdapter } from './webAdapter';
+import { createTauriAdapter } from './tauriAdapter';
 
 import { IShortcutsStore } from "@/stores/shortcutsStore";
 import { IStartupStore } from "@/stores/startupStore";
@@ -91,38 +92,9 @@ export interface PlatformAdapter {
   openExternal: (url: string) => Promise<void>;
 }
 
-let adapter: PlatformAdapter | null = null;
+const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
+const isTauri = appStore.state?.isTauri ?? !!(window as any).__TAURI__;
 
-const loadAdapter = () => {
-  if (adapter) return adapter;
-
-  try {
-    const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
-    const isTauri = appStore.state?.isTauri ?? !!(window as any).__TAURI__;
-    
-    if (isTauri) {
-      const { createTauriAdapter } = require('./tauriAdapter');
-      adapter = createTauriAdapter();
-    } else {
-      adapter = createWebAdapter();
-    }
-  } catch (error) {
-    console.error('Failed to load adapter:', error);
-    adapter = createWebAdapter();
-  }
-
-  return adapter;
-};
-
-// Use proxy to ensure lazy loading and singleton pattern
-const platformAdapter = new Proxy({} as PlatformAdapter, {
-  get: (_target, prop) => {
-    const currentAdapter = loadAdapter();
-    if (!currentAdapter) {
-      throw new Error('Platform adapter not initialized');
-    }
-    return currentAdapter[prop as keyof PlatformAdapter];
-  }
-});
+const platformAdapter: PlatformAdapter = isTauri ? createTauriAdapter() : createWebAdapter();
 
 export default platformAdapter;
