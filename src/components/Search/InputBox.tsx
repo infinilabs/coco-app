@@ -13,7 +13,6 @@ import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import SearchPopover from "./SearchPopover";
 // import AudioRecording from "../AudioRecording";
-import { hide_coco } from "@/commands";
 import { DataSource } from "@/types/commands";
 // import InputExtra from "./InputExtra";
 // import { useConnectStore } from "@/stores/connectStore";
