@@ -5,6 +5,7 @@ import IconWrapper from "./IconWrapper";
 import ThemedIcon from "./ThemedIcon";
 import { useFindConnectorIcon } from "@/hooks/useFindConnectorIcon";
 import { useAppStore } from "@/stores/appStore";
+import FontIcon from "./FontIcon";
 
 interface ItemIconProps {
   item: any;
@@ -22,6 +23,12 @@ const ItemIcon = React.memo(function ItemIcon({
   const connectorSource = useFindConnectorIcon(item);
   // console.log("connectorSource", connectorSource);
   const icons = connectorSource?.assets?.icons || {};
+
+  if (item?.icon?.startsWith("font_")) {
+    return (
+      <FontIcon name={item?.icon} className={className} />
+    );
+  }
 
   // If the icon is a valid base64-encoded image
   const isBase64 = item?.icon?.startsWith("data:image/");
