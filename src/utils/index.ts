@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { open } from "@tauri-apps/plugin-shell";
 
 import { hide_coco } from "@/commands";
 import platformAdapter from "./platformAdapter";
@@ -67,9 +66,8 @@ export const OpenURLWithBrowser = async (url: string) => {
   if (!url) return;
   if (IsTauri()) {
     try {
-      await open(url);
+      await platformAdapter.openExternal(url);
       await hide_coco();
-      await platformAdapter.invokeBackend("hide_coco");
       console.log("URL opened in default browser");
     } catch (error) {
       console.error("Failed to open URL:", error);
