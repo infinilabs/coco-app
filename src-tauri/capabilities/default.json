@@ -68,6 +68,7 @@
     "screenshots:default",
     "core:window:allow-set-theme",
     "process:default",
-    "updater:default"
+    "updater:default",
+    "windows-version:default"
   ]
 }
