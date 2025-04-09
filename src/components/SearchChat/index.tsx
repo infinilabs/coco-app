@@ -335,7 +335,7 @@ function SearchChat({
           "w-screen h-screen": isTauri,
           "rounded-xl": !isWin,
           "border border-[#E6E6E6] dark:border-[#272626]": isLinux,
-          "border-t border-t-[#999]": isWin10,
+          "border-t border-t-[#999] dark:border-t-[#333]": isWin10,
         }
       )}
     >
