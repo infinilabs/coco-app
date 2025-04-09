@@ -5,8 +5,10 @@ import {
   useReducer,
   Suspense,
   memo,
+  useState,
 } from "react";
 import clsx from "clsx";
+import { isWindows10 } from "tauri-plugin-windows-version-api";
 
 import Search from "@/components/Search/Search";
 import InputBox from "@/components/Search/InputBox";
@@ -22,19 +24,20 @@ import { useStartupStore } from "@/stores/startupStore";
 import { DataSource } from "@/types/commands";
 import { useThemeStore } from "@/stores/themeStore";
 import { Get } from "@/api/axiosRequest";
+import { useMount } from "ahooks";
 
 interface SearchChatProps {
   isTauri?: boolean;
   hasModules?: string[];
   defaultModule?: "search" | "chat";
-  
+
   hasFeature?: string[];
   showChatHistory?: boolean;
-  
+
   theme?: "auto" | "light" | "dark";
   searchPlaceholder?: string;
   chatPlaceholder?: string;
-  
+
   hideCoco?: () => void;
   setIsPinned?: (value: boolean) => void;
   querySearch: (input: string) => Promise<any>;
@@ -74,6 +77,7 @@ function SearchChat({
     isDeepThinkActive,
     isTyping,
   } = state;
+  const [isWin10, setIsWin10] = useState(false);
 
   useWindowEvents();
 
@@ -83,6 +87,12 @@ function SearchChat({
   );
 
   const setTheme = useThemeStore((state) => state.setTheme);
+
+  useMount(async () => {
+    const isWin10 = await isWindows10();
+
+    setIsWin10(isWin10);
+  });
 
   useEffect(() => {
     let mounted = true;
@@ -325,6 +335,7 @@ function SearchChat({
           "w-screen h-screen": isTauri,
           "rounded-xl": !isWin,
           "border border-[#E6E6E6] dark:border-[#272626]": isLinux,
+          "border-t border-t-[#999]": isWin10,
         }
       )}
     >
