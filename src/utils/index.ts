@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 
-import { hide_coco } from "@/commands";
 import platformAdapter from "./platformAdapter";
 
 // 1
@@ -67,7 +66,7 @@ export const OpenURLWithBrowser = async (url: string) => {
   if (IsTauri()) {
     try {
       await platformAdapter.openExternal(url);
-      await hide_coco();
+      await platformAdapter.commands("hide_coco");
       console.log("URL opened in default browser");
     } catch (error) {
       console.error("Failed to open URL:", error);

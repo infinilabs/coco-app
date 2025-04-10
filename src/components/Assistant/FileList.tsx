@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { useChatStore } from "@/stores/chatStore";
 import { useConnectStore } from "@/stores/connectStore";
 import FileIcon from "../Common/Icons/FileIcon";
-import { delete_attachment, upload_attachment } from "@/commands";
+import platformAdapter from "@/utils/platformAdapter";
 
 interface FileListProps {
   sessionId: string;
@@ -39,11 +39,14 @@ const FileList = (props: FileListProps) => {
 
       if (uploaded) continue;
 
-      const attachmentIds = await upload_attachment({
-        serverId,
-        sessionId,
-        filePaths: [path],
-      });
+      const attachmentIds: any = await platformAdapter.commands(
+        "upload_attachment",
+        {
+          serverId,
+          sessionId,
+          filePaths: [path],
+        }
+      );
 
       if (!attachmentIds) continue;
 
@@ -59,7 +62,10 @@ const FileList = (props: FileListProps) => {
   const deleteFile = async (id: string, attachmentId: string) => {
     setUploadFiles(uploadFiles.filter((file) => file.id !== id));
 
-    delete_attachment({ serverId, id: attachmentId });
+    platformAdapter.commands("delete_attachment", {
+      serverId,
+      id: attachmentId,
+    });
   };
 
   return (

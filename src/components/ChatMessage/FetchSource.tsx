@@ -74,7 +74,7 @@ export const FetchSource = ({ Detail, ChunkData }: FetchSourceProps) => {
 
   return (
     <div
-      className={`mt-2 mb-2 w-[610px] ${
+      className={`mt-2 mb-2 max-w-full w-full md:w-[610px] ${
         isSourceExpanded
           ? "rounded-lg overflow-hidden border border-[#E6E6E6] dark:border-[#272626]"
           : ""
@@ -120,13 +120,13 @@ export const FetchSource = ({ Detail, ChunkData }: FetchSourceProps) => {
               className="group flex items-center p-2 hover:bg-[#F7F7F7] dark:hover:bg-[#2C2C2C] border-b border-[#E6E6E6] dark:border-[#272626] last:border-b-0 cursor-pointer transition-colors"
             >
               <div className="w-full flex items-center gap-2">
-                <div className="w-[75%] flex items-center gap-1">
+                <div className="w-full md:w-[75%] flex items-center gap-1">
                   <Globe className="w-3 h-3 flex-shrink-0" />
                   <div className="text-xs text-[#333333] dark:text-[#D8D8D8] truncate font-normal group-hover:text-[#0072FF] dark:group-hover:text-[#0072FF]">
                     {item.title || item.category}
                   </div>
                 </div>
-                <div className="w-[25%] flex items-center justify-end gap-2">
+                <div className="hidden md:flex w-[25%] items-center justify-end gap-2">
                   <span className="text-xs text-[#999999] dark:text-[#999999] truncate">
                     {item.source?.name}
                   </span>

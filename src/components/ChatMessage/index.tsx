@@ -125,9 +125,9 @@ export const ChatMessage = memo(function ChatMessage({
         }`}
       >
         <div
-          className={`space-y-2 ${isAssistant ? "text-left" : "text-right"}`}
+          className={`w-full space-y-2 ${isAssistant ? "text-left" : "text-right"}`}
         >
-          <p className="flex items-center gap-1 font-semibold text-sm text-[#333] dark:text-[#d8d8d8]">
+          <p className="w-full flex items-center gap-1 font-semibold text-sm text-[#333] dark:text-[#d8d8d8]">
             {isAssistant ? (
               <img
                 src={logoImg}
@@ -137,8 +137,8 @@ export const ChatMessage = memo(function ChatMessage({
             ) : null}
             {isAssistant ? t("assistant.message.aiName") : ""}
           </p>
-          <div className="prose dark:prose-invert prose-sm max-w-none">
-            <div className="pl-7 text-[#333] dark:text-[#d8d8d8] leading-relaxed">
+          <div className="w-full prose dark:prose-invert prose-sm max-w-none">
+            <div className="w-full pl-7 text-[#333] dark:text-[#d8d8d8] leading-relaxed">
               {renderContent()}
             </div>
           </div>

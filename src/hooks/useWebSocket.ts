@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useWebSocket as useWebSocketAHook } from "ahooks";
 
 import { useAppStore, IServer } from "@/stores/appStore";
-import { connect_to_server, disconnect as disconnectCommand } from "@/commands"
 import platformAdapter from "@/utils/platformAdapter";
 
 enum ReadyState {
@@ -108,7 +107,7 @@ export default function useWebSocket({
         if (!targetServer?.id) return;
         try {
           // console.log("reconnect", targetServer.id);
-          await connect_to_server(targetServer.id, clientId);
+          await platformAdapter.commands("connect_to_server", targetServer.id, clientId);
         } catch (error) {
           setConnected(false);
           console.error("Failed to connect:", error);
@@ -126,7 +125,7 @@ export default function useWebSocket({
     if (isTauri) {
       try {
         console.log("disconnect");
-        await disconnectCommand(clientId);
+        await platformAdapter.commands("disconnect", clientId);
         setConnected(false);
       } catch (error) {
         console.error("Failed to disconnect:", error);

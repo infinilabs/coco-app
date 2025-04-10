@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import { AppEndpoint } from "@/utils/tauri";
+import { AppEndpoint } from "@/types/index";
 import platformAdapter from "@/utils/platformAdapter";
 
 const ENDPOINT_CHANGE_EVENT = "endpoint-changed";

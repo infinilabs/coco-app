@@ -49,3 +49,14 @@ export const systemWrapper = {
     }
   },
 };
+
+// Command functions
+export const commandWrapper = {
+  async commands<T>(commandName: string, ...args: any[]): Promise<T> {
+    const commands = await import('@/commands');
+    if (commandName in commands) {
+      return (commands as any)[commandName](...args);
+    }
+    throw new Error(`Command ${commandName} not found`);
+  }
+};

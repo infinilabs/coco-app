@@ -19,7 +19,7 @@ export const NoResults = () => {
       <div className="mt-4 text-sm text-[#999] dark:text-[#666]">
         {t("search.main.noResults")}
       </div>
-      <div className="mt-10 text-sm  text-[#333] dark:text-[#D8D8D8] flex">
+      <div className="hidden md:flex mt-10 text-sm  text-[#333] dark:text-[#D8D8D8]">
         {t("search.main.askCoco")}
         {isMac ? (
           <span className="ml-3 w-5 h-5 rounded-[6px] border border-[#D8D8D8] flex justify-center items-center">

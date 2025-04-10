@@ -8,7 +8,7 @@ import useEscape from "@/hooks/useEscape";
 import useSettingsWindow from "@/hooks/useSettingsWindow";
 import { useThemeStore } from "@/stores/themeStore";
 import platformAdapter from "@/utils/platformAdapter";
-import { AppTheme } from "@/utils/tauri";
+import { AppTheme } from "@/types/index";
 
 export default function Layout() {
   const location = useLocation();
