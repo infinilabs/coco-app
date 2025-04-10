@@ -115,7 +115,7 @@ function WebApp({
       id="searchChat-container"
       className={`coco-container ${theme}`}
       data-theme={theme}
-      style={{ maxWidth: `${width}px`, height: `${height}px` }}
+      style={{ maxWidth: `${width}px`, width: `100vw`, height: `${height}px` }}
     >
       <SearchChat
         isTauri={false}
