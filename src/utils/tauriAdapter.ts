@@ -1,4 +1,5 @@
 import type { OpenDialogOptions } from '@tauri-apps/plugin-dialog';
+import { isWindows10 } from "tauri-plugin-windows-version-api";
 
 import { windowWrapper, eventWrapper, systemWrapper, commandWrapper } from './wrappers/tauriWrappers';
 import type { PlatformAdapter, EventPayloads } from './platformAdapter';
@@ -175,5 +176,7 @@ export const createTauriAdapter = (): PlatformAdapter => {
       const { open } = await import("@tauri-apps/plugin-shell");
       return open(url);
     },
+
+    isWindows10: isWindows10
   };
 };

@@ -91,6 +91,7 @@ export interface PlatformAdapter {
   isTauri: () => boolean;
   openExternal: (url: string) => Promise<void>;
   commands: <T>(commandName: string, ...args: any[]) => Promise<T>;
+  isWindows10: () => Promise<boolean>;
 }
 
 // const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");

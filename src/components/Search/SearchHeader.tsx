@@ -24,7 +24,7 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({
         </span>
         {t('search.header.results')}
       </div>
-      <div className="flex gap-2">
+      <div className="hidden md:flex gap-2">
         <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
           <button
             onClick={() => setViewMode("list")}

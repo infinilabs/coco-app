@@ -162,5 +162,7 @@ export const createWebAdapter = (): PlatformAdapter => {
       console.log(`Web mode opening URL: ${url}`);
       window.open(url, '_blank');
     },
+
+    isWindows10: async () => false,
   };
 };

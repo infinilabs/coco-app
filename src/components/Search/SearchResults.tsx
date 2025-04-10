@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { DocumentList } from "./DocumentList";
 import { DocumentDetail } from "./DocumentDetail";
@@ -13,7 +13,18 @@ export function SearchResults({ input, isChatMode, queryDocuments }: SearchResul
   const [selectedDocumentId, setSelectedDocumentId] = useState("1");
 
   const [detailData, setDetailData] = useState<any>({});
-  const [viewMode, setViewMode] = useState<"detail" | "list">("detail");
+  const [viewMode, setViewMode] = useState<"detail" | "list">(() => {
+    return window.innerWidth < 768 ? "list" : "detail";
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setViewMode(window.innerWidth < 768 ? "list" : "detail");
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   function getDocDetail(detail: any) {
     setDetailData(detail);

@@ -34,7 +34,7 @@ interface ISourceData {
   url: string;
 }
 
-export const FetchSource = ({ Detail, ChunkData }: FetchSourceProps) => {
+export const FetchSource = ({ Detail, ChunkData, loading }: FetchSourceProps) => {
   const { t } = useTranslation();
   const [isSourceExpanded, setIsSourceExpanded] = useState(false);
 
@@ -51,23 +51,27 @@ export const FetchSource = ({ Detail, ChunkData }: FetchSourceProps) => {
   useEffect(() => {
     if (!ChunkData?.message_chunk) return;
 
-    try {
-      const match = ChunkData.message_chunk.match(
-        /\u003cPayload total=(\d+)\u003e/
-      );
-      if (match) {
-        setTotal(Number(match[1]));
-      }
+    if (!loading) { 
+      try {
+        const match = ChunkData.message_chunk.match(
+          // /\u003cPayload total=(\d+)\u003e/
+          /<Payload total=(\d+)>/
+        );
+        if (match) {
+          setTotal(Number(match[1]));
+        }
 
-      const jsonMatch = ChunkData.message_chunk.match(/\[(.*)\]/s);
-      if (jsonMatch) {
-        const jsonData = JSON.parse(jsonMatch[0]);
-        setData(jsonData);
+        // const jsonMatch = ChunkData.message_chunk.match(/\[(.*)\]/s);
+        const jsonMatch = ChunkData.message_chunk.match(/\[([\s\S]*)\]/);
+        if (jsonMatch) {
+          const jsonData = JSON.parse(jsonMatch[0]);
+          setData(jsonData);
+        }
+      } catch (e) {
+        console.error("Failed to parse fetch source data:", e);
       }
-    } catch (e) {
-      console.error("Failed to parse fetch source data:", e);
     }
-  }, [ChunkData?.message_chunk]);
+  }, [ChunkData?.message_chunk, loading]);
 
   // Must be after hooks !!!
   if (!ChunkData && !Detail) return null;

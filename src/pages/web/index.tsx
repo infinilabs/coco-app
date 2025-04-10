@@ -28,7 +28,7 @@ function WebApp({
   width = 680,
   height = 590,
   headers = {
-    "X-API-TOKEN": "cvqt6r02sdb2v3bkgip0x3ixv01f3r2lhnxoz1efbn160wm9og58wtv8t6wrv1ebvnvypuc23dx9pb33aemh",
+    "X-API-TOKEN": "cvrmh6uhpceh4c6u2e9gnnmb1e09x2u1ttvdpt87zsv8gtdbto938t942r5mxdfmexzwynwtbyd9ov52qee9",
     "APP-INTEGRATION-ID": "cvkm9hmhpcemufsg3vug",
   },
   // token = "cva1j5ehpcenic3ir7k0h8fb8qtv35iwtywze248oscrej8yoivhb5b1hyovp24xejjk27jy9ddt69ewfi3n",   // https://coco.infini.cloud
