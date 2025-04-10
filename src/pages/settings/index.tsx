@@ -11,6 +11,7 @@ import Cloud from "@/components/Cloud/Cloud.tsx";
 import Footer from "@/components/Common/UI/SettingsFooter";
 import { useTray } from "@/hooks/useTray";
 import Advanced from "@/components/Settings/Advanced";
+import Extensions from "@/components/Settings/Extensions";
 
 const tabIndexMap: { [key: string]: number } = {
   general: 0,
@@ -33,7 +34,7 @@ function SettingsPage() {
     { name: t("settings.tabs.about"), icon: Info },
   ];
 
-  const [defaultIndex, setDefaultIndex] = useState<number>(0);
+  const [defaultIndex, setDefaultIndex] = useState<number>(1);
 
   useEffect(() => {
     const unlisten = listen("tab_index", (event) => {
@@ -91,9 +92,7 @@ function SettingsPage() {
               </TabPanel>
               <TabPanel>
                 <SettingsPanel title="">
-                  <div className="text-gray-600 dark:text-gray-400">
-                    {t("settings.tabs.extensionsContent")}
-                  </div>
+                  <Extensions />
                 </SettingsPanel>
               </TabPanel>
               <TabPanel>
