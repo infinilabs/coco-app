@@ -23,6 +23,7 @@ cargo-clippy = []
 
 [dependencies]
 pizza-common = { git = "https://github.com/infinilabs/pizza-common", branch = "main" }
+pizza-engine = { path = "../../pizza/lib/engine", features = ["persistence"] }
 
 tauri = { version = "2", features = ["protocol-asset", "macos-private-api", "tray-icon", "image-ico", "image-png", "unstable"] }
 tauri-plugin-shell = "2"
@@ -60,7 +61,6 @@ hostname = "0.3"
 plist = "1.7"
 base64 = "0.13"
 walkdir = "2"
-fuzzy_prefix_search = "0.2"
 log = "0.4"
 
 futures-util = "0.3.31"

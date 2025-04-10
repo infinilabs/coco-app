@@ -1,3 +1,4 @@
+use super::RUNTIME_TX;
 use crate::common::document::{DataSourceReference, Document};
 use crate::common::search::{QueryResponse, QuerySource, SearchQuery};
 use crate::common::traits::{SearchError, SearchSource};
@@ -5,66 +6,220 @@ use crate::local::LOCAL_QUERY_SOURCE_TYPE;
 use applications::{AppInfo, AppInfoContext};
 use async_trait::async_trait;
 use base64::encode;
-use fuzzy_prefix_search::Trie;
-use std::collections::HashMap;
-use std::fs;
+use pizza_engine::document::FieldType;
+use pizza_engine::document::{Document as PizzaEngineDocument, FieldValue};
+use pizza_engine::document::{Property, Schema};
+use pizza_engine::error::PizzaEngineError;
+use pizza_engine::search::{OriginalQuery, QueryContext, SearchResult, Searcher};
+use pizza_engine::store::{DiskStore, DiskStoreSnapshot};
+use pizza_engine::{doc, EngineBuilder};
 use std::path::{Path, PathBuf};
-use tauri::{AppHandle, Runtime};
+use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_fs_pro::{icon, name};
+use tokio::sync::oneshot::Sender as OneshotSender;
 
-pub struct ApplicationSearchSource {
-    base_score: f64,
-    icons: HashMap<String, PathBuf>,
-    application_paths: Trie<String>,
+const FIELD_APP_NAME: &str = "app_name";
+const FIELD_APP_PATH: &str = "app_path";
+const FIELD_ICON_PATH: &str = "icon_path";
+const APPLICATION_SEARCH_SOURCE_ID: &str = "application";
+
+struct ApplicationSearchSourceState {
+    searcher: Searcher<DiskStore>,
+    snapshot: DiskStoreSnapshot,
 }
 
-impl ApplicationSearchSource {
-    pub async fn new<R: Runtime>(
-        app_handle: AppHandle<R>,
-        base_score: f64,
-    ) -> Result<Self, String> {
-        let application_paths = Trie::new();
-        let mut icons = HashMap::new();
+impl super::SearchSourceState for ApplicationSearchSourceState {
+    fn as_mut_any(&mut self) -> &mut dyn std::any::Any {
+        self
+    }
+}
 
-        let mut ctx = AppInfoContext::new(vec![]);
-        ctx.refresh_apps().map_err(|err| err.to_string())?; // must refresh apps before getting them
-        let apps = ctx.get_all_apps();
+struct IndexApplicationsTask<R: Runtime> {
+    tauri_app_handle: AppHandle<R>,
+    callback: Option<tokio::sync::oneshot::Sender<Result<(), String>>>,
+}
 
-        for app in &apps {
-            if app.icon_path.is_none() {
-                continue;
-            }
+#[async_trait::async_trait(?Send)]
+impl<R: Runtime> super::Task for IndexApplicationsTask<R> {
+    fn search_source_id(&self) -> &'static str {
+        APPLICATION_SEARCH_SOURCE_ID
+    }
 
-            let path = if cfg!(target_os = "windows") {
-                app.app_path_exe
-                    .clone()
-                    .unwrap_or(PathBuf::from("Path not found"))
-            } else {
-                app.app_desktop_path.clone()
+    async fn exec(&mut self, state: &mut Option<Box<dyn super::SearchSourceState>>) {
+        macro_rules! my_try {
+            ($result:expr, $callback:expr) => {
+                match $result {
+                    Ok(ok) => ok,
+                    Err(e) => {
+                        let e_str = e.to_string();
+                        $callback.send(Err(e_str)).unwrap();
+                        return;
+                    }
+                }
             };
-            let search_word = name(path.clone()).await;
-            let icon = if cfg!(target_os = "linux") {
-                app.icon_path.clone().unwrap_or(PathBuf::from(""))
-            } else {
-                icon(app_handle.clone(), path.clone(), Some(256))
-                    .await
-                    .map_err(|err| err.to_string())?
-            };
-            let path_string = path.to_string_lossy().into_owned();
-
-            if search_word.is_empty() || search_word.eq("coco-ai") {
-                continue;
-            }
-
-            application_paths.insert(&search_word, path_string.clone());
-            icons.insert(path_string, icon);
         }
 
-        Ok(ApplicationSearchSource {
-            base_score,
-            icons,
-            application_paths,
-        })
+        let callback = self.callback.take().unwrap();
+        let mut app_index_dir = self
+            .tauri_app_handle
+            .path()
+            .app_data_dir()
+            .expect("failed to find the local dir");
+        app_index_dir.push("local_application_index");
+
+        let index_exists = app_index_dir.exists();
+
+        let mut pizza_engine_builder = EngineBuilder::new();
+        let disk_store = my_try!(DiskStore::new(&app_index_dir), callback);
+        pizza_engine_builder.set_data_store(disk_store);
+
+        let mut schema = Schema::new();
+        schema
+            .add_property(
+                FIELD_APP_NAME,
+                Property::as_text(None).expect("analyzer is not set, should not fail"),
+            )
+            .expect("no collision could happen");
+        let property_app_path = Property::builder(FieldType::Text).index(false).build();
+        schema
+            .add_property(FIELD_APP_PATH, property_app_path)
+            .expect("no collision could happen");
+        let property_icon = Property::builder(FieldType::Text).index(false).build();
+        schema
+            .add_property(FIELD_ICON_PATH, property_icon)
+            .expect("no collision could happen");
+        schema.freeze();
+        pizza_engine_builder.set_schema(schema);
+
+        let pizza_engine = pizza_engine_builder.build();
+        pizza_engine.start();
+
+        if !index_exists {
+            let mut writer = pizza_engine.acquire_writer();
+
+            let mut ctx = AppInfoContext::new(vec![]);
+            my_try!(ctx.refresh_apps(), callback);
+            let apps = ctx.get_all_apps();
+
+            for (index, app) in apps.iter().enumerate() {
+                if app.icon_path.is_none() {
+                    continue;
+                }
+
+                let app_path = if cfg!(target_os = "windows") {
+                    app.app_path_exe
+                        .clone()
+                        .unwrap_or(PathBuf::from("Path not found"))
+                } else {
+                    app.app_desktop_path.clone()
+                };
+                let app_path_str = app_path
+                    .clone()
+                    .into_os_string()
+                    .into_string()
+                    .expect("path should be UTF-8 encoded");
+
+                let app_name = name(app_path.clone()).await;
+                let app_icon_path = if cfg!(target_os = "linux") {
+                    app.icon_path.clone().unwrap_or(PathBuf::from(""))
+                } else {
+                    my_try!(
+                        icon(self.tauri_app_handle.clone(), app_path.clone(), Some(256)).await,
+                        callback
+                    )
+                };
+                let app_icon_path_str = app_icon_path
+                    .into_os_string()
+                    .into_string()
+                    .expect("path should be UTF-8 encoded");
+
+                if app_name.is_empty() || app_name.eq("Coco-AI") {
+                    continue;
+                }
+
+                let document_id = index as u32;
+                let document = doc!( document_id,  {
+                    FIELD_APP_NAME => app_name,
+                    FIELD_APP_PATH => app_path_str,
+                    FIELD_ICON_PATH => app_icon_path_str,
+                  }
+                );
+
+                my_try!(writer.create_document(document).await, callback);
+            }
+
+            my_try!(writer.commit(), callback);
+        }
+
+        let snapshot = pizza_engine.create_snapshot();
+        let searcher = pizza_engine.acquire_searcher();
+
+        let state_to_store = Box::new(ApplicationSearchSourceState { searcher, snapshot })
+            as Box<dyn super::SearchSourceState>;
+
+        *state = Some(state_to_store);
+
+        callback.send(Ok(())).unwrap();
+    }
+}
+
+struct SearchApplicationsTask {
+    query_string: String,
+    callback: Option<OneshotSender<Result<SearchResult, PizzaEngineError>>>,
+}
+
+#[async_trait::async_trait(?Send)]
+impl super::Task for SearchApplicationsTask {
+    fn search_source_id(&self) -> &'static str {
+        APPLICATION_SEARCH_SOURCE_ID
+    }
+
+    async fn exec(&mut self, state: &mut Option<Box<dyn super::SearchSourceState>>) {
+        let callback = self.callback.take().unwrap();
+
+        let dsl = format!(
+            "{{ \"query\": {{ \"bool\": {{ \"should\": [ {{ \"match\": {{ \"{FIELD_APP_NAME}\": \"{}\" }} }}, {{ \"prefix\": {{ \"{FIELD_APP_NAME}\": \"{}\" }} }} ] }} }} }}", self.query_string, self.query_string);
+
+        let state = state
+            .as_mut()
+            .expect("should be set before")
+            .as_mut_any()
+            .downcast_mut::<ApplicationSearchSourceState>()
+            .unwrap();
+
+        let query = OriginalQuery::QueryDSL(dsl);
+        let query_ctx = QueryContext::new(query, true);
+        let search_result = match state.searcher.parse_and_query(&query_ctx, &state.snapshot) {
+            Ok(search_result) => search_result,
+            Err(engine_err) => {
+                callback.send(Err(engine_err)).unwrap();
+                return;
+            }
+        };
+
+        callback.send(Ok(search_result)).unwrap();
+    }
+}
+
+pub struct ApplicationSearchSource;
+
+impl ApplicationSearchSource {
+    pub async fn new<R: Runtime>(app_handle: AppHandle<R>) -> Result<Self, String> {
+        let (tx, rx) = tokio::sync::oneshot::channel();
+        let index_applications_task = IndexApplicationsTask {
+            tauri_app_handle: app_handle.clone(),
+            callback: Some(tx),
+        };
+
+        super::RUNTIME_TX
+            .get()
+            .unwrap()
+            .send(Box::new(index_applications_task))
+            .unwrap();
+
+        rx.await.unwrap()?;
+
+        Ok(ApplicationSearchSource)
     }
 }
 
@@ -96,71 +251,82 @@ impl SearchSource for ApplicationSearchSource {
             });
         }
 
-        let mut total_hits = 0;
-        let mut hits = Vec::new();
+        let (tx, rx) = tokio::sync::oneshot::channel();
+        let task = SearchApplicationsTask {
+            query_string,
+            callback: Some(tx),
+        };
 
-        let mut results = self
-            .application_paths
-            .search_within_distance_scored(&query_string, 3);
+        RUNTIME_TX.get().unwrap().send(Box::new(task)).unwrap();
 
-        // Check for NaN or extreme score values and handle them properly
-        results.sort_by(|a, b| {
-            // If either score is NaN, consider them equal (you can customize this logic as needed)
-            if a.score.is_nan() || b.score.is_nan() {
-                std::cmp::Ordering::Equal
-            } else {
-                // Otherwise, compare the scores as usual
-                b.score
-                    .partial_cmp(&a.score)
-                    .unwrap_or(std::cmp::Ordering::Equal)
-            }
-        });
+        let search_result = rx.await.unwrap().map_err(|pizza_engine_err| {
+            let err_str = pizza_engine_err.to_string();
+            SearchError::InternalError(err_str)
+        })?;
 
-        if !results.is_empty() {
-            for result in results {
-                let file_name_str = result.word;
-                let file_path_str = result.data.get(0).unwrap().to_string();
-                let file_path = PathBuf::from(file_path_str.clone());
-                let cleaned_file_name = name(file_path).await;
-                total_hits += 1;
-                let mut doc = Document::new(
-                    Some(DataSourceReference {
-                        r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
-                        name: Some("Applications".into()),
-                        id: Some(file_name_str.clone()),
-                        icon: None,
-                    }),
-                    file_path_str.clone(),
-                    "Application".to_string(),
-                    cleaned_file_name,
-                    file_path_str.clone(),
-                );
-
-                // Attach icon if available
-                if let Some(icon_path) = self.icons.get(file_path_str.as_str()) {
-                    // doc.icon = Some(format!("file://{}", icon_path.to_string_lossy()));
-                    // dbg!(&doc.icon);
-                    if let Ok(icon_data) = read_icon_and_encode(icon_path) {
-                        doc.icon = Some(format!("data:image/png;base64,{}", icon_data));
-                    }
-                }
-
-                hits.push((doc, self.base_score + result.score as f64));
-            }
-        }
+        let total_hits = search_result.total_hits;
+        let source = self.get_type();
+        let hits = pizza_engine_hits_to_coco_hits(search_result.hits);
 
         Ok(QueryResponse {
-            source: self.get_type(),
+            source,
             hits,
             total_hits,
         })
     }
 }
 
+fn pizza_engine_hits_to_coco_hits(
+    pizza_engine_hits: Option<Vec<PizzaEngineDocument>>,
+) -> Vec<(Document, f64)> {
+    let Some(engine_hits) = pizza_engine_hits else {
+        return Vec::new();
+    };
+
+    let mut coco_hits = Vec::new();
+    for engine_hit in engine_hits {
+        let score = engine_hit.score.unwrap_or(0.0) as f64;
+        let mut document_fields = engine_hit.fields;
+        let app_name = match document_fields.remove(FIELD_APP_NAME).unwrap() {
+            FieldValue::Text(string) => string,
+            _ => unreachable!("field name is of type Text"),
+        };
+        let app_path = match document_fields.remove(FIELD_APP_PATH).unwrap() {
+            FieldValue::Text(string) => string,
+            _ => unreachable!("field name is of type Text"),
+        };
+        let icon_path = match document_fields.remove(FIELD_ICON_PATH).unwrap() {
+            FieldValue::Text(string) => string,
+            _ => unreachable!("field icon is of type Text"),
+        };
+
+        let mut coco_document = Document::new(
+            Some(DataSourceReference {
+                r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
+                name: Some("Applications".into()),
+                id: Some(app_name.clone()),
+                icon: None,
+            }),
+            app_name.clone(),
+            "Application".to_string(),
+            app_name.clone(),
+            app_path,
+        );
+
+        if let Ok(icon_data) = read_icon_and_encode(&icon_path) {
+            coco_document.icon = Some(format!("data:image/png;base64,{}", icon_data));
+        }
+
+        coco_hits.push((coco_document, score));
+    }
+
+    coco_hits
+}
+
 // Function to read the icon file and convert it to base64
-fn read_icon_and_encode(icon_path: &Path) -> Result<String, std::io::Error> {
+fn read_icon_and_encode<P: AsRef<Path>>(icon_path: &P) -> Result<String, std::io::Error> {
     // Read the icon file as binary data
-    let icon_data = fs::read(icon_path)?;
+    let icon_data = std::fs::read(icon_path)?;
 
     // Encode the data to base64
     Ok(encode(&icon_data))

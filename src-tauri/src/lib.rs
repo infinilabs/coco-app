@@ -14,6 +14,7 @@ use crate::common::{MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL};
 use crate::server::servers::{load_or_insert_default_server, load_servers_token};
 use autostart::{change_autostart, enable_autostart};
 use lazy_static::lazy_static;
+use local::start_pizza_engine_runtime;
 use std::sync::Mutex;
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
@@ -235,11 +236,12 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
         crate::server::servers::try_register_server_to_search_source(app_handle.clone(), &server)
             .await;
     }
+
+    start_pizza_engine_runtime();
 }
 
 async fn init_app_search_source<R: Runtime>(app_handle: &AppHandle<R>) -> Result<(), String> {
-    let application_search =
-        local::application::ApplicationSearchSource::new(app_handle.clone(), 1000f64).await?;
+    let application_search = local::application::ApplicationSearchSource::new(app_handle.clone()).await?;
 
     // Register the application search source
     let registry = app_handle.state::<SearchSourceRegistry>();
