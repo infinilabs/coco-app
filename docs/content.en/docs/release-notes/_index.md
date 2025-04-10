@@ -38,6 +38,7 @@ Information about release notes of Coco Server is provided here.
 
 - feat: support multi websocket connections #314
 - feat: add support for embeddable web widget #277
+- feat: mobile terminal adaptation about style #348
 
 ### Bug fix
 
