@@ -773,6 +773,7 @@ dependencies = [
  "tauri-plugin-store",
  "tauri-plugin-updater",
  "tauri-plugin-websocket",
+ "tauri-plugin-windows-version",
  "thiserror 1.0.69",
  "tokio",
  "tokio-native-tls",
@@ -6132,6 +6133,19 @@ dependencies = [
  "thiserror 2.0.12",
  "tokio",
  "tokio-tungstenite 0.26.2",
+]
+
+[[package]]
+name = "tauri-plugin-windows-version"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "76a116b1451af25fab5649f53bc6d8192bb65238b5817c94ea4f5a55bc6725a8"
+dependencies = [
+ "serde",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 2.0.12",
+ "windows-version",
 ]
 
 [[package]]

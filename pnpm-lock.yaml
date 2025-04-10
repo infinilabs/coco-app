@@ -134,6 +134,9 @@ importers:
       tauri-plugin-screenshots-api:
         specifier: ^2.1.0
         version: 2.1.0
+      tauri-plugin-windows-version-api:
+        specifier: ^2.0.0
+        version: 2.0.0
       use-debounce:
         specifier: ^10.0.4
         version: 10.0.4(react@18.3.1)
@@ -3313,6 +3316,9 @@ packages:
 
   tauri-plugin-screenshots-api@2.1.0:
     resolution: {integrity: sha512-lknHlq7truhBCO4lVlHBWkk/YYrKXNef0mveUftHC3U0LBI/GTNzOFbyZk+VhHAcztTB5BPpZA0TSbuLd9zgQA==}
+
+  tauri-plugin-windows-version-api@2.0.0:
+    resolution: {integrity: sha512-tty5n4ASYbXpnsD5ws2iTcTTpDCrSbzRTVp5Bo3UTpYGqlN1gBn2Zk8s3oO4w7VIM5WtJhDM9Jr/UgoTk7tFJQ==}
 
   thenify-all@1.6.0:
     resolution: {integrity: sha512-RNxQH/qI8/t3thXJDwcstUO4zeqo64+Uy/+sNVRBx4Xn2OX+OZ9oP+iJnNFqplFra2ZUVeKCSa2oVWi3T4uVmA==}
@@ -7010,6 +7016,10 @@ snapshots:
       '@tauri-apps/api': 2.4.0
 
   tauri-plugin-screenshots-api@2.1.0:
+    dependencies:
+      '@tauri-apps/api': 2.4.0
+
+  tauri-plugin-windows-version-api@2.0.0:
     dependencies:
       '@tauri-apps/api': 2.4.0
 

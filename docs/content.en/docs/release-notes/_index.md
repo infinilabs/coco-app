@@ -13,17 +13,19 @@ Information about release notes of Coco Server is provided here.
 
 ### Features
 
-- Linux support for application search #330
-- Add shortcuts to most icon buttons #334
-- Add font icon for search list #342
+- feat: linux support for application search #330
+- feat: add shortcuts to most icon buttons #334
+- feat: add font icon for search list #342
+- feat: add a border to the main window in Windows 10 #343
 
 ### Bug fix
 
-- Fixed the problem of not being able to search in secondary directories #338
+- fix: fixed the problem of not being able to search in secondary directories #338
 
 ### Improvements
 
 - refactor: web components #331
+- refactor: refactoring login callback, receive access_token from coco-server
 
 ## 0.3.0 (2025-03-31)
 
