@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import SettingsItem from "./SettingsItem";
 import { useAppStore } from "@/stores/appStore";
-import { AppEndpoint } from "@/utils/tauri";
+import { AppEndpoint } from "@/types/index";
 
 const ENDPOINTS = [
   { value: "https://coco.infini.cloud", label: "https://coco.infini.cloud" },

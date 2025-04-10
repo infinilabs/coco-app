@@ -99,7 +99,7 @@ export default function Footer({
         <Copyright />
       )}
 
-      <div className="flex items-center gap-3">
+      <div className="hidden md:flex items-center gap-3">
         <div className="gap-1 flex items-center text-[#666] dark:text-[#666] text-xs">
           <span className="mr-1.5">{t("search.footer.select")}:</span>
           <kbd className="coco-modal-footer-commands-key pr-1">

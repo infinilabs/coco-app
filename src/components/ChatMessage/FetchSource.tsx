@@ -34,7 +34,7 @@ interface ISourceData {
   url: string;
 }
 
-export const FetchSource = ({ Detail, ChunkData }: FetchSourceProps) => {
+export const FetchSource = ({ Detail, ChunkData, loading }: FetchSourceProps) => {
   const { t } = useTranslation();
   const [isSourceExpanded, setIsSourceExpanded] = useState(false);
 
@@ -51,30 +51,34 @@ export const FetchSource = ({ Detail, ChunkData }: FetchSourceProps) => {
   useEffect(() => {
     if (!ChunkData?.message_chunk) return;
 
-    try {
-      const match = ChunkData.message_chunk.match(
-        /\u003cPayload total=(\d+)\u003e/
-      );
-      if (match) {
-        setTotal(Number(match[1]));
-      }
+    if (!loading) { 
+      try {
+        const match = ChunkData.message_chunk.match(
+          // /\u003cPayload total=(\d+)\u003e/
+          /<Payload total=(\d+)>/
+        );
+        if (match) {
+          setTotal(Number(match[1]));
+        }
 
-      const jsonMatch = ChunkData.message_chunk.match(/\[(.*)\]/s);
-      if (jsonMatch) {
-        const jsonData = JSON.parse(jsonMatch[0]);
-        setData(jsonData);
+        // const jsonMatch = ChunkData.message_chunk.match(/\[(.*)\]/s);
+        const jsonMatch = ChunkData.message_chunk.match(/\[([\s\S]*)\]/);
+        if (jsonMatch) {
+          const jsonData = JSON.parse(jsonMatch[0]);
+          setData(jsonData);
+        }
+      } catch (e) {
+        console.error("Failed to parse fetch source data:", e);
       }
-    } catch (e) {
-      console.error("Failed to parse fetch source data:", e);
     }
-  }, [ChunkData?.message_chunk]);
+  }, [ChunkData?.message_chunk, loading]);
 
   // Must be after hooks !!!
   if (!ChunkData && !Detail) return null;
 
   return (
     <div
-      className={`mt-2 mb-2 w-[610px] ${
+      className={`mt-2 mb-2 max-w-full w-full md:w-[610px] ${
         isSourceExpanded
           ? "rounded-lg overflow-hidden border border-[#E6E6E6] dark:border-[#272626]"
           : ""
@@ -120,13 +124,13 @@ export const FetchSource = ({ Detail, ChunkData }: FetchSourceProps) => {
               className="group flex items-center p-2 hover:bg-[#F7F7F7] dark:hover:bg-[#2C2C2C] border-b border-[#E6E6E6] dark:border-[#272626] last:border-b-0 cursor-pointer transition-colors"
             >
               <div className="w-full flex items-center gap-2">
-                <div className="w-[75%] flex items-center gap-1">
+                <div className="w-full md:w-[75%] flex items-center gap-1">
                   <Globe className="w-3 h-3 flex-shrink-0" />
                   <div className="text-xs text-[#333333] dark:text-[#D8D8D8] truncate font-normal group-hover:text-[#0072FF] dark:group-hover:text-[#0072FF]">
                     {item.title || item.category}
                   </div>
                 </div>
-                <div className="w-[25%] flex items-center justify-end gap-2">
+                <div className="hidden md:flex w-[25%] items-center justify-end gap-2">
                   <span className="text-xs text-[#999999] dark:text-[#999999] truncate">
                     {item.source?.name}
                   </span>

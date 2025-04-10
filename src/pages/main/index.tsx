@@ -22,6 +22,7 @@ function MainApp() {
           queryStrings: { query: input },
         }
       );
+      console.log(11111, response)
       return response;
     } catch (error) {
       console.error("query_coco_fusion error:", error);

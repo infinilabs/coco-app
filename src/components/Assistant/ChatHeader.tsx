@@ -30,7 +30,6 @@ import { useChatStore } from "@/stores/chatStore";
 import type { Chat } from "./types";
 import { useConnectStore } from "@/stores/connectStore";
 import platformAdapter from "@/utils/platformAdapter";
-import { list_coco_servers } from "@/commands";
 import VisibleKey from "../Common/VisibleKey";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 
@@ -86,7 +85,7 @@ export function ChatHeader({
 
   const fetchServers = useCallback(
     async (resetSelection: boolean) => {
-      list_coco_servers()
+      platformAdapter.commands("list_coco_servers")
         .then((res: any) => {
           const enabledServers = (res as IServer[]).filter(
             (server) => server.enabled !== false

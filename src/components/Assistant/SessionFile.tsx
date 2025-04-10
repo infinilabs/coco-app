@@ -7,9 +7,9 @@ import { useTranslation } from "react-i18next";
 import { useConnectStore } from "@/stores/connectStore";
 import Checkbox from "@/components/Common/Checkbox";
 import FileIcon from "@/components/Common/Icons/FileIcon";
-import { delete_attachment, get_attachment } from "@/commands";
 import { AttachmentHit } from "@/types/commands";
 import { useAppStore } from "@/stores/appStore";
+import platformAdapter from "@/utils/platformAdapter";
 
 interface SessionFileProps {
   sessionId: string;
@@ -37,7 +37,10 @@ const SessionFile = (props: SessionFileProps) => {
 
   const getUploadedFiles = async () => {
     if (isTauri) {
-      const response = await get_attachment({ serverId, sessionId });
+      const response: any = await platformAdapter.commands("get_attachment", {
+        serverId,
+        sessionId,
+      });
 
       setUploadedFiles(response.hits.hits);
     } else {
@@ -47,7 +50,10 @@ const SessionFile = (props: SessionFileProps) => {
   const handleDelete = async (id: string) => {
     let result;
     if (isTauri) {
-      result = await delete_attachment({ serverId, id });
+      result = await platformAdapter.commands("delete_attachment", {
+        serverId,
+        id,
+      });
     } else {
     }
     if (!result) return;

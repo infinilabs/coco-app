@@ -17,7 +17,7 @@ export default function ListRight({
   goToTwoPage,
 }: ListRightProps) {
   return (
-    <div className="flex-1 text-right min-w-[160px] h-full pl-5 text-[12px] flex gap-2 items-center justify-end relative">
+    <div className="hidden md:flex flex-1 text-right min-w-[160px] h-full pl-5 text-[12px] gap-2 items-center justify-end relative">
       {item?.rich_categories ? null : (
         <div
           className="w-4 h-4 cursor-pointer"

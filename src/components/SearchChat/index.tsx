@@ -8,7 +8,6 @@ import {
   useState,
 } from "react";
 import clsx from "clsx";
-import { isWindows10 } from "tauri-plugin-windows-version-api";
 
 import Search from "@/components/Search/Search";
 import InputBox from "@/components/Search/InputBox";
@@ -89,7 +88,7 @@ function SearchChat({
   const setTheme = useThemeStore((state) => state.setTheme);
 
   useMount(async () => {
-    const isWin10 = await isWindows10();
+    const isWin10 = await platformAdapter.isWindows10();
 
     setIsWin10(isWin10);
   });

@@ -3,7 +3,7 @@ import {
   persist,
   // createJSONStorage
 } from "zustand/middleware";
-import { AppTheme } from "../utils/tauri";
+import { AppTheme } from "@/types/index";
 
 export type IThemeStore = {
   themes: AppTheme[];

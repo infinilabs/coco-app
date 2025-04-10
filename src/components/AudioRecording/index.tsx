@@ -11,9 +11,9 @@ import RecordPlugin from "wavesurfer.js/dist/plugins/record.esm.js";
 
 import { useConnectStore } from "@/stores/connectStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
-import { transcription } from "@/commands";
 import VisibleKey from "@/components/Common/VisibleKey";
 import { useAppStore } from "@/stores/appStore";
+import platformAdapter from "@/utils/platformAdapter";
 
 interface AudioRecordingProps {
   onChange?: (text: string) => void;
@@ -78,7 +78,7 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
       reader.onloadend = async () => {
         const base64Audio = (reader.result as string).split(",")[1];
 
-        const response = await transcription({
+        const response: any = await platformAdapter.commands("transcription", {
           serverId: currentService.id,
           audioType: "mp3",
           audioContent: base64Audio,

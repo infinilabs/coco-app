@@ -3,6 +3,11 @@ import type { PlatformAdapter, EventPayloads } from './platformAdapter';
 // Create Web adapter functions
 export const createWebAdapter = (): PlatformAdapter => {
   return {
+    async commands<T>(commandName: string, ...args: any[]): Promise<T> {
+      console.warn(`Command "${commandName}" is not supported in web environment`, args);
+      return Promise.reject(new Error('Not supported in web environment'));
+    },
+
     async invokeBackend(command: string, args?: any): Promise<any> {
       console.log(`Web mode simulated backend call: ${command}`, args);
       // Implement web environment simulation logic or API calls here
@@ -157,5 +162,7 @@ export const createWebAdapter = (): PlatformAdapter => {
       console.log(`Web mode opening URL: ${url}`);
       window.open(url, '_blank');
     },
+
+    isWindows10: async () => false,
   };
 };

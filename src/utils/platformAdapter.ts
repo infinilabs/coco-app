@@ -1,9 +1,9 @@
 import { createWebAdapter } from './webAdapter';
-import { createTauriAdapter } from './tauriAdapter';
+// import { createTauriAdapter } from './tauriAdapter';
 
 import { IShortcutsStore } from "@/stores/shortcutsStore";
 import { IStartupStore } from "@/stores/startupStore";
-import { AppTheme } from "@/utils/tauri";
+import { AppTheme } from "@/types/index";
 
 export interface EventPayloads {
   "language-changed": {
@@ -90,11 +90,13 @@ export interface PlatformAdapter {
   listenWindowEvent: (event: string, callback: (event: any) => void) => Promise<() => void>;
   isTauri: () => boolean;
   openExternal: (url: string) => Promise<void>;
+  commands: <T>(commandName: string, ...args: any[]) => Promise<T>;
+  isWindows10: () => Promise<boolean>;
 }
 
-const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
-const isTauri = appStore.state?.isTauri ?? !!(window as any).__TAURI__;
+// const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
+// const isTauri = appStore.state?.isTauri ?? !!(window as any).__TAURI__;
 
-const platformAdapter: PlatformAdapter = isTauri ? createTauriAdapter() : createWebAdapter();
+let platformAdapter: PlatformAdapter = createWebAdapter();
 
 export default platformAdapter;

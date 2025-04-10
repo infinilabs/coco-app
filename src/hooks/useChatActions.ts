@@ -1,19 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 
 import type { Chat } from "@/components/Assistant/types";
-import {
-  close_session_chat,
-  cancel_session_chat,
-  session_chat_history,
-  new_chat,
-  send_message,
-  open_session_chat,
-  chat_history,
-  update_session_chat,
-  delete_session_chat,
-} from "@/commands";
 import { useAppStore } from "@/stores/appStore";
 import { Get, Post } from "@/api/axiosRequest";
+import platformAdapter from "@/utils/platformAdapter";
 
 export function useChatActions(
   currentServiceId: string | undefined,
@@ -41,7 +31,7 @@ export function useChatActions(
         let response: any;
         if (isTauri) {
           if (!currentServiceId) return;
-          response = await close_session_chat({
+          response = await platformAdapter.commands("close_session_chat", {
             serverId: currentServiceId,
             sessionId: activeChat?._id,
           });
@@ -73,7 +63,7 @@ export function useChatActions(
         let response: any;
         if (isTauri) {
           if (!currentServiceId) return;
-          response = await cancel_session_chat({
+          response = await platformAdapter.commands("cancel_session_chat", {
             serverId: currentServiceId,
             sessionId: activeChat?._id,
           });
@@ -104,7 +94,7 @@ export function useChatActions(
         let response: any;
         if (isTauri) {
           if (!currentServiceId) return;
-          response = await session_chat_history({
+          response = await platformAdapter.commands("session_chat_history", {
             serverId: currentServiceId,
             sessionId: chat?._id,
             from: 0,
@@ -154,7 +144,7 @@ export function useChatActions(
         let response: any;
         if (isTauri) {
           if (!currentServiceId) return;
-          response = await new_chat({
+          response = await platformAdapter.commands("new_chat", {
             serverId: currentServiceId,
             websocketId: websocketSessionId || id,
             message: value,
@@ -231,7 +221,7 @@ export function useChatActions(
         let response: any;
         if (isTauri) {
           if (!currentServiceId) return;
-          response = await send_message({
+          response = await platformAdapter.commands("send_message", {
             serverId: currentServiceId,
             websocketId: websocketSessionId || id,
             sessionId: newChat?._id,
@@ -324,7 +314,7 @@ export function useChatActions(
         let response: any;
         if (isTauri) {
           if (!currentServiceId) return;
-          response = await open_session_chat({
+          response = await platformAdapter.commands("open_session_chat", {
             serverId: currentServiceId,
             sessionId: chat?._id,
           });
@@ -353,7 +343,7 @@ export function useChatActions(
       let response: any;
       if (isTauri) {
         if (!currentServiceId) return [];
-        response = await chat_history({
+        response = await platformAdapter.commands("chat_history", {
           serverId: currentServiceId,
           from: 0,
           size: 20,
@@ -414,7 +404,7 @@ export function useChatActions(
   const handleRename = async (chat: Chat, title: string) => {
     if (!currentServiceId) return;
 
-    await update_session_chat({
+    await platformAdapter.commands("update_session_chat", {
       serverId: currentServiceId,
       sessionId: chat?._id,
       title,
@@ -426,7 +416,7 @@ export function useChatActions(
   const handleDelete = async (id: string) => {
     if (!currentServiceId) return;
 
-    await delete_session_chat(currentServiceId, id);
+    await platformAdapter.commands("delete_session_chat", currentServiceId, id);
 
     getChatHistory();
   };

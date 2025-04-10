@@ -1,8 +1,9 @@
 import type { OpenDialogOptions } from '@tauri-apps/plugin-dialog';
+import { isWindows10 } from "tauri-plugin-windows-version-api";
 
-import { windowWrapper, eventWrapper, systemWrapper } from './wrappers/tauriWrappers';
+import { windowWrapper, eventWrapper, systemWrapper, commandWrapper } from './wrappers/tauriWrappers';
 import type { PlatformAdapter, EventPayloads } from './platformAdapter';
-import type { AppTheme } from "@/utils/tauri";
+import type { AppTheme } from "@/types/index";
 
 // Create Tauri adapter functions
 export const createTauriAdapter = (): PlatformAdapter => {
@@ -43,6 +44,8 @@ export const createTauriAdapter = (): PlatformAdapter => {
     async captureWindowScreenshot(id: number) {
       return systemWrapper.captureScreen(id, 'window');
     },
+
+    commands: commandWrapper.commands,
 
     async invokeBackend(command: string, args?: any): Promise<any> {
       const { invoke } = await import("@tauri-apps/api/core");
@@ -173,5 +176,7 @@ export const createTauriAdapter = (): PlatformAdapter => {
       const { open } = await import("@tauri-apps/plugin-shell");
       return open(url);
     },
+
+    isWindows10: isWindows10
   };
 };

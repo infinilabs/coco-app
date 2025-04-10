@@ -21,7 +21,13 @@ export default function useMessageChunkData() {
       });
     }, []),
     deal_fetch_source: useCallback((data: IChunkData) => {
-      setFetch_source(data);
+      setFetch_source((prev: IChunkData | undefined): IChunkData => {
+        if (!prev) return data;
+        return {
+          ...prev,
+          message_chunk: prev.message_chunk + data.message_chunk,
+        };
+      });
     }, []),
     deal_pick_source: useCallback((data: IChunkData) => {
       setPick_source((prev: IChunkData | undefined): IChunkData => {

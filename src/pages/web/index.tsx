@@ -28,11 +28,11 @@ function WebApp({
   width = 680,
   height = 590,
   headers = {
-    "X-API-TOKEN": "cvkm9hmhpcemufsg3vtgxbns7jqioo6uq5btira638fzclrkstbvc0hoe2kd86vnhrnf2e3izpoy4phrmv79",
+    "X-API-TOKEN": "cvrmh6uhpceh4c6u2e9gnnmb1e09x2u1ttvdpt87zsv8gtdbto938t942r5mxdfmexzwynwtbyd9ov52qee9",
     "APP-INTEGRATION-ID": "cvkm9hmhpcemufsg3vug",
   },
   // token = "cva1j5ehpcenic3ir7k0h8fb8qtv35iwtywze248oscrej8yoivhb5b1hyovp24xejjk27jy9ddt69ewfi3n",   // https://coco.infini.cloud
-  // token = "cv97ieo2sdbbru4vtha094eyxuzxdj6pvp9fbdzxb66dff0djy4rsjyju6yymypxe42lg2h7jl6ohdksecth",  // http://localhost:9000
+  // token = "cvqt6r02sdb2v3bkgip0x3ixv01f3r2lhnxoz1efbn160wm9og58wtv8t6wrv1ebvnvypuc23dx9pb33aemh",  // http://localhost:9000
   // token = "cv5djeb9om602jdvtnmg6kc1muyn2vcadr6te48j9t9pvt59ewrnwj7fwvxrw3va84j2a0lb5y8194fbr3jd",  // http://43.153.113.88:9000
   serverUrl = "http://localhost:9000",
   hideCoco = () => {},
@@ -115,7 +115,7 @@ function WebApp({
       id="searchChat-container"
       className={`coco-container ${theme}`}
       data-theme={theme}
-      style={{ width: `${width}px`, height: `${height}px` }}
+      style={{ maxWidth: `${width}px`, height: `${height}px` }}
     >
       <SearchChat
         isTauri={false}

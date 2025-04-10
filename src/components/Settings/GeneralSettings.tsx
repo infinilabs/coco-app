@@ -24,7 +24,7 @@ import { ShortcutItem } from "./ShortcutItem";
 import { Shortcut } from "./shortcut";
 import { useShortcutEditor } from "@/hooks/useShortcutEditor";
 import { useAppStore } from "@/stores/appStore";
-import { AppTheme } from "@/utils/tauri";
+import { AppTheme } from "@/types/index";
 import { useThemeStore } from "@/stores/themeStore";
 import { change_autostart, get_current_shortcut, change_shortcut, unregister_shortcut } from "@/commands"
 
