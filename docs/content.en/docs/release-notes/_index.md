@@ -16,6 +16,7 @@ Information about release notes of Coco Server is provided here.
 - feat: linux support for application search #330
 - feat: add shortcuts to most icon buttons #334
 - feat: add font icon for search list #342
+- feat: add a border to the main window in Windows 10 #343
 
 ### Bug fix
 
