@@ -168,8 +168,6 @@ pub async fn query_coco_fusion<R: Runtime>(
             .unwrap_or(std::cmp::Ordering::Equal)
     });
 
-    println!("Final hits: {:?}", final_hits);
-
     Ok(MultiSourceQueryResponse {
         failed: failed_requests,
         hits: final_hits,
