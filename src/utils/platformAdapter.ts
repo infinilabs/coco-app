@@ -1,5 +1,6 @@
-import { createWebAdapter } from './webAdapter';
-// import { createTauriAdapter } from './tauriAdapter';
+// manual modification
+// import { createWebAdapter } from './webAdapter';
+import { createTauriAdapter } from './tauriAdapter';
 
 import { IShortcutsStore } from "@/stores/shortcutsStore";
 import { IStartupStore } from "@/stores/startupStore";
@@ -97,6 +98,6 @@ export interface PlatformAdapter {
 // const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
 // const isTauri = appStore.state?.isTauri ?? !!(window as any).__TAURI__;
 
-let platformAdapter: PlatformAdapter = createWebAdapter();
+let platformAdapter: PlatformAdapter = createTauriAdapter();
 
 export default platformAdapter;
