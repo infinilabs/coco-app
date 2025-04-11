@@ -21,6 +21,8 @@ export type IShortcutsStore = {
   setDeepThinking: (deepThinking: string) => void;
   internetSearch: string;
   setInternetSearch: (internetSearch: string) => void;
+  internetSearchScope: string;
+  setInternetSearchScope: (internetSearchScope: string) => void;
   historicalRecords: string;
   setHistoricalRecords: (historicalRecords: string) => void;
   newSession: string;
@@ -53,6 +55,10 @@ export const useShortcutsStore = create<IShortcutsStore>()(
       setDeepThinking: (deepThinking: string) => set({ deepThinking }),
       internetSearch: "G",
       setInternetSearch: (internetSearch: string) => set({ internetSearch }),
+      internetSearchScope: "J",
+      setInternetSearchScope: (internetSearchScope: string) => {
+        return set({ internetSearchScope });
+      },
       historicalRecords: "Y",
       setHistoricalRecords: (historicalRecords: string) => {
         return set({ historicalRecords });

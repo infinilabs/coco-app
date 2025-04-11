@@ -27,15 +27,21 @@ const Shortcuts = () => {
   const deepThinking = useShortcutsStore((state) => state.deepThinking);
   const setDeepThinking = useShortcutsStore((state) => state.setDeepThinking);
   const internetSearch = useShortcutsStore((state) => state.internetSearch);
-  const setInternetSearch = useShortcutsStore(
-    (state) => state.setInternetSearch
-  );
-  const historicalRecords = useShortcutsStore(
-    (state) => state.historicalRecords
-  );
-  const setHistoricalRecords = useShortcutsStore(
-    (state) => state.setHistoricalRecords
-  );
+  const setInternetSearch = useShortcutsStore((state) => {
+    return state.setInternetSearch;
+  });
+  const internetSearchScope = useShortcutsStore((state) => {
+    return state.internetSearchScope;
+  });
+  const setInternetSearchScope = useShortcutsStore((state) => {
+    return state.setInternetSearchScope;
+  });
+  const historicalRecords = useShortcutsStore((state) => {
+    return state.historicalRecords;
+  });
+  const setHistoricalRecords = useShortcutsStore((state) => {
+    return state.setHistoricalRecords;
+  });
   const newSession = useShortcutsStore((state) => state.newSession);
   const setNewSession = useShortcutsStore((state) => state.setNewSession);
   const fixedWindow = useShortcutsStore((state) => state.fixedWindow);
@@ -89,6 +95,13 @@ const Shortcuts = () => {
       description: "settings.advanced.shortcuts.internetSearch.description",
       value: internetSearch,
       setValue: setInternetSearch,
+    },
+    {
+      title: "settings.advanced.shortcuts.internetSearchScope.title",
+      description:
+        "settings.advanced.shortcuts.internetSearchScope.description",
+      value: internetSearchScope,
+      setValue: setInternetSearchScope,
     },
     {
       title: "settings.advanced.shortcuts.historicalRecords.title",
