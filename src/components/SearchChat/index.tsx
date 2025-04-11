@@ -58,7 +58,7 @@ function SearchChat({
   queryDocuments,
   searchPlaceholder,
   chatPlaceholder,
-  showChatHistory,
+  showChatHistory = true,
   setIsPinned,
 }: SearchChatProps) {
   const customInitialState = {

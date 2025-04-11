@@ -92,7 +92,7 @@ function App() {
       theme="dark"
       searchPlaceholder=""
       chatPlaceholder=""
-      showChatHistory={true}
+      showChatHistory={false}
       setIsPinned={(isPinned) => console.log('isPinned:', isPinned)}
     />
   );
