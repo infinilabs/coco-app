@@ -22,7 +22,7 @@ function MainApp() {
           queryStrings: { query: input },
         }
       );
-      console.log(11111, response)
+      console.log(11111, response);
       return response;
     } catch (error) {
       console.error("query_coco_fusion error:", error);
@@ -90,6 +90,9 @@ function MainApp() {
   const setInternetSearch = useShortcutsStore((state) => {
     return state.setInternetSearch;
   });
+  const setInternetSearchScope = useShortcutsStore((state) => {
+    return state.setInternetSearchScope;
+  });
   const setHistoricalRecords = useShortcutsStore((state) => {
     return state.setHistoricalRecords;
   });
@@ -117,6 +120,7 @@ function MainApp() {
           addFile,
           deepThinking,
           internetSearch,
+          internetSearchScope,
           historicalRecords,
           newSession,
           fixedWindow,
@@ -130,6 +134,7 @@ function MainApp() {
         setAddFile(addFile);
         setDeepThinking(deepThinking);
         setInternetSearch(internetSearch);
+        setInternetSearchScope(internetSearchScope);
         setHistoricalRecords(historicalRecords);
         setNewSession(newSession);
         setFixedWindow(fixedWindow);

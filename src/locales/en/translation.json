@@ -111,6 +111,10 @@
           "title": "Internet Search",
           "description": "Shortcut button to enable networking search in chat mode."
         },
+        "internetSearchScope": {
+          "title": "Internet Search Scope",
+          "description": "Shortcut to open the networking search scope menu in chat mode."
+        },
         "historicalRecords": {
           "title": "Conversation History",
           "description": "Shortcut to view past conversation history in chat mode."
