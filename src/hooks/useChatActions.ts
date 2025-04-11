@@ -19,7 +19,8 @@ export function useChatActions(
   isDeepThinkActive?: boolean,
   sourceDataIds?: string[],
   changeInput?: (val: string) => void,
-  websocketSessionId?: string
+  websocketSessionId?: string,
+  showChatHistory?: boolean,
 ) {
   const isTauri = useAppStore((state) => state.isTauri);
   const [keyword, setKeyword] = useState("");
@@ -373,8 +374,9 @@ export function useChatActions(
   }, [currentServiceId, keyword]);
 
   useEffect(() => {
-    getChatHistory();
-  }, [keyword]);
+    console.log("showChatHistory", showChatHistory);
+    showChatHistory && getChatHistory();
+  }, [showChatHistory]);
 
   const createChatWindow = useCallback(async (createWin: any) => {
     if (isTauri) {

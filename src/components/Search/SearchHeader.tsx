@@ -2,6 +2,8 @@ import React from "react";
 import { AlignLeft, Columns2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { useAppStore } from "@/stores/appStore";
+
 interface SearchHeaderProps {
   total: number;
   viewMode: "detail" | "list";
@@ -15,6 +17,8 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({
 }) => {
   const { t } = useTranslation();
 
+  const isTauri = useAppStore((state) => state.isTauri);
+
   return (
     <div className="flex items-center justify-between py-1">
       <div className="text-xs text-gray-600 dark:text-gray-400">
@@ -24,7 +28,7 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({
         </span>
         {t('search.header.results')}
       </div>
-      <div className="hidden md:flex gap-2">
+      <div className={`${isTauri ? 'flex' : 'hidden md:flex'} gap-2`}>
         <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
           <button
             onClick={() => setViewMode("list")}

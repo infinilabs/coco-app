@@ -177,6 +177,12 @@ export const createTauriAdapter = (): PlatformAdapter => {
       return open(url);
     },
 
-    isWindows10: isWindows10
+    isWindows10: isWindows10,
+
+    async setShadow(enable: boolean) {
+      const { getCurrentWindow } = await import("@tauri-apps/api/window");
+      const window = await getCurrentWindow();
+      return window.setShadow(enable);
+    },
   };
 };

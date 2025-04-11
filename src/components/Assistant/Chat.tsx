@@ -58,7 +58,7 @@ const ChatAI = memo(
         clearChatPage,
         isChatPage = false,
         getFileUrl,
-        showChatHistory = true,
+        showChatHistory,
       },
       ref
     ) => {
@@ -166,7 +166,8 @@ const ChatAI = memo(
         isDeepThinkActive,
         sourceDataIds,
         changeInput,
-        websocketSessionId
+        websocketSessionId,
+        showChatHistory
       );
 
       const { dealMsg, messageTimeoutRef } = useMessageHandler(

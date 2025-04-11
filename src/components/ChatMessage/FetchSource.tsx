@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { OpenURLWithBrowser } from "@/utils/index";
 import type { IChunkData } from "@/components/Assistant/types";
 import RetrieveIcon from "@/icons/Retrieve";
+import { useAppStore } from "@/stores/appStore";
 
 interface FetchSourceProps {
   Detail?: any;
@@ -34,8 +35,14 @@ interface ISourceData {
   url: string;
 }
 
-export const FetchSource = ({ Detail, ChunkData, loading }: FetchSourceProps) => {
+export const FetchSource = ({
+  Detail,
+  ChunkData,
+  loading,
+}: FetchSourceProps) => {
   const { t } = useTranslation();
+  const isTauri = useAppStore((state) => state.isTauri);
+
   const [isSourceExpanded, setIsSourceExpanded] = useState(false);
 
   const [total, setTotal] = useState(0);
@@ -51,7 +58,7 @@ export const FetchSource = ({ Detail, ChunkData, loading }: FetchSourceProps) =>
   useEffect(() => {
     if (!ChunkData?.message_chunk) return;
 
-    if (!loading) { 
+    if (!loading) {
       try {
         const match = ChunkData.message_chunk.match(
           // /\u003cPayload total=(\d+)\u003e/
@@ -130,7 +137,11 @@ export const FetchSource = ({ Detail, ChunkData, loading }: FetchSourceProps) =>
                     {item.title || item.category}
                   </div>
                 </div>
-                <div className="hidden md:flex w-[25%] items-center justify-end gap-2">
+                <div
+                  className={`${
+                    isTauri ? "flex" : "hidden md:flex"
+                  } w-[25%] items-center justify-end gap-2`}
+                >
                   <span className="text-xs text-[#999999] dark:text-[#999999] truncate">
                     {item.source?.name}
                   </span>

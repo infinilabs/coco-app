@@ -93,11 +93,13 @@ export interface PlatformAdapter {
   openExternal: (url: string) => Promise<void>;
   commands: <T>(commandName: string, ...args: any[]) => Promise<T>;
   isWindows10: () => Promise<boolean>;
+  setShadow(enable: boolean): Promise<void>;
 }
 
 // const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
 // const isTauri = appStore.state?.isTauri ?? !!(window as any).__TAURI__;
 
 let platformAdapter: PlatformAdapter = createTauriAdapter();
+// let platformAdapter: PlatformAdapter = createWebAdapter();
 
 export default platformAdapter;
