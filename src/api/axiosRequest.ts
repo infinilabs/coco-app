@@ -50,10 +50,9 @@ export const Get = <T>(
     // console.log("baseURL", appStore.state?.endpoint_http)
 
     let baseURL = appStore.state?.endpoint_http;
-    const isDev = import.meta.env.DEV;
 
     axios
-      .get(isDev ? url : baseURL + url, { params })
+      .get(baseURL + url, { params })
       .then((result) => {
         let res: FcResponse<T>;
         if (clearFn !== undefined) {
@@ -79,10 +78,9 @@ export const Post = <T>(
     // console.log("baseURL", appStore.state?.endpoint_http)
 
     let baseURL = appStore.state?.endpoint_http;
-    const isDev = import.meta.env.DEV;
 
     axios
-      .post(isDev ? url : baseURL + url, data, {
+      .post(baseURL + url, data, {
         params,
         headers,
       } as any)

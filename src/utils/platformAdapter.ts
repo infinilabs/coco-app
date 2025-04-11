@@ -100,5 +100,6 @@ export interface PlatformAdapter {
 // const isTauri = appStore.state?.isTauri ?? !!(window as any).__TAURI__;
 
 let platformAdapter: PlatformAdapter = createTauriAdapter();
+// let platformAdapter: PlatformAdapter = createWebAdapter();
 
 export default platformAdapter;
