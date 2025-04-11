@@ -13,9 +13,9 @@ use tauri::{AppHandle, Runtime};
 use tauri_plugin_fs_pro::{icon, name};
 
 #[tauri::command]
-pub fn get_default_search_paths<R: Runtime>(app_handle: AppHandle<R>) -> Vec<String> {
+pub fn get_default_search_paths() -> Vec<String> {
     let paths = applications::get_default_search_paths();
-    let ret = Vec::with_capacity(paths.len());
+    let mut ret = Vec::with_capacity(paths.len());
     for search_path in paths {
         let path = search_path.path;
         let path_string = path

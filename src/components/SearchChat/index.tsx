@@ -242,82 +242,18 @@ function SearchChat({
   const defaultStartupWindow = useStartupStore((state) => {
     return state.defaultStartupWindow;
   });
-  const setDefaultStartupWindow = useStartupStore((state) => {
-    return state.setDefaultStartupWindow;
-  });
-
-  const showCocoListenRef = useRef<(() => void) | undefined>();
 
   useEffect(() => {
-    if (hasModules?.length === 1 && hasModules?.includes("chat")) {
-      changeMode(true);
+    if (platformAdapter.isTauri()) {
+      changeMode(defaultStartupWindow === "chatMode");
     } else {
-      changeMode(defaultModule === "chat");
+      if (hasModules?.length === 1 && hasModules?.includes("chat")) {
+        changeMode(true);
+      } else {
+        changeMode(defaultModule === "chat");
+      }
     }
-
-    let unlistenChangeStartupStore: (() => void) | undefined;
-
-    const setupListener = async () => {
-      try {
-        unlistenChangeStartupStore = await platformAdapter.listenEvent(
-          "change-startup-store",
-          ({ payload }) => {
-            if (
-              payload &&
-              typeof payload === "object" &&
-              "defaultStartupWindow" in payload
-            ) {
-              const startupWindow = payload.defaultStartupWindow;
-              if (
-                startupWindow === "searchMode" ||
-                startupWindow === "chatMode"
-              ) {
-                setDefaultStartupWindow(startupWindow);
-              }
-            }
-          }
-        );
-      } catch (error) {
-        console.error("Error setting up change-startup-store listener:", error);
-      }
-    };
-
-    setupListener();
-
-    return () => {
-      if (unlistenChangeStartupStore) {
-        unlistenChangeStartupStore();
-      }
-    };
   }, []);
-
-  useEffect(() => {
-    const setupShowCocoListener = async () => {
-      if (showCocoListenRef.current) {
-        showCocoListenRef.current();
-        showCocoListenRef.current = undefined;
-      }
-
-      try {
-        const unlisten = await platformAdapter.listenEvent("show-coco", () => {
-          changeMode(defaultStartupWindow === "chatMode");
-        });
-
-        showCocoListenRef.current = unlisten;
-      } catch (error) {
-        console.error("Error setting up show-coco listener:", error);
-      }
-    };
-
-    setupShowCocoListener();
-
-    return () => {
-      if (showCocoListenRef.current) {
-        showCocoListenRef.current();
-        showCocoListenRef.current = undefined;
-      }
-    };
-  }, [defaultStartupWindow, changeMode]);
 
   return (
     <div

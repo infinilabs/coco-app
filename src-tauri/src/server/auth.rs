@@ -1,7 +1,12 @@
 use crate::common::server::ServerAccessToken;
 use crate::server::profile::get_user_profiles;
-use crate::server::servers::{get_server_by_id, persist_servers, persist_servers_token, save_access_token, save_server, try_register_server_to_search_source};
+use crate::server::servers::{
+    get_server_by_id, persist_servers, persist_servers_token, save_access_token, save_server,
+    try_register_server_to_search_source,
+};
 use tauri::{AppHandle, Runtime};
+
+#[allow(dead_code)]
 fn request_access_token_url(request_id: &str) -> String {
     // Remove the endpoint part and keep just the path for the request
     format!("/auth/request_access_token?request_id={}", request_id)
@@ -20,11 +25,7 @@ pub async fn handle_sso_callback<R: Runtime>(
     let expire_in = 3600; // TODO, need to update to actual expire_in value
     if let Some(mut server) = server {
         // Save the access token for the server
-        let access_token = ServerAccessToken::new(
-            server_id.clone(),
-            code.clone(),
-            expire_in,
-        );
+        let access_token = ServerAccessToken::new(server_id.clone(), code.clone(), expire_in);
         // dbg!(&server_id, &request_id, &code, &token);
         save_access_token(server_id.clone(), access_token);
         persist_servers_token(&app_handle)?;
