@@ -6,7 +6,7 @@ use crate::server::servers::{
 };
 use tauri::{AppHandle, Runtime};
 
-#[warn(unused_variables)]
+#[allow(dead_code)]
 fn request_access_token_url(request_id: &str) -> String {
     // Remove the endpoint part and keep just the path for the request
     format!("/auth/request_access_token?request_id={}", request_id)
