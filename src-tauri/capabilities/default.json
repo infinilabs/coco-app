@@ -29,6 +29,7 @@
     "core:window:allow-set-focus",
     "core:window:allow-set-always-on-top",
     "core:window:deny-internal-toggle-maximize",
+    "core:window:allow-set-shadow",
     "core:app:allow-set-app-theme",
     "shell:default",
     "http:default",

@@ -28,6 +28,8 @@ export default function Layout() {
   }
 
   useMount(async () => {
+    await platformAdapter.setShadow(true);
+
     const unlistenTheme = await platformAdapter.listenThemeChanged(
       (theme: AppTheme) => {
         setTheme(theme);

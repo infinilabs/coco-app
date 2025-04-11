@@ -93,6 +93,7 @@ export interface PlatformAdapter {
   openExternal: (url: string) => Promise<void>;
   commands: <T>(commandName: string, ...args: any[]) => Promise<T>;
   isWindows10: () => Promise<boolean>;
+  setShadow(enable: boolean): Promise<void>;
 }
 
 // const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
