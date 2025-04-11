@@ -12,6 +12,23 @@ use std::path::{Path, PathBuf};
 use tauri::{AppHandle, Runtime};
 use tauri_plugin_fs_pro::{icon, name};
 
+#[tauri::command]
+pub fn get_default_search_paths<R: Runtime>(app_handle: AppHandle<R>) -> Vec<String> {
+    let paths = applications::get_default_search_paths();
+    let ret = Vec::with_capacity(paths.len());
+    for search_path in paths {
+        let path = search_path.path;
+        let path_string = path
+            .into_os_string()
+            .into_string()
+            .expect("path should be UTF-8 encoded");
+
+        ret.push(path_string);
+    }
+
+    ret
+}
+
 pub struct ApplicationSearchSource {
     base_score: f64,
     icons: HashMap<String, PathBuf>,
