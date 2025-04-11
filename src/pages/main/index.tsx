@@ -22,7 +22,9 @@ function MainApp() {
           queryStrings: { query: input },
         }
       );
-      console.log(11111, response)
+      if (!response || typeof response !== 'object') {
+        throw new Error('Invalid response format');
+      }
       return response;
     } catch (error) {
       console.error("query_coco_fusion error:", error);

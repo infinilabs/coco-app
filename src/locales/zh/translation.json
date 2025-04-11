@@ -303,7 +303,8 @@
       "addServer": "添加新服务器"
     },
     "enable_server": "启用服务",
-    "disable_server": "禁用服务"
+    "disable_server": "禁用服务",
+    "manualCopyLink": "如果链接没有自动打开，请手动复制并粘贴到浏览器中"
   },
   "tray": {
     "showCoco": "显示 Coco",
