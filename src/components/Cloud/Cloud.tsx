@@ -473,8 +473,7 @@ export default function Cloud() {
                           <Copy className="inline mr-2" />{" "}
                         </button>
                         <div className="text-justify italic text-xs">
-                          If the link did not open automatically, please copy
-                          and paste it into your browser manually.
+                          {t("cloud.manualCopyLink")}
                         </div>
                       </div>
                     )}

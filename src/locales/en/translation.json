@@ -307,7 +307,8 @@
       "addServer": "Add New Server"
     },
     "enable_server": "Enable Server",
-    "disable_server": "Disable Server"
+    "disable_server": "Disable Server",
+    "manualCopyLink": "If the link did not open automatically, please copy and paste it into your browser manually"
   },
   "tray": {
     "showCoco": "Show Coco",
