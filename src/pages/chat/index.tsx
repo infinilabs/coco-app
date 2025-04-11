@@ -76,17 +76,19 @@ export default function Chat({}: ChatProps) {
     }
   };
 
-  // const deleteChat = (chatId: string) => {
-  //   setChats((prev) => prev.filter((chat) => chat._id !== chatId));
-  //   if (activeChat?._id === chatId) {
-  //     const remainingChats = chats.filter((chat) => chat._id !== chatId);
-  //     if (remainingChats.length > 0) {
-  //       setActiveChat(remainingChats[0]);
-  //     } else {
-  //       chatAIRef.current?.init("");
-  //     }
-  //   }
-  // };
+  const deleteChat = (chatId: string) => {
+    handleDelete(chatId);
+
+    setChats((prev) => prev.filter((chat) => chat._id !== chatId));
+    if (activeChat?._id === chatId) {
+      const remainingChats = chats.filter((chat) => chat._id !== chatId);
+      if (remainingChats.length > 0) {
+        setActiveChat(remainingChats[0]);
+      } else {
+        chatAIRef.current?.init("");
+      }
+    }
+  };
 
   const handleSendMessage = async (content: string) => {
     setInput(content);
@@ -227,8 +229,6 @@ export default function Chat({}: ChatProps) {
     if (!currentService?.id) return;
 
     await delete_session_chat(currentService.id, id);
-
-    getChatHistory();
   };
 
   return (
@@ -248,7 +248,7 @@ export default function Chat({}: ChatProps) {
               onRefresh={getChatHistory}
               onSelect={onSelectChat}
               onRename={handleRename}
-              onRemove={handleDelete}
+              onRemove={deleteChat}
             />
           </div>
         ) : null}

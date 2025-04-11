@@ -20,7 +20,7 @@ export function useChatActions(
   sourceDataIds?: string[],
   changeInput?: (val: string) => void,
   websocketSessionId?: string,
-  showChatHistory?: boolean,
+  showChatHistory?: boolean
 ) {
   const isTauri = useAppStore((state) => state.isTauri);
   const [keyword, setKeyword] = useState("");
@@ -419,8 +419,6 @@ export function useChatActions(
     if (!currentServiceId) return;
 
     await platformAdapter.commands("delete_session_chat", currentServiceId, id);
-
-    getChatHistory();
   };
 
   return {

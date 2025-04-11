@@ -270,20 +270,24 @@ const ChatAI = memo(
         ]
       );
 
-      // const deleteChat = useCallback(
-      //   (chatId: string) => {
-      //     setChats((prev) => prev.filter((chat) => chat._id !== chatId));
-      //     if (activeChat?._id === chatId) {
-      //       const remainingChats = chats.filter((chat) => chat._id !== chatId);
-      //       if (remainingChats.length > 0) {
-      //         setActiveChat(remainingChats[0]);
-      //       } else {
-      //         init("");
-      //       }
-      //     }
-      //   },
-      //   [activeChat, chats, init, setActiveChat]
-      // );
+      const deleteChat = useCallback(
+        (chatId: string) => {
+          handleDelete(chatId);
+
+          setChats((prev) => prev.filter((chat) => chat._id !== chatId));
+
+          if (activeChat?._id === chatId) {
+            const remainingChats = chats.filter((chat) => chat._id !== chatId);
+
+            if (remainingChats.length > 0) {
+              setActiveChat(remainingChats[0]);
+            } else {
+              init("");
+            }
+          }
+        },
+        [activeChat, chats, init, setActiveChat]
+      );
 
       const handleOutsideClick = useCallback((e: MouseEvent) => {
         const sidebar = document.querySelector("[data-sidebar]");
@@ -339,7 +343,7 @@ const ChatAI = memo(
               activeChat={activeChat}
               // onNewChat={clearChat}
               onSelectChat={onSelectChat}
-              onDeleteChat={handleDelete}
+              onDeleteChat={deleteChat}
               fetchChatHistory={getChatHistory}
               onSearch={handleSearch}
               onRename={handleRename}
