@@ -62,6 +62,9 @@ export default function SearchPopover({
   const popoverRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const internetSearch = useShortcutsStore((state) => state.internetSearch);
+  const internetSearchScope = useShortcutsStore((state) => {
+    return state.internetSearchScope;
+  });
 
   useEffect(() => {
     if (!showDataSource) return;
@@ -157,13 +160,20 @@ export default function SearchPopover({
                   setShowDataSource((prev) => !prev);
                 }}
               >
-                <ChevronDownIcon
-                  className={clsx("size-5", [
-                    isSearchActive
-                      ? "text-[#0072FF] dark:text-[#0072FF]"
-                      : "text-[#333] dark:text-white",
-                  ])}
-                />
+                <VisibleKey
+                  shortcut={internetSearchScope}
+                  onKeypress={() => {
+                    buttonRef.current?.click();
+                  }}
+                >
+                  <ChevronDownIcon
+                    className={clsx("size-5", [
+                      isSearchActive
+                        ? "text-[#0072FF] dark:text-[#0072FF]"
+                        : "text-[#333] dark:text-white",
+                    ])}
+                  />
+                </VisibleKey>
               </PopoverButton>
 
               {showDataSource ? (
