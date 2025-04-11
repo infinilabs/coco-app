@@ -233,7 +233,7 @@ export default function Chat({}: ChatProps) {
 
   return (
     <div className="h-screen">
-      <div className="h-[100%] flex">
+      <div className="h-full flex">
         {/* Sidebar */}
         {isSidebarOpen ? (
           <div
@@ -256,20 +256,22 @@ export default function Chat({}: ChatProps) {
         {/* Main content */}
         <div className={`flex-1 flex flex-col bg-white dark:bg-gray-900`}>
           {/* Chat messages */}
-          <ChatAI
-            ref={chatAIRef}
-            key="ChatAI"
-            activeChatProp={activeChat}
-            isTransitioned={true}
-            isSearchActive={isSearchActive}
-            isDeepThinkActive={isDeepThinkActive}
-            setIsSidebarOpen={setIsSidebarOpen}
-            isSidebarOpen={isSidebarOpen}
-            clearChatPage={clearChat}
-            isChatPage={isChatPage}
-            getFileUrl={getFileUrl}
-            changeInput={setInput}
-          />
+          <div className="flex-1 overflow-auto">
+            <ChatAI
+              ref={chatAIRef}
+              key="ChatAI"
+              activeChatProp={activeChat}
+              isTransitioned={true}
+              isSearchActive={isSearchActive}
+              isDeepThinkActive={isDeepThinkActive}
+              setIsSidebarOpen={setIsSidebarOpen}
+              isSidebarOpen={isSidebarOpen}
+              clearChatPage={clearChat}
+              isChatPage={isChatPage}
+              getFileUrl={getFileUrl}
+              changeInput={setInput}
+            />
+          </div>
 
           {/* Input area */}
           <div
