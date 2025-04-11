@@ -158,6 +158,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
                       <div className="flex-1 flex items-center justify-between gap-2 px-2 overflow-hidden">
                         {isEdit && isActive ? (
                           <Input
+                            autoFocus
                             defaultValue={title}
                             className="flex-1 -mx-px outline-none bg-transparent border border-[#0061FF] rounded-[4px]"
                             onKeyDown={(event) => {
@@ -186,7 +187,12 @@ const HistoryList: FC<HistoryListProps> = (props) => {
 
                           <MenuItems
                             anchor="bottom"
+                            portal
                             className="flex flex-col rounded-lg shadow-md z-100 bg-white dark:bg-[#202126] p-1 border border-black/2 dark:border-white/10"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              event.preventDefault();
+                            }}
                           >
                             {menuItems.map((menuItem) => {
                               const {
