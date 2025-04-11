@@ -23,6 +23,14 @@ cargo-clippy = []
 
 [dependencies]
 pizza-common = { git = "https://github.com/infinilabs/pizza-common", branch = "main" }
+#pizza-engine = {git = "https://github.com/infinilabs/pizza", branch = "main" }
+pizza-engine = {path = "../../../pizza/lib/engine", features = ["persistence", "benchmark_internal"] }
+hashbrown = { version = "0.14",default-features = false, features = ["nightly", "serde", "inline-more"]  }
+
+spin = { version = "0.9",default-features = false,features = ["rwlock", "mutex", "spin_mutex"] }
+tauri-api = "0.7.6"
+
+camino = "1.1.9"
 
 tauri = { version = "2", features = ["protocol-asset", "macos-private-api", "tray-icon", "image-ico", "image-png", "unstable"] }
 tauri-plugin-shell = "2"

@@ -56,7 +56,13 @@ pub struct Document {
     pub last_updated_by: Option<EditorInfo>,
 }
 impl Document {
-    pub fn new(source: Option<DataSourceReference>, id: String, category: String, name: String, url: String) -> Self {
+    pub fn new(
+        source: Option<DataSourceReference>,
+        id: String,
+        category: String,
+        name: String,
+        url: String,
+    ) -> Self {
         Self {
             id,
             created: None,

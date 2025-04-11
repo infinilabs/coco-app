@@ -105,6 +105,7 @@ function SearchChat({
       await initializeListeners();
       await initializeListeners_auth();
       await platformAdapter.invokeBackend("get_app_search_source");
+      await platformAdapter.invokeBackend("get_fs_search_source");
       if (theme && mounted) {
         setTheme(theme);
       }

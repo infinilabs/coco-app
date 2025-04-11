@@ -14,6 +14,7 @@ use crate::common::{MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL};
 use crate::server::servers::{load_or_insert_default_server, load_servers_token};
 use autostart::{change_autostart, enable_autostart};
 use lazy_static::lazy_static;
+use local::start_pizza_engine_runtime;
 use std::sync::Mutex;
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
@@ -57,6 +58,8 @@ pub fn run() {
     let ctx = tauri::generate_context!();
     // Initialize logger
     env_logger::init();
+
+    start_pizza_engine_runtime();
 
     let mut app_builder = tauri::Builder::default();
 
@@ -128,6 +131,7 @@ pub fn run() {
             server::websocket::connect_to_server,
             server::websocket::disconnect,
             get_app_search_source,
+            get_fs_search_source,
             server::attachment::upload_attachment,
             server::attachment::get_attachment,
             server::attachment::delete_attachment,
@@ -246,6 +250,17 @@ async fn init_app_search_source<R: Runtime>(app_handle: &AppHandle<R>) -> Result
     // Register the application search source
     let registry = app_handle.state::<SearchSourceRegistry>();
     registry.register_source(application_search).await;
+
+    Ok(())
+}
+
+async fn init_fs_search_source<R: Runtime>(app_handle: &AppHandle<R>) -> Result<(), String> {
+    let filesystem_search =
+        local::file_system::FileSystemSearchSource::new(app_handle.clone()).await?;
+
+    // Register the application search source
+    let registry = app_handle.state::<SearchSourceRegistry>();
+    registry.register_source(filesystem_search).await;
 
     Ok(())
 }
@@ -404,6 +419,15 @@ fn open_settings(app: &tauri::AppHandle) {
 #[tauri::command]
 async fn get_app_search_source<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), String> {
     init_app_search_source(&app_handle).await?;
+    let _ = server::connector::refresh_all_connectors(&app_handle).await;
+    let _ = server::datasource::refresh_all_datasources(&app_handle).await;
+
+    Ok(())
+}
+
+#[tauri::command]
+async fn get_fs_search_source<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), String> {
+    init_fs_search_source(&app_handle).await?;
     let _ = server::connector::refresh_all_connectors(&app_handle).await;
     let _ = server::datasource::refresh_all_datasources(&app_handle).await;
 
