@@ -190,7 +190,6 @@ const HistoryList: FC<HistoryListProps> = (props) => {
                             className="flex flex-col rounded-lg shadow-md z-100 bg-white dark:bg-[#202126] p-1 border border-black/2 dark:border-white/10"
                             onClick={(event) => {
                               event.stopPropagation();
-                              event.preventDefault();
                             }}
                           >
                             {menuItems.map((menuItem) => {
