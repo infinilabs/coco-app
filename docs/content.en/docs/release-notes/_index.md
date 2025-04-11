@@ -17,10 +17,12 @@ Information about release notes of Coco Server is provided here.
 - feat: add shortcuts to most icon buttons #334
 - feat: add font icon for search list #342
 - feat: add a border to the main window in Windows 10 #343
+- feat: mobile terminal adaptation about style #348
 
 ### Bug fix
 
 - fix: fixed the problem of not being able to search in secondary directories #338
+- fix: active shadow setting #354
 
 ### Improvements
 
@@ -38,7 +40,6 @@ Information about release notes of Coco Server is provided here.
 
 - feat: support multi websocket connections #314
 - feat: add support for embeddable web widget #277
-- feat: mobile terminal adaptation about style #348
 
 ### Bug fix
 
