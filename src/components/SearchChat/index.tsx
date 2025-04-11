@@ -244,15 +244,15 @@ function SearchChat({
   });
 
   useEffect(() => {
-    if (hasModules?.length === 1 && hasModules?.includes("chat")) {
-      changeMode(true);
+    if (platformAdapter.isTauri()) {
+      changeMode(defaultStartupWindow === "chatMode");
     } else {
-      changeMode(defaultModule === "chat");
+      if (hasModules?.length === 1 && hasModules?.includes("chat")) {
+        changeMode(true);
+      } else {
+        changeMode(defaultModule === "chat");
+      }
     }
-  }, []);
-
-  useEffect(() => {
-    changeMode(defaultStartupWindow === "chatMode");
   }, []);
 
   return (
