@@ -132,7 +132,12 @@ impl ApplicationSearchSource {
         let application_paths = Trie::new();
         let mut icons = HashMap::new();
 
-        let mut ctx = AppInfoContext::new(vec![]);
+        let default_search_path = if cfg!(target_os = "macos") {
+            vec![PathBuf::from("/Applications")]
+        } else {
+            applications::get_default_search_paths()
+        };
+        let mut ctx = AppInfoContext::new(default_search_path);
         ctx.refresh_apps().map_err(|err| err.to_string())?; // must refresh apps before getting them
         let apps = ctx.get_all_apps();
 
