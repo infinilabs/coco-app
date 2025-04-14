@@ -378,6 +378,10 @@ export function useChatActions(
     showChatHistory && getChatHistory();
   }, [showChatHistory]);
 
+  useEffect(() => {
+    getChatHistory();
+  }, [keyword]);
+
   const createChatWindow = useCallback(async (createWin: any) => {
     if (isTauri) {
       createWin &&
@@ -403,16 +407,14 @@ export function useChatActions(
     setKeyword(keyword);
   };
 
-  const handleRename = async (chat: Chat, title: string) => {
+  const handleRename = async (chatId: string, title: string) => {
     if (!currentServiceId) return;
 
     await platformAdapter.commands("update_session_chat", {
       serverId: currentServiceId,
-      sessionId: chat?._id,
+      sessionId: chatId,
       title,
     });
-
-    getChatHistory();
   };
 
   const handleDelete = async (id: string) => {
