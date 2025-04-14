@@ -2,7 +2,7 @@ use crate::common::document::{DataSourceReference, Document};
 use crate::common::search::{QueryResponse, QuerySource, SearchQuery};
 use crate::common::traits::{SearchError, SearchSource};
 use crate::local::LOCAL_QUERY_SOURCE_TYPE;
-use applications::{AppInfo, AppInfoContext};
+use applications::{App, AppInfo, AppInfoContext};
 use async_trait::async_trait;
 use base64::encode;
 use fuzzy_prefix_search::Trie;
@@ -17,8 +17,7 @@ pub fn get_default_search_paths() -> Vec<String> {
     let paths = applications::get_default_search_paths();
     let mut ret = Vec::with_capacity(paths.len());
     for search_path in paths {
-        let path = search_path.path;
-        let path_string = path
+        let path_string = search_path
             .into_os_string()
             .into_string()
             .expect("path should be UTF-8 encoded");
@@ -27,6 +26,96 @@ pub fn get_default_search_paths() -> Vec<String> {
     }
 
     ret
+}
+
+/// List apps that are in the `search_path`.
+#[allow(unused)] // for now, will be used in https://github.com/infinilabs/coco-app/pull/346
+fn list_app_in(search_path: Vec<String>) -> Result<Vec<App>, String> {
+    let search_path = search_path
+        .into_iter()
+        .map(PathBuf::from)
+        .collect::<Vec<_>>();
+    let apps = applications::get_all_apps(&search_path).map_err(|err| err.to_string())?;
+
+    Ok(apps
+        .into_iter()
+        .filter(|app| app.icon_path.is_none())
+        .collect())
+}
+
+#[derive(serde::Serialize)]
+pub struct AppMetadata {
+    #[serde(rename = "Name")]
+    name: String,
+    #[serde(rename = "Where")]
+    r#where: PathBuf,
+    #[serde(rename = "Size")]
+    size: u64,
+    #[serde(rename = "Created")]
+    created: u128,
+    #[serde(rename = "Modified")]
+    modified: u128,
+    #[serde(rename = "Last opened")]
+    last_opened: u128,
+}
+
+/// List apps that are in the `search_path`.
+///
+/// Different from `list_app_in()`, every app is JSON object containing its metadata, e.g.:
+///
+/// ```json
+/// {
+///   "Name": "Finder",
+///   "Where": "/System/Library/CoreServices",
+///   "Size": 49283072,
+///   "Created": 1744625204,
+///   "Modified": 1744625204,
+///   "Last opened": 1744625250
+/// }
+/// ```
+#[tauri::command]
+pub async fn list_app_with_metadata_in(
+    search_path: Vec<String>,
+) -> Result<Vec<AppMetadata>, String> {
+    let apps = list_app_in(search_path)?;
+
+    let mut apps_with_meta = Vec::with_capacity(apps.len());
+
+    // name version where Type(hardcoded Application) Size Created Modify
+    for app in apps {
+        let app_path = if cfg!(target_os = "windows") {
+            app.app_path_exe
+                .clone()
+                .unwrap_or(PathBuf::from("Path not found"))
+        } else {
+            app.app_desktop_path.clone()
+        };
+        let app_name = name(app_path.clone()).await;
+        let app_path_where = {
+            let mut app_path_clone = app_path.clone();
+            let truncated = app_path_clone.pop();
+            if !truncated {
+                panic!("every app file should live somewhere");
+            }
+
+            app_path_clone
+        };
+
+        let raw_app_metadata = tauri_plugin_fs_pro::metadata(app_path.clone(), None).await?;
+
+        let app_metadata = AppMetadata {
+            name: app_name,
+            r#where: app_path_where,
+            size: raw_app_metadata.size,
+            created: raw_app_metadata.created_at,
+            modified: raw_app_metadata.modified_at,
+            last_opened: raw_app_metadata.accessed_at,
+        };
+
+        apps_with_meta.push(app_metadata);
+    }
+
+    Ok(apps_with_meta)
 }
 
 pub struct ApplicationSearchSource {

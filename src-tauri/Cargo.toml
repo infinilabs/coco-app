@@ -27,7 +27,8 @@ pizza-common = { git = "https://github.com/infinilabs/pizza-common", branch = "m
 tauri = { version = "2", features = ["protocol-asset", "macos-private-api", "tray-icon", "image-ico", "image-png", "unstable"] }
 tauri-plugin-shell = "2"
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+# Need `arbitrary_precision` feature to support storing u128
+serde_json = { version = "1", features = ["arbitrary_precision"] }
 tauri-plugin-http = "2"
 tauri-plugin-websocket = "2"
 tauri-plugin-deep-link = "2.0.0"
@@ -41,7 +42,7 @@ tauri-plugin-drag = "2"
 tauri-plugin-macos-permissions = "2"
 tauri-plugin-fs-pro = "2"
 tauri-plugin-screenshots = "2"
-applications = "0.3.1"
+applications = { git = "https://github.com/infinilabs/applications-rs", rev = "2345d3b86b711b03aa9aee6920e0108d81a8edb9" }
 
 tokio-native-tls = "0.3"  # For wss connections
 tokio = { version = "1", features = ["full"] }
