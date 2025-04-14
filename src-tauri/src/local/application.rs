@@ -133,7 +133,7 @@ impl ApplicationSearchSource {
         let mut icons = HashMap::new();
 
         let default_search_path = if cfg!(target_os = "macos") {
-            vec![PathBuf::from("/Applications")]
+            vec!["/Applications".into(), "/System/Applications".into(), "/System/Library/CoreServices".into()]
         } else {
             applications::get_default_search_paths()
         };
