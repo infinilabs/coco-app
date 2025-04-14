@@ -13,6 +13,7 @@ Information about release notes of Coco Server is provided here.
 
 ### Features
 
+- feat: history support for searching, renaming and deleting #322
 - feat: linux support for application search #330
 - feat: add shortcuts to most icon buttons #334
 - feat: add font icon for search list #342

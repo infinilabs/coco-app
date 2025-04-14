@@ -26,7 +26,7 @@ interface HistoryListProps {
   onSearch: (keyword: string) => void;
   onRefresh: () => void;
   onSelect: (chat: Chat) => void;
-  onRename: (chat: Chat, title: string) => void;
+  onRename: (chatId: string, title: string) => void;
   onRemove: (chatId: string) => void;
 }
 
@@ -164,12 +164,12 @@ const HistoryList: FC<HistoryListProps> = (props) => {
                             onKeyDown={(event) => {
                               if (event.key !== "Enter") return;
 
-                              onRename(item, event.currentTarget.value);
+                              onRename(item._id, event.currentTarget.value);
 
                               setIsEdit(false);
                             }}
                             onBlur={(event) => {
-                              onRename(item, event.target.value);
+                              onRename(item._id, event.target.value);
 
                               setIsEdit(false);
                             }}

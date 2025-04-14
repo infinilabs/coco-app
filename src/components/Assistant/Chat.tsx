@@ -331,6 +331,39 @@ const ChatAI = memo(
         !isSidebarOpenChat && getChatHistory();
       }, [isSidebarOpenChat, setIsSidebarOpen, getChatHistory]);
 
+      const renameChat = (chatId: string, title: string) => {
+        setChats((prev) => {
+          const updatedChats = prev.map((item) => {
+            if (item._id !== chatId) return item;
+
+            return { ...item, _source: { ...item._source, title } };
+          });
+
+          const modifiedChat = updatedChats.find((item) => {
+            return item._id === chatId;
+          });
+
+          if (!modifiedChat) {
+            return updatedChats;
+          }
+
+          return [
+            modifiedChat,
+            ...updatedChats.filter((item) => item._id !== chatId),
+          ];
+        });
+
+        if (activeChat?._id === chatId) {
+          setActiveChat((prev) => {
+            if (!prev) return prev;
+
+            return { ...prev, _source: { ...prev._source, title } };
+          });
+        }
+
+        handleRename(chatId, title);
+      };
+
       return (
         <div
           data-tauri-drag-region
@@ -346,7 +379,7 @@ const ChatAI = memo(
               onDeleteChat={deleteChat}
               fetchChatHistory={getChatHistory}
               onSearch={handleSearch}
-              onRename={handleRename}
+              onRename={renameChat}
             />
           )}
 
