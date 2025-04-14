@@ -32,6 +32,7 @@ import { useConnectStore } from "@/stores/connectStore";
 import platformAdapter from "@/utils/platformAdapter";
 import VisibleKey from "../Common/VisibleKey";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
+import { useKeyPress } from "ahooks";
 
 interface ChatHeaderProps {
   onCreateNewChat: () => void;
@@ -85,7 +86,8 @@ export function ChatHeader({
 
   const fetchServers = useCallback(
     async (resetSelection: boolean) => {
-      platformAdapter.commands("list_coco_servers")
+      platformAdapter
+        .commands("list_coco_servers")
         .then((res: any) => {
           const enabledServers = (res as IServer[]).filter(
             (server) => server.enabled !== false
@@ -162,6 +164,33 @@ export function ChatHeader({
 
   const openSettings = async () => {
     platformAdapter.emitEvent("open_settings", "connect");
+  };
+
+  useKeyPress(["uparrow", "downarrow"], (_, key) => {
+    const isOpen = serverListButtonRef.current?.dataset["open"] != null;
+    const length = serverList.length;
+
+    if (!isOpen || length <= 1) return;
+
+    const currentIndex = serverList.findIndex((server) => {
+      return server.id === currentService?.id;
+    });
+
+    let nextIndex = currentIndex;
+
+    if (key === "uparrow") {
+      nextIndex = currentIndex > 0 ? currentIndex - 1 : length - 1;
+    } else if (key === "downarrow") {
+      nextIndex = currentIndex < serverList.length - 1 ? currentIndex + 1 : 0;
+    }
+
+    switchServer(serverList[nextIndex]);
+  });
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchServers(false);
+    setTimeout(() => setIsRefreshing(false), 1000);
   };
 
   return (
@@ -280,22 +309,22 @@ export function ChatHeader({
                       onClick={openSettings}
                       className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
                     >
-                      <Settings className="h-4 w-4 text-[#0287FF]" />
+                      <VisibleKey shortcut=",">
+                        <Settings className="h-4 w-4 text-[#0287FF]" />
+                      </VisibleKey>
                     </button>
                     <button
-                      onClick={async () => {
-                        setIsRefreshing(true);
-                        await fetchServers(false);
-                        setTimeout(() => setIsRefreshing(false), 1000);
-                      }}
+                      onClick={handleRefresh}
                       className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
                       disabled={isRefreshing}
                     >
-                      <RefreshCw
-                        className={`h-4 w-4 text-[#0287FF] transition-transform duration-1000 ${
-                          isRefreshing ? "animate-spin" : ""
-                        }`}
-                      />
+                      <VisibleKey shortcut="R" onKeypress={handleRefresh}>
+                        <RefreshCw
+                          className={`h-4 w-4 text-[#0287FF] transition-transform duration-1000 ${
+                            isRefreshing ? "animate-spin" : ""
+                          }`}
+                        />
+                      </VisibleKey>
                     </button>
                   </div>
                 </div>
