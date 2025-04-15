@@ -8,6 +8,13 @@ use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use tauri::{AppHandle, Runtime};
 
+#[derive(serde::Deserialize, Debug)]
+pub struct GetDatasourcesByServerOptions {
+    pub from: Option<u32>,
+    pub size: Option<u32>,
+    pub query: Option<String>,
+}
+
 lazy_static! {
     static ref DATASOURCE_CACHE: Arc<RwLock<HashMap<String, HashMap<String, DataSource>>>> =
         Arc::new(RwLock::new(HashMap::new()));
@@ -25,7 +32,7 @@ pub fn save_datasource_to_cache(server_id: &str, datasources: Vec<DataSource>) {
 #[allow(dead_code)]
 pub fn get_datasources_from_cache(server_id: &str) -> Option<HashMap<String, DataSource>> {
     let cache = DATASOURCE_CACHE.read().unwrap(); // Acquire read lock
-    // dbg!("cache: {:?}", &cache);
+                                                  // dbg!("cache: {:?}", &cache);
     let server_cache = cache.get(server_id)?; // Get the server's cache
     Some(server_cache.clone())
 }
@@ -41,7 +48,7 @@ pub async fn refresh_all_datasources<R: Runtime>(_app_handle: &AppHandle<R>) -> 
         // dbg!("fetch datasources for server: {}", &server.id);
 
         // Attempt to get datasources by server, and continue even if it fails
-        let connectors = match get_datasources_by_server(server.id.as_str()).await {
+        let connectors = match get_datasources_by_server(server.id.as_str(), None).await {
             Ok(connectors) => {
                 // Process connectors only after fetching them
                 let connectors_map: HashMap<String, DataSource> = connectors
@@ -83,13 +90,48 @@ pub async fn refresh_all_datasources<R: Runtime>(_app_handle: &AppHandle<R>) -> 
 }
 
 #[tauri::command]
-pub async fn get_datasources_by_server(id: &str) -> Result<Vec<DataSource>, String> {
+pub async fn get_datasources_by_server(
+    id: &str,
+    options: Option<GetDatasourcesByServerOptions>,
+) -> Result<Vec<DataSource>, String> {
+    let from = options.as_ref().and_then(|opt| opt.from).unwrap_or(0);
+    let size = options.as_ref().and_then(|opt| opt.size).unwrap_or(10000);
+    let query = options
+        .and_then(|opt| opt.query)
+        .unwrap_or(String::default());
+
+    let mut body = serde_json::json!({
+        "from": from,
+        "size": size,
+    });
+
+    if !query.is_empty() {
+        body["query"] = serde_json::json!({
+              "bool": {
+                  "must": [{
+                      "query_string": {
+                          "fields": ["combined_fulltext"],
+                          "query": query,
+                          "fuzziness": "AUTO",
+                          "fuzzy_prefix_length": 2,
+                          "fuzzy_max_expansions": 10,
+                          "fuzzy_transpositions": true,
+                          "allow_leading_wildcard": false
+                      }
+                  }]
+              }
+        });
+    }
+
     // Perform the async HTTP request outside the cache lock
-    let resp = HttpClient::get(id, "/datasource/_search", None)
-        .await
-        .map_err(|e| {
-            format!("Error fetching datasource: {}", e)
-        })?;
+    let resp = HttpClient::post(
+        id,
+        "/datasource/_search",
+        None,
+        Some(reqwest::Body::from(body.to_string())),
+    )
+    .await
+    .map_err(|e| format!("Error fetching datasource: {}", e))?;
 
     // Parse the search results from the response
     let datasources: Vec<DataSource> = parse_search_results(resp).await.map_err(|e| {

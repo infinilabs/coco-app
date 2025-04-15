@@ -9,6 +9,7 @@ import useSettingsWindow from "@/hooks/useSettingsWindow";
 import { useThemeStore } from "@/stores/themeStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { AppTheme } from "@/types/index";
+import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 
 export default function Layout() {
   const location = useLocation();
@@ -103,6 +104,8 @@ export default function Layout() {
 
     event.preventDefault();
   });
+
+  useModifierKeyPress();
 
   return <Outlet />;
 }

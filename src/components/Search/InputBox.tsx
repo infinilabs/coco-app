@@ -34,7 +34,14 @@ interface ChatInputProps {
   isDeepThinkActive: boolean;
   setIsDeepThinkActive: () => void;
   isChatPage?: boolean;
-  getDataSourcesByServer: (serverId: string) => Promise<DataSource[]>;
+  getDataSourcesByServer: (
+    serverId: string,
+    options?: {
+      from?: number;
+      size?: number;
+      query?: string;
+    }
+  ) => Promise<DataSource[]>;
   setupWindowFocusListener: (callback: () => void) => Promise<() => void>;
   checkScreenPermission: () => Promise<boolean>;
   requestScreenPermission: () => void;
@@ -98,6 +105,7 @@ export default function ChatInput({
   const modifierKeyPressed = useShortcutsStore((state) => {
     return state.modifierKeyPressed;
   });
+  console.log("modifierKeyPressed", modifierKeyPressed);
   const modeSwitch = useShortcutsStore((state) => state.modeSwitch);
   const returnToInput = useShortcutsStore((state) => state.returnToInput);
   const deepThinking = useShortcutsStore((state) => state.deepThinking);

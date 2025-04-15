@@ -23,7 +23,10 @@ import { useStartupStore } from "@/stores/startupStore";
 import { DataSource } from "@/types/commands";
 import { useThemeStore } from "@/stores/themeStore";
 import { Get } from "@/api/axiosRequest";
-import { useMount } from "ahooks";
+import { useKeyPress, useMount } from "ahooks";
+import { modifierKeys } from "../Settings/Advanced/components/Shortcuts";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
+import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 
 interface SearchChatProps {
   isTauri?: boolean;
@@ -170,10 +173,18 @@ function SearchChat({
   }, []);
 
   const getDataSourcesByServer = useCallback(
-    async (serverId: string): Promise<DataSource[]> => {
+    async (
+      serverId: string,
+      options?: {
+        from?: number;
+        size?: number;
+        query?: string;
+      }
+    ): Promise<DataSource[]> => {
       if (isTauri) {
         return platformAdapter.invokeBackend("get_datasources_by_server", {
           id: serverId,
+          options,
         });
       } else {
         const [error, response]: any = await Get("/datasource/_search");

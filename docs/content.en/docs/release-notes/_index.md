@@ -37,6 +37,7 @@ Information about release notes of Coco Server is provided here.
 ### Breaking changes
 
 ### Features
+
 - feat: add web pages components #277
 - feat: support for customizing some of the preset shortcuts #316
 - feat: support multi websocket connections #314
