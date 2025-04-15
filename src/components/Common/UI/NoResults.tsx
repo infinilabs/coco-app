@@ -15,9 +15,9 @@ export const NoResults = () => {
   return (
     <div
       data-tauri-drag-region
-      className="h-full w-full flex flex-col items-center"
+      className="h-full w-full flex flex-col justify-center items-center"
     >
-      <img src={noDataImg} alt="no-data" className="w-16 h-16 mt-24" />
+      <img src={noDataImg} alt="no-data" className="w-16 h-16" />
       <div className="mt-4 text-sm text-[#999] dark:text-[#666]">
         {t("search.main.noResults")}
       </div>

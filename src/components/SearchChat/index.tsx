@@ -45,6 +45,7 @@ interface SearchChatProps {
     size: number,
     queryStrings: any
   ) => Promise<any>;
+  onModeChange?: (isChatMode: boolean) => void;
 }
 
 function SearchChat({
@@ -60,6 +61,7 @@ function SearchChat({
   chatPlaceholder,
   showChatHistory = true,
   setIsPinned,
+  onModeChange,
 }: SearchChatProps) {
   const customInitialState = {
     ...initialAppState,
@@ -117,6 +119,7 @@ function SearchChat({
 
   const changeMode = useCallback(async (value: boolean) => {
     dispatch({ type: "SET_CHAT_MODE", payload: value });
+    onModeChange?.(value);
   }, []);
 
   const handleSendMessage = useCallback(
@@ -269,8 +272,8 @@ function SearchChat({
           "size-full": !isTauri,
           "w-screen h-screen": isTauri,
           "rounded-xl": !isWin,
-          "border border-[#E6E6E6] dark:border-[#272626]": isLinux,
-          "border-t border-t-[#999] dark:border-t-[#333]": isWin10,
+          "border border-[#E6E6E6] dark:border-[#272626]": isTauri && isLinux,
+          "border-t border-t-[#999] dark:border-t-[#333]": isTauri && isWin10,
         }
       )}
     >

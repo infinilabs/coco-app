@@ -2,11 +2,11 @@ import type { OpenDialogOptions } from '@tauri-apps/plugin-dialog';
 import { isWindows10 } from "tauri-plugin-windows-version-api";
 
 import { windowWrapper, eventWrapper, systemWrapper, commandWrapper } from './wrappers/tauriWrappers';
-import type { PlatformAdapter, EventPayloads } from './platformAdapter';
+import type { TauriPlatformAdapter, EventPayloads } from '@/types/platform';
 import type { AppTheme } from "@/types/index";
 
 // Create Tauri adapter functions
-export const createTauriAdapter = (): PlatformAdapter => {
+export const createTauriAdapter = (): TauriPlatformAdapter => {
   return {
     async setWindowSize(width: number, height: number) {
       return windowWrapper.setSize(width, height);
