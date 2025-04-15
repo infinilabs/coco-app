@@ -1,6 +1,13 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
-import { ChevronDownIcon, RefreshCw, Layers, Globe } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Input, Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+import {
+  ChevronDownIcon,
+  RefreshCw,
+  Layers,
+  Globe,
+  ChevronRight,
+  ChevronLeft,
+} from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
@@ -11,11 +18,19 @@ import { DataSource } from "@/types/commands";
 import Checkbox from "@/components/Common/Checkbox";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import VisibleKey from "../Common/VisibleKey";
+import { useDebounce } from "ahooks";
 
 interface SearchPopoverProps {
   isSearchActive: boolean;
   setIsSearchActive: () => void;
-  getDataSourcesByServer: (serverId: string) => Promise<DataSource[]>;
+  getDataSourcesByServer: (
+    serverId: string,
+    options?: {
+      from?: number;
+      size?: number;
+      query?: string;
+    }
+  ) => Promise<DataSource[]>;
 }
 
 export default function SearchPopover({
@@ -33,12 +48,22 @@ export default function SearchPopover({
   const currentService = useConnectStore((state) => state.currentService);
 
   const [showDataSource, setShowDataSource] = useState(false);
+  const [keyword, setKeyword] = useState("");
+  const debouncedKeyword = useDebounce(keyword, { wait: 500 });
 
   const getDataSourceList = useCallback(async () => {
     try {
+      setPage(1);
+
       const res: DataSource[] = await getDataSourcesByServer(
-        currentService?.id
+        currentService?.id,
+        {
+          query: debouncedKeyword,
+        }
       );
+
+      console.log("res111", res);
+
       if (res?.length === 0) {
         setDataSourceList([]);
         return;
@@ -52,12 +77,13 @@ export default function SearchPopover({
             ...res,
           ]
         : [];
+
       setDataSourceList(data);
     } catch (err) {
       setDataSourceList([]);
       console.error("get_datasources_by_server", err);
     }
-  }, [currentService?.id]);
+  }, [currentService?.id, debouncedKeyword]);
 
   const popoverRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -65,6 +91,10 @@ export default function SearchPopover({
   const internetSearchScope = useShortcutsStore((state) => {
     return state.internetSearchScope;
   });
+  const [page, setPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(0);
+  const [visibleList, setVisibleList] = useState<DataSource[]>([]);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!showDataSource) return;
@@ -88,38 +118,72 @@ export default function SearchPopover({
 
   useEffect(() => {
     if (dataSourceList.length > 0) {
-      onSelectDataSource("all", true, true);
+      setSourceDataIds(dataSourceList.slice(1).map((item) => item.id));
     }
   }, [dataSourceList]);
 
   useEffect(() => {
     getDataSourceList();
-  }, [currentService?.id]);
+  }, [currentService?.id, debouncedKeyword]);
 
-  const memoizedDataSourceIds = useMemo(
-    () => new Set(sourceDataIds),
-    [sourceDataIds]
-  );
+  useEffect(() => {
+    setTotalPage(Math.ceil(dataSourceList.length / 10));
+  }, [dataSourceList]);
+
+  useEffect(() => {
+    if (dataSourceList.length === 0) return;
+
+    const startIndex = (page - 1) * 9;
+    const endIndex = startIndex + 9;
+
+    const list = [
+      dataSourceList[0],
+      ...dataSourceList.slice(1).slice(startIndex, endIndex),
+    ];
+
+    setVisibleList(list);
+  }, [dataSourceList, page]);
 
   const onSelectDataSource = useCallback(
     (id: string, checked: boolean, isAll: boolean) => {
-      if (isAll) {
-        setSourceDataIds(
-          checked ? dataSourceList.slice(1).map((item) => item.id) : []
-        );
-        return;
+      let nextSourceDataIds = new Set(sourceDataIds);
+
+      const ids = isAll ? visibleList.slice(1).map((item) => item.id) : [id];
+
+      for (const id of ids) {
+        if (checked) {
+          nextSourceDataIds.add(id);
+        } else {
+          nextSourceDataIds.delete(id);
+        }
       }
 
-      const updatedIds = new Set(memoizedDataSourceIds);
-      if (checked) {
-        updatedIds.add(id);
-      } else {
-        updatedIds.delete(id);
-      }
-      setSourceDataIds(Array.from(updatedIds));
+      setSourceDataIds(Array.from(nextSourceDataIds));
     },
-    [dataSourceList, memoizedDataSourceIds]
+    [visibleList, sourceDataIds]
   );
+
+  const handleRefresh = async () => {
+    setIsRefreshDataSource(true);
+
+    await getDataSourceList();
+
+    setTimeout(() => {
+      setIsRefreshDataSource(false);
+    }, 1000);
+  };
+
+  const handlePrev = () => {
+    if (page === 1) return;
+
+    setPage(page - 1);
+  };
+
+  const handleNext = () => {
+    if (page === totalPage) return;
+
+    setPage(page + 1);
+  };
 
   return (
     <div
@@ -149,7 +213,7 @@ export default function SearchPopover({
             {t("search.input.search")}
           </span>
 
-          {dataSourceList?.length > 0 && (
+          {visibleList?.length > 0 && (
             <Popover className="relative">
               <PopoverButton
                 as="span"
@@ -180,75 +244,127 @@ export default function SearchPopover({
                 <PopoverPanel
                   static
                   ref={popoverRef}
-                  className="absolute z-50 left-0 bottom-6 min-w-[220px] max-h-[400px] overflow-y-auto bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+                  className="absolute z-50 left-0 bottom-6 w-[240px] overflow-y-auto bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
                 >
                   <div
-                    className="text-sm px-[12px] py-[18px]"
+                    className="text-sm"
                     onClick={(e) => {
                       e.stopPropagation();
                     }}
                   >
-                    <div className="flex justify-between mb-[18px]">
-                      <span>{t("search.input.searchPopover.title")}</span>
+                    <div className="p-3">
+                      <div className="flex justify-between">
+                        <span>{t("search.input.searchPopover.title")}</span>
 
-                      <div
-                        onClick={async () => {
-                          setIsRefreshDataSource(true);
+                        <div
+                          onClick={handleRefresh}
+                          className="size-[24px] flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10 cursor-pointer"
+                        >
+                          <VisibleKey shortcut="R" onKeypress={handleRefresh}>
+                            <RefreshCw
+                              className={`size-3 text-[#0287FF] transition-transform duration-1000 ${
+                                isRefreshDataSource ? "animate-spin" : ""
+                              }`}
+                            />
+                          </VisibleKey>
+                        </div>
+                      </div>
 
-                          getDataSourceList();
+                      <div className="relative h-8 my-2">
+                        <div className="absolute inset-0 flex items-center px-2 pointer-events-none">
+                          <VisibleKey
+                            shortcut="I"
+                            onKeypress={() => {
+                              searchInputRef.current?.focus();
+                            }}
+                          />
+                        </div>
 
-                          setTimeout(() => {
-                            setIsRefreshDataSource(false);
-                          }, 1000);
-                        }}
-                        className="size-[24px] flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10 cursor-pointer"
-                      >
-                        <RefreshCw
-                          className={`size-3 text-[#0287FF] transition-transform duration-1000 ${
-                            isRefreshDataSource ? "animate-spin" : ""
-                          }`}
+                        <Input
+                          autoFocus
+                          ref={searchInputRef}
+                          className="size-full px-2 rounded-lg border dark:border-[#202126]"
+                          onChange={(e) => {
+                            setKeyword(e.target.value);
+                          }}
                         />
                       </div>
+
+                      <ul className="flex flex-col gap-2">
+                        {visibleList?.map((item, index) => {
+                          const { id, name } = item;
+
+                          const isAll = index === 0;
+
+                          const isChecked = () => {
+                            if (isAll) {
+                              return visibleList.slice(1).every((item) => {
+                                return sourceDataIds.includes(item.id);
+                              });
+                            } else {
+                              return sourceDataIds.includes(id);
+                            }
+                          };
+
+                          return (
+                            <li
+                              key={id}
+                              className="flex justify-between items-center"
+                            >
+                              <div className="flex items-center gap-2 overflow-hidden">
+                                {isAll ? (
+                                  <Layers className="size-[16px] text-[#0287FF]" />
+                                ) : (
+                                  <TypeIcon
+                                    item={item}
+                                    className="size-[16px]"
+                                  />
+                                )}
+
+                                <span className="truncate">
+                                  {isAll && name ? t(name) : name}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-1">
+                                <VisibleKey
+                                  shortcut={
+                                    index === 9 ? "0" : String(index + 1)
+                                  }
+                                  onKeypress={() => {
+                                    onSelectDataSource(id, !isChecked(), isAll);
+                                  }}
+                                />
+
+                                <div className="flex justify-center items-center size-[24px]">
+                                  <Checkbox
+                                    checked={isChecked()}
+                                    indeterminate={isAll}
+                                    onChange={(value) =>
+                                      onSelectDataSource(id, value, isAll)
+                                    }
+                                  />
+                                </div>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
                     </div>
-                    <ul className="flex flex-col gap-[16px]">
-                      {dataSourceList?.map((item, index) => {
-                        const { id, name } = item;
 
-                        const isAll = index === 0;
+                    <div className="flex items-center justify-between h-8 px-3 border-t dark:border-t-[#202126]">
+                      <VisibleKey shortcut="leftarrow" onKeypress={handlePrev}>
+                        <ChevronLeft className="size-4" onClick={handlePrev} />
+                      </VisibleKey>
 
-                        return (
-                          <li
-                            key={id}
-                            className="flex justify-between items-center"
-                          >
-                            <div className="flex items-center gap-[8px]">
-                              {isAll ? (
-                                <Layers className="size-[16px] text-[#0287FF]" />
-                              ) : (
-                                <TypeIcon item={item} className="size-[16px]" />
-                              )}
+                      <div className="text-xs">
+                        {page}/{totalPage}
+                      </div>
 
-                              <span>{isAll && name ? t(name) : name}</span>
-                            </div>
-
-                            <div className="flex justify-center items-center size-[24px]">
-                              <Checkbox
-                                checked={
-                                  isAll
-                                    ? sourceDataIds.length ===
-                                      dataSourceList.length - 1
-                                    : sourceDataIds?.includes(id)
-                                }
-                                indeterminate={isAll}
-                                onChange={(value) =>
-                                  onSelectDataSource(id, value, isAll)
-                                }
-                              />
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
+                      <VisibleKey shortcut="rightarrow" onKeypress={handleNext}>
+                        <ChevronRight className="size-4" onClick={handleNext} />
+                      </VisibleKey>
+                    </div>
                   </div>
                 </PopoverPanel>
               ) : null}

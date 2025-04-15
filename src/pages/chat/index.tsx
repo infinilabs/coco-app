@@ -29,6 +29,7 @@ import {
 } from "@/commands";
 import { DataSource } from "@/types/commands";
 import HistoryList from "@/components/Common/HistoryList";
+import { useSyncStore } from "@/hooks/useSyncStore";
 
 interface ChatProps {}
 
@@ -49,6 +50,8 @@ export default function Chat({}: ChatProps) {
   const [keyword, setKeyword] = useState("");
 
   const isChatPage = true;
+
+  useSyncStore();
 
   useEffect(() => {
     getChatHistory();
