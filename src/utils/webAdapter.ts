@@ -1,110 +1,115 @@
-import type { WebPlatformAdapter, EventPayloads } from '@/types/platform';
+import type { BasePlatformAdapter } from "@/types/platform";
+
+export interface WebPlatformAdapter extends BasePlatformAdapter {
+  // Add web-specific methods here
+  openFileDialog: (options: any) => Promise<string | string[] | null>;
+}
 
 // Create Web adapter functions
 export const createWebAdapter = (): WebPlatformAdapter => {
   return {
-    async commands<T>(commandName: string, ...args: any[]): Promise<T> {
-      console.warn(`Command "${commandName}" is not supported in web environment`, args);
-      return Promise.reject(new Error('Not supported in web environment'));
+    async commands(commandName, ...args) {
+      console.warn(
+        `Command "${commandName}" is not supported in web environment`,
+        args
+      );
+      return Promise.reject(new Error("Not supported in web environment"));
     },
 
-    async invokeBackend(command: string, args?: any): Promise<any> {
+    async invokeBackend(command, args) {
       console.log(`Web mode simulated backend call: ${command}`, args);
       // Implement web environment simulation logic or API calls here
-      return null;
+      return null as any;
     },
 
-    async setWindowSize(width: number, height: number): Promise<void> {
+    async setWindowSize(width, height) {
       console.log(`Web mode simulated window resize: ${width}x${height}`);
       // No actual operation needed in web environment
     },
 
-    async hideWindow(): Promise<void> {
+    async hideWindow() {
       console.log("Web mode simulated window hide");
       // No actual operation needed in web environment
     },
 
-    async showWindow(): Promise<void> {
+    async showWindow() {
       console.log("Web mode simulated window show");
       // No actual operation needed in web environment
     },
 
-    convertFileSrc(path: string): string {
+    convertFileSrc(path) {
       return path;
     },
 
-    async emitEvent(event: string, payload?: any): Promise<void> {
+    async emitEvent(event, payload) {
       console.log("Web mode simulated event emit", event, payload);
     },
 
-    async listenEvent<K extends keyof EventPayloads>(
-      event: K,
-      _callback: (event: { payload: EventPayloads[K] }) => void
-    ): Promise<() => void> {
+    async listenEvent(event, _callback) {
       console.log("Web mode simulated event listen", event);
-      return () => { };
+      return () => {};
     },
 
-    async setAlwaysOnTop(isPinned: boolean): Promise<void> {
+    async setAlwaysOnTop(isPinned) {
       console.log("Web mode simulated set always on top", isPinned);
     },
 
-    async checkScreenRecordingPermission(): Promise<boolean> {
+    async checkScreenRecordingPermission() {
       console.log("Web mode simulated check screen recording permission");
       return false;
     },
 
-    requestScreenRecordingPermission(): void {
+    requestScreenRecordingPermission() {
       console.log("Web mode simulated request screen recording permission");
     },
 
-    async getScreenshotableMonitors(): Promise<any[]> {
+    async getScreenshotableMonitors() {
       console.log("Web mode simulated get screenshotable monitors");
       return [];
     },
 
-    async getScreenshotableWindows(): Promise<any[]> {
+    async getScreenshotableWindows() {
       console.log("Web mode simulated get screenshotable windows");
       return [];
     },
 
-    async captureMonitorScreenshot(id: number): Promise<string> {
+    async captureMonitorScreenshot(id) {
       console.log("Web mode simulated capture monitor screenshot", id);
       return "";
     },
 
-    async captureWindowScreenshot(id: number): Promise<string> {
+    async captureWindowScreenshot(id) {
       console.log("Web mode simulated capture window screenshot", id);
       return "";
     },
 
-    async openFileDialog(options: { multiple: boolean }): Promise<null> {
+    async openFileDialog(options) {
       console.log("Web mode simulated open file dialog", options);
       return null;
     },
 
-    async getFileMetadata(path: string): Promise<null> {
+    async getFileMetadata(path) {
       console.log("Web mode simulated get file metadata", path);
       return null;
     },
 
-    async getFileIcon(path: string, size: number): Promise<string> {
+    async getFileIcon(path, size) {
       console.log("Web mode simulated get file icon", path, size);
       return "";
     },
 
-    async checkUpdate(): Promise<any> {
+    async checkUpdate() {
       console.log("Web mode simulated check update");
       return null;
     },
 
-    async relaunchApp(): Promise<void> {
+    async relaunchApp() {
       console.log("Web mode simulated relaunch app");
     },
 
     async listenThemeChanged() {
       console.log("Web mode simulated theme change listener");
-      return () => { };
+      return () => {};
     },
 
     async getWebviewWindow() {
@@ -118,55 +123,55 @@ export const createWebAdapter = (): WebPlatformAdapter => {
 
     async getWindowTheme() {
       console.log("Web mode simulated get window theme");
-      return 'light';
+      return "light";
     },
 
     async onThemeChanged(callback) {
       console.log("Web mode simulated on theme changed", callback);
     },
 
-    async getWindowByLabel(label: string) {
+    async getWindowByLabel(label) {
       console.log("Web mode simulated get window by label:", label);
       return null;
     },
 
-    async createWindow(label: string, options: any) {
+    async createWindow(label, options) {
       console.log("Web mode simulated create window:", label, options);
     },
 
-    async getAllWindows(): Promise<any[]> {
+    async getAllWindows() {
       console.log("Web mode simulated get all windows");
       return [];
     },
 
-    async getCurrentWindow(): Promise<any> {
+    async getCurrentWindow() {
       console.log("Web mode simulated get current window");
       return null;
     },
 
-    async createWebviewWindow(label: string, options: any): Promise<any> {
+    async createWebviewWindow(label, options) {
       console.log("Web mode simulated create webview window:", label, options);
       return null;
     },
 
-    async listenWindowEvent(event: string, _callback: (event: any) => void): Promise<() => void> {
+    async listenWindowEvent(event, _callback) {
       console.log("Web mode simulated listen window event:", event);
       return () => {};
     },
 
-    isTauri(): boolean {
+    isTauri() {
       return false;
     },
 
-    async openExternal(url: string): Promise<void> {
+    async openExternal(url) {
       console.log(`Web mode opening URL: ${url}`);
-      window.open(url, '_blank');
+      window.open(url, "_blank");
     },
 
     isWindows10: async () => false,
 
-    async setShadow(enable: boolean): Promise<void> {
-      console.warn('setShadow is not supported in web environment', enable);
+    async setShadow(enable) {
+      console.warn("setShadow is not supported in web environment", enable);
       return Promise.resolve();
     },
   };

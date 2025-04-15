@@ -1,14 +1,25 @@
-import type { OpenDialogOptions } from '@tauri-apps/plugin-dialog';
+import type { OpenDialogOptions } from "@tauri-apps/plugin-dialog";
 import { isWindows10 } from "tauri-plugin-windows-version-api";
 
-import { windowWrapper, eventWrapper, systemWrapper, commandWrapper } from './wrappers/tauriWrappers';
-import type { TauriPlatformAdapter, EventPayloads } from '@/types/platform';
+import {
+  windowWrapper,
+  eventWrapper,
+  systemWrapper,
+  commandWrapper,
+} from "./wrappers/tauriWrappers";
+import type { BasePlatformAdapter } from "@/types/platform";
 import type { AppTheme } from "@/types/index";
+
+export interface TauriPlatformAdapter extends BasePlatformAdapter {
+  openFileDialog: (
+    options: OpenDialogOptions
+  ) => Promise<string | string[] | null>;
+}
 
 // Create Tauri adapter functions
 export const createTauriAdapter = (): TauriPlatformAdapter => {
   return {
-    async setWindowSize(width: number, height: number) {
+    async setWindowSize(width, height) {
       return windowWrapper.setSize(width, height);
     },
 
@@ -22,14 +33,11 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       return window?.show();
     },
 
-    async emitEvent(event: string, payload?: any) {
+    async emitEvent(event, payload) {
       return eventWrapper.emit(event, payload);
     },
 
-    async listenEvent<K extends keyof EventPayloads>(
-      event: K,
-      callback: (event: { payload: EventPayloads[K] }) => void
-    ) {
+    async listenEvent(event, callback) {
       return eventWrapper.listen(event, callback);
     },
 
@@ -37,58 +45,64 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       return systemWrapper.checkScreenPermission();
     },
 
-    async captureMonitorScreenshot(id: number) {
-      return systemWrapper.captureScreen(id, 'monitor');
+    async captureMonitorScreenshot(id) {
+      return systemWrapper.captureScreen(id, "monitor");
     },
 
-    async captureWindowScreenshot(id: number) {
-      return systemWrapper.captureScreen(id, 'window');
+    async captureWindowScreenshot(id) {
+      return systemWrapper.captureScreen(id, "window");
     },
 
     commands: commandWrapper.commands,
 
-    async invokeBackend(command: string, args?: any): Promise<any> {
+    async invokeBackend(command, args) {
       const { invoke } = await import("@tauri-apps/api/core");
       return invoke(command, args);
     },
 
-    convertFileSrc(path: string): string {
+    convertFileSrc(path) {
       const { convertFileSrc } = require("@tauri-apps/api/core");
       return convertFileSrc(path);
     },
 
-    async setAlwaysOnTop(isPinned: boolean) {
+    async setAlwaysOnTop(isPinned) {
       const { getCurrentWindow } = await import("@tauri-apps/api/window");
       const window = getCurrentWindow();
       return window.setAlwaysOnTop(isPinned);
     },
 
     async requestScreenRecordingPermission() {
-      const { requestScreenRecordingPermission } = await import("tauri-plugin-macos-permissions-api");
+      const { requestScreenRecordingPermission } = await import(
+        "tauri-plugin-macos-permissions-api"
+      );
       return requestScreenRecordingPermission();
     },
 
     async getScreenshotableMonitors() {
-      const { getScreenshotableMonitors } = await import("tauri-plugin-screenshots-api");
+      const { getScreenshotableMonitors } = await import(
+        "tauri-plugin-screenshots-api"
+      );
       return getScreenshotableMonitors();
     },
 
     async getScreenshotableWindows() {
-      const { getScreenshotableWindows } = await import("tauri-plugin-screenshots-api");
+      const { getScreenshotableWindows } = await import(
+        "tauri-plugin-screenshots-api"
+      );
       return getScreenshotableWindows();
     },
 
-    async openFileDialog(options: OpenDialogOptions) {
+    async openFileDialog(options) {
       const { open } = await import("@tauri-apps/plugin-dialog");
       return open(options);
     },
 
-    async getFileMetadata(path: string) {
+    async getFileMetadata(path) {
       const { metadata } = await import("tauri-plugin-fs-pro-api");
       return metadata(path);
     },
 
-    async getFileIcon(path: string, size: number) {
+    async getFileIcon(path, size) {
       const { icon } = await import("tauri-plugin-fs-pro-api");
       return icon(path, size);
     },
@@ -103,7 +117,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       return relaunch();
     },
 
-    async listenThemeChanged(callback: (theme: AppTheme) => void) {
+    async listenThemeChanged(callback) {
       const { listen } = await import("@tauri-apps/api/event");
       return listen<AppTheme>("theme-changed", ({ payload }) => {
         callback(payload);
@@ -111,7 +125,9 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     async getWebviewWindow() {
-      const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+      const { getCurrentWebviewWindow } = await import(
+        "@tauri-apps/api/webviewWindow"
+      );
       return getCurrentWebviewWindow();
     },
 
@@ -127,7 +143,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       if (window) {
         return window.theme();
       }
-      return 'light';
+      return "light";
     },
 
     async onThemeChanged(callback) {
@@ -137,52 +153,54 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       }
     },
 
-    async getWindowByLabel(label: string) {
+    async getWindowByLabel(label) {
       const { WebviewWindow } = await import("@tauri-apps/api/webviewWindow");
       const window = await WebviewWindow.getByLabel(label);
       return window;
     },
 
-    async createWindow(label: string, options: any) {
+    async createWindow(label, options) {
       const { WebviewWindow } = await import("@tauri-apps/api/webviewWindow");
       new WebviewWindow(label, options);
     },
 
-    async getAllWindows(): Promise<any[]> {
+    async getAllWindows() {
       const { getAllWindows } = await import("@tauri-apps/api/window");
       return getAllWindows();
     },
 
-    async getCurrentWindow(): Promise<any> {
+    async getCurrentWindow() {
       const { getCurrentWindow } = await import("@tauri-apps/api/window");
       return getCurrentWindow();
     },
 
-    async createWebviewWindow(label: string, options: any): Promise<any> {
+    async createWebviewWindow(label, options) {
       const { WebviewWindow } = await import("@tauri-apps/api/webviewWindow");
       return new WebviewWindow(label, options);
     },
 
-    async listenWindowEvent(event: string, callback: (event: any) => void): Promise<() => void> {
+    async listenWindowEvent(event, callback) {
       const { listen } = await import("@tauri-apps/api/event");
       return listen(event, callback);
     },
 
-    isTauri(): boolean {
+    isTauri() {
       return true;
     },
 
-    async openExternal(url: string): Promise<void> {
+    async openExternal(url) {
       const { open } = await import("@tauri-apps/plugin-shell");
       return open(url);
     },
 
     isWindows10: isWindows10,
 
-    async setShadow(enable: boolean) {
-      const { getCurrentWindow } = await import("@tauri-apps/api/window");
-      const window = await getCurrentWindow();
-      return window.setShadow(enable);
+    async setShadow(enable) {
+      const { getCurrentWebviewWindow } = await import(
+        "@tauri-apps/api/webviewWindow"
+      );
+      const appWindow = getCurrentWebviewWindow();
+      return appWindow.setShadow(enable);
     },
   };
 };
