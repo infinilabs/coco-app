@@ -1,7 +1,7 @@
-import type { PlatformAdapter, EventPayloads } from './platformAdapter';
+import type { WebPlatformAdapter, EventPayloads } from '@/types/platform';
 
 // Create Web adapter functions
-export const createWebAdapter = (): PlatformAdapter => {
+export const createWebAdapter = (): WebPlatformAdapter => {
   return {
     async commands<T>(commandName: string, ...args: any[]): Promise<T> {
       console.warn(`Command "${commandName}" is not supported in web environment`, args);

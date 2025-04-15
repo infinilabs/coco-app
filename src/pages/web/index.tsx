@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 
 import SearchChat from "@/components/SearchChat";
 import { useAppStore } from "@/stores/appStore";
@@ -22,13 +22,15 @@ interface WebAppProps {
   chatPlaceholder?: string;
   showChatHistory?: boolean;
   setIsPinned?: (value: boolean) => void;
+  onCancel?: () => void;
 }
 
 function WebApp({
   width = 680,
   height = 590,
   headers = {
-    "X-API-TOKEN": "cvqt6r02sdb2v3bkgip0x3ixv01f3r2lhnxoz1efbn160wm9og58wtv8t6wrv1ebvnvypuc23dx9pb33aemh",
+    "X-API-TOKEN":
+      "cvqt6r02sdb2v3bkgip0x3ixv01f3r2lhnxoz1efbn160wm9og58wtv8t6wrv1ebvnvypuc23dx9pb33aemh",
     "APP-INTEGRATION-ID": "cvkm9hmhpcemufsg3vug",
   },
   // token = "cva1j5ehpcenic3ir7k0h8fb8qtv35iwtywze248oscrej8yoivhb5b1hyovp24xejjk27jy9ddt69ewfi3n",   // https://coco.infini.cloud
@@ -38,12 +40,13 @@ function WebApp({
   hideCoco = () => {},
   hasModules = ["search", "chat"],
   defaultModule = "search",
-  hasFeature = ['search', 'think_active', 'search_active'],
-  theme="light",
+  hasFeature = ["search", "think_active", "search_active"],
+  theme = "dark",
   searchPlaceholder = "",
   chatPlaceholder = "",
   showChatHistory = false,
   setIsPinned,
+  onCancel,
 }: WebAppProps) {
   const setIsTauri = useAppStore((state) => state.setIsTauri);
   const setEndpoint = useAppStore((state) => state.setEndpoint);
@@ -53,7 +56,7 @@ function WebApp({
     setIsTauri(false);
     setEndpoint(serverUrl);
     setModeSwitch("S");
-    localStorage.setItem("headers", JSON.stringify(headers||{}));
+    localStorage.setItem("headers", JSON.stringify(headers || {}));
   }, []);
 
   const query_coco_fusion = useCallback(async (url: string) => {
@@ -110,13 +113,35 @@ function WebApp({
     []
   );
 
+  const isMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+  };
+
+  const [isChatMode, setIsChatMode] = useState(false);
+
   return (
     <div
       id="searchChat-container"
       className={`coco-container ${theme}`}
       data-theme={theme}
-      style={{ maxWidth: `${width}px`, width: `100vw`, height: `${height}px` }}
+      style={{
+        maxWidth: `${width}px`,
+        width: `100vw`,
+        height: isMobile() ? "100vh" : `${height}px`,
+      }}
     >
+      {isMobile() && (
+        <div 
+          className={`fixed ${isChatMode ? 'top-2' : 'top-4'} right-2 flex items-center justify-center w-8 h-8 rounded-full bg-black/10 dark:bg-white/10 cursor-pointer z-50`}
+          onClick={onCancel}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M12 4L4 12M4 4L12 12" stroke="#FF4D4F" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+        </div>
+      )}
       <SearchChat
         isTauri={false}
         hideCoco={hideCoco}
@@ -130,6 +155,7 @@ function WebApp({
         queryDocuments={queryDocuments}
         showChatHistory={showChatHistory}
         setIsPinned={setIsPinned}
+        onModeChange={setIsChatMode}
       />
     </div>
   );
