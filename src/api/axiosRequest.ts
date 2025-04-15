@@ -1,5 +1,7 @@
 import axios from "axios";
 
+import { useAppStore } from '@/stores/appStore';
+
 import {
   handleChangeRequestHeader,
   handleConfigureAuth,
@@ -40,6 +42,26 @@ axios.interceptors.response.use(
   }
 );
 
+export const handleApiError = (error: any) => {
+  const addError = useAppStore.getState().addError;
+  
+  let message = 'Request failed';
+  
+  if (error.response) {
+    // Server error response
+    message = error.response.data?.message || `Error (${error.response.status})`;
+  } else if (error.request) {
+    // Request failed to send
+    message = 'Network connection failed';
+  } else {
+    // Other errors
+    message = error.message;
+  }
+  
+  addError(message, 'error');
+  return error;
+};
+
 export const Get = <T>(
   url: string,
   params: IAnyObj = {},
@@ -63,6 +85,7 @@ export const Get = <T>(
         resolve([null, res as FcResponse<T>]);
       })
       .catch((err) => {
+        handleApiError(err);
         resolve([err, undefined]);
       });
   });
@@ -88,6 +111,7 @@ export const Post = <T>(
         resolve([null, result.data as FcResponse<T>]);
       })
       .catch((err) => {
+        handleApiError(err);
         resolve([err, undefined]);
       });
   });

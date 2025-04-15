@@ -1,35 +1,10 @@
 import { Menu, MenuButton } from "@headlessui/react";
-import { OctagonAlert, X } from "lucide-react";
-// import { Settings, LogOut, User, ChevronUp, Home } from "lucide-react";
-// import { Link } from "react-router-dom";
 
 import logoImg from "@/assets/icon.svg";
-import { useAppStore } from "@/stores/appStore";
 
 const Footer = () => {
-  const error = useAppStore((state) => state.error);
-  const setError = useAppStore((state) => state.setError);
-
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
-      {/* Move the warning message outside the border */}
-      {error && (
-        <div className="fixed bottom-6 left-0 right-0 bg-yellow-100 dark:bg-yellow-900 border-l-4 border-yellow-500 rounded-lg shadow-lg p-4 m-4">
-          <div className="flex items-center space-x-4">
-            <OctagonAlert size={32} color="red" className="mr-2" />
-            <span className="text-xs text-red-500 dark:text-red-400 flex-1">
-              {error}
-            </span>
-            <X
-              className="cursor-pointer ml-2"
-              onClick={() => setError("")}
-              size={32}
-              color="gray"
-            />
-          </div>
-        </div>
-      )}
-
       <div className="max-w-6xl mx-auto px-4 h-8 flex items-center justify-between">
         <Menu as="div" className="relative">
           <MenuButton className="h-7 flex items-center space-x-2 px-1 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">

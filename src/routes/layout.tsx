@@ -9,6 +9,7 @@ import useSettingsWindow from "@/hooks/useSettingsWindow";
 import { useThemeStore } from "@/stores/themeStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { AppTheme } from "@/types/index";
+import ErrorNotification from '@/components/Common/ErrorNotification';
 
 export default function Layout() {
   const location = useLocation();
@@ -104,5 +105,10 @@ export default function Layout() {
     event.preventDefault();
   });
 
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <ErrorNotification />
+    </>
+  );;
 }
