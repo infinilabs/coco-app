@@ -104,7 +104,3 @@ export interface BasePlatformAdapter
   extends WindowOperations,
     ThemeAndEvents,
     SystemOperations {}
-
-// Tauri platform specific features
-
-// Web platform specific features
