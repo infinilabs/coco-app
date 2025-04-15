@@ -22,11 +22,11 @@ export interface EventPayloads {
   open_settings: string | "";
   tab_index: string | "";
   login_or_logout: unknown;
-  'show-coco': void;
-  'connector_data_change': void;
-  'datasourceData_change': void;
-  'ws-error': void;
-  'ws-message': void;
+  "show-coco": void;
+  connector_data_change: void;
+  datasourceData_change: void;
+  "ws-error": void;
+  "ws-message": void;
   [key: `ws-error-${string}`]: {
     error: {
       reason: string;
@@ -34,7 +34,7 @@ export interface EventPayloads {
     status: number;
   };
   [key: `ws-message-${string}`]: string;
-  "change-startup-store": IStartupStore
+  "change-startup-store": IStartupStore;
   "change-shortcuts-store": IShortcutsStore;
 }
 
@@ -56,7 +56,10 @@ export interface WindowOperations {
   getAllWindows: () => Promise<any[]>;
   getCurrentWindow: () => Promise<any>;
   createWebviewWindow: (label: string, options: any) => Promise<any>;
-  listenWindowEvent: (event: string, callback: (event: any) => void) => Promise<() => void>;
+  listenWindowEvent: (
+    event: string,
+    callback: (event: any) => void
+  ) => Promise<() => void>;
 }
 
 // Theme and event related interface
@@ -68,13 +71,17 @@ export interface ThemeAndEvents {
   ) => Promise<() => void>;
   setWindowTheme: (theme: string | null) => Promise<void>;
   getWindowTheme: () => Promise<string>;
-  onThemeChanged: (callback: (payload: { payload: string }) => void) => Promise<void>;
-  listenThemeChanged: (callback: (theme: AppTheme) => void) => Promise<() => void>;
+  onThemeChanged: (
+    callback: (payload: { payload: string }) => void
+  ) => Promise<void>;
+  listenThemeChanged: (
+    callback: (theme: AppTheme) => void
+  ) => Promise<() => void>;
 }
 
 // System operations interface
 export interface SystemOperations {
-  invokeBackend: <T = unknown>(command: string, args?: unknown) => Promise<T>;
+  invokeBackend: <T = unknown>(command: string, args?: any) => Promise<T>;
   convertFileSrc: (path: string) => string;
   checkScreenRecordingPermission: () => Promise<boolean>;
   requestScreenRecordingPermission: () => void;
@@ -82,7 +89,6 @@ export interface SystemOperations {
   getScreenshotableWindows: () => Promise<any[]>;
   captureMonitorScreenshot: (id: number) => Promise<string>;
   captureWindowScreenshot: (id: number) => Promise<string>;
-  openFileDialog: (options: { multiple: boolean; }) => Promise<string | string[] | null>;
   getFileMetadata: (path: string) => Promise<any>;
   getFileIcon: (path: string, size: number) => Promise<string>;
   checkUpdate: () => Promise<any>;
@@ -94,15 +100,11 @@ export interface SystemOperations {
 }
 
 // Base platform adapter interface
-export interface BasePlatformAdapter extends WindowOperations, ThemeAndEvents, SystemOperations {}
+export interface BasePlatformAdapter
+  extends WindowOperations,
+    ThemeAndEvents,
+    SystemOperations {}
 
 // Tauri platform specific features
-export interface TauriPlatformAdapter extends BasePlatformAdapter {
-  checkScreenRecordingPermission: () => Promise<boolean>;
-  requestScreenRecordingPermission: () => void;
-}
 
 // Web platform specific features
-export interface WebPlatformAdapter extends BasePlatformAdapter {
-  // Add web-specific methods here
-}
