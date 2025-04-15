@@ -20,6 +20,7 @@ Information about release notes of Coco Server is provided here.
 - feat: add a border to the main window in Windows 10 #343
 - feat: mobile terminal adaptation about style #348
 - feat: service list popup box supports keyboard-only operation #359
+- feat: networked search data sources support search and keyboard-only operation #367
 
 ### Bug fix
 
