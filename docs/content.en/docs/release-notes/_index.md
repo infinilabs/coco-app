@@ -21,6 +21,7 @@ Information about release notes of Coco Server is provided here.
 - feat: mobile terminal adaptation about style #348
 - feat: service list popup box supports keyboard-only operation #359
 - feat: networked search data sources support search and keyboard-only operation #367
+- feat: add application management to the plugin #374
 
 ### Bug fix
 
