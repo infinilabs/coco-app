@@ -124,7 +124,7 @@ export default function SearchPopover({
   return (
     <div
       className={clsx(
-        "flex items-center gap-1 p-1 h-6 rounded-lg transition hover:bg-[#EDEDED] dark:hover:bg-[#202126] cursor-pointer",
+        "flex items-center gap-1 p-[3px] pr-1 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126] cursor-pointer",
         {
           "!bg-[rgba(0,114,255,0.3)]": isSearchActive,
         }
@@ -133,7 +133,7 @@ export default function SearchPopover({
     >
       <VisibleKey shortcut={internetSearch} onKeypress={setIsSearchActive}>
         <Globe
-          className={`size-4 ${
+          className={`size-3 ${
             isSearchActive
               ? "text-[#0072FF] dark:text-[#0072FF]"
               : "text-[#333] dark:text-white"
@@ -144,7 +144,7 @@ export default function SearchPopover({
       {isSearchActive && (
         <>
           <span
-            className={isSearchActive ? "text-[#0072FF]" : "dark:text-white"}
+            className={`${isSearchActive ? "text-[#0072FF]" : "dark:text-white"}`}
           >
             {t("search.input.search")}
           </span>

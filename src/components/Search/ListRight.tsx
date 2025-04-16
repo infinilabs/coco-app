@@ -1,6 +1,5 @@
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import RichIcon from "@/components/Common/Icons/RichIcon";
-import { useAppStore } from "@/stores/appStore";
 
 interface ListRightProps {
   item: any;
@@ -17,17 +16,13 @@ export default function ListRight({
   currentIndex,
   goToTwoPage,
 }: ListRightProps) {
-  const isTauri = useAppStore((state) => state.isTauri);
-
   return (
     <div
-      className={`${
-        isTauri ? "flex" : "hidden md:flex"
-      } flex-1 text-right min-w-[160px] h-full pl-5 text-[12px] gap-2 items-center justify-end relative`}
+      className={`flex flex-1 md:text-right text-left md:min-w-[160px] w-full h-full md:pl-5 text-[12px] gap-2 items-center md:justify-end justify-start relative`}
     >
       {item?.rich_categories ? null : (
         <div
-          className="w-4 h-4 cursor-pointer"
+          className="hidden md:inline-block w-4 h-4 cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
             goToTwoPage && goToTwoPage(item);
@@ -48,7 +43,7 @@ export default function ListRight({
         <div className="flex items-center justify-end max-w-[calc(100%-20px)] whitespace-nowrap">
           <RichIcon
             item={item}
-            className="w-4 h-4 mr-2 cursor-pointer"
+            className="hidden md:inline-block w-4 h-4 mr-2 cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
               goToTwoPage && goToTwoPage(item);

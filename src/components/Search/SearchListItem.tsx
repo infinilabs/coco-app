@@ -42,16 +42,16 @@ const SearchListItem: React.FC<SearchListItemProps> = React.memo(({
       ref={itemRef}
       onMouseEnter={onMouseEnter}
       onClick={onItemClick}
-      className={`w-full px-2 py-2.5 text-sm flex items-center justify-between rounded-lg transition-colors cursor-pointer ${
+      className={`w-full px-2 py-2.5 md:mb-0 mb-2 text-sm flex md:flex-row flex-col md:items-center items-start justify-between rounded-lg transition-colors cursor-pointer ${
         isSelected
           ? "text-white bg-[var(--coco-primary-color)] hover:bg-[var(--coco-primary-color)]"
-          : "text-[#333] dark:text-[#d8d8d8]"
-      } ${showListRight ? "gap-7" : ""}`}
+          : "text-[#333] dark:text-[#d8d8d8] md:bg-transparent bg-gray-200/80 dark:bg-gray-700/50"
+      } ${showListRight ? "md:gap-7 gap-1" : ""}`}
       onContextMenu={onContextMenu}
     >
       <div
         className={`${
-          showListRight ? "max-w-[450px]" : "flex-1"
+          showListRight ? "md:max-w-[450px] w-full" : "flex-1"
         } min-w-0 flex gap-2 items-center justify-start `}
       >
         <ItemIcon item={item} />

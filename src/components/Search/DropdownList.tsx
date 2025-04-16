@@ -158,7 +158,7 @@ function DropdownList({
     <div
       ref={containerRef}
       data-tauri-drag-region
-      className="h-[458px] w-full p-2 flex flex-col overflow-y-auto custom-scrollbar focus:outline-none"
+      className="h-full w-full p-2 flex flex-col overflow-y-auto custom-scrollbar focus:outline-none"
       tabIndex={0}
     >
       {showError ? (
