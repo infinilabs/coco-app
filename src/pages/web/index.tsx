@@ -7,6 +7,7 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 import "@/i18n";
 import "@/web.css";
+import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 
 interface WebAppProps {
   headers?: Record<string, unknown>;
@@ -51,13 +52,19 @@ function WebApp({
   const setIsTauri = useAppStore((state) => state.setIsTauri);
   const setEndpoint = useAppStore((state) => state.setEndpoint);
   const setModeSwitch = useShortcutsStore((state) => state.setModeSwitch);
+  const setInternetSearch = useShortcutsStore((state) => {
+    return state.setInternetSearch;
+  });
 
   useEffect(() => {
     setIsTauri(false);
     setEndpoint(serverUrl);
     setModeSwitch("S");
+    setInternetSearch("B");
     localStorage.setItem("headers", JSON.stringify(headers || {}));
   }, []);
+
+  useModifierKeyPress();
 
   const query_coco_fusion = useCallback(async (url: string) => {
     try {

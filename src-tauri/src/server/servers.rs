@@ -333,7 +333,7 @@ pub async fn refresh_coco_server_info<R: Runtime>(
                             //refresh connectors and datasources
                             let _ = fetch_connectors_by_server(&id).await;
 
-                            let _ = get_datasources_by_server(&id).await;
+                            let _ = get_datasources_by_server(&id, None).await;
 
                             Ok(server)
                         }
