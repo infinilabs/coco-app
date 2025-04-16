@@ -21,7 +21,6 @@ interface ChatContentProps {
   response?: IChunkData;
   loadingStep?: Record<string, boolean>;
   timedoutShow: boolean;
-  errorShow: boolean;
   Question: string;
   handleSendMessage: (content: string, newChat?: Chat) => void;
   getFileUrl: (path: string) => string;
@@ -38,7 +37,6 @@ export const ChatContent = ({
   response,
   loadingStep,
   timedoutShow,
-  errorShow,
   Question,
   handleSendMessage,
   getFileUrl,
@@ -129,21 +127,6 @@ export const ChatContent = ({
               _source: {
                 type: "assistant",
                 message: t("assistant.chat.timedout"),
-                question: Question,
-              },
-            }}
-            onResend={handleSendMessage}
-            isTyping={false}
-          />
-        ) : null}
-        {errorShow ? (
-          <ChatMessage
-            key={"error"}
-            message={{
-              _id: "error",
-              _source: {
-                type: "assistant",
-                message: t("assistant.chat.error"),
                 question: Question,
               },
             }}

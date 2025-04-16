@@ -125,13 +125,7 @@ const ChatAI = memo(
       const dealMsgRef = useRef<((msg: string) => void) | null>(null);
 
       const clientId = isChatPage ? "standalone" : "popup";
-      const {
-        errorShow,
-        setErrorShow,
-        reconnect,
-        disconnectWS,
-        updateDealMsg,
-      } = useWebSocket({
+      const { reconnect, disconnectWS, updateDealMsg } = useWebSocket({
         clientId,
         connected,
         setConnected,
@@ -156,7 +150,6 @@ const ChatAI = memo(
         currentService?.id,
         setActiveChat,
         setCurChatEnd,
-        setErrorShow,
         setTimedoutShow,
         clearAllChunkData,
         setQuestion,
@@ -189,7 +182,6 @@ const ChatAI = memo(
       const clearChat = useCallback(() => {
         console.log("clearChat");
         setTimedoutShow(false);
-        setErrorShow(false);
         chatClose(activeChat);
         setActiveChat(undefined);
         setCurChatEnd(true);
@@ -199,7 +191,6 @@ const ChatAI = memo(
         chatClose,
         clearChatPage,
         setCurChatEnd,
-        setErrorShow,
         setTimedoutShow,
       ]);
 
@@ -251,7 +242,6 @@ const ChatAI = memo(
       const onSelectChat = useCallback(
         async (chat: Chat) => {
           setTimedoutShow(false);
-          setErrorShow(false);
           clearAllChunkData();
           await cancelChat(activeChat);
           await chatClose(activeChat);
@@ -406,7 +396,6 @@ const ChatAI = memo(
               response={response}
               loadingStep={loadingStep}
               timedoutShow={timedoutShow}
-              errorShow={errorShow}
               Question={Question}
               handleSendMessage={(value) =>
                 handleSendMessage(value, activeChat)

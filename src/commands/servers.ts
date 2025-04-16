@@ -13,6 +13,7 @@ import {
   DeleteAttachmentPayload,
   TranscriptionPayload,
   TranscriptionResponse,
+  MultiSourceQueryResponse,
 } from "@/types/commands";
 import { useAppStore } from '@/stores/appStore';
 
@@ -20,11 +21,21 @@ async function invokeWithErrorHandler<T>(
   command: string,
   args?: Record<string, any>
 ): Promise<T> {
+  const addError = useAppStore.getState().addError;
   try {
     const result = await invoke<T>(command, args);
+    console.log(command, result);
+    
+    if (result && typeof result === 'object' && 'failed' in result) {
+      const failedResult = result as any;
+      if (failedResult.failed?.length > 0) {
+        failedResult.failed.forEach((error: any) => {
+          addError(error.error, 'error');
+        });
+      }
+    }
     return result;
   } catch (error: any) {
-    const addError = useAppStore.getState().addError;
     const errorMessage = error?.message || 'Command execution failed';
     addError(errorMessage, 'error');
     throw error;
@@ -248,4 +259,12 @@ export const delete_attachment = (payload: DeleteAttachmentPayload) => {
 
 export const transcription = (payload: TranscriptionPayload) => {
   return invokeWithErrorHandler<TranscriptionResponse>("transcription", { ...payload });
+};
+
+export const query_coco_fusion = (payload: {
+  from: number;
+  size: number;
+  query_strings: Record<string, string>;
+}) => {
+  return invokeWithErrorHandler<MultiSourceQueryResponse>("query_coco_fusion", { ...payload });
 };

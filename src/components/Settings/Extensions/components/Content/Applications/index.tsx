@@ -1,5 +1,5 @@
 import SettingsToggle from "@/components/Settings/SettingsToggle";
-import { useApplicationsStore } from "@/stores/applications";
+import { useApplicationsStore } from "@/stores/applicationsStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { useContext } from "react";
 import { ExtensionsContext } from "../../..";

@@ -11,7 +11,7 @@ import { noop } from "lodash-es";
 import Accordion from "./components/Accordion";
 import ApplicationsContent from "./components/Content/Applications";
 import ApplicationsDetail from "./components/Details/Applications";
-import { useApplicationsStore } from "@/stores/applications";
+import { useApplicationsStore } from "@/stores/applicationsStore";
 import Application from "./components/Details/Application";
 
 export interface Plugin {

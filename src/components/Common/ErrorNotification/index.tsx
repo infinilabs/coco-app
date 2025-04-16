@@ -9,8 +9,8 @@ interface ErrorNotificationProps {
 }
 
 const ErrorNotification = ({
-  duration = 5000,
-  autoClose = false 
+  duration = 3000,
+  autoClose = true
  }: ErrorNotificationProps) => {
   const errors = useAppStore((state) => state.errors);
   const removeError = useAppStore((state) => state.removeError);

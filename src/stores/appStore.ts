@@ -37,8 +37,6 @@ export type IAppStore = {
   showTooltip: boolean;
   setShowTooltip: (showTooltip: boolean) => void;
 
-  error: string;
-  setError: (message: any) => void;
   errors: ErrorMessage[];
   addError: (message: string, type?: 'error' | 'warning' | 'info') => void;
   removeError: (id: string) => void;
@@ -75,28 +73,7 @@ export const useAppStore = create<IAppStore>()(
     (set) => ({
       showTooltip: true,
       setShowTooltip: (showTooltip: boolean) => set({ showTooltip }),
-      error: "",
-      setError: (message: any) => set({ error: message as string }),
-      errors: [
-        {
-          id: '1',
-          type: 'error',
-          message: 'Failed to connect to server',
-          timestamp: Date.now()
-        },
-        {
-          id: '2',
-          type: 'warning',
-          message: 'Network connection is unstable Network connection is unstable',
-          timestamp: Date.now()
-        },
-        {
-          id: '3',
-          type: 'info',
-          message: 'Successfully synchronized data',
-          timestamp: Date.now()
-        }
-      ],
+      errors: [],
       addError: (message: string, type: 'error' | 'warning' | 'info' = 'error') => 
         set((state) => ({
           errors: [...state.errors, {
@@ -176,7 +153,6 @@ export const useAppStore = create<IAppStore>()(
         showTooltip: state.showTooltip,
         ssoRequestID: state.ssoRequestID,
         // ssoServerID: state.ssoServerID,
-        error: state.error,
         endpoint: state.endpoint,
         endpoint_http: state.endpoint_http,
         endpoint_websocket: state.endpoint_websocket,

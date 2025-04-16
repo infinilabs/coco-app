@@ -1,4 +1,4 @@
-import { useApplicationsStore } from "@/stores/applications";
+import { useApplicationsStore } from "@/stores/applicationsStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { Button } from "@headlessui/react";
 import { castArray, union } from "lodash-es";

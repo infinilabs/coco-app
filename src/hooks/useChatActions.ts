@@ -9,7 +9,6 @@ export function useChatActions(
   currentServiceId: string | undefined,
   setActiveChat: (chat: Chat | undefined) => void,
   setCurChatEnd: (value: boolean) => void,
-  setErrorShow: (value: boolean) => void,
   setTimedoutShow: (value: boolean) => void,
   clearAllChunkData: () => void,
   setQuestion: (value: string) => void,
@@ -23,6 +22,8 @@ export function useChatActions(
   showChatHistory?: boolean
 ) {
   const isTauri = useAppStore((state) => state.isTauri);
+  const addError = useAppStore((state) => state.addError);
+
   const [keyword, setKeyword] = useState("");
 
   const chatClose = useCallback(
@@ -132,12 +133,11 @@ export function useChatActions(
     async (value: string = "", activeChat?: Chat, id?: string) => {
       try {
         setTimedoutShow(false);
-        setErrorShow(false);
         await chatClose(activeChat);
         clearAllChunkData();
         setQuestion(value);
         if (!(websocketSessionId || id)) {
-          setErrorShow(true);
+          addError("websocketSessionId not found");
           console.error("websocketSessionId", websocketSessionId, id);
           return;
         }
@@ -172,7 +172,6 @@ export function useChatActions(
             }
           );
           if (error) {
-            setErrorShow(true);
             console.error("_new", error);
             return;
           }
@@ -194,7 +193,6 @@ export function useChatActions(
         setActiveChat(updatedChat);
         setCurChatEnd(false);
       } catch (error) {
-        setErrorShow(true);
         console.error("createNewChat:", error);
       }
     },
@@ -215,7 +213,7 @@ export function useChatActions(
       clearAllChunkData();
       try {
         if (!(websocketSessionId || id)) {
-          setErrorShow(true);
+          addError("websocketSessionId not found");
           console.error("websocketSessionId", websocketSessionId, id);
           return;
         }
@@ -252,7 +250,6 @@ export function useChatActions(
           );
 
           if (error) {
-            setErrorShow(true);
             console.error("_cancel", error);
             return;
           }
@@ -270,7 +267,6 @@ export function useChatActions(
         setActiveChat(updatedChat);
         setCurChatEnd(false);
       } catch (error) {
-        setErrorShow(true);
         console.error("sendMessage:", error);
       }
     },
@@ -282,7 +278,6 @@ export function useChatActions(
       curIdRef,
       setActiveChat,
       setCurChatEnd,
-      setErrorShow,
       changeInput,
       websocketSessionId,
     ]
@@ -294,7 +289,6 @@ export function useChatActions(
       setQuestion(content);
 
       setTimedoutShow(false);
-      setErrorShow(false);
 
       await chatHistory(activeChat, (chat) => sendMessage(content, chat, id));
     },
@@ -303,7 +297,6 @@ export function useChatActions(
       sendMessage,
       setQuestion,
       setTimedoutShow,
-      setErrorShow,
       clearAllChunkData,
     ]
   );
