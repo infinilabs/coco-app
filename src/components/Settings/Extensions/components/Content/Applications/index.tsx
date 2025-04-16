@@ -21,7 +21,7 @@ const Applications = () => {
       <div
         key={name}
         className={clsx("flex items-center h-8 -mx-2 pl-10 pr-2 rounded-md", {
-          "bg-[#F0F6FE]": name === activeId,
+          "bg-[#f0f6fe] dark:bg-gray-700": name === activeId,
         })}
         onClick={() => {
           setActiveId(name);
@@ -33,7 +33,7 @@ const Applications = () => {
           <span className="text-sm truncate">{name}</span>
         </div>
 
-        <div className="flex-1 flex items-center text-[#666]">
+        <div className="flex-1 flex items-center text-[#999] ">
           <div className="flex-1">Application</div>
           <div className="flex-1">Add Alias</div>
           <div className="flex-1">Record Hotkey</div>

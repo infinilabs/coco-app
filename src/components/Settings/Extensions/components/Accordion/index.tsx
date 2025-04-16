@@ -25,7 +25,7 @@ const Accordion: FC<AccordionProps> = (props) => {
     <div>
       <div
         className={clsx("flex items-center h-8 -mx-2 px-2 text-sm rounded-md", {
-          "bg-[#F0F6FE]": id === activeId,
+          "bg-[#f0f6fe] dark:bg-gray-700": id === activeId,
         })}
         onClick={() => {
           setActiveId(id);
@@ -52,7 +52,7 @@ const Accordion: FC<AccordionProps> = (props) => {
           <span>{title}</span>
         </div>
 
-        <div className="flex-1 flex items-center text-[#666]">
+        <div className="flex-1 flex items-center text-[#999]">
           <div className="flex-1">{type}</div>
           <div className="flex-1">{alias}</div>
           <div className="flex-1">{hotKey}</div>
