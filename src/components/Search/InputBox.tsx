@@ -102,9 +102,6 @@ export default function ChatInput({
   const modifierKey = useShortcutsStore((state) => {
     return state.modifierKey;
   });
-  const modifierKeyPressed = useShortcutsStore((state) => {
-    return state.modifierKeyPressed;
-  });
 
   const modeSwitch = useShortcutsStore((state) => state.modeSwitch);
   const returnToInput = useShortcutsStore((state) => state.returnToInput);
@@ -139,7 +136,7 @@ export default function ChatInput({
     }
   }, [reconnectCountdown, connected]);
 
-  const [isCommandPressed, setIsCommandPressed] = useState(false);
+  const [_isCommandPressed, setIsCommandPressed] = useState(false);
   const setModifierKeyPressed = useShortcutsStore((state) => {
     return state.setModifierKeyPressed;
   });
@@ -444,7 +441,11 @@ export default function ChatInput({
                 )}
                 onClick={DeepThinkClick}
               >
-                <VisibleKey shortcut={deepThinking} onKeypress={DeepThinkClick} className="!size-3">
+                <VisibleKey
+                  shortcut={deepThinking}
+                  onKeypress={DeepThinkClick}
+                  className="!size-3"
+                >
                   <Brain
                     className={`size-3 ${
                       isDeepThinkActive
