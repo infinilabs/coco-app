@@ -19,6 +19,11 @@ use std::path::PathBuf;
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::oneshot::Sender as OneshotSender;
 
+use tokio::fs;
+use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
+use tokio_stream::{Stream, StreamExt};
+
 pub const LOCAL_DISK_STORE_PATH: &str = "filesystem_index";
 const FIELD_FS_START_NAME: &str = "fs_start_name";
 const FIELD_FS_START_PATH: &str = "fs_start_path";
@@ -42,9 +47,11 @@ struct IndexFSTask<R: Runtime> {
 }
 
 impl<R: Runtime> IndexFSTask<R> {
-    async fn write_all_filenames(engine: &pizza_engine::Engine<DiskStore>) -> Result<(), String> {
+    async fn write_all_filenames_oneshot(
+        engine: &pizza_engine::Engine<DiskStore>,
+    ) -> Result<(), String> {
         let mut writer = engine.acquire_writer();
-        let fs_files: Vec<String> = Self::get_all_filenames().await?;
+        let fs_files: Vec<String> = Self::get_all_filenames_oneshot().await?;
 
         //let mut doc_id = 0;
         for (doc_id, file_str) in fs_files.iter().enumerate() {
@@ -71,7 +78,110 @@ impl<R: Runtime> IndexFSTask<R> {
         Ok(store)
     }
 
-    async fn get_all_filenames() -> Result<Vec<String>, String> {
+    fn get_file_search_start() -> PathBuf {
+        // get home dir of current user
+        let home_dir = std::env::var("HOME").unwrap();
+        let home_path = PathBuf::from(home_dir);
+        let root_fs = if cfg!(target_os = "linux") {
+            //home_path.join("Documents")
+            //home_path.join("git");
+            PathBuf::from("/")
+        } else if cfg!(target_os = "windows") {
+            todo!()
+        } else {
+            todo!()
+        };
+
+        root_fs
+    }
+
+    async fn write_all_filenames(engine: &pizza_engine::Engine<DiskStore>) -> Result<(), String> {
+        let mut file_stream = Self::list_files_recursive(Self::get_file_search_start(), 6);
+
+        let mut writer = engine.acquire_writer();
+        let mut doc_id = 0;
+        while let Some(file_result) = file_stream.next().await {
+            match file_result {
+                Ok(path) => {
+                    doc_id += 1;
+                    let file_str: String = path.to_string_lossy().into();
+                    let document_id = doc_id as u32;
+                    let filename = file_str.clone();
+                    let filepath = file_str.clone();
+                    let document = doc!( document_id, {
+                        FIELD_FS_START_NAME => filename,
+                        FIELD_FS_START_PATH => filepath,
+                      }
+                    );
+
+                    let _ = writer.create_document(document).await;
+                }
+                Err(e) => eprintln!("Error: {:?}", e),
+            }
+
+            if doc_id % 100000 == 0 {
+                writer.commit().map_err(|err| err.to_string())?;
+                eprintln!(
+                    "Indexing files on file system, there are '{doc_id}' documents committed"
+                );
+            }
+        }
+
+        writer.commit().map_err(|err| err.to_string())?;
+
+        Ok(())
+    }
+
+    pub fn list_files_recursive(
+        root: PathBuf,
+        max_depth: usize,
+    ) -> impl Stream<Item = Result<PathBuf, std::io::Error>> {
+        let (tx, rx) = mpsc::channel(100);
+        tokio::spawn(async move {
+            if let Err(e) = Self::walk(root, max_depth, tx).await {
+                eprintln!("walk error: {:?}", e);
+            }
+        });
+        ReceiverStream::new(rx)
+    }
+
+    async fn walk(
+        path: PathBuf,
+        max_depth: usize,
+        tx: mpsc::Sender<Result<PathBuf, std::io::Error>>,
+    ) -> Result<(), std::io::Error> {
+        if max_depth == 0 {
+            return Ok(());
+        }
+
+        let mut entries = fs::read_dir(&path).await?;
+        loop {
+            match entries.next_entry().await {
+                Ok(entry_option) => {
+                    if let Some(entry) = entry_option {
+                        let entry_path = entry.path();
+                        if entry_path.is_dir() {
+                            // when walk error for subdirectory just ignore. For example: permisson denied
+                            let _error =
+                                Box::pin(Self::walk(entry_path.clone(), max_depth - 1, tx.clone()))
+                                    .await;
+                        } else {
+                            if let Err(err) = tx.send(Ok(entry_path)).await {
+                                eprintln!("fs walk send entry error: {err:?}");
+                                break;
+                            }
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                Err(_err) => {}
+            }
+        }
+        Ok(())
+    }
+
+    async fn get_all_filenames_oneshot() -> Result<Vec<String>, String> {
         // get home dir of current user
         let home_dir = std::env::var("HOME").unwrap();
         let home_path = PathBuf::from(home_dir);
@@ -83,7 +193,7 @@ impl<R: Runtime> IndexFSTask<R> {
             todo!()
         };
 
-        let files = Self::list_files_recursive(&root_fs)
+        let files = Self::list_files_recursive_oneshot(&root_fs)
             .map_err(|err| err.to_string())
             .await?;
 
@@ -93,7 +203,7 @@ impl<R: Runtime> IndexFSTask<R> {
             .collect())
     }
 
-    async fn list_files_recursive(path: &PathBuf) -> Result<Vec<PathBuf>, std::io::Error> {
+    async fn list_files_recursive_oneshot(path: &PathBuf) -> Result<Vec<PathBuf>, std::io::Error> {
         async fn list_files_recursive_inner(
             path: &PathBuf,
         ) -> Result<Vec<PathBuf>, std::io::Error> {
@@ -173,7 +283,7 @@ impl<R: Runtime> super::Task for IndexFSTask<R> {
         let engine = builder.build();
         engine.start();
 
-        if index_exists {
+        if !index_exists {
             my_try!(Self::write_all_filenames(&engine).await, callback);
         }
 
@@ -225,7 +335,7 @@ impl super::Task for SearchFSTask {
             self.query_string, self.query_string
         );
 
-        let result = match state.searcher.parse_and_query(
+        let mut result = match state.searcher.parse_and_query(
             &QueryContext::new(OriginalQuery::QueryDSL(dsl), true),
             &state.snapshot,
         ) {
@@ -236,7 +346,28 @@ impl super::Task for SearchFSTask {
             }
         };
 
-        callback.send(Ok(result)).unwrap();
+        let result_str = result.to_string();
+        let mut count = 0;
+        if let Some(v) = &mut result.hits {
+            if v.len() > 100 {
+                v.truncate(100);
+            }
+
+            count = v.len();
+        }
+        eprintln!(
+            "the result count before send: {:?}, now: {count}",
+            result_str.len()
+        );
+
+        if let Err(err) = callback.send(Ok(result)) {
+            let mut err_str = format!("{:?}", err);
+            if err_str.len() > 1000 {
+                err_str.truncate(1000);
+            }
+
+            eprintln!("callback send failed: {:?}", err_str);
+        }
     }
 }
 
@@ -250,11 +381,17 @@ impl FileSystemSearchSource {
             callback: Some(tx),
         };
 
-        super::RUNTIME_TX
+        if let Err(err) = super::RUNTIME_TX
             .get()
             .unwrap()
             .send(Box::new(index_fs_task))
-            .unwrap();
+        {
+            let mut err_str = err.to_string();
+            if err_str.len() > 100 {
+                err_str.truncate(100);
+            }
+            eprintln!("send task failed: {:?}", err_str);
+        }
 
         rx.await.unwrap()?;
 
@@ -276,6 +413,7 @@ impl SearchSource for FileSystemSearchSource {
     }
 
     async fn search(&self, query: SearchQuery) -> Result<QueryResponse, SearchError> {
+        eprintln!("search begin");
         let query_string = query
             .query_strings
             .get("query")
@@ -296,7 +434,11 @@ impl SearchSource for FileSystemSearchSource {
             callback: Some(tx),
         };
 
-        RUNTIME_TX.get().unwrap().send(Box::new(task)).unwrap();
+        RUNTIME_TX
+            .get()
+            .unwrap()
+            .send(Box::new(task))
+            .expect("failed to send");
 
         let result = rx.await.unwrap().map_err(|pizza_engine_err| {
             let err_str = pizza_engine_err.to_string();
@@ -347,7 +489,8 @@ fn pizza_engine_hits_to_coco_hits(
             app_path,
         );
 
-        coco_hits.push((coco_document, score));
+        eprint!("score: {score} ");
+        coco_hits.push((coco_document, score + 1000f64));
     }
 
     coco_hits
