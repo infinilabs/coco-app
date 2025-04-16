@@ -1,12 +1,13 @@
 import { useTranslation } from "react-i18next";
 import { Command } from "lucide-react";
 import { ChangeEvent, useEffect } from "react";
-import { emit } from "@tauri-apps/api/event";
 
 import { formatKey } from "@/utils/keyboardUtils";
 import SettingsItem from "@/components/Settings/SettingsItem";
 import { isMac } from "@/utils/platform";
-import { ModifierKey, useShortcutsStore } from "@/stores/shortcutsStore";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
+import { ModifierKey } from "@/types/index";
+import platformAdapter from "@/utils/platformAdapter";
 
 export const modifierKeys: ModifierKey[] = isMac
   ? ["meta", "ctrl"]
@@ -53,7 +54,7 @@ const Shortcuts = () => {
 
   useEffect(() => {
     const unlisten = useShortcutsStore.subscribe((state) => {
-      emit("change-shortcuts-store", state);
+      platformAdapter.emitEvent("change-shortcuts-store", state);
     });
 
     return unlisten;

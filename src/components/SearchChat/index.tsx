@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import clsx from "clsx";
+import { useMount } from "ahooks";
 
 import Search from "@/components/Search/Search";
 import InputBox from "@/components/Search/InputBox";
@@ -23,10 +24,6 @@ import { useStartupStore } from "@/stores/startupStore";
 import { DataSource } from "@/types/commands";
 import { useThemeStore } from "@/stores/themeStore";
 import { Get } from "@/api/axiosRequest";
-import { useKeyPress, useMount } from "ahooks";
-import { modifierKeys } from "../Settings/Advanced/components/Shortcuts";
-import { useShortcutsStore } from "@/stores/shortcutsStore";
-import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 
 interface SearchChatProps {
   isTauri?: boolean;

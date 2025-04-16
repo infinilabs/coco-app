@@ -453,7 +453,7 @@ export default function ChatInput({
                 )}
                 onClick={DeepThinkClick}
               >
-                <VisibleKey shortcut={deepThinking} onKeypress={DeepThinkClick}>
+                <VisibleKey shortcut={deepThinking} onKeypress={DeepThinkClick} className="!size-3">
                   <Brain
                     className={`size-3 ${
                       isDeepThinkActive

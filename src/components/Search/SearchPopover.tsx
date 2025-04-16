@@ -195,7 +195,7 @@ export default function SearchPopover({
       )}
       onClick={setIsSearchActive}
     >
-      <VisibleKey shortcut={internetSearch} onKeypress={setIsSearchActive}>
+      <VisibleKey shortcut={internetSearch} onKeypress={setIsSearchActive} className="!size-3">
         <Globe
           className={`size-3 ${
             isSearchActive
@@ -229,9 +229,10 @@ export default function SearchPopover({
                   onKeypress={() => {
                     buttonRef.current?.click();
                   }}
+                  className="!size-3"
                 >
                   <ChevronDownIcon
-                    className={clsx("size-5", [
+                    className={clsx("size-3", [
                       isSearchActive
                         ? "text-[#0072FF] dark:text-[#0072FF]"
                         : "text-[#333] dark:text-white",
