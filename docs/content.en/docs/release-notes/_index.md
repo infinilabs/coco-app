@@ -27,6 +27,8 @@ Information about release notes of Coco Server is provided here.
 
 - fix: fixed the problem of not being able to search in secondary directories #338
 - fix: active shadow setting #354
+- fix: chat history was not show up #377
+
 
 ### Improvements
 
