@@ -363,12 +363,9 @@ export function ChatHeader({
                                 : "bg-gray-400 dark:bg-gray-600"
                             }`}
                           />
-                          <div className="size-4">
+                          <div className="size-4 flex justify-end">
                             {currentService?.id === server.id && (
-                              <VisibleKey
-                                shortcut="↓↑"
-                                className="w-6 -translate-x-2"
-                              >
+                              <VisibleKey shortcut="↓↑" className="min-w-6">
                                 <Check className="w-full h-full text-gray-500 dark:text-gray-400" />
                               </VisibleKey>
                             )}
