@@ -18,6 +18,7 @@ import {
 } from "@headlessui/react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
+import { useKeyPress } from "ahooks";
 
 import logoImg from "@/assets/icon.svg";
 import HistoryIcon from "@/icons/History";
@@ -32,7 +33,6 @@ import { useConnectStore } from "@/stores/connectStore";
 import platformAdapter from "@/utils/platformAdapter";
 import VisibleKey from "../Common/VisibleKey";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
-import { useKeyPress } from "ahooks";
 
 interface ChatHeaderProps {
   onCreateNewChat: () => void;
@@ -206,7 +206,7 @@ export function ChatHeader({
               e.stopPropagation();
               setIsSidebarOpen();
             }}
-            className="inline-flex size-[34px] p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="py-1 px-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <VisibleKey
               shortcut={historicalRecords}

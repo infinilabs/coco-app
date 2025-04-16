@@ -80,7 +80,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       target: containerRef,
       isNoMore: (d) => !d?.hasMore,
       reloadDeps: [input?.trim(), JSON.stringify(sourceData)],
-      manual: true,
       onFinally: (data) => {
         if (data?.page === 1) return;
         if (selectedItem === null) return;

@@ -3,6 +3,8 @@ import React, { MouseEvent } from "react";
 import ItemIcon from "@/components/Common/Icons/ItemIcon";
 import ListRight from "./ListRight";
 import { useSearchStore } from "@/stores/searchStore";
+import { useAppStore } from "@/stores/appStore";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface SearchListItemProps {
   item: any;
@@ -16,58 +18,73 @@ interface SearchListItemProps {
   showListRight?: boolean;
 }
 
-const SearchListItem: React.FC<SearchListItemProps> = React.memo(({
-  item,
-  isSelected,
-  currentIndex,
-  showIndex = false,
-  showListRight = true,
-  onMouseEnter,
-  onItemClick,
-  goToTwoPage,
-  itemRef,
-}) => {
-  const setVisibleContextMenu = useSearchStore(
-    (state) => state.setVisibleContextMenu
-  );
+const SearchListItem: React.FC<SearchListItemProps> = React.memo(
+  ({
+    item,
+    isSelected,
+    currentIndex,
+    showIndex = false,
+    showListRight = true,
+    onMouseEnter,
+    onItemClick,
+    goToTwoPage,
+    itemRef,
+  }) => {
+    const isTauri = useAppStore((state) => state.isTauri);
 
-  const onContextMenu = (event: MouseEvent) => {
-    event.preventDefault();
+    const setVisibleContextMenu = useSearchStore(
+      (state) => state.setVisibleContextMenu
+    );
 
-    setVisibleContextMenu(true);
-  };
+    const onContextMenu = (event: MouseEvent) => {
+      event.preventDefault();
 
-  return (
-    <div
-      ref={itemRef}
-      onMouseEnter={onMouseEnter}
-      onClick={onItemClick}
-      className={`w-full px-2 py-2.5 md:mb-0 mb-2 text-sm flex md:flex-row flex-col md:items-center items-start justify-between rounded-lg transition-colors cursor-pointer ${
-        isSelected
-          ? "text-white bg-[var(--coco-primary-color)] hover:bg-[var(--coco-primary-color)]"
-          : "text-[#333] dark:text-[#d8d8d8] md:bg-transparent md:dark:bg-transparent bg-gray-200/80 dark:bg-gray-700/50"
-      } ${showListRight ? "md:gap-7 gap-1" : ""}`}
-      onContextMenu={onContextMenu}
-    >
+      setVisibleContextMenu(true);
+    };
+
+    const isMobile = useIsMobile();
+
+    return (
       <div
-        className={`${
-          showListRight ? "md:max-w-[450px] w-full" : "flex-1"
-        } min-w-0 flex gap-2 items-center justify-start `}
+        ref={itemRef}
+        onMouseEnter={onMouseEnter}
+        onClick={onItemClick}
+        className={`w-full px-2 py-2.5 text-sm flex ${
+          isTauri
+            ? "mb-0 flex-row items-center"
+            : "md:mb-0 mb-2 md:flex-row flex-col md:items-center items-start"
+        } justify-between rounded-lg transition-colors cursor-pointer ${
+          isSelected
+            ? "text-white bg-[var(--coco-primary-color)] hover:bg-[var(--coco-primary-color)]"
+            : isTauri
+            ? "text-[#333] dark:text-[#d8d8d8]"
+            : "text-[#333] dark:text-[#d8d8d8] md:bg-transparent md:dark:bg-transparent bg-gray-200/80 dark:bg-gray-700/50"
+        } ${showListRight ? (isTauri ? "gap-7" : "md:gap-7 gap-1") : ""}`}
+        onContextMenu={onContextMenu}
       >
-        <ItemIcon item={item} />
-        <span className={`text-sm truncate text-left`}>{item?.title}</span>
+        <div
+          className={`${
+            showListRight ? "md:max-w-[450px] w-full" : "flex-1"
+          } min-w-0 flex gap-2 items-center justify-start `}
+        >
+          <ItemIcon item={item} />
+          <span className={`text-sm truncate text-left`}>{item?.title}</span>
+        </div>
+        {!isTauri && isMobile ? (
+          <div className="text-sm truncate">{item?.summary}</div>
+        ) : null}
+        {showListRight && (isTauri || !isMobile) ? (
+          <ListRight
+            goToTwoPage={goToTwoPage}
+            item={item}
+            isSelected={isSelected}
+            showIndex={showIndex}
+            currentIndex={currentIndex}
+          />
+        ) : null}
       </div>
-      {showListRight ? (
-        <ListRight
-          goToTwoPage={goToTwoPage}
-          item={item}
-          isSelected={isSelected}
-          showIndex={showIndex}
-          currentIndex={currentIndex}
-        />
-      ) : null}
-    </div>
-  );
-});
+    );
+  }
+);
 
 export default SearchListItem;

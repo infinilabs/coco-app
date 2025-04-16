@@ -281,7 +281,7 @@ function SearchChat({
         {
           "size-full": !isTauri,
           "w-screen h-screen": isTauri,
-          "rounded-md": !isMobile && !isWin,
+          "rounded-xl": !isMobile && !isWin,
           "border border-[#E6E6E6] dark:border-[#272626]": isTauri && isLinux,
           "border-t border-t-[#999] dark:border-t-[#333]": isTauri && isWin10,
         }

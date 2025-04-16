@@ -394,7 +394,7 @@ export default function ChatInput({
         )}
 
         {!connected && isChatMode ? (
-          <div className="absolute top-0 right-0 bottom-0 left-0 px-2 py-4 bg-red-500/10 rounded-md font-normal text-xs text-gray-400 flex items-center gap-4">
+          <div className="absolute top-0 right-0 bottom-0 left-0 px-2 py-4 bg-[rgba(255,255,255,0.9)] dark:bg-[rgba(32,33,38,0.9)] backdrop-blur-[2px] rounded-md font-normal text-xs text-gray-400 flex items-center gap-4 z-10">
             {t("search.input.connectionError")}
             <div
               className="px-1 h-[24px] text-[#0061FF] font-normal text-xs flex items-center justify-center cursor-pointer underline"

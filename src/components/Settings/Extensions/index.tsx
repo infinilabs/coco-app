@@ -5,11 +5,12 @@ import {
   useMemo,
   useState,
 } from "react";
-import { File, Folder } from "lucide-react";
+import { Folder } from "lucide-react";
+import { noop } from "lodash-es";
+
 import Accordion from "./components/Accordion";
 import ApplicationsContent from "./components/Content/Applications";
 import ApplicationsDetail from "./components/Details/Applications";
-import { noop } from "lodash-es";
 import { useApplicationsStore } from "@/stores/applications";
 import Application from "./components/Details/Application";
 
