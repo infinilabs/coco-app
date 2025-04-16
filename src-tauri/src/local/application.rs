@@ -14,18 +14,28 @@ use tauri_plugin_fs_pro::{icon, name};
 
 #[tauri::command]
 pub fn get_default_search_paths() -> Vec<String> {
-    let paths = applications::get_default_search_paths();
-    let mut ret = Vec::with_capacity(paths.len());
-    for search_path in paths {
-        let path_string = search_path
-            .into_os_string()
-            .into_string()
-            .expect("path should be UTF-8 encoded");
+    #[cfg(target_os = "macos")]
+    return vec![
+        "/Applications".into(),
+        "/System/Applications".into(),
+        "/System/Library/CoreServices".into(),
+    ];
 
-        ret.push(path_string);
+    #[cfg(not(target_os = "macos"))]
+    {
+        let paths = applications::get_default_search_paths();
+        let mut ret = Vec::with_capacity(paths.len());
+        for search_path in paths {
+            let path_string = search_path
+                .into_os_string()
+                .into_string()
+                .expect("path should be UTF-8 encoded");
+
+            ret.push(path_string);
+        }
+
+        ret
     }
-
-    ret
 }
 
 /// List apps that are in the `search_path`.
@@ -35,27 +45,24 @@ fn list_app_in(search_path: Vec<String>) -> Result<Vec<App>, String> {
         .into_iter()
         .map(PathBuf::from)
         .collect::<Vec<_>>();
+
     let apps = applications::get_all_apps(&search_path).map_err(|err| err.to_string())?;
 
     Ok(apps
         .into_iter()
-        .filter(|app| app.icon_path.is_none())
+        .filter(|app| !app.icon_path.is_none())
         .collect())
 }
 
 #[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AppMetadata {
-    #[serde(rename = "Name")]
     name: String,
-    #[serde(rename = "Where")]
     r#where: PathBuf,
-    #[serde(rename = "Size")]
     size: u64,
-    #[serde(rename = "Created")]
+    icon: PathBuf,
     created: u128,
-    #[serde(rename = "Modified")]
     modified: u128,
-    #[serde(rename = "Last opened")]
     last_opened: u128,
 }
 
@@ -65,16 +72,17 @@ pub struct AppMetadata {
 ///
 /// ```json
 /// {
-///   "Name": "Finder",
-///   "Where": "/System/Library/CoreServices",
-///   "Size": 49283072,
-///   "Created": 1744625204,
-///   "Modified": 1744625204,
-///   "Last opened": 1744625250
+///   "name": "Finder",
+///   "where": "/System/Library/CoreServices",
+///   "size": 49283072,
+///   "created": 1744625204,
+///   "modified": 1744625204,
+///   "lastOpened": 1744625250
 /// }
 /// ```
 #[tauri::command]
-pub async fn list_app_with_metadata_in(
+pub async fn list_app_with_metadata_in<R: Runtime>(
+    app_handle: AppHandle<R>,
     search_path: Vec<String>,
 ) -> Result<Vec<AppMetadata>, String> {
     let apps = list_app_in(search_path)?;
@@ -101,12 +109,21 @@ pub async fn list_app_with_metadata_in(
             app_path_clone
         };
 
+        let icon = if cfg!(target_os = "linux") {
+            app.icon_path.clone().unwrap_or(PathBuf::from(""))
+        } else {
+            icon(app_handle.clone(), app_path.clone(), Some(256))
+                .await
+                .map_err(|err| err.to_string())?
+        };
+
         let raw_app_metadata = tauri_plugin_fs_pro::metadata(app_path.clone(), None).await?;
 
         let app_metadata = AppMetadata {
             name: app_name,
             r#where: app_path_where,
             size: raw_app_metadata.size,
+            icon,
             created: raw_app_metadata.created_at,
             modified: raw_app_metadata.modified_at,
             last_opened: raw_app_metadata.accessed_at,
@@ -132,11 +149,7 @@ impl ApplicationSearchSource {
         let application_paths = Trie::new();
         let mut icons = HashMap::new();
 
-        let default_search_path = if cfg!(target_os = "macos") {
-            vec!["/Applications".into(), "/System/Applications".into(), "/System/Library/CoreServices".into()]
-        } else {
-            applications::get_default_search_paths()
-        };
+        let default_search_path = applications::get_default_search_paths();
         let mut ctx = AppInfoContext::new(default_search_path);
         ctx.refresh_apps().map_err(|err| err.to_string())?; // must refresh apps before getting them
         let apps = ctx.get_all_apps();

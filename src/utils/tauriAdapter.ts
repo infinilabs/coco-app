@@ -1,5 +1,6 @@
 import type { OpenDialogOptions } from "@tauri-apps/plugin-dialog";
 import { isWindows10 } from "tauri-plugin-windows-version-api";
+import { convertFileSrc } from "@tauri-apps/api/core";
 
 import {
   windowWrapper,
@@ -61,7 +62,6 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     convertFileSrc(path) {
-      const { convertFileSrc } = require("@tauri-apps/api/core");
       return convertFileSrc(path);
     },
 
