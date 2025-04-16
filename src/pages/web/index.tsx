@@ -31,7 +31,7 @@ function WebApp({
   height = 590,
   headers = {
     "X-API-TOKEN":
-      "cvqt6r02sdb2v3bkgip0x3ixv01f3r2lhnxoz1efbn160wm9og58wtv8t6wrv1ebvnvypuc23dx9pb33aemh",
+      "cvv8e2ehpcevm89r0khg8iesn4hbuzhxvy3y621n0ca2cqs3vw46mhs91yr5us82emdg46r0qtrt23nl1lux",
     "APP-INTEGRATION-ID": "cvkm9hmhpcemufsg3vug",
   },
   // token = "cva1j5ehpcenic3ir7k0h8fb8qtv35iwtywze248oscrej8yoivhb5b1hyovp24xejjk27jy9ddt69ewfi3n",   // https://coco.infini.cloud
@@ -41,7 +41,7 @@ function WebApp({
   hideCoco = () => {},
   hasModules = ["search", "chat"],
   defaultModule = "search",
-  hasFeature = ["search", "think_active", "search_active"],
+  hasFeature = ["search", "think", "think_active", "search_active"],
   theme = "dark",
   searchPlaceholder = "",
   chatPlaceholder = "",
@@ -142,7 +142,7 @@ function WebApp({
       {isMobile() && (
         <div
           className={`fixed ${
-            isChatMode ? "top-2" : "top-4"
+            isChatMode ? "top-2" : "top-3"
           } right-2 flex items-center justify-center w-8 h-8 rounded-full bg-black/10 dark:bg-white/10 cursor-pointer z-50`}
           onClick={onCancel}
         >

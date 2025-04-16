@@ -171,7 +171,7 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     isWindows10: async () => false,
 
     async setShadow(enable) {
-      console.warn("setShadow is not supported in web environment", enable);
+      console.log("setShadow is not supported in web environment", enable);
       return Promise.resolve();
     },
   };

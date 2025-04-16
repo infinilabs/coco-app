@@ -287,7 +287,7 @@ export default function ChatInput({
   return (
     <div className={`w-full relative`}>
       <div
-        className={`p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded transition-all relative overflow-hidden`}
+        className={`p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded-md transition-all relative overflow-hidden`}
       >
         <div className="flex flex-wrap gap-2 flex-1 items-center relative">
           {!isChatMode && !sourceData ? (
@@ -428,7 +428,7 @@ export default function ChatInput({
         className="flex justify-between items-center py-2"
       >
         {isChatMode ? (
-          <div className="flex gap-2 text-sm text-[#333] dark:text-[#d8d8d8]">
+          <div className="flex gap-2 text-[12px] leading-3 text-[#333] dark:text-[#d8d8d8]">
             {/* {sessionId && (
               <InputExtra
                 checkScreenPermission={checkScreenPermission}
@@ -446,16 +446,16 @@ export default function ChatInput({
             {hasFeature.includes("think") && (
               <button
                 className={clsx(
-                  "flex items-center gap-1 p-1 h-6 rounded-lg transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
+                  "flex items-center gap-1 py-[3px] pl-1 pr-1.5 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
                   {
                     "!bg-[rgba(0,114,255,0.3)]": isDeepThinkActive,
                   }
                 )}
                 onClick={DeepThinkClick}
               >
-                <VisibleKey shortcut={deepThinking} onKeypress={DeepThinkClick}>
+                <VisibleKey shortcut={deepThinking} onKeypress={DeepThinkClick} className="!size-3">
                   <Brain
-                    className={`size-4 ${
+                    className={`size-3 ${
                       isDeepThinkActive
                         ? "text-[#0072FF] dark:text-[#0072FF]"
                         : "text-[#333] dark:text-white"
@@ -464,9 +464,9 @@ export default function ChatInput({
                 </VisibleKey>
                 {isDeepThinkActive && (
                   <span
-                    className={
+                    className={`${
                       isDeepThinkActive ? "text-[#0072FF]" : "dark:text-white"
-                    }
+                    }`}
                   >
                     {t("search.input.deepThink")}
                   </span>

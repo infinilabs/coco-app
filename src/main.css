@@ -96,7 +96,7 @@
   }
 
   .input-body {
-    @apply rounded-xl overflow-hidden;
+    @apply rounded-md overflow-hidden;
   }
 
   .icon {

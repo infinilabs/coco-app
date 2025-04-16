@@ -1,8 +1,8 @@
-import { isMac } from "@/utils/platform";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type ModifierKey = "meta" | "ctrl" | "alt";
+import { isMac } from "@/utils/platform";
+import { ModifierKey } from "@/types/index";
 
 export type IShortcutsStore = {
   modifierKey: ModifierKey;

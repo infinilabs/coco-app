@@ -31,7 +31,7 @@ export function SearchResults({ input, isChatMode, queryDocuments }: SearchResul
   }
 
   return (
-    <div className="h-[458px] w-full p-2 pr-0 flex flex-col rounded-xl focus:outline-none">
+    <div className="h-full w-full p-2 pr-0 flex flex-col rounded-xl focus:outline-none">
       <div className="h-full flex">
         {/* Left Panel */}
         <DocumentList

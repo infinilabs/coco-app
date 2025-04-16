@@ -188,16 +188,16 @@ export default function SearchPopover({
   return (
     <div
       className={clsx(
-        "flex items-center gap-1 p-1 h-6 rounded-lg transition hover:bg-[#EDEDED] dark:hover:bg-[#202126] cursor-pointer",
+        "flex items-center gap-1 p-[3px] pr-1 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126] cursor-pointer",
         {
           "!bg-[rgba(0,114,255,0.3)]": isSearchActive,
         }
       )}
       onClick={setIsSearchActive}
     >
-      <VisibleKey shortcut={internetSearch} onKeypress={setIsSearchActive}>
+      <VisibleKey shortcut={internetSearch} onKeypress={setIsSearchActive} className="!size-3">
         <Globe
-          className={`size-4 ${
+          className={`size-3 ${
             isSearchActive
               ? "text-[#0072FF] dark:text-[#0072FF]"
               : "text-[#333] dark:text-white"
@@ -208,7 +208,7 @@ export default function SearchPopover({
       {isSearchActive && (
         <>
           <span
-            className={isSearchActive ? "text-[#0072FF]" : "dark:text-white"}
+            className={`${isSearchActive ? "text-[#0072FF]" : "dark:text-white"}`}
           >
             {t("search.input.search")}
           </span>
@@ -229,9 +229,10 @@ export default function SearchPopover({
                   onKeypress={() => {
                     buttonRef.current?.click();
                   }}
+                  className="!size-3"
                 >
                   <ChevronDownIcon
-                    className={clsx("size-5", [
+                    className={clsx("size-3", [
                       isSearchActive
                         ? "text-[#0072FF] dark:text-[#0072FF]"
                         : "text-[#333] dark:text-white",
