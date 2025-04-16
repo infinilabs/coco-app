@@ -23,12 +23,17 @@ pub async fn chat_history<R: Runtime>(
     }
 
     if let Some(query) = query {
+        if !query.is_empty() {
         query_params.insert("query".to_string(), query.into());
+    }
     }
 
     let response = HttpClient::get(&server_id, "/chat/_history", Some(query_params))
         .await
-        .map_err(|e| format!("Error get sessions: {}", e))?;
+        .map_err(|e| {
+            dbg!("Error get history: {}", &e);
+            format!("Error get history: {}", e)
+        })?;
 
     handle_raw_response(response).await?
 }
