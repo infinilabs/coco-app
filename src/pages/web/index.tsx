@@ -4,10 +4,11 @@ import SearchChat from "@/components/SearchChat";
 import { useAppStore } from "@/stores/appStore";
 import { Get } from "@/api/axiosRequest";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 
 import "@/i18n";
 import "@/web.css";
-import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 
 interface WebAppProps {
   headers?: Record<string, unknown>;
@@ -120,16 +121,7 @@ function WebApp({
     []
   );
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const isMobile = useIsMobile();
 
   const [isChatMode, setIsChatMode] = useState(false);
 

@@ -4,6 +4,7 @@ import ItemIcon from "@/components/Common/Icons/ItemIcon";
 import ListRight from "./ListRight";
 import { useSearchStore } from "@/stores/searchStore";
 import { useAppStore } from "@/stores/appStore";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface SearchListItemProps {
   item: any;
@@ -41,6 +42,8 @@ const SearchListItem: React.FC<SearchListItemProps> = React.memo(
       setVisibleContextMenu(true);
     };
 
+    const isMobile = useIsMobile();
+
     return (
       <div
         ref={itemRef}
@@ -67,7 +70,10 @@ const SearchListItem: React.FC<SearchListItemProps> = React.memo(
           <ItemIcon item={item} />
           <span className={`text-sm truncate text-left`}>{item?.title}</span>
         </div>
-        {showListRight ? (
+        {!isTauri && isMobile ? (
+          <div className="text-sm truncate">{item?.summary}</div>
+        ) : null}
+        {showListRight && (isTauri || !isMobile) ? (
           <ListRight
             goToTwoPage={goToTwoPage}
             item={item}
