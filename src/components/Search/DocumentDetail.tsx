@@ -9,6 +9,30 @@ interface DocumentDetailProps {
 }
 
 export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
+
+  // {
+  //   id: "383aac6500efe68d0fa8388550494128",
+  //   created: "2023-10-09T08:00:00+08:00",
+  //   source: {
+  //   type: "connector",
+  //   name: "INFINI Labs 中文官网",
+  //   id: "cvlab8mhpceqa8fa2gqg",
+  //   icon: "https://coco.infini.cloud/assets/connector/hugo_site/icon.png"
+  //   },
+  //   type: "web_page",
+  //   category: "Blog",
+  //   subcategory: "Technology",
+  //   title: "Easysearch 压缩模式深度比较：ZSTD + source_reuse 的优势分析",
+  //   summary: "本文探讨了Easysearch的zstd + source_reuse压缩模式，通过与default、best_compression和zstd对比，该模式在存储效率（仅1.6GB）和吞吐量（38942 docs/s）上表现最优，适合存储成本敏感场景。",
+  //   lang: "cn",
+  //   icon: "https://coco.infini.cloud/assets/connector/hugo_site/web.png",
+  //   tags: [
+  //   "Easysearch",
+  //   "ZSTD",
+  //   "source_reuse"
+  //   ],
+  //   url: "https://infinilabs.cn/blog/2023/deep-comparison-of-easysearch-compression-modes/"
+  //   }
   const { t } = useTranslation();
 
   return (
