@@ -29,9 +29,7 @@ hashbrown = { version = "0.14",default-features = false, features = ["nightly", 
 tokio-stream = "0.1.17"
 
 spin = { version = "0.9",default-features = false,features = ["rwlock", "mutex", "spin_mutex"] }
-tauri-api = "0.7.6"
-
-camino = "1.1.9"
+sysinfo = {version = "0.34.2", features = ["disk"], default-features = false}
 
 tauri = { version = "2", features = ["protocol-asset", "macos-private-api", "tray-icon", "image-ico", "image-png", "unstable"] }
 tauri-plugin-shell = "2"

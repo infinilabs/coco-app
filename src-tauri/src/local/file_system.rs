@@ -19,6 +19,8 @@ use std::path::PathBuf;
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::oneshot::Sender as OneshotSender;
 
+use sysinfo::DiskRefreshKind;
+use sysinfo::Disks;
 use tokio::fs;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
@@ -29,6 +31,21 @@ const FIELD_FS_START_NAME: &str = "fs_start_name";
 const FIELD_FS_START_PATH: &str = "fs_start_path";
 const FIELD_FS_ICON_PATH: &str = "fs_icon_path";
 const FS_SEARCH_SOURCE_ID: &str = "filesystem";
+
+#[derive(Debug, Clone, Default)]
+struct FsIndexConfig {
+    pub index_store_path: Option<String>,
+    pub max_depth: usize,
+    pub index_content: bool,
+}
+
+lazy_static::lazy_static! {
+    static ref FS_INDEX_CONFIG: FsIndexConfig = FsIndexConfig {
+        index_store_path: None,
+        max_depth: 6,
+        index_content: false,
+    };
+}
 
 struct FileSystemSearchSourceState {
     snapshot: DiskStoreSnapshot,
@@ -78,16 +95,22 @@ impl<R: Runtime> IndexFSTask<R> {
         Ok(store)
     }
 
-    fn get_file_search_start() -> PathBuf {
+    fn get_file_search_start() -> Vec<PathBuf> {
         // get home dir of current user
-        let home_dir = std::env::var("HOME").unwrap();
-        let home_path = PathBuf::from(home_dir);
+        //let home_dir = std::env::var("HOME").unwrap();
+        //let home_path = PathBuf::from(home_dir);
         let root_fs = if cfg!(target_os = "linux") {
             //home_path.join("Documents")
             //home_path.join("git");
-            PathBuf::from("/")
+            vec![PathBuf::from("/")]
         } else if cfg!(target_os = "windows") {
-            todo!()
+            let disks = Disks::new_with_refreshed_list_specifics(DiskRefreshKind::nothing());
+            let mut starts = vec![];
+            for disk in disks.iter() {
+                let mount = disk.mount_point();
+                starts.push(mount.to_path_buf());
+            }
+            starts
         } else {
             todo!()
         };
@@ -96,38 +119,42 @@ impl<R: Runtime> IndexFSTask<R> {
     }
 
     async fn write_all_filenames(engine: &pizza_engine::Engine<DiskStore>) -> Result<(), String> {
-        let mut file_stream = Self::list_files_recursive(Self::get_file_search_start(), 6);
-
+        let start_paths = Self::get_file_search_start();
         let mut writer = engine.acquire_writer();
-        let mut doc_id = 0;
-        while let Some(file_result) = file_stream.next().await {
-            match file_result {
-                Ok(path) => {
-                    doc_id += 1;
-                    let file_str: String = path.to_string_lossy().into();
-                    let document_id = doc_id as u32;
-                    let filename = file_str.clone();
-                    let filepath = file_str.clone();
-                    let document = doc!( document_id, {
-                        FIELD_FS_START_NAME => filename,
-                        FIELD_FS_START_PATH => filepath,
-                      }
-                    );
+        let mut doc_id = 0u32;
 
-                    let _ = writer.create_document(document).await;
+        for path in start_paths {
+            eprintln!("Indexing files on file system, path: {:?}", path);
+            let mut file_stream = Self::list_files_recursive(path, FS_INDEX_CONFIG.max_depth);
+            while let Some(file_result) = file_stream.next().await {
+                match file_result {
+                    Ok(path) => {
+                        doc_id += 1;
+                        let file_str: String = path.to_string_lossy().into();
+                        let document_id = doc_id;
+                        let filename = file_str.clone();
+                        let filepath = file_str.clone();
+                        let document = doc!( document_id, {
+                            FIELD_FS_START_NAME => filename,
+                            FIELD_FS_START_PATH => filepath,
+                          }
+                        );
+
+                        let _ = writer.create_document(document).await;
+                    }
+                    Err(e) => eprintln!("Error: {:?}", e),
                 }
-                Err(e) => eprintln!("Error: {:?}", e),
+
+                if doc_id % 100000 == 0 {
+                    writer.commit().map_err(|err| err.to_string())?;
+                    eprintln!(
+                        "Indexing files on file system, there are '{doc_id}' documents committed"
+                    );
+                }
             }
 
-            if doc_id % 100000 == 0 {
-                writer.commit().map_err(|err| err.to_string())?;
-                eprintln!(
-                    "Indexing files on file system, there are '{doc_id}' documents committed"
-                );
-            }
+            writer.commit().map_err(|err| err.to_string())?;
         }
-
-        writer.commit().map_err(|err| err.to_string())?;
 
         Ok(())
     }
@@ -225,6 +252,18 @@ impl<R: Runtime> IndexFSTask<R> {
 
         Box::pin(list_files_recursive_inner(path)).await
     }
+
+    fn get_fs_index_dir(&self) -> PathBuf {
+        if FS_INDEX_CONFIG.index_store_path.is_some() {
+            PathBuf::from(FS_INDEX_CONFIG.index_store_path.as_ref().unwrap())
+        } else {
+            self.tauri_app_handle
+                .path()
+                .app_data_dir()
+                .expect("failed to find the applicate local data directory")
+        }
+        .join(LOCAL_DISK_STORE_PATH)
+    }
 }
 
 #[async_trait::async_trait(?Send)]
@@ -248,12 +287,12 @@ impl<R: Runtime> super::Task for IndexFSTask<R> {
         }
 
         let callback = self.callback.take().unwrap();
-        let fs_index_dir = self
-            .tauri_app_handle
-            .path()
-            .app_data_dir()
-            .expect("failed to find the applicate local data directory")
-            .join(LOCAL_DISK_STORE_PATH);
+        let fs_index_dir = self.get_fs_index_dir();
+
+        eprintln!(
+            "Indexing files on file system, index path: {:?}",
+            fs_index_dir
+        );
 
         let index_exists = fs_index_dir.exists();
 
