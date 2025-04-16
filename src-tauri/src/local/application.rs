@@ -75,6 +75,7 @@ pub struct AppMetadata {
 ///   "name": "Finder",
 ///   "where": "/System/Library/CoreServices",
 ///   "size": 49283072,
+///   "icon": "/xxx.png",  
 ///   "created": 1744625204,
 ///   "modified": 1744625204,
 ///   "lastOpened": 1744625250
