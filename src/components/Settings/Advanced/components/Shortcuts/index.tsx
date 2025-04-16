@@ -143,9 +143,15 @@ const Shortcuts = () => {
 
     if (value.length > 1) return;
 
+    const systemKeys = ["C", "V", "X", "Z", "Q", "H"];
+
+    const isSystemKey = systemKeys.includes(value);
+
     const state = useShortcutsStore.getState();
 
-    if (Object.values(state).includes(value)) return;
+    const isUsed = Object.values(state).includes(value);
+
+    if (isSystemKey || isUsed) return;
 
     setValue(value);
   };
