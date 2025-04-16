@@ -120,11 +120,16 @@ function WebApp({
     []
   );
 
-  const isMobile = () => {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    );
-  };
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const [isChatMode, setIsChatMode] = useState(false);
 
@@ -136,10 +141,10 @@ function WebApp({
       style={{
         maxWidth: `${width}px`,
         width: `100vw`,
-        height: isMobile() ? "100vh" : `${height}px`,
+        height: isMobile ? "100vh" : `${height}px`,
       }}
     >
-      {isMobile() && (
+      {isMobile && (
         <div
           className={`fixed ${
             isChatMode ? "top-2" : "top-3"
@@ -170,6 +175,7 @@ function WebApp({
         showChatHistory={showChatHistory}
         setIsPinned={setIsPinned}
         onModeChange={setIsChatMode}
+        isMobile={isMobile}
       />
     </div>
   );

@@ -46,6 +46,7 @@ interface SearchChatProps {
     queryStrings: any
   ) => Promise<any>;
   onModeChange?: (isChatMode: boolean) => void;
+  isMobile?: boolean;
 }
 
 function SearchChat({
@@ -62,6 +63,7 @@ function SearchChat({
   showChatHistory = true,
   setIsPinned,
   onModeChange,
+  isMobile = false,
 }: SearchChatProps) {
   const customInitialState = {
     ...initialAppState,
@@ -279,7 +281,7 @@ function SearchChat({
         {
           "size-full": !isTauri,
           "w-screen h-screen": isTauri,
-          "rounded-md": !isWin,
+          "rounded-md": !isMobile && !isWin,
           "border border-[#E6E6E6] dark:border-[#272626]": isTauri && isLinux,
           "border-t border-t-[#999] dark:border-t-[#333]": isTauri && isWin10,
         }
