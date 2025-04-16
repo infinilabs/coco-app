@@ -175,6 +175,8 @@
       "details": "Details",
       "name": "Name",
       "source": "Source",
+      "url": "URL",
+      "thumbnail": "Thumbnail",
       "id": "ID",
       "createdAt": "Created At",
       "category": "Category",

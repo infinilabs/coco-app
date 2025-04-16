@@ -48,6 +48,38 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
           icon={<TypeIcon item={document} className="w-4 h-4 mr-1" />}
         />
 
+        {/* Document URL */}
+        {document?.url && (
+          <DetailItem
+            label={t("search.document.url")}
+            value={
+              <a
+                href={document.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:text-blue-600 break-all"
+                title={document.url}
+              >
+                {document.url}
+              </a>
+            }
+          />
+        )}
+
+        {/* Document Thumbnail */}
+        {document?.thumbnail && (
+          <DetailItem
+            label={t("search.document.thumbnail")}
+            value={
+              <img
+                src={document.thumbnail}
+                alt="thumbnail"
+                className="max-w-[200px] max-h-[120px] object-contain"
+              />
+            }
+          />
+        )}
+
         {/* Document Identifier */}
         {document?.id && (
           <DetailItem label={t("search.document.id")} value={document.id} />
