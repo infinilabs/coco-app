@@ -152,6 +152,18 @@
       "about": "About",
       "extensionsContent": "Extensions settings content",
       "advancedContent": "Advanced Settings content"
+    },
+    "extensions": {
+      "application": {
+        "name": "Name",
+        "where": "Where",
+        "type": "Type",
+        "typeValue": "Application",
+        "size": "Size",
+        "created": "Created",
+        "modified": "Modified",
+        "lastOpened": "Last Opened"
+      }
     }
   },
   "search": {
