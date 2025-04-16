@@ -45,7 +45,7 @@ const SearchListItem: React.FC<SearchListItemProps> = React.memo(({
       className={`w-full px-2 py-2.5 md:mb-0 mb-2 text-sm flex md:flex-row flex-col md:items-center items-start justify-between rounded-lg transition-colors cursor-pointer ${
         isSelected
           ? "text-white bg-[var(--coco-primary-color)] hover:bg-[var(--coco-primary-color)]"
-          : "text-[#333] dark:text-[#d8d8d8] md:bg-transparent bg-gray-200/80 dark:bg-gray-700/50"
+          : "text-[#333] dark:text-[#d8d8d8] md:bg-transparent md:dark:bg-transparent bg-gray-200/80 dark:bg-gray-700/50"
       } ${showListRight ? "md:gap-7 gap-1" : ""}`}
       onContextMenu={onContextMenu}
     >
