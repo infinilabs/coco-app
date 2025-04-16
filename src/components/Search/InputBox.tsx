@@ -337,22 +337,17 @@ export default function ChatInput({
               }}
             />
           )}
-          {showTooltip && isCommandPressed && !isChatMode && sourceData ? (
-            <div
-              className={`absolute left-0 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#ededed] dark:shadow-[-6px_0px_6px_2px_#202126]`}
-            >
-              ←
-            </div>
-          ) : null}
-          {showTooltip && modifierKeyPressed ? (
-            <div
-              className={`absolute ${
-                !isChatMode && sourceData ? "left-7" : ""
-              } w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#ededed] dark:shadow-[-6px_0px_6px_2px_#202126]`}
-            >
-              {returnToInput}
-            </div>
-          ) : null}
+          {showTooltip && !isChatMode && sourceData && (
+            <VisibleKey shortcut="←" className="absolute left-0" />
+          )}
+          {showTooltip && (
+            <VisibleKey
+              shortcut={returnToInput}
+              className={clsx("absolute", {
+                "left-7": !isChatMode && sourceData,
+              })}
+            />
+          )}
         </div>
 
         {/* <AudioRecording
@@ -397,13 +392,9 @@ export default function ChatInput({
           </div>
         ) : null} */}
 
-        {showTooltip && isChatMode && isCommandPressed ? (
-          <div
-            className={`absolute right-3 w-4 h-4 flex items-end justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
-          >
-            ↩︎
-          </div>
-        ) : null}
+        {showTooltip && isChatMode && (
+          <VisibleKey shortcut="↩︎" className="absolute right-3" />
+        )}
 
         {!connected && isChatMode ? (
           <div className="absolute top-0 right-0 bottom-0 left-0 px-2 py-4 bg-red-500/10 rounded-md font-normal text-xs text-gray-400 flex items-center gap-4">
@@ -496,13 +487,13 @@ export default function ChatInput({
 
         {isChatPage || hasModules?.length !== 2 ? null : (
           <div className="relative w-16 flex justify-end items-center">
-            {showTooltip && modifierKeyPressed ? (
-              <div
-                className={`absolute left-1 z-10 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
-              >
-                {modeSwitch}
-              </div>
-            ) : null}
+            {showTooltip && (
+              <VisibleKey
+                shortcut={modeSwitch}
+                className="absolute left-1 z-10"
+              />
+            )}
+
             <ChatSwitch
               isChatMode={isChatMode}
               onChange={(value: boolean) => {

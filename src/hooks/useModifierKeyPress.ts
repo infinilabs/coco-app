@@ -1,4 +1,4 @@
-import { modifierKeys } from "@/components/Settings/Advanced/components/Shortcuts";
+import { POPOVER_PANEL_SELECTOR } from "@/constants";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useKeyPress } from "ahooks";
 
@@ -9,13 +9,17 @@ export const useModifierKeyPress = () => {
   const setModifierKeyPressed = useShortcutsStore((state) => {
     return state.setModifierKeyPressed;
   });
+  const setOpenPopover = useShortcutsStore((state) => {
+    return state.setOpenPopover;
+  });
 
   useKeyPress(
-    modifierKeys,
-    (event, key) => {
-      if (key === modifierKey) {
-        setModifierKeyPressed(event.type === "keydown");
-      }
+    modifierKey,
+    (event) => {
+      const popoverPanelEl = document.querySelector(POPOVER_PANEL_SELECTOR);
+      setOpenPopover(Boolean(popoverPanelEl));
+
+      setModifierKeyPressed(event.type === "keydown");
     },
     {
       events: ["keydown", "keyup"],
