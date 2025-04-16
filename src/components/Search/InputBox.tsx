@@ -105,7 +105,7 @@ export default function ChatInput({
   const modifierKeyPressed = useShortcutsStore((state) => {
     return state.modifierKeyPressed;
   });
-  console.log("modifierKeyPressed", modifierKeyPressed);
+
   const modeSwitch = useShortcutsStore((state) => state.modeSwitch);
   const returnToInput = useShortcutsStore((state) => state.returnToInput);
   const deepThinking = useShortcutsStore((state) => state.deepThinking);

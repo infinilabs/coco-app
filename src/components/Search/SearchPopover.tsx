@@ -284,7 +284,7 @@ export default function SearchPopover({
                         <Input
                           autoFocus
                           ref={searchInputRef}
-                          className="size-full px-2 rounded-lg border dark:border-[#202126]"
+                          className="size-full px-2 rounded-lg border dark:border-white/10 bg-transparent"
                           onChange={(e) => {
                             setKeyword(e.target.value);
                           }}
