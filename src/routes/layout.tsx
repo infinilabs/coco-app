@@ -10,6 +10,7 @@ import { useThemeStore } from "@/stores/themeStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { AppTheme } from "@/types/index";
 import ErrorNotification from '@/components/Common/ErrorNotification';
+import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 
 export default function Layout() {
   const location = useLocation();
@@ -105,10 +106,12 @@ export default function Layout() {
     event.preventDefault();
   });
 
+  useModifierKeyPress();
+
   return (
     <>
       <Outlet />
       <ErrorNotification />
     </>
-  );;
+  );
 }

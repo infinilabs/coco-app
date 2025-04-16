@@ -7,6 +7,7 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 import "@/i18n";
 import "@/web.css";
+import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 
 interface WebAppProps {
   headers?: Record<string, unknown>;
@@ -51,13 +52,19 @@ function WebApp({
   const setIsTauri = useAppStore((state) => state.setIsTauri);
   const setEndpoint = useAppStore((state) => state.setEndpoint);
   const setModeSwitch = useShortcutsStore((state) => state.setModeSwitch);
+  const setInternetSearch = useShortcutsStore((state) => {
+    return state.setInternetSearch;
+  });
 
   useEffect(() => {
     setIsTauri(false);
     setEndpoint(serverUrl);
     setModeSwitch("S");
+    setInternetSearch("B");
     localStorage.setItem("headers", JSON.stringify(headers || {}));
   }, []);
+
+  useModifierKeyPress();
 
   const query_coco_fusion = useCallback(async (url: string) => {
     try {
@@ -133,12 +140,19 @@ function WebApp({
       }}
     >
       {isMobile() && (
-        <div 
-          className={`fixed ${isChatMode ? 'top-2' : 'top-4'} right-2 flex items-center justify-center w-8 h-8 rounded-full bg-black/10 dark:bg-white/10 cursor-pointer z-50`}
+        <div
+          className={`fixed ${
+            isChatMode ? "top-2" : "top-4"
+          } right-2 flex items-center justify-center w-8 h-8 rounded-full bg-black/10 dark:bg-white/10 cursor-pointer z-50`}
           onClick={onCancel}
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M12 4L4 12M4 4L12 12" stroke="#FF4D4F" strokeWidth="1.5" strokeLinecap="round"/>
+            <path
+              d="M12 4L4 12M4 4L12 12"
+              stroke="#FF4D4F"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
           </svg>
         </div>
       )}
