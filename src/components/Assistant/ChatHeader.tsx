@@ -355,7 +355,7 @@ export function ChatHeader({
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col items-center gap-2">
                           <span
                             className={`w-3 h-3 rounded-full ${
                               server.health?.status
@@ -363,9 +363,14 @@ export function ChatHeader({
                                 : "bg-gray-400 dark:bg-gray-600"
                             }`}
                           />
-                          <div className="w-4 h-4">
+                          <div className="size-4">
                             {currentService?.id === server.id && (
-                              <Check className="w-full h-full text-gray-500 dark:text-gray-400" />
+                              <VisibleKey
+                                shortcut="↓↑"
+                                className="w-6 -translate-x-2"
+                              >
+                                <Check className="w-full h-full text-gray-500 dark:text-gray-400" />
+                              </VisibleKey>
                             )}
                           </div>
                         </div>
