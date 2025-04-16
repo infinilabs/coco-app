@@ -21,6 +21,7 @@ Information about release notes of Coco Server is provided here.
 - feat: mobile terminal adaptation about style #348
 - feat: service list popup box supports keyboard-only operation #359
 - feat: networked search data sources support search and keyboard-only operation #367
+- feat: add application management to the plugin #374
 
 ### Bug fix
 
@@ -32,6 +33,7 @@ Information about release notes of Coco Server is provided here.
 - refactor: web components #331
 - refactor: refactoring login callback, receive access_token from coco-server
 - chore: adjust web component styles #362
+- style: modify the style #370
 
 ## 0.3.0 (2025-03-31)
 

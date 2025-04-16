@@ -152,6 +152,20 @@
       "about": "关于",
       "extensionsContent": "扩展设置内容",
       "advancedContent": "高级设置内容"
+    },
+    "extensions": {
+      "title": "扩展",
+
+      "application": {
+        "name": "名称",
+        "where": "来源",
+        "type": "类型",
+        "typeValue": "应用程序",
+        "size": "大小",
+        "created": "创建时间",
+        "modified": "修改时间",
+        "lastOpened": "上次打开时间"
+      }
     }
   },
   "search": {
@@ -163,6 +177,13 @@
       "details": "详细信息",
       "name": "名称",
       "source": "来源",
+      "id": "ID",
+      "createdAt": "创建时间",
+      "category": "分类",
+      "subcategory": "子分类",
+      "language": "语言",
+      "tags": "标签",
+      "summary": "摘要",
       "updatedAt": "更新时间",
       "updatedBy": "更新者",
       "createdBy": "创建者",

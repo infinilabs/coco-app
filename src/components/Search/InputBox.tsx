@@ -102,9 +102,6 @@ export default function ChatInput({
   const modifierKey = useShortcutsStore((state) => {
     return state.modifierKey;
   });
-  const modifierKeyPressed = useShortcutsStore((state) => {
-    return state.modifierKeyPressed;
-  });
 
   const modeSwitch = useShortcutsStore((state) => state.modeSwitch);
   const returnToInput = useShortcutsStore((state) => state.returnToInput);
@@ -139,7 +136,7 @@ export default function ChatInput({
     }
   }, [reconnectCountdown, connected]);
 
-  const [isCommandPressed, setIsCommandPressed] = useState(false);
+  const [_isCommandPressed, setIsCommandPressed] = useState(false);
   const setModifierKeyPressed = useShortcutsStore((state) => {
     return state.setModifierKeyPressed;
   });
@@ -287,7 +284,7 @@ export default function ChatInput({
   return (
     <div className={`w-full relative`}>
       <div
-        className={`p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded transition-all relative overflow-hidden`}
+        className={`p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded-md transition-all relative overflow-hidden`}
       >
         <div className="flex flex-wrap gap-2 flex-1 items-center relative">
           {!isChatMode && !sourceData ? (
@@ -337,22 +334,17 @@ export default function ChatInput({
               }}
             />
           )}
-          {showTooltip && isCommandPressed && !isChatMode && sourceData ? (
-            <div
-              className={`absolute left-0 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#ededed] dark:shadow-[-6px_0px_6px_2px_#202126]`}
-            >
-              ←
-            </div>
-          ) : null}
-          {showTooltip && modifierKeyPressed ? (
-            <div
-              className={`absolute ${
-                !isChatMode && sourceData ? "left-7" : ""
-              } w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#ededed] dark:shadow-[-6px_0px_6px_2px_#202126]`}
-            >
-              {returnToInput}
-            </div>
-          ) : null}
+          {showTooltip && !isChatMode && sourceData && (
+            <VisibleKey shortcut="←" className="absolute left-0" />
+          )}
+          {showTooltip && (
+            <VisibleKey
+              shortcut={returnToInput}
+              className={clsx("absolute", {
+                "left-7": !isChatMode && sourceData,
+              })}
+            />
+          )}
         </div>
 
         {/* <AudioRecording
@@ -397,16 +389,12 @@ export default function ChatInput({
           </div>
         ) : null} */}
 
-        {showTooltip && isChatMode && isCommandPressed ? (
-          <div
-            className={`absolute right-3 w-4 h-4 flex items-end justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
-          >
-            ↩︎
-          </div>
-        ) : null}
+        {showTooltip && isChatMode && (
+          <VisibleKey shortcut="↩︎" className="absolute right-3" />
+        )}
 
         {!connected && isChatMode ? (
-          <div className="absolute top-0 right-0 bottom-0 left-0 px-2 py-4 bg-red-500/10 rounded-md font-normal text-xs text-gray-400 flex items-center gap-4">
+          <div className="absolute top-0 right-0 bottom-0 left-0 px-2 py-4 bg-[rgba(255,255,255,0.9)] dark:bg-[rgba(32,33,38,0.9)] backdrop-blur-[2px] rounded-md font-normal text-xs text-gray-400 flex items-center gap-4 z-10">
             {t("search.input.connectionError")}
             <div
               className="px-1 h-[24px] text-[#0061FF] font-normal text-xs flex items-center justify-center cursor-pointer underline"
@@ -428,7 +416,7 @@ export default function ChatInput({
         className="flex justify-between items-center py-2"
       >
         {isChatMode ? (
-          <div className="flex gap-2 text-sm text-[#333] dark:text-[#d8d8d8]">
+          <div className="flex gap-2 text-[12px] leading-3 text-[#333] dark:text-[#d8d8d8]">
             {/* {sessionId && (
               <InputExtra
                 checkScreenPermission={checkScreenPermission}
@@ -446,16 +434,20 @@ export default function ChatInput({
             {hasFeature.includes("think") && (
               <button
                 className={clsx(
-                  "flex items-center gap-1 p-1 h-6 rounded-lg transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
+                  "flex items-center gap-1 py-[3px] pl-1 pr-1.5 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
                   {
                     "!bg-[rgba(0,114,255,0.3)]": isDeepThinkActive,
                   }
                 )}
                 onClick={DeepThinkClick}
               >
-                <VisibleKey shortcut={deepThinking} onKeypress={DeepThinkClick}>
+                <VisibleKey
+                  shortcut={deepThinking}
+                  onKeypress={DeepThinkClick}
+                  className="!size-3"
+                >
                   <Brain
-                    className={`size-4 ${
+                    className={`size-3 ${
                       isDeepThinkActive
                         ? "text-[#0072FF] dark:text-[#0072FF]"
                         : "text-[#333] dark:text-white"
@@ -464,9 +456,9 @@ export default function ChatInput({
                 </VisibleKey>
                 {isDeepThinkActive && (
                   <span
-                    className={
+                    className={`${
                       isDeepThinkActive ? "text-[#0072FF]" : "dark:text-white"
-                    }
+                    }`}
                   >
                     {t("search.input.deepThink")}
                   </span>
@@ -496,13 +488,13 @@ export default function ChatInput({
 
         {isChatPage || hasModules?.length !== 2 ? null : (
           <div className="relative w-16 flex justify-end items-center">
-            {showTooltip && modifierKeyPressed ? (
-              <div
-                className={`absolute left-1 z-10 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
-              >
-                {modeSwitch}
-              </div>
-            ) : null}
+            {showTooltip && (
+              <VisibleKey
+                shortcut={modeSwitch}
+                className="absolute left-1 z-10"
+              />
+            )}
+
             <ChatSwitch
               isChatMode={isChatMode}
               onChange={(value: boolean) => {

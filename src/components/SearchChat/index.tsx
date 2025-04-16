@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import clsx from "clsx";
+import { useMount } from "ahooks";
 
 import Search from "@/components/Search/Search";
 import InputBox from "@/components/Search/InputBox";
@@ -23,10 +24,6 @@ import { useStartupStore } from "@/stores/startupStore";
 import { DataSource } from "@/types/commands";
 import { useThemeStore } from "@/stores/themeStore";
 import { Get } from "@/api/axiosRequest";
-import { useKeyPress, useMount } from "ahooks";
-import { modifierKeys } from "../Settings/Advanced/components/Shortcuts";
-import { useShortcutsStore } from "@/stores/shortcutsStore";
-import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 
 interface SearchChatProps {
   isTauri?: boolean;
@@ -49,6 +46,7 @@ interface SearchChatProps {
     queryStrings: any
   ) => Promise<any>;
   onModeChange?: (isChatMode: boolean) => void;
+  isMobile?: boolean;
 }
 
 function SearchChat({
@@ -65,6 +63,7 @@ function SearchChat({
   showChatHistory = true,
   setIsPinned,
   onModeChange,
+  isMobile = false,
 }: SearchChatProps) {
   const customInitialState = {
     ...initialAppState,
@@ -282,7 +281,7 @@ function SearchChat({
         {
           "size-full": !isTauri,
           "w-screen h-screen": isTauri,
-          "rounded-xl": !isWin,
+          "rounded-xl": !isMobile && !isWin,
           "border border-[#E6E6E6] dark:border-[#272626]": isTauri && isLinux,
           "border-t border-t-[#999] dark:border-t-[#333]": isTauri && isWin10,
         }
@@ -290,10 +289,10 @@ function SearchChat({
     >
       <div
         data-tauri-drag-region={isTauri}
-        className={`p-2 pb-0 absolute w-full flex items-center justify-center transition-all duration-500 ${
+        className={`p-2 absolute w-full flex justify-center transition-all duration-500 ${
           isTransitioned
-            ? "top-[calc(100%-90px)] h-[90px] border-t"
-            : "top-0 h-[90px] border-b"
+            ? "top-[calc(100%-84px)] h-[84px] border-t"
+            : "top-0 h-[84px] border-b"
         } border-[#E6E6E6] dark:border-[#272626]`}
       >
         <InputBox
@@ -332,7 +331,7 @@ function SearchChat({
         data-tauri-drag-region={isTauri}
         className={`absolute w-full transition-opacity duration-500 ${
           isTransitioned ? "opacity-0 pointer-events-none" : "opacity-100"
-        } bottom-0 h-[calc(100%-90px)] `}
+        } bottom-0 h-[calc(100%-84px)] `}
       >
         <Suspense fallback={<LoadingFallback />}>
           <Search

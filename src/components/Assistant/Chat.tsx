@@ -367,7 +367,7 @@ const ChatAI = memo(
       return (
         <div
           data-tauri-drag-region
-          className={`h-full flex flex-col rounded-xl relative`}
+          className={`h-full flex flex-col rounded-md relative`}
         >
           {showChatHistory && !setIsSidebarOpen && (
             <ChatSidebar

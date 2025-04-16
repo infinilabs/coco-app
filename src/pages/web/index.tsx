@@ -4,10 +4,11 @@ import SearchChat from "@/components/SearchChat";
 import { useAppStore } from "@/stores/appStore";
 import { Get } from "@/api/axiosRequest";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 
 import "@/i18n";
 import "@/web.css";
-import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 
 interface WebAppProps {
   headers?: Record<string, unknown>;
@@ -31,7 +32,7 @@ function WebApp({
   height = 590,
   headers = {
     "X-API-TOKEN":
-      "cvqt6r02sdb2v3bkgip0x3ixv01f3r2lhnxoz1efbn160wm9og58wtv8t6wrv1ebvnvypuc23dx9pb33aemh",
+      "cvvitp6hpceh0ip1q1706byts41c7213k4el22v3bp6f4ta2sar0u29jp4pg08h6xcyxn085x3lq1k7wojof",
     "APP-INTEGRATION-ID": "cvkm9hmhpcemufsg3vug",
   },
   // token = "cva1j5ehpcenic3ir7k0h8fb8qtv35iwtywze248oscrej8yoivhb5b1hyovp24xejjk27jy9ddt69ewfi3n",   // https://coco.infini.cloud
@@ -41,7 +42,7 @@ function WebApp({
   hideCoco = () => {},
   hasModules = ["search", "chat"],
   defaultModule = "search",
-  hasFeature = ["search", "think_active", "search_active"],
+  hasFeature = ["search", "think", "think_active", "search_active"],
   theme = "dark",
   searchPlaceholder = "",
   chatPlaceholder = "",
@@ -120,11 +121,7 @@ function WebApp({
     []
   );
 
-  const isMobile = () => {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    );
-  };
+  const isMobile = useIsMobile();
 
   const [isChatMode, setIsChatMode] = useState(false);
 
@@ -136,13 +133,13 @@ function WebApp({
       style={{
         maxWidth: `${width}px`,
         width: `100vw`,
-        height: isMobile() ? "100vh" : `${height}px`,
+        height: isMobile ? "100vh" : `${height}px`,
       }}
     >
-      {isMobile() && (
+      {isMobile && (
         <div
           className={`fixed ${
-            isChatMode ? "top-2" : "top-4"
+            isChatMode ? "top-2" : "top-3"
           } right-2 flex items-center justify-center w-8 h-8 rounded-full bg-black/10 dark:bg-white/10 cursor-pointer z-50`}
           onClick={onCancel}
         >
@@ -170,6 +167,7 @@ function WebApp({
         showChatHistory={showChatHistory}
         setIsPinned={setIsPinned}
         onModeChange={setIsChatMode}
+        isMobile={isMobile}
       />
     </div>
   );

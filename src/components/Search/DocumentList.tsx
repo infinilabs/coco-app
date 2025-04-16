@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useInfiniteScroll } from "ahooks";
 import { useTranslation } from "react-i18next";
-import { FixedSizeList } from "react-window";
 
 import { useSearchStore } from "@/stores/searchStore";
 import { SearchHeader } from "./SearchHeader";
@@ -26,7 +25,6 @@ interface DocumentListProps {
 }
 
 const PAGE_SIZE = 20;
-const ITEM_HEIGHT = 48; // SearchListItem height (padding + content)
 
 export const DocumentList: React.FC<DocumentListProps> = ({
   input,
@@ -44,12 +42,10 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [isKeyboardMode, setIsKeyboardMode] = useState(false);
-  const listRef = useRef<FixedSizeList>(null);
 
   const { data, loading } = useInfiniteScroll(
     async (d) => {
       const from = d?.list?.length || 0;
-
       let queryStrings: any = {
         query: input,
         datasource: sourceData?.source?.id,
@@ -66,14 +62,11 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         const response = await queryDocuments(from, PAGE_SIZE, queryStrings);
         const list = response?.hits || [];
         const total = response?.total_hits || 0;
-
-        // console.log("docs:", list, total);
-
         setTotal(total);
 
         return {
           list: list,
-          hasMore: list.length === PAGE_SIZE,
+          hasMore: list.length === PAGE_SIZE && from + list.length < total,
         };
       } catch (error) {
         console.error("Failed to fetch documents:", error);
@@ -86,17 +79,18 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     {
       target: containerRef,
       isNoMore: (d) => !d?.hasMore,
-      reloadDeps: [input, JSON.stringify(sourceData)],
-      onFinally: (data) => onFinally(data, containerRef),
+      reloadDeps: [input?.trim(), JSON.stringify(sourceData)],
+      onFinally: (data) => {
+        if (data?.page === 1) return;
+        if (selectedItem === null) return;
+        setSelectedItem(null);
+        itemRefs.current[selectedItem]?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      },
     }
   );
-
-  const onFinally = (data: any, _ref: any) => {
-    if (data?.page === 1) return;
-    if (selectedItem === null) return;
-
-    listRef.current?.scrollToItem(selectedItem, "smart");
-  };
 
   const onMouseEnter = useCallback(
     (index: number, item: any) => {
@@ -120,96 +114,51 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         e.preventDefault();
         setIsKeyboardMode(true);
 
-        if (e.key === "ArrowUp") {
-          setSelectedItem((prev) => {
-            const newIndex = prev === null || prev === 0 ? 0 : prev - 1;
-            getDocDetail(data.list[newIndex]?.document);
-            listRef.current?.scrollToItem(newIndex, "smart");
-            return newIndex;
+        const newIndex =
+          e.key === "ArrowUp"
+            ? (prev: number | null) =>
+                prev === null || prev === 0 ? 0 : prev - 1
+            : (prev: number | null) =>
+                prev === null
+                  ? 0
+                  : prev === data.list.length - 1
+                  ? prev
+                  : prev + 1;
+
+        setSelectedItem((prev) => {
+          const nextIndex = newIndex(prev);
+          getDocDetail(data.list[nextIndex]?.document);
+          itemRefs.current[nextIndex]?.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
           });
-        } else {
-          setSelectedItem((prev) => {
-            const newIndex =
-              prev === null
-                ? 0
-                : prev === data.list.length - 1
-                ? prev
-                : prev + 1;
-            getDocDetail(data.list[newIndex]?.document);
-            listRef.current?.scrollToItem(newIndex, "smart");
-            return newIndex;
-          });
-        }
+          return nextIndex;
+        });
       } else if (e.key === metaOrCtrlKey()) {
         e.preventDefault();
-      }
-
-      if (e.key === "Enter" && selectedItem !== null) {
+      } else if (e.key === "Enter" && selectedItem !== null) {
         const item = data?.list?.[selectedItem];
-        if (item?.url) {
-          OpenURLWithBrowser(item?.url);
-        }
+        item?.document?.url && OpenURLWithBrowser(item.document.url);
       }
     },
     [data, selectedItem, getDocDetail]
   );
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (e.movementX !== 0 || e.movementY !== 0) {
-        setIsKeyboardMode(false);
-      }
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (e.movementX !== 0 || e.movementY !== 0) {
+      setIsKeyboardMode(false);
+    }
   }, []);
 
   useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [handleKeyDown]);
-
-  useEffect(() => {
-    if (selectedItem !== null) {
-      listRef.current?.scrollToItem(selectedItem, "smart");
-    }
-  }, [selectedItem]);
-
-  const Row = useCallback(
-    ({ index, style }: { index: number; style: React.CSSProperties }) => {
-      const hit = data?.list[index];
-      if (!hit) return null;
-
-      const isSelected = selectedItem === index;
-      const item = hit.document;
-
-      return (
-        <div style={style}>
-          <SearchListItem
-            key={item.id + index}
-            itemRef={(el) => (itemRefs.current[index] = el)}
-            item={item}
-            isSelected={isSelected}
-            currentIndex={index}
-            onMouseEnter={() => onMouseEnter(index, item)}
-            onItemClick={() => {
-              if (item?.url) {
-                OpenURLWithBrowser(item?.url);
-              }
-            }}
-            showListRight={viewMode === "list"}
-          />
-        </div>
-      );
-    },
-    [data, selectedItem, viewMode, onMouseEnter]
-  );
+  }, [handleKeyDown, handleMouseMove]);
 
   return (
     <div
@@ -225,36 +174,25 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         />
       </div>
 
-      <div className="flex-1 overflow-hidden">
-        {data?.list && data.list.length > 0 ? (
-          <div ref={containerRef} style={{ height: "100%" }}>
-            <FixedSizeList
-              ref={listRef}
-              height={containerRef.current?.clientHeight || 400}
-              width="100%"
-              itemCount={data?.list.length}
-              itemSize={ITEM_HEIGHT}
-              overscanCount={5}
-              onScroll={({ scrollOffset, scrollUpdateWasRequested }) => {
-                if (!scrollUpdateWasRequested && containerRef.current) {
-                  const threshold = 100;
-                  const { scrollHeight, clientHeight } = containerRef.current;
-                  const remainingScroll =
-                    scrollHeight - (scrollOffset + clientHeight);
-                  if (
-                    remainingScroll <= threshold &&
-                    !loading &&
-                    data?.hasMore
-                  ) {
-                    data?.loadMore && data.loadMore();
-                  }
+      <div className="flex-1 overflow-auto" ref={containerRef}>
+        {data?.list && data.list.length > 0 && (
+          <div>
+            {data.list.map((hit, index) => (
+              <SearchListItem
+                key={hit.document.id + index}
+                itemRef={(el) => (itemRefs.current[index] = el)}
+                item={hit.document}
+                isSelected={selectedItem === index}
+                currentIndex={index}
+                onMouseEnter={() => onMouseEnter(index, hit.document)}
+                onItemClick={() =>
+                  hit.document?.url && OpenURLWithBrowser(hit.document.url)
                 }
-              }}
-            >
-              {Row}
-            </FixedSizeList>
+                showListRight={viewMode === "list"}
+              />
+            ))}
           </div>
-        ) : null}
+        )}
 
         {loading && (
           <div className="flex justify-center py-4">
@@ -262,7 +200,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
           </div>
         )}
 
-        {!loading && data?.list.length === 0 && (
+        {!loading && (!data?.list || data.list.length === 0) && (
           <div
             data-tauri-drag-region
             className="h-full w-full flex flex-col items-center"

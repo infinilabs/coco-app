@@ -152,6 +152,18 @@
       "about": "About",
       "extensionsContent": "Extensions settings content",
       "advancedContent": "Advanced Settings content"
+    },
+    "extensions": {
+      "application": {
+        "name": "Name",
+        "where": "Where",
+        "type": "Type",
+        "typeValue": "Application",
+        "size": "Size",
+        "created": "Created",
+        "modified": "Modified",
+        "lastOpened": "Last Opened"
+      }
     }
   },
   "search": {
@@ -163,9 +175,16 @@
       "details": "Details",
       "name": "Name",
       "source": "Source",
-      "updatedAt": "Updated at",
-      "updatedBy": "Updated by",
-      "createdBy": "Created by",
+      "id": "ID",
+      "createdAt": "Created At",
+      "category": "Category",
+      "subcategory": "Subcategory",
+      "language": "Language",
+      "tags": "Tags",
+      "summary": "Summary",
+      "updatedAt": "Updated At",
+      "updatedBy": "Updated By",
+      "createdBy": "Created By",
       "type": "Type",
       "size": "Size"
     },

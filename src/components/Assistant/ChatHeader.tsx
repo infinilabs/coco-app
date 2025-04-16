@@ -18,6 +18,7 @@ import {
 } from "@headlessui/react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
+import { useKeyPress } from "ahooks";
 
 import logoImg from "@/assets/icon.svg";
 import HistoryIcon from "@/icons/History";
@@ -32,7 +33,6 @@ import { useConnectStore } from "@/stores/connectStore";
 import platformAdapter from "@/utils/platformAdapter";
 import VisibleKey from "../Common/VisibleKey";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
-import { useKeyPress } from "ahooks";
 
 interface ChatHeaderProps {
   onCreateNewChat: () => void;
@@ -206,7 +206,7 @@ export function ChatHeader({
               e.stopPropagation();
               setIsSidebarOpen();
             }}
-            className="inline-flex size-[34px] p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="py-1 px-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <VisibleKey
               shortcut={historicalRecords}
@@ -355,7 +355,7 @@ export function ChatHeader({
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col items-center gap-2">
                           <span
                             className={`w-3 h-3 rounded-full ${
                               server.health?.status
@@ -363,9 +363,11 @@ export function ChatHeader({
                                 : "bg-gray-400 dark:bg-gray-600"
                             }`}
                           />
-                          <div className="w-4 h-4">
+                          <div className="size-4 flex justify-end">
                             {currentService?.id === server.id && (
-                              <Check className="w-full h-full text-gray-500 dark:text-gray-400" />
+                              <VisibleKey shortcut="↓↑" className="min-w-6">
+                                <Check className="w-full h-full text-gray-500 dark:text-gray-400" />
+                              </VisibleKey>
                             )}
                           </div>
                         </div>

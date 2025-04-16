@@ -11,6 +11,10 @@ import Cloud from "@/components/Cloud/Cloud.tsx";
 import Footer from "@/components/Common/UI/SettingsFooter";
 import { useTray } from "@/hooks/useTray";
 import Advanced from "@/components/Settings/Advanced";
+import Extensions from "@/components/Settings/Extensions";
+import { useAsyncEffect, useMount } from "ahooks";
+import { useApplicationsStore } from "@/stores/applications";
+import platformAdapter from "@/utils/platformAdapter";
 
 const tabIndexMap: { [key: string]: number } = {
   general: 0,
@@ -22,6 +26,9 @@ const tabIndexMap: { [key: string]: number } = {
 
 function SettingsPage() {
   const { t } = useTranslation();
+  const searchPaths = useApplicationsStore((state) => state.searchPaths);
+  const setSearchPaths = useApplicationsStore((state) => state.setSearchPaths);
+  const setAllApps = useApplicationsStore((state) => state.setAllApps);
 
   useTray();
 
@@ -48,6 +55,35 @@ function SettingsPage() {
       unlisten.then((fn) => fn());
     };
   }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = defaultIndex !== 1 ? "auto" : "hidden";
+  }, [defaultIndex]);
+
+  useMount(async () => {
+    if (searchPaths.length > 0) return;
+
+    const paths = await platformAdapter.invokeBackend<string[]>(
+      "get_default_search_paths"
+    );
+
+    setSearchPaths(paths);
+  });
+
+  useAsyncEffect(async () => {
+    if (searchPaths.length === 0) {
+      return setAllApps([]);
+    }
+
+    const apps = await platformAdapter.invokeBackend<any[]>(
+      "list_app_with_metadata_in",
+      {
+        searchPath: searchPaths,
+      }
+    );
+
+    setAllApps(apps);
+  }, [searchPaths]);
 
   return (
     <div>
@@ -91,9 +127,7 @@ function SettingsPage() {
               </TabPanel>
               <TabPanel>
                 <SettingsPanel title="">
-                  <div className="text-gray-600 dark:text-gray-400">
-                    {t("settings.tabs.extensionsContent")}
-                  </div>
+                  <Extensions />
                 </SettingsPanel>
               </TabPanel>
               <TabPanel>

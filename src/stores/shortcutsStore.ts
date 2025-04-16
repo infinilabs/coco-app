@@ -1,13 +1,15 @@
-import { isMac } from "@/utils/platform";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type ModifierKey = "meta" | "ctrl" | "alt";
+import { isMac } from "@/utils/platform";
+import { ModifierKey } from "@/types/index";
 
 export type IShortcutsStore = {
   modifierKey: ModifierKey;
   setModifierKey: (modifierKey: ModifierKey) => void;
   modifierKeyPressed: boolean;
+  openPopover: boolean;
+  setOpenPopover: (openPopover: boolean) => void;
   setModifierKeyPressed: (modifierKeyPressed: boolean) => void;
   modeSwitch: string;
   setModeSwitch: (modeSwitch: string) => void;
@@ -39,38 +41,43 @@ export const useShortcutsStore = create<IShortcutsStore>()(
   persist(
     (set) => ({
       modifierKey: isMac ? "meta" : "ctrl",
-      setModifierKey: (modifierKey: ModifierKey) => set({ modifierKey }),
+      setModifierKey: (modifierKey) => set({ modifierKey }),
       modifierKeyPressed: false,
-      setModifierKeyPressed: (modifierKeyPressed: boolean) =>
-        set({ modifierKeyPressed }),
+      openPopover: false,
+      setOpenPopover: (openPopover) => {
+        return set({ openPopover });
+      },
+      setModifierKeyPressed: (modifierKeyPressed: boolean) => {
+        return set({ modifierKeyPressed });
+      },
       modeSwitch: "T",
-      setModeSwitch: (modeSwitch: string) => set({ modeSwitch }),
+      setModeSwitch: (modeSwitch) => set({ modeSwitch }),
       returnToInput: "I",
-      setReturnToInput: (returnToInput: string) => set({ returnToInput }),
+      setReturnToInput: (returnToInput) => set({ returnToInput }),
       voiceInput: "K",
-      setVoiceInput: (voiceInput: string) => set({ voiceInput }),
+      setVoiceInput: (voiceInput) => set({ voiceInput }),
       addFile: "A",
-      setAddFile: (addFile: string) => set({ addFile }),
+      setAddFile: (addFile) => set({ addFile }),
       deepThinking: "D",
-      setDeepThinking: (deepThinking: string) => set({ deepThinking }),
+      setDeepThinking: (deepThinking) => set({ deepThinking }),
       internetSearch: "G",
-      setInternetSearch: (internetSearch: string) => set({ internetSearch }),
+      setInternetSearch: (internetSearch) => set({ internetSearch }),
       internetSearchScope: "J",
-      setInternetSearchScope: (internetSearchScope: string) => {
+      setInternetSearchScope: (internetSearchScope) => {
         return set({ internetSearchScope });
       },
       historicalRecords: "Y",
-      setHistoricalRecords: (historicalRecords: string) => {
+      setHistoricalRecords: (historicalRecords) => {
         return set({ historicalRecords });
       },
       newSession: "N",
-      setNewSession: (newSession: string) => set({ newSession }),
+      setNewSession: (newSession) => set({ newSession }),
       fixedWindow: "F",
-      setFixedWindow: (fixedWindow: string) => set({ fixedWindow }),
+      setFixedWindow: (fixedWindow) => set({ fixedWindow }),
       serviceList: "S",
-      setServiceList: (serviceList: string) => set({ serviceList }),
+      setServiceList: (serviceList) => set({ serviceList }),
       external: "E",
-      setExternal: (external: string) => set({ external }),
+      setExternal: (external) => set({ external }),
     }),
     {
       name: "shortcuts-store",
