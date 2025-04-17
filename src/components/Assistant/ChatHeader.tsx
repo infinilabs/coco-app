@@ -54,7 +54,7 @@ export function ChatHeader({
   reconnect,
   setIsLogin,
   isChatPage = false,
-  showChatHistory,
+  showChatHistory = true,
 }: ChatHeaderProps) {
   const { t } = useTranslation();
 
@@ -199,20 +199,20 @@ export function ChatHeader({
       data-tauri-drag-region
     >
       <div className="flex items-center gap-2">
-        {isTauri && (
+        {showChatHistory && (
           <button
             data-sidebar-button
             onClick={(e) => {
               e.stopPropagation();
               setIsSidebarOpen();
             }}
-            className="py-1 px-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="p-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <VisibleKey
               shortcut={historicalRecords}
               onKeypress={setIsSidebarOpen}
             >
-              <HistoryIcon />
+              <HistoryIcon className="h-4 w-4" />
             </VisibleKey>
           </button>
         )}
@@ -250,13 +250,13 @@ export function ChatHeader({
           ) : null}
         </Menu>
 
-        {showChatHistory && isTauri ? (
+        {showChatHistory ? (
           <button
             onClick={onCreateNewChat}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="p-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <VisibleKey shortcut={newSession} onKeypress={onCreateNewChat}>
-              <MessageSquarePlus className="h-4 w-4" />
+              <MessageSquarePlus className="h-4 w-4 relative top-0.5" />
             </VisibleKey>
           </button>
         ) : null}

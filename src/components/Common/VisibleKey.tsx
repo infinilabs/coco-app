@@ -1,8 +1,9 @@
-import { POPOVER_PANEL_SELECTOR } from "@/constants";
-import { useShortcutsStore } from "@/stores/shortcutsStore";
+import { FC, ReactNode, useEffect, useRef, useState } from "react";
 import { useKeyPress } from "ahooks";
 import clsx from "clsx";
-import { FC, ReactNode, useEffect, useRef, useState } from "react";
+
+import { POPOVER_PANEL_SELECTOR } from "@/constants";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 interface VisibleKeyProps {
   shortcut: string;
@@ -64,17 +65,23 @@ const VisibleKey: FC<VisibleKeyProps> = (props) => {
     return shortcut;
   };
 
-  return visibleShortcut ? (
+  return (
     <div
-      className={clsx(
-        "size-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]",
-        className
-      )}
+      ref={childrenRef}
+      className={clsx("relative inline-block")}
     >
-      {renderShortcut()}
+      {children}
+      {visibleShortcut ? (
+        <div
+          className={clsx(
+            "size-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+            className
+          )}
+        >
+          {renderShortcut()}
+        </div>
+      ) : null}
     </div>
-  ) : (
-    <div ref={childrenRef}>{children}</div>
   );
 };
 

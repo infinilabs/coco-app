@@ -335,15 +335,18 @@ export default function ChatInput({
             />
           )}
           {showTooltip && !isChatMode && sourceData && (
-            <VisibleKey shortcut="←" className="absolute left-0" />
+            <div className="absolute -top-[5px] left-2">
+              <VisibleKey shortcut="←" />
+            </div>
           )}
           {showTooltip && (
-            <VisibleKey
-              shortcut={returnToInput}
-              className={clsx("absolute", {
-                "left-7": !isChatMode && sourceData,
+            <div
+              className={clsx("absolute -top-[5px] left-2", {
+                "left-8": !isChatMode && sourceData,
               })}
-            />
+            >
+              <VisibleKey shortcut={returnToInput} />
+            </div>
           )}
         </div>
 
@@ -390,7 +393,9 @@ export default function ChatInput({
         ) : null} */}
 
         {showTooltip && isChatMode && (
-          <VisibleKey shortcut="↩︎" className="absolute right-3" />
+          <div className="absolute top-[2px] right-[18px]">
+            <VisibleKey shortcut="↩︎" />
+          </div>
         )}
 
         {!connected && isChatMode ? (
@@ -444,7 +449,6 @@ export default function ChatInput({
                 <VisibleKey
                   shortcut={deepThinking}
                   onKeypress={DeepThinkClick}
-                  className="!size-3"
                 >
                   <Brain
                     className={`size-3 ${
@@ -474,7 +478,7 @@ export default function ChatInput({
               />
             )}
             {!hasFeature.includes("search") && !hasFeature.includes("think") ? (
-              <div className="px-2">
+              <div className="px-[9px]">
                 <Copyright />
               </div>
             ) : null}
@@ -491,7 +495,7 @@ export default function ChatInput({
             {showTooltip && (
               <VisibleKey
                 shortcut={modeSwitch}
-                className="absolute left-1 z-10"
+                className="absolute -left-3 z-10"
               />
             )}
 
