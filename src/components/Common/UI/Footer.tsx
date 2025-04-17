@@ -89,7 +89,7 @@ export default function Footer({
                 "pl-2": updateInfo?.available,
               })}
             >
-              <VisibleKey shortcut={fixedWindow} onKeypress={togglePin}>
+              <VisibleKey shortcut={fixedWindow} onKeyPress={togglePin}>
                 {isPinned ? <PinIcon /> : <PinOffIcon />}
               </VisibleKey>
             </button>
