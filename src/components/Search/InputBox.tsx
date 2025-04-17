@@ -19,6 +19,7 @@ import { DataSource } from "@/types/commands";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import Copyright from "@/components/Common/Copyright";
 import VisibleKey from "../Common/VisibleKey";
+import { divide } from "lodash-es";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -446,10 +447,7 @@ export default function ChatInput({
                 )}
                 onClick={DeepThinkClick}
               >
-                <VisibleKey
-                  shortcut={deepThinking}
-                  onKeypress={DeepThinkClick}
-                >
+                <VisibleKey shortcut={deepThinking} onKeypress={DeepThinkClick}>
                   <Brain
                     className={`size-3 ${
                       isDeepThinkActive
@@ -493,10 +491,9 @@ export default function ChatInput({
         {isChatPage || hasModules?.length !== 2 ? null : (
           <div className="relative w-16 flex justify-end items-center">
             {showTooltip && (
-              <VisibleKey
-                shortcut={modeSwitch}
-                className="absolute -left-3 z-10"
-              />
+              <div className="absolute right-[52px] -top-2 z-10">
+                <VisibleKey shortcut={modeSwitch} />
+              </div>
             )}
 
             <ChatSwitch

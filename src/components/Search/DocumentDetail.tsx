@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { formatter } from "@/utils/index";
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import defaultThumbnail from "@/assets/coconut-tree.png";
+import ItemIcon from "@/components/Common/Icons/ItemIcon";
 
 interface DocumentDetailProps {
   document: any;
@@ -17,9 +18,9 @@ interface DetailItemProps {
 }
 
 const DetailItem: React.FC<DetailItemProps> = ({ label, value, icon }) => (
-  <div className="flex justify-between flex-wrap font-normal text-xs mb-2.5">
-    <div className="text-[#666]">{label}</div>
-    <div className="text-[#333] dark:text-[#D8D8D8] flex justify-end text-right w-56 break-words">
+  <div className="flex justify-between flex-wrap font-normal text-xs mb-2.5 border-t border-[rgba(238,240,243,1)] dark:border-[#272626] pt-2.5">
+    <div className="text-[rgba(153,153,153,1)] dark:text-[#666]">{label}</div>
+    <div className="text-[rgba(51,51,51,1);] dark:text-[#D8D8D8] flex justify-end text-right w-56 break-words">
       {icon}
       {value}
     </div>
@@ -31,15 +32,18 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
   const { t } = useTranslation();
 
   return (
-    <div className="p-4">
-      <div className="font-normal text-xs text-[#666] dark:text-[#999] mb-2">
+    <div className="p-3">
+      {/* <div className="font-normal text-xs text-[#666] dark:text-[#999] mb-2">
         {t("search.document.details")}
+      </div> */}
+      <div className="text-xs font-normal text-[rgba(51,51,51,1)] dark:text-[#D8D8D8]">
+        {document?.title || "-"}
       </div>
 
-      <div className="py-4 mt-4">
+      <div className="py-4">
         {/* Document Thumbnail */}
-        {document?.thumbnail && (
-          <div className="mb-4">
+        <div className="mb-4 h-[140px] rounded-lg bg-[rgba(243,244,246,1)] dark:bg-[#202126] flex justify-center items-center">
+          {document.thumbnail ? (
             <img
               src={document.thumbnail}
               alt="thumbnail"
@@ -49,12 +53,14 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
                 target.src = defaultThumbnail;
               }}
             />
-          </div>
-        )}
+          ) : (
+            <ItemIcon item={document} className="w-16 h-16"/>
+          )}
+        </div>
 
         {/* Document Summary */}
         {document?.summary && (
-          <div className="mb-4 text-xs text-[#333] dark:text-[#D8D8D8] whitespace-pre-wrap break-words">
+          <div className="mb-4 text-xs text-[rgba(153,153,153,1)] dark:text-[#D8D8D8] whitespace-pre-wrap break-words">
             {document.summary}
           </div>
         )}
@@ -72,12 +78,6 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
             ))}
           </div>
         )}
-
-        {/* Basic Information */}
-        <DetailItem
-          label={t("search.document.name")}
-          value={document?.title || "-"}
-        />
 
         <DetailItem
           label={t("search.document.source")}
