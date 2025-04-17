@@ -1,9 +1,10 @@
 use crate::common::document::Document;
+use crate::common::http::get_response_body_text;
 use reqwest::Response;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use std::collections::HashMap;
 use std::error::Error;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SearchResponse<T> {
     pub took: u64,
@@ -47,14 +48,11 @@ pub async fn parse_search_response<T>(
 where
     T: for<'de> Deserialize<'de> + std::fmt::Debug,
 {
-    let body = response
-        .json::<Value>()
-        .await
-        .map_err(|e| format!("Failed to parse JSON: {}", e))?;
+    let body_text = get_response_body_text(response).await?;
 
-    // dbg!(&body);
+    dbg!(&body_text);
 
-    let search_response: SearchResponse<T> = serde_json::from_value(body)
+    let search_response: SearchResponse<T> = serde_json::from_str(&body_text)
         .map_err(|e| format!("Failed to deserialize search response: {}", e))?;
 
     Ok(search_response)

@@ -1,3 +1,4 @@
+use crate::common::http::get_response_body_text;
 use crate::common::profile::UserProfile;
 use crate::server::http_client::HttpClient;
 use tauri::{AppHandle, Runtime};
@@ -12,14 +13,16 @@ pub async fn get_user_profiles<R: Runtime>(
         .await
         .map_err(|e| format!("Error fetching profile: {}", e))?;
 
-    if let Some(content_length) = response.content_length() {
-        if content_length > 0 {
-            let profile: UserProfile = response
-                .json()
-                .await
-                .map_err(|e| format!("Failed to parse response: {}", e))?;
-            return Ok(profile);
-        }
+    // Use get_response_body_text to extract the body content
+    let response_body = get_response_body_text(response)
+        .await
+        .map_err(|e| format!("Failed to read response body: {}", e))?;
+
+    // Check if the response body is not empty before deserializing
+    if !response_body.is_empty() {
+        let profile: UserProfile = serde_json::from_str(&response_body)
+            .map_err(|e| format!("Failed to parse response: {}", e))?;
+        return Ok(profile);
     }
 
     Err("Profile not found or empty response".to_string())

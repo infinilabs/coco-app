@@ -1,6 +1,7 @@
 use crate::common::document::{DataSourceReference, Document};
+use crate::common::error::SearchError;
 use crate::common::search::{QueryResponse, QuerySource, SearchQuery};
-use crate::common::traits::{SearchError, SearchSource};
+use crate::common::traits::SearchSource;
 use crate::local::LOCAL_QUERY_SOURCE_TYPE;
 use applications::{App, AppInfo, AppInfoContext};
 use async_trait::async_trait;
