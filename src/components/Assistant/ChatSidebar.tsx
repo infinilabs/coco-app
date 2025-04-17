@@ -39,15 +39,17 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         overflow-hidden
       `}
     >
-      <HistoryList
-        list={chats}
-        active={activeChat}
-        onSearch={onSearch}
-        onRefresh={fetchChatHistory}
-        onSelect={onSelectChat}
-        onRename={onRename}
-        onRemove={onDeleteChat}
-      />
+      {isSidebarOpen && (
+        <HistoryList
+          list={chats}
+          active={activeChat}
+          onSearch={onSearch}
+          onRefresh={fetchChatHistory}
+          onSelect={onSelectChat}
+          onRename={onRename}
+          onRemove={onDeleteChat}
+        />
+      )}
       {/* <Sidebar
         chats={chats}
         activeChat={activeChat}

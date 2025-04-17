@@ -1,19 +1,27 @@
-import { FC, ReactNode, useEffect, useRef, useState } from "react";
+import { FC, HTMLAttributes, useEffect, useRef, useState } from "react";
 import { useKeyPress } from "ahooks";
 import clsx from "clsx";
+import { last } from "lodash-es";
 
 import { POPOVER_PANEL_SELECTOR } from "@/constants";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 
-interface VisibleKeyProps {
+interface VisibleKeyProps extends HTMLAttributes<HTMLDivElement> {
   shortcut: string;
-  children?: ReactNode;
-  className?: string;
-  onKeypress?: () => void;
+  rootClassName?: string;
+  shortcutClassName?: string;
+  onKeyPress?: () => void;
 }
 
 const VisibleKey: FC<VisibleKeyProps> = (props) => {
-  const { shortcut, children, className, onKeypress } = props;
+  const {
+    shortcut,
+    rootClassName,
+    shortcutClassName,
+    children,
+    onKeyPress,
+    ...rest
+  } = props;
 
   const modifierKey = useShortcutsStore((state) => {
     return state.modifierKey;
@@ -29,7 +37,9 @@ const VisibleKey: FC<VisibleKeyProps> = (props) => {
   const [visibleShortcut, setVisibleShortcut] = useState<boolean>();
 
   useEffect(() => {
-    const popoverPanelEl = document.querySelector(POPOVER_PANEL_SELECTOR);
+    const popoverPanelEls = document.querySelectorAll(POPOVER_PANEL_SELECTOR);
+
+    const popoverPanelEl = last(popoverPanelEls);
 
     if (!openPopover || !popoverPanelEl) {
       return setVisibleShortcut(modifierKeyPressed);
@@ -50,7 +60,7 @@ const VisibleKey: FC<VisibleKeyProps> = (props) => {
   useKeyPress(`${modifierKey}.${shortcut}`, () => {
     if (!visibleShortcut) return;
 
-    onKeypress?.();
+    onKeyPress?.();
   });
 
   const renderShortcut = () => {
@@ -67,15 +77,17 @@ const VisibleKey: FC<VisibleKeyProps> = (props) => {
 
   return (
     <div
+      {...rest}
       ref={childrenRef}
-      className={clsx("relative inline-block")}
+      className={clsx(rootClassName, "relative inline-block")}
     >
       {children}
+
       {visibleShortcut ? (
         <div
           className={clsx(
             "size-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-            className
+            shortcutClassName
           )}
         >
           {renderShortcut()}
