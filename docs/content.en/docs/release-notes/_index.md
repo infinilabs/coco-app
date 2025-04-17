@@ -29,7 +29,6 @@ Information about release notes of Coco Server is provided here.
 - fix: active shadow setting #354
 - fix: chat history was not show up #377
 
-
 ### Improvements
 
 - refactor: web components #331
@@ -38,6 +37,7 @@ Information about release notes of Coco Server is provided here.
 - style: modify the style #370
 - style: search list details display #378
 - refactor: refactoring api error handling #382
+- style: search list details display #378
 
 ## 0.3.0 (2025-03-31)
 

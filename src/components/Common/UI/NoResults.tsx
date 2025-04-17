@@ -4,12 +4,10 @@ import { useTranslation } from "react-i18next";
 import { isMac } from "@/utils/platform";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import noDataImg from "@/assets/coconut-tree.png";
-import { useAppStore } from "@/stores/appStore";
 
 export const NoResults = () => {
   const { t } = useTranslation();
 
-  const isTauri = useAppStore((state) => state.isTauri);
   const modeSwitch = useShortcutsStore((state) => state.modeSwitch);
 
   return (
@@ -21,7 +19,7 @@ export const NoResults = () => {
       <div className="mt-4 text-sm text-[#999] dark:text-[#666]">
         {t("search.main.noResults")}
       </div>
-      <div className={`${isTauri ? 'flex' : 'hidden md:flex'} mt-10 text-sm  text-[#333] dark:text-[#D8D8D8]`}>
+      <div className={`flex mobile:hidden mt-10 text-sm  text-[#333] dark:text-[#D8D8D8]`}>
         {t("search.main.askCoco")}
         {isMac ? (
           <span className="ml-3 w-5 h-5 rounded-[6px] border border-[#D8D8D8] flex justify-center items-center">

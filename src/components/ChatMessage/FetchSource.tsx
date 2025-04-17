@@ -10,7 +10,6 @@ import { useTranslation } from "react-i18next";
 import { OpenURLWithBrowser } from "@/utils/index";
 import type { IChunkData } from "@/components/Assistant/types";
 import RetrieveIcon from "@/icons/Retrieve";
-import { useAppStore } from "@/stores/appStore";
 
 interface FetchSourceProps {
   Detail?: any;
@@ -41,7 +40,6 @@ export const FetchSource = ({
   loading,
 }: FetchSourceProps) => {
   const { t } = useTranslation();
-  const isTauri = useAppStore((state) => state.isTauri);
 
   const [isSourceExpanded, setIsSourceExpanded] = useState(false);
 
@@ -138,9 +136,7 @@ export const FetchSource = ({
                   </div>
                 </div>
                 <div
-                  className={`${
-                    isTauri ? "flex" : "hidden md:flex"
-                  } w-[25%] items-center justify-end gap-2`}
+                  className={`flex mobile:hidden w-[25%] items-center justify-end gap-2`}
                 >
                   <span className="text-xs text-[#999999] dark:text-[#999999] truncate">
                     {item.source?.name}

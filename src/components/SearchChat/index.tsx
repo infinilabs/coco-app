@@ -291,8 +291,8 @@ function SearchChat({
         data-tauri-drag-region={isTauri}
         className={`p-2 absolute w-full flex justify-center transition-all duration-500 ${
           isTransitioned
-            ? "top-[calc(100%-84px)] h-[84px] border-t"
-            : "top-0 h-[84px] border-b"
+            ? "top-[calc(100%-82px)] h-[82px] border-t"
+            : "top-0 h-[82px] border-b"
         } border-[#E6E6E6] dark:border-[#272626]`}
       >
         <InputBox
@@ -331,7 +331,7 @@ function SearchChat({
         data-tauri-drag-region={isTauri}
         className={`absolute w-full transition-opacity duration-500 ${
           isTransitioned ? "opacity-0 pointer-events-none" : "opacity-100"
-        } bottom-0 h-[calc(100%-84px)] `}
+        } bottom-0 h-[calc(100%-82px)] `}
       >
         <Suspense fallback={<LoadingFallback />}>
           <Search

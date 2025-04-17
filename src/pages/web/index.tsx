@@ -42,7 +42,7 @@ function WebApp({
   hideCoco = () => {},
   hasModules = ["search", "chat"],
   defaultModule = "search",
-  hasFeature = ["search", "think", "think_active", "search_active"],
+  hasFeature = ["think_active", "search_active"],
   theme = "dark",
   searchPlaceholder = "",
   chatPlaceholder = "",

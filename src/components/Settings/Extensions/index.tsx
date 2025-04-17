@@ -70,8 +70,6 @@ const Extensions = () => {
     });
   }, [activeId, allApps]);
 
-  console.log("currentPlugin", currentPlugin);
-
   return (
     <ExtensionsContext.Provider
       value={{
