@@ -64,7 +64,11 @@ const SearchListItem: React.FC<SearchListItemProps> = React.memo(
       >
         <div
           className={`${
-            showListRight ? "md:max-w-[450px] w-full" : "flex-1"
+            showListRight
+              ? isTauri
+                ? "max-w-[450px]"
+                : "md:max-w-[450px] w-full"
+              : "flex-1"
           } min-w-0 flex gap-2 items-center justify-start `}
         >
           <ItemIcon item={item} />

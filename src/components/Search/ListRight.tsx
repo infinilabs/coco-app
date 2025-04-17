@@ -30,7 +30,7 @@ export default function ListRight({
       {item?.rich_categories ? null : (
         <div
           className={`${
-            isTauri ? "inline-block" : "hidden md:inline-block"
+            isTauri ? "" : "hidden md:inline-block"
           } w-4 h-4 cursor-pointer`}
           onClick={(e) => {
             e.stopPropagation();
@@ -53,7 +53,7 @@ export default function ListRight({
           <RichIcon
             item={item}
             className={`${
-              isTauri ? "inline-block" : "hidden md:inline-block"
+              isTauri ? "" : "hidden md:inline-block"
             } w-4 h-4 mr-2 cursor-pointer`}
             onClick={(e) => {
               e.stopPropagation();

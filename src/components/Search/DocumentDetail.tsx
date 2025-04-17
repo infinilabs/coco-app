@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { formatter } from "@/utils/index";
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
+import defaultThumbnail from "@/assets/coconut-tree.png";
 
 interface DocumentDetailProps {
   document: any;
@@ -36,6 +37,42 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
       </div>
 
       <div className="py-4 mt-4">
+        {/* Document Thumbnail */}
+        {document?.thumbnail && (
+          <div className="mb-4">
+            <img
+              src={document.thumbnail}
+              alt="thumbnail"
+              className="max-w-[200px] max-h-[120px] object-contain"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = defaultThumbnail;
+              }}
+            />
+          </div>
+        )}
+
+        {/* Document Summary */}
+        {document?.summary && (
+          <div className="mb-4 text-xs text-[#333] dark:text-[#D8D8D8] whitespace-pre-wrap break-words">
+            {document.summary}
+          </div>
+        )}
+
+        {/* Document Tags */}
+        {document?.tags && document.tags.length > 0 && (
+          <div className="mb-4 flex flex-wrap gap-1">
+            {document.tags.map((tag: string, index: number) => (
+              <span
+                key={index}
+                className="px-2 py-0.5 text-xs rounded-full bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* Basic Information */}
         <DetailItem
           label={t("search.document.name")}
@@ -62,20 +99,6 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
               >
                 {document.url}
               </a>
-            }
-          />
-        )}
-
-        {/* Document Thumbnail */}
-        {document?.thumbnail && (
-          <DetailItem
-            label={t("search.document.thumbnail")}
-            value={
-              <img
-                src={document.thumbnail}
-                alt="thumbnail"
-                className="max-w-[200px] max-h-[120px] object-contain"
-              />
             }
           />
         )}
@@ -114,30 +137,6 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
           <DetailItem
             label={t("search.document.language")}
             value={document.lang.toUpperCase()}
-          />
-        )}
-
-        {/* Document Tags */}
-        {document?.tags && document.tags.length > 0 && (
-          <DetailItem
-            label={t("search.document.tags")}
-            value={
-              <div className="text-right whitespace-pre-wrap break-words w-full">
-                {document.tags.join(", ")}
-              </div>
-            }
-          />
-        )}
-
-        {/* Document Summary */}
-        {document?.summary && (
-          <DetailItem
-            label={t("search.document.summary")}
-            value={
-              <div className="text-right whitespace-pre-wrap break-words w-full">
-                {document.summary}
-              </div>
-            }
           />
         )}
 
