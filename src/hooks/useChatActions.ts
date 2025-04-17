@@ -37,7 +37,7 @@ export function useChatActions(
             serverId: currentServiceId,
             sessionId: activeChat?._id,
           });
-          response = JSON.parse(response || "");
+          response = response ? JSON.parse(response) : null;
         } else {
           const [error, res] = await Post(
             `/chat/${activeChat?._id}/_close`,
@@ -69,7 +69,7 @@ export function useChatActions(
             serverId: currentServiceId,
             sessionId: activeChat?._id,
           });
-          response = JSON.parse(response || "");
+          response = response ? JSON.parse(response) : null;
         } else {
           const [error, res] = await Post(
             `/chat/${activeChat?._id}/_cancel`,
@@ -102,7 +102,7 @@ export function useChatActions(
             from: 0,
             size: 20,
           });
-          response = JSON.parse(response || "");
+          response = response ? JSON.parse(response) : null;
         } else {
           const [error, res] = await Get(`/chat/${chat?._id}/_history`, {
             from: 0,
@@ -231,7 +231,7 @@ export function useChatActions(
             },
             message: content,
           });
-          response = JSON.parse(response || "");
+          response = response ? JSON.parse(response) : null;
         } else {
           console.log("websocketSessionId", websocketSessionId, id);
           const [error, res] = await Post(
@@ -312,7 +312,7 @@ export function useChatActions(
             serverId: currentServiceId,
             sessionId: chat?._id,
           });
-          response = JSON.parse(response || "");
+          response = response ? JSON.parse(response) : null;
         } else {
           const [error, res] = await Post(`/chat/${chat?._id}/_open`, {});
           if (error) {
@@ -343,7 +343,8 @@ export function useChatActions(
           size: 20,
           query: keyword,
         });
-        response = JSON.parse(response || "");
+        console.log("12121212121212", response);
+        response = response ? JSON.parse(response) : null;
       } else {
         const [error, res] = await Get(`/chat/_history`, {
           from: 0,
@@ -367,13 +368,8 @@ export function useChatActions(
   }, [currentServiceId, keyword]);
 
   useEffect(() => {
-    console.log("showChatHistory", showChatHistory);
     showChatHistory && getChatHistory();
   }, [showChatHistory]);
-
-  useEffect(() => {
-    getChatHistory();
-  }, [keyword]);
 
   const createChatWindow = useCallback(async (createWin: any) => {
     if (isTauri) {

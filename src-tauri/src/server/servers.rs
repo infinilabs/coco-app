@@ -304,7 +304,7 @@ pub async fn refresh_coco_server_info<R: Runtime>(
         cache.get(&id).cloned()
     };
 
-    let mut server = match cached_server {
+    let server = match cached_server {
         Some(server) => server,
         None => return Err("Server not found.".into()),
     };

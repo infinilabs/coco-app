@@ -30,13 +30,19 @@ async function invokeWithErrorHandler<T>(
       const failedResult = result as any;
       if (failedResult.failed?.length > 0) {
         failedResult.failed.forEach((error: any) => {
-          addError(error.error, 'error');
+          // addError(error.error, 'error');
+          console.log(error.error);
         });
       }
     }
+
+    if (typeof result === 'string') {
+      throw new Error(result);
+    }
+    
     return result;
   } catch (error: any) {
-    const errorMessage = error?.message || 'Command execution failed';
+    const errorMessage = error || 'Command execution failed';
     addError(errorMessage, 'error');
     throw error;
   }

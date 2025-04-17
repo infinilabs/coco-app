@@ -65,7 +65,7 @@ export default function Chat({}: ChatProps) {
         size: 20,
         query: keyword,
       });
-      response = JSON.parse(response || "");
+      response = response ? JSON.parse(response) : null;
       console.log("_history", response);
       const hits = response?.hits?.hits || [];
       setChats(hits);
@@ -106,7 +106,7 @@ export default function Chat({}: ChatProps) {
         from: 0,
         size: 20,
       });
-      response = JSON.parse(response || "");
+      response = response ? JSON.parse(response) : null;
       console.log("id_history", response);
       const hits = response?.hits?.hits || [];
       const updatedChat: typeChat = {
@@ -126,7 +126,7 @@ export default function Chat({}: ChatProps) {
         serverId: currentService?.id,
         sessionId: activeChat?._id,
       });
-      response = JSON.parse(response || "");
+      response = response ? JSON.parse(response) : null;
       console.log("_close", response);
     } catch (error) {
       console.error("close_session_chat:", error);
@@ -140,7 +140,7 @@ export default function Chat({}: ChatProps) {
         serverId: currentService?.id,
         sessionId: chat?._id,
       });
-      response = JSON.parse(response || "");
+      response = response ? JSON.parse(response) : null;
       console.log("_open", response);
       chatHistory(response);
     } catch (error) {
@@ -209,7 +209,7 @@ export default function Chat({}: ChatProps) {
   }, []);
 
   const getFileIcon = useCallback(async (path: string, size: number) => {
-    return icon(path, { size });
+    return icon(path, size);
   }, []);
 
   const handleSearch = (keyword: string) => {

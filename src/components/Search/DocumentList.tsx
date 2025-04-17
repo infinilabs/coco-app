@@ -174,7 +174,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         />
       </div>
 
-      <div className="flex-1 overflow-auto" ref={containerRef}>
+      <div className="flex-1 overflow-auto custom-scrollbar pr-0.5" ref={containerRef}>
         {data?.list && data.list.length > 0 && (
           <div>
             {data.list.map((hit, index) => (

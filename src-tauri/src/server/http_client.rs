@@ -38,14 +38,10 @@ impl HttpClient {
         let request_builder =
             Self::get_request_builder(method, url, headers, query_params, body).await;
 
-
-        let response = request_builder
-            .send()
-            .await
-            .map_err(|e| {
-                dbg!("Failed to send request: {}", &e);
-                format!("Failed to send request: {}", e)
-            })?;
+        let response = request_builder.send().await.map_err(|e| {
+            dbg!("Failed to send request: {}", &e);
+            format!("Failed to send request: {}", e)
+        })?;
         Ok(response)
     }
 
@@ -58,14 +54,12 @@ impl HttpClient {
     ) -> RequestBuilder {
         let client = HTTP_CLIENT.lock().await; // Acquire the lock on HTTP_CLIENT
 
-
         // Build the request
         let mut request_builder = client.request(method.clone(), url);
 
         if let Some(h) = headers {
             let mut req_headers = reqwest::header::HeaderMap::new();
             for (key, value) in h.into_iter() {
-
                 match (
                     HeaderName::from_bytes(key.as_bytes()),
                     HeaderValue::from_str(value.trim()),
@@ -74,10 +68,13 @@ impl HttpClient {
                         req_headers.insert(name, val);
                     }
                     (Err(e), _) => {
-                        eprintln!("Invalid header name: {:?}", key);
+                        eprintln!("Invalid header name: {:?}, error: {}", key, e);
                     }
                     (_, Err(e)) => {
-                        eprintln!("Invalid header value for {}: {:?}", key, value);
+                        eprintln!(
+                            "Invalid header value for {}: {:?}, error: {}",
+                            key, value, e
+                        );
                     }
                 }
             }
@@ -85,9 +82,8 @@ impl HttpClient {
         }
 
         if let Some(query) = query_params {
-            let query: HashMap<String, String> = query.into_iter()
-                .map(|(k, v)| (k, v.to_string()))
-                .collect();
+            let query: HashMap<String, String> =
+                query.into_iter().map(|(k, v)| (k, v.to_string())).collect();
             request_builder = request_builder.query(&query);
         }
 
@@ -173,7 +169,7 @@ impl HttpClient {
             query_params,
             body,
         )
-            .await
+        .await
     }
 
     // Convenience method for PUT requests
@@ -193,7 +189,7 @@ impl HttpClient {
             query_params,
             body,
         )
-            .await
+        .await
     }
 
     // Convenience method for DELETE requests
@@ -212,6 +208,6 @@ impl HttpClient {
             query_params,
             None,
         )
-            .await
+        .await
     }
 }

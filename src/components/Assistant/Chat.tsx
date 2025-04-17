@@ -22,6 +22,7 @@ import { ChatContent } from "./ChatContent";
 import ConnectPrompt from "./ConnectPrompt";
 import type { Chat } from "./types";
 import PrevSuggestion from "@/components/ChatMessage/PrevSuggestion";
+import { useAppStore } from '@/stores/appStore';
 
 interface ChatAIProps {
   isTransitioned: boolean;
@@ -75,6 +76,8 @@ const ChatAI = memo(
         useChatStore();
 
       const currentService = useConnectStore((state) => state.currentService);
+
+      const addError = useAppStore.getState().addError;
 
       const [activeChat, setActiveChat] = useState<Chat>();
       const [timedoutShow, setTimedoutShow] = useState(false);
@@ -198,7 +201,10 @@ const ChatAI = memo(
         async (value: string) => {
           try {
             console.log("init", isLogin, curChatEnd, activeChat?._id);
-            if (!isLogin || !curChatEnd) return;
+            if (!isLogin || !curChatEnd) {
+              addError("Please login to continue chatting")
+              return;
+            }
             setShowPrevSuggestion(false);
             if (!activeChat?._id) {
               await createNewChat(value, activeChat, websocketSessionId);
