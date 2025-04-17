@@ -16,13 +16,14 @@ export default function ListRight({
   currentIndex,
   goToTwoPage,
 }: ListRightProps) {
+
   return (
     <div
-      className={`flex flex-1 md:text-right text-left md:min-w-[160px] w-full h-full md:pl-5 text-[12px] gap-2 items-center md:justify-end justify-start relative`}
+      className={`flex flex-1 text-right min-w-[160px] pl-5 justify-end w-full h-full text-[12px] gap-2 items-center relative`}
     >
       {item?.rich_categories ? null : (
         <div
-          className="hidden md:inline-block w-4 h-4 cursor-pointer"
+          className={`w-4 h-4 cursor-pointer`}
           onClick={(e) => {
             e.stopPropagation();
             goToTwoPage && goToTwoPage(item);
@@ -43,7 +44,7 @@ export default function ListRight({
         <div className="flex items-center justify-end max-w-[calc(100%-20px)] whitespace-nowrap">
           <RichIcon
             item={item}
-            className="hidden md:inline-block w-4 h-4 mr-2 cursor-pointer"
+            className={`w-4 h-4 mr-2 cursor-pointer`}
             onClick={(e) => {
               e.stopPropagation();
               goToTwoPage && goToTwoPage(item);

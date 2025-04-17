@@ -1,9 +1,9 @@
 use crate::common::document::Document;
-use crate::common::search::{
-    parse_search_response, QueryHits, QueryResponse, QuerySource, SearchQuery,
-};
+use crate::common::error::SearchError;
+use crate::common::http::get_response_body_text;
+use crate::common::search::{QueryHits, QueryResponse, QuerySource, SearchQuery, SearchResponse};
 use crate::common::server::Server;
-use crate::common::traits::{SearchError, SearchSource};
+use crate::common::traits::SearchSource;
 use crate::server::http_client::HttpClient;
 use crate::server::servers::get_server_token;
 use async_trait::async_trait;
@@ -46,7 +46,7 @@ impl DocumentsSizedCollector {
         }
     }
 
-    fn documents(self) -> impl ExactSizeIterator<Item = Document> {
+    fn documents(self) -> impl ExactSizeIterator<Item=Document> {
         self.docs.into_iter().map(|(_, doc, _)| doc)
     }
 
@@ -126,58 +126,42 @@ impl SearchSource for CocoSearchSource {
         }
     }
 
-    // Directly return Result<QueryResponse, SearchError> instead of Future
     async fn search(&self, query: SearchQuery) -> Result<QueryResponse, SearchError> {
-        let _server_id = self.server.id.clone();
-        let _server_name = self.server.name.clone();
-        let request_builder = self.build_request_from_query(&query).await.unwrap();
+        // Build the request from the provided query
+        let request_builder = self
+            .build_request_from_query(&query)
+            .await
+            .map_err(|e| SearchError::InternalError(e.to_string()))?;
 
-        // Send the HTTP request asynchronously
-        let response = request_builder.send().await;
+        // Send the HTTP request and handle errors
+        let response = request_builder
+            .send()
+            .await
+            .map_err(|e| SearchError::HttpError(format!("Failed to send search request: {}", e)))?;
 
-        match response {
-            Ok(response) => {
-                let status_code = response.status().as_u16();
+        // Use the helper function to parse the response body
+        let response_body = get_response_body_text(response)
+            .await
+            .map_err(|e| SearchError::ParseError(format!("Failed to read response body: {}", e)))?;
 
-                if status_code >= 200 && status_code < 400 {
-                    // Parse the response only if the status code is successful
-                    match parse_search_response(response).await {
-                        Ok(response) => {
-                            let total_hits = response.hits.total.value as usize;
-                            let hits: Vec<(Document, f64)> = response
-                                .hits
-                                .hits
-                                .into_iter()
-                                .map(|hit| {
-                                    // Handling Option<f64> in hit._score by defaulting to 0.0 if None
-                                    (hit._source, hit._score.unwrap_or(0.0)) // Use 0.0 if _score is None
-                                })
-                                .collect();
+        // Parse the search response from the body text
+        let parsed: SearchResponse<Document> = serde_json::from_str(&response_body)
+            .map_err(|e| SearchError::ParseError(format!("Failed to parse search response: {}", e)))?;
 
-                            // Return the QueryResponse with hits and total hits
-                            Ok(QueryResponse {
-                                source: self.get_type(),
-                                hits,
-                                total_hits,
-                            })
-                        }
-                        Err(err) => {
-                            // Parse error when response parsing fails
-                            Err(SearchError::ParseError(err.to_string()))
-                        }
-                    }
-                } else {
-                    // Handle unsuccessful HTTP status codes (e.g., 4xx, 5xx)
-                    Err(SearchError::HttpError(format!(
-                        "Request failed with status code: {}",
-                        status_code
-                    )))
-                }
-            }
-            Err(err) => {
-                // Handle error from the request itself
-                Err(SearchError::HttpError(err.to_string()))
-            }
-        }
+        // Process the parsed response
+        let total_hits = parsed.hits.total.value as usize;
+        let hits: Vec<(Document, f64)> = parsed
+            .hits
+            .hits
+            .into_iter()
+            .map(|hit| (hit._source, hit._score.unwrap_or(0.0))) // Default _score to 0.0 if None
+            .collect();
+
+        // Return the final result
+        Ok(QueryResponse {
+            source: self.get_type(),
+            hits,
+            total_hits,
+        })
     }
 }

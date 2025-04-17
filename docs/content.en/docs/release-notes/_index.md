@@ -22,11 +22,13 @@ Information about release notes of Coco Server is provided here.
 - feat: service list popup box supports keyboard-only operation #359
 - feat: networked search data sources support search and keyboard-only operation #367
 - feat: add application management to the plugin #374
+- feat: add keyboard-only operation to history list #385
 
 ### Bug fix
 
 - fix: fixed the problem of not being able to search in secondary directories #338
 - fix: active shadow setting #354
+- fix: chat history was not show up #377
 
 ### Improvements
 
@@ -34,6 +36,8 @@ Information about release notes of Coco Server is provided here.
 - refactor: refactoring login callback, receive access_token from coco-server
 - chore: adjust web component styles #362
 - style: modify the style #370
+- style: search list details display #378
+- refactor: refactoring api error handling #382
 
 ## 0.3.0 (2025-03-31)
 

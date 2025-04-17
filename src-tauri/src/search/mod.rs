@@ -1,8 +1,8 @@
+use crate::common::error::SearchError;
 use crate::common::register::SearchSourceRegistry;
 use crate::common::search::{
     FailedRequest, MultiSourceQueryResponse, QueryHits, QuerySource, SearchQuery,
 };
-use crate::common::traits::SearchError;
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
 use std::collections::HashMap;
@@ -41,7 +41,7 @@ pub async fn query_coco_fusion<R: Runtime>(
             timeout(timeout_duration, async {
                 query_source_clone.search(query).await
             })
-            .await
+                .await
         }));
     }
 

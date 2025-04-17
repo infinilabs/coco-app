@@ -195,7 +195,7 @@ export default function SearchPopover({
       )}
       onClick={setIsSearchActive}
     >
-      <VisibleKey shortcut={internetSearch} onKeypress={setIsSearchActive} className="!size-3">
+      <VisibleKey shortcut={internetSearch} onKeyPress={setIsSearchActive}>
         <Globe
           className={`size-3 ${
             isSearchActive
@@ -208,7 +208,9 @@ export default function SearchPopover({
       {isSearchActive && (
         <>
           <span
-            className={`${isSearchActive ? "text-[#0072FF]" : "dark:text-white"}`}
+            className={`${
+              isSearchActive ? "text-[#0072FF]" : "dark:text-white"
+            }`}
           >
             {t("search.input.search")}
           </span>
@@ -226,10 +228,9 @@ export default function SearchPopover({
               >
                 <VisibleKey
                   shortcut={internetSearchScope}
-                  onKeypress={() => {
+                  onKeyPress={() => {
                     buttonRef.current?.click();
                   }}
-                  className="!size-3"
                 >
                   <ChevronDownIcon
                     className={clsx("size-3", [
@@ -261,7 +262,7 @@ export default function SearchPopover({
                           onClick={handleRefresh}
                           className="size-[24px] flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10 cursor-pointer"
                         >
-                          <VisibleKey shortcut="R" onKeypress={handleRefresh}>
+                          <VisibleKey shortcut="R" onKeyPress={handleRefresh}>
                             <RefreshCw
                               className={`size-3 text-[#0287FF] transition-transform duration-1000 ${
                                 isRefreshDataSource ? "animate-spin" : ""
@@ -275,7 +276,7 @@ export default function SearchPopover({
                         <div className="absolute inset-0 flex items-center px-2 pointer-events-none">
                           <VisibleKey
                             shortcut="I"
-                            onKeypress={() => {
+                            onKeyPress={() => {
                               searchInputRef.current?.focus();
                             }}
                           />
@@ -332,7 +333,7 @@ export default function SearchPopover({
                                   shortcut={
                                     index === 9 ? "0" : String(index + 1)
                                   }
-                                  onKeypress={() => {
+                                  onKeyPress={() => {
                                     onSelectDataSource(id, !isChecked(), isAll);
                                   }}
                                 />
@@ -354,7 +355,7 @@ export default function SearchPopover({
                     </div>
 
                     <div className="flex items-center justify-between h-8 px-3 border-t dark:border-t-[#202126]">
-                      <VisibleKey shortcut="leftarrow" onKeypress={handlePrev}>
+                      <VisibleKey shortcut="leftarrow" onKeyPress={handlePrev}>
                         <ChevronLeft className="size-4" onClick={handlePrev} />
                       </VisibleKey>
 
@@ -362,7 +363,7 @@ export default function SearchPopover({
                         {page}/{totalPage}
                       </div>
 
-                      <VisibleKey shortcut="rightarrow" onKeypress={handleNext}>
+                      <VisibleKey shortcut="rightarrow" onKeyPress={handleNext}>
                         <ChevronRight className="size-4" onClick={handleNext} />
                       </VisibleKey>
                     </div>

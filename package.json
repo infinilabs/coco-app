@@ -57,7 +57,7 @@
     "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
-    "tauri-plugin-fs-pro-api": "^2.3.1",
+    "tauri-plugin-fs-pro-api": "^2.4.0",
     "tauri-plugin-macos-permissions-api": "^2.2.0",
     "tauri-plugin-screenshots-api": "^2.1.0",
     "tauri-plugin-windows-version-api": "^2.0.0",

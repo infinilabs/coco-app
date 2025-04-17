@@ -1,10 +1,10 @@
 use crate::server::servers::{get_server_by_id, get_server_token};
-use http::HeaderName;
+use http::{HeaderName, HeaderValue};
 use once_cell::sync::Lazy;
 use reqwest::{Client, Method, RequestBuilder};
-use serde_json::Value;
 use std::collections::HashMap;
 use std::time::Duration;
+use tauri_plugin_store::JsonValue;
 use tokio::sync::Mutex;
 
 pub static HTTP_CLIENT: Lazy<Mutex<Client>> = Lazy::new(|| {
@@ -31,17 +31,21 @@ impl HttpClient {
     pub async fn send_raw_request(
         method: Method,
         url: &str,
-        query_params: Option<HashMap<String, Value>>,
+        query_params: Option<HashMap<String, JsonValue>>,
         headers: Option<HashMap<String, String>>,
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
         let request_builder =
             Self::get_request_builder(method, url, headers, query_params, body).await;
 
+
         let response = request_builder
             .send()
             .await
-            .map_err(|e| format!("Failed to send request: {}", e))?;
+            .map_err(|e| {
+                dbg!("Failed to send request: {}", &e);
+                format!("Failed to send request: {}", e)
+            })?;
         Ok(response)
     }
 
@@ -49,10 +53,11 @@ impl HttpClient {
         method: Method,
         url: &str,
         headers: Option<HashMap<String, String>>,
-        query_params: Option<HashMap<String, Value>>, // Add query parameters
+        query_params: Option<HashMap<String, JsonValue>>, // Add query parameters
         body: Option<reqwest::Body>,
     ) -> RequestBuilder {
         let client = HTTP_CLIENT.lock().await; // Acquire the lock on HTTP_CLIENT
+
 
         // Build the request
         let mut request_builder = client.request(method.clone(), url);
@@ -60,17 +65,32 @@ impl HttpClient {
         if let Some(h) = headers {
             let mut req_headers = reqwest::header::HeaderMap::new();
             for (key, value) in h.into_iter() {
-                let _ = req_headers.insert(
-                    HeaderName::from_bytes(key.as_bytes()).unwrap(),
-                    reqwest::header::HeaderValue::from_str(&value).unwrap(),
-                );
+
+                match (
+                    HeaderName::from_bytes(key.as_bytes()),
+                    HeaderValue::from_str(value.trim()),
+                ) {
+                    (Ok(name), Ok(val)) => {
+                        req_headers.insert(name, val);
+                    }
+                    (Err(e), _) => {
+                        eprintln!("Invalid header name: {:?}", key);
+                    }
+                    (_, Err(e)) => {
+                        eprintln!("Invalid header value for {}: {:?}", key, value);
+                    }
+                }
             }
             request_builder = request_builder.headers(req_headers);
         }
 
         if let Some(query) = query_params {
+            let query: HashMap<String, String> = query.into_iter()
+                .map(|(k, v)| (k, v.to_string()))
+                .collect();
             request_builder = request_builder.query(&query);
         }
+
         // Add body if present
         if let Some(b) = body {
             request_builder = request_builder.body(b);
@@ -84,7 +104,7 @@ impl HttpClient {
         method: Method,
         path: &str,
         custom_headers: Option<HashMap<String, String>>,
-        query_params: Option<HashMap<String, Value>>,
+        query_params: Option<HashMap<String, JsonValue>>,
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
         // Fetch the server using the server_id
@@ -123,7 +143,7 @@ impl HttpClient {
     pub async fn get(
         server_id: &str,
         path: &str,
-        query_params: Option<HashMap<String, Value>>, // Add query parameters
+        query_params: Option<HashMap<String, JsonValue>>, // Add query parameters
     ) -> Result<reqwest::Response, String> {
         HttpClient::send_request(server_id, Method::GET, path, None, query_params, None).await
     }
@@ -132,7 +152,7 @@ impl HttpClient {
     pub async fn post(
         server_id: &str,
         path: &str,
-        query_params: Option<HashMap<String, Value>>, // Add query parameters
+        query_params: Option<HashMap<String, JsonValue>>, // Add query parameters
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
         HttpClient::send_request(server_id, Method::POST, path, None, query_params, body).await
@@ -142,7 +162,7 @@ impl HttpClient {
         server_id: &str,
         path: &str,
         custom_headers: Option<HashMap<String, String>>,
-        query_params: Option<HashMap<String, Value>>, // Add query parameters
+        query_params: Option<HashMap<String, JsonValue>>, // Add query parameters
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
         HttpClient::send_request(
@@ -153,7 +173,7 @@ impl HttpClient {
             query_params,
             body,
         )
-        .await
+            .await
     }
 
     // Convenience method for PUT requests
@@ -162,7 +182,7 @@ impl HttpClient {
         server_id: &str,
         path: &str,
         custom_headers: Option<HashMap<String, String>>,
-        query_params: Option<HashMap<String, Value>>, // Add query parameters
+        query_params: Option<HashMap<String, JsonValue>>, // Add query parameters
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
         HttpClient::send_request(
@@ -173,7 +193,7 @@ impl HttpClient {
             query_params,
             body,
         )
-        .await
+            .await
     }
 
     // Convenience method for DELETE requests
@@ -182,7 +202,7 @@ impl HttpClient {
         server_id: &str,
         path: &str,
         custom_headers: Option<HashMap<String, String>>,
-        query_params: Option<HashMap<String, Value>>, // Add query parameters
+        query_params: Option<HashMap<String, JsonValue>>, // Add query parameters
     ) -> Result<reqwest::Response, String> {
         HttpClient::send_request(
             server_id,
@@ -192,6 +212,6 @@ impl HttpClient {
             query_params,
             None,
         )
-        .await
+            .await
     }
 }

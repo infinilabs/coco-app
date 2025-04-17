@@ -49,22 +49,18 @@ const SearchListItem: React.FC<SearchListItemProps> = React.memo(
         ref={itemRef}
         onMouseEnter={onMouseEnter}
         onClick={onItemClick}
-        className={`w-full px-2 py-2.5 text-sm flex ${
-          isTauri
-            ? "mb-0 flex-row items-center"
-            : "md:mb-0 mb-2 md:flex-row flex-col md:items-center items-start"
-        } justify-between rounded-lg transition-colors cursor-pointer ${
+        className={`w-full px-2 py-2.5 text-sm flex mb-0 flex-row items-center mobile:mb-2 mobile:flex-col mobile:items-start justify-between rounded-lg transition-colors cursor-pointer ${
           isSelected
             ? "text-white bg-[var(--coco-primary-color)] hover:bg-[var(--coco-primary-color)]"
-            : isTauri
-            ? "text-[#333] dark:text-[#d8d8d8]"
-            : "text-[#333] dark:text-[#d8d8d8] md:bg-transparent md:dark:bg-transparent bg-gray-200/80 dark:bg-gray-700/50"
-        } ${showListRight ? (isTauri ? "gap-7" : "md:gap-7 gap-1") : ""}`}
+            : "text-[#333] dark:text-[#d8d8d8] mobile:bg-gray-200/80 mobile:dark:bg-gray-700/50"
+        } ${showListRight ? "gap-7 mobile:gap-1" : ""}`}
         onContextMenu={onContextMenu}
       >
         <div
           className={`${
-            showListRight ? "md:max-w-[450px] w-full" : "flex-1"
+            showListRight
+              ? "max-w-[450px] mobile:w-full"
+              : "flex-1"
           } min-w-0 flex gap-2 items-center justify-start `}
         >
           <ItemIcon item={item} />

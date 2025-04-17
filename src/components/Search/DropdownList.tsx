@@ -10,6 +10,7 @@ import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import SearchListItem from "./SearchListItem";
 import { metaOrCtrlKey, isMetaOrCtrlKey } from "@/utils/keyboardUtils";
 import { OpenURLWithBrowser } from "@/utils/index";
+import VisibleKey from "@/components/Common/VisibleKey";
 
 type ISearchData = Record<string, any[]>;
 
@@ -190,7 +191,10 @@ function DropdownList({
                 <ThemedIcon component={ArrowBigRight} className="w-4 h-4" />
               </IconWrapper>
               {showIndex && sourceName === selectedName ? (
-                <div className={`bg-[#ccc] dark:bg-[#6B6B6B] `}>→</div>
+                <div className="absolute top-0 right-4">
+                  <VisibleKey shortcut="→" />
+                </div>
+                
               ) : null}
             </div>
           ) : null}

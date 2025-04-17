@@ -18,7 +18,7 @@ import { DataSource } from "@/types/commands";
 // import { useConnectStore } from "@/stores/connectStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import Copyright from "@/components/Common/Copyright";
-import VisibleKey from "../Common/VisibleKey";
+import VisibleKey from "@/components/Common/VisibleKey";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -335,15 +335,18 @@ export default function ChatInput({
             />
           )}
           {showTooltip && !isChatMode && sourceData && (
-            <VisibleKey shortcut="←" className="absolute left-0" />
+            <div className="absolute -top-[5px] left-2">
+              <VisibleKey shortcut="←" />
+            </div>
           )}
           {showTooltip && (
-            <VisibleKey
-              shortcut={returnToInput}
-              className={clsx("absolute", {
-                "left-7": !isChatMode && sourceData,
+            <div
+              className={clsx("absolute -top-[5px] left-2", {
+                "left-8": !isChatMode && sourceData,
               })}
-            />
+            >
+              <VisibleKey shortcut={returnToInput} />
+            </div>
           )}
         </div>
 
@@ -390,7 +393,9 @@ export default function ChatInput({
         ) : null} */}
 
         {showTooltip && isChatMode && (
-          <VisibleKey shortcut="↩︎" className="absolute right-3" />
+          <div className="absolute top-[2px] right-[18px]">
+            <VisibleKey shortcut="↩︎" />
+          </div>
         )}
 
         {!connected && isChatMode ? (
@@ -441,11 +446,7 @@ export default function ChatInput({
                 )}
                 onClick={DeepThinkClick}
               >
-                <VisibleKey
-                  shortcut={deepThinking}
-                  onKeypress={DeepThinkClick}
-                  className="!size-3"
-                >
+                <VisibleKey shortcut={deepThinking} onKeyPress={DeepThinkClick}>
                   <Brain
                     className={`size-3 ${
                       isDeepThinkActive
@@ -474,7 +475,7 @@ export default function ChatInput({
               />
             )}
             {!hasFeature.includes("search") && !hasFeature.includes("think") ? (
-              <div className="px-2">
+              <div className="px-[9px]">
                 <Copyright />
               </div>
             ) : null}
@@ -489,10 +490,9 @@ export default function ChatInput({
         {isChatPage || hasModules?.length !== 2 ? null : (
           <div className="relative w-16 flex justify-end items-center">
             {showTooltip && (
-              <VisibleKey
-                shortcut={modeSwitch}
-                className="absolute left-1 z-10"
-              />
+              <div className="absolute right-[52px] -top-2 z-10">
+                <VisibleKey shortcut={modeSwitch} />
+              </div>
             )}
 
             <ChatSwitch

@@ -1,4 +1,5 @@
 use super::servers::{get_server_by_id, get_server_token};
+use crate::common::http::get_response_body_text;
 use crate::server::http_client::HttpClient;
 use reqwest::multipart::{Form, Part};
 use serde::{Deserialize, Serialize};
@@ -99,16 +100,10 @@ pub async fn upload_attachment(
         .await
         .map_err(|err| err.to_string())?;
 
-    if response.status().is_success() {
-        let result = response
-            .json::<UploadAttachmentResponse>()
-            .await
-            .map_err(|err| err.to_string())?;
+    let body = get_response_body_text(response).await?;
 
-        Ok(result)
-    } else {
-        Err(format!("Upload failed with status: {}", response.status()))
-    }
+    serde_json::from_str::<UploadAttachmentResponse>(&body)
+        .map_err(|e| format!("Failed to parse upload response: {}", e))
 }
 
 #[command]
@@ -119,33 +114,30 @@ pub async fn get_attachment(
     let mut query_params = HashMap::new();
     query_params.insert("session".to_string(), serde_json::Value::String(session_id));
 
-    let response = HttpClient::get(&server_id, "/attachment/_search", Some(query_params)).await?;
+    let response = HttpClient::get(&server_id, "/attachment/_search", Some(query_params))
+        .await
+        .map_err(|e| format!("Request error: {}", e))?;
 
-    if response.status().is_success() {
-        response
-            .json::<GetAttachmentResponse>()
-            .await
-            .map_err(|e| e.to_string())
-    } else {
-        Err(format!("Request failed with status: {}", response.status()))
-    }
+    let body = get_response_body_text(response).await?;
+
+    serde_json::from_str::<GetAttachmentResponse>(&body)
+        .map_err(|e| format!("Failed to parse attachment response: {}", e))
 }
 
 #[command]
 pub async fn delete_attachment(server_id: String, id: String) -> Result<bool, String> {
-    let response =
-        HttpClient::delete(&server_id, &format!("/attachment/{}", id), None, None).await?;
+    let response = HttpClient::delete(&server_id, &format!("/attachment/{}", id), None, None)
+        .await
+        .map_err(|e| format!("Request error: {}", e))?;
 
-    if response.status().is_success() {
-        response
-            .json::<DeleteAttachmentResponse>()
-            .await
-            .map_err(|e| e.to_string())?
-            .result
-            .eq("deleted")
-            .then_some(true)
-            .ok_or("Delete operation was not successful".to_string())
-    } else {
-        Err(format!("Delete failed with status: {}", response.status()))
-    }
+    let body = get_response_body_text(response).await?;
+
+    let parsed: DeleteAttachmentResponse = serde_json::from_str(&body)
+        .map_err(|e| format!("Failed to parse delete response: {}", e))?;
+
+    parsed
+        .result
+        .eq("deleted")
+        .then_some(true)
+        .ok_or_else(|| "Delete operation was not successful".to_string())
 }

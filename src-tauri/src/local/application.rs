@@ -1,6 +1,7 @@
 use crate::common::document::{DataSourceReference, Document};
+use crate::common::error::SearchError;
 use crate::common::search::{QueryResponse, QuerySource, SearchQuery};
-use crate::common::traits::{SearchError, SearchSource};
+use crate::common::traits::SearchSource;
 use crate::local::LOCAL_QUERY_SOURCE_TYPE;
 use applications::{App, AppInfo, AppInfoContext};
 use async_trait::async_trait;
@@ -10,7 +11,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use tauri::{AppHandle, Runtime};
-use tauri_plugin_fs_pro::{icon, name};
+use tauri_plugin_fs_pro::{icon, metadata, name, IconOptions};
 
 #[tauri::command]
 pub fn get_default_search_paths() -> Vec<String> {
@@ -113,12 +114,17 @@ pub async fn list_app_with_metadata_in<R: Runtime>(
         let icon = if cfg!(target_os = "linux") {
             app.icon_path.clone().unwrap_or(PathBuf::from(""))
         } else {
-            icon(app_handle.clone(), app_path.clone(), Some(256))
+            let options = IconOptions {
+                size: Some(256),
+                save_path: None,
+            };
+
+            icon(app_handle.clone(), app_path.clone(), Some(options))
                 .await
                 .map_err(|err| err.to_string())?
         };
 
-        let raw_app_metadata = tauri_plugin_fs_pro::metadata(app_path.clone(), None).await?;
+        let raw_app_metadata = metadata(app_path.clone(), None).await?;
 
         let app_metadata = AppMetadata {
             name: app_name,
@@ -150,7 +156,10 @@ impl ApplicationSearchSource {
         let application_paths = Trie::new();
         let mut icons = HashMap::new();
 
-        let default_search_path = applications::get_default_search_paths();
+        let default_search_path = get_default_search_paths()
+            .into_iter()
+            .map(PathBuf::from)
+            .collect();
         let mut ctx = AppInfoContext::new(default_search_path);
         ctx.refresh_apps().map_err(|err| err.to_string())?; // must refresh apps before getting them
         let apps = ctx.get_all_apps();
@@ -171,7 +180,12 @@ impl ApplicationSearchSource {
             let icon = if cfg!(target_os = "linux") {
                 app.icon_path.clone().unwrap_or(PathBuf::from(""))
             } else {
-                icon(app_handle.clone(), path.clone(), Some(256))
+                let options = IconOptions {
+                    size: Some(256),
+                    save_path: None,
+                };
+
+                icon(app_handle.clone(), path.clone(), Some(options))
                     .await
                     .map_err(|err| err.to_string())?
             };
