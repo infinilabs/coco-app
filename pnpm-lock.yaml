@@ -126,8 +126,8 @@ importers:
         specifier: ^6.0.0
         version: 6.0.0
       tauri-plugin-fs-pro-api:
-        specifier: ^2.3.1
-        version: 2.3.1
+        specifier: ^2.4.0
+        version: 2.4.0
       tauri-plugin-macos-permissions-api:
         specifier: ^2.2.0
         version: 2.2.0
@@ -3308,8 +3308,8 @@ packages:
     engines: {node: '>=14.0.0'}
     hasBin: true
 
-  tauri-plugin-fs-pro-api@2.3.1:
-    resolution: {integrity: sha512-fx/zITX9MWoDZ603FKWSybluZqJUEOvHU+H6kj3iRJNyoGFHoNkajpQbiK5cu81spQbGBlP9sV2HkaCI07gQ+Q==}
+  tauri-plugin-fs-pro-api@2.4.0:
+    resolution: {integrity: sha512-SfXMQC3SClaHCzEfrQOeSgQvx+YrlfQQpbbtj1U9LJhRjhwpIsC71UqtzcI2J7aJTt5njD+7Oe8daa3mH0Eybg==}
 
   tauri-plugin-macos-permissions-api@2.2.0:
     resolution: {integrity: sha512-pgcBqtUMucSColUJ/HcLOBOr+Z+sma2o0nAuobG1uSGBwFJXwltGKE4XsYynktzfzyTpha/xwta2eLezH+EqLg==}
@@ -7007,7 +7007,7 @@ snapshots:
     transitivePeerDependencies:
       - ts-node
 
-  tauri-plugin-fs-pro-api@2.3.1:
+  tauri-plugin-fs-pro-api@2.4.0:
     dependencies:
       '@tauri-apps/api': 2.4.0
 
