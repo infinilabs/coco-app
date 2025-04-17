@@ -209,7 +209,7 @@ export default function Chat({}: ChatProps) {
   }, []);
 
   const getFileIcon = useCallback(async (path: string, size: number) => {
-    return icon(path, size);
+    return icon(path, { size });
   }, []);
 
   const handleSearch = (keyword: string) => {
