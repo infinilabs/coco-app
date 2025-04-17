@@ -48,8 +48,7 @@ export const useChatStore = create<IChatStore>()(
     {
       name: "chat-state",
       // storage: createJSONStorage(() => sessionStorage),
-      partialize: (_state) => ({
-      }),
+      partialize: (_state) => ({}),
     }
   )
 );

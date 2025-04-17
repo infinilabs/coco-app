@@ -41,7 +41,7 @@ tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
 tauri-plugin-drag = "2"
 tauri-plugin-macos-permissions = "2"
-tauri-plugin-fs-pro = "=2.3.1"
+tauri-plugin-fs-pro = "2"
 tauri-plugin-screenshots = "2"
 applications = { git = "https://github.com/infinilabs/applications-rs", rev = "2345d3b86b711b03aa9aee6920e0108d81a8edb9" }
 
