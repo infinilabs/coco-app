@@ -150,7 +150,7 @@ impl ApplicationSearchSource {
         let application_paths = Trie::new();
         let mut icons = HashMap::new();
 
-        let default_search_path = applications::get_default_search_paths();
+        let default_search_path = get_default_search_paths().into_iter().map(PathBuf::from).collect();
         let mut ctx = AppInfoContext::new(default_search_path);
         ctx.refresh_apps().map_err(|err| err.to_string())?; // must refresh apps before getting them
         let apps = ctx.get_all_apps();
