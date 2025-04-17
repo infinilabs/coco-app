@@ -25,7 +25,7 @@ async function invokeWithErrorHandler<T>(
   try {
     const result = await invoke<T>(command, args);
     console.log(command, result);
-    
+
     if (result && typeof result === 'object' && 'failed' in result) {
       const failedResult = result as any;
       if (failedResult.failed?.length > 0) {
@@ -37,9 +37,12 @@ async function invokeWithErrorHandler<T>(
     }
 
     if (typeof result === 'string') {
-      throw new Error(result);
+      const res = JSON.parse(result);
+      if (typeof res === 'string') {
+        throw new Error(result);
+      }
     }
-    
+
     return result;
   } catch (error: any) {
     const errorMessage = error || 'Command execution failed';
