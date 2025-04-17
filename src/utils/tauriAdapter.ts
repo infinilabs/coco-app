@@ -104,7 +104,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
 
     async getFileIcon(path, size) {
       const { icon } = await import("tauri-plugin-fs-pro-api");
-      return icon(path, { size });
+      return icon(path, size);
     },
 
     async checkUpdate() {
