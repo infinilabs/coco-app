@@ -18,8 +18,7 @@ import { DataSource } from "@/types/commands";
 // import { useConnectStore } from "@/stores/connectStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import Copyright from "@/components/Common/Copyright";
-import VisibleKey from "../Common/VisibleKey";
-import { divide } from "lodash-es";
+import VisibleKey from "@/components/Common/VisibleKey";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
