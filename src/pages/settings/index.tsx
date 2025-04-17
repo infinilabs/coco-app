@@ -82,8 +82,6 @@ function SettingsPage() {
       }
     );
 
-    console.log("apps", apps);
-
     setAllApps(apps);
   }, [searchPaths]);
 
