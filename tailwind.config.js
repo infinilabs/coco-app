@@ -55,6 +55,9 @@ export default {
         1000: "1000",
         2000: "2000",
       },
+      screens: {
+        'mobile': {'max': '679px'},
+      },
     },
   },
   plugins: [],

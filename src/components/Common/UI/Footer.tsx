@@ -100,7 +100,7 @@ export default function Footer({
       )}
 
       <div
-        className={`${isTauri ? "flex" : "hidden md:flex"} items-center gap-3`}
+        className={`flex mobile:hidden items-center gap-3`}
       >
         <div className="gap-1 flex items-center text-[#666] dark:text-[#666] text-xs">
           <span className="mr-1.5">{t("search.footer.select")}:</span>
