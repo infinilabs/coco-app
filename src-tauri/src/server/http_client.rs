@@ -58,6 +58,7 @@ impl HttpClient {
     ) -> RequestBuilder {
         let client = HTTP_CLIENT.lock().await; // Acquire the lock on HTTP_CLIENT
 
+
         // Build the request
         let mut request_builder = client.request(method.clone(), url);
 

@@ -1,7 +1,7 @@
+use crate::common;
 use crate::common::assistant::ChatRequestMessage;
 use crate::common::http::GetResponse;
 use crate::server::http_client::HttpClient;
-use reqwest::Response;
 use serde_json::Value;
 use std::collections::HashMap;
 use tauri::{AppHandle, Runtime};
@@ -24,8 +24,8 @@ pub async fn chat_history<R: Runtime>(
 
     if let Some(query) = query {
         if !query.is_empty() {
-        query_params.insert("query".to_string(), query.into());
-    }
+            query_params.insert("query".to_string(), query.into());
+        }
     }
 
     let response = HttpClient::get(&server_id, "/chat/_history", Some(query_params))
@@ -35,21 +35,8 @@ pub async fn chat_history<R: Runtime>(
             format!("Error get history: {}", e)
         })?;
 
-    handle_raw_response(response).await?
-}
 
-async fn handle_raw_response(response: Response) -> Result<Result<String, String>, String> {
-    Ok(
-        if response.status().as_u16() < 200 || response.status().as_u16() >= 400 {
-            Err("Failed to send message".to_string())
-        } else {
-            let body = response
-                .text()
-                .await
-                .map_err(|e| format!("Failed to parse response JSON: {}", e))?;
-            Ok(body)
-        },
-    )
+    common::http::get_response_body_text(response).await
 }
 
 #[tauri::command]
@@ -74,7 +61,7 @@ pub async fn session_chat_history<R: Runtime>(
         .await
         .map_err(|e| format!("Error get session message: {}", e))?;
 
-    handle_raw_response(response).await?
+    common::http::get_response_body_text(response).await
 }
 
 #[tauri::command]
@@ -90,7 +77,7 @@ pub async fn open_session_chat<R: Runtime>(
         .await
         .map_err(|e| format!("Error open session: {}", e))?;
 
-    handle_raw_response(response).await?
+    common::http::get_response_body_text(response).await
 }
 
 #[tauri::command]
@@ -106,7 +93,7 @@ pub async fn close_session_chat<R: Runtime>(
         .await
         .map_err(|e| format!("Error close session: {}", e))?;
 
-    handle_raw_response(response).await?
+    common::http::get_response_body_text(response).await
 }
 #[tauri::command]
 pub async fn cancel_session_chat<R: Runtime>(
@@ -121,7 +108,7 @@ pub async fn cancel_session_chat<R: Runtime>(
         .await
         .map_err(|e| format!("Error cancel session: {}", e))?;
 
-    handle_raw_response(response).await?
+    common::http::get_response_body_text(response).await
 }
 
 #[tauri::command]
@@ -130,14 +117,17 @@ pub async fn new_chat<R: Runtime>(
     server_id: String,
     websocket_id: String,
     message: String,
-    query_params: Option<HashMap<String, Value>>, //search,deep_thinking
+    query_params: Option<HashMap<String, Value>>,
 ) -> Result<GetResponse, String> {
     let body = if !message.is_empty() {
         let message = ChatRequestMessage {
             message: Some(message),
         };
-        let body = reqwest::Body::from(serde_json::to_string(&message).unwrap());
-        Some(body)
+        Some(
+            serde_json::to_string(&message)
+                .map_err(|e| format!("Failed to serialize message: {}", e))?
+                .into(),
+        )
     } else {
         None
     };
@@ -145,21 +135,18 @@ pub async fn new_chat<R: Runtime>(
     let mut headers = HashMap::new();
     headers.insert("WEBSOCKET-SESSION-ID".to_string(), websocket_id.into());
 
-    let response =
-        HttpClient::advanced_post(&server_id, "/chat/_new", Some(headers), query_params, body)
-            .await
-            .map_err(|e| format!("Error sending message: {}", e))?;
-
-    if response.status().as_u16() < 200 || response.status().as_u16() >= 400 {
-        return Err("Failed to send message".to_string());
-    }
-
-    let chat_response: GetResponse = response
-        .json()
+    let response = HttpClient::advanced_post(&server_id, "/chat/_new", Some(headers), query_params, body)
         .await
+        .map_err(|e| format!("Error sending message: {}", e))?;
+
+    let text = response
+        .text()
+        .await
+        .map_err(|e| format!("Failed to read response body: {}", e))?;
+
+    let chat_response: GetResponse = serde_json::from_str(&text)
         .map_err(|e| format!("Failed to parse response JSON: {}", e))?;
 
-    // Check the result and status fields
     if chat_response.result != "created" {
         return Err(format!("Unexpected result: {}", chat_response.result));
     }
@@ -192,10 +179,10 @@ pub async fn send_message<R: Runtime>(
         query_params,
         Some(body),
     )
-    .await
-    .map_err(|e| format!("Error cancel session: {}", e))?;
+        .await
+        .map_err(|e| format!("Error cancel session: {}", e))?;
 
-    handle_raw_response(response).await?
+    common::http::get_response_body_text(response).await
 }
 
 #[tauri::command]
@@ -235,8 +222,8 @@ pub async fn update_session_chat(
         None,
         Some(reqwest::Body::from(serde_json::to_string(&body).unwrap())),
     )
-    .await
-    .map_err(|e| format!("Error updating session: {}", e))?;
+        .await
+        .map_err(|e| format!("Error updating session: {}", e))?;
 
     Ok(response.status().is_success())
 }

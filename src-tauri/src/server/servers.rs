@@ -1,3 +1,4 @@
+use crate::common::http::get_response_body_text;
 use crate::common::register::SearchSourceRegistry;
 use crate::common::server::{AuthProvider, Provider, Server, ServerAccessToken, Sso, Version};
 use crate::server::connector::fetch_connectors_by_server;
@@ -6,7 +7,7 @@ use crate::server::http_client::HttpClient;
 use crate::server::search::CocoSearchSource;
 use crate::COCO_TAURI_STORE;
 use lazy_static::lazy_static;
-use reqwest::{Client, Method, StatusCode};
+use reqwest::{Client, Method};
 use serde_json::from_value;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
@@ -298,61 +299,57 @@ pub async fn refresh_coco_server_info<R: Runtime>(
     id: String,
 ) -> Result<Server, String> {
     // Retrieve the server from the cache
-    let server = {
+    let cached_server = {
         let cache = SERVER_CACHE.read().unwrap();
         cache.get(&id).cloned()
     };
 
-    if let Some(server) = server {
-        let is_enabled = server.enabled;
-        let is_builtin = server.builtin;
-        let profile = server.profile;
+    let mut server = match cached_server {
+        Some(server) => server,
+        None => return Err("Server not found.".into()),
+    };
 
-        // Use the HttpClient to send the request
-        let response = HttpClient::get(&id, "/provider/_info", None) // Assuming "/provider-info" is the endpoint
-            .await
-            .map_err(|e| format!("Failed to send request to the server: {}", e))?;
+    // Preserve important local state
+    let is_enabled = server.enabled;
+    let is_builtin = server.builtin;
+    let profile = server.profile;
 
-        if response.status() == StatusCode::OK {
-            if let Some(content_length) = response.content_length() {
-                if content_length > 0 {
-                    let new_coco_server: Result<Server, _> = response.json().await;
-                    match new_coco_server {
-                        Ok(mut server) => {
-                            server.id = id.clone();
-                            server.builtin = is_builtin;
-                            server.enabled = is_enabled;
-                            server.available = true;
-                            server.profile = profile;
-                            trim_endpoint_last_forward_slash(&mut server);
-                            save_server(&server);
-                            persist_servers(&app_handle)
-                                .await
-                                .expect("Failed to persist coco servers.");
+    // Send request to fetch updated server info
+    let response = HttpClient::get(&id, "/provider/_info", None)
+        .await
+        .map_err(|e| format!("Failed to contact the server: {}", e))?;
 
-                            //refresh connectors and datasources
-                            let _ = fetch_connectors_by_server(&id).await;
-
-                            let _ = get_datasources_by_server(&id, None).await;
-
-                            Ok(server)
-                        }
-                        Err(e) => Err(format!("Failed to deserialize the response: {:?}", e)),
-                    }
-                } else {
-                    Err("Received empty response body.".to_string())
-                }
-            } else {
-                mark_server_as_offline(id.as_str()).await;
-                Err("Could not determine the content length.".to_string())
-            }
-        } else {
-            mark_server_as_offline(id.as_str()).await;
-            Err(format!("Request failed with status: {}", response.status()))
-        }
-    } else {
-        Err("Server not found.".to_string())
+    if !response.status().is_success() {
+        mark_server_as_offline(&id).await;
+        return Err(format!("Request failed with status: {}", response.status()));
     }
+
+    // Get body text via helper
+    let body = get_response_body_text(response).await?;
+
+    // Deserialize server
+    let mut updated_server: Server = serde_json::from_str(&body)
+        .map_err(|e| format!("Failed to deserialize the response: {}", e))?;
+
+    // Restore local state
+    updated_server.id = id.clone();
+    updated_server.builtin = is_builtin;
+    updated_server.enabled = is_enabled;
+    updated_server.available = true;
+    updated_server.profile = profile;
+    trim_endpoint_last_forward_slash(&mut updated_server);
+
+    // Save and persist
+    save_server(&updated_server);
+    persist_servers(&app_handle)
+        .await
+        .map_err(|e| format!("Failed to persist servers: {}", e))?;
+
+    // Refresh connectors and datasources (best effort)
+    let _ = fetch_connectors_by_server(&id).await;
+    let _ = get_datasources_by_server(&id, None).await;
+
+    Ok(updated_server)
 }
 
 #[tauri::command]
@@ -362,12 +359,10 @@ pub async fn add_coco_server<R: Runtime>(
 ) -> Result<Server, String> {
     load_or_insert_default_server(&app_handle)
         .await
-        .expect("Failed to load default servers");
+        .map_err(|e| format!("Failed to load default servers: {}", e))?;
 
-    // Remove the trailing '/' from the endpoint to ensure correct URL construction
     let endpoint = endpoint.trim_end_matches('/');
 
-    // Check if the server with this endpoint already exists
     if check_endpoint_exists(endpoint) {
         dbg!(format!(
             "This Coco server has already been registered: {:?}",
@@ -376,59 +371,37 @@ pub async fn add_coco_server<R: Runtime>(
         return Err("This Coco server has already been registered.".into());
     }
 
-    let url = provider_info_url(&endpoint);
-
-    // Use the HttpClient to fetch provider information
+    let url = provider_info_url(endpoint);
     let response = HttpClient::send_raw_request(Method::GET, url.as_str(), None, None, None)
         .await
         .map_err(|e| format!("Failed to send request to the server: {}", e))?;
 
     dbg!(format!("Get provider info response: {:?}", &response));
 
-    // Check if the response status is OK (200)
-    if response.status() == StatusCode::OK {
-        if let Some(content_length) = response.content_length() {
-            if content_length > 0 {
-                let new_coco_server: Result<Server, _> = response.json().await;
+    let body = get_response_body_text(response).await?;
 
-                match new_coco_server {
-                    Ok(mut server) => {
-                        // Perform necessary checks and adjustments on the server data
-                        trim_endpoint_last_forward_slash(&mut server);
+    let mut server: Server = serde_json::from_str(&body)
+        .map_err(|e| format!("Failed to deserialize the response: {}", e))?;
 
-                        if server.id.is_empty() {
-                            server.id = pizza_common::utils::uuid::Uuid::new().to_string();
-                        }
+    trim_endpoint_last_forward_slash(&mut server);
 
-                        if server.name.is_empty() {
-                            server.name = "Coco Cloud".to_string();
-                        }
-
-                        // Save the new server to the cache
-                        save_server(&server);
-
-                        // Register the server to the search source
-                        try_register_server_to_search_source(app_handle.clone(), &server).await;
-
-                        // Persist the servers to the store
-                        persist_servers(&app_handle)
-                            .await
-                            .expect("Failed to persist Coco servers.");
-
-                        dbg!(format!("Successfully registered server: {:?}", &endpoint));
-                        Ok(server)
-                    }
-                    Err(e) => Err(format!("Failed to deserialize the response: {}", e)),
-                }
-            } else {
-                Err("Received empty response body.".to_string())
-            }
-        } else {
-            Err("Could not determine the content length.".to_string())
-        }
-    } else {
-        Err(format!("Request failed with status: {}", response.status()))
+    if server.id.is_empty() {
+        server.id = pizza_common::utils::uuid::Uuid::new().to_string();
     }
+
+    if server.name.is_empty() {
+        server.name = "Coco Server".to_string();
+    }
+
+    save_server(&server);
+    try_register_server_to_search_source(app_handle.clone(), &server).await;
+
+    persist_servers(&app_handle)
+        .await
+        .map_err(|e| format!("Failed to persist Coco servers: {}", e))?;
+
+    dbg!(format!("Successfully registered server: {:?}", &endpoint));
+    Ok(server)
 }
 
 #[tauri::command]

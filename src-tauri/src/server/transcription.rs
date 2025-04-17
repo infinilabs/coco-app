@@ -1,3 +1,4 @@
+use crate::common::http::get_response_body_text;
 use crate::server::http_client::HttpClient;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -19,23 +20,24 @@ pub async fn transcription(
     query_params.insert("type".to_string(), JsonValue::String(audio_type));
     query_params.insert("content".to_string(), JsonValue::String(audio_content));
 
+    // Send the HTTP POST request
     let response = HttpClient::post(
         &server_id,
         "/services/audio/transcription",
         Some(query_params),
         None,
     )
-    .await?;
+        .await
+        .map_err(|e| format!("Error sending transcription request: {}", e))?;
 
-    if response.status().is_success() {
-        response
-            .json::<TranscriptionResponse>()
-            .await
-            .map_err(|e| e.to_string())
-    } else {
-        Err(format!(
-            "Transcription failed with status: {}",
-            response.status()
-        ))
-    }
+    // Use get_response_body_text to extract the response body as text
+    let response_body = get_response_body_text(response)
+        .await
+        .map_err(|e| format!("Failed to read response body: {}", e))?;
+
+    // Deserialize the response body into TranscriptionResponse
+    let transcription_response: TranscriptionResponse = serde_json::from_str(&response_body)
+        .map_err(|e| format!("Failed to parse transcription response: {}", e))?;
+
+    Ok(transcription_response)
 }
