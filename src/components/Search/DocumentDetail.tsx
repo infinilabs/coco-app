@@ -32,114 +32,151 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
   return (
     <div className="p-4">
       <div className="font-normal text-xs text-[#666] dark:text-[#999] mb-2">
-        {t('search.document.details')}
+        {t("search.document.details")}
       </div>
 
       <div className="py-4 mt-4">
         {/* Basic Information */}
-        <DetailItem 
-          label={t('search.document.name')}
+        <DetailItem
+          label={t("search.document.name")}
           value={document?.title || "-"}
         />
 
-        <DetailItem 
-          label={t('search.document.source')}
+        <DetailItem
+          label={t("search.document.source")}
           value={document?.source?.name || "-"}
           icon={<TypeIcon item={document} className="w-4 h-4 mr-1" />}
         />
 
+        {/* Document URL */}
+        {document?.url && (
+          <DetailItem
+            label={t("search.document.url")}
+            value={
+              <a
+                href={document.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:text-blue-600 break-all"
+                title={document.url}
+              >
+                {document.url}
+              </a>
+            }
+          />
+        )}
+
+        {/* Document Thumbnail */}
+        {document?.thumbnail && (
+          <DetailItem
+            label={t("search.document.thumbnail")}
+            value={
+              <img
+                src={document.thumbnail}
+                alt="thumbnail"
+                className="max-w-[200px] max-h-[120px] object-contain"
+              />
+            }
+          />
+        )}
+
         {/* Document Identifier */}
         {document?.id && (
-          <DetailItem 
-            label={t('search.document.id')}
-            value={document.id}
-          />
+          <DetailItem label={t("search.document.id")} value={document.id} />
         )}
 
         {/* Creation Time */}
         {document?.created && (
-          <DetailItem 
-            label={t('search.document.createdAt')}
+          <DetailItem
+            label={t("search.document.createdAt")}
             value={document.created}
           />
         )}
 
         {/* Document Classification */}
         {document?.category && (
-          <DetailItem 
-            label={t('search.document.category')}
+          <DetailItem
+            label={t("search.document.category")}
             value={document.category}
           />
         )}
 
         {/* Document Subcategory */}
         {document?.subcategory && (
-          <DetailItem 
-            label={t('search.document.subcategory')}
+          <DetailItem
+            label={t("search.document.subcategory")}
             value={document.subcategory}
           />
         )}
 
         {/* Document Language */}
         {document?.lang && (
-          <DetailItem 
-            label={t('search.document.language')}
+          <DetailItem
+            label={t("search.document.language")}
             value={document.lang.toUpperCase()}
           />
         )}
 
         {/* Document Tags */}
         {document?.tags && document.tags.length > 0 && (
-          <DetailItem 
-            label={t('search.document.tags')}
-            value={document.tags.join(', ')}
+          <DetailItem
+            label={t("search.document.tags")}
+            value={
+              <div className="text-right whitespace-pre-wrap break-words w-full">
+                {document.tags.join(", ")}
+              </div>
+            }
           />
         )}
 
         {/* Document Summary */}
         {document?.summary && (
-          <DetailItem 
-            label={t('search.document.summary')}
-            value={document.summary}
+          <DetailItem
+            label={t("search.document.summary")}
+            value={
+              <div className="text-right whitespace-pre-wrap break-words w-full">
+                {document.summary}
+              </div>
+            }
           />
         )}
 
         {/* Last Update Time */}
         {document?.updated && (
-          <DetailItem 
-            label={t('search.document.updatedAt')}
+          <DetailItem
+            label={t("search.document.updatedAt")}
             value={document?.updated || "-"}
           />
         )}
 
         {/* Last Modified By */}
         {document?.last_updated_by?.user?.username && (
-          <DetailItem 
-            label={t('search.document.updatedBy')}
+          <DetailItem
+            label={t("search.document.updatedBy")}
             value={document?.last_updated_by?.user?.username || "-"}
           />
         )}
 
         {/* Document Owner */}
         {document?.owner?.username && (
-          <DetailItem 
-            label={t('search.document.createdBy')}
+          <DetailItem
+            label={t("search.document.createdBy")}
             value={document?.owner?.username || "-"}
           />
         )}
 
         {/* Document Type */}
         {document?.type && (
-          <DetailItem 
-            label={t('search.document.type')}
+          <DetailItem
+            label={t("search.document.type")}
             value={document?.type || "-"}
           />
         )}
 
         {/* Document Size */}
         {document?.size && (
-          <DetailItem 
-            label={t('search.document.size')}
+          <DetailItem
+            label={t("search.document.size")}
             value={formatter.bytes(document?.size || 0)}
           />
         )}

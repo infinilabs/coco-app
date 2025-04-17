@@ -177,6 +177,8 @@
       "details": "详细信息",
       "name": "名称",
       "source": "来源",
+      "url": "链接",
+      "thumbnail": "缩略图",
       "id": "ID",
       "createdAt": "创建时间",
       "category": "分类",
