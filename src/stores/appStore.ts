@@ -75,14 +75,16 @@ export const useAppStore = create<IAppStore>()(
       setShowTooltip: (showTooltip: boolean) => set({ showTooltip }),
       errors: [],
       addError: (message: string, type: 'error' | 'warning' | 'info' = 'error') => 
-        set((state) => ({
-          errors: [...state.errors, {
+        set((state) => {
+          const newError = {
             id: Date.now().toString(),
             type,
             message,
             timestamp: Date.now()
-          }]
-        })),
+          };
+          const updatedErrors = [newError, ...state.errors].slice(0, 5);
+          return { errors: updatedErrors };
+        }),
       removeError: (id: string) =>
         set((state) => ({
           errors: state.errors.filter(error => error.id !== id)

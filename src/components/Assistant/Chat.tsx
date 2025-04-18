@@ -387,6 +387,7 @@ const ChatAI = memo(
             activeChat={activeChat}
             reconnect={reconnect}
             isChatPage={isChatPage}
+            isLogin={isLogin}
             setIsLogin={setIsLoginChat}
             showChatHistory={showChatHistory}
           />

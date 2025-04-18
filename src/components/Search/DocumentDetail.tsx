@@ -31,6 +31,11 @@ const DetailItem: React.FC<DetailItemProps> = ({ label, value, icon }) => (
 export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
   const { t } = useTranslation();
 
+  const truncateUrl = (url: string) => {
+    if (url.length <= 40) return url;
+    return `${url.slice(0, 20)}...${url.slice(-20)}`;
+  };
+
   return (
     <div className="p-3">
       {/* <div className="font-normal text-xs text-[#666] dark:text-[#999] mb-2">
@@ -54,7 +59,7 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
               }}
             />
           ) : (
-            <ItemIcon item={document} className="w-16 h-16"/>
+            <ItemIcon item={document} className="w-16 h-16" />
           )}
         </div>
 
@@ -94,10 +99,10 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
                 href={document.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-500 hover:text-blue-600 break-all"
+                className="text-blue-500 hover:text-blue-600 whitespace-nowrap"
                 title={document.url}
               >
-                {document.url}
+                {truncateUrl(document.url)}
               </a>
             }
           />
