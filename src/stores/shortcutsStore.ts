@@ -72,7 +72,7 @@ export const useShortcutsStore = create<IShortcutsStore>()(
       },
       newSession: "N",
       setNewSession: (newSession) => set({ newSession }),
-      fixedWindow: "F",
+      fixedWindow: "P",
       setFixedWindow: (fixedWindow) => set({ fixedWindow }),
       serviceList: "S",
       setServiceList: (serviceList) => set({ serviceList }),
