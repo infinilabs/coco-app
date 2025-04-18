@@ -13,7 +13,7 @@ import { useTray } from "@/hooks/useTray";
 import Advanced from "@/components/Settings/Advanced";
 import Extensions from "@/components/Settings/Extensions";
 import { useAsyncEffect, useMount } from "ahooks";
-import { useApplicationsStore } from "@/stores/applications";
+import { useApplicationsStore } from "@/stores/applicationsStore";
 import platformAdapter from "@/utils/platformAdapter";
 
 const tabIndexMap: { [key: string]: number } = {

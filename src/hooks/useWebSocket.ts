@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useWebSocket as useWebSocketAHook } from "ahooks";
 
 import { useAppStore, IServer } from "@/stores/appStore";
@@ -30,6 +30,7 @@ export default function useWebSocket({
 }: WebSocketProps) {
   const isTauri = useAppStore((state) => state.isTauri);
   const endpoint_websocket = useAppStore((state) => state.endpoint_websocket);
+  const addError = useAppStore((state) => state.addError);
 
   const websocketIdRef = useRef<string>("");
   const messageQueue = useRef<string[]>([]);
@@ -94,8 +95,6 @@ export default function useWebSocket({
     }
   }, [readyState]);
 
-  const [errorShow, setErrorShow] = useState(false);
-
   // 1. WebSocket connects when loading or switching services
   // src/components/Assistant/ChatHeader.tsx
   // 2. If not connected or disconnected, input box has a connect button, clicking it will connect to WebSocket
@@ -148,8 +147,6 @@ export default function useWebSocket({
     let unlisten_error = null;
     let unlisten_message = null;
 
-    setErrorShow(false);
-
     if (!isTauri) return;
     unlisten_error = platformAdapter.listenEvent(`ws-error-${clientId}`, (event) => {
       // {
@@ -158,9 +155,9 @@ export default function useWebSocket({
       //   },
       //   "status": 401
       // }
-      console.error(`ws-error-${clientId}`, event.payload);
+      console.error(`ws-error-${clientId}`, event);
       setConnected(false);
-      setErrorShow(true);
+      addError("WebSocket connection failed.");
     });
 
     unlisten_message = platformAdapter.listenEvent(`ws-message-${clientId}`, (event) => {
@@ -187,5 +184,5 @@ export default function useWebSocket({
     };
   }, [dealMsgRef]);
 
-  return { errorShow, setErrorShow, reconnect, disconnectWS, updateDealMsg };
+  return { reconnect, disconnectWS, updateDealMsg };
 }

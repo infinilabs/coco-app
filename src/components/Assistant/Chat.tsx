@@ -22,6 +22,7 @@ import { ChatContent } from "./ChatContent";
 import ConnectPrompt from "./ConnectPrompt";
 import type { Chat } from "./types";
 import PrevSuggestion from "@/components/ChatMessage/PrevSuggestion";
+import { useAppStore } from '@/stores/appStore';
 
 interface ChatAIProps {
   isTransitioned: boolean;
@@ -76,6 +77,8 @@ const ChatAI = memo(
 
       const currentService = useConnectStore((state) => state.currentService);
 
+      const addError = useAppStore.getState().addError;
+
       const [activeChat, setActiveChat] = useState<Chat>();
       const [timedoutShow, setTimedoutShow] = useState(false);
       const [isLogin, setIsLogin] = useState(true);
@@ -125,13 +128,7 @@ const ChatAI = memo(
       const dealMsgRef = useRef<((msg: string) => void) | null>(null);
 
       const clientId = isChatPage ? "standalone" : "popup";
-      const {
-        errorShow,
-        setErrorShow,
-        reconnect,
-        disconnectWS,
-        updateDealMsg,
-      } = useWebSocket({
+      const { reconnect, disconnectWS, updateDealMsg } = useWebSocket({
         clientId,
         connected,
         setConnected,
@@ -156,7 +153,6 @@ const ChatAI = memo(
         currentService?.id,
         setActiveChat,
         setCurChatEnd,
-        setErrorShow,
         setTimedoutShow,
         clearAllChunkData,
         setQuestion,
@@ -189,7 +185,6 @@ const ChatAI = memo(
       const clearChat = useCallback(() => {
         console.log("clearChat");
         setTimedoutShow(false);
-        setErrorShow(false);
         chatClose(activeChat);
         setActiveChat(undefined);
         setCurChatEnd(true);
@@ -199,7 +194,6 @@ const ChatAI = memo(
         chatClose,
         clearChatPage,
         setCurChatEnd,
-        setErrorShow,
         setTimedoutShow,
       ]);
 
@@ -207,7 +201,10 @@ const ChatAI = memo(
         async (value: string) => {
           try {
             console.log("init", isLogin, curChatEnd, activeChat?._id);
-            if (!isLogin || !curChatEnd) return;
+            if (!isLogin || !curChatEnd) {
+              addError("Please login to continue chatting")
+              return;
+            }
             setShowPrevSuggestion(false);
             if (!activeChat?._id) {
               await createNewChat(value, activeChat, websocketSessionId);
@@ -251,7 +248,6 @@ const ChatAI = memo(
       const onSelectChat = useCallback(
         async (chat: Chat) => {
           setTimedoutShow(false);
-          setErrorShow(false);
           clearAllChunkData();
           await cancelChat(activeChat);
           await chatClose(activeChat);
@@ -391,6 +387,7 @@ const ChatAI = memo(
             activeChat={activeChat}
             reconnect={reconnect}
             isChatPage={isChatPage}
+            isLogin={isLogin}
             setIsLogin={setIsLoginChat}
             showChatHistory={showChatHistory}
           />
@@ -406,7 +403,6 @@ const ChatAI = memo(
               response={response}
               loadingStep={loadingStep}
               timedoutShow={timedoutShow}
-              errorShow={errorShow}
               Question={Question}
               handleSendMessage={(value) =>
                 handleSendMessage(value, activeChat)

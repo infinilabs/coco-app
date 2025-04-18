@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Application } from "@/stores/applications";
+import { Application } from "@/stores/applicationsStore";
 import { filesize } from "filesize";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";

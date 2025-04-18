@@ -44,8 +44,8 @@ export default function Cloud() {
 
   const SidebarRef = useRef<{ refreshData: () => void }>(null);
 
-  const error = useAppStore((state) => state.error);
-  const setError = useAppStore((state) => state.setError);
+  const errors = useAppStore((state) => state.errors);
+  const addError = useAppStore((state) => state.addError);
 
   const [isConnect, setIsConnect] = useState(true);
 
@@ -70,14 +70,13 @@ export default function Cloud() {
     console.log("currentService", currentService);
     setLoading(false);
     setRefreshLoading(false);
-    setError("");
     setIsConnect(true);
   }, [JSON.stringify(currentService)]);
 
   const fetchServers = async (resetSelection: boolean) => {
     list_coco_servers()
       .then((res: any) => {
-        if (error) {
+        if (errors.length > 0) {
           res = (res || []).map((item: any) => {
             if (item.id === currentService?.id) {
               item.health = {
@@ -102,7 +101,6 @@ export default function Cloud() {
         }
       })
       .catch((err: any) => {
-        setError(err);
         console.error(err);
       });
   };
@@ -123,21 +121,10 @@ export default function Cloud() {
     return add_coco_server(endpointLink)
       .then((res: any) => {
         // console.log("add_coco_server", res);
-        fetchServers(false)
-          .then((r) => {
-            console.log("fetchServers", r);
-            setCurrentService(res);
-          })
-          .catch((err: any) => {
-            console.error("fetchServers failed:", err);
-            setError(err);
-            throw err; // Propagate error back up to outer promise chain
-          });
-      })
-      .catch((err: any) => {
-        console.error("add coco server failed:", err);
-        setError(err);
-        throw err; // Propagate error back up
+        fetchServers(false).then((r) => {
+          console.log("fetchServers", r);
+          setCurrentService(res);
+        });
       })
       .finally(() => {
         setRefreshLoading(false);
@@ -147,7 +134,7 @@ export default function Cloud() {
   const handleOAuthCallback = useCallback(
     async (code: string | null, serverId: string | null) => {
       if (!code || !serverId) {
-        setError("No authorization code received");
+        addError("No authorization code received");
         return;
       }
 
@@ -163,15 +150,10 @@ export default function Cloud() {
           refreshClick(serverId);
         }
 
-        getCurrentWindow()
-          .setFocus()
-          .catch((err) => {
-            setError(err);
-          });
+        getCurrentWindow().setFocus();
       } catch (e) {
         console.error("Sign in failed:", e);
-        setError("SSO login failed: " + e);
-        throw error;
+        addError("SSO login failed: " + e);
       } finally {
         setLoading(false);
       }
@@ -190,7 +172,7 @@ export default function Cloud() {
 
       if (reqId != ssoRequestID) {
         console.log("Request ID not matched, skip");
-        setError("Request ID not matched, skip");
+        addError("Request ID not matched, skip");
         return;
       }
 
@@ -198,7 +180,7 @@ export default function Cloud() {
       handleOAuthCallback(code, serverId);
     } catch (err) {
       console.error("Failed to parse URL:", err);
-      setError("Invalid URL format: " + err);
+      addError("Invalid URL format: " + err);
     }
   };
 
@@ -234,7 +216,7 @@ export default function Cloud() {
       })
       .catch((err) => {
         console.error("Failed to get initial URLs:", err);
-        setError("Failed to get initial URLs: " + err);
+        addError("Failed to get initial URLs: " + err);
       });
 
     const unlisten = onOpenUrl((urls) => handleUrl(urls[0]));
@@ -275,10 +257,6 @@ export default function Cloud() {
         setCurrentService(res);
         emit("login_or_logout", true);
       })
-      .catch((err: any) => {
-        setError(err);
-        console.error(err);
-      })
       .finally(() => {
         setRefreshLoading(false);
       });
@@ -297,45 +275,31 @@ export default function Cloud() {
         refreshClick(id);
         emit("login_or_logout", false);
       })
-      .catch((err: any) => {
-        setError(err);
-        console.error(err);
-      })
       .finally(() => {
         setRefreshLoading(false);
       });
   }
 
   const removeServer = (id: string) => {
-    remove_coco_server(id)
-      .then((res: any) => {
-        console.log("remove_coco_server", id, JSON.stringify(res));
-        fetchServers(true).then((r) => {
-          console.log("fetchServers", r);
-        });
-      })
-      .catch((err: any) => {
-        // TODO display the error message
-        setError(err);
-        console.error(err);
+    remove_coco_server(id).then((res: any) => {
+      console.log("remove_coco_server", id, JSON.stringify(res));
+      fetchServers(true).then((r) => {
+        console.log("fetchServers", r);
       });
+    });
   };
 
   const enable_coco_server = useCallback(
     async (enabled: boolean) => {
-      try {
-        if (enabled) {
-          await enable_server(currentService?.id);
-        } else {
-          await disable_server(currentService?.id);
-        }
-
-        setCurrentService({ ...currentService, enabled });
-
-        await fetchServers(false);
-      } catch (error) {
-        setError(error);
+      if (enabled) {
+        await enable_server(currentService?.id);
+      } else {
+        await disable_server(currentService?.id);
       }
+
+      setCurrentService({ ...currentService, enabled });
+
+      await fetchServers(false);
     },
     [currentService?.id]
   );

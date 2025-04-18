@@ -11,7 +11,7 @@ function MainApp() {
 
   const querySearch = useCallback(async (input: string) => {
     try {
-      const response: any = await platformAdapter.invokeBackend(
+      const response: any = await platformAdapter.commands(
         "query_coco_fusion",
         {
           from: 0,
@@ -32,7 +32,7 @@ function MainApp() {
   const queryDocuments = useCallback(
     async (from: number, size: number, queryStrings: any) => {
       try {
-        const response: any = await platformAdapter.invokeBackend(
+        const response: any = await platformAdapter.commands(
           "query_coco_fusion",
           {
             from,

@@ -4,7 +4,6 @@ import { RefreshCcw } from "lucide-react";
 
 import { DataSourceItem } from "./DataSourceItem";
 import { useConnectStore } from "@/stores/connectStore";
-import { useAppStore } from "@/stores/appStore";
 import {
   get_connectors_by_server,
   get_datasources_by_server,
@@ -13,7 +12,7 @@ import {
 export function DataSourcesList({ server }: { server: string }) {
   const { t } = useTranslation();
   const datasourceData = useConnectStore((state) => state.datasourceData);
-  const setError = useAppStore((state) => state.setError);
+
   const [refreshLoading, setRefreshLoading] = useState(false);
   const setDatasourceData = useConnectStore((state) => state.setDatasourceData);
   const setConnectorData = useConnectStore((state) => state.setConnectorData);
@@ -25,10 +24,6 @@ export function DataSourcesList({ server }: { server: string }) {
         // console.log("get_connectors_by_server", res);
         setConnectorData(res, server);
       })
-      .catch((err: any) => {
-        setError(err);
-        throw err; // Propagate error back up
-      })
       .finally(() => {});
 
     //fetch datasource data
@@ -37,10 +32,6 @@ export function DataSourcesList({ server }: { server: string }) {
         // console.log("get_datasources_by_server", res);
         setDatasourceData(res, server);
       })
-      .catch((err: any) => {
-        setError(err);
-        throw err; // Propagate error back up
-      })
       .finally(() => {});
   }
 
@@ -48,8 +39,6 @@ export function DataSourcesList({ server }: { server: string }) {
     setRefreshLoading(true);
     try {
       initServerAppData({ server });
-    } catch (e) {
-      setError(e);
     } finally {
       setRefreshLoading(false);
     }

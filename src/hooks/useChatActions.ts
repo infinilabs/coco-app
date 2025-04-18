@@ -9,7 +9,6 @@ export function useChatActions(
   currentServiceId: string | undefined,
   setActiveChat: (chat: Chat | undefined) => void,
   setCurChatEnd: (value: boolean) => void,
-  setErrorShow: (value: boolean) => void,
   setTimedoutShow: (value: boolean) => void,
   clearAllChunkData: () => void,
   setQuestion: (value: string) => void,
@@ -23,6 +22,8 @@ export function useChatActions(
   showChatHistory?: boolean
 ) {
   const isTauri = useAppStore((state) => state.isTauri);
+  const addError = useAppStore((state) => state.addError);
+
   const [keyword, setKeyword] = useState("");
 
   const chatClose = useCallback(
@@ -36,7 +37,7 @@ export function useChatActions(
             serverId: currentServiceId,
             sessionId: activeChat?._id,
           });
-          response = JSON.parse(response || "");
+          response = response ? JSON.parse(response) : null;
         } else {
           const [error, res] = await Post(
             `/chat/${activeChat?._id}/_close`,
@@ -68,7 +69,7 @@ export function useChatActions(
             serverId: currentServiceId,
             sessionId: activeChat?._id,
           });
-          response = JSON.parse(response || "");
+          response = response ? JSON.parse(response) : null;
         } else {
           const [error, res] = await Post(
             `/chat/${activeChat?._id}/_cancel`,
@@ -101,7 +102,7 @@ export function useChatActions(
             from: 0,
             size: 20,
           });
-          response = JSON.parse(response || "");
+          response = response ? JSON.parse(response) : null;
         } else {
           const [error, res] = await Get(`/chat/${chat?._id}/_history`, {
             from: 0,
@@ -132,12 +133,11 @@ export function useChatActions(
     async (value: string = "", activeChat?: Chat, id?: string) => {
       try {
         setTimedoutShow(false);
-        setErrorShow(false);
         await chatClose(activeChat);
         clearAllChunkData();
         setQuestion(value);
         if (!(websocketSessionId || id)) {
-          setErrorShow(true);
+          addError("websocketSessionId not found");
           console.error("websocketSessionId", websocketSessionId, id);
           return;
         }
@@ -172,7 +172,6 @@ export function useChatActions(
             }
           );
           if (error) {
-            setErrorShow(true);
             console.error("_new", error);
             return;
           }
@@ -194,7 +193,6 @@ export function useChatActions(
         setActiveChat(updatedChat);
         setCurChatEnd(false);
       } catch (error) {
-        setErrorShow(true);
         console.error("createNewChat:", error);
       }
     },
@@ -215,7 +213,7 @@ export function useChatActions(
       clearAllChunkData();
       try {
         if (!(websocketSessionId || id)) {
-          setErrorShow(true);
+          addError("websocketSessionId not found");
           console.error("websocketSessionId", websocketSessionId, id);
           return;
         }
@@ -233,7 +231,7 @@ export function useChatActions(
             },
             message: content,
           });
-          response = JSON.parse(response || "");
+          response = response ? JSON.parse(response) : null;
         } else {
           console.log("websocketSessionId", websocketSessionId, id);
           const [error, res] = await Post(
@@ -252,7 +250,6 @@ export function useChatActions(
           );
 
           if (error) {
-            setErrorShow(true);
             console.error("_cancel", error);
             return;
           }
@@ -270,7 +267,6 @@ export function useChatActions(
         setActiveChat(updatedChat);
         setCurChatEnd(false);
       } catch (error) {
-        setErrorShow(true);
         console.error("sendMessage:", error);
       }
     },
@@ -282,7 +278,6 @@ export function useChatActions(
       curIdRef,
       setActiveChat,
       setCurChatEnd,
-      setErrorShow,
       changeInput,
       websocketSessionId,
     ]
@@ -294,7 +289,6 @@ export function useChatActions(
       setQuestion(content);
 
       setTimedoutShow(false);
-      setErrorShow(false);
 
       await chatHistory(activeChat, (chat) => sendMessage(content, chat, id));
     },
@@ -303,7 +297,6 @@ export function useChatActions(
       sendMessage,
       setQuestion,
       setTimedoutShow,
-      setErrorShow,
       clearAllChunkData,
     ]
   );
@@ -319,7 +312,7 @@ export function useChatActions(
             serverId: currentServiceId,
             sessionId: chat?._id,
           });
-          response = JSON.parse(response || "");
+          response = response ? JSON.parse(response) : null;
         } else {
           const [error, res] = await Post(`/chat/${chat?._id}/_open`, {});
           if (error) {
@@ -350,7 +343,8 @@ export function useChatActions(
           size: 20,
           query: keyword,
         });
-        response = JSON.parse(response || "");
+        console.log("12121212121212", response);
+        response = response ? JSON.parse(response) : null;
       } else {
         const [error, res] = await Get(`/chat/_history`, {
           from: 0,
@@ -374,13 +368,8 @@ export function useChatActions(
   }, [currentServiceId, keyword]);
 
   useEffect(() => {
-    console.log("showChatHistory", showChatHistory);
     showChatHistory && getChatHistory();
   }, [showChatHistory]);
-
-  useEffect(() => {
-    getChatHistory();
-  }, [keyword]);
 
   const createChatWindow = useCallback(async (createWin: any) => {
     if (isTauri) {

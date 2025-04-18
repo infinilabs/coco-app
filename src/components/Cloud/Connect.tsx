@@ -13,9 +13,8 @@ export function Connect({ setIsConnect, onAddServer }: ConnectServiceProps) {
   const { t } = useTranslation();
   const [endpointLink, setEndpointLink] = useState("");
   const [refreshLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(""); // State to store the error message
 
-  const setError = useAppStore((state) => state.setError);
+  const addError = useAppStore((state) => state.addError);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,15 +35,8 @@ export function Connect({ setIsConnect, onAddServer }: ConnectServiceProps) {
         typeof err === "string"
           ? err
           : err?.message || "An unknown error occurred.";
-      setErrorMessage("ERR:" + errorMessage);
-      setError(errorMessage);
-      console.error("Error:", errorMessage);
+      addError(errorMessage);
     }
-  };
-
-  // Function to close the error message
-  const closeError = () => {
-    setErrorMessage("");
   };
 
   return (
@@ -96,31 +88,6 @@ export function Connect({ setIsConnect, onAddServer }: ConnectServiceProps) {
           </div>
         </div>
       </form>
-
-      {/*//TODO move to outer container, move error state to global*/}
-      {errorMessage && (
-        <div className="mb-8">
-          <div
-            style={{
-              color: "red",
-              marginTop: "10px",
-              display: "block", // Makes sure the error message starts on a new line
-              marginBottom: "10px",
-            }}
-          >
-            <span>{errorMessage}</span>
-            <button
-              onClick={closeError}
-              style={{
-                background: "none",
-                border: "none",
-                color: "red",
-                cursor: "pointer",
-              }}
-            ></button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

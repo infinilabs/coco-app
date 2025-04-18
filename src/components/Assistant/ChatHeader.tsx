@@ -42,6 +42,7 @@ interface ChatHeaderProps {
   isSidebarOpen: boolean;
   activeChat: Chat | undefined;
   reconnect: (server?: IServer) => void;
+  isLogin: boolean;
   setIsLogin: (isLogin: boolean) => void;
   isChatPage?: boolean;
   showChatHistory?: boolean;
@@ -54,6 +55,7 @@ export function ChatHeader({
   setIsSidebarOpen,
   activeChat,
   reconnect,
+  isLogin,
   setIsLogin,
   isChatPage = false,
   showChatHistory = true,
@@ -120,7 +122,10 @@ export function ChatHeader({
     isTauri && fetchServers(true);
 
     const unlisten = platformAdapter.listenEvent("login_or_logout", (event) => {
-      console.log("Login or Logout:", currentService, event);
+      console.log("Login or Logout:", currentService, event.payload);
+      if (event.payload !== isLogin) {
+        setIsLogin(!!event.payload);
+      }
       fetchServers(true);
     });
 

@@ -175,3 +175,28 @@ export interface TranscriptionPayload {
 export interface TranscriptionResponse {
   text: string;
 }
+
+export interface MultiSourceQueryResponse {
+  failed: FailedRequest[];
+  hits: QueryHits[];
+  total_hits: number;
+}
+
+export interface FailedRequest {
+  source: QuerySource;
+  status: number;
+  error?: string;
+  reason?: string | null;
+}
+
+export interface QuerySource {
+  type: string;
+  name: string;
+  id: string;
+}
+
+export interface QueryHits {
+  source?: QuerySource;
+  score: number;
+  document: any;
+}

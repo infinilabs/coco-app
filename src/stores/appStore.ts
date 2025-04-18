@@ -26,12 +26,21 @@ export interface IServer {
   };
 }
 
+interface ErrorMessage {
+  id: string;
+  type: 'error' | 'warning' | 'info';
+  message: string;
+  timestamp: number;
+}
+
 export type IAppStore = {
   showTooltip: boolean;
   setShowTooltip: (showTooltip: boolean) => void;
 
-  error: string;
-  setError: (message: any) => void;
+  errors: ErrorMessage[];
+  addError: (message: string, type?: 'error' | 'warning' | 'info') => void;
+  removeError: (id: string) => void;
+  clearErrors: () => void;
 
   ssoRequestID: string;
   setSSORequestID: (ssoRequestID: string) => void;
@@ -64,8 +73,24 @@ export const useAppStore = create<IAppStore>()(
     (set) => ({
       showTooltip: true,
       setShowTooltip: (showTooltip: boolean) => set({ showTooltip }),
-      error: "",
-      setError: (message: any) => set({ error: message as string }),
+      errors: [],
+      addError: (message: string, type: 'error' | 'warning' | 'info' = 'error') => 
+        set((state) => {
+          const newError = {
+            id: Date.now().toString(),
+            type,
+            message,
+            timestamp: Date.now()
+          };
+          const updatedErrors = [newError, ...state.errors].slice(0, 5);
+          return { errors: updatedErrors };
+        }),
+      removeError: (id: string) =>
+        set((state) => ({
+          errors: state.errors.filter(error => error.id !== id)
+        })),
+      clearErrors: () => set({ errors: [] }),
+
       ssoRequestID: "",
       setSSORequestID: (ssoRequestID: string) => set({ ssoRequestID }),
       //  ssoServerID: "",
@@ -130,7 +155,6 @@ export const useAppStore = create<IAppStore>()(
         showTooltip: state.showTooltip,
         ssoRequestID: state.ssoRequestID,
         // ssoServerID: state.ssoServerID,
-        error: state.error,
         endpoint: state.endpoint,
         endpoint_http: state.endpoint_http,
         endpoint_websocket: state.endpoint_websocket,
