@@ -27,7 +27,7 @@ interface HistoryListProps {
   list: Chat[];
   active?: Chat;
   onSearch: (keyword: string) => void;
-  onRefresh: () => void;
+  onRefresh: () => Promise<void>;
   onSelect: (chat: Chat) => void;
   onRename: (chatId: string, title: string) => void;
   onRemove: (chatId: string) => void;
@@ -50,6 +50,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
   const listRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const moreButtonRef = useRef<HTMLButtonElement>(null);
+  const [isRefresh, setIsRefresh] = useState(false);
 
   const sortedList = useMemo(() => {
     if (isNil(list)) return {};
@@ -142,6 +143,16 @@ const HistoryList: FC<HistoryListProps> = (props) => {
     setIsOpen(false);
   };
 
+  const handleRefresh = async () => {
+    setIsRefresh(true);
+
+    await onRefresh();
+
+    setTimeout(() => {
+      setIsRefresh(false);
+    }, 1000);
+  };
+
   return (
     <div
       ref={listRef}
@@ -174,10 +185,14 @@ const HistoryList: FC<HistoryListProps> = (props) => {
 
         <div
           className="size-8 flex items-center justify-center rounded-lg border text-[#0072FF] border-[#E6E6E6] bg-[#F3F4F6] dark:border-[#343D4D] dark:bg-[#1F2937] hover:bg-[#F8F9FA] dark:hover:bg-[#353F4D] cursor-pointer transition"
-          onClick={onRefresh}
+          onClick={handleRefresh}
         >
-          <VisibleKey shortcut="R" onKeyPress={onRefresh}>
-            <RefreshCcw className="size-4" />
+          <VisibleKey shortcut="R" onKeyPress={handleRefresh}>
+            <RefreshCcw
+              className={clsx("size-4", {
+                "animate-spin": isRefresh,
+              })}
+            />
           </VisibleKey>
         </div>
       </div>

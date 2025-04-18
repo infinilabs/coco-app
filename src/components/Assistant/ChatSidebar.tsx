@@ -12,7 +12,7 @@ interface ChatSidebarProps {
   // onNewChat: () => void;
   onSelectChat: (chat: any) => void;
   onDeleteChat: (chatId: string) => void;
-  fetchChatHistory: () => void;
+  fetchChatHistory: () => Promise<void>;
   onSearch: (keyword: string) => void;
   onRename: (chat: any, title: string) => void;
 }
