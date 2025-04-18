@@ -3,13 +3,11 @@ use crate::common::error::SearchError;
 use crate::common::search::{QueryResponse, QuerySource, SearchQuery};
 use crate::common::traits::SearchSource;
 use crate::local::LOCAL_QUERY_SOURCE_TYPE;
-use applications::{App, AppInfo, AppInfoContext};
+use applications::App;
 use async_trait::async_trait;
-use base64::encode;
 use fuzzy_prefix_search::Trie;
 use std::collections::HashMap;
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use tauri::{AppHandle, Runtime};
 use tauri_plugin_fs_pro::{icon, metadata, name, IconOptions};
 
@@ -39,8 +37,70 @@ pub fn get_default_search_paths() -> Vec<String> {
     }
 }
 
-/// List apps that are in the `search_path`.
-#[allow(unused)] // for now, will be used in https://github.com/infinilabs/coco-app/pull/346
+/// Helper function to return `app`'s path.
+///
+/// * Windows: return the path to application's exe
+/// * macOS: return the path to the `.app` bundle
+/// * Linux: return the path to the `.desktop` file
+fn get_app_path(app: &App) -> PathBuf {
+    if cfg!(target_os = "windows") {
+        assert!(
+            app.icon_path.is_some(),
+            "we only accept Applications with icons"
+        );
+        app.app_path_exe
+            .as_ref()
+            .expect("icon is Some, exe path should be Some as well")
+            .to_path_buf()
+    } else {
+        app.app_desktop_path.clone()
+    }
+}
+
+/// Helper function to return `app`'s path.
+///
+/// * Windows/macOS: extract `app_path`'s file name and remove the file extension
+/// * Linux: return the name specified in `.desktop` file
+async fn get_app_name(app: &App) -> String {
+    if cfg!(target_os = "linux") {
+        app.name.clone()
+    } else {
+        let app_path = get_app_path(app);
+        name(app_path.clone()).await
+    }
+}
+
+/// Helper function to return an absolute path to `app`'s icon.
+///
+/// On macOS/Windows, we cache icons in our data directory using the `icon()` function.
+async fn get_app_icon_path<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
+    app: &App,
+) -> Result<PathBuf, String> {
+    if cfg!(target_os = "linux") {
+        let icon_path = app
+            .icon_path
+            .as_ref()
+            .expect("We only accept applications with icons")
+            .to_path_buf();
+
+        Ok(icon_path)
+    } else {
+        let app_path = get_app_path(app);
+        let options = IconOptions {
+            size: Some(256),
+            save_path: None,
+        };
+
+        icon(tauri_app_handle.clone(), app_path, Some(options))
+            .await
+            .map_err(|err| err.to_string())
+    }
+}
+
+/// Return all the Apps found under `search_path`.
+///
+/// Note: apps with no icons will be filtered out.
 fn list_app_in(search_path: Vec<String>) -> Result<Vec<App>, String> {
     let search_path = search_path
         .into_iter()
@@ -51,7 +111,7 @@ fn list_app_in(search_path: Vec<String>) -> Result<Vec<App>, String> {
 
     Ok(apps
         .into_iter()
-        .filter(|app| !app.icon_path.is_none())
+        .filter(|app| app.icon_path.is_some())
         .collect())
 }
 
@@ -92,15 +152,9 @@ pub async fn list_app_with_metadata_in<R: Runtime>(
     let mut apps_with_meta = Vec::with_capacity(apps.len());
 
     // name version where Type(hardcoded Application) Size Created Modify
-    for app in apps {
-        let app_path = if cfg!(target_os = "windows") {
-            app.app_path_exe
-                .clone()
-                .unwrap_or(PathBuf::from("Path not found"))
-        } else {
-            app.app_desktop_path.clone()
-        };
-        let app_name = name(app_path.clone()).await;
+    for app in apps.iter() {
+        let app_path = get_app_path(app);
+        let app_name = get_app_name(app).await;
         let app_path_where = {
             let mut app_path_clone = app_path.clone();
             let truncated = app_path_clone.pop();
@@ -110,19 +164,7 @@ pub async fn list_app_with_metadata_in<R: Runtime>(
 
             app_path_clone
         };
-
-        let icon = if cfg!(target_os = "linux") {
-            app.icon_path.clone().unwrap_or(PathBuf::from(""))
-        } else {
-            let options = IconOptions {
-                size: Some(256),
-                save_path: None,
-            };
-
-            icon(app_handle.clone(), app_path.clone(), Some(options))
-                .await
-                .map_err(|err| err.to_string())?
-        };
+        let icon = get_app_icon_path(&app_handle, app).await?;
 
         let raw_app_metadata = metadata(app_path.clone(), None).await?;
 
@@ -144,8 +186,9 @@ pub async fn list_app_with_metadata_in<R: Runtime>(
 
 pub struct ApplicationSearchSource {
     base_score: f64,
+    // app name -> app icon path
     icons: HashMap<String, PathBuf>,
-    application_paths: Trie<String>,
+    application_paths: Trie<PathBuf>,
 }
 
 impl ApplicationSearchSource {
@@ -156,47 +199,20 @@ impl ApplicationSearchSource {
         let application_paths = Trie::new();
         let mut icons = HashMap::new();
 
-        let default_search_path = get_default_search_paths()
-            .into_iter()
-            .map(PathBuf::from)
-            .collect();
-        let mut ctx = AppInfoContext::new(default_search_path);
-        ctx.refresh_apps().map_err(|err| err.to_string())?; // must refresh apps before getting them
-        let apps = ctx.get_all_apps();
+        let default_search_path = get_default_search_paths();
+        let apps = list_app_in(default_search_path)?;
 
         for app in &apps {
-            if app.icon_path.is_none() {
+            let app_path = get_app_path(app);
+            let app_name = get_app_name(app).await;
+            let app_icon_path = get_app_icon_path(&app_handle, app).await?;
+
+            if app_name.is_empty() || app_name.eq("Coco-AI") {
                 continue;
             }
 
-            let path = if cfg!(target_os = "windows") {
-                app.app_path_exe
-                    .clone()
-                    .unwrap_or(PathBuf::from("Path not found"))
-            } else {
-                app.app_desktop_path.clone()
-            };
-            let search_word = name(path.clone()).await;
-            let icon = if cfg!(target_os = "linux") {
-                app.icon_path.clone().unwrap_or(PathBuf::from(""))
-            } else {
-                let options = IconOptions {
-                    size: Some(256),
-                    save_path: None,
-                };
-
-                icon(app_handle.clone(), path.clone(), Some(options))
-                    .await
-                    .map_err(|err| err.to_string())?
-            };
-            let path_string = path.to_string_lossy().into_owned();
-
-            if search_word.is_empty() || search_word.eq("coco-ai") {
-                continue;
-            }
-
-            application_paths.insert(&search_word, path_string.clone());
-            icons.insert(path_string, icon);
+            application_paths.insert(&app_name, app_path);
+            icons.insert(app_name, app_icon_path);
         }
 
         Ok(ApplicationSearchSource {
@@ -238,9 +254,10 @@ impl SearchSource for ApplicationSearchSource {
         let mut total_hits = 0;
         let mut hits = Vec::new();
 
+        let query_string_len = query_string.len();
         let mut results = self
             .application_paths
-            .search_within_distance_scored(&query_string, 3);
+            .search_within_distance_scored(&query_string, query_string_len - 1);
 
         // Check for NaN or extreme score values and handle them properly
         results.sort_by(|a, b| {
@@ -257,26 +274,26 @@ impl SearchSource for ApplicationSearchSource {
 
         if !results.is_empty() {
             for result in results {
-                let file_name_str = result.word;
-                let file_path_str = result.data.get(0).unwrap().to_string();
-                let file_path = PathBuf::from(file_path_str.clone());
-                let cleaned_file_name = name(file_path).await;
+                let app_name = result.word;
+                let app_path = result.data.first().unwrap().clone();
+                let app_path_string = app_path.to_string_lossy().into_owned();
+
                 total_hits += 1;
                 let mut doc = Document::new(
                     Some(DataSourceReference {
                         r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
                         name: Some("Applications".into()),
-                        id: Some(file_name_str.clone()),
+                        id: Some(app_name.clone()),
                         icon: None,
                     }),
-                    file_path_str.clone(),
+                    app_path_string.clone(),
                     "Application".to_string(),
-                    cleaned_file_name,
-                    file_path_str.clone(),
+                    app_name.clone(),
+                    app_path_string.clone(),
                 );
 
                 // Attach icon if available
-                if let Some(icon_path) = self.icons.get(file_path_str.as_str()) {
+                if let Some(icon_path) = self.icons.get(app_name.as_str()) {
                     doc.icon = Some(icon_path.as_os_str().to_str().unwrap().to_string());
                 }
 
