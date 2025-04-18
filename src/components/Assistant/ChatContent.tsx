@@ -143,7 +143,7 @@ export const ChatContent = ({
         </div>
       )}
 
-      {sessionId && <SessionFile sessionId={sessionId} />}
+      {/* {sessionId && <SessionFile sessionId={sessionId} />} */}
     </div>
   );
 };
