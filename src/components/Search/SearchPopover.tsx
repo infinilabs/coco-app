@@ -276,6 +276,7 @@ export default function SearchPopover({
                         <div className="absolute inset-0 flex items-center px-2 pointer-events-none">
                           <VisibleKey
                             shortcut="I"
+                            shortcutClassName="translate-x-0"
                             onKeyPress={() => {
                               searchInputRef.current?.focus();
                             }}
@@ -333,6 +334,7 @@ export default function SearchPopover({
                                   shortcut={
                                     index === 9 ? "0" : String(index + 1)
                                   }
+                                  shortcutClassName="-translate-x-3"
                                   onKeyPress={() => {
                                     onSelectDataSource(id, !isChecked(), isAll);
                                   }}
