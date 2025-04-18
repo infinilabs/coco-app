@@ -16,11 +16,16 @@ impl LinuxDesktopEnvironment {
         }
 
         let cmd_output = match self {
-            Self::Gnome => Command::new("gio")
-                .arg("launch")
-                .arg(path)
-                .output()
-                .map_err(|e| e.to_string())?,
+            Self::Gnome => {
+                let uri = path
+                    .file_stem()
+                    .expect("the desktop file should contain a file stem part");
+                
+                Command::new("gtk-launch")
+                  .arg(uri)
+                  .output()
+                  .map_err(|e| e.to_string())?
+            }
             Self::Kde => Command::new("kde-open")
                 .arg(path)
                 .output()
