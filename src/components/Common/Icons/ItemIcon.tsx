@@ -8,7 +8,7 @@ import { useFindConnectorIcon } from "@/hooks/useFindConnectorIcon";
 import { useAppStore } from "@/stores/appStore";
 import FontIcon from "./FontIcon";
 import platformAdapter from "@/utils/platformAdapter";
-import { isNil } from "lodash-es";
+import { isEmpty, isNil } from "lodash-es";
 
 interface ItemIconProps {
   item: any;
@@ -27,15 +27,17 @@ const ItemIcon = React.memo(function ItemIcon({
   const [isAbsolute, setIsAbsolute] = useState<boolean>();
 
   useAsyncEffect(async () => {
-    if (!item?.icon) {
-      return setIsAbsolute(false);
+    if (isEmpty(item)) return;
+
+    try {
+      const { isAbsolute } = await platformAdapter.metadata(item.icon, {
+        omitSize: true,
+      });
+
+      setIsAbsolute(isAbsolute);
+    } catch (error) {
+      setIsAbsolute(false);
     }
-
-    const { isAbsolute } = await platformAdapter.metadata(item.icon, {
-      omitSize: true,
-    });
-
-    setIsAbsolute(isAbsolute);
   }, [item]);
 
   const renderIcon = () => {
