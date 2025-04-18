@@ -55,7 +55,7 @@ export const commandWrapper = {
   async commands<T>(commandName: string, ...args: any[]): Promise<T> {
     const commands = await import('@/commands');
     if (commandName in commands) {
-      console.log(`Command ${commandName} found`);
+      // console.log(`Command ${commandName} found`);
       return (commands as any)[commandName](...args);
     }
     throw new Error(`Command ${commandName} not found`);

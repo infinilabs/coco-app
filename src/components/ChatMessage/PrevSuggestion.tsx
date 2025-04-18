@@ -16,7 +16,7 @@ const PrevSuggestion: FC<PrevSuggestionProps> = (props) => {
   const headersStr = localStorage.getItem("headers") || "{}";
   const headers = JSON.parse(headersStr);
   const id = headers["APP-INTEGRATION-ID"] || "cvkm9hmhpcemufsg3vug";
-  console.log("id", id);
+  // console.log("id", id);
 
   const [list, setList] = useState<string[]>([]);
 
@@ -36,12 +36,10 @@ const PrevSuggestion: FC<PrevSuggestionProps> = (props) => {
       return setList([]);
     }
 
-    console.log("res", res);
+    console.log("chat/_suggest", res);
 
     setList(Array.isArray(res) ? res : []);
   };
-
-  console.log("id", id);
 
   return (
     <ul className="absolute left-2 bottom-2 flex flex-col gap-2">

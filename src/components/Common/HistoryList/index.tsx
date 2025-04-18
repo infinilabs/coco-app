@@ -1,4 +1,4 @@
-import { Chat } from "@/components/Assistant/types";
+import { useKeyPress } from "ahooks";
 import {
   Description,
   Dialog,
@@ -16,9 +16,10 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import clsx from "clsx";
 import { Ellipsis, Pencil, RefreshCcw, Search, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+
 import VisibleKey from "../VisibleKey";
 import { HISTORY_PANEL_ID } from "@/constants";
-import { useKeyPress } from "ahooks";
+import { Chat } from "@/components/Assistant/types";
 
 dayjs.extend(isSameOrAfter);
 
