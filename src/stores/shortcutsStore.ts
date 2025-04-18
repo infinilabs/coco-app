@@ -100,6 +100,7 @@ export const useShortcutsStore = create<IShortcutsStore>()(
         fixedWindow: state.fixedWindow,
         serviceList: state.serviceList,
         external: state.external,
+        resetFixedWindow: state.resetFixedWindow,
       }),
     }
   )
