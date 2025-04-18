@@ -35,6 +35,8 @@ export type IShortcutsStore = {
   setServiceList: (serviceList: string) => void;
   external: string;
   setExternal: (external: string) => void;
+  resetFixedWindow: boolean;
+  setResetFixedWindow: (resetFixedWindow: boolean) => void;
 };
 
 export const useShortcutsStore = create<IShortcutsStore>()(
@@ -78,6 +80,10 @@ export const useShortcutsStore = create<IShortcutsStore>()(
       setServiceList: (serviceList) => set({ serviceList }),
       external: "E",
       setExternal: (external) => set({ external }),
+      resetFixedWindow: false,
+      setResetFixedWindow: (resetFixedWindow) => {
+        return set({ resetFixedWindow });
+      },
     }),
     {
       name: "shortcuts-store",
