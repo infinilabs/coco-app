@@ -20,11 +20,11 @@ impl LinuxDesktopEnvironment {
                 let uri = path
                     .file_stem()
                     .expect("the desktop file should contain a file stem part");
-                
+
                 Command::new("gtk-launch")
-                  .arg(uri)
-                  .output()
-                  .map_err(|e| e.to_string())?
+                    .arg(uri)
+                    .output()
+                    .map_err(|e| e.to_string())?
             }
             Self::Kde => Command::new("kde-open")
                 .arg(path)
