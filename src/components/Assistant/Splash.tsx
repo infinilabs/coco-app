@@ -1,8 +1,13 @@
-import { MoveRight } from "lucide-react";
-import FileIcon from "../Common/Icons/FileIcon";
+import { CircleX, MoveRight } from "lucide-react";
 import ItemIcon from "../Common/Icons/ItemIcon";
+import { useMount } from "ahooks";
+import { useAppStore } from "@/stores/appStore";
+import { useState } from "react";
 
 const Splash = () => {
+  const isTauri = useAppStore((state) => state.isTauri);
+  const [visible, setVisible] = useState(false);
+
   const list = [
     {
       icon: "",
@@ -46,38 +51,54 @@ const Splash = () => {
     },
   ];
 
+  useMount(() => {
+    if (isTauri) {
+      setVisible(true);
+    } else {
+    }
+  });
+
   return (
-    <div className="absolute inset-0 flex flex-col items-center px-6 pt-6 text-[#333] dark:text-white">
-      <div>logo</div>
+    visible && (
+      <div className="absolute inset-0 flex flex-col items-center px-6 pt-6 text-[#333] dark:text-white">
+        <CircleX
+          className="absolute top-3 right-3 size-4 text-[#999] cursor-pointer"
+          onClick={() => {
+            setVisible(false);
+          }}
+        />
 
-      <div className="mt-3 mb-6 text-lg font-medium">
-        AI 专利工具箱，快速开启高效工作之旅
-      </div>
+        <div>logo</div>
 
-      <ul className="flex flex-wrap -m-1">
-        {list.map((item) => {
-          const { icon, title, desc } = item;
+        <div className="mt-3 mb-6 text-lg font-medium">
+          AI 专利工具箱，快速开启高效工作之旅
+        </div>
 
-          return (
-            <li key={title} className="w-1/2 p-1">
-              <div className="group px-3 py-2 text-sm rounded-xl border dark:border-[#262626] bg-white dark:bg-black cursor-pointer transition hover:!border-[#0087FF]">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1">
-                    <ItemIcon item={item} className="size-4" />
+        <ul className="flex flex-wrap -m-1">
+          {list.map((item) => {
+            const { title, desc } = item;
 
-                    <span>{title}</span>
+            return (
+              <li key={title} className="w-1/2 p-1">
+                <div className="group px-3 py-2 text-sm rounded-xl border dark:border-[#262626] bg-white dark:bg-black cursor-pointer transition hover:!border-[#0087FF]">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                      <ItemIcon item={item} className="size-4" />
+
+                      <span>{title}</span>
+                    </div>
+
+                    <MoveRight className="size-4 transition group-hover:text-[#0087FF]" />
                   </div>
 
-                  <MoveRight className="size-4 transition group-hover:text-[#0087FF]" />
+                  <div className="mt-1 text-xs text-[#999]">{desc}</div>
                 </div>
-
-                <div className="mt-1 text-xs text-[#999]">{desc}</div>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    )
   );
 };
 
