@@ -125,6 +125,14 @@ const HistoryList: FC<HistoryListProps> = (props) => {
     activeEl?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [active?._id]);
 
+  const handleRemove = () => {
+    if (!active?._id) return;
+
+    onRemove(active._id);
+
+    setIsOpen(false);
+  };
+
   return (
     <div
       ref={listRef}
@@ -307,13 +315,16 @@ const HistoryList: FC<HistoryListProps> = (props) => {
         onClose={() => setIsOpen(false)}
         className="relative z-1000"
       >
-        <div className="fixed inset-0 flex items-center justify-center w-screen">
-          <DialogPanel className="flex flex-col justify-between w-[360px] h-[160px] p-3 border border-[#e6e6e6] bg-white dark:bg-[#202126] dark:border-white/10 shadow-xl rounded-lg">
+        <div
+          id="headlessui-popover-panel:delete-history"
+          className="fixed inset-0 flex items-center justify-center w-screen"
+        >
+          <DialogPanel className="flex flex-col justify-between w-[360px] h-[160px] p-3 text-[#333] dark:text-white/90 border border-[#e6e6e6] bg-white dark:bg-[#202126] dark:border-white/10 shadow-xl rounded-lg">
             <div className="flex flex-col gap-3">
-              <DialogTitle className="text-base font-bold text-[#333]">
+              <DialogTitle className="text-base font-bold">
                 {t("history_list.delete_modal.title")}
               </DialogTitle>
-              <Description className="text-sm text-[#333]">
+              <Description className="text-sm">
                 {t("history_list.delete_modal.description", {
                   replace: [active?._source?.title || active?._id],
                 })}
@@ -321,24 +332,31 @@ const HistoryList: FC<HistoryListProps> = (props) => {
             </div>
 
             <div className="flex gap-4 self-end">
-              <button
-                className="h-8 px-4 text-sm text-[#666666] bg-[#F8F9FA] dark:text-white dark:bg-[#202126] border border-[#E6E6E6] dark:border-white/10 rounded-lg"
-                onClick={() => setIsOpen(false)}
+              <VisibleKey
+                shortcut="N"
+                shortcutClassName="left-[unset] right-0"
+                onKeyPress={() => setIsOpen(false)}
               >
-                {t("history_list.delete_modal.button.cancel")}
-              </button>
-              <button
-                className="h-8 px-4 text-sm text-white bg-[#EF4444] rounded-lg"
-                onClick={() => {
-                  if (!active?._id) return;
+                <button
+                  className="h-8 px-4 text-sm text-[#666666] bg-[#F8F9FA] dark:text-white dark:bg-[#202126] border border-[#E6E6E6] dark:border-white/10 rounded-lg"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {t("history_list.delete_modal.button.cancel")}
+                </button>
+              </VisibleKey>
 
-                  onRemove(active._id);
-
-                  setIsOpen(false);
-                }}
+              <VisibleKey
+                shortcut="Y"
+                shortcutClassName="left-[unset] right-0"
+                onKeyPress={handleRemove}
               >
-                {t("history_list.delete_modal.button.delete")}
-              </button>
+                <button
+                  className="h-8 px-4 text-sm text-white bg-[#EF4444] rounded-lg"
+                  onClick={handleRemove}
+                >
+                  {t("history_list.delete_modal.button.delete")}
+                </button>
+              </VisibleKey>
             </div>
           </DialogPanel>
         </div>
