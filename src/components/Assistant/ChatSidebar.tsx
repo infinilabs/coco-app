@@ -3,6 +3,7 @@ import React from "react";
 // import { Sidebar } from "@/components/Assistant/Sidebar";
 import type { Chat } from "./types";
 import HistoryList from "../Common/HistoryList";
+import { HISTORY_PANEL_ID } from "@/constants";
 
 interface ChatSidebarProps {
   isSidebarOpen: boolean;
@@ -11,7 +12,7 @@ interface ChatSidebarProps {
   // onNewChat: () => void;
   onSelectChat: (chat: any) => void;
   onDeleteChat: (chatId: string) => void;
-  fetchChatHistory: () => void;
+  fetchChatHistory: () => Promise<void>;
   onSearch: (keyword: string) => void;
   onRename: (chat: any, title: string) => void;
 }
@@ -41,6 +42,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     >
       {isSidebarOpen && (
         <HistoryList
+          id={HISTORY_PANEL_ID}
           list={chats}
           active={activeChat}
           onSearch={onSearch}

@@ -49,7 +49,10 @@ const App: FC<AppProps> = (props) => {
         const { label, value } = item;
 
         return (
-          <li key={label} className="flex items-center justify-between gap-2">
+          <li
+            key={label}
+            className="flex items-center justify-between gap-2 text-[13px]"
+          >
             <span className="opacity-70">{label}</span>
             <span className="truncate max-w-[240px]">{value}</span>
           </li>

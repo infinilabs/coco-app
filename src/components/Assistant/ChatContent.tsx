@@ -7,8 +7,9 @@ import FileList from "@/components/Assistant/FileList";
 import { useChatScroll } from "@/hooks/useChatScroll";
 import { useChatStore } from "@/stores/chatStore";
 import type { Chat, IChunkData } from "./types";
-import SessionFile from "./SessionFile";
+// import SessionFile from "./SessionFile";
 import { useConnectStore } from "@/stores/connectStore";
+import SessionFile from "./SessionFile";
 
 interface ChatContentProps {
   activeChat?: Chat;

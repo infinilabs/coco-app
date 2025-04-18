@@ -1,6 +1,6 @@
 import { File } from "lucide-react";
 import React, { useState } from "react";
-import { useMount } from "ahooks";
+import { useAsyncEffect } from "ahooks";
 
 import IconWrapper from "./IconWrapper";
 import ThemedIcon from "./ThemedIcon";
@@ -8,7 +8,7 @@ import { useFindConnectorIcon } from "@/hooks/useFindConnectorIcon";
 import { useAppStore } from "@/stores/appStore";
 import FontIcon from "./FontIcon";
 import platformAdapter from "@/utils/platformAdapter";
-import { isNil } from "lodash-es";
+import { isEmpty, isNil } from "lodash-es";
 
 interface ItemIconProps {
   item: any;
@@ -26,17 +26,19 @@ const ItemIcon = React.memo(function ItemIcon({
   const icons = connectorSource?.assets?.icons || {};
   const [isAbsolute, setIsAbsolute] = useState<boolean>();
 
-  useMount(async () => {
-    if (!item?.icon) {
-      return setIsAbsolute(false);
+  useAsyncEffect(async () => {
+    if (isEmpty(item)) return;
+
+    try {
+      const { isAbsolute } = await platformAdapter.metadata(item.icon, {
+        omitSize: true,
+      });
+
+      setIsAbsolute(isAbsolute);
+    } catch (error) {
+      setIsAbsolute(false);
     }
-
-    const { isAbsolute } = await platformAdapter.metadata(item.icon, {
-      omitSize: true,
-    });
-
-    setIsAbsolute(isAbsolute);
-  });
+  }, [item]);
 
   const renderIcon = () => {
     if (isNil(isAbsolute)) return;

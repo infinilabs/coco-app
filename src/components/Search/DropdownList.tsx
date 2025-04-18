@@ -113,8 +113,12 @@ function DropdownList({
       }
 
       if (e.key >= "0" && e.key <= "9" && showIndex) {
-        // console.log(`number ${e.key}`);
-        const item = globalItemIndexMap[parseInt(e.key, 10)];
+        let index = parseInt(e.key, 10);
+
+        index = index === 0 ? 9 : index - 1;
+
+        const item = globalItemIndexMap[index];
+
         if (item?.url) {
           OpenURLWithBrowser(item?.url);
         }
@@ -133,6 +137,8 @@ function DropdownList({
   }, []);
 
   useEffect(() => {
+    if (isChatMode) return;
+
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
 
@@ -191,10 +197,9 @@ function DropdownList({
                 <ThemedIcon component={ArrowBigRight} className="w-4 h-4" />
               </IconWrapper>
               {showIndex && sourceName === selectedName ? (
-                <div className="absolute top-0 right-4">
+                <div className="absolute top-1 right-4">
                   <VisibleKey shortcut="→" />
                 </div>
-                
               ) : null}
             </div>
           ) : null}

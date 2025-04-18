@@ -18,30 +18,39 @@ import { Ellipsis, Pencil, RefreshCcw, Search, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import VisibleKey from "../VisibleKey";
-import { HISTORY_PANEL_ID } from "@/constants";
 import { Chat } from "@/components/Assistant/types";
 
 dayjs.extend(isSameOrAfter);
 
 interface HistoryListProps {
+  id?: string;
   list: Chat[];
   active?: Chat;
   onSearch: (keyword: string) => void;
-  onRefresh: () => void;
+  onRefresh: () => Promise<void>;
   onSelect: (chat: Chat) => void;
   onRename: (chatId: string, title: string) => void;
   onRemove: (chatId: string) => void;
 }
 
 const HistoryList: FC<HistoryListProps> = (props) => {
-  const { list, active, onSearch, onRefresh, onSelect, onRename, onRemove } =
-    props;
+  const {
+    id,
+    list,
+    active,
+    onSearch,
+    onRefresh,
+    onSelect,
+    onRename,
+    onRemove,
+  } = props;
   const { t } = useTranslation();
   const [isEdit, setIsEdit] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const moreButtonRef = useRef<HTMLButtonElement>(null);
+  const [isRefresh, setIsRefresh] = useState(false);
 
   const sortedList = useMemo(() => {
     if (isNil(list)) return {};
@@ -126,10 +135,28 @@ const HistoryList: FC<HistoryListProps> = (props) => {
     activeEl?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [active?._id]);
 
+  const handleRemove = () => {
+    if (!active?._id) return;
+
+    onRemove(active._id);
+
+    setIsOpen(false);
+  };
+
+  const handleRefresh = async () => {
+    setIsRefresh(true);
+
+    await onRefresh();
+
+    setTimeout(() => {
+      setIsRefresh(false);
+    }, 1000);
+  };
+
   return (
     <div
       ref={listRef}
-      id={HISTORY_PANEL_ID}
+      id={id}
       className={clsx(
         "h-full overflow-auto px-3 py-2 text-sm bg-[#F3F4F6] dark:bg-[#1F2937]"
       )}
@@ -137,7 +164,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
       <div className="flex gap-1 children:h-8">
         <div className="flex-1 flex items-center gap-2 px-2 rounded-lg border transition border-[#E6E6E6] bg-[#F8F9FA] dark:bg-[#2B3444] dark:border-[#343D4D] focus-within:border-[#0061FF]">
           <VisibleKey
-            shortcut="I"
+            shortcut="F"
             onKeyPress={() => {
               searchInputRef.current?.focus();
             }}
@@ -158,10 +185,14 @@ const HistoryList: FC<HistoryListProps> = (props) => {
 
         <div
           className="size-8 flex items-center justify-center rounded-lg border text-[#0072FF] border-[#E6E6E6] bg-[#F3F4F6] dark:border-[#343D4D] dark:bg-[#1F2937] hover:bg-[#F8F9FA] dark:hover:bg-[#353F4D] cursor-pointer transition"
-          onClick={onRefresh}
+          onClick={handleRefresh}
         >
-          <VisibleKey shortcut="R" onKeyPress={onRefresh}>
-            <RefreshCcw className="size-4" />
+          <VisibleKey shortcut="R" onKeyPress={handleRefresh}>
+            <RefreshCcw
+              className={clsx("size-4", {
+                "animate-spin": isRefresh,
+              })}
+            />
           </VisibleKey>
         </div>
       </div>
@@ -308,13 +339,16 @@ const HistoryList: FC<HistoryListProps> = (props) => {
         onClose={() => setIsOpen(false)}
         className="relative z-1000"
       >
-        <div className="fixed inset-0 flex items-center justify-center w-screen">
-          <DialogPanel className="flex flex-col justify-between w-[360px] h-[160px] p-3 border border-[#e6e6e6] bg-white dark:bg-[#202126] dark:border-white/10 shadow-xl rounded-lg">
+        <div
+          id="headlessui-popover-panel:delete-history"
+          className="fixed inset-0 flex items-center justify-center w-screen"
+        >
+          <DialogPanel className="flex flex-col justify-between w-[360px] h-[160px] p-3 text-[#333] dark:text-white/90 border border-[#e6e6e6] bg-white dark:bg-[#202126] dark:border-white/10 shadow-xl rounded-lg">
             <div className="flex flex-col gap-3">
-              <DialogTitle className="text-base font-bold text-[#333]">
+              <DialogTitle className="text-base font-bold">
                 {t("history_list.delete_modal.title")}
               </DialogTitle>
-              <Description className="text-sm text-[#333]">
+              <Description className="text-sm">
                 {t("history_list.delete_modal.description", {
                   replace: [active?._source?.title || active?._id],
                 })}
@@ -322,24 +356,31 @@ const HistoryList: FC<HistoryListProps> = (props) => {
             </div>
 
             <div className="flex gap-4 self-end">
-              <button
-                className="h-8 px-4 text-sm text-[#666666] bg-[#F8F9FA] dark:text-white dark:bg-[#202126] border border-[#E6E6E6] dark:border-white/10 rounded-lg"
-                onClick={() => setIsOpen(false)}
+              <VisibleKey
+                shortcut="N"
+                shortcutClassName="left-[unset] right-0"
+                onKeyPress={() => setIsOpen(false)}
               >
-                {t("history_list.delete_modal.button.cancel")}
-              </button>
-              <button
-                className="h-8 px-4 text-sm text-white bg-[#EF4444] rounded-lg"
-                onClick={() => {
-                  if (!active?._id) return;
+                <button
+                  className="h-8 px-4 text-sm text-[#666666] bg-[#F8F9FA] dark:text-white dark:bg-[#202126] border border-[#E6E6E6] dark:border-white/10 rounded-lg"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {t("history_list.delete_modal.button.cancel")}
+                </button>
+              </VisibleKey>
 
-                  onRemove(active._id);
-
-                  setIsOpen(false);
-                }}
+              <VisibleKey
+                shortcut="Y"
+                shortcutClassName="left-[unset] right-0"
+                onKeyPress={handleRemove}
               >
-                {t("history_list.delete_modal.button.delete")}
-              </button>
+                <button
+                  className="h-8 px-4 text-sm text-white bg-[#EF4444] rounded-lg"
+                  onClick={handleRemove}
+                >
+                  {t("history_list.delete_modal.button.delete")}
+                </button>
+              </VisibleKey>
             </div>
           </DialogPanel>
         </div>
