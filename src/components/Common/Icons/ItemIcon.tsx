@@ -1,6 +1,6 @@
 import { File } from "lucide-react";
 import React, { useState } from "react";
-import { useMount } from "ahooks";
+import { useAsyncEffect, useMount } from "ahooks";
 
 import IconWrapper from "./IconWrapper";
 import ThemedIcon from "./ThemedIcon";
@@ -26,7 +26,7 @@ const ItemIcon = React.memo(function ItemIcon({
   const icons = connectorSource?.assets?.icons || {};
   const [isAbsolute, setIsAbsolute] = useState<boolean>();
 
-  useMount(async () => {
+  useAsyncEffect(async () => {
     if (!item?.icon) {
       return setIsAbsolute(false);
     }
@@ -36,7 +36,7 @@ const ItemIcon = React.memo(function ItemIcon({
     });
 
     setIsAbsolute(isAbsolute);
-  });
+  }, [item]);
 
   const renderIcon = () => {
     if (isNil(isAbsolute)) return;
