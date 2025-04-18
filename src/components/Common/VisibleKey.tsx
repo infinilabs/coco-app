@@ -57,8 +57,11 @@ const VisibleKey: FC<VisibleKeyProps> = (props) => {
     setVisibleShortcut(isChildInPopover && modifierKeyPressed);
   }, [openPopover, modifierKeyPressed]);
 
-  useKeyPress(`${modifierKey}.${shortcut}`, () => {
+  useKeyPress(`${modifierKey}.${shortcut}`, (event) => {
     if (!visibleShortcut) return;
+
+    event.stopPropagation();
+    event.preventDefault();
 
     onKeyPress?.();
   });

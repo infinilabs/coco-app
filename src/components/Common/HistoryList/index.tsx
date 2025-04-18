@@ -17,12 +17,12 @@ import clsx from "clsx";
 import { Ellipsis, Pencil, RefreshCcw, Search, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import VisibleKey from "../VisibleKey";
-import { HISTORY_PANEL_ID } from "@/constants";
 import { useKeyPress } from "ahooks";
 
 dayjs.extend(isSameOrAfter);
 
 interface HistoryListProps {
+  id?: string;
   list: Chat[];
   active?: Chat;
   onSearch: (keyword: string) => void;
@@ -33,8 +33,16 @@ interface HistoryListProps {
 }
 
 const HistoryList: FC<HistoryListProps> = (props) => {
-  const { list, active, onSearch, onRefresh, onSelect, onRename, onRemove } =
-    props;
+  const {
+    id,
+    list,
+    active,
+    onSearch,
+    onRefresh,
+    onSelect,
+    onRename,
+    onRemove,
+  } = props;
   const { t } = useTranslation();
   const [isEdit, setIsEdit] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -136,7 +144,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
   return (
     <div
       ref={listRef}
-      id={HISTORY_PANEL_ID}
+      id={id}
       className={clsx(
         "h-full overflow-auto px-3 py-2 text-sm bg-[#F3F4F6] dark:bg-[#1F2937]"
       )}
@@ -144,7 +152,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
       <div className="flex gap-1 children:h-8">
         <div className="flex-1 flex items-center gap-2 px-2 rounded-lg border transition border-[#E6E6E6] bg-[#F8F9FA] dark:bg-[#2B3444] dark:border-[#343D4D] focus-within:border-[#0061FF]">
           <VisibleKey
-            shortcut="I"
+            shortcut="F"
             onKeyPress={() => {
               searchInputRef.current?.focus();
             }}

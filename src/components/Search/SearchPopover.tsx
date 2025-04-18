@@ -275,7 +275,7 @@ export default function SearchPopover({
                       <div className="relative h-8 my-2">
                         <div className="absolute inset-0 flex items-center px-2 pointer-events-none">
                           <VisibleKey
-                            shortcut="I"
+                            shortcut="F"
                             shortcutClassName="translate-x-0"
                             onKeyPress={() => {
                               searchInputRef.current?.focus();

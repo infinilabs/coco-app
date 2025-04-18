@@ -3,6 +3,7 @@ import React from "react";
 // import { Sidebar } from "@/components/Assistant/Sidebar";
 import type { Chat } from "./types";
 import HistoryList from "../Common/HistoryList";
+import { HISTORY_PANEL_ID } from "@/constants";
 
 interface ChatSidebarProps {
   isSidebarOpen: boolean;
@@ -41,6 +42,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     >
       {isSidebarOpen && (
         <HistoryList
+          id={HISTORY_PANEL_ID}
           list={chats}
           active={activeChat}
           onSearch={onSearch}
