@@ -10,11 +10,13 @@ import {
 } from "./wrappers/tauriWrappers";
 import type { BasePlatformAdapter } from "@/types/platform";
 import type { AppTheme } from "@/types/index";
+import { metadata } from "tauri-plugin-fs-pro-api";
 
 export interface TauriPlatformAdapter extends BasePlatformAdapter {
   openFileDialog: (
     options: OpenDialogOptions
   ) => Promise<string | string[] | null>;
+  metadata: typeof metadata;
 }
 
 // Create Tauri adapter functions
@@ -202,5 +204,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       const appWindow = getCurrentWebviewWindow();
       return appWindow.setShadow(enable);
     },
+
+    metadata,
   };
 };

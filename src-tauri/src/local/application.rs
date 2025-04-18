@@ -277,11 +277,7 @@ impl SearchSource for ApplicationSearchSource {
 
                 // Attach icon if available
                 if let Some(icon_path) = self.icons.get(file_path_str.as_str()) {
-                    // doc.icon = Some(format!("file://{}", icon_path.to_string_lossy()));
-                    // dbg!(&doc.icon);
-                    if let Ok(icon_data) = read_icon_and_encode(icon_path) {
-                        doc.icon = Some(format!("data:image/png;base64,{}", icon_data));
-                    }
+                    doc.icon = Some(icon_path.as_os_str().to_str().unwrap().to_string());
                 }
 
                 hits.push((doc, self.base_score + result.score as f64));
@@ -294,13 +290,4 @@ impl SearchSource for ApplicationSearchSource {
             total_hits,
         })
     }
-}
-
-// Function to read the icon file and convert it to base64
-fn read_icon_and_encode(icon_path: &Path) -> Result<String, std::io::Error> {
-    // Read the icon file as binary data
-    let icon_data = fs::read(icon_path)?;
-
-    // Encode the data to base64
-    Ok(encode(&icon_data))
 }
