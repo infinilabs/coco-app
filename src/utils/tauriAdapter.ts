@@ -191,11 +191,11 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     async openExternal(url) {
-      const { open } = await import("@tauri-apps/plugin-shell");
-      return open(url);
+      const { invoke } = await import("@tauri-apps/api/core");
+      return invoke("open", { path: url });
     },
 
-    isWindows10: isWindows10,
+    isWindows10,
 
     async setShadow(enable) {
       const { getCurrentWebviewWindow } = await import(
