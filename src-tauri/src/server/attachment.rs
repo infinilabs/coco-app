@@ -30,16 +30,16 @@ pub struct AttachmentSource {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AttachmentHit {
     pub _index: String,
-    pub _type: String,
+    pub _type: Option<String>,
     pub _id: String,
-    pub _score: f64,
+    pub _score: Option<f64>,
     pub _source: AttachmentSource,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AttachmentHits {
     pub total: Value,
-    pub max_score: f64,
+    pub max_score: Option<f64>,
     pub hits: Vec<AttachmentHit>,
 }
 
