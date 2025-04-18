@@ -1,6 +1,6 @@
 import { File } from "lucide-react";
 import React, { useState } from "react";
-import { useAsyncEffect, useMount } from "ahooks";
+import { useAsyncEffect } from "ahooks";
 
 import IconWrapper from "./IconWrapper";
 import ThemedIcon from "./ThemedIcon";
