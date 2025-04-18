@@ -343,7 +343,6 @@ export function useChatActions(
           size: 20,
           query: keyword,
         });
-        console.log("12121212121212", response);
         response = response ? JSON.parse(response) : null;
       } else {
         const [error, res] = await Get(`/chat/_history`, {

@@ -82,7 +82,7 @@ export default function useWebSocket({
     while (messageQueue.current.length > 0) {
       const msg = messageQueue.current.shift();
       if (msg) {
-        console.log("处理消息:", msg.substring(0, 100));
+        console.log("Processing message:", msg.substring(0, 100));
         processMessage(msg);
       }
     }
@@ -156,6 +156,7 @@ export default function useWebSocket({
       //   "status": 401
       // }
       console.error(`ws-error-${clientId}`, event);
+      if(!connected) return;
       setConnected(false);
       addError("WebSocket connection failed.");
     });
@@ -164,7 +165,6 @@ export default function useWebSocket({
       const msg = event.payload as string;
       console.log(`ws-message-${clientId}`, msg);
       if (msg.includes("websocket-session-id")) {
-        console.log("websocket-session-id:", msg);
         const sessionId = msg.split(":")[1].trim();
         websocketIdRef.current = sessionId;
         console.log("sessionId:", sessionId);
@@ -176,7 +176,6 @@ export default function useWebSocket({
       }
       dealMsgRef.current && dealMsgRef.current(msg);
     });
-
 
     return () => {
       unlisten_error?.then((fn: any) => fn());
