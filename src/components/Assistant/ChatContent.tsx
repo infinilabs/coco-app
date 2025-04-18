@@ -9,6 +9,7 @@ import { useChatStore } from "@/stores/chatStore";
 import type { Chat, IChunkData } from "./types";
 // import SessionFile from "./SessionFile";
 import { useConnectStore } from "@/stores/connectStore";
+import SessionFile from "./SessionFile";
 
 interface ChatContentProps {
   activeChat?: Chat;
@@ -143,7 +144,7 @@ export const ChatContent = ({
         </div>
       )}
 
-      {/* {sessionId && <SessionFile sessionId={sessionId} />} */}
+      {sessionId && <SessionFile sessionId={sessionId} />}
     </div>
   );
 };
