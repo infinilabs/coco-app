@@ -24,7 +24,7 @@ async function invokeWithErrorHandler<T>(
   const addError = useAppStore.getState().addError;
   try {
     const result = await invoke<T>(command, args);
-    console.log(command, result);
+    // console.log(command, result);
 
     if (result && typeof result === 'object' && 'failed' in result) {
       const failedResult = result as any;

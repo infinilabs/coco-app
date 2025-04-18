@@ -1,6 +1,7 @@
 import type { OpenDialogOptions } from "@tauri-apps/plugin-dialog";
 import { isWindows10 } from "tauri-plugin-windows-version-api";
 import { convertFileSrc } from "@tauri-apps/api/core";
+import { metadata } from "tauri-plugin-fs-pro-api";
 
 import {
   windowWrapper,
@@ -10,7 +11,6 @@ import {
 } from "./wrappers/tauriWrappers";
 import type { BasePlatformAdapter } from "@/types/platform";
 import type { AppTheme } from "@/types/index";
-import { metadata } from "tauri-plugin-fs-pro-api";
 
 export interface TauriPlatformAdapter extends BasePlatformAdapter {
   openFileDialog: (
@@ -191,11 +191,11 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     async openExternal(url) {
-      const { open } = await import("@tauri-apps/plugin-shell");
-      return open(url);
+      const { invoke } = await import("@tauri-apps/api/core");
+      return invoke("open", { path: url });
     },
 
-    isWindows10: isWindows10,
+    isWindows10,
 
     async setShadow(enable) {
       const { getCurrentWebviewWindow } = await import(

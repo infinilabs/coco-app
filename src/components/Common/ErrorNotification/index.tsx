@@ -33,7 +33,7 @@ const ErrorNotification = ({
   if (errors.length === 0) return null;
 
   return (
-    <div className="fixed bottom-10 right-4 z-50 space-y-2">
+    <div className="fixed bottom-10 right-4 z-50 max-w-[calc(100%-32px)] space-y-2">
       {errors.map((error) => (
         <div
           key={error.id}
