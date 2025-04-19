@@ -31,6 +31,7 @@ Information about release notes of Coco Server is provided here.
 - fix: active shadow setting #354
 - fix: chat history was not show up #377
 - fix: get attachments in chat sessioins
+- fix: filter http query_args and convert only supported values
 
 ### Improvements
 
