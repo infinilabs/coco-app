@@ -134,8 +134,6 @@ pub async fn new_chat<R: Runtime>(
     let mut headers = HashMap::new();
     headers.insert("WEBSOCKET-SESSION-ID".to_string(), websocket_id.into());
 
-    println!("Query Params: {:?}", query_params);
-
     let response =
         HttpClient::advanced_post(&server_id, "/chat/_new", Some(headers), query_params, body)
             .await
@@ -145,8 +143,6 @@ pub async fn new_chat<R: Runtime>(
         .text()
         .await
         .map_err(|e| format!("Failed to read response body: {}", e))?;
-
-    println!("Response: {}", text);
 
     let chat_response: GetResponse =
         serde_json::from_str(&text).map_err(|e| format!("Failed to parse response JSON: {}", e))?;
