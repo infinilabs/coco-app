@@ -27,24 +27,7 @@ export function AssistantList({ showChatHistory = true }: AssistantListProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useClickAway(menuRef, () => setIsOpen(false));
-  const [assistants, setAssistants] = useState<any[]>([
-    {
-      id: "coco",
-      name: "Coco AI",
-      description: "Your Personal AI Assistant",
-      icon: logoImg,
-    },
-    {
-      id: "searchkit",
-      name: "Searchkit 百晓生",
-      description: "社区老司机，有事你叫我",
-    },
-    {
-      id: "midjourney",
-      name: "MidjourneyGPT",
-      description: "Midjourney 提示词优化专家",
-    },
-  ]);
+  const [assistants, setAssistants] = useState<any[]>([]);
 
   
   const fetchAssistant = useCallback(async () => {
@@ -56,7 +39,7 @@ export function AssistantList({ showChatHistory = true }: AssistantListProps) {
       })
       .then((res: any) => {
         res = res ? JSON.parse(res) : null;
-        console.log("res", res);
+        console.log("assistant_search", res);
         const assistantList = res?.hits?.hits || [];
         setAssistants(assistantList);
         if (assistantList.length > 0 && !currentAssistant) {
