@@ -134,6 +134,8 @@ pub async fn new_chat<R: Runtime>(
     let mut headers = HashMap::new();
     headers.insert("WEBSOCKET-SESSION-ID".to_string(), websocket_id.into());
 
+    println!("Query Params: {:?}", query_params);
+
     let response =
         HttpClient::advanced_post(&server_id, "/chat/_new", Some(headers), query_params, body)
             .await
