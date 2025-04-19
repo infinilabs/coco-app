@@ -248,6 +248,12 @@ export const update_session_chat = (payload: {
   return invokeWithErrorHandler<boolean>("update_session_chat", payload);
 };
 
+export const assistant_search = (payload: {
+  serverId: string;
+}): Promise<boolean> => {
+  return invokeWithErrorHandler<boolean>("assistant_search", payload);
+};
+
 export const upload_attachment = async (payload: UploadAttachmentPayload) => {
   const response = await invokeWithErrorHandler<UploadAttachmentResponse>("upload_attachment", {
     ...payload,

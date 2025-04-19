@@ -4,6 +4,7 @@ import type { Chat } from "@/components/Assistant/types";
 import { useAppStore } from "@/stores/appStore";
 import { Get, Post } from "@/api/axiosRequest";
 import platformAdapter from "@/utils/platformAdapter";
+import { useConnectStore } from "@/stores/connectStore";
 
 export function useChatActions(
   currentServiceId: string | undefined,
@@ -23,6 +24,8 @@ export function useChatActions(
 ) {
   const isTauri = useAppStore((state) => state.isTauri);
   const addError = useAppStore((state) => state.addError);
+  const currentAssistant = useConnectStore((state) => state.currentAssistant);
+
 
   const [keyword, setKeyword] = useState("");
 
@@ -145,6 +148,7 @@ export function useChatActions(
         let response: any;
         if (isTauri) {
           if (!currentServiceId) return;
+          console.log("currentAssistant", currentAssistant);
           response = await platformAdapter.commands("new_chat", {
             serverId: currentServiceId,
             websocketId: websocketSessionId || id,
@@ -153,6 +157,7 @@ export function useChatActions(
               search: isSearchActive,
               deep_thinking: isDeepThinkActive,
               datasource: sourceDataIds?.join(",") || "",
+              assistant_id: currentAssistant?._id || '',
             },
           });
         } else {
@@ -203,6 +208,7 @@ export function useChatActions(
       isDeepThinkActive,
       curIdRef,
       websocketSessionId,
+      currentAssistant,
     ]
   );
 
@@ -228,6 +234,7 @@ export function useChatActions(
               search: isSearchActive,
               deep_thinking: isDeepThinkActive,
               datasource: sourceDataIds?.join(",") || "",
+              assistant_id: currentAssistant?._id || '',
             },
             message: content,
           });
@@ -280,6 +287,7 @@ export function useChatActions(
       setCurChatEnd,
       changeInput,
       websocketSessionId,
+      currentAssistant,
     ]
   );
 

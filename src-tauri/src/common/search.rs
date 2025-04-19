@@ -50,7 +50,7 @@ where
 {
     let body_text = get_response_body_text(response).await?;
 
-    dbg!(&body_text);
+    // dbg!(&body_text);
 
     let search_response: SearchResponse<T> = serde_json::from_str(&body_text)
         .map_err(|e| format!("Failed to deserialize search response: {}", e))?;

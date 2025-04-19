@@ -35,7 +35,6 @@ pub async fn chat_history<R: Runtime>(
             format!("Error get history: {}", e)
         })?;
 
-
     common::http::get_response_body_text(response).await
 }
 
@@ -135,17 +134,18 @@ pub async fn new_chat<R: Runtime>(
     let mut headers = HashMap::new();
     headers.insert("WEBSOCKET-SESSION-ID".to_string(), websocket_id.into());
 
-    let response = HttpClient::advanced_post(&server_id, "/chat/_new", Some(headers), query_params, body)
-        .await
-        .map_err(|e| format!("Error sending message: {}", e))?;
+    let response =
+        HttpClient::advanced_post(&server_id, "/chat/_new", Some(headers), query_params, body)
+            .await
+            .map_err(|e| format!("Error sending message: {}", e))?;
 
     let text = response
         .text()
         .await
         .map_err(|e| format!("Failed to read response body: {}", e))?;
 
-    let chat_response: GetResponse = serde_json::from_str(&text)
-        .map_err(|e| format!("Failed to parse response JSON: {}", e))?;
+    let chat_response: GetResponse =
+        serde_json::from_str(&text).map_err(|e| format!("Failed to parse response JSON: {}", e))?;
 
     if chat_response.result != "created" {
         return Err(format!("Unexpected result: {}", chat_response.result));
@@ -179,8 +179,8 @@ pub async fn send_message<R: Runtime>(
         query_params,
         Some(body),
     )
-        .await
-        .map_err(|e| format!("Error cancel session: {}", e))?;
+    .await
+    .map_err(|e| format!("Error cancel session: {}", e))?;
 
     common::http::get_response_body_text(response).await
 }
@@ -222,8 +222,20 @@ pub async fn update_session_chat(
         None,
         Some(reqwest::Body::from(serde_json::to_string(&body).unwrap())),
     )
-        .await
-        .map_err(|e| format!("Error updating session: {}", e))?;
+    .await
+    .map_err(|e| format!("Error updating session: {}", e))?;
 
     Ok(response.status().is_success())
+}
+
+#[tauri::command]
+pub async fn assistant_search<R: Runtime>(
+    _app_handle: AppHandle<R>,
+    server_id: String,
+) -> Result<String, String> {
+    let response = HttpClient::get(&server_id, "/assistant/_search", None)
+        .await
+        .map_err(|e| format!("Error searching assistants: {}", e))?;
+
+    common::http::get_response_body_text(response).await
 }

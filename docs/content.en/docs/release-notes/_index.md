@@ -24,6 +24,7 @@ Information about release notes of Coco Server is provided here.
 - feat: add application management to the plugin #374
 - feat: add keyboard-only operation to history list #385
 - feat: add error notification #386
+- feat: add support for AI assistant #394
 
 ### Bug fix
 

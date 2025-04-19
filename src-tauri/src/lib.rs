@@ -123,6 +123,7 @@ pub fn run() {
             assistant::cancel_session_chat,
             assistant::delete_session_chat,
             assistant::update_session_chat,
+            assistant::assistant_search,
             // server::get_coco_server_datasources,
             // server::get_coco_server_connectors,
             server::websocket::connect_to_server,
