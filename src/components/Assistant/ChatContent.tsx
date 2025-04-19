@@ -10,6 +10,7 @@ import type { Chat, IChunkData } from "./types";
 // import SessionFile from "./SessionFile";
 import { useConnectStore } from "@/stores/connectStore";
 import SessionFile from "./SessionFile";
+import Splash from "./Splash";
 
 interface ChatContentProps {
   activeChat?: Chat;
@@ -145,6 +146,8 @@ export const ChatContent = ({
       )}
 
       {sessionId && <SessionFile sessionId={sessionId} />}
+
+      <Splash />
     </div>
   );
 };
