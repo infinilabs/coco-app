@@ -22,7 +22,7 @@ import { ChatContent } from "./ChatContent";
 import ConnectPrompt from "./ConnectPrompt";
 import type { Chat } from "./types";
 import PrevSuggestion from "@/components/ChatMessage/PrevSuggestion";
-import { useAppStore } from '@/stores/appStore';
+import { useAppStore } from "@/stores/appStore";
 
 interface ChatAIProps {
   isTransitioned: boolean;
@@ -202,7 +202,7 @@ const ChatAI = memo(
           try {
             console.log("init", isLogin, curChatEnd, activeChat?._id);
             if (!isLogin || !curChatEnd) {
-              addError("Please login to continue chatting")
+              addError("Please login to continue chatting");
               return;
             }
             setShowPrevSuggestion(false);

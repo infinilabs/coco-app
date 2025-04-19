@@ -52,8 +52,25 @@ export const useSyncStore = () => {
   const setExternal = useShortcutsStore((state) => {
     return state.setExternal;
   });
+  const fixedWindow = useShortcutsStore((state) => {
+    return state.fixedWindow;
+  });
+  const resetFixedWindow = useShortcutsStore((state) => {
+    return state.resetFixedWindow;
+  });
+  const setResetFixedWindow = useShortcutsStore((state) => {
+    return state.setResetFixedWindow;
+  });
 
   useEffect(() => {
+    if (!resetFixedWindow) {
+      if (fixedWindow === "F") {
+        setFixedWindow("P");
+      }
+
+      setResetFixedWindow(true);
+    }
+
     const unListeners = Promise.all([
       platformAdapter.listenEvent("change-shortcuts-store", ({ payload }) => {
         const {
