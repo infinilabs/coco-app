@@ -82,8 +82,23 @@ impl HttpClient {
         }
 
         if let Some(query) = query_params {
-            let query: HashMap<String, String> =
-                query.into_iter().map(|(k, v)| (k, v.to_string())).collect();
+            // Convert only supported value types into strings
+            let query: HashMap<String, String> = query
+                .into_iter()
+                .filter_map(|(k, v)| {
+                    match v {
+                        JsonValue::String(s) => Some((k, s)),
+                        JsonValue::Number(n) => Some((k, n.to_string())),
+                        JsonValue::Bool(b) => Some((k, b.to_string())),
+                        _ => {
+                            dbg!(
+                                "Unsupported query parameter type. Only strings, numbers, and booleans are supported.",k,v,
+                            );
+                            None
+                        } // skip arrays, objects, nulls
+                    }
+                })
+                .collect();
             request_builder = request_builder.query(&query);
         }
 
@@ -169,7 +184,7 @@ impl HttpClient {
             query_params,
             body,
         )
-        .await
+            .await
     }
 
     // Convenience method for PUT requests
@@ -189,7 +204,7 @@ impl HttpClient {
             query_params,
             body,
         )
-        .await
+            .await
     }
 
     // Convenience method for DELETE requests
@@ -208,6 +223,6 @@ impl HttpClient {
             query_params,
             None,
         )
-        .await
+            .await
     }
 }
