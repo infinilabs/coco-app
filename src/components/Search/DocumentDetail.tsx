@@ -20,9 +20,12 @@ interface DetailItemProps {
 const DetailItem: React.FC<DetailItemProps> = ({ label, value, icon }) => (
   <div className="flex justify-between flex-wrap font-normal text-xs mb-2.5 border-t border-[rgba(238,240,243,1)] dark:border-[#272626] pt-2.5">
     <div className="text-[rgba(153,153,153,1)] dark:text-[#666]">{label}</div>
-    <div className="text-[rgba(51,51,51,1);] dark:text-[#D8D8D8] flex justify-end text-right w-56 break-words">
+    <div
+      className="text-[rgba(51,51,51,1);] dark:text-[#D8D8D8] flex justify-end text-right w-56 truncate group relative"
+      title={typeof value === "string" ? value : undefined}
+    >
       {icon}
-      {value}
+      <span className="truncate">{value}</span>
     </div>
   </div>
 );

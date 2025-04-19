@@ -24,6 +24,8 @@ export type IConnectStore = {
   setConnectionTimeout: (connectionTimeout: number) => void;
   currentSessionId?: string;
   setCurrentSessionId: (currentSessionId?: string) => void;
+  currentAssistant: any;
+  setCurrentAssistant: (assistant: any) => void;
 };
 
 export const useConnectStore = create<IConnectStore>()(
@@ -86,6 +88,14 @@ export const useConnectStore = create<IConnectStore>()(
       setCurrentSessionId(currentSessionId) {
         return set(() => ({ currentSessionId }));
       },
+      currentAssistant: null,
+      setCurrentAssistant: (assistant: any) => {
+        set(
+          produce((draft) => {
+            draft.currentAssistant = assistant;
+          })
+        );
+      },
     }),
     {
       name: "connect-store",
@@ -94,6 +104,7 @@ export const useConnectStore = create<IConnectStore>()(
         connector_data: state.connector_data,
         datasourceData: state.datasourceData,
         connectionTimeout: state.connectionTimeout,
+        currentAssistant: state.currentAssistant,
       }),
     }
   )

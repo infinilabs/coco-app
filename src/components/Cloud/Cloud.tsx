@@ -153,7 +153,6 @@ export default function Cloud() {
         getCurrentWindow().setFocus();
       } catch (e) {
         console.error("Sign in failed:", e);
-        addError("SSO login failed: " + e);
       } finally {
         setLoading(false);
       }

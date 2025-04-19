@@ -12,6 +12,8 @@ import { MessageActions } from "./MessageActions";
 import Markdown from "./Markdown";
 import { SuggestionList } from "./SuggestionList";
 import { UserMessage } from "./UserMessage";
+import { useConnectStore } from "@/stores/connectStore";
+import FontIcon from "@/components/Common/Icons/FontIcon";
 
 interface ChatMessageProps {
   message: Message;
@@ -39,6 +41,8 @@ export const ChatMessage = memo(function ChatMessage({
   loadingStep,
 }: ChatMessageProps) {
   const { t } = useTranslation();
+
+  const currentAssistant = useConnectStore((state) => state.currentAssistant);
 
   const isAssistant = message?._source?.type === "assistant";
   const messageContent = message?._source?.message || "";
@@ -127,16 +131,25 @@ export const ChatMessage = memo(function ChatMessage({
         <div
           className={`w-full space-y-2 ${isAssistant ? "text-left" : "text-right"}`}
         >
-          <p className="w-full flex items-center gap-1 font-semibold text-sm text-[#333] dark:text-[#d8d8d8]">
+          <div className="w-full flex items-center gap-1 font-semibold text-sm text-[#333] dark:text-[#d8d8d8]">
             {isAssistant ? (
-              <img
-                src={logoImg}
-                className="w-6 h-6"
-                alt={t("assistant.message.logo")}
-              />
+              <div className="w-6 h-6 flex justify-center items-center bg-white rounded-full">
+                {currentAssistant?._source?.icon?.startsWith("font_") ? (
+                  <FontIcon
+                    name={currentAssistant._source.icon}
+                    className="w-4 h-4"
+                  />
+                ) : (
+                  <img
+                    src={logoImg}
+                    className="w-4 h-4"
+                    alt={t("assistant.message.logo")}
+                  />
+                )}
+              </div>
             ) : null}
-            {isAssistant ? t("assistant.message.aiName") : ""}
-          </p>
+            {isAssistant ? currentAssistant?._source?.name || "Coco AI" : ""}
+          </div>
           <div className="w-full prose dark:prose-invert prose-sm max-w-none">
             <div className="w-full pl-7 text-[#333] dark:text-[#d8d8d8] leading-relaxed">
               {renderContent()}
