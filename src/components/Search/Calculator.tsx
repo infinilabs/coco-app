@@ -19,14 +19,16 @@ const Calculator: FC<CalculatorProps> = (props) => {
     return (
       <div
         className={clsx(
-          "flex-1 flex flex-col gap-1 items-center justify-center h-[90px] rounded-md border border-transparent transition bg-[#ededed] dark:bg-[#202126]",
+          "flex-1 flex flex-col gap-1 items-center justify-center h-[90px] overflow-hidden rounded-md border border-transparent transition bg-[#ededed] dark:bg-[#202126]",
           {
             "!border-[#881C94]": isSelected,
           }
         )}
       >
-        <div className="text-xl text-[#333] dark:text-[#d8d8d8]">{result}</div>
-        <div className="text-xs text-[#999] dark:text-[#666]">
+        <div className="w-[90%] text-xl text-[#333] dark:text-[#d8d8d8] truncate text-center">
+          {result}
+        </div>
+        <div className="w-[90%] text-xs text-[#999] dark:text-[#666] truncate text-center">
           {description}
         </div>
       </div>
