@@ -12,6 +12,7 @@ import { metaOrCtrlKey, isMetaOrCtrlKey } from "@/utils/keyboardUtils";
 import { copyToClipboard, OpenURLWithBrowser } from "@/utils/index";
 import VisibleKey from "@/components/Common/VisibleKey";
 import Calculator from "./Calculator";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 type ISearchData = Record<string, any[]>;
 
@@ -73,6 +74,8 @@ function DropdownList({
     }
   }, [isChatMode]);
 
+  const openPopover = useShortcutsStore((state) => state.openPopover);
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       // console.log(
@@ -81,7 +84,7 @@ function DropdownList({
       //   showIndex,
       //   e.key >= "0" && e.key <= "9" && showIndex
       // );
-      if (!suggests.length) return;
+      if (!suggests.length || openPopover) return;
 
       if (e.key === "ArrowUp") {
         e.preventDefault();

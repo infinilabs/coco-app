@@ -17,8 +17,19 @@ function TypeIcon({
   className = "w-5 h-5 flex-shrink-0",
   onClick = () => {},
 }: TypeIconProps) {
+  console.log("item", item);
   const endpoint_http = useAppStore((state) => state.endpoint_http);
   const connectorSource = useFindConnectorIcon(item);
+
+  const isCalculator = item.id === "Calculator";
+
+  if (isCalculator) {
+    return (
+      <IconWrapper className={className} onClick={onClick}>
+        <img className={className} src="/assets/calculator.png" alt="icon" />
+      </IconWrapper>
+    );
+  }
 
   if (item?.source?.icon) {
     if (
