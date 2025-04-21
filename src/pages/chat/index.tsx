@@ -30,6 +30,7 @@ import {
 import { DataSource } from "@/types/commands";
 import HistoryList from "@/components/Common/HistoryList";
 import { useSyncStore } from "@/hooks/useSyncStore";
+import { useFeatureControl } from "@/hooks/useFeatureControl";
 
 interface ChatProps {}
 
@@ -261,6 +262,12 @@ export default function Chat({}: ChatProps) {
     await delete_session_chat(currentService.id, id);
   };
 
+  const hasFeature = useFeatureControl({
+    initialFeatures: ["think", "search"],
+    featureToToggle: "think",
+    condition: (item) => item?._source?.type === "simple"
+  });
+
   return (
     <div className="h-screen">
       <div className="h-full flex">
@@ -331,6 +338,7 @@ export default function Chat({}: ChatProps) {
               openFileDialog={openFileDialog}
               getFileMetadata={getFileMetadata}
               getFileIcon={getFileIcon}
+              hasFeature={hasFeature}
             />
           </div>
         </div>

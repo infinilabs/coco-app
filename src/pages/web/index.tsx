@@ -6,6 +6,7 @@ import { Get } from "@/api/axiosRequest";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
+import { useFeatureControl } from "@/hooks/useFeatureControl";
 
 import "@/i18n";
 import "@/web.css";
@@ -125,6 +126,12 @@ function WebApp({
 
   const [isChatMode, setIsChatMode] = useState(false);
 
+  const hasFeatureCopy = useFeatureControl({
+    initialFeatures: hasFeature,
+    featureToToggle: "think",
+    condition: (item) => item?._source?.type === "simple"
+  });
+
   return (
     <div
       id="searchChat-container"
@@ -158,7 +165,7 @@ function WebApp({
         hideCoco={hideCoco}
         hasModules={hasModules}
         defaultModule={defaultModule}
-        hasFeature={hasFeature}
+        hasFeature={hasFeatureCopy}
         theme={theme}
         searchPlaceholder={searchPlaceholder}
         chatPlaceholder={chatPlaceholder}
