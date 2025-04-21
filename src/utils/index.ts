@@ -6,6 +6,7 @@ import { useAppStore } from "@/stores/appStore";
 // 1
 export async function copyToClipboard(text: string) {
   const addError = useAppStore.getState().addError;
+  const language = useAppStore.getState().language;
 
   try {
     if (window.__TAURI__) {
@@ -30,7 +31,7 @@ export async function copyToClipboard(text: string) {
     document.body.removeChild(textArea);
   }
 
-  addError("复制成功", "info");
+  addError(language === "zh" ? "复制成功" : "Copy Success", "info");
 }
 
 // 2
