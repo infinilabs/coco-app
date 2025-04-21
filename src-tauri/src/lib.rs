@@ -244,10 +244,12 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
 async fn init_app_search_source<R: Runtime>(app_handle: &AppHandle<R>) -> Result<(), String> {
     let application_search =
         local::application::ApplicationSearchSource::new(app_handle.clone(), 1000f64).await?;
+    let calculator_search = local::calculator::CalculatorSource::new(2000f64);
 
     // Register the application search source
     let registry = app_handle.state::<SearchSourceRegistry>();
     registry.register_source(application_search).await;
+    registry.register_source(calculator_search).await;
 
     Ok(())
 }

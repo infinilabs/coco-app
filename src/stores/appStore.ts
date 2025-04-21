@@ -28,7 +28,7 @@ export interface IServer {
 
 interface ErrorMessage {
   id: string;
-  type: 'error' | 'warning' | 'info';
+  type: "error" | "warning" | "info";
   message: string;
   timestamp: number;
 }
@@ -38,7 +38,7 @@ export type IAppStore = {
   setShowTooltip: (showTooltip: boolean) => void;
 
   errors: ErrorMessage[];
-  addError: (message: string, type?: 'error' | 'warning' | 'info') => void;
+  addError: (message: string, type?: "error" | "warning" | "info") => void;
   removeError: (id: string) => void;
   clearErrors: () => void;
 
@@ -74,20 +74,23 @@ export const useAppStore = create<IAppStore>()(
       showTooltip: true,
       setShowTooltip: (showTooltip: boolean) => set({ showTooltip }),
       errors: [],
-      addError: (message: string, type: 'error' | 'warning' | 'info' = 'error') => 
+      addError: (
+        message: string,
+        type: "error" | "warning" | "info" = "error"
+      ) =>
         set((state) => {
           const newError = {
             id: Date.now().toString(),
             type,
             message,
-            timestamp: Date.now()
+            timestamp: Date.now(),
           };
           const updatedErrors = [newError, ...state.errors].slice(0, 5);
           return { errors: updatedErrors };
         }),
       removeError: (id: string) =>
         set((state) => ({
-          errors: state.errors.filter(error => error.id !== id)
+          errors: state.errors.filter((error) => error.id !== id),
         })),
       clearErrors: () => set({ errors: [] }),
 
