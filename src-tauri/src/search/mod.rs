@@ -17,6 +17,8 @@ pub async fn query_coco_fusion<R: Runtime>(
     size: u64,
     query_strings: HashMap<String, String>,
 ) -> Result<MultiSourceQueryResponse, SearchError> {
+    println!("DBG: query_string [{:?}]", query_strings);
+
     let search_sources = app_handle.state::<SearchSourceRegistry>();
 
     let sources_future = search_sources.get_sources();
@@ -41,7 +43,7 @@ pub async fn query_coco_fusion<R: Runtime>(
             timeout(timeout_duration, async {
                 query_source_clone.search(query).await
             })
-                .await
+            .await
         }));
     }
 
