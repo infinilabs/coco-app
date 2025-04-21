@@ -6,7 +6,7 @@ import { Get } from "@/api/axiosRequest";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
-import { useConnectStore } from "@/stores/connectStore";
+import { useFeatureControl } from "@/hooks/useFeatureControl";
 
 import "@/i18n";
 import "@/web.css";
@@ -126,15 +126,11 @@ function WebApp({
 
   const [isChatMode, setIsChatMode] = useState(false);
 
-  const currentAssistant = useConnectStore((state) => state.currentAssistant);
-  const [hasFeatureCopy, setHasFeatureCopy] = useState<string[]>(hasFeature);
-  useEffect(() => {
-    if (currentAssistant?._source?.type === "simple") {
-      setHasFeatureCopy((prev) => prev.filter((feature) => feature !== "think"));
-    } else {
-      setHasFeatureCopy((prev) => [...prev, "think"]);
-    }
-  }, [currentAssistant?._id]);
+  const hasFeatureCopy = useFeatureControl({
+    initialFeatures: hasFeature,
+    featureToToggle: "think",
+    condition: (item) => item?._source?.type === "simple"
+  });
 
   return (
     <div

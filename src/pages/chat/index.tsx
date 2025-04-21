@@ -30,6 +30,7 @@ import {
 import { DataSource } from "@/types/commands";
 import HistoryList from "@/components/Common/HistoryList";
 import { useSyncStore } from "@/hooks/useSyncStore";
+import { useFeatureControl } from "@/hooks/useFeatureControl";
 
 interface ChatProps {}
 
@@ -261,15 +262,11 @@ export default function Chat({}: ChatProps) {
     await delete_session_chat(currentService.id, id);
   };
 
-  const currentAssistant = useConnectStore((state) => state.currentAssistant);
-  const [hasFeature, setHasFeature] = useState<string[]>(["think", "search",]);
-  useEffect(() => {
-    if (currentAssistant?._source?.type === "simple") {
-      setHasFeature((prev) => prev.filter((feature) => feature !== "think"));
-    } else {
-      setHasFeature((prev) => [...prev, "think"]);
-    }
-  }, [currentAssistant?._id]);
+  const hasFeature = useFeatureControl({
+    initialFeatures: ["think", "search"],
+    featureToToggle: "think",
+    condition: (item) => item?._source?.type === "simple"
+  });
 
   return (
     <div className="h-screen">

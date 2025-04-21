@@ -1,10 +1,10 @@
-import { useCallback, useState, useEffect } from "react";
+import { useCallback } from "react";
 
 import SearchChat from "@/components/SearchChat";
 import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore } from "@/stores/appStore";
 import { useSyncStore } from "@/hooks/useSyncStore";
-import { useConnectStore } from "@/stores/connectStore";
+import { useFeatureControl } from "@/hooks/useFeatureControl";
 
 function MainApp() {
   const setIsTauri = useAppStore((state) => state.setIsTauri);
@@ -56,15 +56,11 @@ function MainApp() {
 
   useSyncStore();
 
-  const currentAssistant = useConnectStore((state) => state.currentAssistant);
-  const [hasFeature, setHasFeature] = useState<string[]>(["think", "search",]);
-  useEffect(() => {
-    if (currentAssistant?._source?.type === "simple") {
-      setHasFeature((prev) => prev.filter((feature) => feature !== "think"));
-    } else {
-      setHasFeature((prev) => [...prev, "think"]);
-    }
-  }, [currentAssistant?._id]);
+  const hasFeature = useFeatureControl({
+    initialFeatures: ["think", "search"],
+    featureToToggle: "think",
+    condition: (item) => item?._source?.type === "simple"
+  });
 
   return (
     <SearchChat
