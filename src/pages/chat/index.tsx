@@ -261,6 +261,16 @@ export default function Chat({}: ChatProps) {
     await delete_session_chat(currentService.id, id);
   };
 
+  const currentAssistant = useConnectStore((state) => state.currentAssistant);
+  const [hasFeature, setHasFeature] = useState<string[]>(["think", "search",]);
+  useEffect(() => {
+    if (currentAssistant?._source?.type === "simple") {
+      setHasFeature((prev) => prev.filter((feature) => feature !== "think"));
+    } else {
+      setHasFeature((prev) => [...prev, "think"]);
+    }
+  }, [currentAssistant?._id]);
+
   return (
     <div className="h-screen">
       <div className="h-full flex">
@@ -331,6 +341,7 @@ export default function Chat({}: ChatProps) {
               openFileDialog={openFileDialog}
               getFileMetadata={getFileMetadata}
               getFileIcon={getFileIcon}
+              hasFeature={hasFeature}
             />
           </div>
         </div>

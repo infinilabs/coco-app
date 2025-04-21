@@ -77,7 +77,7 @@ export default function ChatInput({
   isChatPage = false,
   getDataSourcesByServer,
   setupWindowFocusListener,
-  hasFeature = ["think", "search", "think_icon", "search_icon"],
+  hasFeature = ["think", "search", "think_active", "search_active"],
   hideCoco,
   hasModules = [],
   searchPlaceholder,
@@ -474,6 +474,7 @@ export default function ChatInput({
                 getDataSourcesByServer={getDataSourcesByServer}
               />
             )}
+
             {!hasFeature.includes("search") && !hasFeature.includes("think") ? (
               <div className="px-[9px]">
                 <Copyright />
