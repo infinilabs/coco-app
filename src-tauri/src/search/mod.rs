@@ -17,7 +17,7 @@ pub async fn query_coco_fusion<R: Runtime>(
     size: u64,
     query_strings: HashMap<String, String>,
 ) -> Result<MultiSourceQueryResponse, SearchError> {
-    println!("DBG: query_string [{:?}]", query_strings);
+    let data_source_to_search = query_strings.get("datasource");
 
     let search_sources = app_handle.state::<SearchSourceRegistry>();
 
@@ -33,6 +33,14 @@ pub async fn query_coco_fusion<R: Runtime>(
     // Push all queries into futures
     for query_source in sources_list {
         let query_source_type = query_source.get_type().clone();
+
+        if let Some(data_source_to_search) = data_source_to_search {
+            // We should not search this data source
+            if &query_source_type.id != data_source_to_search {
+                continue;
+            }
+        }
+
         sources.insert(query_source_type.id.clone(), query_source_type);
 
         let query = SearchQuery::new(from, size, query_strings.clone());

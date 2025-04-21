@@ -11,6 +11,8 @@ use std::path::PathBuf;
 use tauri::{AppHandle, Runtime};
 use tauri_plugin_fs_pro::{icon, metadata, name, IconOptions};
 
+const DATA_SOURCE_ID: &str = "Applications";
+
 #[tauri::command]
 pub fn get_default_search_paths() -> Vec<String> {
     #[cfg(target_os = "macos")]
@@ -232,7 +234,7 @@ impl SearchSource for ApplicationSearchSource {
                 .unwrap_or("My Computer".into())
                 .to_string_lossy()
                 .into(),
-            id: "local_applications".into(),
+            id: DATA_SOURCE_ID.into(),
         }
     }
 
@@ -282,8 +284,8 @@ impl SearchSource for ApplicationSearchSource {
                 let mut doc = Document::new(
                     Some(DataSourceReference {
                         r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
-                        name: Some("Applications".into()),
-                        id: Some(app_name.clone()),
+                        name: Some(DATA_SOURCE_ID.into()),
+                        id: Some(DATA_SOURCE_ID.into()),
                         icon: None,
                     }),
                     app_path_string.clone(),
