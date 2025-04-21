@@ -232,7 +232,10 @@
     },
     "contextMenu": {
       "open": "Open",
-      "copyLink": "Copy Link"
+      "copyLink": "Copy Link",
+      "copyAnswer": "Copy Answer",
+      "copyUppercaseAnswer": "Copy Answer (in Word)",
+      "copyQuestionAndAnswer": "Copy Question and Answer"
     }
   },
   "assistant": {
@@ -373,5 +376,13 @@
         "cancel": "Cancel"
       }
     }
+  },
+  "calculator": {
+    "sum": "Sum",
+    "subtract": "Difference",
+    "multiply": "Product",
+    "divide": "Divide",
+    "remainder": "Remainder",
+    "expression": "Expression"
   }
 }

@@ -1,12 +1,7 @@
-import {
-  useClickAway,
-  useCreation,
-  useEventListener,
-  useReactive,
-} from "ahooks";
+import { useClickAway, useCreation, useReactive } from "ahooks";
 import clsx from "clsx";
-import { isNil } from "lodash-es";
-import { Link, SquareArrowOutUpRight } from "lucide-react";
+import { isNil, noop } from "lodash-es";
+import { Copy, Link, SquareArrowOutUpRight } from "lucide-react";
 import { cloneElement, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -14,6 +9,7 @@ import { useOSKeyPress } from "@/hooks/useOSKeyPress";
 import { useSearchStore } from "@/stores/searchStore";
 import { copyToClipboard, OpenURLWithBrowser } from "@/utils";
 import { isMac } from "@/utils/platform";
+import { CONTEXT_MENU_PANEL_ID } from "@/constants";
 
 interface State {
   activeMenuIndex: number;
@@ -43,16 +39,17 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
   const menus = useCreation(() => {
     if (isNil(selectedSearchContent)) return [];
 
-    return [
+    const { url, category, title, content } = selectedSearchContent;
+
+    const menus = [
       {
         name: "search.contextMenu.open",
         icon: <SquareArrowOutUpRight />,
         keys: isMac ? ["↩︎"] : ["Enter"],
         shortcut: "enter",
+        hide: category === "Calculator",
         clickEvent: () => {
-          OpenURLWithBrowser(selectedSearchContent?.url);
-
-          setVisibleContextMenu(false);
+          OpenURLWithBrowser(url);
 
           hideCoco && hideCoco();
         },
@@ -62,14 +59,49 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
         icon: <Link />,
         keys: isMac ? ["⌘", "L"] : ["Ctrl", "L"],
         shortcut: isMac ? "meta.l" : "ctrl.l",
-        clickEvent: () => {
-          copyToClipboard(selectedSearchContent?.url);
-
-          setVisibleContextMenu(false);
+        hide: category === "Calculator",
+        clickEvent() {
+          copyToClipboard(url);
+        },
+      },
+      {
+        name: "search.contextMenu.copyAnswer",
+        icon: <Copy />,
+        keys: isMac ? ["↩︎"] : ["Enter"],
+        shortcut: "enter",
+        hide: category !== "Calculator",
+        clickEvent() {
+          copyToClipboard(content);
+        },
+      },
+      {
+        name: "search.contextMenu.copyUppercaseAnswer",
+        icon: <Copy />,
+        keys: isMac ? ["⌘", "↩︎"] : ["Ctrl", "Enter"],
+        shortcut: "meta.enter",
+        hide: category !== "Calculator",
+        clickEvent() {
+          copyToClipboard(content);
+        },
+      },
+      {
+        name: "search.contextMenu.copyQuestionAndAnswer",
+        icon: <Copy />,
+        keys: isMac ? ["⌘", "L"] : ["Ctrl", "L"],
+        shortcut: "meta.l",
+        hide: category !== "Calculator",
+        clickEvent() {
+          copyToClipboard(`${title} = ${content}`);
         },
       },
     ];
+
+    return menus.filter((item) => !item.hide);
   }, [selectedSearchContent]);
+
+  const shortcuts = useCreation(() => {
+    return menus.map((item) => item.shortcut);
+  }, [menus]);
 
   const state = useReactive<State>({
     activeMenuIndex: 0,
@@ -111,22 +143,19 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
     }
   });
 
-  useOSKeyPress(
-    menus.map((item) => item.shortcut),
-    (_, key) => {
-      if (!visibleContextMenu) return;
-
-      const item = menus.find((item) => item.shortcut === key);
-
-      item?.clickEvent();
-    }
-  );
-
-  useEventListener("keydown", (event) => {
+  useOSKeyPress(shortcuts, (_, key) => {
     if (!visibleContextMenu) return;
 
-    event.stopImmediatePropagation();
+    const item = menus.find((item) => item.shortcut === key);
+
+    handleClick(item?.clickEvent);
   });
+
+  const handleClick = (click = noop) => {
+    click?.();
+
+    setVisibleContextMenu(false);
+  };
 
   return (
     <>
@@ -138,11 +167,12 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
 
             setVisibleContextMenu(false);
           }}
-        ></div>
+        />
       )}
 
       <div
         ref={containerRef}
+        id={visibleContextMenu ? CONTEXT_MENU_PANEL_ID : ""}
         className={clsx(
           "absolute bottom-[40px] right-[8px] min-w-[280px] scale-0 transition origin-bottom-right text-sm p-1 bg-white dark:bg-[#202126] rounded-lg shadow-xs border border-gray-200 dark:border-gray-700",
           {
@@ -167,7 +197,7 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
                 onMouseEnter={() => {
                   state.activeMenuIndex = index;
                 }}
-                onClick={clickEvent}
+                onClick={() => handleClick(clickEvent)}
               >
                 <div className="flex items-center gap-2 text-black/80 dark:text-white/80">
                   {cloneElement(icon, { className: "size-4" })}

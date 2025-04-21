@@ -11,6 +11,7 @@ import SearchListItem from "./SearchListItem";
 import { metaOrCtrlKey, isMetaOrCtrlKey } from "@/utils/keyboardUtils";
 import { OpenURLWithBrowser } from "@/utils/index";
 import VisibleKey from "@/components/Common/VisibleKey";
+import Calculator from "./Calculator";
 
 type ISearchData = Record<string, any[]>;
 
@@ -21,6 +22,8 @@ interface DropdownListProps {
   isSearchComplete: boolean;
   isChatMode: boolean;
 }
+
+const HIDE_ARROW_CATEGORIES = ["Calculator"];
 
 function DropdownList({
   suggests,
@@ -187,20 +190,24 @@ function DropdownList({
               <TypeIcon item={items[0]?.document} className="w-4 h-4" />
               {sourceName} - {items[0]?.source.name}
               <div className="flex-1 border-b border-b-[#e6e6e6] dark:border-b-[#272626]"></div>
-              <IconWrapper
-                className="w-4 h-4 cursor-pointer"
-                onClick={(e: React.MouseEvent) => {
-                  e.stopPropagation();
-                  goToTwoPage(items[0]?.document);
-                }}
-              >
-                <ThemedIcon component={ArrowBigRight} className="w-4 h-4" />
-              </IconWrapper>
-              {showIndex && sourceName === selectedName ? (
-                <div className="absolute top-1 right-4">
-                  <VisibleKey shortcut="→" />
-                </div>
-              ) : null}
+              {!HIDE_ARROW_CATEGORIES.includes(sourceName) && (
+                <>
+                  <IconWrapper
+                    className="w-4 h-4 cursor-pointer"
+                    onClick={(e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      goToTwoPage(items[0]?.document);
+                    }}
+                  >
+                    <ThemedIcon component={ArrowBigRight} className="w-4 h-4" />
+                  </IconWrapper>
+                  {showIndex && sourceName === selectedName && (
+                    <div className="absolute top-1 right-4">
+                      <VisibleKey shortcut="→" />
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           ) : null}
 
@@ -210,7 +217,16 @@ function DropdownList({
             const item = hit.document;
             globalItemIndexMap.push(item);
             globalIndex++;
-            return (
+
+            // TODO: 如果没有分类，计算器下面显示一个横线：https://lanhuapp.com/web/#/item/project/detailDetach?pid=fed58f5b-a117-4fe4-a521-c71f2e9b88c3&project_id=fed58f5b-a117-4fe4-a521-c71f2e9b88c3&image_id=a0afd01b-da7d-47c8-818b-90496fb28a71&fromEditor=true
+            return item.category === "Calculator" ? (
+              <div
+                key={item.id + index}
+                onMouseEnter={() => setSelectedItem(currentIndex)}
+              >
+                <Calculator item={item} isSelected={isSelected} />
+              </div>
+            ) : (
               <SearchListItem
                 key={item.id + index}
                 item={item}

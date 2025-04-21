@@ -45,6 +45,7 @@
     "lucide-react": "^0.461.0",
     "mermaid": "^11.5.0",
     "nanoid": "^5.1.5",
+    "numbo": "3.0.0-rc.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hotkeys-hook": "^4.6.1",
