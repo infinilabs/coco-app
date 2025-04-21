@@ -67,16 +67,23 @@ fn parse_result(num: f64) -> Value {
     let to_en = Num2Words::new(num)
         .to_words()
         .map(|s| {
-            s.split([' ', '-'])
-                .map(|word| {
-                    let mut chars = word.chars();
-                    match chars.next() {
-                        None => String::new(),
-                        Some(c) => c.to_uppercase().collect::<String>() + chars.as_str(),
-                    }
-                })
-                .collect::<Vec<_>>()
-                .join(" ")
+            let mut chars = s.chars();
+            let mut result = String::new();
+            let mut capitalize = true;
+
+            while let Some(c) = chars.next() {
+                if c == ' ' || c == '-' {
+                    result.push(c);
+                    capitalize = true;
+                } else if capitalize {
+                    result.extend(c.to_uppercase());
+                    capitalize = false;
+                } else {
+                    result.push(c);
+                }
+            }
+
+            result
         })
         .unwrap_or(num.to_string());
 
