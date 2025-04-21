@@ -9,7 +9,7 @@ import IconWrapper from "@/components/Common/Icons/IconWrapper";
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import SearchListItem from "./SearchListItem";
 import { metaOrCtrlKey, isMetaOrCtrlKey } from "@/utils/keyboardUtils";
-import { OpenURLWithBrowser } from "@/utils/index";
+import { copyToClipboard, OpenURLWithBrowser } from "@/utils/index";
 import VisibleKey from "@/components/Common/VisibleKey";
 import Calculator from "./Calculator";
 
@@ -22,8 +22,6 @@ interface DropdownListProps {
   isSearchComplete: boolean;
   isChatMode: boolean;
 }
-
-const HIDE_ARROW_CATEGORIES = ["Calculator"];
 
 function DropdownList({
   suggests,
@@ -48,6 +46,12 @@ function DropdownList({
   const setSelectedSearchContent = useSearchStore((state) => {
     return state.setSelectedSearchContent;
   });
+
+  const hideArrowRight = (item: any) => {
+    const categories = ["Calculator"];
+
+    return categories.includes(item.category);
+  };
 
   useUnmount(() => {
     setSelectedSearchContent(void 0);
@@ -103,7 +107,11 @@ function DropdownList({
 
       if (e.key === "ArrowRight" && selectedItem !== null) {
         e.preventDefault();
+
         const item = globalItemIndexMap[selectedItem];
+
+        if (hideArrowRight(item)) return;
+
         goToTwoPage(item);
       }
 
@@ -112,6 +120,8 @@ function DropdownList({
         const item = globalItemIndexMap[selectedItem];
         if (item?.url) {
           OpenURLWithBrowser(item?.url);
+        } else {
+          copyToClipboard(item?.payload?.result?.value);
         }
       }
 
@@ -190,7 +200,7 @@ function DropdownList({
               <TypeIcon item={items[0]?.document} className="w-4 h-4" />
               {sourceName} - {items[0]?.source.name}
               <div className="flex-1 border-b border-b-[#e6e6e6] dark:border-b-[#272626]"></div>
-              {!HIDE_ARROW_CATEGORIES.includes(sourceName) && (
+              {!hideArrowRight({ category: sourceName }) && (
                 <>
                   <IconWrapper
                     className="w-4 h-4 cursor-pointer"
@@ -219,7 +229,7 @@ function DropdownList({
             globalIndex++;
 
             // TODO: 如果没有分类，计算器下面显示一个横线：https://lanhuapp.com/web/#/item/project/detailDetach?pid=fed58f5b-a117-4fe4-a521-c71f2e9b88c3&project_id=fed58f5b-a117-4fe4-a521-c71f2e9b88c3&image_id=a0afd01b-da7d-47c8-818b-90496fb28a71&fromEditor=true
-            return item.category === "Calculator" ? (
+            return hideArrowRight(item) ? (
               <div
                 key={item.id + index}
                 onMouseEnter={() => setSelectedItem(currentIndex)}

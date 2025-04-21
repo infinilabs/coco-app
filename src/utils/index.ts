@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 
 import platformAdapter from "./platformAdapter";
+import { useAppStore } from "@/stores/appStore";
 
 // 1
 export async function copyToClipboard(text: string) {
+  const addError = useAppStore.getState().addError;
+
   try {
     if (window.__TAURI__) {
       window.__TAURI__.writeText(text);
@@ -26,6 +29,8 @@ export async function copyToClipboard(text: string) {
     }
     document.body.removeChild(textArea);
   }
+
+  addError("复制成功", "info");
 }
 
 // 2
