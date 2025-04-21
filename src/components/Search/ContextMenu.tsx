@@ -39,11 +39,8 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
   const menus = useCreation(() => {
     if (isNil(selectedSearchContent)) return [];
 
-    const {
-      url,
-      category,
-      payload: { query, result },
-    } = selectedSearchContent;
+    const { url, category, payload } = selectedSearchContent;
+    const { query, result } = payload ?? {};
 
     const menus = [
       {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, MouseEvent } from "react";
 import { CircleAlert, Bolt, X, ArrowBigRight } from "lucide-react";
 import { isNil } from "lodash-es";
 import { useUnmount } from "ahooks";
@@ -177,6 +177,16 @@ function DropdownList({
     setSourceData(item);
   }
 
+  const setVisibleContextMenu = useSearchStore(
+    (state) => state.setVisibleContextMenu
+  );
+
+  const handleContextMenu = (event: MouseEvent) => {
+    event.preventDefault();
+
+    setVisibleContextMenu(true);
+  };
+
   return (
     <div
       ref={containerRef}
@@ -232,29 +242,29 @@ function DropdownList({
             globalIndex++;
 
             // TODO: 如果没有分类，计算器下面显示一个横线：https://lanhuapp.com/web/#/item/project/detailDetach?pid=fed58f5b-a117-4fe4-a521-c71f2e9b88c3&project_id=fed58f5b-a117-4fe4-a521-c71f2e9b88c3&image_id=a0afd01b-da7d-47c8-818b-90496fb28a71&fromEditor=true
-            return hideArrowRight(item) ? (
-              <div
-                key={item.id + index}
-                onMouseEnter={() => setSelectedItem(currentIndex)}
-              >
-                <Calculator item={item} isSelected={isSelected} />
+            return (
+              <div key={item.id + index} onContextMenu={handleContextMenu}>
+                {hideArrowRight(item) ? (
+                  <div onMouseEnter={() => setSelectedItem(currentIndex)}>
+                    <Calculator item={item} isSelected={isSelected} />
+                  </div>
+                ) : (
+                  <SearchListItem
+                    item={item}
+                    isSelected={isSelected}
+                    currentIndex={currentIndex}
+                    showIndex={showIndex}
+                    onMouseEnter={() => setSelectedItem(currentIndex)}
+                    onItemClick={() => {
+                      if (item?.url) {
+                        OpenURLWithBrowser(item?.url);
+                      }
+                    }}
+                    goToTwoPage={goToTwoPage}
+                    itemRef={(el) => (itemRefs.current[currentIndex] = el)}
+                  />
+                )}
               </div>
-            ) : (
-              <SearchListItem
-                key={item.id + index}
-                item={item}
-                isSelected={isSelected}
-                currentIndex={currentIndex}
-                showIndex={showIndex}
-                onMouseEnter={() => setSelectedItem(currentIndex)}
-                onItemClick={() => {
-                  if (item?.url) {
-                    OpenURLWithBrowser(item?.url);
-                  }
-                }}
-                goToTwoPage={goToTwoPage}
-                itemRef={(el) => (itemRefs.current[currentIndex] = el)}
-              />
             );
           })}
         </div>

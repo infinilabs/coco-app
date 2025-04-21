@@ -1,8 +1,7 @@
-import React, { MouseEvent } from "react";
+import React from "react";
 
 import ItemIcon from "@/components/Common/Icons/ItemIcon";
 import ListRight from "./ListRight";
-import { useSearchStore } from "@/stores/searchStore";
 import { useAppStore } from "@/stores/appStore";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
@@ -32,16 +31,6 @@ const SearchListItem: React.FC<SearchListItemProps> = React.memo(
   }) => {
     const isTauri = useAppStore((state) => state.isTauri);
 
-    const setVisibleContextMenu = useSearchStore(
-      (state) => state.setVisibleContextMenu
-    );
-
-    const onContextMenu = (event: MouseEvent) => {
-      event.preventDefault();
-
-      setVisibleContextMenu(true);
-    };
-
     const isMobile = useIsMobile();
 
     return (
@@ -54,13 +43,10 @@ const SearchListItem: React.FC<SearchListItemProps> = React.memo(
             ? "text-white bg-[var(--coco-primary-color)] hover:bg-[var(--coco-primary-color)]"
             : "text-[#333] dark:text-[#d8d8d8] mobile:bg-gray-200/80 mobile:dark:bg-gray-700/50"
         } ${showListRight ? "gap-7 mobile:gap-1" : ""}`}
-        onContextMenu={onContextMenu}
       >
         <div
           className={`${
-            showListRight
-              ? "max-w-[450px] mobile:w-full"
-              : "flex-1"
+            showListRight ? "max-w-[450px] mobile:w-full" : "flex-1"
           } min-w-0 flex gap-2 items-center justify-start `}
         >
           <ItemIcon item={item} />
