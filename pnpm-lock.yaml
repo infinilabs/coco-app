@@ -89,9 +89,6 @@ importers:
       nanoid:
         specifier: ^5.1.5
         version: 5.1.5
-      numbo:
-        specifier: 3.0.0-rc.0
-        version: 3.0.0-rc.0
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -2759,10 +2756,6 @@ packages:
   npm-run-path@6.0.0:
     resolution: {integrity: sha512-9qny7Z9DsQU8Ou39ERsPU4OZQlSTP47ShQzuKZ6PRXpYLtIFgl/DEBYEXKlvcEa+9tHVcK8CF81Y2V72qaZhWA==}
     engines: {node: '>=18'}
-
-  numbo@3.0.0-rc.0:
-    resolution: {integrity: sha512-YNlfrFZIm27AHU/c/HfNlWkIfDB34yRXfXhNNuHvUSEDHvXVCm7UhLvdL8F1D0k7gLB8lehskWFUSM3oHUJu1A==}
-    engines: {//: Require node >=14.0 to develop this package, node: '>=6'}
 
   object-assign@4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
@@ -6359,8 +6352,6 @@ snapshots:
     dependencies:
       path-key: 4.0.0
       unicorn-magic: 0.3.0
-
-  numbo@3.0.0-rc.0: {}
 
   object-assign@4.1.1: {}
 

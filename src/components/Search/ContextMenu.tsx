@@ -22,7 +22,7 @@ interface ContextMenuProps {
 const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const visibleContextMenu = useSearchStore((state) => {
     return state.visibleContextMenu;
@@ -39,7 +39,11 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
   const menus = useCreation(() => {
     if (isNil(selectedSearchContent)) return [];
 
-    const { url, category, title, content } = selectedSearchContent;
+    const {
+      url,
+      category,
+      payload: { query, result },
+    } = selectedSearchContent;
 
     const menus = [
       {
@@ -71,7 +75,7 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
         shortcut: "enter",
         hide: category !== "Calculator",
         clickEvent() {
-          copyToClipboard(content);
+          copyToClipboard(result.value);
         },
       },
       {
@@ -81,7 +85,7 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
         shortcut: "meta.enter",
         hide: category !== "Calculator",
         clickEvent() {
-          copyToClipboard(content);
+          copyToClipboard(i18n.language === "zh" ? result.toZh : result.toEn);
         },
       },
       {
@@ -91,7 +95,7 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
         shortcut: "meta.l",
         hide: category !== "Calculator",
         clickEvent() {
-          copyToClipboard(`${title} = ${content}`);
+          copyToClipboard(`${query.value} = ${result.value}`);
         },
       },
     ];

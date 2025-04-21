@@ -1,8 +1,5 @@
-import { useAppStore } from "@/stores/appStore";
 import { ChevronsRight } from "lucide-react";
 import { FC } from "react";
-// @ts-ignore
-import Numbo from "numbo";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
@@ -11,40 +8,12 @@ interface CalculatorProps {
   isSelected: boolean;
 }
 
-const numbo = new Numbo();
-
 const Calculator: FC<CalculatorProps> = (props) => {
   const { item, isSelected } = props;
-  const { title, content } = item;
-  const { t } = useTranslation();
-  const language = useAppStore((state) => state.language);
-
-  console.log("language", language);
-
-  const aaa = () => {
-    const operators = ["+", "-", "*", "/", "%", "^"];
-
-    const foundOperators = title
-      .split("")
-      .filter((item: string) => operators.includes(item));
-
-    if (foundOperators.length === 1) {
-      switch (foundOperators[0]) {
-        case "+":
-          return t("calculator.sum");
-        case "-":
-          return t("calculator.subtract");
-        case "*":
-          return t("calculator.multiply");
-        case "/":
-          return t("calculator.divide");
-        case "%":
-          return t("calculator.remainder");
-      }
-    }
-
-    return t("calculator.expression");
-  };
+  const {
+    payload: { query, result },
+  } = item;
+  const { t, i18n } = useTranslation();
 
   const renderItem = (result: string, description: string) => {
     return (
@@ -66,15 +35,13 @@ const Calculator: FC<CalculatorProps> = (props) => {
 
   return (
     <div className="flex items-center gap-1 w-full children:flex">
-      {renderItem(title, aaa())}
+      {renderItem(query.value, t(`calculator.${query.type}`))}
 
       <ChevronsRight className="text-[#999999] size-5" />
 
       {renderItem(
-        content,
-        numbo.convert(content, {
-          lang: language === "zh" ? "zhCN" : "enUS",
-        })
+        result.value,
+        i18n.language === "zh" ? result.toZh : result.toEn
       )}
     </div>
   );

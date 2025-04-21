@@ -73,6 +73,8 @@ env_logger = "0.11.5"
 tokio-util = "0.7.14"
 tauri-plugin-windows-version = "2"
 meval = "0.2"
+chinese-number = "0.7"
+num2words = "1"
 
 [target."cfg(target_os = \"macos\")".dependencies]
 tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }
