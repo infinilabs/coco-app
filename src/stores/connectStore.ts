@@ -112,6 +112,7 @@ export const useConnectStore = create<IConnectStore>()(
           datasourceData: state.datasourceData,
           connectionTimeout: state.connectionTimeout,
           currentAssistant: state.currentAssistant,
+          queryTimeout: state.queryTimeout,
         }),
       }
     )
