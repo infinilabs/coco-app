@@ -3,6 +3,7 @@ import { CircleAlert, Bolt, X, ArrowBigRight } from "lucide-react";
 import { isNil } from "lodash-es";
 import clsx from "clsx";
 import { useDebounceFn, useUnmount } from "ahooks";
+import { useTranslation } from "react-i18next";
 
 import { useSearchStore } from "@/stores/searchStore";
 import ThemedIcon from "@/components/Common/Icons/ThemedIcon";
@@ -31,6 +32,8 @@ function DropdownList({
   IsError,
   isChatMode,
 }: DropdownListProps) {
+  const { t } = useTranslation();
+  
   let globalIndex = 0;
   const globalItemIndexMap: any[] = [];
 
@@ -197,8 +200,7 @@ function DropdownList({
       {showError ? (
         <div className="flex items-center gap-2 text-sm text-[#333] p-2">
           <CircleAlert className="text-[#FF0000] w-[14px] h-[14px]" />
-          Coco server is unavailable, only local results and available services
-          are displayed.
+          {t("search.list.failures")}
           <Bolt className="text-[#000] w-[14px] h-[14px] cursor-pointer" />
           <X
             className="text-[#666] w-[16px] h-[16px] cursor-pointer"

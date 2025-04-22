@@ -151,16 +151,16 @@ export function AssistantList({ showChatHistory = true }: AssistantListProps) {
               }`}
             >
               {assistant._source?.icon?.startsWith("font_") ? (
-                <div className="w-6 h-6 flex items-center justify-center rounded-full bg-white">
+                <div className="w-7 h-7 flex items-center justify-center rounded-full bg-white">
                   <FontIcon
                     name={assistant._source?.icon}
-                    className="w-[18px] h-[18px]"
+                    className="w-5 h-5"
                   />
                 </div>
               ) : (
                 <img
                   src={logoImg}
-                  className="w-[18px] h-[18px] rounded-full"
+                  className="w-5 h-5 rounded-full"
                   alt={assistant.name}
                 />
               )}

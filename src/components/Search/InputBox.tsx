@@ -500,9 +500,7 @@ export default function ChatInput({
             <ChatSwitch
               isChatMode={isChatMode}
               onChange={(value: boolean) => {
-                value && disabledChange();
                 changeMode && changeMode(value);
-                setSourceData(undefined);
               }}
             />
           </div>

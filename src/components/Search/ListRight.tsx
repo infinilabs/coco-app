@@ -1,7 +1,8 @@
+import clsx from "clsx";
+
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import RichIcon from "@/components/Common/Icons/RichIcon";
-import VisibleKey from "../Common/VisibleKey";
-import clsx from "clsx";
+import VisibleKey from "@/components/Common/VisibleKey";
 
 interface ListRightProps {
   item: any;

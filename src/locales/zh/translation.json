@@ -204,7 +204,8 @@
     "list": {
       "loading": "加载中...",
       "noResults": "暂无结果",
-      "noDataAlt": "无数据图片"
+      "noDataAlt": "无数据图片",
+      "failures": "部分服务暂时不可用，请检查相关设置。"
     },
     "footer": {
       "logoAlt": "Coco 图标",

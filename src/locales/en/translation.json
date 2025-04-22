@@ -202,7 +202,8 @@
     "list": {
       "loading": "Loading...",
       "noResults": "No Results",
-      "noDataAlt": "No data image"
+      "noDataAlt": "No data image",
+      "failures": "Partial results returned due to service failures."
     },
     "footer": {
       "logoAlt": "Coco Logo",

@@ -53,7 +53,7 @@ const SearchListItem: React.FC<SearchListItemProps> = React.memo(
           <span className={`text-sm truncate text-left`}>{item?.title}</span>
         </div>
         {!isTauri && isMobile ? (
-          <div className="text-sm truncate">{item?.summary}</div>
+          <div className="w-full text-xs truncate">{item?.summary}</div>
         ) : null}
         {showListRight && (isTauri || !isMobile) ? (
           <ListRight
