@@ -41,6 +41,9 @@ export const useSyncStore = () => {
   const setHistoricalRecords = useShortcutsStore((state) => {
     return state.setHistoricalRecords;
   });
+  const setAiAssistant = useShortcutsStore((state) => {
+    return state.setAiAssistant;
+  });
   const setNewSession = useShortcutsStore((state) => {
     return state.setNewSession;
   });
@@ -90,6 +93,7 @@ export const useSyncStore = () => {
           internetSearch,
           internetSearchScope,
           historicalRecords,
+          aiAssistant,
           newSession,
           fixedWindow,
           serviceList,
@@ -104,6 +108,7 @@ export const useSyncStore = () => {
         setInternetSearch(internetSearch);
         setInternetSearchScope(internetSearchScope);
         setHistoricalRecords(historicalRecords);
+        setAiAssistant(aiAssistant);
         setNewSession(newSession);
         setFixedWindow(fixedWindow);
         setServiceList(serviceList);
