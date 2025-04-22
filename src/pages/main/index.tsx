@@ -22,7 +22,7 @@ function MainApp() {
           from: 0,
           size: 10,
           queryStrings: { query: input },
-          connectionTimeout: connectionTimeout,
+          connectionTimeout,
         }
       );
       if (!response || typeof response !== "object") {
@@ -44,7 +44,7 @@ function MainApp() {
             from,
             size,
             queryStrings,
-            connectionTimeout: connectionTimeout,
+            connectionTimeout,
           }
         );
         return response;
