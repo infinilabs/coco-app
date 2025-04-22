@@ -148,6 +148,7 @@ export default function useWebSocket({
     let unlisten_message = null;
 
     if (!isTauri) return;
+    
     unlisten_error = platformAdapter.listenEvent(`ws-error-${clientId}`, (event) => {
       // {
       //   "error": {

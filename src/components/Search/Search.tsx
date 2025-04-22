@@ -7,18 +7,14 @@ import { useSearchStore } from "@/stores/searchStore";
 import ContextMenu from "./ContextMenu";
 import { NoResults } from "@/components/Common/UI/NoResults";
 import Footer from "@/components/Common/UI/Footer";
+import platformAdapter from "@/utils/platformAdapter";
+import { Get } from "@/api/axiosRequest";
 
 interface SearchProps {
   isTauri: boolean;
   changeInput: (val: string) => void;
   isChatMode: boolean;
   input: string;
-  querySearch: (input: string) => Promise<any>;
-  queryDocuments: (
-    from: number,
-    size: number,
-    queryStrings: any
-  ) => Promise<any>;
   hideCoco?: () => void;
   openSetting: () => void;
   setWindowAlwaysOnTop: (isPinned: boolean) => Promise<void>;
@@ -28,8 +24,6 @@ function Search({
   isTauri,
   isChatMode,
   input,
-  querySearch,
-  queryDocuments,
   hideCoco,
   openSetting,
   setWindowAlwaysOnTop,
@@ -43,42 +37,76 @@ function Search({
 
   const mainWindowRef = useRef<HTMLDivElement>(null);
 
-  const getSuggest = async () => {
-    if (!input) return;
-    try {
-      const response = await querySearch(input);
-
-      console.log("_suggest", input, response);
-      let data = response?.hits || [];
-
-      setSuggests(data);
-
-      const search_data = data.reduce((acc: any, item: any) => {
-        const name = item?.document?.source?.name;
-        if (!acc[name]) {
-          acc[name] = [];
+  const getSuggest = useCallback(async (searchInput: string) => {
+    if (!searchInput) return;
+    if (sourceData) return;
+    let response: any;
+    if (isTauri) {
+      response = await platformAdapter.commands("query_coco_fusion", {
+        from: 0,
+        size: 10,
+        queryStrings: { query: searchInput },
+      });
+      if (response && typeof response === "object" && "failed" in response) {
+        const failedResult = response as any;
+        if (failedResult.failed?.length > 0) {
+          setIsError(true);
+        } else {
+          setIsError(false);
         }
-        acc[name].push(item);
-        return acc;
-      }, {});
+      }
+    } else {
+      const [error, res]: any = await Get(`/query/_search?query=${searchInput}`);
 
-      setSearchData(search_data);
+      if (error) {
+        console.error("_search", error);
+        response = { hits: [], total: 0 };
+      }
 
-      setIsError(false);
-      setIsSearchComplete(true);
-    } catch (error) {
-      setSuggests([]);
-      setIsError(true);
-      console.error("query_coco_fusion:", error);
+      const hits =
+        res?.hits?.hits?.map((hit: any) => ({
+          document: {
+            ...hit._source,
+          },
+          score: hit._score || 0,
+          source: hit._source.source || null,
+        })) || [];
+      const total = res?.hits?.total?.value || 0;
+
+      console.log("_suggest2", total, hits);
+
+      response = {
+        hits: hits,
+        total_hits: total,
+      };
     }
-  };
+    console.log("_suggest", sourceData, searchInput, response);
+    let data = response?.hits || [];
 
-  const debouncedSearch = useCallback(debounce(getSuggest, 500), [input]);
+    setSuggests(data);
 
+    const search_data = data.reduce((acc: any, item: any) => {
+      const name = item?.document?.source?.name;
+      if (!acc[name]) {
+        acc[name] = [];
+      }
+      acc[name].push(item);
+      return acc;
+    }, {});
+    setSearchData(search_data);
+    setIsSearchComplete(true);
+  }, [sourceData, isTauri]);
+  const debouncedSearch = useCallback(
+    debounce((value: string) => getSuggest(value), 500),
+    []
+  );
   useEffect(() => {
-    !isChatMode && debouncedSearch();
-    if (!input) setSuggests([]);
-  }, [input]);
+    if (!isChatMode && input) {
+      debouncedSearch(input);
+    } else if (!input) {
+      setSuggests([]);
+    }
+  }, [input, isChatMode]);
 
   return (
     <div ref={mainWindowRef} className={`h-full pb-10 w-full relative`}>
@@ -88,7 +116,6 @@ function Search({
           <SearchResults
             input={input}
             isChatMode={isChatMode}
-            queryDocuments={queryDocuments}
           />
         ) : (
           <DropdownList

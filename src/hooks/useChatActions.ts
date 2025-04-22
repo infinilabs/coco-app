@@ -5,6 +5,7 @@ import { useAppStore } from "@/stores/appStore";
 import { Get, Post } from "@/api/axiosRequest";
 import platformAdapter from "@/utils/platformAdapter";
 import { useConnectStore } from "@/stores/connectStore";
+import { useChatStore } from "@/stores/chatStore";
 
 export function useChatActions(
   currentServiceId: string | undefined,
@@ -25,7 +26,7 @@ export function useChatActions(
   const isTauri = useAppStore((state) => state.isTauri);
   const addError = useAppStore((state) => state.addError);
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
-
+  const { connected } = useChatStore();
 
   const [keyword, setKeyword] = useState("");
 
@@ -341,9 +342,9 @@ export function useChatActions(
   );
 
   const getChatHistory = useCallback(async () => {
-    try {
-      let response: any;
-      if (isTauri) {
+    let response: any;
+    if (isTauri) {
+      try {
         if (!currentServiceId) return [];
         response = await platformAdapter.commands("chat_history", {
           serverId: currentServiceId,
@@ -351,32 +352,31 @@ export function useChatActions(
           size: 20,
           query: keyword,
         });
-        response = response ? JSON.parse(response) : null;
-      } else {
-        const [error, res] = await Get(`/chat/_history`, {
-          from: 0,
-          size: 20,
-        });
-        if (error) {
-          console.error("_history", error);
-          return [];
-        }
-        response = res;
+      } catch (error) {
+        console.error("chat_history", error);
       }
-      console.log("_history", response);
-      const hits = response?.hits?.hits || [];
-
-      setChats(hits);
-      return hits;
-    } catch (error) {
-      console.error("chat_history:", error);
-      return [];
+      response = response ? JSON.parse(response) : null;
+    } else {
+      const [error, res] = await Get(`/chat/_history`, {
+        from: 0,
+        size: 20,
+      });
+      if (error) {
+        console.error("_history", error);
+        return [];
+      }
+      response = res;
     }
+    console.log("_history", response);
+    const hits = response?.hits?.hits || [];
+
+    setChats(hits);
+    return hits;
   }, [currentServiceId, keyword]);
 
   useEffect(() => {
-    showChatHistory && getChatHistory();
-  }, [showChatHistory]);
+    showChatHistory && connected && getChatHistory();
+  }, [showChatHistory, connected]);
 
   const createChatWindow = useCallback(async (createWin: any) => {
     if (isTauri) {

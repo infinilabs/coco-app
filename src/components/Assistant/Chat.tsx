@@ -25,7 +25,6 @@ import PrevSuggestion from "@/components/ChatMessage/PrevSuggestion";
 import { useAppStore } from "@/stores/appStore";
 
 interface ChatAIProps {
-  isTransitioned: boolean;
   isSearchActive?: boolean;
   isDeepThinkActive?: boolean;
   activeChatProp?: Chat;
@@ -49,7 +48,6 @@ const ChatAI = memo(
   forwardRef<ChatAIRef, ChatAIProps>(
     (
       {
-        isTransitioned,
         changeInput,
         isSearchActive,
         isDeepThinkActive,
@@ -63,8 +61,6 @@ const ChatAI = memo(
       },
       ref
     ) => {
-      if (!isTransitioned) return null;
-
       useImperativeHandle(ref, () => ({
         init: init,
         cancelChat: () => cancelChat(activeChat),
@@ -307,20 +303,6 @@ const ChatAI = memo(
         };
       }, [isSidebarOpenChat, handleOutsideClick]);
 
-      // const fetchChatHistory = useCallback(async () => {
-      //   const hits = await getChatHistory();
-      //   setChats(hits);
-      // }, [getChatHistory]);
-
-      const setIsLoginChat = useCallback(
-        (value: boolean) => {
-          setIsLogin(value);
-          value && currentService && !setIsSidebarOpen && getChatHistory();
-          !value && setChats([]);
-        },
-        [currentService, setIsSidebarOpen, getChatHistory]
-      );
-
       const toggleSidebar = useCallback(() => {
         setIsSidebarOpenChat(!isSidebarOpenChat);
         setIsSidebarOpen && setIsSidebarOpen(!isSidebarOpenChat);
@@ -388,7 +370,7 @@ const ChatAI = memo(
             reconnect={reconnect}
             isChatPage={isChatPage}
             isLogin={isLogin}
-            setIsLogin={setIsLoginChat}
+            setIsLogin={setIsLogin}
             showChatHistory={showChatHistory}
           />
           {isLogin ? (

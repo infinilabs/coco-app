@@ -9,6 +9,7 @@ import { useClickAway } from "@/hooks/useClickAway";
 import VisibleKey from "@/components/Common/VisibleKey";
 import { useConnectStore } from "@/stores/connectStore";
 import FontIcon from "@/components/Common/Icons/FontIcon";
+import { useChatStore } from "@/stores/chatStore";
 
 interface AssistantListProps {
   showChatHistory?: boolean;
@@ -16,10 +17,13 @@ interface AssistantListProps {
 
 export function AssistantList({ showChatHistory = true }: AssistantListProps) {
   const { t } = useTranslation();
+  const { connected } = useChatStore();
   const isTauri = useAppStore((state) => state.isTauri);
   const currentService = useConnectStore((state) => state.currentService);
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
-  const setCurrentAssistant = useConnectStore((state) => state.setCurrentAssistant);
+  const setCurrentAssistant = useConnectStore(
+    (state) => state.setCurrentAssistant
+  );
 
   const [isOpen, setIsOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -29,7 +33,6 @@ export function AssistantList({ showChatHistory = true }: AssistantListProps) {
   useClickAway(menuRef, () => setIsOpen(false));
   const [assistants, setAssistants] = useState<any[]>([]);
 
-  
   const fetchAssistant = useCallback(async () => {
     if (!isTauri) return;
     if (!currentService?.id) return;
@@ -43,14 +46,21 @@ export function AssistantList({ showChatHistory = true }: AssistantListProps) {
         const assistantList = res?.hits?.hits || [];
         setAssistants(assistantList);
         if (assistantList.length > 0 && !currentAssistant) {
-          setCurrentAssistant(assistantList[0]);
+          const assistant = assistantList.find(
+            (item: any) => item._id === currentAssistant._id
+          );
+          if (assistant) {
+            setCurrentAssistant(assistant);
+          } else {
+            setCurrentAssistant(assistantList[0]);
+          }
         }
       });
-  }, []);
+  }, [currentService?.id]);
 
   useEffect(() => {
-    fetchAssistant();
-  }, []);
+    connected && fetchAssistant();
+  }, [connected]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
