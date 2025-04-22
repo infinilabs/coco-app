@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback, MouseEvent } from "react";
 import { CircleAlert, Bolt, X, ArrowBigRight } from "lucide-react";
 import { isNil } from "lodash-es";
-import { useUnmount } from "ahooks";
+import { useDebounceFn, useUnmount } from "ahooks";
 
 import { useSearchStore } from "@/stores/searchStore";
 import ThemedIcon from "@/components/Common/Icons/ThemedIcon";
@@ -56,6 +56,7 @@ function DropdownList({
   };
 
   useUnmount(() => {
+    setSelectedItem(null);
     setSelectedSearchContent(void 0);
   });
 
@@ -75,9 +76,13 @@ function DropdownList({
     }
   }, [isChatMode]);
 
+  const { run } = useDebounceFn(() => setSelectedItem(0), { wait: 200 });
+
   useEffect(() => {
-    setSelectedItem(0);
-  }, [suggests]);
+    setSelectedItem(null);
+
+    run();
+  }, [SearchData]);
 
   const openPopover = useShortcutsStore((state) => state.openPopover);
 
