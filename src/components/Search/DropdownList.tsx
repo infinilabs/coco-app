@@ -13,6 +13,7 @@ import { copyToClipboard, OpenURLWithBrowser } from "@/utils/index";
 import VisibleKey from "@/components/Common/VisibleKey";
 import Calculator from "./Calculator";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
+import clsx from "clsx";
 
 type ISearchData = Record<string, any[]>;
 
@@ -206,69 +207,85 @@ function DropdownList({
           />
         </div>
       ) : null}
-      {Object.entries(SearchData).map(([sourceName, items]) => (
-        <div key={sourceName}>
-          {Object.entries(SearchData).length < 5 ? (
-            <div className="p-2 text-xs text-[#999] dark:text-[#666] flex items-center gap-2.5 relative">
-              <TypeIcon item={items[0]?.document} className="w-4 h-4" />
-              {sourceName} - {items[0]?.source.name}
-              <div className="flex-1 border-b border-b-[#e6e6e6] dark:border-b-[#272626]"></div>
-              {!hideArrowRight({ category: sourceName }) && (
-                <>
-                  <IconWrapper
-                    className="w-4 h-4 cursor-pointer"
-                    onClick={(e: React.MouseEvent) => {
-                      e.stopPropagation();
-                      goToTwoPage(items[0]?.document);
-                    }}
-                  >
-                    <ThemedIcon component={ArrowBigRight} className="w-4 h-4" />
-                  </IconWrapper>
-                  {showIndex && sourceName === selectedName && (
-                    <div className="absolute top-1 right-4">
-                      <VisibleKey shortcut="→" />
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          ) : null}
+      {Object.entries(SearchData).map(([sourceName, items]) => {
+        const showHeader = Object.entries(SearchData).length < 5;
 
-          {items.map((hit: any, index: number) => {
-            const isSelected = selectedItem === globalIndex;
-            const currentIndex = globalIndex;
-            const item = hit.document;
-            globalItemIndexMap.push(item);
-            globalIndex++;
-
-            // TODO: 如果没有分类，计算器下面显示一个横线：https://lanhuapp.com/web/#/item/project/detailDetach?pid=fed58f5b-a117-4fe4-a521-c71f2e9b88c3&project_id=fed58f5b-a117-4fe4-a521-c71f2e9b88c3&image_id=a0afd01b-da7d-47c8-818b-90496fb28a71&fromEditor=true
-            return (
-              <div key={item.id + index} onContextMenu={handleContextMenu}>
-                {hideArrowRight(item) ? (
-                  <div onMouseEnter={() => setSelectedItem(currentIndex)}>
-                    <Calculator item={item} isSelected={isSelected} />
-                  </div>
-                ) : (
-                  <SearchListItem
-                    item={item}
-                    isSelected={isSelected}
-                    currentIndex={currentIndex}
-                    showIndex={showIndex}
-                    onMouseEnter={() => setSelectedItem(currentIndex)}
-                    onItemClick={() => {
-                      if (item?.url) {
-                        OpenURLWithBrowser(item?.url);
-                      }
-                    }}
-                    goToTwoPage={goToTwoPage}
-                    itemRef={(el) => (itemRefs.current[currentIndex] = el)}
-                  />
+        return (
+          <div key={sourceName}>
+            {showHeader && (
+              <div className="p-2 text-xs text-[#999] dark:text-[#666] flex items-center gap-2.5 relative">
+                <TypeIcon item={items[0]?.document} className="w-4 h-4" />
+                {sourceName} - {items[0]?.source.name}
+                <div className="flex-1 border-b border-b-[#e6e6e6] dark:border-b-[#272626]"></div>
+                {!hideArrowRight({ category: sourceName }) && (
+                  <>
+                    <IconWrapper
+                      className="w-4 h-4 cursor-pointer"
+                      onClick={(e: React.MouseEvent) => {
+                        e.stopPropagation();
+                        goToTwoPage(items[0]?.document);
+                      }}
+                    >
+                      <ThemedIcon
+                        component={ArrowBigRight}
+                        className="w-4 h-4"
+                      />
+                    </IconWrapper>
+                    {showIndex && sourceName === selectedName && (
+                      <div className="absolute top-1 right-4">
+                        <VisibleKey shortcut="→" />
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
-            );
-          })}
-        </div>
-      ))}
+            )}
+
+            {items.map((hit: any, index: number) => {
+              const isSelected = selectedItem === globalIndex;
+              const currentIndex = globalIndex;
+              const item = hit.document;
+              globalItemIndexMap.push(item);
+              globalIndex++;
+
+              // TODO: 如果没有分类，计算器下面显示一个横线：https://lanhuapp.com/web/#/item/project/detailDetach?pid=fed58f5b-a117-4fe4-a521-c71f2e9b88c3&project_id=fed58f5b-a117-4fe4-a521-c71f2e9b88c3&image_id=a0afd01b-da7d-47c8-818b-90496fb28a71&fromEditor=true
+              return (
+                <div key={item.id + index} onContextMenu={handleContextMenu}>
+                  {hideArrowRight(item) ? (
+                    <div
+                      onMouseEnter={() => setSelectedItem(currentIndex)}
+                      className={clsx({
+                        "mt-1": !showHeader,
+                      })}
+                    >
+                      <Calculator item={item} isSelected={isSelected} />
+
+                      {!showHeader && (
+                        <div className="h-px mt-3 mx-2 bg-[#E6E6E6] dark:bg-[#262626]" />
+                      )}
+                    </div>
+                  ) : (
+                    <SearchListItem
+                      item={item}
+                      isSelected={isSelected}
+                      currentIndex={currentIndex}
+                      showIndex={showIndex}
+                      onMouseEnter={() => setSelectedItem(currentIndex)}
+                      onItemClick={() => {
+                        if (item?.url) {
+                          OpenURLWithBrowser(item?.url);
+                        }
+                      }}
+                      goToTwoPage={goToTwoPage}
+                      itemRef={(el) => (itemRefs.current[currentIndex] = el)}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
     </div>
   );
 }
