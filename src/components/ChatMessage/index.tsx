@@ -133,7 +133,7 @@ export const ChatMessage = memo(function ChatMessage({
         >
           <div className="w-full flex items-center gap-1 font-semibold text-sm text-[#333] dark:text-[#d8d8d8]">
             {isAssistant ? (
-              <div className="w-6 h-6 flex justify-center items-center rounded-full bg-gray-200 dark:bg-gray-800">
+              <div className="w-6 h-6 flex justify-center items-center rounded-full bg-white">
                 {currentAssistant?._source?.icon?.startsWith("font_") ? (
                   <FontIcon
                     name={currentAssistant._source.icon}

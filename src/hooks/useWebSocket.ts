@@ -36,6 +36,7 @@ export default function useWebSocket({
   const messageQueue = useRef<string[]>([]);
   const processingRef = useRef(false);
 
+  // web
   const { readyState, connect, disconnect } = useWebSocketAHook(
     // "wss://coco.infini.cloud/ws",
     // "ws://localhost:9000/ws",
@@ -53,17 +54,17 @@ export default function useWebSocket({
   );
   useEffect(() => {
     if (!isTauri) {
-      connect();
+      connect(); // web
     }
   }, [isTauri, connect]);
-
   const processMessage = useCallback(
     (msg: string) => {
       try {
         if (msg.includes("websocket-session-id")) {
           const sessionId = msg.split(":")[1].trim();
           websocketIdRef.current = sessionId;
-          setConnected(true);
+          setConnected(true); // web connected
+          console.log("setConnected:", sessionId);
           onWebsocketSessionId?.(sessionId);
         } else {
           dealMsgRef.current?.(msg);
@@ -74,7 +75,6 @@ export default function useWebSocket({
     },
     [onWebsocketSessionId]
   );
-
   const processQueue = useCallback(() => {
     if (processingRef.current || messageQueue.current.length === 0) return;
 
@@ -88,13 +88,14 @@ export default function useWebSocket({
     }
     processingRef.current = false;
   }, [processMessage]);
-
   useEffect(() => {
+    // web
     if (readyState !== ReadyState.Open) {
-      setConnected(false);
+      setConnected(false); // state
     }
   }, [readyState]);
 
+  // Tauri
   // 1. WebSocket connects when loading or switching services
   // src/components/Assistant/ChatHeader.tsx
   // 2. If not connected or disconnected, input box has a connect button, clicking it will connect to WebSocket
@@ -108,7 +109,7 @@ export default function useWebSocket({
           // console.log("reconnect", targetServer.id);
           await platformAdapter.commands("connect_to_server", targetServer.id, clientId);
         } catch (error) {
-          setConnected(false);
+          setConnected(false); // error
           console.error("Failed to connect:", error);
         }
       } else {
@@ -117,15 +118,13 @@ export default function useWebSocket({
     },
     [currentService]
   );
-
-
   const disconnectWS = async () => {
     if (!connected) return;
     if (isTauri) {
       try {
         console.log("disconnect");
         await platformAdapter.commands("disconnect", clientId);
-        setConnected(false);
+        setConnected(false); // disconnected
       } catch (error) {
         console.error("Failed to disconnect:", error);
       }
@@ -133,14 +132,12 @@ export default function useWebSocket({
       disconnect();
     }
   };
-
   const updateDealMsg = useCallback(
     (newDealMsg: (msg: string) => void) => {
       dealMsgRef.current = newDealMsg;
     },
     [dealMsgRef]
   );
-
   useEffect(() => {
     if (!currentService?.id) return;
 
@@ -148,6 +145,7 @@ export default function useWebSocket({
     let unlisten_message = null;
 
     if (!isTauri) return;
+    
     unlisten_error = platformAdapter.listenEvent(`ws-error-${clientId}`, (event) => {
       // {
       //   "error": {
@@ -155,20 +153,21 @@ export default function useWebSocket({
       //   },
       //   "status": 401
       // }
-      console.error(`ws-error-${clientId}`, event);
-      if(!connected) return;
-      setConnected(false);
-      addError("WebSocket connection failed.");
+      console.error(`ws-error-${clientId}`, event, connected);
+      if(connected) {
+        addError("WebSocket connection failed.");
+      }
+      setConnected(false); // error
     });
 
     unlisten_message = platformAdapter.listenEvent(`ws-message-${clientId}`, (event) => {
       const msg = event.payload as string;
-      console.log(`ws-message-${clientId}`, msg);
+      // console.log(`ws-message-${clientId}`, msg);
       if (msg.includes("websocket-session-id")) {
         const sessionId = msg.split(":")[1].trim();
         websocketIdRef.current = sessionId;
-        console.log("sessionId:", sessionId);
-        setConnected(true);
+        console.log("setConnected sessionId:", sessionId);
+        setConnected(true); // Tauri connected
         if (onWebsocketSessionId) {
           onWebsocketSessionId(sessionId);
         }

@@ -39,12 +39,6 @@ interface SearchChatProps {
 
   hideCoco?: () => void;
   setIsPinned?: (value: boolean) => void;
-  querySearch: (input: string) => Promise<any>;
-  queryDocuments: (
-    from: number,
-    size: number,
-    queryStrings: any
-  ) => Promise<any>;
   onModeChange?: (isChatMode: boolean) => void;
   isMobile?: boolean;
 }
@@ -56,8 +50,6 @@ function SearchChat({
   hasFeature = ["think", "search", "think_active", "search_active"],
   theme,
   hideCoco,
-  querySearch,
-  queryDocuments,
   searchPlaceholder,
   chatPlaceholder,
   showChatHistory = true,
@@ -340,8 +332,6 @@ function SearchChat({
             input={input}
             isChatMode={isChatMode}
             changeInput={setInput}
-            querySearch={querySearch}
-            queryDocuments={queryDocuments}
             hideCoco={hideCoco}
             openSetting={openSetting}
             setWindowAlwaysOnTop={setWindowAlwaysOnTop}
@@ -357,20 +347,17 @@ function SearchChat({
             : "-top-[506px] opacity-0 pointer-events-none"
         } h-[calc(100%-90px)]`}
       >
-        {isTransitioned && isChatMode ? (
-          <Suspense fallback={<LoadingFallback />}>
-            <ChatAI
-              ref={chatAIRef}
-              key="ChatAI"
-              isTransitioned={isTransitioned}
-              changeInput={setInput}
-              isSearchActive={isSearchActive}
-              isDeepThinkActive={isDeepThinkActive}
-              getFileUrl={getFileUrl}
-              showChatHistory={showChatHistory}
-            />
-          </Suspense>
-        ) : null}
+        <Suspense fallback={<LoadingFallback />}>
+          <ChatAI
+            ref={chatAIRef}
+            key="ChatAI"
+            changeInput={setInput}
+            isSearchActive={isSearchActive}
+            isDeepThinkActive={isDeepThinkActive}
+            getFileUrl={getFileUrl}
+            showChatHistory={showChatHistory}
+          />
+        </Suspense>
       </div>
 
       <UpdateApp checkUpdate={checkUpdate} relaunchApp={relaunchApp} />

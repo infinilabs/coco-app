@@ -27,7 +27,7 @@ export const useFeatureControl = ({
         return prev;
       });
     }
-  }, [currentAssistant?._id, featureToToggle]);
+  }, [JSON.stringify(currentAssistant), featureToToggle]);
 
   return features;
 };

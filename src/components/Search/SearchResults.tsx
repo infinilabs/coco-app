@@ -7,17 +7,16 @@ import { useAppStore } from "@/stores/appStore";
 interface SearchResultsProps {
   input: string;
   isChatMode: boolean;
-  queryDocuments: (from: number, size: number, queryStrings: any) => Promise<any>;
 }
 
-export function SearchResults({ input, isChatMode, queryDocuments }: SearchResultsProps) {
+export function SearchResults({ input, isChatMode }: SearchResultsProps) {
   const isTauri = useAppStore((state) => state.isTauri);
 
   const [selectedDocumentId, setSelectedDocumentId] = useState("1");
 
   const [detailData, setDetailData] = useState<any>({});
   const [viewMode, setViewMode] = useState<"detail" | "list">(() => {
-    return isTauri ? "detail" : (window.innerWidth < 768 ? "list" : "detail");
+    return isTauri ? "detail" : window.innerWidth < 768 ? "list" : "detail";
   });
 
   useEffect(() => {
@@ -26,8 +25,8 @@ export function SearchResults({ input, isChatMode, queryDocuments }: SearchResul
         setViewMode(window.innerWidth < 768 ? "list" : "detail");
       };
 
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
     }
   }, [isTauri]);
 
@@ -47,7 +46,6 @@ export function SearchResults({ input, isChatMode, queryDocuments }: SearchResul
           isChatMode={isChatMode}
           viewMode={viewMode}
           setViewMode={setViewMode}
-          queryDocuments={queryDocuments}
         />
 
         {/* Right Panel */}

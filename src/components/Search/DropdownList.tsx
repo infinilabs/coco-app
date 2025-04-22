@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, useCallback, MouseEvent } from "react";
 import { CircleAlert, Bolt, X, ArrowBigRight } from "lucide-react";
 import { isNil } from "lodash-es";
+import clsx from "clsx";
 import { useDebounceFn, useUnmount } from "ahooks";
+import { useTranslation } from "react-i18next";
 
 import { useSearchStore } from "@/stores/searchStore";
 import ThemedIcon from "@/components/Common/Icons/ThemedIcon";
@@ -13,7 +15,6 @@ import { copyToClipboard, OpenURLWithBrowser } from "@/utils/index";
 import VisibleKey from "@/components/Common/VisibleKey";
 import Calculator from "./Calculator";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
-import clsx from "clsx";
 
 type ISearchData = Record<string, any[]>;
 
@@ -31,12 +32,12 @@ function DropdownList({
   IsError,
   isChatMode,
 }: DropdownListProps) {
+  const { t } = useTranslation();
+  
   let globalIndex = 0;
   const globalItemIndexMap: any[] = [];
 
-  const setSourceData = useSearchStore(
-    (state: { setSourceData: any }) => state.setSourceData
-  );
+  const setSourceData = useSearchStore((state) => state.setSourceData);
 
   const [showError, setShowError] = useState<boolean>(IsError);
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
@@ -45,9 +46,7 @@ function DropdownList({
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const setSelectedSearchContent = useSearchStore((state) => {
-    return state.setSelectedSearchContent;
-  });
+  const setSelectedSearchContent = useSearchStore((state) => state.setSelectedSearchContent);
 
   const hideArrowRight = (item: any) => {
     const categories = ["Calculator"];
@@ -88,13 +87,6 @@ function DropdownList({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      // console.log(
-      //   "handleKeyDown",
-      //   e.key,
-      //   showIndex,
-      //   e.key >= "0" && e.key <= "9" && showIndex
-      // );
-
       if (!suggests.length || openPopover) return;
 
       if (e.key === "ArrowUp") {
@@ -208,8 +200,7 @@ function DropdownList({
       {showError ? (
         <div className="flex items-center gap-2 text-sm text-[#333] p-2">
           <CircleAlert className="text-[#FF0000] w-[14px] h-[14px]" />
-          Coco server is unavailable, only local results and available services
-          are displayed.
+          {t("search.list.failures")}
           <Bolt className="text-[#000] w-[14px] h-[14px] cursor-pointer" />
           <X
             className="text-[#666] w-[16px] h-[16px] cursor-pointer"
@@ -258,7 +249,7 @@ function DropdownList({
               globalItemIndexMap.push(item);
               globalIndex++;
 
-              // TODO: 如果没有分类，计算器下面显示一个横线：https://lanhuapp.com/web/#/item/project/detailDetach?pid=fed58f5b-a117-4fe4-a521-c71f2e9b88c3&project_id=fed58f5b-a117-4fe4-a521-c71f2e9b88c3&image_id=a0afd01b-da7d-47c8-818b-90496fb28a71&fromEditor=true
+              // TODO：https://lanhuapp.com/web/#/item/project/detailDetach?pid=fed58f5b-a117-4fe4-a521-c71f2e9b88c3&project_id=fed58f5b-a117-4fe4-a521-c71f2e9b88c3&image_id=a0afd01b-da7d-47c8-818b-90496fb28a71&fromEditor=true
               return (
                 <div key={item.id + index} onContextMenu={handleContextMenu}>
                   {hideArrowRight(item) ? (
@@ -286,7 +277,7 @@ function DropdownList({
                           OpenURLWithBrowser(item?.url);
                         }
                       }}
-                      goToTwoPage={goToTwoPage}
+                      goToTwoPage={() => goToTwoPage(item)}
                       itemRef={(el) => (itemRefs.current[currentIndex] = el)}
                     />
                   )}

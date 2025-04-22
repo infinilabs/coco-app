@@ -1,33 +1,36 @@
+import clsx from "clsx";
+
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import RichIcon from "@/components/Common/Icons/RichIcon";
-import VisibleKey from "../Common/VisibleKey";
-import clsx from "clsx";
+import VisibleKey from "@/components/Common/VisibleKey";
 
 interface ListRightProps {
   item: any;
   isSelected: boolean;
   showIndex: boolean;
   currentIndex: number;
-  goToTwoPage?: (item: any) => void;
+  goToTwoPage?: () => void;
 }
 
-export default function ListRight({
+export interface RichCategoriesProps {
+  item: any;
+  isSelected: boolean;
+  goToTwoPage?: () => void;
+}
+
+export function RichCategories({
   item,
   isSelected,
-  showIndex,
-  currentIndex,
   goToTwoPage,
-}: ListRightProps) {
+}: RichCategoriesProps) {
   return (
-    <div
-      className={`flex flex-1 text-right min-w-[160px] pl-5 justify-end w-full h-full text-[12px] gap-2 items-center relative`}
-    >
+    <>
       {item?.rich_categories ? null : (
         <div
           className={`w-4 h-4 cursor-pointer`}
           onClick={(e) => {
             e.stopPropagation();
-            goToTwoPage && goToTwoPage(item);
+            goToTwoPage && goToTwoPage();
           }}
         >
           <TypeIcon
@@ -35,7 +38,7 @@ export default function ListRight({
             className="w-4 h-4 cursor-pointer"
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
-              goToTwoPage && goToTwoPage(item);
+              goToTwoPage && goToTwoPage();
             }}
           />
         </div>
@@ -48,7 +51,7 @@ export default function ListRight({
             className={`w-4 h-4 mr-2 cursor-pointer`}
             onClick={(e) => {
               e.stopPropagation();
-              goToTwoPage && goToTwoPage(item);
+              goToTwoPage && goToTwoPage();
             }}
           />
           <span
@@ -98,6 +101,26 @@ export default function ListRight({
             ""}
         </span>
       )}
+    </>
+  );
+}
+
+export default function ListRight({
+  item,
+  isSelected,
+  showIndex,
+  currentIndex,
+  goToTwoPage,
+}: ListRightProps) {
+  return (
+    <div
+      className={`flex flex-1 text-right min-w-[160px] pl-5 justify-end w-full h-full text-[12px] gap-2 items-center relative`}
+    >
+      <RichCategories
+        item={item}
+        isSelected={isSelected}
+        goToTwoPage={goToTwoPage}
+      />
 
       {isSelected && (
         <VisibleKey

@@ -46,7 +46,7 @@ async function invokeWithErrorHandler<T>(
     return result;
   } catch (error: any) {
     const errorMessage = error || "Command execution failed";
-    addError(errorMessage, "error");
+    addError(command + ":" + errorMessage, "error");
     throw error;
   }
 }

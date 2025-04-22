@@ -190,6 +190,7 @@
       "id": "ID",
       "createdAt": "创建时间",
       "category": "分类",
+      "richCategories": "分类",
       "subcategory": "子分类",
       "language": "语言",
       "tags": "标签",
@@ -203,7 +204,8 @@
     "list": {
       "loading": "加载中...",
       "noResults": "暂无结果",
-      "noDataAlt": "无数据图片"
+      "noDataAlt": "无数据图片",
+      "failures": "部分服务暂时不可用，请检查相关设置。"
     },
     "footer": {
       "logoAlt": "Coco 图标",

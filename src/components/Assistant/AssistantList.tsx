@@ -9,6 +9,7 @@ import { useClickAway } from "@/hooks/useClickAway";
 import VisibleKey from "@/components/Common/VisibleKey";
 import { useConnectStore } from "@/stores/connectStore";
 import FontIcon from "@/components/Common/Icons/FontIcon";
+import { useChatStore } from "@/stores/chatStore";
 import { AI_ASSISTANT_PANEL_ID } from "@/constants";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 
@@ -18,50 +19,61 @@ interface AssistantListProps {
 
 export function AssistantList({ showChatHistory = true }: AssistantListProps) {
   const { t } = useTranslation();
+  const { connected } = useChatStore();
   const isTauri = useAppStore((state) => state.isTauri);
   const currentService = useConnectStore((state) => state.currentService);
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
   const setCurrentAssistant = useConnectStore(
     (state) => state.setCurrentAssistant
   );
+  const aiAssistant = useShortcutsStore((state) => state.aiAssistant);
 
   const [isOpen, setIsOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const aiAssistant = useShortcutsStore((state) => {
-    return state.aiAssistant;
-  });
   const menuRef = useRef<HTMLDivElement>(null);
 
   useClickAway(menuRef, () => setIsOpen(false));
   const [assistants, setAssistants] = useState<any[]>([]);
 
-  const fetchAssistant = useCallback(async () => {
+  const fetchAssistant = useCallback(async (serverId: string) => {
     if (!isTauri) return;
-    if (!currentService?.id) return;
+    if (!serverId) return;
     platformAdapter
       .commands("assistant_search", {
-        serverId: currentService?.id,
+        serverId,
       })
       .then((res: any) => {
         res = res ? JSON.parse(res) : null;
         console.log("assistant_search", res);
         const assistantList = res?.hits?.hits || [];
         setAssistants(assistantList);
-        if (assistantList.length > 0 && !currentAssistant) {
-          setCurrentAssistant(assistantList[0]);
+        if (assistantList.length > 0) {
+          const assistant = assistantList.find(
+            (item: any) => item._id === currentAssistant?._id
+          );
+          if (assistant) {
+            setCurrentAssistant(assistant);
+          } else {
+            setCurrentAssistant(assistantList[0]);
+          }
         }
+      })
+      .catch((err: any) => {
+        setAssistants([]);
+        setCurrentAssistant(null);
+        console.log("assistant_search", err);
       });
   }, []);
 
   useEffect(() => {
-    fetchAssistant();
-  }, []);
+    connected && fetchAssistant(currentService?.id);
+  }, [connected, currentService?.id]);
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
-    await fetchAssistant();
+    await fetchAssistant(currentService?.id);
     setTimeout(() => setIsRefreshing(false), 1000);
-  };
+  }, [currentService?.id]);
 
   return (
     <div className="relative" ref={menuRef}>
@@ -69,7 +81,7 @@ export function AssistantList({ showChatHistory = true }: AssistantListProps) {
         onClick={() => setIsOpen(!isOpen)}
         className="h-6  p-1 px-1.5 flex items-center gap-1 rounded-full bg-white dark:bg-[#202126] text-sm/6 font-semibold text-gray-800 dark:text-[#d8d8d8] border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none"
       >
-        <div className="w-4 h-4 flex justify-center items-center rounded-full bg-gray-200 dark:bg-gray-800">
+        <div className="w-4 h-4 flex justify-center items-center rounded-full bg-white">
           {currentAssistant?._source?.icon?.startsWith("font_") ? (
             <FontIcon
               name={currentAssistant._source.icon}
@@ -139,11 +151,16 @@ export function AssistantList({ showChatHistory = true }: AssistantListProps) {
               }`}
             >
               {assistant._source?.icon?.startsWith("font_") ? (
-                <FontIcon name={assistant._source?.icon} className="w-4 h-4" />
+                <div className="w-7 h-7 flex items-center justify-center rounded-full bg-white">
+                  <FontIcon
+                    name={assistant._source?.icon}
+                    className="w-5 h-5"
+                  />
+                </div>
               ) : (
                 <img
                   src={logoImg}
-                  className="w-4 h-4 rounded-full"
+                  className="w-5 h-5 rounded-full"
                   alt={assistant.name}
                 />
               )}

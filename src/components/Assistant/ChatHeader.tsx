@@ -45,8 +45,6 @@ export function ChatHeader({
   const isPinned = useAppStore((state) => state.isPinned);
   const setIsPinned = useAppStore((state) => state.setIsPinned);
 
-
-
   const isTauri = useAppStore((state) => state.isTauri);
   const historicalRecords = useShortcutsStore((state) => {
     return state.historicalRecords;

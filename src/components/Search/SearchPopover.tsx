@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
+import { useDebounce } from "ahooks";
 
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import { useConnectStore } from "@/stores/connectStore";
@@ -17,9 +18,9 @@ import { useSearchStore } from "@/stores/searchStore";
 import { DataSource } from "@/types/commands";
 import Checkbox from "@/components/Common/Checkbox";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
-import VisibleKey from "../Common/VisibleKey";
-import { useDebounce } from "ahooks";
-import NoDataImage from "../Common/NoDataImage";
+import VisibleKey from "@/components/Common/VisibleKey";
+import { useChatStore } from "@/stores/chatStore";
+import NoDataImage from "@/components/Common/NoDataImage";
 
 interface SearchPopoverProps {
   isSearchActive: boolean;
@@ -40,6 +41,8 @@ export default function SearchPopover({
   getDataSourcesByServer,
 }: SearchPopoverProps) {
   const { t } = useTranslation();
+  const { connected } = useChatStore();
+
   const [isRefreshDataSource, setIsRefreshDataSource] = useState(false);
   const [dataSourceList, setDataSourceList] = useState<DataSource[]>([]);
 
@@ -102,8 +105,8 @@ export default function SearchPopover({
   }, [dataSourceList]);
 
   useEffect(() => {
-    getDataSourceList();
-  }, [currentService?.id, debouncedKeyword]);
+    connected && getDataSourceList();
+  }, [connected, currentService?.id, debouncedKeyword]);
 
   useEffect(() => {
     setTotalPage(Math.max(Math.ceil(dataSourceList.length / 10), 1));

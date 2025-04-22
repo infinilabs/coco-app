@@ -1,10 +1,9 @@
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useState } from "react";
 
 import SearchChat from "@/components/SearchChat";
 import { useAppStore } from "@/stores/appStore";
-import { Get } from "@/api/axiosRequest";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
-import { useIsMobile } from '@/hooks/useIsMobile';
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 import { useFeatureControl } from "@/hooks/useFeatureControl";
 
@@ -68,60 +67,6 @@ function WebApp({
 
   useModifierKeyPress();
 
-  const query_coco_fusion = useCallback(async (url: string) => {
-    try {
-      const [error, response]: any = await Get(url);
-
-      if (error) {
-        console.error("_search", error);
-        return { hits: [], total: 0 };
-      }
-
-      console.log("_suggest", url, response);
-      const hits =
-        response?.hits?.hits?.map((hit: any) => ({
-          document: {
-            ...hit._source,
-          },
-          score: hit._score || 0,
-          source: hit._source.source || null,
-        })) || [];
-      const total = response?.hits?.total?.value || 0;
-
-      console.log("_suggest2", url, total, hits);
-
-      return {
-        hits: hits,
-        total_hits: total,
-      };
-    } catch (error) {
-      console.error("query_coco_fusion error:", error);
-      throw error;
-    }
-  }, []);
-
-  const querySearch = useCallback(async (input: string) => {
-    console.log(input);
-    return await query_coco_fusion(`/query/_search?query=${input}`);
-  }, []);
-
-  const queryDocuments = useCallback(
-    async (from: number, size: number, queryStrings: any) => {
-      console.log(from, size, queryStrings);
-      try {
-        let url = `/query/_search?query=${queryStrings.query}&datasource=${queryStrings.datasource}&from=${from}&size=${size}`;
-        if (queryStrings?.rich_categories) {
-          url = `/query/_search?query=${queryStrings.query}&rich_category=${queryStrings.rich_category}&from=${from}&size=${size}`;
-        }
-        return await query_coco_fusion(url);
-      } catch (error) {
-        console.error("query_coco_fusion error:", error);
-        throw error;
-      }
-    },
-    []
-  );
-
   const isMobile = useIsMobile();
 
   const [isChatMode, setIsChatMode] = useState(false);
@@ -129,7 +74,7 @@ function WebApp({
   const hasFeatureCopy = useFeatureControl({
     initialFeatures: hasFeature,
     featureToToggle: "think",
-    condition: (item) => item?._source?.type === "simple"
+    condition: (item) => item?._source?.type === "simple",
   });
 
   return (
@@ -169,8 +114,6 @@ function WebApp({
         theme={theme}
         searchPlaceholder={searchPlaceholder}
         chatPlaceholder={chatPlaceholder}
-        querySearch={querySearch}
-        queryDocuments={queryDocuments}
         showChatHistory={showChatHistory}
         setIsPinned={setIsPinned}
         onModeChange={setIsChatMode}

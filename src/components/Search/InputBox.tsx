@@ -85,24 +85,14 @@ export default function ChatInput({
 }: ChatInputProps) {
   const { t } = useTranslation();
 
-  const showTooltip = useAppStore(
-    (state: { showTooltip: boolean }) => state.showTooltip
-  );
-
+  const showTooltip = useAppStore((state) => state.showTooltip);
   const isPinned = useAppStore((state) => state.isPinned);
 
-  const sourceData = useSearchStore(
-    (state: { sourceData: any }) => state.sourceData
-  );
-  const setSourceData = useSearchStore(
-    (state: { setSourceData: any }) => state.setSourceData
-  );
+  const sourceData = useSearchStore((state) => state.sourceData);
+  const setSourceData = useSearchStore((state) => state.setSourceData);
 
   // const sessionId = useConnectStore((state) => state.currentSessionId);
-  const modifierKey = useShortcutsStore((state) => {
-    return state.modifierKey;
-  });
-
+  const modifierKey = useShortcutsStore((state) => state.modifierKey);
   const modeSwitch = useShortcutsStore((state) => state.modeSwitch);
   const returnToInput = useShortcutsStore((state) => state.returnToInput);
   const deepThinking = useShortcutsStore((state) => state.deepThinking);
@@ -410,7 +400,7 @@ export default function ChatInput({
         )}
 
         {!connected && isChatMode ? (
-          <div className="absolute top-0 right-0 bottom-0 left-0 px-2 py-4 bg-[rgba(255,255,255,0.9)] dark:bg-[rgba(32,33,38,0.9)] backdrop-blur-[2px] rounded-md font-normal text-xs text-gray-400 flex items-center gap-4 z-10">
+          <div className="absolute top-0 right-0 bottom-0 left-0 px-2 py-4 bg-[rgba(238,238,238,0.98)] dark:bg-[rgba(32,33,38,0.9)] backdrop-blur-[2px] rounded-md font-normal text-xs text-gray-400 flex items-center gap-4 z-10">
             {t("search.input.connectionError")}
             <div
               className="px-1 h-[24px] text-[#0061FF] font-normal text-xs flex items-center justify-center cursor-pointer underline"
@@ -510,9 +500,7 @@ export default function ChatInput({
             <ChatSwitch
               isChatMode={isChatMode}
               onChange={(value: boolean) => {
-                value && disabledChange();
                 changeMode && changeMode(value);
-                setSourceData(undefined);
               }}
             />
           </div>
