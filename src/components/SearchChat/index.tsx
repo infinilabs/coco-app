@@ -136,7 +136,6 @@ function SearchChat({
   }, []);
 
   const setInput = useCallback((value: string) => {
-    console.log("setInput", value);
     dispatch({ type: "SET_INPUT", payload: value });
   }, []);
 

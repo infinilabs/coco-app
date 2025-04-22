@@ -115,7 +115,7 @@ function Search({
     [sourceData, isTauri]
   );
   const debouncedSearch = useCallback(
-    debounce((value: string) => getSuggest(value), 500),
+    debounce((value: string) => getSuggest(value), 300),
     [getSuggest]
   );
   useEffect(() => {

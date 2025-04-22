@@ -26,23 +26,21 @@ export function AssistantList({ showChatHistory = true }: AssistantListProps) {
   const setCurrentAssistant = useConnectStore(
     (state) => state.setCurrentAssistant
   );
+  const aiAssistant = useShortcutsStore((state) => state.aiAssistant);
 
   const [isOpen, setIsOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const aiAssistant = useShortcutsStore((state) => {
-    return state.aiAssistant;
-  });
   const menuRef = useRef<HTMLDivElement>(null);
 
   useClickAway(menuRef, () => setIsOpen(false));
   const [assistants, setAssistants] = useState<any[]>([]);
 
-  const fetchAssistant = useCallback(async () => {
+  const fetchAssistant = useCallback(async (serverId: string) => {
     if (!isTauri) return;
-    if (!currentService?.id) return;
+    if (!serverId) return;
     platformAdapter
       .commands("assistant_search", {
-        serverId: currentService?.id,
+        serverId,
       })
       .then((res: any) => {
         res = res ? JSON.parse(res) : null;
@@ -59,18 +57,23 @@ export function AssistantList({ showChatHistory = true }: AssistantListProps) {
             setCurrentAssistant(assistantList[0]);
           }
         }
+      })
+      .catch((err: any) => {
+        setAssistants([]);
+        setCurrentAssistant(null);
+        console.log("assistant_search", err);
       });
-  }, [currentService?.id]);
+  }, []);
 
   useEffect(() => {
-    connected && fetchAssistant();
-  }, [connected]);
+    connected && fetchAssistant(currentService?.id);
+  }, [connected, currentService?.id]);
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
-    await fetchAssistant();
+    await fetchAssistant(currentService?.id);
     setTimeout(() => setIsRefreshing(false), 1000);
-  };
+  }, [currentService?.id]);
 
   return (
     <div className="relative" ref={menuRef}>
@@ -148,13 +151,16 @@ export function AssistantList({ showChatHistory = true }: AssistantListProps) {
               }`}
             >
               {assistant._source?.icon?.startsWith("font_") ? (
-                <div className="w-4 h-4 flex items-center justify-center rounded-full bg-white">
-                  <FontIcon name={assistant._source?.icon} className="w-3 h-3" />
+                <div className="w-6 h-6 flex items-center justify-center rounded-full bg-white">
+                  <FontIcon
+                    name={assistant._source?.icon}
+                    className="w-[18px] h-[18px]"
+                  />
                 </div>
               ) : (
                 <img
                   src={logoImg}
-                  className="w-4 h-4 rounded-full"
+                  className="w-[18px] h-[18px] rounded-full"
                   alt={assistant.name}
                 />
               )}

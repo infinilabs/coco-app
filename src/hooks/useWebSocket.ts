@@ -64,6 +64,7 @@ export default function useWebSocket({
           const sessionId = msg.split(":")[1].trim();
           websocketIdRef.current = sessionId;
           setConnected(true);
+          console.log("setConnected:", sessionId);
           onWebsocketSessionId?.(sessionId);
         } else {
           dealMsgRef.current?.(msg);
@@ -164,7 +165,7 @@ export default function useWebSocket({
 
     unlisten_message = platformAdapter.listenEvent(`ws-message-${clientId}`, (event) => {
       const msg = event.payload as string;
-      console.log(`ws-message-${clientId}`, msg);
+      // console.log(`ws-message-${clientId}`, msg);
       if (msg.includes("websocket-session-id")) {
         const sessionId = msg.split(":")[1].trim();
         websocketIdRef.current = sessionId;
