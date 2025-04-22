@@ -119,6 +119,10 @@
           "title": "Conversation History",
           "description": "Shortcut to view past conversation history in chat mode."
         },
+        "aiAssistant": {
+          "title": "AI Assistant",
+          "description": "Shortcut to view AI assistant list in chat mode."
+        },
         "newSession": {
           "title": "New Conversation",
           "description": "Shortcut to start a new conversation in chat mode."

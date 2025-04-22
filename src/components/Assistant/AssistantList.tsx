@@ -9,6 +9,8 @@ import { useClickAway } from "@/hooks/useClickAway";
 import VisibleKey from "@/components/Common/VisibleKey";
 import { useConnectStore } from "@/stores/connectStore";
 import FontIcon from "@/components/Common/Icons/FontIcon";
+import { AI_ASSISTANT_PANEL_ID } from "@/constants";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 interface AssistantListProps {
   showChatHistory?: boolean;
@@ -19,17 +21,20 @@ export function AssistantList({ showChatHistory = true }: AssistantListProps) {
   const isTauri = useAppStore((state) => state.isTauri);
   const currentService = useConnectStore((state) => state.currentService);
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
-  const setCurrentAssistant = useConnectStore((state) => state.setCurrentAssistant);
+  const setCurrentAssistant = useConnectStore(
+    (state) => state.setCurrentAssistant
+  );
 
   const [isOpen, setIsOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
+  const aiAssistant = useShortcutsStore((state) => {
+    return state.aiAssistant;
+  });
   const menuRef = useRef<HTMLDivElement>(null);
 
   useClickAway(menuRef, () => setIsOpen(false));
   const [assistants, setAssistants] = useState<any[]>([]);
 
-  
   const fetchAssistant = useCallback(async () => {
     if (!isTauri) return;
     if (!currentService?.id) return;
@@ -82,16 +87,27 @@ export function AssistantList({ showChatHistory = true }: AssistantListProps) {
           {currentAssistant?._source?.name || "Coco AI"}
         </div>
         {showChatHistory && isTauri && (
-          <ChevronDownIcon
-            className={`size-4 text-gray-500 dark:text-gray-400 transition-transform ${
-              isOpen ? "rotate-180" : ""
-            }`}
-          />
+          <VisibleKey
+            aria-controls={isOpen ? AI_ASSISTANT_PANEL_ID : ""}
+            shortcut={aiAssistant}
+            onKeyPress={() => {
+              setIsOpen(!isOpen);
+            }}
+          >
+            <ChevronDownIcon
+              className={`size-4 text-gray-500 dark:text-gray-400 transition-transform ${
+                isOpen ? "rotate-180" : ""
+              }`}
+            />
+          </VisibleKey>
         )}
       </button>
 
       {showChatHistory && isTauri && isOpen && (
-        <div className="absolute z-50 top-full mt-1 left-0 w-64 rounded-xl bg-white dark:bg-[#202126] p-2 text-sm/6 text-gray-800 dark:text-white shadow-lg border border-gray-200 dark:border-gray-700 focus:outline-none max-h-[calc(100vh-80px)] overflow-y-auto">
+        <div
+          id={isOpen ? AI_ASSISTANT_PANEL_ID : ""}
+          className="absolute z-50 top-full mt-1 left-0 w-64 rounded-xl bg-white dark:bg-[#202126] p-2 text-sm/6 text-gray-800 dark:text-white shadow-lg border border-gray-200 dark:border-gray-700 focus:outline-none max-h-[calc(100vh-80px)] overflow-y-auto"
+        >
           <div className="sticky top-0 mb-2 px-2 py-1 text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-[#202126] flex justify-between">
             <div>AI Assistant</div>
             <button

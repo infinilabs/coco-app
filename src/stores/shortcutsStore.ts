@@ -27,6 +27,8 @@ export type IShortcutsStore = {
   setInternetSearchScope: (internetSearchScope: string) => void;
   historicalRecords: string;
   setHistoricalRecords: (historicalRecords: string) => void;
+  aiAssistant: string;
+  setAiAssistant: (aiAssistant: string) => void;
   newSession: string;
   setNewSession: (newSession: string) => void;
   fixedWindow: string;
@@ -72,6 +74,8 @@ export const useShortcutsStore = create<IShortcutsStore>()(
       setHistoricalRecords: (historicalRecords) => {
         return set({ historicalRecords });
       },
+      aiAssistant: "U",
+      setAiAssistant: (aiAssistant) => set({ aiAssistant }),
       newSession: "N",
       setNewSession: (newSession) => set({ newSession }),
       fixedWindow: "P",
@@ -96,6 +100,7 @@ export const useShortcutsStore = create<IShortcutsStore>()(
         deepThinking: state.deepThinking,
         internetSearch: state.internetSearch,
         historicalRecords: state.historicalRecords,
+        aiAssistant: state.aiAssistant,
         newSession: state.newSession,
         fixedWindow: state.fixedWindow,
         serviceList: state.serviceList,
