@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, MouseEvent } from "react";
 import { CircleAlert, Bolt, X, ArrowBigRight } from "lucide-react";
 import { isNil } from "lodash-es";
 import { useUnmount } from "ahooks";
@@ -9,8 +9,10 @@ import IconWrapper from "@/components/Common/Icons/IconWrapper";
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import SearchListItem from "./SearchListItem";
 import { metaOrCtrlKey, isMetaOrCtrlKey } from "@/utils/keyboardUtils";
-import { OpenURLWithBrowser } from "@/utils/index";
+import { copyToClipboard, OpenURLWithBrowser } from "@/utils/index";
 import VisibleKey from "@/components/Common/VisibleKey";
+import Calculator from "./Calculator";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 type ISearchData = Record<string, any[]>;
 
@@ -46,6 +48,12 @@ function DropdownList({
     return state.setSelectedSearchContent;
   });
 
+  const hideArrowRight = (item: any) => {
+    const categories = ["Calculator"];
+
+    return categories.includes(item.category);
+  };
+
   useUnmount(() => {
     setSelectedSearchContent(void 0);
   });
@@ -66,6 +74,8 @@ function DropdownList({
     }
   }, [isChatMode]);
 
+  const openPopover = useShortcutsStore((state) => state.openPopover);
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       // console.log(
@@ -74,7 +84,7 @@ function DropdownList({
       //   showIndex,
       //   e.key >= "0" && e.key <= "9" && showIndex
       // );
-      if (!suggests.length) return;
+      if (!suggests.length || openPopover) return;
 
       if (e.key === "ArrowUp") {
         e.preventDefault();
@@ -100,7 +110,11 @@ function DropdownList({
 
       if (e.key === "ArrowRight" && selectedItem !== null) {
         e.preventDefault();
+
         const item = globalItemIndexMap[selectedItem];
+
+        if (hideArrowRight(item)) return;
+
         goToTwoPage(item);
       }
 
@@ -109,6 +123,8 @@ function DropdownList({
         const item = globalItemIndexMap[selectedItem];
         if (item?.url) {
           OpenURLWithBrowser(item?.url);
+        } else {
+          copyToClipboard(item?.payload?.result?.value);
         }
       }
 
@@ -161,6 +177,16 @@ function DropdownList({
     setSourceData(item);
   }
 
+  const setVisibleContextMenu = useSearchStore(
+    (state) => state.setVisibleContextMenu
+  );
+
+  const handleContextMenu = (event: MouseEvent) => {
+    event.preventDefault();
+
+    setVisibleContextMenu(true);
+  };
+
   return (
     <div
       ref={containerRef}
@@ -187,20 +213,24 @@ function DropdownList({
               <TypeIcon item={items[0]?.document} className="w-4 h-4" />
               {sourceName} - {items[0]?.source.name}
               <div className="flex-1 border-b border-b-[#e6e6e6] dark:border-b-[#272626]"></div>
-              <IconWrapper
-                className="w-4 h-4 cursor-pointer"
-                onClick={(e: React.MouseEvent) => {
-                  e.stopPropagation();
-                  goToTwoPage(items[0]?.document);
-                }}
-              >
-                <ThemedIcon component={ArrowBigRight} className="w-4 h-4" />
-              </IconWrapper>
-              {showIndex && sourceName === selectedName ? (
-                <div className="absolute top-1 right-4">
-                  <VisibleKey shortcut="→" />
-                </div>
-              ) : null}
+              {!hideArrowRight({ category: sourceName }) && (
+                <>
+                  <IconWrapper
+                    className="w-4 h-4 cursor-pointer"
+                    onClick={(e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      goToTwoPage(items[0]?.document);
+                    }}
+                  >
+                    <ThemedIcon component={ArrowBigRight} className="w-4 h-4" />
+                  </IconWrapper>
+                  {showIndex && sourceName === selectedName && (
+                    <div className="absolute top-1 right-4">
+                      <VisibleKey shortcut="→" />
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           ) : null}
 
@@ -210,22 +240,31 @@ function DropdownList({
             const item = hit.document;
             globalItemIndexMap.push(item);
             globalIndex++;
+
+            // TODO: 如果没有分类，计算器下面显示一个横线：https://lanhuapp.com/web/#/item/project/detailDetach?pid=fed58f5b-a117-4fe4-a521-c71f2e9b88c3&project_id=fed58f5b-a117-4fe4-a521-c71f2e9b88c3&image_id=a0afd01b-da7d-47c8-818b-90496fb28a71&fromEditor=true
             return (
-              <SearchListItem
-                key={item.id + index}
-                item={item}
-                isSelected={isSelected}
-                currentIndex={currentIndex}
-                showIndex={showIndex}
-                onMouseEnter={() => setSelectedItem(currentIndex)}
-                onItemClick={() => {
-                  if (item?.url) {
-                    OpenURLWithBrowser(item?.url);
-                  }
-                }}
-                goToTwoPage={goToTwoPage}
-                itemRef={(el) => (itemRefs.current[currentIndex] = el)}
-              />
+              <div key={item.id + index} onContextMenu={handleContextMenu}>
+                {hideArrowRight(item) ? (
+                  <div onMouseEnter={() => setSelectedItem(currentIndex)}>
+                    <Calculator item={item} isSelected={isSelected} />
+                  </div>
+                ) : (
+                  <SearchListItem
+                    item={item}
+                    isSelected={isSelected}
+                    currentIndex={currentIndex}
+                    showIndex={showIndex}
+                    onMouseEnter={() => setSelectedItem(currentIndex)}
+                    onItemClick={() => {
+                      if (item?.url) {
+                        OpenURLWithBrowser(item?.url);
+                      }
+                    }}
+                    goToTwoPage={goToTwoPage}
+                    itemRef={(el) => (itemRefs.current[currentIndex] = el)}
+                  />
+                )}
+              </div>
             );
           })}
         </div>

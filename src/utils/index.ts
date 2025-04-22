@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 
 import platformAdapter from "./platformAdapter";
+import { useAppStore } from "@/stores/appStore";
 
 // 1
 export async function copyToClipboard(text: string) {
+  const addError = useAppStore.getState().addError;
+  const language = useAppStore.getState().language;
+
   try {
     if (window.__TAURI__) {
       window.__TAURI__.writeText(text);
@@ -26,6 +30,8 @@ export async function copyToClipboard(text: string) {
     }
     document.body.removeChild(textArea);
   }
+
+  addError(language === "zh" ? "复制成功" : "Copy Success", "info");
 }
 
 // 2

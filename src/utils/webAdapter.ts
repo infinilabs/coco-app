@@ -3,7 +3,7 @@ import type { BasePlatformAdapter } from "@/types/platform";
 export interface WebPlatformAdapter extends BasePlatformAdapter {
   // Add web-specific methods here
   openFileDialog: (options: any) => Promise<string | string[] | null>;
-  metadata: (path: string) => Promise<Record<string, any>>;
+  metadata: (path: string, options: any) => Promise<Record<string, any>>;
 }
 
 // Create Web adapter functions
@@ -176,8 +176,8 @@ export const createWebAdapter = (): WebPlatformAdapter => {
       return Promise.resolve();
     },
 
-    async metadata(path) {
-      console.log("metadata is not supported in web environment", path);
+    async metadata(path, options = {}) {
+      console.log("metadata is not supported in web environment", path, options);
       return Promise.resolve({});
     },
   };

@@ -234,7 +234,10 @@
     },
     "contextMenu": {
       "open": "打开",
-      "copyLink": "复制链接"
+      "copyLink": "复制链接",
+      "copyAnswer": "复制答案",
+      "copyUppercaseAnswer": "复制答案（大写）",
+      "copyQuestionAndAnswer": "复制问题和答案"
     }
   },
   "assistant": {
@@ -374,5 +377,13 @@
         "cancel": "取消"
       }
     }
+  },
+  "calculator": {
+    "sum": "求和",
+    "subtract": "相减",
+    "multiply": "相乘",
+    "divide": "相除",
+    "remainder": "求余",
+    "expression": "表达式"
   }
 }
