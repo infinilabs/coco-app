@@ -153,10 +153,11 @@ export default function useWebSocket({
       //   },
       //   "status": 401
       // }
-      console.error(`ws-error-${clientId}`, event);
-      if(!connected) return;
+      console.error(`ws-error-${clientId}`, event, connected);
+      if(connected) {
+        addError("WebSocket connection failed.");
+      }
       setConnected(false); // error
-      addError("WebSocket connection failed.");
     });
 
     unlisten_message = platformAdapter.listenEvent(`ws-message-${clientId}`, (event) => {
