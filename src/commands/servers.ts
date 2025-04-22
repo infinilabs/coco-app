@@ -15,7 +15,7 @@ import {
   TranscriptionResponse,
   MultiSourceQueryResponse,
 } from "@/types/commands";
-import { useAppStore } from '@/stores/appStore';
+import { useAppStore } from "@/stores/appStore";
 
 async function invokeWithErrorHandler<T>(
   command: string,
@@ -26,7 +26,7 @@ async function invokeWithErrorHandler<T>(
     const result = await invoke<T>(command, args);
     // console.log(command, result);
 
-    if (result && typeof result === 'object' && 'failed' in result) {
+    if (result && typeof result === "object" && "failed" in result) {
       const failedResult = result as any;
       if (failedResult.failed?.length > 0) {
         failedResult.failed.forEach((error: any) => {
@@ -36,17 +36,17 @@ async function invokeWithErrorHandler<T>(
       }
     }
 
-    if (typeof result === 'string') {
+    if (typeof result === "string") {
       const res = JSON.parse(result);
-      if (typeof res === 'string') {
+      if (typeof res === "string") {
         throw new Error(result);
       }
     }
 
     return result;
   } catch (error: any) {
-    const errorMessage = error || 'Command execution failed';
-    addError(errorMessage, 'error');
+    const errorMessage = error || "Command execution failed";
+    addError(errorMessage, "error");
     throw error;
   }
 }
@@ -234,7 +234,10 @@ export function send_message({
 }
 
 export const delete_session_chat = (serverId: string, sessionId: string) => {
-  return invokeWithErrorHandler<boolean>(`delete_session_chat`, { serverId, sessionId });
+  return invokeWithErrorHandler<boolean>(`delete_session_chat`, {
+    serverId,
+    sessionId,
+  });
 };
 
 export const update_session_chat = (payload: {
@@ -255,9 +258,12 @@ export const assistant_search = (payload: {
 };
 
 export const upload_attachment = async (payload: UploadAttachmentPayload) => {
-  const response = await invokeWithErrorHandler<UploadAttachmentResponse>("upload_attachment", {
-    ...payload,
-  });
+  const response = await invokeWithErrorHandler<UploadAttachmentResponse>(
+    "upload_attachment",
+    {
+      ...payload,
+    }
+  );
 
   if (response?.acknowledged) {
     return response.attachments;
@@ -265,7 +271,9 @@ export const upload_attachment = async (payload: UploadAttachmentPayload) => {
 };
 
 export const get_attachment = (payload: GetAttachmentPayload) => {
-  return invokeWithErrorHandler<GetAttachmentResponse>("get_attachment", { ...payload });
+  return invokeWithErrorHandler<GetAttachmentResponse>("get_attachment", {
+    ...payload,
+  });
 };
 
 export const delete_attachment = (payload: DeleteAttachmentPayload) => {
@@ -273,13 +281,18 @@ export const delete_attachment = (payload: DeleteAttachmentPayload) => {
 };
 
 export const transcription = (payload: TranscriptionPayload) => {
-  return invokeWithErrorHandler<TranscriptionResponse>("transcription", { ...payload });
+  return invokeWithErrorHandler<TranscriptionResponse>("transcription", {
+    ...payload,
+  });
 };
 
 export const query_coco_fusion = (payload: {
   from: number;
   size: number;
   query_strings: Record<string, string>;
+  connection_timeout: number;
 }) => {
-  return invokeWithErrorHandler<MultiSourceQueryResponse>("query_coco_fusion", { ...payload });
+  return invokeWithErrorHandler<MultiSourceQueryResponse>("query_coco_fusion", {
+    ...payload,
+  });
 };

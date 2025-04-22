@@ -11,6 +11,7 @@ import { OpenURLWithBrowser } from "@/utils/index";
 import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
 import { useAppStore } from "@/stores/appStore";
+import { useConnectStore } from "@/stores/connectStore";
 
 interface DocumentListProps {
   onSelectDocument: (id: string) => void;
@@ -34,6 +35,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const { t } = useTranslation();
   const sourceData = useSearchStore((state) => state.sourceData);
   const isTauri = useAppStore((state) => state.isTauri);
+  const queryTimeout = useConnectStore((state) => state.queryTimeout);
 
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
   const [total, setTotal] = useState(0);
@@ -63,6 +65,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
           from: from,
           size: PAGE_SIZE,
           queryStrings: queryStrings,
+          queryTimeout: queryTimeout,
         });
       } else {
         let url = `/query/_search?query=${queryStrings.query}&datasource=${queryStrings.datasource}&from=${from}&size=${PAGE_SIZE}`;

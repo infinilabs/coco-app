@@ -9,6 +9,7 @@ import { NoResults } from "@/components/Common/UI/NoResults";
 import Footer from "@/components/Common/UI/Footer";
 import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
+import { useConnectStore } from "@/stores/connectStore";
 
 interface SearchResponse {
   hits: Array<{
@@ -44,6 +45,7 @@ function Search({
   setWindowAlwaysOnTop,
 }: SearchProps) {
   const sourceData = useSearchStore((state) => state.sourceData);
+  const queryTimeout = useConnectStore((state) => state.queryTimeout);
 
   const [IsError, setIsError] = useState<boolean>(false);
   const [suggests, setSuggests] = useState<any[]>([]);
@@ -63,6 +65,7 @@ function Search({
           from: 0,
           size: 10,
           queryStrings: { query: searchInput },
+          queryTimeout: queryTimeout,
         });
         if (response && typeof response === "object" && "failed" in response) {
           const failedResult = response as any;

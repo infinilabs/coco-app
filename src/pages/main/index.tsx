@@ -9,7 +9,7 @@ import { useFeatureControl } from "@/hooks/useFeatureControl";
 function MainApp() {
   const setIsTauri = useAppStore((state) => state.setIsTauri);
   setIsTauri(true);
-
+ 
   const hideCoco = useCallback(() => {
     return platformAdapter.hideWindow();
   }, []);
@@ -19,7 +19,7 @@ function MainApp() {
   const hasFeature = useFeatureControl({
     initialFeatures: ["think", "search"],
     featureToToggle: "think",
-    condition: (item) => item?._source?.type === "simple"
+    condition: (item) => item?._source?.type === "simple",
   });
 
   return (

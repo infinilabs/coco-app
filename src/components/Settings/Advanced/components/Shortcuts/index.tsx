@@ -43,6 +43,12 @@ const Shortcuts = () => {
   const setHistoricalRecords = useShortcutsStore((state) => {
     return state.setHistoricalRecords;
   });
+  const aiAssistant = useShortcutsStore((state) => {
+    return state.aiAssistant;
+  });
+  const setAiAssistant = useShortcutsStore((state) => {
+    return state.setAiAssistant;
+  });
   const newSession = useShortcutsStore((state) => state.newSession);
   const setNewSession = useShortcutsStore((state) => state.setNewSession);
   const fixedWindow = useShortcutsStore((state) => state.fixedWindow);
@@ -109,6 +115,12 @@ const Shortcuts = () => {
       description: "settings.advanced.shortcuts.historicalRecords.description",
       value: historicalRecords,
       setValue: setHistoricalRecords,
+    },
+    {
+      title: "settings.advanced.shortcuts.aiAssistant.title",
+      description: "settings.advanced.shortcuts.aiAssistant.description",
+      value: aiAssistant,
+      setValue: setAiAssistant,
     },
     {
       title: "settings.advanced.shortcuts.newSession.title",

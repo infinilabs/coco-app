@@ -33,13 +33,26 @@ const Advanced = () => {
   const setConnectionTimeout = useConnectStore((state) => {
     return state.setConnectionTimeout;
   });
+  const queryTimeout = useConnectStore((state) => {
+    return state.queryTimeout;
+  });
+  const setQueryTimeout = useConnectStore((state) => {
+    return state.setQueryTimeout;
+  });
 
   useEffect(() => {
-    const unlisten = useStartupStore.subscribe((state) => {
+    const unsubscribeStartup = useStartupStore.subscribe((state) => {
       emit("change-startup-store", state);
     });
 
-    return unlisten;
+    const unsubscribeConnect = useConnectStore.subscribe((state) => {
+      emit("change-connect-store", state);
+    });
+
+    return () => {
+      unsubscribeStartup();
+      unsubscribeConnect();
+    };
   }, []);
 
   const startupList = [
@@ -159,6 +172,22 @@ const Advanced = () => {
             className="w-20 h-8 px-2 rounded-md border bg-transparent border-black/5 dark:border-white/10"
             onChange={(event) => {
               setConnectionTimeout(Number(event.target.value) || 120);
+            }}
+          />
+        </SettingsItem>
+
+        <SettingsItem
+          icon={Unplug}
+          title={t("settings.advanced.connect.queryTimeout.title")}
+          description={t("settings.advanced.connect.queryTimeout.description")}
+        >
+          <input
+            type="number"
+            min={1}
+            value={queryTimeout}
+            className="w-20 h-8 px-2 rounded-md border bg-transparent border-black/5 dark:border-white/10"
+            onChange={(event) => {
+              setQueryTimeout(Number(event.target.value) || 5);
             }}
           />
         </SettingsItem>
