@@ -2,6 +2,7 @@ import { ChevronsRight } from "lucide-react";
 import { FC } from "react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
+import { copyToClipboard } from "@/utils";
 
 interface CalculatorProps {
   item: any;
@@ -36,7 +37,12 @@ const Calculator: FC<CalculatorProps> = (props) => {
   };
 
   return (
-    <div className="flex items-center gap-1 w-full children:flex">
+    <div
+      className="flex items-center gap-1 w-full children:flex"
+      onDoubleClick={() => {
+        copyToClipboard(result.value);
+      }}
+    >
       {renderItem(query.value, t(`calculator.${query.type}`))}
 
       <ChevronsRight className="text-[#999999] size-5" />
