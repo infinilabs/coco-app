@@ -183,7 +183,7 @@ const Advanced = () => {
         >
           <input
             type="number"
-            min={5}
+            min={1}
             value={queryTimeout}
             className="w-20 h-8 px-2 rounded-md border bg-transparent border-black/5 dark:border-white/10"
             onChange={(event) => {
