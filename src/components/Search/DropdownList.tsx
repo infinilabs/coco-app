@@ -71,6 +71,10 @@ function DropdownList({
     }
   }, [isChatMode]);
 
+  useEffect(() => {
+    setSelectedItem(0);
+  }, [suggests]);
+
   const openPopover = useShortcutsStore((state) => state.openPopover);
 
   const handleKeyDown = useCallback(
@@ -131,7 +135,7 @@ function DropdownList({
         }
       }
     },
-    [suggests, selectedItem, showIndex, globalItemIndexMap]
+    [suggests, selectedItem, showIndex, globalItemIndexMap, openPopover]
   );
 
   const handleKeyUp = useCallback((e: KeyboardEvent) => {

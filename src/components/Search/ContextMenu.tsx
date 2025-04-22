@@ -1,9 +1,4 @@
-import {
-  useClickAway,
-  useCreation,
-  useEventListener,
-  useReactive,
-} from "ahooks";
+import { useClickAway, useCreation, useReactive } from "ahooks";
 import clsx from "clsx";
 import { isNil, noop } from "lodash-es";
 import { Copy, Link, SquareArrowOutUpRight } from "lucide-react";
@@ -15,6 +10,7 @@ import { useSearchStore } from "@/stores/searchStore";
 import { copyToClipboard, OpenURLWithBrowser } from "@/utils";
 import { isMac } from "@/utils/platform";
 import { CONTEXT_MENU_PANEL_ID } from "@/constants";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 interface State {
   activeMenuIndex: number;
@@ -36,6 +32,7 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
   const setVisibleContextMenu = useSearchStore((state) => {
     return state.setVisibleContextMenu;
   });
+  const setOpenPopover = useShortcutsStore((state) => state.setOpenPopover);
 
   const selectedSearchContent = useSearchStore((state) => {
     return state.selectedSearchContent;
@@ -157,11 +154,9 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
     handleClick(item?.clickEvent);
   });
 
-  useEventListener("keydown", (event) => {
-    if (!visibleContextMenu) return;
-
-    event.stopImmediatePropagation();
-  });
+  useEffect(() => {
+    setOpenPopover(visibleContextMenu);
+  }, [visibleContextMenu]);
 
   const handleClick = (click = noop) => {
     click?.();
