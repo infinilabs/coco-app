@@ -132,7 +132,7 @@ impl SearchSource for CalculatorSource {
                 payload.insert("query".to_string(), payload_query);
                 payload.insert("result".to_string(), payload_result);
 
-                let doc = Document::new(Document {
+                let doc = Document {
                     id: DATA_SOURCE_ID.to_string(),
                     category: Some(DATA_SOURCE_ID.to_string()),
                     payload: Some(payload),
@@ -143,7 +143,7 @@ impl SearchSource for CalculatorSource {
                         icon: None,
                     }),
                     ..Default::default()
-                });
+                };
 
                 return Ok(QueryResponse {
                     source: self.get_type(),

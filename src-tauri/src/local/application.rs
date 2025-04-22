@@ -282,19 +282,18 @@ impl SearchSource for ApplicationSearchSource {
 
                 total_hits += 1;
 
-                let mut doc = Document::new(Document {
-                    id: app_path_string.clone(),
-                    title: Some(app_name.clone()),
-                    url: Some(app_path_string),
-                    category: Some("Application".to_string()),
-                    source: Some(DataSourceReference {
-                        r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
-                        name: Some(DATA_SOURCE_ID.into()),
-                        id: Some(DATA_SOURCE_ID.into()),
-                        icon: None,
-                    }),
-                    ..Default::default()
-                });
+                let mut doc = Document::new(
+                  Some(DataSourceReference {
+                      r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
+                      name: Some(DATA_SOURCE_ID.into()),
+                      id: Some(DATA_SOURCE_ID.into()),
+                      icon: None,
+                  }),
+                  app_path_string.clone(),
+                  "Application".to_string(),
+                  app_name.clone(),
+                  app_path_string.clone(),
+              );
 
                 // Attach icon if available
                 if let Some(icon_path) = self.icons.get(app_name.as_str()) {
