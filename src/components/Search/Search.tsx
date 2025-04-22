@@ -86,9 +86,6 @@ function Search({
               source: hit._source.source || null,
             })) || [];
           const total = res?.hits?.total?.value || 0;
-
-          console.log("_suggest2", total, hits);
-
           response = {
             hits: hits,
             total_hits: total,
@@ -121,7 +118,7 @@ function Search({
   useEffect(() => {
     if (!isChatMode && input) {
       debouncedSearch(input);
-    } else if (!input) {
+    } else if (!input && !sourceData) {
       setSuggests([]);
     }
   }, [input, isChatMode, debouncedSearch]);

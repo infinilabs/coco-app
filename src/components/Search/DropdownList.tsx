@@ -74,12 +74,6 @@ function DropdownList({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      // console.log(
-      //   "handleKeyDown",
-      //   e.key,
-      //   showIndex,
-      //   e.key >= "0" && e.key <= "9" && showIndex
-      // );
       if (!suggests.length || openPopover) return;
 
       if (e.key === "ArrowUp") {

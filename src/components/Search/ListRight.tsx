@@ -11,17 +11,19 @@ interface ListRightProps {
   goToTwoPage?: () => void;
 }
 
-export default function ListRight({
+export interface RichCategoriesProps {
+  item: any;
+  isSelected: boolean;
+  goToTwoPage?: () => void;
+}
+
+export function RichCategories({
   item,
   isSelected,
-  showIndex,
-  currentIndex,
   goToTwoPage,
-}: ListRightProps) {
+}: RichCategoriesProps) {
   return (
-    <div
-      className={`flex flex-1 text-right min-w-[160px] pl-5 justify-end w-full h-full text-[12px] gap-2 items-center relative`}
-    >
+    <>
       {item?.rich_categories ? null : (
         <div
           className={`w-4 h-4 cursor-pointer`}
@@ -98,6 +100,26 @@ export default function ListRight({
             ""}
         </span>
       )}
+    </>
+  );
+}
+
+export default function ListRight({
+  item,
+  isSelected,
+  showIndex,
+  currentIndex,
+  goToTwoPage,
+}: ListRightProps) {
+  return (
+    <div
+      className={`flex flex-1 text-right min-w-[160px] pl-5 justify-end w-full h-full text-[12px] gap-2 items-center relative`}
+    >
+      <RichCategories
+        item={item}
+        isSelected={isSelected}
+        goToTwoPage={goToTwoPage}
+      />
 
       {isSelected && (
         <VisibleKey

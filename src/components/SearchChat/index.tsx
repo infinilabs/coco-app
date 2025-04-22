@@ -118,6 +118,7 @@ function SearchChat({
 
   const handleSendMessage = useCallback(
     async (value: string) => {
+      console.log("handleSendMessage", value);
       dispatch({ type: "SET_INPUT", payload: value });
       if (isChatMode) {
         chatAIRef.current?.init(value);
@@ -135,6 +136,7 @@ function SearchChat({
   }, []);
 
   const setInput = useCallback((value: string) => {
+    console.log("setInput", value);
     dispatch({ type: "SET_INPUT", payload: value });
   }, []);
 

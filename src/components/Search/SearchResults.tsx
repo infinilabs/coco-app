@@ -16,7 +16,7 @@ export function SearchResults({ input, isChatMode }: SearchResultsProps) {
 
   const [detailData, setDetailData] = useState<any>({});
   const [viewMode, setViewMode] = useState<"detail" | "list">(() => {
-    return isTauri ? "detail" : (window.innerWidth < 768 ? "list" : "detail");
+    return isTauri ? "detail" : window.innerWidth < 768 ? "list" : "detail";
   });
 
   useEffect(() => {
@@ -25,8 +25,8 @@ export function SearchResults({ input, isChatMode }: SearchResultsProps) {
         setViewMode(window.innerWidth < 768 ? "list" : "detail");
       };
 
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
     }
   }, [isTauri]);
 

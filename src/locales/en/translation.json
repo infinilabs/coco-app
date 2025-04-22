@@ -180,6 +180,7 @@
       "id": "ID",
       "createdAt": "Created At",
       "category": "Category",
+      "richCategories": "RichCategories",
       "subcategory": "Subcategory",
       "language": "Language",
       "tags": "Tags",
