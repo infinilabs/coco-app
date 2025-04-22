@@ -183,13 +183,23 @@ export default function ChatInput({
 
   useKeyPress(`${modifierKey}.${returnToInput}`, handleToggleFocus);
 
+  const visibleContextMenu = useSearchStore((state) => {
+    return state.visibleContextMenu;
+  });
+  const setVisibleContextMenu = useSearchStore((state) => {
+    return state.setVisibleContextMenu;
+  });
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       // console.log("handleKeyDown", e.code, e.key);
 
       if (e.key === "Escape") {
-        handleEscapeKey();
-        return;
+        if (visibleContextMenu) {
+          return setVisibleContextMenu(false);
+        }
+
+        return handleEscapeKey();
       }
 
       pressedKeys.add(e.key);
@@ -239,6 +249,7 @@ export default function ChatInput({
       setIsCommandPressed,
       disabledChange,
       curChatEnd,
+      visibleContextMenu,
     ]
   );
 

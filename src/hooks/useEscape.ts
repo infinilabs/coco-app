@@ -1,20 +1,34 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 import platformAdapter from "@/utils/platformAdapter";
+import { useSearchStore } from "@/stores/searchStore";
 
 const useEscape = () => {
-  const handleEscape = async (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
-      console.log("Escape key pressed.");
+  const visibleContextMenu = useSearchStore((state) => {
+    return state.visibleContextMenu;
+  });
+  const setVisibleContextMenu = useSearchStore((state) => {
+    return state.setVisibleContextMenu;
+  });
 
-      event.preventDefault();
+  const handleEscape = useCallback(() => {
+    async (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        console.log("Escape key pressed.");
 
-      // Hide the Tauri app window when 'Esc' is pressed
-      await platformAdapter.invokeBackend("hide_coco");
+        event.preventDefault();
 
-      console.log("App window hidden successfully.");
-    }
-  };
+        if (visibleContextMenu) {
+          return setVisibleContextMenu(false);
+        }
+
+        // Hide the Tauri app window when 'Esc' is pressed
+        await platformAdapter.invokeBackend("hide_coco");
+
+        console.log("App window hidden successfully.");
+      }
+    };
+  }, [visibleContextMenu]);
 
   useEffect(() => {
     const unlisten = platformAdapter.listenEvent("tauri://focus", () => {
