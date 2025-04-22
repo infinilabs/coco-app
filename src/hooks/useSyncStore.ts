@@ -1,3 +1,4 @@
+import { useConnectStore } from "@/stores/connectStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useStartupStore } from "@/stores/startupStore";
 import platformAdapter from "@/utils/platformAdapter";
@@ -61,6 +62,12 @@ export const useSyncStore = () => {
   const setResetFixedWindow = useShortcutsStore((state) => {
     return state.setResetFixedWindow;
   });
+  const setConnectionTimeout = useConnectStore((state) => {
+    return state.setConnectionTimeout;
+  });
+  const setQueryTimeout = useConnectStore((state) => {
+    return state.setQueryTimeout;
+  });
 
   useEffect(() => {
     if (!resetFixedWindow) {
@@ -112,6 +119,12 @@ export const useSyncStore = () => {
         setDefaultStartupWindow(defaultStartupWindow);
         setDefaultContentForSearchWindow(defaultContentForSearchWindow);
         setDefaultContentForChatWindow(defaultContentForChatWindow);
+      }),
+
+      platformAdapter.listenEvent("change-connect-store", ({ payload }) => {
+        const { connectionTimeout, queryTimeout } = payload;
+        setConnectionTimeout(connectionTimeout);
+        setQueryTimeout(queryTimeout);
       }),
     ]);
 

@@ -10,8 +10,8 @@ import { useConnectStore } from "@/stores/connectStore";
 function MainApp() {
   const setIsTauri = useAppStore((state) => state.setIsTauri);
   setIsTauri(true);
-  const connectionTimeout = useConnectStore((state) => {
-    return state.connectionTimeout;
+  const queryTimeout = useConnectStore((state) => {
+    return state.queryTimeout;
   });
 
   const querySearch = useCallback(async (input: string) => {
@@ -22,7 +22,7 @@ function MainApp() {
           from: 0,
           size: 10,
           queryStrings: { query: input },
-          connectionTimeout,
+          connectionTimeout: queryTimeout,
         }
       );
       if (!response || typeof response !== "object") {
@@ -44,7 +44,7 @@ function MainApp() {
             from,
             size,
             queryStrings,
-            connectionTimeout,
+            connectionTimeout: queryTimeout,
           }
         );
         return response;
