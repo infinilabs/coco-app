@@ -45,9 +45,9 @@ export function AssistantList({ showChatHistory = true }: AssistantListProps) {
         console.log("assistant_search", res);
         const assistantList = res?.hits?.hits || [];
         setAssistants(assistantList);
-        if (assistantList.length > 0 && !currentAssistant) {
+        if (assistantList.length > 0) {
           const assistant = assistantList.find(
-            (item: any) => item._id === currentAssistant._id
+            (item: any) => item._id === currentAssistant?._id
           );
           if (assistant) {
             setCurrentAssistant(assistant);
@@ -74,7 +74,7 @@ export function AssistantList({ showChatHistory = true }: AssistantListProps) {
         onClick={() => setIsOpen(!isOpen)}
         className="h-6  p-1 px-1.5 flex items-center gap-1 rounded-full bg-white dark:bg-[#202126] text-sm/6 font-semibold text-gray-800 dark:text-[#d8d8d8] border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none"
       >
-        <div className="w-4 h-4 flex justify-center items-center rounded-full bg-gray-200 dark:bg-gray-800">
+        <div className="w-4 h-4 flex justify-center items-center rounded-full bg-white">
           {currentAssistant?._source?.icon?.startsWith("font_") ? (
             <FontIcon
               name={currentAssistant._source.icon}
@@ -133,7 +133,9 @@ export function AssistantList({ showChatHistory = true }: AssistantListProps) {
               }`}
             >
               {assistant._source?.icon?.startsWith("font_") ? (
-                <FontIcon name={assistant._source?.icon} className="w-4 h-4" />
+                <div className="w-4 h-4 flex items-center justify-center rounded-full bg-white">
+                  <FontIcon name={assistant._source?.icon} className="w-3 h-3" />
+                </div>
               ) : (
                 <img
                   src={logoImg}

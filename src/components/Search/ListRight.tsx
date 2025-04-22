@@ -8,7 +8,7 @@ interface ListRightProps {
   isSelected: boolean;
   showIndex: boolean;
   currentIndex: number;
-  goToTwoPage?: (item: any) => void;
+  goToTwoPage?: () => void;
 }
 
 export default function ListRight({
@@ -27,7 +27,7 @@ export default function ListRight({
           className={`w-4 h-4 cursor-pointer`}
           onClick={(e) => {
             e.stopPropagation();
-            goToTwoPage && goToTwoPage(item);
+            goToTwoPage && goToTwoPage();
           }}
         >
           <TypeIcon
@@ -35,7 +35,7 @@ export default function ListRight({
             className="w-4 h-4 cursor-pointer"
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
-              goToTwoPage && goToTwoPage(item);
+              goToTwoPage && goToTwoPage();
             }}
           />
         </div>
@@ -48,7 +48,7 @@ export default function ListRight({
             className={`w-4 h-4 mr-2 cursor-pointer`}
             onClick={(e) => {
               e.stopPropagation();
-              goToTwoPage && goToTwoPage(item);
+              goToTwoPage && goToTwoPage();
             }}
           />
           <span

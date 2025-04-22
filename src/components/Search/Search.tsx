@@ -10,6 +10,21 @@ import Footer from "@/components/Common/UI/Footer";
 import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
 
+interface SearchResponse {
+  hits: Array<{
+    _source: any;
+    _score?: number;
+    document: any;
+    score?: number;
+    source?: any;
+  }>;
+  total?: {
+    value: number;
+  };
+  total_hits?: number;
+  failed?: any[];
+}
+
 interface SearchProps {
   isTauri: boolean;
   changeInput: (val: string) => void;
@@ -37,68 +52,71 @@ function Search({
 
   const mainWindowRef = useRef<HTMLDivElement>(null);
 
-  const getSuggest = useCallback(async (searchInput: string) => {
-    if (!searchInput) return;
-    if (sourceData) return;
-    let response: any;
-    if (isTauri) {
-      response = await platformAdapter.commands("query_coco_fusion", {
-        from: 0,
-        size: 10,
-        queryStrings: { query: searchInput },
-      });
-      if (response && typeof response === "object" && "failed" in response) {
-        const failedResult = response as any;
-        if (failedResult.failed?.length > 0) {
-          setIsError(true);
+  const getSuggest = useCallback(
+    async (searchInput: string) => {
+      if (!searchInput) return;
+      if (sourceData) return;
+
+      let response: SearchResponse;
+      if (isTauri) {
+        response = await platformAdapter.commands("query_coco_fusion", {
+          from: 0,
+          size: 10,
+          queryStrings: { query: searchInput },
+        });
+        if (response && typeof response === "object" && "failed" in response) {
+          const failedResult = response as any;
+          setIsError(!!failedResult.failed?.length);
+        }
+      } else {
+        const [error, res]: any = await Get(
+          `/query/_search?query=${searchInput}`
+        );
+
+        if (error) {
+          console.error("_search", error);
+          response = { hits: [], total_hits: 0 };
         } else {
-          setIsError(false);
+          const hits =
+            res?.hits?.hits?.map((hit: any) => ({
+              document: {
+                ...hit._source,
+              },
+              score: hit._score || 0,
+              source: hit._source.source || null,
+            })) || [];
+          const total = res?.hits?.total?.value || 0;
+
+          console.log("_suggest2", total, hits);
+
+          response = {
+            hits: hits,
+            total_hits: total,
+          };
         }
       }
-    } else {
-      const [error, res]: any = await Get(`/query/_search?query=${searchInput}`);
+      console.log("_suggest", sourceData, searchInput, response);
+      let data = response?.hits || [];
 
-      if (error) {
-        console.error("_search", error);
-        response = { hits: [], total: 0 };
-      }
+      setSuggests(data);
 
-      const hits =
-        res?.hits?.hits?.map((hit: any) => ({
-          document: {
-            ...hit._source,
-          },
-          score: hit._score || 0,
-          source: hit._source.source || null,
-        })) || [];
-      const total = res?.hits?.total?.value || 0;
-
-      console.log("_suggest2", total, hits);
-
-      response = {
-        hits: hits,
-        total_hits: total,
-      };
-    }
-    console.log("_suggest", sourceData, searchInput, response);
-    let data = response?.hits || [];
-
-    setSuggests(data);
-
-    const search_data = data.reduce((acc: any, item: any) => {
-      const name = item?.document?.source?.name;
-      if (!acc[name]) {
-        acc[name] = [];
-      }
-      acc[name].push(item);
-      return acc;
-    }, {});
-    setSearchData(search_data);
-    setIsSearchComplete(true);
-  }, [sourceData, isTauri]);
+      const search_data = data.reduce((acc: any, item: any) => {
+        const name = item?.document?.source?.name;
+        if (!acc[name]) {
+          acc[name] = [];
+        }
+        item.document.querySource = item?.source;
+        acc[name].push(item);
+        return acc;
+      }, {});
+      setSearchData(search_data);
+      setIsSearchComplete(true);
+    },
+    [sourceData, isTauri]
+  );
   const debouncedSearch = useCallback(
     debounce((value: string) => getSuggest(value), 500),
-    []
+    [getSuggest]
   );
   useEffect(() => {
     if (!isChatMode && input) {
@@ -106,17 +124,14 @@ function Search({
     } else if (!input) {
       setSuggests([]);
     }
-  }, [input, isChatMode]);
+  }, [input, isChatMode, debouncedSearch]);
 
   return (
     <div ref={mainWindowRef} className={`h-full pb-10 w-full relative`}>
       {/* Search Results Panel */}
       {suggests.length > 0 ? (
         sourceData ? (
-          <SearchResults
-            input={input}
-            isChatMode={isChatMode}
-          />
+          <SearchResults input={input} isChatMode={isChatMode} />
         ) : (
           <DropdownList
             suggests={suggests}

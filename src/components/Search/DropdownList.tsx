@@ -33,9 +33,7 @@ function DropdownList({
   let globalIndex = 0;
   const globalItemIndexMap: any[] = [];
 
-  const setSourceData = useSearchStore(
-    (state: { setSourceData: any }) => state.setSourceData
-  );
+  const setSourceData = useSearchStore((state) => state.setSourceData);
 
   const [showError, setShowError] = useState<boolean>(IsError);
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
@@ -44,9 +42,7 @@ function DropdownList({
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const setSelectedSearchContent = useSearchStore((state) => {
-    return state.setSelectedSearchContent;
-  });
+  const setSelectedSearchContent = useSearchStore((state) => state.setSelectedSearchContent);
 
   const hideArrowRight = (item: any) => {
     const categories = ["Calculator"];
@@ -260,7 +256,7 @@ function DropdownList({
                         OpenURLWithBrowser(item?.url);
                       }
                     }}
-                    goToTwoPage={goToTwoPage}
+                    goToTwoPage={() => goToTwoPage(item)}
                     itemRef={(el) => (itemRefs.current[currentIndex] = el)}
                   />
                 )}

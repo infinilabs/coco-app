@@ -85,24 +85,14 @@ export default function ChatInput({
 }: ChatInputProps) {
   const { t } = useTranslation();
 
-  const showTooltip = useAppStore(
-    (state: { showTooltip: boolean }) => state.showTooltip
-  );
-
+  const showTooltip = useAppStore((state) => state.showTooltip);
   const isPinned = useAppStore((state) => state.isPinned);
 
-  const sourceData = useSearchStore(
-    (state: { sourceData: any }) => state.sourceData
-  );
-  const setSourceData = useSearchStore(
-    (state: { setSourceData: any }) => state.setSourceData
-  );
+  const sourceData = useSearchStore((state) => state.sourceData);
+  const setSourceData = useSearchStore((state) => state.setSourceData);
 
   // const sessionId = useConnectStore((state) => state.currentSessionId);
-  const modifierKey = useShortcutsStore((state) => {
-    return state.modifierKey;
-  });
-
+  const modifierKey = useShortcutsStore((state) => state.modifierKey);
   const modeSwitch = useShortcutsStore((state) => state.modeSwitch);
   const returnToInput = useShortcutsStore((state) => state.returnToInput);
   const deepThinking = useShortcutsStore((state) => state.deepThinking);

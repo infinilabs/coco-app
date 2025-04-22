@@ -11,9 +11,10 @@ import { OpenURLWithBrowser } from "@/utils/index";
 import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
 import { useAppStore } from "@/stores/appStore";
+
 interface DocumentListProps {
   onSelectDocument: (id: string) => void;
-  getDocDetail: (detail: any) => void;
+  getDocDetail: (detail: Record<string, any>) => void;
   input: string;
   isChatMode: boolean;
   selectedId?: string;
@@ -46,6 +47,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       let queryStrings: any = {
         query: input,
         datasource: sourceData?.source?.id,
+        querysource: sourceData?.querySource?.id,
       };
 
       if (sourceData?.rich_categories) {
@@ -72,22 +74,22 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         if (error) {
           console.error("_search", error);
           response = { hits: [], total: 0 };
+        } else {
+          const hits =
+            res?.hits?.hits?.map((hit: any) => ({
+              document: {
+                ...hit._source,
+              },
+              score: hit._score || 0,
+              source: hit._source.source || null,
+            })) || [];
+          const total = res?.hits?.total?.value || 0;
+
+          response = {
+            hits: hits,
+            total_hits: total,
+          };
         }
-
-        const hits =
-          res?.hits?.hits?.map((hit: any) => ({
-            document: {
-              ...hit._source,
-            },
-            score: hit._score || 0,
-            source: hit._source.source || null,
-          })) || [];
-        const total = res?.hits?.total?.value || 0;
-
-        response = {
-          hits: hits,
-          total_hits: total,
-        };
       }
       console.log("_docs", from, queryStrings, response);
       const list = response?.hits || [];
@@ -133,23 +135,18 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     (e: KeyboardEvent) => {
       if (!data?.list?.length) return;
 
-      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+      const handleArrowKeys = () => {
         e.preventDefault();
         setIsKeyboardMode(true);
-
-        const newIndex =
-          e.key === "ArrowUp"
-            ? (prev: number | null) =>
-                prev === null || prev === 0 ? 0 : prev - 1
-            : (prev: number | null) =>
-                prev === null
-                  ? 0
-                  : prev === data.list.length - 1
-                  ? prev
-                  : prev + 1;
-
+  
         setSelectedItem((prev) => {
-          const nextIndex = newIndex(prev);
+          const isArrowUp = e.key === "ArrowUp";
+          const nextIndex = prev === null 
+            ? 0 
+            : isArrowUp
+              ? Math.max(0, prev - 1)
+              : Math.min(data.list.length - 1, prev + 1);
+  
           getDocDetail(data.list[nextIndex]?.document);
           itemRefs.current[nextIndex]?.scrollIntoView({
             behavior: "smooth",
@@ -157,11 +154,25 @@ export const DocumentList: React.FC<DocumentListProps> = ({
           });
           return nextIndex;
         });
-      } else if (e.key === metaOrCtrlKey()) {
-        e.preventDefault();
-      } else if (e.key === "Enter" && selectedItem !== null) {
-        const item = data?.list?.[selectedItem];
-        item?.document?.url && OpenURLWithBrowser(item.document.url);
+      };
+
+      const handleEnter = () => {
+        if (selectedItem === null) return;
+        const item = data.list[selectedItem]?.document;
+        item?.url && OpenURLWithBrowser(item.url);
+      };
+
+      switch (e.key) {
+        case "ArrowUp":
+        case "ArrowDown":
+          handleArrowKeys();
+          break;
+        case metaOrCtrlKey():
+          e.preventDefault();
+          break;
+        case "Enter":
+          handleEnter();
+          break;
       }
     },
     [data, selectedItem, getDocDetail]

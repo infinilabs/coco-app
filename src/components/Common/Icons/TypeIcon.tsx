@@ -17,7 +17,6 @@ function TypeIcon({
   className = "w-5 h-5 flex-shrink-0",
   onClick = () => {},
 }: TypeIconProps) {
-  console.log("item", item);
   const endpoint_http = useAppStore((state) => state.endpoint_http);
   const connectorSource = useFindConnectorIcon(item);
 

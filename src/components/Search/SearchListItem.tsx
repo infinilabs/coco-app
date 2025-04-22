@@ -13,7 +13,7 @@ interface SearchListItemProps {
   onItemClick: () => void;
   itemRef: (el: HTMLDivElement | null) => void;
   showIndex?: boolean;
-  goToTwoPage?: (item: any) => void;
+  goToTwoPage?: () => void;
   showListRight?: boolean;
 }
 
