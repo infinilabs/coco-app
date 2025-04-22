@@ -25,6 +25,8 @@ Information about release notes of Coco Server is provided here.
 - feat: add keyboard-only operation to history list #385
 - feat: add error notification #386
 - feat: add support for AI assistant #394
+- feat: add support for AI assistant #394
+- feat: add support for calculator function #399
 
 ### Bug fix
 
