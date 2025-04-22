@@ -16,6 +16,7 @@ pub async fn query_coco_fusion<R: Runtime>(
     from: u64,
     size: u64,
     query_strings: HashMap<String, String>,
+    query_timeout: u64,
 ) -> Result<MultiSourceQueryResponse, SearchError> {
     let data_source_to_search = query_strings.get("datasource");
 
@@ -28,7 +29,7 @@ pub async fn query_coco_fusion<R: Runtime>(
     let sources_list = sources_future.await;
 
     // Time limit for each query
-    let timeout_duration = Duration::from_millis(500); //TODO, settings
+    let timeout_duration = Duration::from_secs(query_timeout);
 
     // Push all queries into futures
     for query_source in sources_list {

@@ -141,6 +141,10 @@
         "connectionTimeout": {
           "title": "连接超时",
           "description": "如果在此时间内未收到响应，则重试连接。默认值：120 秒。"
+        },
+        "queryTimeout": {
+          "title": "查询超时",
+          "description": "在此时间内未返回搜索结果，则终止查询。默认值：5 秒。"
         }
       }
     },

@@ -5,10 +5,14 @@ import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore } from "@/stores/appStore";
 import { useSyncStore } from "@/hooks/useSyncStore";
 import { useFeatureControl } from "@/hooks/useFeatureControl";
+import { useConnectStore } from "@/stores/connectStore";
 
 function MainApp() {
   const setIsTauri = useAppStore((state) => state.setIsTauri);
   setIsTauri(true);
+  const queryTimeout = useConnectStore((state) => {
+    return state.queryTimeout;
+  });
 
   const querySearch = useCallback(async (input: string) => {
     try {
@@ -18,6 +22,7 @@ function MainApp() {
           from: 0,
           size: 10,
           queryStrings: { query: input },
+          queryTimeout: queryTimeout,
         }
       );
       if (!response || typeof response !== "object") {
@@ -39,6 +44,7 @@ function MainApp() {
             from,
             size,
             queryStrings,
+            queryTimeout: queryTimeout,
           }
         );
         return response;
@@ -59,7 +65,7 @@ function MainApp() {
   const hasFeature = useFeatureControl({
     initialFeatures: ["think", "search"],
     featureToToggle: "think",
-    condition: (item) => item?._source?.type === "simple"
+    condition: (item) => item?._source?.type === "simple",
   });
 
   return (

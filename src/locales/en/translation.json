@@ -141,6 +141,10 @@
         "connectionTimeout": {
           "title": "Connection Timeout",
           "description": "Retries the connection if no response is received within this time. Default: 120s."
+        },
+        "queryTimeout": {
+          "title": "Query Timeout",
+          "description": "Terminates the query if no search results are returned within this time. Default: 5s."
         }
       }
     },

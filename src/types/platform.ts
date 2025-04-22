@@ -1,3 +1,4 @@
+import { IConnectStore } from "@/stores/connectStore";
 import { IShortcutsStore } from "@/stores/shortcutsStore";
 import { IStartupStore } from "@/stores/startupStore";
 import { AppTheme } from "@/types/index";
@@ -36,6 +37,7 @@ export interface EventPayloads {
   [key: `ws-message-${string}`]: string;
   "change-startup-store": IStartupStore;
   "change-shortcuts-store": IShortcutsStore;
+  "change-connect-store": IConnectStore;
 }
 
 // Window operation interface
