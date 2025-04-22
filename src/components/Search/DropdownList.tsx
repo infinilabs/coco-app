@@ -90,8 +90,6 @@ function DropdownList({
       //   e.key >= "0" && e.key <= "9" && showIndex
       // );
 
-      console.log("openPopover", openPopover);
-
       if (!suggests.length || openPopover) return;
 
       if (e.key === "ArrowUp") {
