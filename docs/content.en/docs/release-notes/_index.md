@@ -43,6 +43,7 @@ Information about release notes of Coco Server is provided here.
 - style: search list details display #378
 - refactor: refactoring api error handling #382
 - chore: update assistant icon & think mode #397
+- build: build web components and publish #404
 
 ## 0.3.0 (2025-03-31)
 
