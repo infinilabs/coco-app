@@ -107,7 +107,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
   ];
 
   const debouncedSearch = useMemo(() => {
-    return debounce((value: string) => onSearch(value), 500);
+    return debounce((value: string) => onSearch(value), 300);
   }, [onSearch]);
 
   useKeyPress(["uparrow", "downarrow"], (_, key) => {
@@ -159,7 +159,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
       ref={listRef}
       id={id}
       className={clsx(
-        "flex flex-col h-full overflow-auto px-3 py-2 text-sm bg-[#F3F4F6] dark:bg-[#1F2937]"
+        "flex flex-col h-full overflow-auto px-3 py-2 text-sm bg-[#F3F4F6] dark:bg-[#1F2937] custom-scrollbar"
       )}
     >
       <div className="flex gap-1 children:h-8">

@@ -376,7 +376,7 @@ export function useChatActions(
 
   useEffect(() => {
     showChatHistory && connected && getChatHistory();
-  }, [showChatHistory, connected]);
+  }, [showChatHistory, connected, getChatHistory]);
 
   const createChatWindow = useCallback(async (createWin: any) => {
     if (isTauri) {
