@@ -20,6 +20,7 @@ import Checkbox from "@/components/Common/Checkbox";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import VisibleKey from "@/components/Common/VisibleKey";
 import { useChatStore } from "@/stores/chatStore";
+import NoDataImage from "@/components/Common/NoDataImage";
 
 interface SearchPopoverProps {
   isSearchActive: boolean;
@@ -50,7 +51,6 @@ export default function SearchPopover({
 
   const currentService = useConnectStore((state) => state.currentService);
 
-  const [showDataSource, setShowDataSource] = useState(false);
   const [keyword, setKeyword] = useState("");
   const debouncedKeyword = useDebounce(keyword, { wait: 500 });
 
@@ -88,8 +88,7 @@ export default function SearchPopover({
     }
   }, [currentService?.id, debouncedKeyword]);
 
-  const popoverRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const popoverButtonRef = useRef<HTMLButtonElement>(null);
   const internetSearch = useShortcutsStore((state) => state.internetSearch);
   const internetSearchScope = useShortcutsStore((state) => {
     return state.internetSearchScope;
@@ -98,26 +97,6 @@ export default function SearchPopover({
   const [totalPage, setTotalPage] = useState(0);
   const [visibleList, setVisibleList] = useState<DataSource[]>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (!showDataSource) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        popoverRef.current &&
-        !popoverRef.current.contains(event.target as Node) &&
-        buttonRef.current &&
-        !buttonRef.current.contains(event.target as Node)
-      ) {
-        setShowDataSource(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showDataSource]);
 
   useEffect(() => {
     if (dataSourceList.length > 0) {
@@ -130,11 +109,13 @@ export default function SearchPopover({
   }, [connected, currentService?.id, debouncedKeyword]);
 
   useEffect(() => {
-    setTotalPage(Math.ceil(dataSourceList.length / 10));
+    setTotalPage(Math.max(Math.ceil(dataSourceList.length / 10), 1));
   }, [dataSourceList]);
 
   useEffect(() => {
-    if (dataSourceList.length === 0) return;
+    if (dataSourceList.length === 0) {
+      return setVisibleList([]);
+    }
 
     const startIndex = (page - 1) * 9;
     const endIndex = startIndex + 9;
@@ -218,165 +199,152 @@ export default function SearchPopover({
             {t("search.input.search")}
           </span>
 
-          {visibleList?.length > 0 && (
-            <Popover className="relative">
-              <PopoverButton
-                as="span"
-                ref={buttonRef}
-                className={clsx("flex items-center")}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowDataSource((prev) => !prev);
+          <Popover className="relative">
+            <PopoverButton ref={popoverButtonRef} className="flex items-center">
+              <VisibleKey
+                shortcut={internetSearchScope}
+                onKeyPress={() => {
+                  popoverButtonRef.current?.click();
                 }}
               >
-                <VisibleKey
-                  shortcut={internetSearchScope}
-                  onKeyPress={() => {
-                    buttonRef.current?.click();
-                  }}
-                >
-                  <ChevronDownIcon
-                    className={clsx("size-3", [
-                      isSearchActive
-                        ? "text-[#0072FF] dark:text-[#0072FF]"
-                        : "text-[#333] dark:text-white",
-                    ])}
-                  />
-                </VisibleKey>
-              </PopoverButton>
+                <ChevronDownIcon
+                  className={clsx("size-3", [
+                    isSearchActive
+                      ? "text-[#0072FF] dark:text-[#0072FF]"
+                      : "text-[#333] dark:text-white",
+                  ])}
+                />
+              </VisibleKey>
+            </PopoverButton>
 
-              {showDataSource ? (
-                <PopoverPanel
-                  static
-                  ref={popoverRef}
-                  className="absolute z-50 left-0 bottom-6 w-[240px] overflow-y-auto bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
-                >
-                  <div
-                    className="text-sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                  >
-                    <div className="p-3">
-                      <div className="flex justify-between">
-                        <span>{t("search.input.searchPopover.title")}</span>
+            <PopoverPanel className="absolute z-50 left-0 bottom-6 w-[240px] overflow-y-auto bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+              <div
+                className="text-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <div className="p-3">
+                  <div className="flex justify-between">
+                    <span>{t("search.input.searchPopover.title")}</span>
 
-                        <div
-                          onClick={handleRefresh}
-                          className="size-[24px] flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10 cursor-pointer"
-                        >
-                          <VisibleKey shortcut="R" onKeyPress={handleRefresh}>
-                            <RefreshCw
-                              className={`size-3 text-[#0287FF] transition-transform duration-1000 ${
-                                isRefreshDataSource ? "animate-spin" : ""
-                              }`}
-                            />
-                          </VisibleKey>
-                        </div>
-                      </div>
-
-                      <div className="relative h-8 my-2">
-                        <div className="absolute inset-0 flex items-center px-2 pointer-events-none">
-                          <VisibleKey
-                            shortcut="F"
-                            shortcutClassName="translate-x-0"
-                            onKeyPress={() => {
-                              searchInputRef.current?.focus();
-                            }}
-                          />
-                        </div>
-
-                        <Input
-                          autoFocus
-                          ref={searchInputRef}
-                          className="size-full px-2 rounded-lg border dark:border-white/10 bg-transparent"
-                          onChange={(e) => {
-                            setKeyword(e.target.value);
-                          }}
+                    <div
+                      onClick={handleRefresh}
+                      className="size-[24px] flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10 cursor-pointer"
+                    >
+                      <VisibleKey shortcut="R" onKeyPress={handleRefresh}>
+                        <RefreshCw
+                          className={`size-3 text-[#0287FF] transition-transform duration-1000 ${
+                            isRefreshDataSource ? "animate-spin" : ""
+                          }`}
                         />
-                      </div>
-
-                      <ul className="flex flex-col gap-2">
-                        {visibleList?.map((item, index) => {
-                          const { id, name } = item;
-
-                          const isAll = index === 0;
-
-                          const isChecked = () => {
-                            if (isAll) {
-                              return visibleList.slice(1).every((item) => {
-                                return sourceDataIds.includes(item.id);
-                              });
-                            } else {
-                              return sourceDataIds.includes(id);
-                            }
-                          };
-
-                          return (
-                            <li
-                              key={id}
-                              className="flex justify-between items-center"
-                            >
-                              <div className="flex items-center gap-2 overflow-hidden">
-                                {isAll ? (
-                                  <Layers className="size-[16px] text-[#0287FF]" />
-                                ) : (
-                                  <TypeIcon
-                                    item={item}
-                                    className="size-[16px]"
-                                  />
-                                )}
-
-                                <span className="truncate">
-                                  {isAll && name ? t(name) : name}
-                                </span>
-                              </div>
-
-                              <div className="flex items-center gap-1">
-                                <VisibleKey
-                                  shortcut={
-                                    index === 9 ? "0" : String(index + 1)
-                                  }
-                                  shortcutClassName="-translate-x-3"
-                                  onKeyPress={() => {
-                                    onSelectDataSource(id, !isChecked(), isAll);
-                                  }}
-                                />
-
-                                <div className="flex justify-center items-center size-[24px]">
-                                  <Checkbox
-                                    checked={isChecked()}
-                                    indeterminate={isAll}
-                                    onChange={(value) =>
-                                      onSelectDataSource(id, value, isAll)
-                                    }
-                                  />
-                                </div>
-                              </div>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-
-                    <div className="flex items-center justify-between h-8 px-3 border-t dark:border-t-[#202126]">
-                      <VisibleKey shortcut="leftarrow" onKeyPress={handlePrev}>
-                        <ChevronLeft className="size-4" onClick={handlePrev} />
-                      </VisibleKey>
-
-                      <div className="text-xs">
-                        {page}/{totalPage}
-                      </div>
-
-                      <VisibleKey shortcut="rightarrow" onKeyPress={handleNext}>
-                        <ChevronRight className="size-4" onClick={handleNext} />
                       </VisibleKey>
                     </div>
                   </div>
-                </PopoverPanel>
-              ) : null}
-            </Popover>
-          )}
+
+                  <div className="relative h-8 my-2">
+                    <div className="absolute inset-0 flex items-center px-2 pointer-events-none">
+                      <VisibleKey
+                        shortcut="F"
+                        shortcutClassName="translate-x-0"
+                        onKeyPress={() => {
+                          searchInputRef.current?.focus();
+                        }}
+                      />
+                    </div>
+
+                    <Input
+                      autoFocus
+                      ref={searchInputRef}
+                      className="size-full px-2 rounded-lg border dark:border-white/10 bg-transparent"
+                      onChange={(e) => {
+                        setKeyword(e.target.value);
+                      }}
+                    />
+                  </div>
+
+                  {visibleList.length > 0 ? (
+                    <ul className="flex flex-col gap-2">
+                      {visibleList?.map((item, index) => {
+                        const { id, name } = item;
+
+                        const isAll = index === 0;
+
+                        const isChecked = () => {
+                          if (isAll) {
+                            return visibleList.slice(1).every((item) => {
+                              return sourceDataIds.includes(item.id);
+                            });
+                          } else {
+                            return sourceDataIds.includes(id);
+                          }
+                        };
+
+                        return (
+                          <li
+                            key={id}
+                            className="flex justify-between items-center"
+                          >
+                            <div className="flex items-center gap-2 overflow-hidden">
+                              {isAll ? (
+                                <Layers className="size-[16px] text-[#0287FF]" />
+                              ) : (
+                                <TypeIcon item={item} className="size-[16px]" />
+                              )}
+
+                              <span className="truncate">
+                                {isAll && name ? t(name) : name}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-1">
+                              <VisibleKey
+                                shortcut={index === 9 ? "0" : String(index + 1)}
+                                shortcutClassName="-translate-x-3"
+                                onKeyPress={() => {
+                                  onSelectDataSource(id, !isChecked(), isAll);
+                                }}
+                              />
+
+                              <div className="flex justify-center items-center size-[24px]">
+                                <Checkbox
+                                  checked={isChecked()}
+                                  indeterminate={isAll}
+                                  onChange={(value) =>
+                                    onSelectDataSource(id, value, isAll)
+                                  }
+                                />
+                              </div>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : (
+                    <div className="flex items-center justify-center py-4">
+                      <NoDataImage />
+                    </div>
+                  )}
+                </div>
+
+                {visibleList.length > 0 && (
+                  <div className="flex items-center justify-between h-8 px-3 border-t dark:border-t-[#202126]">
+                    <VisibleKey shortcut="leftarrow" onKeyPress={handlePrev}>
+                      <ChevronLeft className="size-4" onClick={handlePrev} />
+                    </VisibleKey>
+
+                    <div className="text-xs">
+                      {page}/{totalPage}
+                    </div>
+
+                    <VisibleKey shortcut="rightarrow" onKeyPress={handleNext}>
+                      <ChevronRight className="size-4" onClick={handleNext} />
+                    </VisibleKey>
+                  </div>
+                )}
+              </div>
+            </PopoverPanel>
+          </Popover>
         </>
       )}
     </div>

@@ -1,4 +1,9 @@
-import { useClickAway, useCreation, useReactive } from "ahooks";
+import {
+  useClickAway,
+  useCreation,
+  useEventListener,
+  useReactive,
+} from "ahooks";
 import clsx from "clsx";
 import { isNil, noop } from "lodash-es";
 import { Copy, Link, SquareArrowOutUpRight } from "lucide-react";
@@ -150,6 +155,12 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
     const item = menus.find((item) => item.shortcut === key);
 
     handleClick(item?.clickEvent);
+  });
+
+  useEventListener("keydown", (event) => {
+    if (!visibleContextMenu) return;
+
+    event.stopImmediatePropagation();
   });
 
   const handleClick = (click = noop) => {
