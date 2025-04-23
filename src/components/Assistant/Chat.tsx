@@ -74,6 +74,9 @@ const ChatAI = memo(
         useChatStore();
 
       const currentService = useConnectStore((state) => state.currentService);
+      const visibleStartPage = useConnectStore((state) => {
+        return state.visibleStartPage;
+      });
 
       const addError = useAppStore.getState().addError;
 
@@ -402,7 +405,9 @@ const ChatAI = memo(
             <ConnectPrompt />
           )}
 
-          {showPrevSuggestion ? <PrevSuggestion sendMessage={init} /> : null}
+          {showPrevSuggestion && !visibleStartPage && (
+            <PrevSuggestion sendMessage={init} />
+          )}
         </div>
       );
     }

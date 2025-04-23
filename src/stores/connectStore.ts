@@ -24,10 +24,14 @@ export type IConnectStore = {
   setConnectionTimeout: (connectionTimeout: number) => void;
   currentSessionId?: string;
   setCurrentSessionId: (currentSessionId?: string) => void;
+  assistantList: any[];
+  setAssistantList: (assistantList: []) => void;
   currentAssistant: any;
   setCurrentAssistant: (assistant: any) => void;
   queryTimeout: number;
   setQueryTimeout: (queryTimeout: number) => void;
+  visibleStartPage: boolean;
+  setVisibleStartPage: (visibleStartPage: boolean) => void;
 };
 
 export const useConnectStore = create<IConnectStore>()(
@@ -91,6 +95,10 @@ export const useConnectStore = create<IConnectStore>()(
         setCurrentSessionId(currentSessionId) {
           return set(() => ({ currentSessionId }));
         },
+        assistantList: [],
+        setAssistantList: (assistantList) => {
+          return set(() => ({ assistantList }));
+        },
         currentAssistant: null,
         setCurrentAssistant: (assistant: any) => {
           set(
@@ -102,6 +110,10 @@ export const useConnectStore = create<IConnectStore>()(
         queryTimeout: 5,
         setQueryTimeout: (queryTimeout: number) => {
           return set(() => ({ queryTimeout }));
+        },
+        visibleStartPage: false,
+        setVisibleStartPage: (visibleStartPage: boolean) => {
+          return set(() => ({ visibleStartPage }));
         },
       }),
       {

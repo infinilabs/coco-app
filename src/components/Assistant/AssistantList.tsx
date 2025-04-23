@@ -22,6 +22,8 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
   const { t } = useTranslation();
   const { connected } = useChatStore();
   const isTauri = useAppStore((state) => state.isTauri);
+  const assistantList = useConnectStore((state) => state.assistantList);
+  const setAssistantList = useConnectStore((state) => state.setAssistantList);
   const currentService = useConnectStore((state) => state.currentService);
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
   const setCurrentAssistant = useConnectStore(
@@ -34,7 +36,6 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useClickAway(menuRef, () => setIsOpen(false));
-  const [assistants, setAssistants] = useState<any[]>([]);
 
   const fetchAssistant = useCallback(async (serverId?: string) => {
     let response: any;
@@ -46,14 +47,14 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
         });
         response = response ? JSON.parse(response) : null;
       } catch (err) {
-        setAssistants([]);
+        setAssistantList([]);
         setCurrentAssistant(null);
         console.error("assistant_search", err);
       }
     } else {
       const [error, res] = await Get(`/assistant/_search`);
       if (error) {
-        setAssistants([]);
+        setAssistantList([]);
         setCurrentAssistant(null);
         console.error("assistant_search", error);
         return;
@@ -64,11 +65,12 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
     console.log("assistant_search", response);
     let assistantList = response?.hits?.hits || [];
 
-    assistantList = assistantIDs.length > 0
-      ? assistantList.filter((item: any) => assistantIDs.includes(item._id))
-      : assistantList;
+    assistantList =
+      assistantIDs.length > 0
+        ? assistantList.filter((item: any) => assistantIDs.includes(item._id))
+        : assistantList;
 
-    setAssistants(assistantList);
+    setAssistantList(assistantList);
     if (assistantList.length > 0) {
       const assistant = assistantList.find(
         (item: any) => item._id === currentAssistant?._id
@@ -150,7 +152,7 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
               </VisibleKey>
             </button>
           </div>
-          {assistants.map((assistant) => (
+          {assistantList.map((assistant) => (
             <button
               key={assistant._id}
               onClick={() => {

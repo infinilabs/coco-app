@@ -1,8 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import path from 'path';
+import path from "path";
 import { config } from "dotenv";
-import packageJson from './package.json';
+import packageJson from "./package.json";
 
 config();
 
@@ -12,12 +12,12 @@ const host = process.env.TAURI_DEV_HOST;
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
   define: {
-    'process.env.VERSION': JSON.stringify(packageJson.version),
+    "process.env.VERSION": JSON.stringify(packageJson.version),
   },
   plugins: [react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      "@": path.resolve(__dirname, "./src"),
     },
   },
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
@@ -31,10 +31,10 @@ export default defineConfig(async () => ({
     host: host || false,
     hmr: host
       ? {
-        protocol: "ws",
-        host,
-        port: 1421,
-      }
+          protocol: "ws",
+          host,
+          port: 1421,
+        }
       : undefined,
     watch: {
       // 3. tell vite to ignore watching `src-tauri`
@@ -71,31 +71,36 @@ export default defineConfig(async () => ({
         changeOrigin: true,
         secure: false,
       },
+      "/settings": {
+        target: process.env.COCO_SERVER_URL,
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
   build: {
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          katex: ['rehype-katex'],
-          highlight: ['rehype-highlight'],
-          mermaid: ['mermaid'],
-          'tauri-api': [
-            '@tauri-apps/api/core',
-            '@tauri-apps/api/event',
-            '@tauri-apps/api/window',
-            '@tauri-apps/api/dpi',
-            '@tauri-apps/api/webviewWindow'
+          vendor: ["react", "react-dom"],
+          katex: ["rehype-katex"],
+          highlight: ["rehype-highlight"],
+          mermaid: ["mermaid"],
+          "tauri-api": [
+            "@tauri-apps/api/core",
+            "@tauri-apps/api/event",
+            "@tauri-apps/api/window",
+            "@tauri-apps/api/dpi",
+            "@tauri-apps/api/webviewWindow",
           ],
-          'tauri-plugins': [
-            '@tauri-apps/plugin-dialog',
-            '@tauri-apps/plugin-process',
-            'tauri-plugin-fs-pro-api',
-            'tauri-plugin-macos-permissions-api',
-            'tauri-plugin-screenshots-api',
-          ]
-        }
+          "tauri-plugins": [
+            "@tauri-apps/plugin-dialog",
+            "@tauri-apps/plugin-process",
+            "tauri-plugin-fs-pro-api",
+            "tauri-plugin-macos-permissions-api",
+            "tauri-plugin-screenshots-api",
+          ],
+        },
       },
     },
     chunkSizeWarningLimit: 600,

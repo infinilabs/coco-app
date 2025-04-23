@@ -131,6 +131,9 @@ export default function ChatInput({
   const setModifierKeyPressed = useShortcutsStore((state) => {
     return state.setModifierKeyPressed;
   });
+  const setVisibleStartPage = useConnectStore((state) => {
+    return state.setVisibleStartPage;
+  });
 
   useEffect(() => {
     const handleFocus = () => {
@@ -154,6 +157,8 @@ export default function ChatInput({
   }, [isChatMode, textareaRef, inputRef]);
 
   const handleSubmit = useCallback(() => {
+    setVisibleStartPage(false);
+
     const trimmedValue = inputValue.trim();
     console.log("handleSubmit", trimmedValue, disabled);
     if (trimmedValue && !disabled) {
@@ -477,7 +482,8 @@ export default function ChatInput({
               />
             )}
 
-            {!currentAssistant?._source?.datasource?.visible && !currentAssistant?._source?.config?.visible ? (
+            {!currentAssistant?._source?.datasource?.visible &&
+            !currentAssistant?._source?.config?.visible ? (
               <div className="px-[9px]">
                 <Copyright />
               </div>

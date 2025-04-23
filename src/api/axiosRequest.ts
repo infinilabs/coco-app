@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { useAppStore } from '@/stores/appStore';
+import { useAppStore } from "@/stores/appStore";
 
 import {
   handleChangeRequestHeader,
@@ -44,21 +44,22 @@ axios.interceptors.response.use(
 
 export const handleApiError = (error: any) => {
   const addError = useAppStore.getState().addError;
-  
-  let message = 'Request failed';
-  
+
+  let message = "Request failed";
+
   if (error.response) {
     // Server error response
-    message = error.response.data?.message || `Error (${error.response.status})`;
+    message =
+      error.response.data?.message || `Error (${error.response.status})`;
   } else if (error.request) {
     // Request failed to send
-    message = 'Network connection failed';
+    message = "Network connection failed";
   } else {
     // Other errors
     message = error.message;
   }
-  
-  addError(message, 'error');
+
+  addError(message, "error");
   return error;
 };
 
