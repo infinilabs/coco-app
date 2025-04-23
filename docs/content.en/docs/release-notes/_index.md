@@ -27,6 +27,7 @@ Information about release notes of Coco Server is provided here.
 - feat: add support for AI assistant #394
 - feat: add support for calculator function #399
 - feat: auto selects the first item after searching #411
+- feat: right-click menu support for search #423
 
 ### Bug fix
 
