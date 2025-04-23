@@ -109,7 +109,7 @@ const Splash = () => {
           {settings?.introduction}
         </div>
 
-        <ul className="flex flex-wrap -m-1">
+        <ul className="flex flex-wrap -m-1 w-full">
           {settingsAssistantList?.map((item) => {
             const { id, name, description, icon } = item._source;
 
