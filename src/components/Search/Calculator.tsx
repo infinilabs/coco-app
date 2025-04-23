@@ -18,14 +18,7 @@ const Calculator: FC<CalculatorProps> = (props) => {
 
   const renderItem = (result: string, description: string) => {
     return (
-      <div
-        className={clsx(
-          "flex-1 flex flex-col gap-1 items-center justify-center h-[90px] overflow-hidden rounded-md border border-transparent transition bg-[#ededed] dark:bg-[#202126]",
-          {
-            "!border-[#881C94]": isSelected,
-          }
-        )}
-      >
+      <div className="flex-1 flex flex-col gap-1 items-center justify-center h-[90px] overflow-hidden rounded-[4px] border border-transparent transition bg-[#F8F8F8] dark:bg-[#141414]">
         <div className="w-[90%] text-xl text-[#333] dark:text-[#d8d8d8] truncate text-center">
           {result}
         </div>
@@ -38,7 +31,12 @@ const Calculator: FC<CalculatorProps> = (props) => {
 
   return (
     <div
-      className="flex items-center gap-1 w-full children:flex"
+      className={clsx(
+        "flex items-center gap-1 p-2 w-full rounded-lg transition",
+        {
+          "bg-[#EDEDED] dark:bg-[#202126]": isSelected,
+        }
+      )}
       onDoubleClick={() => {
         copyToClipboard(result.value);
       }}
