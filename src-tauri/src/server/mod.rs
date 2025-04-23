@@ -8,5 +8,6 @@ pub mod http_client;
 pub mod profile;
 pub mod search;
 pub mod servers;
+pub mod system_settings;
 pub mod transcription;
 pub mod websocket;

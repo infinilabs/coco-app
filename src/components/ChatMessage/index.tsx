@@ -14,6 +14,7 @@ import { SuggestionList } from "./SuggestionList";
 import { UserMessage } from "./UserMessage";
 import { useConnectStore } from "@/stores/connectStore";
 import FontIcon from "@/components/Common/Icons/FontIcon";
+import clsx from "clsx";
 
 interface ChatMessageProps {
   message: Message;
@@ -53,6 +54,7 @@ export const ChatMessage = memo(function ChatMessage({
     isTyping === false && (messageContent || response?.message_chunk);
 
   const [suggestion, setSuggestion] = useState<string[]>([]);
+  const visibleStartPage = useConnectStore((state) => state.visibleStartPage);
 
   const getSuggestion = (suggestion: string[]) => {
     setSuggestion(suggestion);
@@ -121,7 +123,13 @@ export const ChatMessage = memo(function ChatMessage({
 
   return (
     <div
-      className={`py-8 flex ${isAssistant ? "justify-start" : "justify-end"}`}
+      className={clsx(
+        "py-8 flex",
+        [isAssistant ? "justify-start" : "justify-end"],
+        {
+          hidden: visibleStartPage,
+        }
+      )}
     >
       <div
         className={`px-4 flex gap-4 ${
@@ -129,7 +137,9 @@ export const ChatMessage = memo(function ChatMessage({
         }`}
       >
         <div
-          className={`w-full space-y-2 ${isAssistant ? "text-left" : "text-right"}`}
+          className={`w-full space-y-2 ${
+            isAssistant ? "text-left" : "text-right"
+          }`}
         >
           <div className="w-full flex items-center gap-1 font-semibold text-sm text-[#333] dark:text-[#d8d8d8]">
             {isAssistant ? (

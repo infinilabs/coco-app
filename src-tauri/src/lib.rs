@@ -135,7 +135,8 @@ pub fn run() {
             server::transcription::transcription,
             local::application::get_default_search_paths,
             local::application::list_app_with_metadata_in,
-            util::open
+            util::open,
+            server::system_settings::get_system_settings
         ])
         .setup(|app| {
             let registry = SearchSourceRegistry::default();
