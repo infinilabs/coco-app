@@ -73,6 +73,7 @@ export const ChatMessage = memo(function ChatMessage({
           getSuggestion={getSuggestion}
           loading={loadingStep?.query_intent}
         />
+        
         <FetchSource
           Detail={details.find((item) => item.type === "fetch_source")}
           ChunkData={fetch_source}
