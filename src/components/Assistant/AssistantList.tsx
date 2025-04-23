@@ -154,6 +154,7 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
             <button
               key={assistant._id}
               onClick={() => {
+                console.log("assistant", assistant);
                 setCurrentAssistant(assistant);
                 setIsOpen(false);
               }}

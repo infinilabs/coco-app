@@ -84,7 +84,7 @@ function WebApp({
       {isMobile && (
         <div
           className={`fixed ${
-            isChatMode ? "top-2" : "top-3"
+            isChatMode ? "top-1" : "top-3"
           } right-2 flex items-center justify-center w-8 h-8 rounded-full bg-black/10 dark:bg-white/10 cursor-pointer z-50`}
           onClick={onCancel}
         >

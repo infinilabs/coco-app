@@ -84,6 +84,7 @@ export default function ChatInput({
   const { t } = useTranslation();
 
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
+  console.log("currentAssistant", currentAssistant);
 
   const showTooltip = useAppStore((state) => state.showTooltip);
   const isPinned = useAppStore((state) => state.isPinned);
