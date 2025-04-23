@@ -289,8 +289,8 @@ export const transcription = (payload: TranscriptionPayload) => {
 export const query_coco_fusion = (payload: {
   from: number;
   size: number;
-  query_strings: Record<string, string>;
-  connection_timeout: number;
+  queryStrings: Record<string, string>;
+  queryTimeout: number;
 }) => {
   return invokeWithErrorHandler<MultiSourceQueryResponse>("query_coco_fusion", {
     ...payload,
