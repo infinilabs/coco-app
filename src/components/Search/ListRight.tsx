@@ -118,7 +118,7 @@ export default function ListRight({
     >
       <RichCategories
         item={item}
-        isSelected={isSelected}
+        isSelected={false}
         goToTwoPage={goToTwoPage}
       />
 
@@ -128,9 +128,6 @@ export default function ListRight({
           rootClassName={clsx("!absolute", [
             showIndex && currentIndex < 10 ? "right-9" : "right-2",
           ])}
-          shortcutClassName={clsx({
-            "!shadow-[-6px_0px_6px_2px_#950599]": isSelected,
-          })}
         />
       )}
 
@@ -138,9 +135,6 @@ export default function ListRight({
         <VisibleKey
           shortcut={String(currentIndex === 9 ? 0 : currentIndex + 1)}
           rootClassName="!absolute right-2"
-          shortcutClassName={clsx({
-            "!shadow-[-6px_0px_6px_2px_#950599]": isSelected,
-          })}
         />
       )}
     </div>

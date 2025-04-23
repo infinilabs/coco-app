@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, useCallback, MouseEvent } from "react";
 import { CircleAlert, Bolt, X, ArrowBigRight } from "lucide-react";
 import { isNil } from "lodash-es";
-import clsx from "clsx";
 import { useDebounceFn, useUnmount } from "ahooks";
 import { useTranslation } from "react-i18next";
 
@@ -33,7 +32,7 @@ function DropdownList({
   isChatMode,
 }: DropdownListProps) {
   const { t } = useTranslation();
-  
+
   let globalIndex = 0;
   const globalItemIndexMap: any[] = [];
 
@@ -46,7 +45,9 @@ function DropdownList({
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const setSelectedSearchContent = useSearchStore((state) => state.setSelectedSearchContent);
+  const setSelectedSearchContent = useSearchStore(
+    (state) => state.setSelectedSearchContent
+  );
 
   const hideArrowRight = (item: any) => {
     const categories = ["Calculator"];
@@ -242,28 +243,21 @@ function DropdownList({
               </div>
             )}
 
-            {items.map((hit: any, index: number) => {
+            {items.map((hit: any) => {
               const isSelected = selectedItem === globalIndex;
               const currentIndex = globalIndex;
               const item = hit.document;
               globalItemIndexMap.push(item);
               globalIndex++;
 
-              // TODO：https://lanhuapp.com/web/#/item/project/detailDetach?pid=fed58f5b-a117-4fe4-a521-c71f2e9b88c3&project_id=fed58f5b-a117-4fe4-a521-c71f2e9b88c3&image_id=a0afd01b-da7d-47c8-818b-90496fb28a71&fromEditor=true
               return (
-                <div key={item.id + index} onContextMenu={handleContextMenu}>
+                <div key={item.id} onContextMenu={handleContextMenu}>
                   {hideArrowRight(item) ? (
                     <div
+                      ref={(el) => (itemRefs.current[currentIndex] = el)}
                       onMouseEnter={() => setSelectedItem(currentIndex)}
-                      className={clsx({
-                        "mt-1": !showHeader,
-                      })}
                     >
                       <Calculator item={item} isSelected={isSelected} />
-
-                      {!showHeader && (
-                        <div className="h-px mt-3 mx-2 bg-[#E6E6E6] dark:bg-[#262626]" />
-                      )}
                     </div>
                   ) : (
                     <SearchListItem
