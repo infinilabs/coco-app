@@ -22,18 +22,17 @@ interface ContextMenuProps {
 
 const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-
   const { t, i18n } = useTranslation();
-
+  const state = useReactive<State>({
+    activeMenuIndex: 0,
+  });
   const visibleContextMenu = useSearchStore((state) => {
     return state.visibleContextMenu;
   });
-
   const setVisibleContextMenu = useSearchStore((state) => {
     return state.setVisibleContextMenu;
   });
   const setOpenPopover = useShortcutsStore((state) => state.setOpenPopover);
-
   const selectedSearchContent = useSearchStore((state) => {
     return state.selectedSearchContent;
   });
@@ -106,10 +105,6 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
     return menus.map((item) => item.shortcut);
   }, [menus]);
 
-  const state = useReactive<State>({
-    activeMenuIndex: 0,
-  });
-
   useEffect(() => {
     state.activeMenuIndex = 0;
   }, [visibleContextMenu, selectedSearchContent]);
@@ -149,9 +144,15 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
   useOSKeyPress(shortcuts, (_, key) => {
     if (!visibleContextMenu) return;
 
-    const item = menus.find((item) => item.shortcut === key);
+    let matched;
 
-    handleClick(item?.clickEvent);
+    if (key === "enter") {
+      matched = menus.find((_, index) => index === state.activeMenuIndex);
+    } else {
+      matched = menus.find((item) => item.shortcut === key);
+    }
+
+    handleClick(matched?.clickEvent);
   });
 
   useEffect(() => {
@@ -195,7 +196,7 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
               <li
                 key={name}
                 className={clsx(
-                  "flex justify-between items-center px-3 py-2 rounded-lg cursor-pointer",
+                  "flex justify-between items-center gap-2 px-3 py-2 rounded-lg cursor-pointer",
                   {
                     "bg-black/5 dark:bg-white/5":
                       index === state.activeMenuIndex,
