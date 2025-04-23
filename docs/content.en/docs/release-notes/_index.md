@@ -29,6 +29,7 @@ Information about release notes of Coco Server is provided here.
 - feat: auto selects the first item after searching #411
 - feat: web components assistant #422
 - feat: right-click menu support for search #423
+- feat: add chat mode launch page #424
 
 ### Bug fix
 
