@@ -1,8 +1,7 @@
 import { MoveRight } from "lucide-react";
 import { FC, useEffect, useState } from "react";
 
-import { Get } from "@/api/axiosRequest";
-import { useAppStore } from "@/stores/appStore";
+import { useConnectStore } from "@/stores/connectStore";
 
 interface PrevSuggestionProps {
   sendMessage: (message: string) => void;
@@ -11,35 +10,18 @@ interface PrevSuggestionProps {
 const PrevSuggestion: FC<PrevSuggestionProps> = (props) => {
   const { sendMessage } = props;
 
-  const isTauri = useAppStore((state) => state.isTauri);
-
-  const headersStr = localStorage.getItem("headers") || "{}";
-  const headers = JSON.parse(headersStr);
-  const id = headers["APP-INTEGRATION-ID"] || "cvkm9hmhpcemufsg3vug";
-  // console.log("id", id);
+  const currentAssistant = useConnectStore((state) => state.currentAssistant);
 
   const [list, setList] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!isTauri) getList();
-  }, [id]);
-
-  const getList = async () => {
-    if (!id) return;
-
-    const url = `/integration/${id}/chat/_suggest`;
-
-    const [error, res] = await Get(`/integration/${id}/chat/_suggest`);
-
-    if (error) {
-      console.error(url, error);
-      return setList([]);
+    const suggested = currentAssistant?._source?.chat_settings?.suggested || {};
+    if (suggested.enabled) {
+      setList(suggested.questions || []);
+    } else {
+      setList([]);
     }
-
-    console.log("chat/_suggest", res);
-
-    setList(Array.isArray(res) ? res : []);
-  };
+  }, [JSON.stringify(currentAssistant)]);
 
   return (
     <ul className="absolute left-2 bottom-2 flex flex-col gap-2">

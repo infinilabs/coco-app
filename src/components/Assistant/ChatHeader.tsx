@@ -1,6 +1,4 @@
-import {
-  MessageSquarePlus,
-} from "lucide-react";
+import { MessageSquarePlus } from "lucide-react";
 import clsx from "clsx";
 
 import HistoryIcon from "@/icons/History";
@@ -27,6 +25,7 @@ interface ChatHeaderProps {
   setIsLogin: (isLogin: boolean) => void;
   isChatPage?: boolean;
   showChatHistory?: boolean;
+  assistantIDs?: string[];
 }
 
 export function ChatHeader({
@@ -40,8 +39,8 @@ export function ChatHeader({
   setIsLogin,
   isChatPage = false,
   showChatHistory = true,
+  assistantIDs,
 }: ChatHeaderProps) {
-
   const isPinned = useAppStore((state) => state.isPinned);
   const setIsPinned = useAppStore((state) => state.setIsPinned);
 
@@ -55,7 +54,7 @@ export function ChatHeader({
   const fixedWindow = useShortcutsStore((state) => {
     return state.fixedWindow;
   });
- 
+
   const external = useShortcutsStore((state) => state.external);
 
   const togglePin = async () => {
@@ -94,7 +93,7 @@ export function ChatHeader({
           </button>
         )}
 
-        <AssistantList showChatHistory={showChatHistory} />
+        <AssistantList assistantIDs={assistantIDs} />
 
         {showChatHistory ? (
           <button
