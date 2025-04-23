@@ -1,8 +1,8 @@
 import { useClickAway, useCreation, useReactive } from "ahooks";
 import clsx from "clsx";
-import { isNil, noop } from "lodash-es";
+import { isNil, lowerCase, noop } from "lodash-es";
 import { Copy, Link, SquareArrowOutUpRight } from "lucide-react";
-import { cloneElement, useEffect, useRef } from "react";
+import { cloneElement, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useOSKeyPress } from "@/hooks/useOSKeyPress";
@@ -11,6 +11,7 @@ import { copyToClipboard, OpenURLWithBrowser } from "@/utils";
 import { isMac } from "@/utils/platform";
 import { CONTEXT_MENU_PANEL_ID } from "@/constants";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
+import { Input } from "@headlessui/react";
 
 interface State {
   activeMenuIndex: number;
@@ -36,6 +37,15 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
   const selectedSearchContent = useSearchStore((state) => {
     return state.selectedSearchContent;
   });
+  const [searchMenus, setSearchMenus] = useState<typeof menus>([]);
+
+  const title = useCreation(() => {
+    if (selectedSearchContent?.id === "Calculator") {
+      return t("search.contextMenu.title.calculator");
+    }
+
+    return selectedSearchContent?.title;
+  }, [selectedSearchContent]);
 
   const menus = useCreation(() => {
     if (isNil(selectedSearchContent)) return [];
@@ -45,7 +55,7 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
 
     const menus = [
       {
-        name: "search.contextMenu.open",
+        name: t("search.contextMenu.open"),
         icon: <SquareArrowOutUpRight />,
         keys: isMac ? ["↩︎"] : ["Enter"],
         shortcut: "enter",
@@ -57,7 +67,7 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
         },
       },
       {
-        name: "search.contextMenu.copyLink",
+        name: t("search.contextMenu.copyLink"),
         icon: <Link />,
         keys: isMac ? ["⌘", "L"] : ["Ctrl", "L"],
         shortcut: isMac ? "meta.l" : "ctrl.l",
@@ -67,7 +77,7 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
         },
       },
       {
-        name: "search.contextMenu.copyAnswer",
+        name: t("search.contextMenu.copyAnswer"),
         icon: <Copy />,
         keys: isMac ? ["↩︎"] : ["Enter"],
         shortcut: "enter",
@@ -77,7 +87,7 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
         },
       },
       {
-        name: "search.contextMenu.copyUppercaseAnswer",
+        name: t("search.contextMenu.copyUppercaseAnswer"),
         icon: <Copy />,
         keys: isMac ? ["⌘", "↩︎"] : ["Ctrl", "Enter"],
         shortcut: "meta.enter",
@@ -87,7 +97,7 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
         },
       },
       {
-        name: "search.contextMenu.copyQuestionAndAnswer",
+        name: t("search.contextMenu.copyQuestionAndAnswer"),
         icon: <Copy />,
         keys: isMac ? ["⌘", "L"] : ["Ctrl", "L"],
         shortcut: "meta.l",
@@ -98,7 +108,11 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
       },
     ];
 
-    return menus.filter((item) => !item.hide);
+    const filterMenus = menus.filter((item) => !item.hide);
+
+    setSearchMenus(filterMenus);
+
+    return filterMenus;
   }, [selectedSearchContent]);
 
   const shortcuts = useCreation(() => {
@@ -182,23 +196,25 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
         ref={containerRef}
         id={visibleContextMenu ? CONTEXT_MENU_PANEL_ID : ""}
         className={clsx(
-          "absolute bottom-[40px] right-[8px] min-w-[280px] scale-0 transition origin-bottom-right text-sm p-1 bg-white dark:bg-[#202126] rounded-lg shadow-xs border border-gray-200 dark:border-gray-700",
+          "absolute bottom-[50px] right-[18px] w-[300px] flex flex-col gap-2 scale-0 transition origin-bottom-right text-sm p-3 pb-0 bg-white dark:bg-black rounded-lg shadow-xs border border-[#EDEDED] dark:border-[#272828] shadow-lg dark:shadow-white/15",
           {
             "!scale-100": visibleContextMenu,
           }
         )}
       >
-        <ul className="flex flex-col">
-          {menus.map((item, index) => {
+        <div className="text-[#999] dark:text-[#666] truncate">{title}</div>
+
+        <ul className="flex flex-col -mx-2">
+          {searchMenus.map((item, index) => {
             const { name, icon, keys, clickEvent } = item;
 
             return (
               <li
                 key={name}
                 className={clsx(
-                  "flex justify-between items-center gap-2 px-3 py-2 rounded-lg cursor-pointer",
+                  "flex justify-between items-center gap-2 px-2 py-2 rounded-lg cursor-pointer",
                   {
-                    "bg-black/5 dark:bg-white/5":
+                    "bg-[#EDEDED] dark:bg-[#202126]":
                       index === state.activeMenuIndex,
                   }
                 )}
@@ -210,7 +226,7 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
                 <div className="flex items-center gap-2 text-black/80 dark:text-white/80">
                   {cloneElement(icon, { className: "size-4" })}
 
-                  <span>{t(name)}</span>
+                  <span>{name}</span>
                 </div>
 
                 <div className="flex gap-[4px] text-black/60 dark:text-white/60">
@@ -218,7 +234,7 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
                     <kbd
                       key={key}
                       className={clsx(
-                        "flex justify-center items-center font-sans h-[20px] min-w-[20px] text-[10px] rounded-md border border-black/10 dark:border-white/10",
+                        "flex justify-center items-center font-sans h-[20px] min-w-[20px] text-[10px] rounded-md border border-[#EDEDED] dark:border-white/10 bg-white dark:bg-[#202126]",
                         {
                           "px-1": key.length > 1,
                         }
@@ -232,6 +248,25 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
             );
           })}
         </ul>
+
+        <div className="-mx-3 p-2 border-t border-[#E6E6E6] dark:border-[#262626]">
+          {visibleContextMenu && (
+            <Input
+              autoFocus
+              placeholder={t("search.contextMenu.search")}
+              className="w-full bg-transparent"
+              onChange={(event) => {
+                const value = event.target.value;
+
+                const searchMenus = menus.filter((item) => {
+                  return lowerCase(item.name).includes(lowerCase(value));
+                });
+
+                setSearchMenus(searchMenus);
+              }}
+            />
+          )}
+        </div>
       </div>
     </>
   );

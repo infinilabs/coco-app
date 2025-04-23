@@ -247,7 +247,11 @@
       "copyLink": "复制链接",
       "copyAnswer": "复制答案",
       "copyUppercaseAnswer": "复制答案（大写）",
-      "copyQuestionAndAnswer": "复制问题和答案"
+      "copyQuestionAndAnswer": "复制问题和答案",
+      "title": {
+        "calculator": "计算器"
+      },
+      "search": "搜索操作"
     }
   },
   "assistant": {
