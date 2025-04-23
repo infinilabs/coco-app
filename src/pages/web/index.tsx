@@ -5,7 +5,6 @@ import { useAppStore } from "@/stores/appStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
-import { useFeatureControl } from "@/hooks/useFeatureControl";
 
 import "@/i18n";
 import "@/web.css";
@@ -17,7 +16,7 @@ interface WebAppProps {
   height?: number;
   hasModules?: string[];
   defaultModule?: "search" | "chat";
-  hasFeature?: string[];
+  assistantIDs?: string[];
   hideCoco?: () => void;
   theme?: "auto" | "light" | "dark";
   searchPlaceholder?: string;
@@ -32,7 +31,7 @@ function WebApp({
   height = 590,
   headers = {
     "X-API-TOKEN":
-      "cvvitp6hpceh0ip1q1706byts41c7213k4el22v3bp6f4ta2sar0u29jp4pg08h6xcyxn085x3lq1k7wojof",
+      "cvqt6r02sdb2v3bkgip0x3ixv01f3r2lhnxoz1efbn160wm9og58wtv8t6wrv1ebvnvypuc23dx9pb33aemh",
     "APP-INTEGRATION-ID": "cvkm9hmhpcemufsg3vug",
   },
   // token = "cva1j5ehpcenic3ir7k0h8fb8qtv35iwtywze248oscrej8yoivhb5b1hyovp24xejjk27jy9ddt69ewfi3n",   // https://coco.infini.cloud
@@ -42,7 +41,7 @@ function WebApp({
   hideCoco = () => {},
   hasModules = ["search", "chat"],
   defaultModule = "search",
-  hasFeature = ["think_active", "search_active"],
+  assistantIDs = [],
   theme = "dark",
   searchPlaceholder = "",
   chatPlaceholder = "",
@@ -71,12 +70,6 @@ function WebApp({
 
   const [isChatMode, setIsChatMode] = useState(false);
 
-  const hasFeatureCopy = useFeatureControl({
-    initialFeatures: hasFeature,
-    featureToToggle: "think",
-    condition: (item) => item?._source?.type === "simple",
-  });
-
   return (
     <div
       id="searchChat-container"
@@ -91,7 +84,7 @@ function WebApp({
       {isMobile && (
         <div
           className={`fixed ${
-            isChatMode ? "top-2" : "top-3"
+            isChatMode ? "top-1" : "top-3"
           } right-2 flex items-center justify-center w-8 h-8 rounded-full bg-black/10 dark:bg-white/10 cursor-pointer z-50`}
           onClick={onCancel}
         >
@@ -110,7 +103,6 @@ function WebApp({
         hideCoco={hideCoco}
         hasModules={hasModules}
         defaultModule={defaultModule}
-        hasFeature={hasFeatureCopy}
         theme={theme}
         searchPlaceholder={searchPlaceholder}
         chatPlaceholder={chatPlaceholder}
@@ -118,6 +110,7 @@ function WebApp({
         setIsPinned={setIsPinned}
         onModeChange={setIsChatMode}
         isMobile={isMobile}
+        assistantIDs={assistantIDs}
       />
     </div>
   );

@@ -49,14 +49,16 @@ const SearchListItem: React.FC<SearchListItemProps> = React.memo(
       >
         <div
           className={`${
-            showListRight ? "max-w-[450px] mobile:w-full" : "flex-1"
+            showListRight ? "max-w-[450px] mobile:max-w-full mobile:w-full" : "flex-1"
           } min-w-0 flex gap-2 items-center justify-start `}
         >
           <ItemIcon item={item} />
           <span className={`text-sm truncate text-left`}>{item?.title}</span>
         </div>
         {!isTauri && isMobile ? (
-          <div className="w-full text-xs truncate">{item?.summary}</div>
+          <div className="w-full text-xs text-gray-500 dark:text-gray-400 truncate">
+            {item?.summary}
+          </div>
         ) : null}
         {showListRight && (isTauri || !isMobile) ? (
           <ListRight

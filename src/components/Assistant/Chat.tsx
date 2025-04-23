@@ -35,6 +35,7 @@ interface ChatAIProps {
   isChatPage?: boolean;
   getFileUrl: (path: string) => string;
   showChatHistory?: boolean;
+  assistantIDs?: string[];
 }
 
 export interface ChatAIRef {
@@ -58,6 +59,7 @@ const ChatAI = memo(
         isChatPage = false,
         getFileUrl,
         showChatHistory,
+        assistantIDs,
       },
       ref
     ) => {
@@ -376,6 +378,7 @@ const ChatAI = memo(
             isLogin={isLogin}
             setIsLogin={setIsLogin}
             showChatHistory={showChatHistory}
+            assistantIDs={assistantIDs}
           />
           {isLogin ? (
             <ChatContent
