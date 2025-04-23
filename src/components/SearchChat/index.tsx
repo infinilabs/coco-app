@@ -197,7 +197,7 @@ function SearchChat({
       }
       let ids = currentAssistant?._source?.datasource?.ids;
       if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
-        response = response.filter((item: any) => ids.includes(item.id));
+        response = response?.filter((item: any) => ids.includes(item.id));
       }
       return response || [];
     },
