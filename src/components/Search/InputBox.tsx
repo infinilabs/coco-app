@@ -15,7 +15,7 @@ import SearchPopover from "./SearchPopover";
 // import AudioRecording from "../AudioRecording";
 import { DataSource } from "@/types/commands";
 // import InputExtra from "./InputExtra";
-// import { useConnectStore } from "@/stores/connectStore";
+import { useConnectStore } from "@/stores/connectStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import Copyright from "@/components/Common/Copyright";
 import VisibleKey from "@/components/Common/VisibleKey";
@@ -55,7 +55,6 @@ interface ChatInputProps {
   getFileMetadata: (path: string) => Promise<any>;
   getFileIcon: (path: string, size: number) => Promise<string>;
   hideCoco?: () => void;
-  hasFeature?: string[];
   hasModules?: string[];
   searchPlaceholder?: string;
   chatPlaceholder?: string;
@@ -77,13 +76,14 @@ export default function ChatInput({
   isChatPage = false,
   getDataSourcesByServer,
   setupWindowFocusListener,
-  hasFeature = ["think", "search", "think_active", "search_active"],
   hideCoco,
   hasModules = [],
   searchPlaceholder,
   chatPlaceholder,
 }: ChatInputProps) {
   const { t } = useTranslation();
+
+  const currentAssistant = useConnectStore((state) => state.currentAssistant);
 
   const showTooltip = useAppStore((state) => state.showTooltip);
   const isPinned = useAppStore((state) => state.isPinned);
@@ -437,7 +437,7 @@ export default function ChatInput({
               />
             )} */}
 
-            {hasFeature.includes("think") && (
+            {currentAssistant?._source?.config?.visible && (
               <button
                 className={clsx(
                   "flex items-center gap-1 py-[3px] pl-1 pr-1.5 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
@@ -468,7 +468,7 @@ export default function ChatInput({
               </button>
             )}
 
-            {hasFeature.includes("search") && (
+            {currentAssistant?._source?.datasource?.visible && (
               <SearchPopover
                 isSearchActive={isSearchActive}
                 setIsSearchActive={setIsSearchActive}
@@ -476,7 +476,7 @@ export default function ChatInput({
               />
             )}
 
-            {!hasFeature.includes("search") && !hasFeature.includes("think") ? (
+            {!currentAssistant?._source?.datasource?.visible && !currentAssistant?._source?.config?.visible ? (
               <div className="px-[9px]">
                 <Copyright />
               </div>

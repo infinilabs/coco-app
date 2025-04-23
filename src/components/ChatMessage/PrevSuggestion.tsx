@@ -28,16 +28,12 @@ const PrevSuggestion: FC<PrevSuggestionProps> = (props) => {
     if (!id) return;
 
     const url = `/integration/${id}/chat/_suggest`;
-
-    const [error, res] = await Get(`/integration/${id}/chat/_suggest`);
-
+    const [error, res] = await Get(url);
     if (error) {
       console.error(url, error);
       return setList([]);
     }
-
     console.log("chat/_suggest", res);
-
     setList(Array.isArray(res) ? res : []);
   };
 

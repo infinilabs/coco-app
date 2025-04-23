@@ -32,12 +32,6 @@
 - **默认值**: `['search', 'chat']`
 - **描述**: 启用的功能模块列表，目前支持 'search' 和 'chat' 模块
 
-### `hasFeature`
-- **类型**: `string[]`
-- **可选**: 是
-- **默认值**: `['think', 'search', 'think_active', 'search_active']`
-- **描述**: 启用的特性列表，支持 'think'、'search'、'think_active'、'search_active' 特性。其中 'think_active' 表示默认开启深度思考，'search_active' 表示默认开启搜索
-
 ### `hideCoco`
 - **类型**: `() => void`
 - **可选**: 是
@@ -87,7 +81,6 @@ function App() {
       width={680}
       height={590}
       hasModules={['search', 'chat']}
-      hasFeature={['think', 'search', 'think_active', 'search_active']}
       hideCoco={() => console.log('hide')}
       theme="dark"
       searchPlaceholder=""

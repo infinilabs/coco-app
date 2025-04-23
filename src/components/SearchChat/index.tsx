@@ -24,13 +24,13 @@ import { useStartupStore } from "@/stores/startupStore";
 import { DataSource } from "@/types/commands";
 import { useThemeStore } from "@/stores/themeStore";
 import { Get } from "@/api/axiosRequest";
+import { useConnectStore } from "@/stores/connectStore";
 
 interface SearchChatProps {
   isTauri?: boolean;
   hasModules?: string[];
   defaultModule?: "search" | "chat";
 
-  hasFeature?: string[];
   showChatHistory?: boolean;
 
   theme?: "auto" | "light" | "dark";
@@ -41,13 +41,13 @@ interface SearchChatProps {
   setIsPinned?: (value: boolean) => void;
   onModeChange?: (isChatMode: boolean) => void;
   isMobile?: boolean;
+  assistantIDs?: string[];
 }
 
 function SearchChat({
   isTauri = true,
   hasModules = ["search", "chat"],
   defaultModule = "search",
-  hasFeature = ["think", "search", "think_active", "search_active"],
   theme,
   hideCoco,
   searchPlaceholder,
@@ -56,11 +56,14 @@ function SearchChat({
   setIsPinned,
   onModeChange,
   isMobile = false,
+  assistantIDs,
 }: SearchChatProps) {
+  const currentAssistant = useConnectStore((state) => state.currentAssistant);
+
   const customInitialState = {
     ...initialAppState,
-    isDeepThinkActive: hasFeature.includes("think_active"),
-    isSearchActive: hasFeature.includes("search_active"),
+    isDeepThinkActive: currentAssistant?._source?.type === "deep_think",
+    isSearchActive: currentAssistant?._source?.datasource?.enabled === true,
   };
 
   const [state, dispatch] = useReducer(appReducer, customInitialState);
@@ -172,26 +175,31 @@ function SearchChat({
         query?: string;
       }
     ): Promise<DataSource[]> => {
+      let response: any;
       if (isTauri) {
-        return platformAdapter.invokeBackend("get_datasources_by_server", {
+        response = platformAdapter.invokeBackend("get_datasources_by_server", {
           id: serverId,
           options,
         });
       } else {
-        const [error, response]: any = await Get("/datasource/_search");
+        const [error, res]: any = await Get("/datasource/_search");
         if (error) {
           console.error("_search", error);
           return [];
         }
-        const res = response?.hits?.hits?.map((item: any) => {
+        response = res?.hits?.hits?.map((item: any) => {
           return {
             ...item,
             id: item._source.id,
             name: item._source.name,
           };
         });
-        return res || [];
       }
+      let ids = currentAssistant?._source?.datasource?.ids;
+      if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
+        response = response.filter((item: any) => ids.includes(item.id));
+      }
+      return response || [];
     },
     []
   );
@@ -300,7 +308,6 @@ function SearchChat({
           setIsSearchActive={toggleSearchActive}
           isDeepThinkActive={isDeepThinkActive}
           setIsDeepThinkActive={toggleDeepThinkActive}
-          hasFeature={hasFeature}
           getDataSourcesByServer={getDataSourcesByServer}
           setupWindowFocusListener={setupWindowFocusListener}
           checkScreenPermission={checkScreenPermission}
@@ -356,6 +363,7 @@ function SearchChat({
             isDeepThinkActive={isDeepThinkActive}
             getFileUrl={getFileUrl}
             showChatHistory={showChatHistory}
+            assistantIDs={assistantIDs}
           />
         </Suspense>
       </div>

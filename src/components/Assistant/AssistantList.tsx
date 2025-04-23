@@ -12,12 +12,13 @@ import FontIcon from "@/components/Common/Icons/FontIcon";
 import { useChatStore } from "@/stores/chatStore";
 import { AI_ASSISTANT_PANEL_ID } from "@/constants";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
+import { Get } from "@/api/axiosRequest";
 
 interface AssistantListProps {
-  showChatHistory?: boolean;
+  assistantIDs?: string[];
 }
 
-export function AssistantList({ showChatHistory = true }: AssistantListProps) {
+export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
   const { t } = useTranslation();
   const { connected } = useChatStore();
   const isTauri = useAppStore((state) => state.isTauri);
@@ -35,34 +36,49 @@ export function AssistantList({ showChatHistory = true }: AssistantListProps) {
   useClickAway(menuRef, () => setIsOpen(false));
   const [assistants, setAssistants] = useState<any[]>([]);
 
-  const fetchAssistant = useCallback(async (serverId: string) => {
-    if (!isTauri) return;
-    if (!serverId) return;
-    platformAdapter
-      .commands("assistant_search", {
-        serverId,
-      })
-      .then((res: any) => {
-        res = res ? JSON.parse(res) : null;
-        console.log("assistant_search", res);
-        const assistantList = res?.hits?.hits || [];
-        setAssistants(assistantList);
-        if (assistantList.length > 0) {
-          const assistant = assistantList.find(
-            (item: any) => item._id === currentAssistant?._id
-          );
-          if (assistant) {
-            setCurrentAssistant(assistant);
-          } else {
-            setCurrentAssistant(assistantList[0]);
-          }
-        }
-      })
-      .catch((err: any) => {
+  const fetchAssistant = useCallback(async (serverId?: string) => {
+    let response: any;
+    if (isTauri) {
+      if (!serverId) return;
+      try {
+        response = await platformAdapter.commands("assistant_search", {
+          serverId,
+        });
+        response = response ? JSON.parse(response) : null;
+      } catch (err) {
         setAssistants([]);
         setCurrentAssistant(null);
-        console.log("assistant_search", err);
-      });
+        console.error("assistant_search", err);
+      }
+    } else {
+      const [error, res] = await Get(`/assistant/_search`);
+      if (error) {
+        setAssistants([]);
+        setCurrentAssistant(null);
+        console.error("assistant_search", error);
+        return;
+      }
+      console.log("/assistant/_search", res);
+      response = res;
+    }
+    console.log("assistant_search", response);
+    let assistantList = response?.hits?.hits || [];
+
+    assistantList = assistantIDs.length > 0
+      ? assistantList.filter((item: any) => assistantIDs.includes(item._id))
+      : assistantList;
+
+    setAssistants(assistantList);
+    if (assistantList.length > 0) {
+      const assistant = assistantList.find(
+        (item: any) => item._id === currentAssistant?._id
+      );
+      if (assistant) {
+        setCurrentAssistant(assistant);
+      } else {
+        setCurrentAssistant(assistantList[0]);
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -98,24 +114,22 @@ export function AssistantList({ showChatHistory = true }: AssistantListProps) {
         <div className="max-w-[100px] truncate">
           {currentAssistant?._source?.name || "Coco AI"}
         </div>
-        {showChatHistory && isTauri && (
-          <VisibleKey
-            aria-controls={isOpen ? AI_ASSISTANT_PANEL_ID : ""}
-            shortcut={aiAssistant}
-            onKeyPress={() => {
-              setIsOpen(!isOpen);
-            }}
-          >
-            <ChevronDownIcon
-              className={`size-4 text-gray-500 dark:text-gray-400 transition-transform ${
-                isOpen ? "rotate-180" : ""
-              }`}
-            />
-          </VisibleKey>
-        )}
+        <VisibleKey
+          aria-controls={isOpen ? AI_ASSISTANT_PANEL_ID : ""}
+          shortcut={aiAssistant}
+          onKeyPress={() => {
+            setIsOpen(!isOpen);
+          }}
+        >
+          <ChevronDownIcon
+            className={`size-4 text-gray-500 dark:text-gray-400 transition-transform ${
+              isOpen ? "rotate-180" : ""
+            }`}
+          />
+        </VisibleKey>
       </button>
 
-      {showChatHistory && isTauri && isOpen && (
+      {isOpen && (
         <div
           id={isOpen ? AI_ASSISTANT_PANEL_ID : ""}
           className="absolute z-50 top-full mt-1 left-0 w-64 rounded-xl bg-white dark:bg-[#202126] p-2 text-sm/6 text-gray-800 dark:text-white shadow-lg border border-gray-200 dark:border-gray-700 focus:outline-none max-h-[calc(100vh-80px)] overflow-y-auto"
