@@ -42,7 +42,7 @@ const SearchListItem: React.FC<SearchListItemProps> = React.memo(
         className={clsx(
           "w-full px-2 py-2.5 text-sm flex mb-0 flex-row items-center mobile:mb-2 mobile:flex-col mobile:items-start justify-between rounded-lg transition-colors cursor-pointer text-[#333] dark:text-[#d8d8d8] mobile:bg-gray-200/80 mobile:dark:bg-gray-700/50",
           {
-            "bg-[#EDEDED] dark:bg-[#202126]": isSelected,
+            "bg-black/10 dark:bg-white/15": isSelected,
             "gap-7 mobile:gap-1": showListRight,
           }
         )}

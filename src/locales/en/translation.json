@@ -245,7 +245,11 @@
       "copyLink": "Copy Link",
       "copyAnswer": "Copy Answer",
       "copyUppercaseAnswer": "Copy Answer (in Word)",
-      "copyQuestionAndAnswer": "Copy Question and Answer"
+      "copyQuestionAndAnswer": "Copy Question and Answer",
+      "title": {
+        "calculator": "Calculator"
+      },
+      "search": "Search Operation"
     }
   },
   "assistant": {
