@@ -197,8 +197,12 @@ const ChatAI = memo(
         async (value: string) => {
           try {
             console.log("init", isLogin, curChatEnd, activeChat?._id);
-            if (!isLogin || !curChatEnd) {
+            if (!isLogin) {
               addError("Please login to continue chatting");
+              return;
+            }
+            if (!curChatEnd) {
+              addError("Please wait for the current conversation to complete");
               return;
             }
             setShowPrevSuggestion(false);
