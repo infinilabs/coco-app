@@ -72,7 +72,9 @@ export function ServerList({
   );
 
   useEffect(() => {
-    isTauri && fetchServers(true);
+    if (!isTauri) return;
+    
+    fetchServers(true);
 
     const unlisten = platformAdapter.listenEvent("login_or_logout", (event) => {
       console.log("Login or Logout:", currentService, event.payload);

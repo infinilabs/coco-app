@@ -70,9 +70,11 @@ export const Get = <T>(
 ): Promise<[any, FcResponse<T> | undefined]> =>
   new Promise((resolve) => {
     const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
-    // console.log("baseURL", appStore.state?.endpoint_http)
 
-    const baseURL = appStore.state?.endpoint_https;
+    let baseURL = appStore.state?.endpoint_http;
+    if (!baseURL || baseURL === "undefined") {
+      baseURL = "";
+    }
 
     axios
       .get(baseURL + url, { params })
@@ -99,9 +101,12 @@ export const Post = <T>(
 ): Promise<[any, FcResponse<T> | undefined]> => {
   return new Promise((resolve) => {
     const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
-    // console.log("baseURL", appStore.state?.endpoint_http)
 
-    const baseURL = appStore.state?.endpoint_https;
+
+    let baseURL = appStore.state?.endpoint_http
+    if (!baseURL || baseURL === "undefined") {
+      baseURL = "";
+    }
 
     axios
       .post(baseURL + url, data, {
