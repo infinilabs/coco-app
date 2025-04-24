@@ -255,6 +255,10 @@
     }
   },
   "assistant": {
+    "popover": {
+      "title": "AI 助手",
+      "search": "搜索"
+    },
     "chat": {
       "openChat": "打开聊天窗口",
       "newChat": "新建对话",
