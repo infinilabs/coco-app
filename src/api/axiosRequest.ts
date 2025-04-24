@@ -75,7 +75,7 @@ export const Get = <T>(
     let baseURL = appStore.state?.endpoint_http;
 
     axios
-      .get(url, { params })
+      .get(baseURL + url, { params })
       .then((result) => {
         let res: FcResponse<T>;
         if (clearFn !== undefined) {
@@ -104,7 +104,7 @@ export const Post = <T>(
     let baseURL = appStore.state?.endpoint_http;
 
     axios
-      .post(url, data, {
+      .post(baseURL + url, data, {
         params,
         headers,
       } as any)
