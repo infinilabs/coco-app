@@ -4,6 +4,7 @@ import type { IChunkData } from "@/components/Assistant/types";
 
 export default function useMessageChunkData() {
   const [query_intent, setQuery_intent] = useState<IChunkData>();
+  const [tools, setTools] = useState<IChunkData>();
   const [fetch_source, setFetch_source] = useState<IChunkData>();
   const [pick_source, setPick_source] = useState<IChunkData>();
   const [deep_read, setDeep_read] = useState<IChunkData>();
@@ -13,6 +14,15 @@ export default function useMessageChunkData() {
   const handlers = {
     deal_query_intent: useCallback((data: IChunkData) => {
       setQuery_intent((prev: IChunkData | undefined): IChunkData => {
+        if (!prev) return data;
+        return {
+          ...prev,
+          message_chunk: prev.message_chunk + data.message_chunk,
+        };
+      });
+    }, []),
+    deal_tools: useCallback((data: IChunkData) => {
+      setTools((prev: IChunkData | undefined): IChunkData => {
         if (!prev) return data;
         return {
           ...prev,
@@ -69,6 +79,7 @@ export default function useMessageChunkData() {
 
   const clearAllChunkData = useCallback(() => {
     setQuery_intent(undefined);
+    setTools(undefined);
     setFetch_source(undefined);
     setPick_source(undefined);
     setDeep_read(undefined);
@@ -77,7 +88,7 @@ export default function useMessageChunkData() {
   }, []);
 
   return {
-    data: { query_intent, fetch_source, pick_source, deep_read, think, response },
+    data: { query_intent, tools, fetch_source, pick_source, deep_read, think, response },
     handlers,
     clearAllChunkData,
   };

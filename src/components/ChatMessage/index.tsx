@@ -1,9 +1,11 @@
 import { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import clsx from "clsx";
 
 import logoImg from "@/assets/icon.svg";
 import type { Message, IChunkData } from "@/components/Assistant/types";
 import { QueryIntent } from "./QueryIntent";
+import { CallTools } from "./CallTools";
 import { FetchSource } from "./FetchSource";
 import { PickSource } from "./PickSource";
 import { DeepRead } from "./DeepRead";
@@ -14,12 +16,12 @@ import { SuggestionList } from "./SuggestionList";
 import { UserMessage } from "./UserMessage";
 import { useConnectStore } from "@/stores/connectStore";
 import FontIcon from "@/components/Common/Icons/FontIcon";
-import clsx from "clsx";
 
 interface ChatMessageProps {
   message: Message;
   isTyping?: boolean;
   query_intent?: IChunkData;
+  tools?: IChunkData;
   fetch_source?: IChunkData;
   pick_source?: IChunkData;
   deep_read?: IChunkData;
@@ -33,6 +35,7 @@ export const ChatMessage = memo(function ChatMessage({
   message,
   isTyping,
   query_intent,
+  tools,
   fetch_source,
   pick_source,
   deep_read,
@@ -72,6 +75,12 @@ export const ChatMessage = memo(function ChatMessage({
           ChunkData={query_intent}
           getSuggestion={getSuggestion}
           loading={loadingStep?.query_intent}
+        />
+
+        <CallTools
+          Detail={details.find((item) => item.type === "tools")}
+          ChunkData={tools}
+          loading={loadingStep?.tools}
         />
         
         <FetchSource

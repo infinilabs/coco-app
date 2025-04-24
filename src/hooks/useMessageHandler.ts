@@ -15,6 +15,7 @@ export function useMessageHandler(
   ) => void,
   handlers: {
     deal_query_intent: (data: IChunkData) => void;
+    deal_tools: (data: IChunkData) => void;
     deal_fetch_source: (data: IChunkData) => void;
     deal_pick_source: (data: IChunkData) => void;
     deal_deep_read: (data: IChunkData) => void;
@@ -47,6 +48,7 @@ export function useMessageHandler(
 
         setLoadingStep(() => ({
           query_intent: false,
+          tools: false,
           fetch_source: false,
           pick_source: false,
           deep_read: false,
@@ -57,6 +59,8 @@ export function useMessageHandler(
 
         if (chunkData.chunk_type === "query_intent") {
           handlers.deal_query_intent(chunkData);
+        } else if (chunkData.chunk_type === "tools") {
+          handlers.deal_tools(chunkData);
         } else if (chunkData.chunk_type === "fetch_source") {
           handlers.deal_fetch_source(chunkData);
         } else if (chunkData.chunk_type === "pick_source") {

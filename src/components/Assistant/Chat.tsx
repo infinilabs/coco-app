@@ -107,6 +107,7 @@ const ChatAI = memo(
       const {
         data: {
           query_intent,
+          tools,
           fetch_source,
           pick_source,
           deep_read,
@@ -119,6 +120,7 @@ const ChatAI = memo(
 
       const [loadingStep, setLoadingStep] = useState<Record<string, boolean>>({
         query_intent: false,
+        tools: false,
         fetch_source: false,
         pick_source: false,
         deep_read: false,
@@ -388,6 +390,7 @@ const ChatAI = memo(
               activeChat={activeChat}
               curChatEnd={curChatEnd}
               query_intent={query_intent}
+              tools={tools}
               fetch_source={fetch_source}
               pick_source={pick_source}
               deep_read={deep_read}

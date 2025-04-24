@@ -16,6 +16,7 @@ interface ChatContentProps {
   activeChat?: Chat;
   curChatEnd: boolean;
   query_intent?: IChunkData;
+  tools?: IChunkData;
   fetch_source?: IChunkData;
   pick_source?: IChunkData;
   deep_read?: IChunkData;
@@ -32,6 +33,7 @@ export const ChatContent = ({
   activeChat,
   curChatEnd,
   query_intent,
+  tools,
   fetch_source,
   pick_source,
   deep_read,
@@ -94,6 +96,7 @@ export const ChatContent = ({
         ))}
         {(!curChatEnd ||
           query_intent ||
+          tools ||
           fetch_source ||
           pick_source ||
           deep_read ||
@@ -113,6 +116,7 @@ export const ChatContent = ({
             onResend={handleSendMessage}
             isTyping={!curChatEnd}
             query_intent={query_intent}
+            tools={tools}
             fetch_source={fetch_source}
             pick_source={pick_source}
             deep_read={deep_read}

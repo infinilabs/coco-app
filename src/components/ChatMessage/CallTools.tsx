@@ -1,9 +1,8 @@
-import { ChevronDown, ChevronUp, Loader } from "lucide-react";
+import {Loader, Hammer, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { IChunkData } from "@/components/Assistant/types";
-import ReadingIcon from "@/icons/Reading";
 
 interface CallToolsProps {
   Detail?: any;
@@ -11,36 +10,21 @@ interface CallToolsProps {
   loading?: boolean;
 }
 
-export const CallTools = ({
-  Detail,
-  ChunkData,
-  loading,
-}: CallToolsProps) => {
+export const CallTools = ({ Detail, ChunkData, loading }: CallToolsProps) => {
   const { t } = useTranslation();
+  const [isThinkingExpanded, setIsThinkingExpanded] = useState(true);
 
-  const [isThinkingExpanded, setIsThinkingExpanded] = useState(false);
-
-  const [Data, setData] = useState<string[]>([]);
-  const [description, setDescription] = useState("");
+  const [Data, setData] = useState("");
 
   useEffect(() => {
     if (!Detail?.description) return;
-    setDescription(Detail?.description);
+    setData(Detail?.description);
   }, [Detail?.description]);
 
   useEffect(() => {
     if (!ChunkData?.message_chunk) return;
-    try {
-      if (ChunkData.message_chunk.includes("&")) {
-        const contentArray = ChunkData.message_chunk.split("&").filter(Boolean);
-        setData(contentArray);
-      } else {
-        setData([ChunkData.message_chunk]);
-      }
-    } catch (e) {
-      console.error("Failed to parse query data:", e);
-    }
-  }, [ChunkData?.message_chunk]);
+    setData(ChunkData?.message_chunk);
+  }, [ChunkData?.message_chunk, Data]);
 
   // Must be after hooks !!!
   if (!ChunkData && !Detail) return null;
@@ -55,25 +39,14 @@ export const CallTools = ({
           <>
             <Loader className="w-4 h-4 animate-spin text-[#1990FF]" />
             <span className="text-xs text-[#999999] italic">
-              {t(
-                `assistant.message.steps.${
-                  ChunkData?.chunk_type || Detail?.type
-                }`
-              )}
+              {t(`assistant.message.steps.${ChunkData?.chunk_type}`)}
             </span>
           </>
         ) : (
           <>
-            <ReadingIcon className="w-4 h-4 text-[#38C200]" />
+            <Hammer className="w-4 h-4 text-[#38C200]" />
             <span className="text-xs text-[#999999]">
-              {t(
-                `assistant.message.steps.${
-                  ChunkData?.chunk_type || Detail?.type
-                }`,
-                {
-                  count: Number(Data.length),
-                }
-              )}
+              {t("assistant.message.steps.thoughtTime")}
             </span>
           </>
         )}
@@ -86,23 +59,14 @@ export const CallTools = ({
       {isThinkingExpanded && (
         <div className="pl-2 border-l-2 border-[#e5e5e5] dark:border-[#4e4e56]">
           <div className="text-[#8b8b8b] dark:text-[#a6a6a6] space-y-2">
-            <div className="mb-4 space-y-3 text-xs">
-              {Data?.map((item) => (
-                <div key={item} className="flex flex-col gap-2">
-                  <div className="text-xs text-[#999999] dark:text-[#808080]">
-                    - {item}
-                  </div>
-                </div>
-              ))}
-              {description?.split("\n").map(
-                (paragraph, idx) =>
-                  paragraph.trim() && (
-                    <p key={idx} className="text-sm">
-                      {paragraph}
-                    </p>
-                  )
-              )}
-            </div>
+            {Data?.split("\n").map(
+              (paragraph, idx) =>
+                paragraph.trim() && (
+                  <p key={idx} className="text-sm">
+                    {paragraph}
+                  </p>
+                )
+            )}
           </div>
         </div>
       )}
