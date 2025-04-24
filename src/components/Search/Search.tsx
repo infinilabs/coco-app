@@ -72,7 +72,7 @@ function Search({
           setIsError(!!failedResult.failed?.length);
         }
       } else {
-        const [error, res]: any = await Get(
+        let [error, res]: any = await Get(
           `/query/_search?query=${searchInput}`
         );
 

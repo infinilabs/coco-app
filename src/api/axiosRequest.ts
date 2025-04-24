@@ -104,7 +104,7 @@ export const Post = <T>(
     let baseURL = appStore.state?.endpoint_http;
 
     axios
-      .post(baseURL + url, data, {
+      .post(url, data, {
         params,
         headers,
       } as any)
