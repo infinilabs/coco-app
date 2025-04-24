@@ -67,24 +67,32 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
         size,
       };
 
-      if (debounceKeyword) {
+      if (debounceKeyword || assistantIDs.length > 0) {
         body.query = {
           bool: {
-            must: [
-              {
-                query_string: {
-                  fields: ["combined_fulltext"],
-                  query: debounceKeyword,
-                  fuzziness: "AUTO",
-                  fuzzy_prefix_length: 2,
-                  fuzzy_max_expansions: 10,
-                  fuzzy_transpositions: true,
-                  allow_leading_wildcard: false,
-                },
-              },
-            ],
+            must: [],
           },
         };
+        if (debounceKeyword) {
+          body.query.bool.must.push({
+            query_string: {
+              fields: ["combined_fulltext"],
+              query: debounceKeyword,
+              fuzziness: "AUTO",
+              fuzzy_prefix_length: 2,
+              fuzzy_max_expansions: 10,
+              fuzzy_transpositions: true,
+              allow_leading_wildcard: false,
+            },
+          });
+        }
+        if (assistantIDs.length > 0) {
+          body.query.bool.must.push({
+            terms: {
+              id: assistantIDs.map((id) => id),
+            },
+          });
+        }
       }
 
       if (isTauri) {
@@ -106,12 +114,6 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
       console.log("assistant_search", response);
 
       let assistantList = response?.hits?.hits ?? [];
-
-      if (assistantIDs.length > 0) {
-        assistantList = assistantList.filter((item: any) => {
-          return assistantIDs.includes(item._id);
-        });
-      }
 
       if (assistantList.length > 0) {
         const matched = assistantList.find((item: any) => {

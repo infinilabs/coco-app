@@ -72,11 +72,7 @@ export const Get = <T>(
     const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
     // console.log("baseURL", appStore.state?.endpoint_http)
 
-    let baseURL = "";
-
-    if (import.meta.env.PROD) {
-      baseURL = appStore.state?.endpoint_https;
-    }
+    const baseURL = appStore.state?.endpoint_https;
 
     axios
       .get(baseURL + url, { params })
@@ -105,11 +101,7 @@ export const Post = <T>(
     const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
     // console.log("baseURL", appStore.state?.endpoint_http)
 
-    let baseURL = "";
-
-    if (import.meta.env.PROD) {
-      baseURL = appStore.state?.endpoint_https;
-    }
+    const baseURL = appStore.state?.endpoint_https;
 
     axios
       .post(baseURL + url, data, {
