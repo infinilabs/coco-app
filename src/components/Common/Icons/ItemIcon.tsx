@@ -26,8 +26,6 @@ const ItemIcon = React.memo(function ItemIcon({
   const icons = connectorSource?.assets?.icons || {};
   const [isAbsolute, setIsAbsolute] = useState<boolean>();
 
-  console.log("item", item);
-
   useAsyncEffect(async () => {
     if (isEmpty(item)) return;
 
@@ -35,8 +33,6 @@ const ItemIcon = React.memo(function ItemIcon({
       const { isAbsolute } = await platformAdapter.metadata(item.icon, {
         omitSize: true,
       });
-      console.log("isAbsolute", Boolean(isAbsolute)); // true or false
-
       setIsAbsolute(Boolean(isAbsolute));
     } catch (error) {
       setIsAbsolute(false);
