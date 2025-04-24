@@ -6,12 +6,13 @@ import platformAdapter from "@/utils/platformAdapter";
 export function useWindowEvents() {
   const isPinned = useAppStore((state) => state.isPinned);
   const visible = useAppStore((state) => state.visible);
+  const setBlurred = useAppStore((state) => state.setBlurred);
 
   useEffect(() => {
     const handleBlur = async () => {
       console.log("Window blurred");
       if (isPinned || visible) {
-        return;
+        return setBlurred(true);
       }
 
       await platformAdapter.hideWindow();

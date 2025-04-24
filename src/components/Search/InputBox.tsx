@@ -133,9 +133,11 @@ export default function ChatInput({
   const setVisibleStartPage = useConnectStore((state) => {
     return state.setVisibleStartPage;
   });
+  const setBlurred = useAppStore((state) => state.setBlurred);
 
   useEffect(() => {
     const handleFocus = () => {
+      setBlurred(false);
       setIsCommandPressed(false);
       setModifierKeyPressed(false);
     };
