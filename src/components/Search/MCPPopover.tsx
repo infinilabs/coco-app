@@ -4,7 +4,7 @@ import {
   ChevronDownIcon,
   RefreshCw,
   Layers,
-  Globe,
+  Hammer,
   ChevronRight,
   ChevronLeft,
 } from "lucide-react";
@@ -23,9 +23,9 @@ import { useChatStore } from "@/stores/chatStore";
 import NoDataImage from "@/components/Common/NoDataImage";
 
 interface SearchPopoverProps {
-  isSearchActive: boolean;
-  setIsSearchActive: () => void;
-  getDataSourcesByServer: (
+  isMCPActive: boolean;
+  setIsMCPActive: () => void;
+  getMCPByServer: (
     serverId: string,
     options?: {
       from?: number;
@@ -36,18 +36,18 @@ interface SearchPopoverProps {
 }
 
 export default function SearchPopover({
-  isSearchActive,
-  setIsSearchActive,
-  getDataSourcesByServer,
+  isMCPActive,
+  setIsMCPActive,
+  getMCPByServer,
 }: SearchPopoverProps) {
   const { t } = useTranslation();
   const { connected } = useChatStore();
 
   const [isRefreshDataSource, setIsRefreshDataSource] = useState(false);
-  const [dataSourceList, setDataSourceList] = useState<DataSource[]>([]);
+  const [dataList, setDataList] = useState<DataSource[]>([]);
 
-  const sourceDataIds = useSearchStore((state) => state.sourceDataIds);
-  const setSourceDataIds = useSearchStore((state) => state.setSourceDataIds);
+  const MCPIds = useSearchStore((state) => state.MCPIds);
+  const setMCPIds = useSearchStore((state) => state.setMCPIds);
 
   const currentService = useConnectStore((state) => state.currentService);
 
@@ -58,17 +58,14 @@ export default function SearchPopover({
     try {
       setPage(1);
 
-      const res: DataSource[] = await getDataSourcesByServer(
-        currentService?.id,
-        {
-          query: debouncedKeyword,
-        }
-      );
+      const res: DataSource[] = await getMCPByServer(currentService?.id, {
+        query: debouncedKeyword,
+      });
 
-      console.log("getDataSourcesByServer", res);
+      console.log("getMCPByServer", res);
 
       if (res?.length === 0) {
-        setDataSourceList([]);
+        setDataList([]);
         return;
       }
       const data = res?.length
@@ -81,9 +78,9 @@ export default function SearchPopover({
           ]
         : [];
 
-      setDataSourceList(data);
+      setDataList(data);
     } catch (err) {
-      setDataSourceList([]);
+      setDataList([]);
       console.error("datasource_search", err);
     }
   }, [currentService?.id, debouncedKeyword]);
@@ -99,21 +96,21 @@ export default function SearchPopover({
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (dataSourceList.length > 0) {
-      setSourceDataIds(dataSourceList.slice(1).map((item) => item.id));
+    if (dataList.length > 0) {
+      setMCPIds(dataList.slice(1).map((item) => item.id));
     }
-  }, [dataSourceList]);
+  }, [dataList]);
 
   useEffect(() => {
     connected && getDataSourceList();
   }, [connected, currentService?.id, debouncedKeyword]);
 
   useEffect(() => {
-    setTotalPage(Math.max(Math.ceil(dataSourceList.length / 10), 1));
-  }, [dataSourceList]);
+    setTotalPage(Math.max(Math.ceil(dataList.length / 10), 1));
+  }, [dataList]);
 
   useEffect(() => {
-    if (dataSourceList.length === 0) {
+    if (dataList.length === 0) {
       return setVisibleList([]);
     }
 
@@ -121,16 +118,16 @@ export default function SearchPopover({
     const endIndex = startIndex + 9;
 
     const list = [
-      dataSourceList[0],
-      ...dataSourceList.slice(1).slice(startIndex, endIndex),
+      dataList[0],
+      ...dataList.slice(1).slice(startIndex, endIndex),
     ];
 
     setVisibleList(list);
-  }, [dataSourceList, page]);
+  }, [dataList, page]);
 
   const onSelectDataSource = useCallback(
     (id: string, checked: boolean, isAll: boolean) => {
-      let nextSourceDataIds = new Set(sourceDataIds);
+      let nextSourceDataIds = new Set(MCPIds);
 
       const ids = isAll ? visibleList.slice(1).map((item) => item.id) : [id];
 
@@ -142,9 +139,9 @@ export default function SearchPopover({
         }
       }
 
-      setSourceDataIds(Array.from(nextSourceDataIds));
+      setMCPIds(Array.from(nextSourceDataIds));
     },
-    [visibleList, sourceDataIds]
+    [visibleList, MCPIds]
   );
 
   const handleRefresh = async () => {
@@ -174,29 +171,27 @@ export default function SearchPopover({
       className={clsx(
         "flex items-center gap-1 p-[3px] pr-1 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126] cursor-pointer",
         {
-          "!bg-[rgba(0,114,255,0.3)]": isSearchActive,
+          "!bg-[rgba(0,114,255,0.3)]": isMCPActive,
         }
       )}
-      onClick={setIsSearchActive}
+      onClick={setIsMCPActive}
     >
-      <VisibleKey shortcut={internetSearch} onKeyPress={setIsSearchActive}>
-        <Globe
+      <VisibleKey shortcut={internetSearch} onKeyPress={setIsMCPActive}>
+        <Hammer
           className={`size-3 ${
-            isSearchActive
+            isMCPActive
               ? "text-[#0072FF] dark:text-[#0072FF]"
               : "text-[#333] dark:text-white"
           }`}
         />
       </VisibleKey>
 
-      {isSearchActive && (
+      {isMCPActive && (
         <>
           <span
-            className={`${
-              isSearchActive ? "text-[#0072FF]" : "dark:text-white"
-            }`}
+            className={`${isMCPActive ? "text-[#0072FF]" : "dark:text-white"}`}
           >
-            {t("search.input.search")}
+            {t("search.input.MCP")}
           </span>
 
           <Popover className="relative">
@@ -209,7 +204,7 @@ export default function SearchPopover({
               >
                 <ChevronDownIcon
                   className={clsx("size-3", [
-                    isSearchActive
+                    isMCPActive
                       ? "text-[#0072FF] dark:text-[#0072FF]"
                       : "text-[#333] dark:text-white",
                   ])}
@@ -273,10 +268,10 @@ export default function SearchPopover({
                         const isChecked = () => {
                           if (isAll) {
                             return visibleList.slice(1).every((item) => {
-                              return sourceDataIds.includes(item.id);
+                              return MCPIds.includes(item.id);
                             });
                           } else {
-                            return sourceDataIds.includes(id);
+                            return MCPIds.includes(id);
                           }
                         };
 

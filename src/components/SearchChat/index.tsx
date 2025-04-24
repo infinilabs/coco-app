@@ -64,6 +64,7 @@ function SearchChat({
     ...initialAppState,
     isDeepThinkActive: currentAssistant?._source?.type === "deep_think",
     isSearchActive: currentAssistant?._source?.datasource?.enabled === true,
+    isMCPActive: currentAssistant?._source?.mcp_servers?.enabled === true,
   };
 
   const [state, dispatch] = useReducer(appReducer, customInitialState);
@@ -73,6 +74,7 @@ function SearchChat({
     isTransitioned,
     isSearchActive,
     isDeepThinkActive,
+    isMCPActive,
     isTyping,
   } = state;
   const [isWin10, setIsWin10] = useState(false);
@@ -149,6 +151,10 @@ function SearchChat({
     dispatch({ type: "TOGGLE_DEEP_THINK_ACTIVE" });
   }, []);
 
+  const toggleMCPActive = useCallback(() => {
+    dispatch({ type: "TOGGLE_MCP_ACTIVE" });
+  }, []);
+
   const LoadingFallback = () => (
     <div className="flex items-center justify-center h-full">loading...</div>
   );
@@ -177,7 +183,7 @@ function SearchChat({
     ): Promise<DataSource[]> => {
       let response: any;
       if (isTauri) {
-        response = platformAdapter.invokeBackend("get_datasources_by_server", {
+        response = platformAdapter.invokeBackend("datasource_search", {
           id: serverId,
           options,
         });
@@ -201,7 +207,45 @@ function SearchChat({
       }
       return response || [];
     },
-    []
+    [JSON.stringify(currentAssistant)]
+  );
+
+  const getMCPByServer = useCallback(
+    async (
+      serverId: string,
+      options?: {
+        from?: number;
+        size?: number;
+        query?: string;
+      }
+    ): Promise<DataSource[]> => {
+      let response: any;
+      if (isTauri) {
+        response = platformAdapter.invokeBackend("mcp_server_search", {
+          id: serverId,
+          options,
+        });
+      } else {
+        const [error, res]: any = await Get("/mcp_server/_search");
+        if (error) {
+          console.error("_search", error);
+          return [];
+        }
+        response = res?.hits?.hits?.map((item: any) => {
+          return {
+            ...item,
+            id: item._source.id,
+            name: item._source.name,
+          };
+        });
+      }
+      let ids = currentAssistant?._source?.datasource?.ids;
+      if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
+        response = response?.filter((item: any) => ids.includes(item.id));
+      }
+      return response || [];
+    },
+    [JSON.stringify(currentAssistant)]
   );
 
   const setupWindowFocusListener = useCallback(async (callback: () => void) => {
@@ -308,7 +352,10 @@ function SearchChat({
           setIsSearchActive={toggleSearchActive}
           isDeepThinkActive={isDeepThinkActive}
           setIsDeepThinkActive={toggleDeepThinkActive}
+          isMCPActive={isMCPActive}
+          setIsMCPActive={toggleMCPActive}
           getDataSourcesByServer={getDataSourcesByServer}
+          getMCPByServer={getMCPByServer}
           setupWindowFocusListener={setupWindowFocusListener}
           checkScreenPermission={checkScreenPermission}
           requestScreenPermission={requestScreenPermission}
@@ -361,6 +408,7 @@ function SearchChat({
             changeInput={setInput}
             isSearchActive={isSearchActive}
             isDeepThinkActive={isDeepThinkActive}
+            isMCPActive={isMCPActive}
             getFileUrl={getFileUrl}
             showChatHistory={showChatHistory}
             assistantIDs={assistantIDs}

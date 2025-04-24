@@ -2,7 +2,7 @@ use crate::common::http::get_response_body_text;
 use crate::common::register::SearchSourceRegistry;
 use crate::common::server::{AuthProvider, Provider, Server, ServerAccessToken, Sso, Version};
 use crate::server::connector::fetch_connectors_by_server;
-use crate::server::datasource::get_datasources_by_server;
+use crate::server::datasource::datasource_search;
 use crate::server::http_client::HttpClient;
 use crate::server::search::CocoSearchSource;
 use crate::COCO_TAURI_STORE;
@@ -347,7 +347,7 @@ pub async fn refresh_coco_server_info<R: Runtime>(
 
     // Refresh connectors and datasources (best effort)
     let _ = fetch_connectors_by_server(&id).await;
-    let _ = get_datasources_by_server(&id, None).await;
+    let _ = datasource_search(&id, None).await;
 
     Ok(updated_server)
 }

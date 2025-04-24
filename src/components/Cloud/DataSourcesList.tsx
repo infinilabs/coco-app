@@ -6,7 +6,7 @@ import { DataSourceItem } from "./DataSourceItem";
 import { useConnectStore } from "@/stores/connectStore";
 import {
   get_connectors_by_server,
-  get_datasources_by_server,
+  datasource_search,
 } from "@/commands";
 
 export function DataSourcesList({ server }: { server: string }) {
@@ -27,9 +27,9 @@ export function DataSourcesList({ server }: { server: string }) {
       .finally(() => {});
 
     //fetch datasource data
-    get_datasources_by_server(server)
+    datasource_search(server)
       .then((res: any) => {
-        // console.log("get_datasources_by_server", res);
+        // console.log("datasource_search", res);
         setDatasourceData(res, server);
       })
       .finally(() => {});

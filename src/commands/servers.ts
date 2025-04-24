@@ -103,8 +103,12 @@ export function get_connectors_by_server(id: string): Promise<Connector[]> {
   return invokeWithErrorHandler(`get_connectors_by_server`, { id });
 }
 
-export function get_datasources_by_server(id: string): Promise<DataSource[]> {
-  return invokeWithErrorHandler(`get_datasources_by_server`, { id });
+export function datasource_search(id: string): Promise<DataSource[]> {
+  return invokeWithErrorHandler(`datasource_search`, { id });
+}
+
+export function mcp_server_search(id: string): Promise<DataSource[]> {
+  return invokeWithErrorHandler(`mcp_server_search`, { id });
 }
 
 export function connect_to_server(id: string, clientId: string): Promise<void> {

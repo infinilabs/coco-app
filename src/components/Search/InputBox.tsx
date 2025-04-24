@@ -12,6 +12,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import SearchPopover from "./SearchPopover";
+import MCPPopover from "./MCPPopover";
 // import AudioRecording from "../AudioRecording";
 import { DataSource } from "@/types/commands";
 // import InputExtra from "./InputExtra";
@@ -33,8 +34,18 @@ interface ChatInputProps {
   setIsSearchActive: () => void;
   isDeepThinkActive: boolean;
   setIsDeepThinkActive: () => void;
+  isMCPActive: boolean;
+  setIsMCPActive: () => void;
   isChatPage?: boolean;
   getDataSourcesByServer: (
+    serverId: string,
+    options?: {
+      from?: number;
+      size?: number;
+      query?: string;
+    }
+  ) => Promise<DataSource[]>;
+  getMCPByServer: (
     serverId: string,
     options?: {
       from?: number;
@@ -73,8 +84,11 @@ export default function ChatInput({
   setIsSearchActive,
   isDeepThinkActive,
   setIsDeepThinkActive,
+  isMCPActive,
+  setIsMCPActive,
   isChatPage = false,
   getDataSourcesByServer,
+  getMCPByServer,
   setupWindowFocusListener,
   hideCoco,
   hasModules = [],
@@ -480,9 +494,18 @@ export default function ChatInput({
                 getDataSourcesByServer={getDataSourcesByServer}
               />
             )}
+            
+            {currentAssistant?._source?.mcp_servers?.visible && (
+              <MCPPopover
+                isMCPActive={isMCPActive}
+                setIsMCPActive={setIsMCPActive}
+                getMCPByServer={getMCPByServer}
+              />
+            )}
 
             {!currentAssistant?._source?.datasource?.visible &&
-            !currentAssistant?._source?.config?.visible ? (
+            !currentAssistant?._source?.config?.visible &&
+            !currentAssistant?._source?.mcp_servers?.visible ? (
               <div className="px-[9px]">
                 <Copyright />
               </div>

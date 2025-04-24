@@ -23,7 +23,7 @@ import {
   session_chat_history,
   close_session_chat,
   open_session_chat,
-  get_datasources_by_server,
+  datasource_search,
   delete_session_chat,
   update_session_chat,
 } from "@/commands";
@@ -167,7 +167,7 @@ export default function Chat({}: ChatProps) {
 
   const getDataSourcesByServer = useCallback(
     async (serverId: string): Promise<DataSource[]> => {
-      return get_datasources_by_server(serverId);
+      return datasource_search(serverId);
     },
     []
   );

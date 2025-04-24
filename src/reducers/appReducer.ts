@@ -3,6 +3,7 @@ export type AppState = {
   input: string;
   isTransitioned: boolean;
   isSearchActive: boolean;
+  isMCPActive: boolean;
   isDeepThinkActive: boolean;
   isTyping: boolean;
   isLoading: boolean;
@@ -13,6 +14,7 @@ export type AppAction =
   | { type: 'SET_INPUT'; payload: string }
   | { type: 'TOGGLE_SEARCH_ACTIVE' }
   | { type: 'TOGGLE_DEEP_THINK_ACTIVE' }
+  | { type: 'TOGGLE_MCP_ACTIVE' }
   | { type: 'SET_TYPING'; payload: boolean }
   | { type: 'SET_LOADING'; payload: boolean };
 
@@ -31,6 +33,7 @@ export const initialAppState: AppState = {
   isTransitioned: getCachedChatMode(),
   isSearchActive: false,
   isDeepThinkActive: false,
+  isMCPActive: false,
   isTyping: false,
   isLoading: false
 };
@@ -45,6 +48,8 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, isSearchActive: !state.isSearchActive };
     case 'TOGGLE_DEEP_THINK_ACTIVE':
       return { ...state, isDeepThinkActive: !state.isDeepThinkActive };
+    case 'TOGGLE_MCP_ACTIVE':
+      return { ...state, isMCPActive: !state.isMCPActive };
     case 'SET_TYPING':
       return { ...state, isTyping: action.payload };
     case 'SET_LOADING':

@@ -6,6 +6,7 @@ import { Get, Post } from "@/api/axiosRequest";
 import platformAdapter from "@/utils/platformAdapter";
 import { useConnectStore } from "@/stores/connectStore";
 import { useChatStore } from "@/stores/chatStore";
+import { useSearchStore } from "@/stores/searchStore";
 
 export function useChatActions(
   currentServiceId: string | undefined,
@@ -18,7 +19,7 @@ export function useChatActions(
   setChats: (chats: Chat[]) => void,
   isSearchActive?: boolean,
   isDeepThinkActive?: boolean,
-  sourceDataIds?: string[],
+  isMCPActive?: boolean,
   changeInput?: (val: string) => void,
   websocketSessionId?: string,
   showChatHistory?: boolean
@@ -27,6 +28,8 @@ export function useChatActions(
   const addError = useAppStore((state) => state.addError);
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
   const { connected } = useChatStore();
+  const sourceDataIds = useSearchStore((state) => state.sourceDataIds);
+  const MCPIds = useSearchStore((state) => state.MCPIds);
 
   const [keyword, setKeyword] = useState("");
 
@@ -145,11 +148,10 @@ export function useChatActions(
           console.error("websocketSessionId", websocketSessionId, id);
           return;
         }
-        console.log("sourceDataIds", sourceDataIds, websocketSessionId, id);
+        console.log("sourceDataIds", sourceDataIds, MCPIds, websocketSessionId, id);
         let response: any;
         if (isTauri) {
           if (!currentServiceId) return;
-          console.log("currentAssistant", currentAssistant);
           response = await platformAdapter.commands("new_chat", {
             serverId: currentServiceId,
             websocketId: websocketSessionId || id,
@@ -157,7 +159,9 @@ export function useChatActions(
             queryParams: {
               search: isSearchActive,
               deep_thinking: isDeepThinkActive,
+              mcp: isMCPActive,
               datasource: sourceDataIds?.join(",") || "",
+              mcp_servers: MCPIds?.join(",") || "",
               assistant_id: currentAssistant?._id || '',
             },
           });
@@ -171,7 +175,10 @@ export function useChatActions(
             {
               search: isSearchActive,
               deep_thinking: isDeepThinkActive,
+              mcp: isMCPActive,
               datasource: sourceDataIds?.join(",") || "",
+              mcp_servers: MCPIds?.join(",") || "",
+              assistant_id: currentAssistant?._id || '',
             },
             {
               "WEBSOCKET-SESSION-ID": websocketSessionId || id,
@@ -205,8 +212,10 @@ export function useChatActions(
     [
       currentServiceId,
       sourceDataIds,
+      MCPIds,
       isSearchActive,
       isDeepThinkActive,
+      isMCPActive,
       curIdRef,
       websocketSessionId,
       currentAssistant,
@@ -234,7 +243,9 @@ export function useChatActions(
             queryParams: {
               search: isSearchActive,
               deep_thinking: isDeepThinkActive,
+              mcp: isMCPActive,
               datasource: sourceDataIds?.join(",") || "",
+              mcp_servers: MCPIds?.join(",") || "",
               assistant_id: currentAssistant?._id || '',
             },
             message: content,
@@ -250,7 +261,10 @@ export function useChatActions(
             {
               search: isSearchActive,
               deep_thinking: isDeepThinkActive,
+              mcp: isMCPActive,
               datasource: sourceDataIds?.join(",") || "",
+              mcp_servers: MCPIds?.join(",") || "",
+              assistant_id: currentAssistant?._id || '',
             },
             {
               "WEBSOCKET-SESSION-ID": websocketSessionId || id,
@@ -281,8 +295,10 @@ export function useChatActions(
     [
       currentServiceId,
       sourceDataIds,
+      MCPIds,
       isSearchActive,
       isDeepThinkActive,
+      isMCPActive,
       curIdRef,
       setActiveChat,
       setCurChatEnd,

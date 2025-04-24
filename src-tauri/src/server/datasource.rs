@@ -48,7 +48,7 @@ pub async fn refresh_all_datasources<R: Runtime>(_app_handle: &AppHandle<R>) -> 
         // dbg!("fetch datasources for server: {}", &server.id);
 
         // Attempt to get datasources by server, and continue even if it fails
-        let connectors = match get_datasources_by_server(server.id.as_str(), None).await {
+        let connectors = match datasource_search(server.id.as_str(), None).await {
             Ok(connectors) => {
                 // Process connectors only after fetching them
                 let connectors_map: HashMap<String, DataSource> = connectors
@@ -90,7 +90,7 @@ pub async fn refresh_all_datasources<R: Runtime>(_app_handle: &AppHandle<R>) -> 
 }
 
 #[tauri::command]
-pub async fn get_datasources_by_server(
+pub async fn datasource_search(
     id: &str,
     options: Option<GetDatasourcesByServerOptions>,
 ) -> Result<Vec<DataSource>, String> {
@@ -143,4 +143,60 @@ pub async fn get_datasources_by_server(
     save_datasource_to_cache(&id, datasources.clone());
 
     Ok(datasources)
+}
+
+#[tauri::command]
+pub async fn mcp_server_search(
+    id: &str,
+    options: Option<GetDatasourcesByServerOptions>,
+) -> Result<Vec<DataSource>, String> {
+    let from = options.as_ref().and_then(|opt| opt.from).unwrap_or(0);
+    let size = options.as_ref().and_then(|opt| opt.size).unwrap_or(10000);
+    let query = options
+        .and_then(|opt| opt.query)
+        .unwrap_or(String::default());
+
+    let mut body = serde_json::json!({
+        "from": from,
+        "size": size,
+    });
+
+    if !query.is_empty() {
+        body["query"] = serde_json::json!({
+              "bool": {
+                  "must": [{
+                      "query_string": {
+                          "fields": ["combined_fulltext"],
+                          "query": query,
+                          "fuzziness": "AUTO",
+                          "fuzzy_prefix_length": 2,
+                          "fuzzy_max_expansions": 10,
+                          "fuzzy_transpositions": true,
+                          "allow_leading_wildcard": false
+                      }
+                  }]
+              }
+        });
+    }
+
+    // Perform the async HTTP request outside the cache lock
+    let resp = HttpClient::post(
+        id,
+        "/mcp_server/_search",
+        None,
+        Some(reqwest::Body::from(body.to_string())),
+    )
+    .await
+    .map_err(|e| format!("Error fetching datasource: {}", e))?;
+
+    // Parse the search results from the response
+    let mcp_server: Vec<DataSource> = parse_search_results(resp).await.map_err(|e| {
+        dbg!("Error parsing search results: {}", &e);
+        e.to_string()
+    })?;
+
+    // Save the updated mcp_server to cache
+    // save_datasource_to_cache(&id, mcp_server.clone());
+
+    Ok(mcp_server)
 }
