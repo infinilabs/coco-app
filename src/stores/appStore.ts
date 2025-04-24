@@ -66,6 +66,9 @@ export type IAppStore = {
 
   visible: boolean;
   withVisibility: <T>(fn: () => Promise<T>) => Promise<T>;
+
+  blurred: boolean;
+  setBlurred: (blurred: boolean) => void;
 };
 
 export const useAppStore = create<IAppStore>()(
@@ -150,6 +153,9 @@ export const useAppStore = create<IAppStore>()(
 
         return result;
       },
+
+      blurred: false,
+      setBlurred: (blurred: boolean) => set({ blurred }),
     }),
     {
       name: "app-store",
