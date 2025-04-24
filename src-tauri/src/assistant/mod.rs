@@ -232,10 +232,30 @@ pub async fn update_session_chat(
 pub async fn assistant_search<R: Runtime>(
     _app_handle: AppHandle<R>,
     server_id: String,
-) -> Result<String, String> {
-    let response = HttpClient::get(&server_id, "/assistant/_search", None)
-        .await
-        .map_err(|e| format!("Error searching assistants: {}", e))?;
+    from: u32,
+    size: u32,
+    query: Option<HashMap<String, Value>>,
+) -> Result<Value, String> {
+    let mut body = serde_json::json!({
+        "from": from,
+        "size": size,
+    });
 
-    common::http::get_response_body_text(response).await
+    if let Some(q) = query {
+        body["query"] = serde_json::to_value(q).map_err(|e| e.to_string())?;
+    }
+
+    let response = HttpClient::post(
+        &server_id,
+        "/assistant/_search",
+        None,
+        Some(reqwest::Body::from(body.to_string())),
+    )
+    .await
+    .map_err(|e| format!("Error searching assistants: {}", e))?;
+
+    response
+        .json::<Value>()
+        .await
+        .map_err(|err| err.to_string())
 }
