@@ -10,7 +10,6 @@ import {
 
 import { useChatStore } from "@/stores/chatStore";
 import { useConnectStore } from "@/stores/connectStore";
-import { useSearchStore } from "@/stores/searchStore";
 import { useWindows } from "@/hooks/useWindows";
 import useMessageChunkData from "@/hooks/useMessageChunkData";
 import useWebSocket from "@/hooks/useWebSocket";
@@ -27,6 +26,7 @@ import { useAppStore } from "@/stores/appStore";
 interface ChatAIProps {
   isSearchActive?: boolean;
   isDeepThinkActive?: boolean;
+  isMCPActive?: boolean;
   activeChatProp?: Chat;
   changeInput?: (val: string) => void;
   setIsSidebarOpen?: (value: boolean) => void;
@@ -52,6 +52,7 @@ const ChatAI = memo(
         changeInput,
         isSearchActive,
         isDeepThinkActive,
+        isMCPActive,
         activeChatProp,
         setIsSidebarOpen,
         isSidebarOpen = false,
@@ -88,7 +89,6 @@ const ChatAI = memo(
 
       const [isSidebarOpenChat, setIsSidebarOpenChat] = useState(isSidebarOpen);
       const [chats, setChats] = useState<Chat[]>([]);
-      const sourceDataIds = useSearchStore((state) => state.sourceDataIds);
 
       useEffect(() => {
         activeChatProp && setActiveChat(activeChatProp);
@@ -107,6 +107,7 @@ const ChatAI = memo(
       const {
         data: {
           query_intent,
+          tools,
           fetch_source,
           pick_source,
           deep_read,
@@ -119,6 +120,7 @@ const ChatAI = memo(
 
       const [loadingStep, setLoadingStep] = useState<Record<string, boolean>>({
         query_intent: false,
+        tools: false,
         fetch_source: false,
         pick_source: false,
         deep_read: false,
@@ -161,10 +163,10 @@ const ChatAI = memo(
         setChats,
         isSearchActive,
         isDeepThinkActive,
-        sourceDataIds,
+        isMCPActive,
         changeInput,
         websocketSessionId,
-        showChatHistory
+        showChatHistory,
       );
 
       const { dealMsg, messageTimeoutRef } = useMessageHandler(
@@ -388,6 +390,7 @@ const ChatAI = memo(
               activeChat={activeChat}
               curChatEnd={curChatEnd}
               query_intent={query_intent}
+              tools={tools}
               fetch_source={fetch_source}
               pick_source={pick_source}
               deep_read={deep_read}

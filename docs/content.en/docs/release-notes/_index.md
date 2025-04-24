@@ -30,7 +30,8 @@ Information about release notes of Coco Server is provided here.
 - feat: web components assistant #422
 - feat: right-click menu support for search #423
 - feat: add chat mode launch page #424
-  feat: ai assistant supports search and paging #431
+- feat: add MCP & call LLM tools #430
+- feat: ai assistant supports search and paging #431
 - feat: data sources support displaying customized icons #432
 
 ### Bug fix

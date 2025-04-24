@@ -222,6 +222,7 @@
       "connecting": "连接中",
       "deepThink": "深度思考",
       "search": "联网搜索",
+      "MCP": "MCP",
       "uploadFile": "上传文件",
       "screenshot": "截取屏幕截图",
       "screenshotType": {
@@ -287,6 +288,7 @@
       "thinkingButton": "查看思考过程",
       "steps": {
         "query_intent": "理解查询",
+        "tools": "调用大模型工具",
         "source_zero": "正在搜索相关文档",
         "fetch_source": "检索 {{count}} 份文档",
         "pick_source": "智能预选 {{count}} 个结果",
