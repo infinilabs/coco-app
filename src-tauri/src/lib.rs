@@ -15,13 +15,13 @@ use crate::server::servers::{load_or_insert_default_server, load_servers_token};
 use autostart::{change_autostart, enable_autostart};
 use lazy_static::lazy_static;
 use std::sync::Mutex;
+use tauri::async_runtime::block_on;
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
 use tauri::{
     AppHandle, Emitter, Manager, PhysicalPosition, Runtime, WebviewWindow, Window, WindowEvent,
 };
 use tauri_plugin_autostart::MacosLauncher;
-use tokio::runtime::Runtime as RT;
 
 /// Tauri store name
 pub(crate) const COCO_TAURI_STORE: &str = "coco_tauri_store";
@@ -144,19 +144,11 @@ pub fn run() {
             app.manage(registry); // Store registry in Tauri's app state
             app.manage(server::websocket::WebSocketManager::default());
 
-            // Get app handle
-            // let app_handle = app.handle().clone();
-
-            // Create a single Tokio runtime instance
-            let rt = RT::new().expect("Failed to create Tokio runtime");
-
-            // Use the runtime to spawn the async initialization tasks
-            let init_app_handle = app.handle().clone();
-            rt.spawn(async move {
-                init(&init_app_handle).await; // Pass a reference to `app_handle`
+            block_on(async {
+                init(app.handle()).await;
             });
 
-            shortcut::enable_shortcut(&app);
+            shortcut::enable_shortcut(app);
 
             enable_autostart(app);
 
