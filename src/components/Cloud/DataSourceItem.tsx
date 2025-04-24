@@ -5,6 +5,7 @@ import source_default_img from "@/assets/images/source_default.png";
 import source_default_dark_img from "@/assets/images/source_default_dark.png";
 import { useConnectStore } from "@/stores/connectStore";
 import { useThemeStore } from "@/stores/themeStore";
+import FontIcon from "../Common/Icons/FontIcon";
 
 interface Account {
   email: string;
@@ -13,11 +14,12 @@ interface Account {
 
 interface DataSourceItemProps {
   name: string;
+  icon?: string;
   connector: any;
   accounts?: Account[];
 }
 
-export function DataSourceItem({ name, connector }: DataSourceItemProps) {
+export function DataSourceItem({ name, icon, connector }: DataSourceItemProps) {
   // const isConnected = true;
 
   const isDark = useThemeStore((state) => state.isDark);
@@ -56,7 +58,12 @@ export function DataSourceItem({ name, connector }: DataSourceItemProps) {
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <img src={getTypeIcon()} alt={name} className="w-6 h-6" />
+          {icon?.startsWith("font_") ? (
+            <FontIcon name={icon} className="size-6" />
+          ) : (
+            <img src={getTypeIcon()} alt={name} className="size-6" />
+          )}
+
           <span className="font-medium text-gray-900 dark:text-white">
             {name}
           </span>

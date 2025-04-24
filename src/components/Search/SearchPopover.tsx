@@ -21,6 +21,7 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 import VisibleKey from "@/components/Common/VisibleKey";
 import { useChatStore } from "@/stores/chatStore";
 import NoDataImage from "@/components/Common/NoDataImage";
+import FontIcon from "../Common/Icons/FontIcon";
 
 interface SearchPopoverProps {
   isSearchActive: boolean;
@@ -288,8 +289,10 @@ export default function SearchPopover({
                             <div className="flex items-center gap-2 overflow-hidden">
                               {isAll ? (
                                 <Layers className="size-[16px] text-[#0287FF]" />
+                              ) : item.icon?.startsWith("font_") ? (
+                                <FontIcon name={item.icon} className="size-4" />
                               ) : (
-                                <TypeIcon item={item} className="size-[16px]" />
+                                <TypeIcon item={item} className="size-4" />
                               )}
 
                               <span className="truncate">

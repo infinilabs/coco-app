@@ -254,6 +254,10 @@
     }
   },
   "assistant": {
+    "popover": {
+      "title": "AI Assistant",
+      "search": "Search"
+    },
     "chat": {
       "openChat": "Open Chat Window",
       "newChat": "New Chat",
