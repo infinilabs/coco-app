@@ -1,5 +1,4 @@
 import { useIconfontScript } from "@/hooks/useScript";
-
 interface FontIconProps {
   name: string;
   className?: string;

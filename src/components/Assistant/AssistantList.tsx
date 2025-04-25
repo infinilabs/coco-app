@@ -203,7 +203,7 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
           ref={popoverButtonRef}
           className="h-6  p-1 px-1.5 flex items-center gap-1 rounded-full bg-white dark:bg-[#202126] text-sm/6 font-semibold text-gray-800 dark:text-[#d8d8d8] border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none"
         >
-          <div className="w-4 h-4 flex justify-center items-center rounded-full bg-white">
+          <div className="w-4 h-4 flex justify-center items-center rounded-full bg-white border border-[#E6E6E6]">
             {currentAssistant?._source?.icon?.startsWith("font_") ? (
               <FontIcon
                 name={currentAssistant._source.icon}
@@ -286,16 +286,16 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
                   <button
                     key={_id}
                     className={clsx(
-                      "w-full flex items-center h-[50px] gap-2 rounded-lg p-2 mb-1 hover:bg-[#F3F4F6] dark:hover:bg-[#1F2937] transition",
+                      "w-full flex items-center h-[50px] gap-2 rounded-lg p-2 mb-1 hover:bg-[#E6E6E6] dark:hover:bg-[#1F2937] transition",
                       {
-                        "bg-[#F3F4F6] dark:bg-[#1F2937]": isActive,
+                        "bg-[#E6E6E6] dark:bg-[#1F2937]": isActive,
                       }
                     )}
                     onClick={() => {
                       setCurrentAssistant(assistant);
                     }}
                   >
-                    <div className="flex items-center justify-center size-6 bg-white border border-[#F3F4F6] rounded-full overflow-hidden">
+                    <div className="flex items-center justify-center size-6 bg-white border border-[#E6E6E6] rounded-full overflow-hidden">
                       {_source?.icon?.startsWith("font_") ? (
                         <FontIcon name={_source?.icon} className="size-4" />
                       ) : (
