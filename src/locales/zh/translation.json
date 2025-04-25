@@ -115,6 +115,14 @@
           "title": "联网搜索范围",
           "description": "在聊天模式下打开联网搜索范围菜单的快捷键。"
         },
+        "mcpSearch": {
+          "title": "MCP搜索",
+          "description": "在聊天模式下启用MCP搜索的快捷按键。"
+        },
+        "mcpSearchScope": {
+          "title": "MCP搜索范围",
+          "description": "在聊天模式下打开MCP搜索范围菜单的快捷键。"
+        },
         "historicalRecords": {
           "title": "历史记录",
           "description": "在聊天模式下查看历史对话记录的快捷键。"
