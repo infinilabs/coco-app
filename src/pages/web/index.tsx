@@ -64,8 +64,6 @@ function WebApp({
     localStorage.setItem("headers", JSON.stringify(headers || {}));
   }, []);
 
-  useModifierKeyPress();
-
   const isMobile = useIsMobile();
 
   const [isChatMode, setIsChatMode] = useState(false);

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Input, Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import {
   ChevronDownIcon,
   RefreshCw,
@@ -21,6 +21,7 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 import VisibleKey from "@/components/Common/VisibleKey";
 import { useChatStore } from "@/stores/chatStore";
 import NoDataImage from "@/components/Common/NoDataImage";
+import PopoverInput from "../Common/PopoverInput";
 
 interface SearchPopoverProps {
   isMCPActive: boolean;
@@ -86,9 +87,9 @@ export default function SearchPopover({
   }, [currentService?.id, debouncedKeyword]);
 
   const popoverButtonRef = useRef<HTMLButtonElement>(null);
-  const internetSearch = useShortcutsStore((state) => state.internetSearch);
-  const internetSearchScope = useShortcutsStore((state) => {
-    return state.internetSearchScope;
+  const mcpSearch = useShortcutsStore((state) => state.mcpSearch);
+  const mcpSearchScope = useShortcutsStore((state) => {
+    return state.mcpSearchScope;
   });
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(0);
@@ -176,7 +177,7 @@ export default function SearchPopover({
       )}
       onClick={setIsMCPActive}
     >
-      <VisibleKey shortcut={internetSearch} onKeyPress={setIsMCPActive}>
+      <VisibleKey shortcut={mcpSearch} onKeyPress={setIsMCPActive}>
         <Hammer
           className={`size-3 ${
             isMCPActive
@@ -197,7 +198,7 @@ export default function SearchPopover({
           <Popover className="relative">
             <PopoverButton ref={popoverButtonRef} className="flex items-center">
               <VisibleKey
-                shortcut={internetSearchScope}
+                shortcut={mcpSearchScope}
                 onKeyPress={() => {
                   popoverButtonRef.current?.click();
                 }}
@@ -248,7 +249,7 @@ export default function SearchPopover({
                       />
                     </div>
 
-                    <Input
+                    <PopoverInput
                       autoFocus
                       ref={searchInputRef}
                       className="size-full px-2 rounded-lg border dark:border-white/10 bg-transparent"

@@ -115,6 +115,14 @@
           "title": "Internet Search Scope",
           "description": "Shortcut to open the networking search scope menu in chat mode."
         },
+        "mcpSearch": {
+          "title": "MCP搜索",
+          "description": "在聊天模式下启用MCP搜索的快捷按键。"
+        },
+        "mcpSearchScope": {
+          "title": "MCP搜索范围",
+          "description": "在聊天模式下打开MCP搜索范围菜单的快捷键。"
+        },
         "historicalRecords": {
           "title": "Conversation History",
           "description": "Shortcut to view past conversation history in chat mode."

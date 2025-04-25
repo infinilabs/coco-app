@@ -11,6 +11,7 @@ import {
 } from "./wrappers/tauriWrappers";
 import type { BasePlatformAdapter } from "@/types/platform";
 import type { AppTheme } from "@/types/index";
+import { useAppStore } from "@/stores/appStore";
 
 export interface TauriPlatformAdapter extends BasePlatformAdapter {
   openFileDialog: (
@@ -27,6 +28,10 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     async hideWindow() {
+      const isPinned = useAppStore.getState().isPinned;
+
+      if (isPinned) return;
+
       const window = await windowWrapper.getWebviewWindow();
       return window?.hide();
     },

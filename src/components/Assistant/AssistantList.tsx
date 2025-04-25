@@ -17,10 +17,12 @@ import FontIcon from "@/components/Common/Icons/FontIcon";
 import { useChatStore } from "@/stores/chatStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { Post } from "@/api/axiosRequest";
-import { Input, Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { useDebounce, useKeyPress, useMount, usePagination } from "ahooks";
 import clsx from "clsx";
 import NoDataImage from "../Common/NoDataImage";
+import PopoverInput from "../Common/PopoverInput";
+import { isNil } from "lodash-es";
 
 interface AssistantListProps {
   assistantIDs?: string[];
@@ -38,7 +40,6 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
   });
   const aiAssistant = useShortcutsStore((state) => state.aiAssistant);
   const [assistants, setAssistants] = useState<any[]>([]);
-
   const [isRefreshing, setIsRefreshing] = useState(false);
   const popoverButtonRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -166,10 +167,13 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
   };
 
   useKeyPress(["uparrow", "downarrow"], (_, key) => {
+    const isClose = isNil(popoverButtonRef.current?.dataset["open"]);
     const index = assistants.findIndex(
       (item) => item._id === currentAssistant?._id
     );
     const length = assistants.length;
+
+    if (isClose || length <= 1) return;
 
     let nextIndex = index;
 
@@ -262,7 +266,7 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
               searchInputRef.current?.focus();
             }}
           >
-            <Input
+            <PopoverInput
               ref={searchInputRef}
               autoFocus
               value={keyword}
