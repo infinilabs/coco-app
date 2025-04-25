@@ -1,7 +1,7 @@
-import { useCallback, useEffect } from "react";
-
 import platformAdapter from "@/utils/platformAdapter";
 import { useSearchStore } from "@/stores/searchStore";
+import { useKeyPress } from "ahooks";
+import { HISTORY_PANEL_ID } from "@/constants";
 
 const useEscape = () => {
   const visibleContextMenu = useSearchStore((state) => {
@@ -11,38 +11,33 @@ const useEscape = () => {
     return state.setVisibleContextMenu;
   });
 
-  const handleEscape = useCallback(() => {
-    async (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        console.log("Escape key pressed.");
+  useKeyPress("esc", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
 
-        event.preventDefault();
+    if (
+      document.activeElement instanceof HTMLInputElement ||
+      document.activeElement instanceof HTMLTextAreaElement
+    ) {
+      return document.activeElement.blur();
+    }
 
-        if (visibleContextMenu) {
-          return setVisibleContextMenu(false);
-        }
+    if (visibleContextMenu) {
+      return setVisibleContextMenu(false);
+    }
 
-        // Hide the Tauri app window when 'Esc' is pressed
-        await platformAdapter.invokeBackend("hide_coco");
+    const historyPanel = document.getElementById(HISTORY_PANEL_ID);
 
-        console.log("App window hidden successfully.");
-      }
-    };
-  }, [visibleContextMenu]);
+    if (historyPanel) {
+      const button = document.querySelector(
+        `[aria-controls="${HISTORY_PANEL_ID}"]`
+      );
 
-  useEffect(() => {
-    const unlisten = platformAdapter.listenEvent("tauri://focus", () => {
-      // Add event listener for keydown
-      window.addEventListener("keydown", handleEscape);
-    });
+      return (button as HTMLElement).click();
+    }
 
-    // Cleanup event listener on component unmount
-    return () => {
-      unlisten.then((unlistenFn) => unlistenFn());
-
-      window.removeEventListener("keydown", handleEscape);
-    };
-  }, []);
+    platformAdapter.hideWindow();
+  });
 };
 
 export default useEscape;

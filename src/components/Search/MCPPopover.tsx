@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Input, Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import {
   ChevronDownIcon,
   RefreshCw,
@@ -21,6 +21,7 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 import VisibleKey from "@/components/Common/VisibleKey";
 import { useChatStore } from "@/stores/chatStore";
 import NoDataImage from "@/components/Common/NoDataImage";
+import PopoverInput from "../Common/PopoverInput";
 
 interface SearchPopoverProps {
   isMCPActive: boolean;
@@ -248,7 +249,7 @@ export default function SearchPopover({
                       />
                     </div>
 
-                    <Input
+                    <PopoverInput
                       autoFocus
                       ref={searchInputRef}
                       className="size-full px-2 rounded-lg border dark:border-white/10 bg-transparent"
