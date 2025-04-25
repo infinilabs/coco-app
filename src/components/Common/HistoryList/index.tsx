@@ -159,7 +159,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
       ref={listRef}
       id={id}
       className={clsx(
-        "flex flex-col h-full overflow-auto px-3 py-2 text-sm bg-[#F3F4F6] dark:bg-[#1F2937] custom-scrollbar"
+        "flex flex-col h-full overflow-auto px-3 py-2 text-sm bg-[#E6E6E6] dark:bg-[#1F2937] custom-scrollbar"
       )}
     >
       <div className="flex gap-1 children:h-8">
@@ -185,7 +185,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
         </div>
 
         <div
-          className="size-8 flex items-center justify-center rounded-lg border text-[#0072FF] border-[#E6E6E6] bg-[#F3F4F6] dark:border-[#343D4D] dark:bg-[#1F2937] hover:bg-[#F8F9FA] dark:hover:bg-[#353F4D] cursor-pointer transition"
+          className="size-8 flex items-center justify-center rounded-lg border text-[#0072FF] border-[#E6E6E6] bg-[#E6E6E6] dark:border-[#343D4D] dark:bg-[#1F2937] hover:bg-[#F8F9FA] dark:hover:bg-[#353F4D] cursor-pointer transition"
           onClick={handleRefresh}
         >
           <VisibleKey shortcut="R" onKeyPress={handleRefresh}>

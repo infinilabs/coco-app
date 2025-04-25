@@ -21,5 +21,12 @@ export default useScript;
 
 
 export const useIconfontScript = () => {
-  useScript('/assets/fonts/icons/iconfont.js');
+  const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
+
+  let baseURL = appStore.state?.endpoint_http
+  if (!baseURL || baseURL === "undefined") {
+    baseURL = "";
+  }
+
+  useScript(baseURL + '/assets/fonts/icons/iconfont.js');
 };
