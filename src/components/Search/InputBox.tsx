@@ -90,7 +90,6 @@ export default function ChatInput({
   getDataSourcesByServer,
   getMCPByServer,
   setupWindowFocusListener,
-  hideCoco,
   hasModules = [],
   searchPlaceholder,
   chatPlaceholder,
@@ -100,7 +99,6 @@ export default function ChatInput({
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
 
   const showTooltip = useAppStore((state) => state.showTooltip);
-  const isPinned = useAppStore((state) => state.isPinned);
 
   const sourceData = useSearchStore((state) => state.sourceData);
   const setSourceData = useSearchStore((state) => state.setSourceData);
@@ -184,35 +182,14 @@ export default function ChatInput({
 
   const pressedKeys = new Set<string>();
 
-  const handleEscapeKey = useCallback(() => {
-    if (inputValue) {
-      changeInput("");
-    } else if (!isPinned) {
-      hideCoco && hideCoco();
-    }
-  }, [inputValue, isPinned]);
-
   useKeyPress(`${modifierKey}.${returnToInput}`, handleToggleFocus);
 
   const visibleContextMenu = useSearchStore((state) => {
     return state.visibleContextMenu;
   });
-  const setVisibleContextMenu = useSearchStore((state) => {
-    return state.setVisibleContextMenu;
-  });
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      // console.log("handleKeyDown", e.code, e.key);
-
-      if (e.key === "Escape") {
-        if (visibleContextMenu) {
-          return setVisibleContextMenu(false);
-        }
-
-        return handleEscapeKey();
-      }
-
       pressedKeys.add(e.key);
 
       if (e.key === metaOrCtrlKey()) {
@@ -496,7 +473,7 @@ export default function ChatInput({
                 getDataSourcesByServer={getDataSourcesByServer}
               />
             )}
-            
+
             {currentAssistant?._source?.mcp_servers?.visible && (
               <MCPPopover
                 isMCPActive={isMCPActive}

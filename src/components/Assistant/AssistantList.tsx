@@ -17,10 +17,11 @@ import FontIcon from "@/components/Common/Icons/FontIcon";
 import { useChatStore } from "@/stores/chatStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { Post } from "@/api/axiosRequest";
-import { Input, Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { useDebounce, useKeyPress, useMount, usePagination } from "ahooks";
 import clsx from "clsx";
 import NoDataImage from "../Common/NoDataImage";
+import PopoverInput from "../Common/PopoverInput";
 
 interface AssistantListProps {
   assistantIDs?: string[];
@@ -262,7 +263,7 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
               searchInputRef.current?.focus();
             }}
           >
-            <Input
+            <PopoverInput
               ref={searchInputRef}
               autoFocus
               value={keyword}
