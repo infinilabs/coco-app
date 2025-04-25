@@ -1,13 +1,31 @@
 import { useTranslation } from "react-i18next";
-import { Command } from "lucide-react";
+import { Command, RotateCcw } from "lucide-react";
 import { ChangeEvent, useEffect } from "react";
 
 import { formatKey } from "@/utils/keyboardUtils";
 import SettingsItem from "@/components/Settings/SettingsItem";
 import { isMac } from "@/utils/platform";
-import { useShortcutsStore } from "@/stores/shortcutsStore";
+import {
+  INITIAL_MODE_SWITCH,
+  INITIAL_RETURN_TO_INPUT,
+  INITIAL_VOICE_INPUT,
+  INITIAL_ADD_FILE,
+  INITIAL_DEEP_THINKING,
+  INITIAL_INTERNET_SEARCH,
+  INITIAL_INTERNET_SEARCH_SCOPE,
+  INITIAL_MCP_SEARCH,
+  INITIAL_MCP_SEARCH_SCOPE,
+  INITIAL_HISTORICAL_RECORDS,
+  INITIAL_AI_ASSISTANT,
+  INITIAL_NEW_SESSION,
+  INITIAL_FIXED_WINDOW,
+  INITIAL_SERVICE_LIST,
+  INITIAL_EXTERNAL,
+  useShortcutsStore,
+} from "@/stores/shortcutsStore";
 import { ModifierKey } from "@/types/index";
 import platformAdapter from "@/utils/platformAdapter";
+import { useAppStore } from "@/stores/appStore";
 
 export const modifierKeys: ModifierKey[] = isMac
   ? ["meta", "ctrl"]
@@ -67,6 +85,7 @@ const Shortcuts = () => {
   const setServiceList = useShortcutsStore((state) => state.setServiceList);
   const external = useShortcutsStore((state) => state.external);
   const setExternal = useShortcutsStore((state) => state.setExternal);
+  const addError = useAppStore((state) => state.addError);
 
   useEffect(() => {
     const unlisten = useShortcutsStore.subscribe((state) => {
@@ -82,36 +101,54 @@ const Shortcuts = () => {
       description: "settings.advanced.shortcuts.modeSwitch.description",
       value: modeSwitch,
       setValue: setModeSwitch,
+      reset: () => {
+        setModeSwitch(INITIAL_MODE_SWITCH);
+      },
     },
     {
       title: "settings.advanced.shortcuts.returnToInput.title",
       description: "settings.advanced.shortcuts.returnToInput.description",
       value: returnToInput,
       setValue: setReturnToInput,
+      reset: () => {
+        setReturnToInput(INITIAL_RETURN_TO_INPUT);
+      },
     },
     {
       title: "settings.advanced.shortcuts.voiceInput.title",
       description: "settings.advanced.shortcuts.voiceInput.description",
       value: voiceInput,
       setValue: setVoiceInput,
+      reset: () => {
+        setVoiceInput(INITIAL_VOICE_INPUT);
+      },
     },
     {
       title: "settings.advanced.shortcuts.addFile.title",
       description: "settings.advanced.shortcuts.addFile.description",
       value: addFile,
       setValue: setAddFile,
+      reset: () => {
+        setAddFile(INITIAL_ADD_FILE);
+      },
     },
     {
       title: "settings.advanced.shortcuts.deepThinking.title",
       description: "settings.advanced.shortcuts.deepThinking.description",
       value: deepThinking,
       setValue: setDeepThinking,
+      reset: () => {
+        setDeepThinking(INITIAL_DEEP_THINKING);
+      },
     },
     {
       title: "settings.advanced.shortcuts.internetSearch.title",
       description: "settings.advanced.shortcuts.internetSearch.description",
       value: internetSearch,
       setValue: setInternetSearch,
+      reset: () => {
+        setInternetSearch(INITIAL_INTERNET_SEARCH);
+      },
     },
     {
       title: "settings.advanced.shortcuts.internetSearchScope.title",
@@ -119,54 +156,81 @@ const Shortcuts = () => {
         "settings.advanced.shortcuts.internetSearchScope.description",
       value: internetSearchScope,
       setValue: setInternetSearchScope,
+      reset: () => {
+        setInternetSearchScope(INITIAL_INTERNET_SEARCH_SCOPE);
+      },
     },
     {
       title: "settings.advanced.shortcuts.mcpSearch.title",
       description: "settings.advanced.shortcuts.mcpSearch.description",
       value: mcpSearch,
       setValue: setMcpSearch,
+      reset: () => {
+        setMcpSearch(INITIAL_MCP_SEARCH);
+      },
     },
     {
       title: "settings.advanced.shortcuts.mcpSearchScope.title",
       description: "settings.advanced.shortcuts.mcpSearchScope.description",
       value: mcpSearchScope,
       setValue: setMcpSearchScope,
+      reset: () => {
+        setMcpSearchScope(INITIAL_MCP_SEARCH_SCOPE);
+      },
     },
     {
       title: "settings.advanced.shortcuts.historicalRecords.title",
       description: "settings.advanced.shortcuts.historicalRecords.description",
       value: historicalRecords,
       setValue: setHistoricalRecords,
+      reset: () => {
+        setHistoricalRecords(INITIAL_HISTORICAL_RECORDS);
+      },
     },
     {
       title: "settings.advanced.shortcuts.aiAssistant.title",
       description: "settings.advanced.shortcuts.aiAssistant.description",
       value: aiAssistant,
       setValue: setAiAssistant,
+      reset: () => {
+        setAiAssistant(INITIAL_AI_ASSISTANT);
+      },
     },
     {
       title: "settings.advanced.shortcuts.newSession.title",
       description: "settings.advanced.shortcuts.newSession.description",
       value: newSession,
       setValue: setNewSession,
+      reset: () => {
+        setNewSession(INITIAL_NEW_SESSION);
+      },
     },
     {
       title: "settings.advanced.shortcuts.fixedWindow.title",
       description: "settings.advanced.shortcuts.fixedWindow.description",
       value: fixedWindow,
       setValue: setFixedWindow,
+      reset: () => {
+        setFixedWindow(INITIAL_FIXED_WINDOW);
+      },
     },
     {
       title: "settings.advanced.shortcuts.serviceList.title",
       description: "settings.advanced.shortcuts.serviceList.description",
       value: serviceList,
       setValue: setServiceList,
+      reset: () => {
+        setServiceList(INITIAL_SERVICE_LIST);
+      },
     },
     {
       title: "settings.advanced.shortcuts.external.title",
       description: "settings.advanced.shortcuts.external.description",
       value: external,
       setValue: setExternal,
+      reset: () => {
+        setExternal(INITIAL_EXTERNAL);
+      },
     },
   ];
 
@@ -186,7 +250,16 @@ const Shortcuts = () => {
 
     const isUsed = Object.values(state).includes(value);
 
-    if (isSystemKey || isUsed) return;
+    if (isSystemKey) {
+      return addError(
+        t("settings.advanced.shortcuts.hits.isSystem"),
+        "warning"
+      );
+    }
+
+    if (isUsed) {
+      return addError(t("settings.advanced.shortcuts.hits.isUse"), "warning");
+    }
 
     setValue(value);
   };
@@ -217,7 +290,7 @@ const Shortcuts = () => {
         </SettingsItem>
 
         {list.map((item) => {
-          const { title, description, value, setValue } = item;
+          const { title, description, value, setValue, reset } = item;
 
           return (
             <SettingsItem
@@ -230,13 +303,20 @@ const Shortcuts = () => {
                 <span>{formatKey(modifierKey)}</span>
                 <span>+</span>
                 <input
-                  className="w-20 h-8 px-2 rounded-md border bg-transparent border-black/5 dark:border-white/10"
+                  className="w-20 h-8 px-2 rounded-md border bg-transparent border-black/5 dark:border-white/10 hover:border-[#0072FF] focus:border-[#0072FF] transition"
                   value={value}
                   maxLength={1}
                   onChange={(event) => {
                     handleChange(event, setValue);
                   }}
                 />
+
+                <button
+                  className="flex items-center justify-center size-8 rounded-md border border-black/5 dark:border-white/10 hover:border-[#0072FF] transition"
+                  onClick={reset}
+                >
+                  <RotateCcw className="size-4 text-[#0072FF]" />
+                </button>
               </div>
             </SettingsItem>
           );

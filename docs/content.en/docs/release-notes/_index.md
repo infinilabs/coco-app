@@ -33,6 +33,7 @@ Information about release notes of Coco Server is provided here.
 - feat: add MCP & call LLM tools #430
 - feat: ai assistant supports search and paging #431
 - feat: data sources support displaying customized icons #432
+- feat: add shortcut key conflict hint and reset function #442
 
 ### Bug fix
 
