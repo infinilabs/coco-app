@@ -45,6 +45,22 @@ export type IShortcutsStore = {
   setResetFixedWindow: (resetFixedWindow: boolean) => void;
 };
 
+export const INITIAL_MODE_SWITCH = "T";
+export const INITIAL_RETURN_TO_INPUT = "I";
+export const INITIAL_VOICE_INPUT = "K";
+export const INITIAL_ADD_FILE = "A";
+export const INITIAL_DEEP_THINKING = "D";
+export const INITIAL_INTERNET_SEARCH = "G";
+export const INITIAL_INTERNET_SEARCH_SCOPE = "J";
+export const INITIAL_MCP_SEARCH = "B";
+export const INITIAL_MCP_SEARCH_SCOPE = "L";
+export const INITIAL_HISTORICAL_RECORDS = "Y";
+export const INITIAL_AI_ASSISTANT = "U";
+export const INITIAL_NEW_SESSION = "N";
+export const INITIAL_FIXED_WINDOW = "P";
+export const INITIAL_SERVICE_LIST = "S";
+export const INITIAL_EXTERNAL = "E";
+
 export const useShortcutsStore = create<IShortcutsStore>()(
   persist(
     (set) => ({
@@ -58,41 +74,41 @@ export const useShortcutsStore = create<IShortcutsStore>()(
       setModifierKeyPressed: (modifierKeyPressed: boolean) => {
         return set({ modifierKeyPressed });
       },
-      modeSwitch: "T",
+      modeSwitch: INITIAL_MODE_SWITCH,
       setModeSwitch: (modeSwitch) => set({ modeSwitch }),
-      returnToInput: "I",
+      returnToInput: INITIAL_RETURN_TO_INPUT,
       setReturnToInput: (returnToInput) => set({ returnToInput }),
-      voiceInput: "K",
+      voiceInput: INITIAL_VOICE_INPUT,
       setVoiceInput: (voiceInput) => set({ voiceInput }),
-      addFile: "A",
+      addFile: INITIAL_ADD_FILE,
       setAddFile: (addFile) => set({ addFile }),
-      deepThinking: "D",
+      deepThinking: INITIAL_DEEP_THINKING,
       setDeepThinking: (deepThinking) => set({ deepThinking }),
-      internetSearch: "G",
+      internetSearch: INITIAL_INTERNET_SEARCH,
       setInternetSearch: (internetSearch) => set({ internetSearch }),
-      internetSearchScope: "J",
+      internetSearchScope: INITIAL_INTERNET_SEARCH_SCOPE,
       setInternetSearchScope: (internetSearchScope) => {
         return set({ internetSearchScope });
       },
-      mcpSearch: "B",
+      mcpSearch: INITIAL_MCP_SEARCH,
       setMcpSearch: (mcpSearch) => set({ mcpSearch }),
-      mcpSearchScope: "L",
+      mcpSearchScope: INITIAL_MCP_SEARCH_SCOPE,
       setMcpSearchScope: (mcpSearchScope) => {
         return set({ mcpSearchScope });
       },
-      historicalRecords: "Y",
+      historicalRecords: INITIAL_HISTORICAL_RECORDS,
       setHistoricalRecords: (historicalRecords) => {
         return set({ historicalRecords });
       },
-      aiAssistant: "U",
+      aiAssistant: INITIAL_AI_ASSISTANT,
       setAiAssistant: (aiAssistant) => set({ aiAssistant }),
-      newSession: "N",
+      newSession: INITIAL_NEW_SESSION,
       setNewSession: (newSession) => set({ newSession }),
-      fixedWindow: "P",
+      fixedWindow: INITIAL_FIXED_WINDOW,
       setFixedWindow: (fixedWindow) => set({ fixedWindow }),
-      serviceList: "S",
+      serviceList: INITIAL_SERVICE_LIST,
       setServiceList: (serviceList) => set({ serviceList }),
-      external: "E",
+      external: INITIAL_EXTERNAL,
       setExternal: (external) => set({ external }),
       resetFixedWindow: false,
       setResetFixedWindow: (resetFixedWindow) => {
