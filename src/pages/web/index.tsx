@@ -4,7 +4,6 @@ import SearchChat from "@/components/SearchChat";
 import { useAppStore } from "@/stores/appStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 
 import "@/i18n";
 import "@/web.css";
