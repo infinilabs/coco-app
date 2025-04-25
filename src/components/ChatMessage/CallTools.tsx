@@ -37,13 +37,21 @@ export const CallTools = ({ Detail, ChunkData, loading }: CallToolsProps) => {
         className="inline-flex items-center gap-2 px-2 py-1 rounded-xl transition-colors border border-[#E6E6E6] dark:border-[#272626]"
       >
         {loading ? (
-          <Loader className="w-4 h-4 animate-spin text-[#1990FF]" />
+          <>
+            <Loader className="w-4 h-4 animate-spin text-[#1990FF]" />
+            <span className="text-xs text-[#999999] italic">
+              {t(`assistant.message.steps.${ChunkData?.chunk_type}`)}
+            </span>
+          </>
         ) : (
-          <Hammer className="w-4 h-4 text-[#38C200]" />
+          <>
+            <Hammer className="w-4 h-4 text-[#38C200]" />
+            <span className="text-xs text-[#999999]">
+              {t(`assistant.message.steps.${ChunkData?.chunk_type}`)}
+            </span>
+          </>
         )}
-        <span className="text-xs text-[#999999] italic">
-          {t(`assistant.message.steps.${ChunkData?.chunk_type}`)}
-        </span>
+
         {isThinkingExpanded ? (
           <ChevronUp className="w-4 h-4" />
         ) : (
@@ -53,11 +61,11 @@ export const CallTools = ({ Detail, ChunkData, loading }: CallToolsProps) => {
       {isThinkingExpanded && (
         <div className="pl-2 border-l-2 border-[#e5e5e5] dark:border-[#4e4e56]">
           <div className="text-[#8b8b8b] dark:text-[#a6a6a6] space-y-2">
-          <Markdown
-            content={Data || ""}
-            loading={loading}
-            onDoubleClickCapture={() => {}}
-          />
+            <Markdown
+              content={Data || ""}
+              loading={loading}
+              onDoubleClickCapture={() => {}}
+            />
             {/* {Data?.split("\n").map(
               (paragraph, idx) =>
                 paragraph.trim() && (

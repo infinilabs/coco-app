@@ -61,7 +61,7 @@ function WebApp({
     setIsTauri(false);
     setEndpoint(serverUrl);
     setModeSwitch("S");
-    setInternetSearch("B");
+    setInternetSearch("G");
     localStorage.setItem("headers", JSON.stringify(headers || {}));
   }, []);
 

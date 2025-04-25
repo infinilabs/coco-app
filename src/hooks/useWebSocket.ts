@@ -39,8 +39,8 @@ export default function useWebSocket({
   // web
   const { readyState, connect, disconnect } = useWebSocketAHook(
     // "wss://coco.infini.cloud/ws",
-    // "ws://localhost:9000/ws",
-    isTauri ? "" : endpoint_websocket,
+    "ws://localhost:9000/ws",
+    //isTauri ? "" : endpoint_websocket,
     {
       manual: true,
       reconnectLimit: 3,
