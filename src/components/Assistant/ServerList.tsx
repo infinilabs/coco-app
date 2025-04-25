@@ -12,6 +12,7 @@ import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore, IServer } from "@/stores/appStore";
 import { useChatStore } from "@/stores/chatStore";
 import { useConnectStore } from "@/stores/connectStore";
+import { isNil } from "lodash-es";
 
 interface ServerListProps {
   isLogin: boolean;
@@ -73,7 +74,7 @@ export function ServerList({
 
   useEffect(() => {
     if (!isTauri) return;
-    
+
     fetchServers(true);
 
     const unlisten = platformAdapter.listenEvent("login_or_logout", (event) => {
@@ -124,10 +125,10 @@ export function ServerList({
   };
 
   useKeyPress(["uparrow", "downarrow"], (_, key) => {
-    const isOpen = serverListButtonRef.current?.dataset["open"] != null;
+    const isClose = isNil(serverListButtonRef.current?.dataset["open"]);
     const length = serverList.length;
 
-    if (!isOpen || length <= 1) return;
+    if (isClose || length <= 1) return;
 
     const currentIndex = serverList.findIndex((server) => {
       return server.id === currentService?.id;
