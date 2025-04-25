@@ -25,6 +25,10 @@ export type IShortcutsStore = {
   setInternetSearch: (internetSearch: string) => void;
   internetSearchScope: string;
   setInternetSearchScope: (internetSearchScope: string) => void;
+  mcpSearch: string;
+  setMcpSearch: (internetSearch: string) => void;
+  mcpSearchScope: string;
+  setMcpSearchScope: (internetSearchScope: string) => void;
   historicalRecords: string;
   setHistoricalRecords: (historicalRecords: string) => void;
   aiAssistant: string;
@@ -70,6 +74,12 @@ export const useShortcutsStore = create<IShortcutsStore>()(
       setInternetSearchScope: (internetSearchScope) => {
         return set({ internetSearchScope });
       },
+      mcpSearch: "B",
+      setMcpSearch: (mcpSearch) => set({ mcpSearch }),
+      mcpSearchScope: "L",
+      setMcpSearchScope: (mcpSearchScope) => {
+        return set({ mcpSearchScope });
+      },
       historicalRecords: "Y",
       setHistoricalRecords: (historicalRecords) => {
         return set({ historicalRecords });
@@ -99,6 +109,9 @@ export const useShortcutsStore = create<IShortcutsStore>()(
         addFile: state.addFile,
         deepThinking: state.deepThinking,
         internetSearch: state.internetSearch,
+        internetSearchScope: state.internetSearchScope,
+        mcpSearch: state.mcpSearch,
+        mcpSearchScope: state.mcpSearchScope,
         historicalRecords: state.historicalRecords,
         aiAssistant: state.aiAssistant,
         newSession: state.newSession,

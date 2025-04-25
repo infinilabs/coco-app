@@ -1,8 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
-import { useHotkeys } from 'react-hotkeys-hook';
+import { useState, useCallback, useEffect } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 
-import { Shortcut } from '@/components/Settings/shortcut';
-import { normalizeKey, isModifierKey, sortKeys } from '@/utils/keyboardUtils';
+import { Shortcut } from "@/components/Settings/shortcut";
+import { normalizeKey, isModifierKey, sortKeys } from "@/utils/keyboardUtils";
 
 const RESERVED_SHORTCUTS = [
   ["Command", "C"],
@@ -42,8 +42,11 @@ const RESERVED_SHORTCUTS = [
   ["Command", "9"],
 ];
 
-export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Shortcut) => void) {
-  console.log("shortcut", shortcut)
+export function useShortcutEditor(
+  shortcut: Shortcut,
+  onChange: (shortcut: Shortcut) => void
+) {
+  console.log("shortcut", shortcut);
 
   const [isEditing, setIsEditing] = useState(false);
   const [currentKeys, setCurrentKeys] = useState<string[]>([]);
@@ -58,13 +61,16 @@ export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Short
     if (!isEditing || currentKeys.length < 2) return;
 
     const hasModifier = currentKeys.some(isModifierKey);
-    const hasNonModifier = currentKeys.some(key => !isModifierKey(key));
+    const hasNonModifier = currentKeys.some((key) => !isModifierKey(key));
 
     if (!hasModifier || !hasNonModifier) return;
 
-    const isReserved = RESERVED_SHORTCUTS.some(reserved =>
-      reserved.length === currentKeys.length &&
-      reserved.every((key, index) => key.toLowerCase() === currentKeys[index].toLowerCase())
+    const isReserved = RESERVED_SHORTCUTS.some(
+      (reserved) =>
+        reserved.length === currentKeys.length &&
+        reserved.every(
+          (key, index) => key.toLowerCase() === currentKeys[index].toLowerCase()
+        )
     );
 
     if (isReserved) {
@@ -74,7 +80,6 @@ export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Short
 
     // Sort keys to ensure consistent order (modifiers first)
     const sortedKeys = sortKeys(currentKeys);
-
 
     onChange(sortedKeys);
     setIsEditing(false);
@@ -88,7 +93,7 @@ export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Short
 
   // Register key capture for editing state
   useHotkeys(
-    '*',
+    "*",
     (e) => {
       if (!isEditing) return;
 
@@ -103,14 +108,14 @@ export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Short
       setCurrentKeys(() => {
         const keys = Array.from(pressedKeys);
         let modifiers = keys.filter(isModifierKey);
-        let nonModifiers = keys.filter(k => !isModifierKey(k));
+        let nonModifiers = keys.filter((k) => !isModifierKey(k));
 
         if (modifiers.length > 2) {
-          modifiers = modifiers.slice(0, 2)
+          modifiers = modifiers.slice(0, 2);
         }
 
         if (nonModifiers.length > 2) {
-          nonModifiers = nonModifiers.slice(0, 2)
+          nonModifiers = nonModifiers.slice(0, 2);
         }
 
         // Combine modifiers and non-modifiers
@@ -120,14 +125,14 @@ export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Short
     {
       enabled: isEditing,
       keydown: true,
-      enableOnContentEditable: true
+      enableOnContentEditable: true,
     },
     [isEditing, pressedKeys]
   );
 
   // Handle key up events
   useHotkeys(
-    '*',
+    "*",
     (e) => {
       if (!isEditing) return;
       const key = normalizeKey(e.code);
@@ -136,7 +141,7 @@ export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Short
     {
       enabled: isEditing,
       keyup: true,
-      enableOnContentEditable: true
+      enableOnContentEditable: true,
     },
     [isEditing, pressedKeys]
   );
@@ -155,6 +160,6 @@ export function useShortcutEditor(shortcut: Shortcut, onChange: (shortcut: Short
     currentKeys,
     startEditing,
     saveShortcut,
-    cancelEditing
+    cancelEditing,
   };
 }

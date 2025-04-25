@@ -87,9 +87,9 @@ export default function SearchPopover({
   }, [currentService?.id, debouncedKeyword]);
 
   const popoverButtonRef = useRef<HTMLButtonElement>(null);
-  const internetSearch = useShortcutsStore((state) => state.internetSearch);
-  const internetSearchScope = useShortcutsStore((state) => {
-    return state.internetSearchScope;
+  const mcpSearch = useShortcutsStore((state) => state.mcpSearch);
+  const mcpSearchScope = useShortcutsStore((state) => {
+    return state.mcpSearchScope;
   });
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(0);
@@ -177,7 +177,7 @@ export default function SearchPopover({
       )}
       onClick={setIsMCPActive}
     >
-      <VisibleKey shortcut={internetSearch} onKeyPress={setIsMCPActive}>
+      <VisibleKey shortcut={mcpSearch} onKeyPress={setIsMCPActive}>
         <Hammer
           className={`size-3 ${
             isMCPActive
@@ -198,7 +198,7 @@ export default function SearchPopover({
           <Popover className="relative">
             <PopoverButton ref={popoverButtonRef} className="flex items-center">
               <VisibleKey
-                shortcut={internetSearchScope}
+                shortcut={mcpSearchScope}
                 onKeyPress={() => {
                   popoverButtonRef.current?.click();
                 }}

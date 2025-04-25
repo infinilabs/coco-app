@@ -38,6 +38,12 @@ export const useSyncStore = () => {
   const setInternetSearchScope = useShortcutsStore((state) => {
     return state.setInternetSearchScope;
   });
+  const setMcpSearch = useShortcutsStore((state) => {
+    return state.setMcpSearch;
+  });
+  const setMcpSearchScope = useShortcutsStore((state) => {
+    return state.setMcpSearchScope;
+  });
   const setHistoricalRecords = useShortcutsStore((state) => {
     return state.setHistoricalRecords;
   });
@@ -92,6 +98,8 @@ export const useSyncStore = () => {
           deepThinking,
           internetSearch,
           internetSearchScope,
+          mcpSearch,
+          mcpSearchScope,
           historicalRecords,
           aiAssistant,
           newSession,
@@ -107,6 +115,8 @@ export const useSyncStore = () => {
         setDeepThinking(deepThinking);
         setInternetSearch(internetSearch);
         setInternetSearchScope(internetSearchScope);
+        setMcpSearch(mcpSearch);
+        setMcpSearchScope(mcpSearchScope);
         setHistoricalRecords(historicalRecords);
         setAiAssistant(aiAssistant);
         setNewSession(newSession);

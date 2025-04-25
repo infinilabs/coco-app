@@ -407,9 +407,19 @@ export default function ChatInput({
                 setReconnectCountdown(10);
               }}
             >
-              {reconnectCountdown > 0
-                ? `${t("search.input.connecting")}(${reconnectCountdown}s)`
-                : t("search.input.reconnect")}
+              {reconnectCountdown > 0 ? (
+                `${t("search.input.connecting")}(${reconnectCountdown}s)`
+              ) : (
+                <VisibleKey
+                  shortcut="R"
+                  onKeyPress={() => {
+                    reconnect();
+                    setReconnectCountdown(10);
+                  }}
+                >
+                  {t("search.input.reconnect")}
+                </VisibleKey>
+              )}
             </div>
           </div>
         ) : null}

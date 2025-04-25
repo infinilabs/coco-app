@@ -37,6 +37,16 @@ const Shortcuts = () => {
   const setInternetSearchScope = useShortcutsStore((state) => {
     return state.setInternetSearchScope;
   });
+  const mcpSearch = useShortcutsStore((state) => state.mcpSearch);
+  const setMcpSearch = useShortcutsStore((state) => {
+    return state.setMcpSearch;
+  });
+  const mcpSearchScope = useShortcutsStore((state) => {
+    return state.mcpSearchScope;
+  });
+  const setMcpSearchScope = useShortcutsStore((state) => {
+    return state.setMcpSearchScope;
+  });
   const historicalRecords = useShortcutsStore((state) => {
     return state.historicalRecords;
   });
@@ -109,6 +119,18 @@ const Shortcuts = () => {
         "settings.advanced.shortcuts.internetSearchScope.description",
       value: internetSearchScope,
       setValue: setInternetSearchScope,
+    },
+    {
+      title: "settings.advanced.shortcuts.mcpSearch.title",
+      description: "settings.advanced.shortcuts.mcpSearch.description",
+      value: mcpSearch,
+      setValue: setMcpSearch,
+    },
+    {
+      title: "settings.advanced.shortcuts.mcpSearchScope.title",
+      description: "settings.advanced.shortcuts.mcpSearchScope.description",
+      value: mcpSearchScope,
+      setValue: setMcpSearchScope,
     },
     {
       title: "settings.advanced.shortcuts.historicalRecords.title",
