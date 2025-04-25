@@ -70,7 +70,7 @@ export function ChatHeader({
 
   return (
     <header
-      className="flex items-center justify-between py-2 px-3"
+      className="flex items-center justify-between py-2 px-3 select-none"
       data-tauri-drag-region
     >
       <div className="flex items-center gap-2">

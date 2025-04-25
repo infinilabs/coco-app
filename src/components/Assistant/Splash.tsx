@@ -95,7 +95,7 @@ const Splash = () => {
 
   return (
     visibleStartPage && (
-      <div className="absolute inset-0 flex flex-col items-center px-6 pt-6 text-[#333] dark:text-white">
+      <div className="absolute inset-0 flex flex-col items-center px-6 pt-6 text-[#333] dark:text-white select-none">
         <CircleX
           className="absolute top-3 right-3 size-4 text-[#999] cursor-pointer"
           onClick={() => {
