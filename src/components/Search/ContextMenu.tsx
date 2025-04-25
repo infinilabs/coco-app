@@ -12,6 +12,7 @@ import { isMac } from "@/utils/platform";
 import { CONTEXT_MENU_PANEL_ID } from "@/constants";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { Input } from "@headlessui/react";
+import VisibleKey from "../Common/VisibleKey";
 
 interface State {
   activeMenuIndex: number;
@@ -38,6 +39,7 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
     return state.selectedSearchContent;
   });
   const [searchMenus, setSearchMenus] = useState<typeof menus>([]);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const title = useCreation(() => {
     if (selectedSearchContent?.id === "Calculator") {
@@ -251,20 +253,29 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
 
         <div className="-mx-3 p-2 border-t border-[#E6E6E6] dark:border-[#262626]">
           {visibleContextMenu && (
-            <Input
-              autoFocus
-              placeholder={t("search.contextMenu.search")}
-              className="w-full bg-transparent"
-              onChange={(event) => {
-                const value = event.target.value;
-
-                const searchMenus = menus.filter((item) => {
-                  return lowerCase(item.name).includes(lowerCase(value));
-                });
-
-                setSearchMenus(searchMenus);
+            <VisibleKey
+              shortcut="F"
+              shortcutClassName="left-3"
+              onKeyPress={() => {
+                searchInputRef.current?.focus();
               }}
-            />
+            >
+              <Input
+                ref={searchInputRef}
+                autoFocus
+                placeholder={t("search.contextMenu.search")}
+                className="w-full bg-transparent"
+                onChange={(event) => {
+                  const value = event.target.value;
+
+                  const searchMenus = menus.filter((item) => {
+                    return lowerCase(item.name).includes(lowerCase(value));
+                  });
+
+                  setSearchMenus(searchMenus);
+                }}
+              />
+            </VisibleKey>
           )}
         </div>
       </div>

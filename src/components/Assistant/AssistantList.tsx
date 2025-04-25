@@ -18,7 +18,12 @@ import { useChatStore } from "@/stores/chatStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { Post } from "@/api/axiosRequest";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
-import { useDebounce, useKeyPress, useMount, usePagination } from "ahooks";
+import {
+  useAsyncEffect,
+  useDebounce,
+  useKeyPress,
+  usePagination,
+} from "ahooks";
 import clsx from "clsx";
 import NoDataImage from "../Common/NoDataImage";
 import PopoverInput from "../Common/PopoverInput";
@@ -144,11 +149,11 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
     }
   };
 
-  useMount(async () => {
+  useAsyncEffect(async () => {
     const data = await fetchAssistant({ current: 1, pageSize: 1000 });
 
     setAssistantList(data.list);
-  });
+  }, [currentServiceId]);
 
   const { pagination, runAsync } = usePagination(fetchAssistant, {
     defaultPageSize: 5,
