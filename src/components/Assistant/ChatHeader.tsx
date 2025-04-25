@@ -107,14 +107,11 @@ export function ChatHeader({
         ) : null}
       </div>
 
-      <div>
-        <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-          {activeChat?._source?.title ||
-            activeChat?._source?.message ||
-            activeChat?._id}
-        </h2>
-      </div>
-
+      <h2 className="max-w-[calc(100%-200px)] text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+        {activeChat?._source?.title ||
+          activeChat?._source?.message ||
+          activeChat?._id}
+      </h2>
       {isTauri ? (
         <div className="flex items-center gap-2">
           <button
