@@ -22,6 +22,7 @@ import { useDebounce, useKeyPress, useMount, usePagination } from "ahooks";
 import clsx from "clsx";
 import NoDataImage from "../Common/NoDataImage";
 import PopoverInput from "../Common/PopoverInput";
+import { isNil } from "lodash-es";
 
 interface AssistantListProps {
   assistantIDs?: string[];
@@ -39,7 +40,6 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
   });
   const aiAssistant = useShortcutsStore((state) => state.aiAssistant);
   const [assistants, setAssistants] = useState<any[]>([]);
-
   const [isRefreshing, setIsRefreshing] = useState(false);
   const popoverButtonRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -167,10 +167,13 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
   };
 
   useKeyPress(["uparrow", "downarrow"], (_, key) => {
+    const isClose = isNil(popoverButtonRef.current?.dataset["open"]);
     const index = assistants.findIndex(
       (item) => item._id === currentAssistant?._id
     );
     const length = assistants.length;
+
+    if (isClose || length <= 1) return;
 
     let nextIndex = index;
 
@@ -203,6 +206,7 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
         <PopoverButton
           ref={popoverButtonRef}
           className="h-6  p-1 px-1.5 flex items-center gap-1 rounded-full bg-white dark:bg-[#202126] text-sm/6 font-semibold text-gray-800 dark:text-[#d8d8d8] border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none"
+          onClick={() => {}}
         >
           <div className="w-4 h-4 flex justify-center items-center rounded-full bg-white">
             {currentAssistant?._source?.icon?.startsWith("font_") ? (
