@@ -7,6 +7,8 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 
 import "@/i18n";
 import "@/web.css";
+import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
+import useEscape from "@/hooks/useEscape";
 
 interface WebAppProps {
   headers?: Record<string, unknown>;
@@ -66,6 +68,10 @@ function WebApp({
   const isMobile = useIsMobile();
 
   const [isChatMode, setIsChatMode] = useState(false);
+
+  useEscape();
+
+  useModifierKeyPress();
 
   return (
     <div
