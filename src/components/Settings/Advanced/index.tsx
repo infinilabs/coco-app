@@ -187,7 +187,7 @@ const Advanced = () => {
             value={queryTimeout}
             className="w-20 h-8 px-2 rounded-md border bg-transparent border-black/5 dark:border-white/10"
             onChange={(event) => {
-              setQueryTimeout(Number(event.target.value) || 5);
+              setQueryTimeout(Number(event.target.value) || 500);
             }}
           />
         </SettingsItem>
