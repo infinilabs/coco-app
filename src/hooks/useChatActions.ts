@@ -30,6 +30,9 @@ export function useChatActions(
   const { connected } = useChatStore();
   const sourceDataIds = useSearchStore((state) => state.sourceDataIds);
   const MCPIds = useSearchStore((state) => state.MCPIds);
+  const setVisibleStartPage = useConnectStore((state) => {
+    return state.setVisibleStartPage;
+  });
 
   const [keyword, setKeyword] = useState("");
 
@@ -132,6 +135,7 @@ export function useChatActions(
       } catch (error) {
         console.error("chatHistory:", error);
       }
+      setVisibleStartPage(false);
     },
     [currentServiceId, setActiveChat]
   );
@@ -208,6 +212,7 @@ export function useChatActions(
       } catch (error) {
         console.error("createNewChat:", error);
       }
+      setVisibleStartPage(false);
     },
     [
       currentServiceId,
@@ -291,6 +296,7 @@ export function useChatActions(
       } catch (error) {
         console.error("sendMessage:", error);
       }
+      setVisibleStartPage(false);
     },
     [
       currentServiceId,
@@ -353,6 +359,7 @@ export function useChatActions(
         console.error("open_session_chat:", error);
         return null;
       }
+      setVisibleStartPage(false);
     },
     [currentServiceId]
   );

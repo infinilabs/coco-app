@@ -39,7 +39,7 @@ export default function useWebSocket({
   // web
   const { readyState, connect, disconnect } = useWebSocketAHook(
     // "wss://coco.infini.cloud/ws",
-    // "ws://localhost:9000/ws",
+    //"ws://localhost:9000/ws",
     isTauri ? "" : endpoint_websocket,
     {
       manual: true,
@@ -82,7 +82,7 @@ export default function useWebSocket({
     while (messageQueue.current.length > 0) {
       const msg = messageQueue.current.shift();
       if (msg) {
-        console.log("Processing message:", msg.substring(0, 100));
+        // console.log("Processing message:", msg.substring(0, 100));
         processMessage(msg);
       }
     }
