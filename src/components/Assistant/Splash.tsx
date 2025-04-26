@@ -1,7 +1,8 @@
+import { useMemo, useState } from "react";
 import { CircleX, MoveRight } from "lucide-react";
 import { useMount } from "ahooks";
+
 import { useAppStore } from "@/stores/appStore";
-import { useMemo, useState } from "react";
 import platformAdapter from "@/utils/platformAdapter";
 import { useConnectStore } from "@/stores/connectStore";
 import { useThemeStore } from "@/stores/themeStore";

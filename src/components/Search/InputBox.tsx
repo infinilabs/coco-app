@@ -142,9 +142,6 @@ export default function ChatInput({
   const setModifierKeyPressed = useShortcutsStore((state) => {
     return state.setModifierKeyPressed;
   });
-  const setVisibleStartPage = useConnectStore((state) => {
-    return state.setVisibleStartPage;
-  });
   const setBlurred = useAppStore((state) => state.setBlurred);
 
   useEffect(() => {
@@ -170,8 +167,6 @@ export default function ChatInput({
   }, [isChatMode, textareaRef, inputRef]);
 
   const handleSubmit = useCallback(() => {
-    setVisibleStartPage(false);
-
     const trimmedValue = inputValue.trim();
     console.log("handleSubmit", trimmedValue, disabled);
     if (trimmedValue && !disabled) {
