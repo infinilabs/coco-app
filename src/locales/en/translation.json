@@ -160,7 +160,7 @@
         },
         "queryTimeout": {
           "title": "Query Timeout",
-          "description": "Terminates the query if no search results are returned within this time. Default: 5s."
+          "description": "Terminates the query if no search results are returned within this time. Default: 500ms."
         }
       }
     },

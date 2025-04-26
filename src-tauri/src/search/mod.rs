@@ -29,7 +29,7 @@ pub async fn query_coco_fusion<R: Runtime>(
     let sources_list = sources_future.await;
 
     // Time limit for each query
-    let timeout_duration = Duration::from_secs(query_timeout);
+    let timeout_duration = Duration::from_millis(query_timeout);
 
     // Push all queries into futures
     for query_source in sources_list {
@@ -52,7 +52,7 @@ pub async fn query_coco_fusion<R: Runtime>(
             timeout(timeout_duration, async {
                 query_source_clone.search(query).await
             })
-            .await
+                .await
         }));
     }
 
