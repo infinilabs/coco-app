@@ -4,11 +4,12 @@ import SearchChat from "@/components/SearchChat";
 import { useAppStore } from "@/stores/appStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
+import useEscape from "@/hooks/useEscape";
+import { useViewportHeight } from "@/hooks/useViewportHeight";
 
 import "@/i18n";
 import "@/web.css";
-import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
-import useEscape from "@/hooks/useEscape";
 
 interface WebAppProps {
   headers?: Record<string, unknown>;
@@ -61,7 +62,8 @@ function WebApp({
     setIsTauri(false);
     setEndpoint(serverUrl);
     setModeSwitch("S");
-    setInternetSearch("G");
+    setInternetSearch("E");
+
     localStorage.setItem("headers", JSON.stringify(headers || {}));
   }, []);
 
@@ -70,8 +72,8 @@ function WebApp({
   const [isChatMode, setIsChatMode] = useState(false);
 
   useEscape();
-
   useModifierKeyPress();
+  useViewportHeight();
 
   return (
     <div
@@ -81,7 +83,7 @@ function WebApp({
       style={{
         maxWidth: `${width}px`,
         width: `100vw`,
-        height: isMobile ? "100vh" : `${height}px`,
+        height: isMobile ? "calc(var(--vh, 1vh) * 100)" : `${height}px`,
       }}
     >
       {isMobile && (
