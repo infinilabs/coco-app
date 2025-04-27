@@ -34,10 +34,10 @@ const Advanced = () => {
     return state.setConnectionTimeout;
   });
   const queryTimeout = useConnectStore((state) => {
-    return state.queryTimeout;
+    return state.queryTimeoutRenamed;
   });
   const setQueryTimeout = useConnectStore((state) => {
-    return state.setQueryTimeout;
+    return state.setQueryTimeoutRenamed;
   });
 
   useEffect(() => {
