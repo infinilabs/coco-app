@@ -4,8 +4,10 @@ import platformAdapter from "@/utils/platformAdapter";
 import { useContext } from "react";
 import { ExtensionsContext } from "../../..";
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
 
 const Applications = () => {
+  const { t } = useTranslation();
   const { activeId, setActiveId } = useContext(ExtensionsContext);
 
   const allApps = useApplicationsStore((state) => state.allApps);
@@ -34,9 +36,15 @@ const Applications = () => {
         </div>
 
         <div className="flex-1 flex items-center text-[#999] ">
-          <div className="flex-1">Application</div>
-          <div className="flex-1">Add Alias</div>
-          <div className="flex-1">Record Hotkey</div>
+          <div className="flex-1">
+            {t("settings.extensions.application.title")}
+          </div>
+          <div className="flex-1">
+            {t("settings.extensions.application.hits.addAlias")}
+          </div>
+          <div className="flex-1">
+            {t("settings.extensions.application.hits.recordHotkey")}
+          </div>
           <div className="flex-1 flex items-center justify-end">
             <SettingsToggle
               label=""

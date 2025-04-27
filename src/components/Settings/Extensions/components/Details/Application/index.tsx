@@ -14,31 +14,31 @@ const App: FC<AppProps> = (props) => {
 
   const metadata = [
     {
-      label: t("settings.extensions.application.name"),
+      label: t("settings.extensions.application.details.name"),
       value: name,
     },
     {
-      label: t("settings.extensions.application.where"),
+      label: t("settings.extensions.application.details.where"),
       value: where,
     },
     {
-      label: t("settings.extensions.application.type"),
-      value: t("settings.extensions.application.typeValue"),
+      label: t("settings.extensions.application.details.type"),
+      value: t("settings.extensions.application.details.typeValue"),
     },
     {
-      label: t("settings.extensions.application.size"),
+      label: t("settings.extensions.application.details.size"),
       value: filesize(size, { standard: "jedec", spacer: "" }),
     },
     {
-      label: t("settings.extensions.application.created"),
+      label: t("settings.extensions.application.details.created"),
       value: dayjs(created).format("YYYY/MM/DD HH:mm:ss"),
     },
     {
-      label: t("settings.extensions.application.modified"),
+      label: t("settings.extensions.application.details.modified"),
       value: dayjs(modified).format("YYYY/MM/DD HH:mm:ss"),
     },
     {
-      label: t("settings.extensions.application.lastOpened"),
+      label: t("settings.extensions.application.details.lastOpened"),
       value: dayjs(lastOpened).format("YYYY/MM/DD HH:mm:ss"),
     },
   ];

@@ -13,6 +13,7 @@ import ApplicationsContent from "./components/Content/Applications";
 import ApplicationsDetail from "./components/Details/Applications";
 import { useApplicationsStore } from "@/stores/applicationsStore";
 import Application from "./components/Details/Application";
+import { useTranslation } from "react-i18next";
 
 export interface Plugin {
   id: string;
@@ -36,6 +37,8 @@ export const ExtensionsContext = createContext<ExtensionsContextType>({
 });
 
 const Extensions = () => {
+  const { t } = useTranslation();
+
   const allApps = useApplicationsStore((state) => {
     return state.allApps;
   });
@@ -44,7 +47,7 @@ const Extensions = () => {
     {
       id: "1",
       icon: <Folder />,
-      title: "Applications",
+      title: t("settings.extensions.application.title"),
       type: "Group",
       content: <ApplicationsContent />,
       detail: <ApplicationsDetail />,
@@ -80,18 +83,28 @@ const Extensions = () => {
       <div className="flex h-[calc(100vh-128px)] -mx-6 gap-4">
         <div className="w-2/3 h-full px-4 border-r dark:border-gray-700 overflow-auto">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Extensions
+            {t("settings.extensions.title")}
           </h2>
 
           <div>
             <div className="flex">
-              <div className="w-[220px]">Name</div>
+              <div className="w-[220px]">
+                {t("settings.extensions.list.name")}
+              </div>
 
               <div className="flex flex-1">
-                <div className="flex-1">Type</div>
-                <div className="flex-1">Alias</div>
-                <div className="flex-1">Hotkey</div>
-                <div className="flex-1 text-right">Enabled</div>
+                <div className="flex-1">
+                  {t("settings.extensions.list.type")}
+                </div>
+                <div className="flex-1">
+                  {t("settings.extensions.list.alias")}
+                </div>
+                <div className="flex-1">
+                  {t("settings.extensions.list.hotkey")}
+                </div>
+                <div className="flex-1 text-right">
+                  {t("settings.extensions.list.enabled")}
+                </div>
               </div>
             </div>
 
