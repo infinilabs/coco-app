@@ -75,7 +75,7 @@ export const useSyncStore = () => {
     return state.setConnectionTimeout;
   });
   const setQueryTimeout = useConnectStore((state) => {
-    return state.setQueryTimeoutRenamed;
+    return state.setQuerySourceTimeout;
   });
 
   useEffect(() => {
@@ -137,9 +137,9 @@ export const useSyncStore = () => {
       }),
 
       platformAdapter.listenEvent("change-connect-store", ({ payload }) => {
-        const { connectionTimeout, queryTimeoutRenamed } = payload;
+        const { connectionTimeout, querySourceTimeout } = payload;
         setConnectionTimeout(connectionTimeout);
-        setQueryTimeout(queryTimeoutRenamed);
+        setQueryTimeout(querySourceTimeout);
       }),
     ]);
 
