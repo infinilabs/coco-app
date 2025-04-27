@@ -174,15 +174,35 @@
       "advancedContent": "Advanced Settings content"
     },
     "extensions": {
-      "application": {
+      "title": "Extensions",
+      "list": {
         "name": "Name",
-        "where": "Where",
         "type": "Type",
-        "typeValue": "Application",
-        "size": "Size",
-        "created": "Created",
-        "modified": "Modified",
-        "lastOpened": "Last Opened"
+        "alias": "Alias",
+        "hotkey": "Hotkey",
+        "enabled": "Enabled"
+      },
+      "application": {
+        "title": "Applications",
+        "hits": {
+          "addAlias": "Add Alias",
+          "recordHotkey": "Record Hotkey"
+        },
+        "button": {
+          "addDirectories": "Add Directories"
+        },
+        "details": {
+          "searchScope": "Search Scope",
+          "searchScopeDescription": "Directories added here will be searched for applications and preference panes.",
+          "name": "Name",
+          "where": "Where",
+          "type": "Type",
+          "typeValue": "Application",
+          "size": "Size",
+          "created": "Created",
+          "modified": "Modified",
+          "lastOpened": "Last Opened"
+        }
       }
     }
   },
