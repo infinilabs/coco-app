@@ -14,6 +14,7 @@ import { copyToClipboard, OpenURLWithBrowser } from "@/utils/index";
 import VisibleKey from "@/components/Common/VisibleKey";
 import Calculator from "./Calculator";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
+import platformAdapter from "@/utils/platformAdapter";
 
 type ISearchData = Record<string, any[]>;
 
@@ -198,17 +199,22 @@ function DropdownList({
       className="h-full w-full p-2 flex flex-col overflow-y-auto custom-scrollbar focus:outline-none"
       tabIndex={0}
     >
-      {showError ? (
-        <div className="flex items-center gap-2 text-sm text-[#333] p-2">
-          <CircleAlert className="text-[#FF0000] w-[14px] h-[14px]" />
+      {showError && (
+        <div className="flex items-center gap-2 text-sm text-[#333] dark:text-[#666] p-2">
+          <CircleAlert className="text-[#FF0000] size-3" />
           {t("search.list.failures")}
-          <Bolt className="text-[#000] w-[14px] h-[14px] cursor-pointer" />
+          <Bolt
+            className="dark:text-white size-3 cursor-pointer"
+            onClick={() => {
+              platformAdapter.emitEvent("open_settings", "connect");
+            }}
+          />
           <X
-            className="text-[#666] w-[16px] h-[16px] cursor-pointer"
+            className="text-[#666] size-4 cursor-pointer"
             onClick={() => setShowError(false)}
           />
         </div>
-      ) : null}
+      )}
       {Object.entries(SearchData).map(([sourceName, items]) => {
         const showHeader = Object.entries(SearchData).length < 5;
 
