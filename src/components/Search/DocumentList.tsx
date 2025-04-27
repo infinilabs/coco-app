@@ -35,7 +35,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const { t } = useTranslation();
   const sourceData = useSearchStore((state) => state.sourceData);
   const isTauri = useAppStore((state) => state.isTauri);
-  const queryTimeout = useConnectStore((state) => state.queryTimeout);
+  const queryTimeout = useConnectStore((state) => state.querySourceTimeout);
 
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
   const [total, setTotal] = useState(0);
@@ -65,7 +65,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
           from: from,
           size: PAGE_SIZE,
           queryStrings: queryStrings,
-          queryTimeout: queryTimeout,
+          queryTimeout,
         });
       } else {
         let url = `/query/_search?query=${queryStrings.query}&datasource=${queryStrings.datasource}&from=${from}&size=${PAGE_SIZE}`;
@@ -141,15 +141,16 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       const handleArrowKeys = () => {
         e.preventDefault();
         setIsKeyboardMode(true);
-  
+
         setSelectedItem((prev) => {
           const isArrowUp = e.key === "ArrowUp";
-          const nextIndex = prev === null 
-            ? 0 
-            : isArrowUp
+          const nextIndex =
+            prev === null
+              ? 0
+              : isArrowUp
               ? Math.max(0, prev - 1)
               : Math.min(data.list.length - 1, prev + 1);
-  
+
           getDocDetail(data.list[nextIndex]?.document);
           itemRefs.current[nextIndex]?.scrollIntoView({
             behavior: "smooth",
