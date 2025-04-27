@@ -45,7 +45,7 @@ function Search({
   setWindowAlwaysOnTop,
 }: SearchProps) {
   const sourceData = useSearchStore((state) => state.sourceData);
-  const queryTimeout = useConnectStore((state) => state.queryTimeout);
+  const queryTimeout = useConnectStore((state) => state.querySourceTimeout);
 
   const [IsError, setIsError] = useState<boolean>(false);
   const [suggests, setSuggests] = useState<any[]>([]);
