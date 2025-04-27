@@ -28,8 +28,8 @@ export type IConnectStore = {
   setAssistantList: (assistantList: []) => void;
   currentAssistant: any;
   setCurrentAssistant: (assistant: any) => void;
-  queryTimeout: number;
-  setQueryTimeout: (queryTimeout: number) => void;
+  querySourceTimeout: number;
+  setQuerySourceTimeout: (queryTimeout: number) => void;
   visibleStartPage: boolean;
   setVisibleStartPage: (visibleStartPage: boolean) => void;
 };
@@ -107,9 +107,13 @@ export const useConnectStore = create<IConnectStore>()(
             })
           );
         },
-        queryTimeout: 5,
-        setQueryTimeout: (queryTimeout: number) => {
-          return set(() => ({ queryTimeout }));
+        querySourceTimeout: 500,
+        setQuerySourceTimeout: (queryTimeout: number) => {
+          set(
+            produce((draft) => {
+              draft.querySourceTimeout = queryTimeout;
+            })
+          );
         },
         visibleStartPage: false,
         setVisibleStartPage: (visibleStartPage: boolean) => {
@@ -124,7 +128,7 @@ export const useConnectStore = create<IConnectStore>()(
           datasourceData: state.datasourceData,
           connectionTimeout: state.connectionTimeout,
           currentAssistant: state.currentAssistant,
-          queryTimeout: state.queryTimeout,
+          querySourceTimeout: state.querySourceTimeout,
         }),
       }
     )

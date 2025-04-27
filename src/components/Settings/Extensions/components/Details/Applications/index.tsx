@@ -3,8 +3,10 @@ import platformAdapter from "@/utils/platformAdapter";
 import { Button } from "@headlessui/react";
 import { castArray, union } from "lodash-es";
 import { Folder, SquareArrowOutUpRight, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const Applications = () => {
+  const { t } = useTranslation();
   const searchPaths = useApplicationsStore((state) => state.searchPaths);
   const setSearchPaths = useApplicationsStore((state) => state.setSearchPaths);
 
@@ -22,18 +24,20 @@ const Applications = () => {
   return (
     <div className="text-sm">
       <div className="text-[#999]">
-        <p>Application Hotkey Behavior</p>
-        <p>Toggle Application Visibility On Hotkey</p>
-        <p>Search Scope</p>
-        <p>Directories added here will be searched</p>
-        <p>for applications and preference panes</p>
+        <p className="font-bold mb-2">
+          {t("settings.extensions.application.details.searchScope")}
+        </p>
+
+        <p>
+          {t("settings.extensions.application.details.searchScopeDescription")}
+        </p>
       </div>
 
       <Button
         className="w-full h-8 my-4 text-[#0087FF] border border-[#EEF0F3] hover:border-[#0087FF] dark:border-gray-700 rounded-md transition"
         onClick={selectDirectory}
       >
-        Add Directories
+        {t("settings.extensions.application.button.addDirectories")}
       </Button>
 
       <ul className="flex flex-col gap-2">

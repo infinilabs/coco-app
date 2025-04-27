@@ -1,13 +1,15 @@
-import { Command } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { isMac } from "@/utils/platform";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import noDataImg from "@/assets/coconut-tree.png";
+import clsx from "clsx";
+import { formatKey } from "@/utils/keyboardUtils";
 
 export const NoResults = () => {
   const { t } = useTranslation();
 
+  const modifierKey = useShortcutsStore((state) => state.modifierKey);
   const modeSwitch = useShortcutsStore((state) => state.modeSwitch);
 
   return (
@@ -19,19 +21,22 @@ export const NoResults = () => {
       <div className="mt-4 text-sm text-[#999] dark:text-[#666]">
         {t("search.main.noResults")}
       </div>
-      <div className={`flex mobile:hidden mt-10 text-sm  text-[#333] dark:text-[#D8D8D8]`}>
+      <div
+        className={`flex mobile:hidden mt-10 text-sm  text-[#333] dark:text-[#D8D8D8]`}
+      >
         {t("search.main.askCoco")}
-        {isMac ? (
-          <span className="ml-3 w-5 h-5 rounded-[6px] border border-[#D8D8D8] flex justify-center items-center">
-            <Command className="w-3 h-3" />
-          </span>
-        ) : (
-          <span className="ml-3 w-8 h-5 rounded-[6px] border border-[#D8D8D8] flex justify-center items-center">
-            <span className="h-3 leading-3 inline-flex items-center text-xs">
-              Ctrl
-            </span>
-          </span>
-        )}
+
+        <span
+          className={clsx(
+            "ml-3 h-5 min-w-5 rounded-md border border-[#D8D8D8] flex justify-center items-center",
+            {
+              "px-1": !isMac,
+            }
+          )}
+        >
+          {formatKey(modifierKey)}
+        </span>
+
         <span className="ml-1 w-5 h-5 rounded-[6px] border border-[#D8D8D8] flex justify-center items-center">
           {modeSwitch}
         </span>

@@ -23,6 +23,7 @@ import {
   useDebounce,
   useKeyPress,
   usePagination,
+  useReactive,
 } from "ahooks";
 import clsx from "clsx";
 import NoDataImage from "../Common/NoDataImage";
@@ -31,6 +32,10 @@ import { isNil } from "lodash-es";
 
 interface AssistantListProps {
   assistantIDs?: string[];
+}
+
+interface State {
+  allAssistants: any[];
 }
 
 export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
@@ -50,6 +55,9 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [keyword, setKeyword] = useState("");
   const debounceKeyword = useDebounce(keyword, { wait: 500 });
+  const state = useReactive<State>({
+    allAssistants: [],
+  });
 
   const currentServiceId = useMemo(() => {
     return currentService?.id;
@@ -121,16 +129,32 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
 
       let assistantList = response?.hits?.hits ?? [];
 
-      if (assistantList.length > 0) {
-        const matched = assistantList.find((item: any) => {
-          return item._id === currentAssistant?._id;
+      console.log("assistantList", assistantList);
+
+      for (const item of assistantList) {
+        const index = state.allAssistants.findIndex((allItem: any) => {
+          return item._id === allItem._id;
         });
 
-        if (matched) {
-          setCurrentAssistant(matched);
+        if (index === -1) {
+          state.allAssistants.push(item);
         } else {
-          setCurrentAssistant(assistantList[0]);
+          state.allAssistants[index] = item;
         }
+      }
+
+      console.log("state.allAssistants", state.allAssistants);
+
+      const matched = state.allAssistants.find((item: any) => {
+        return item._id === currentAssistant?._id;
+      });
+
+      console.log("matched", matched);
+
+      if (matched) {
+        setCurrentAssistant(matched);
+      } else {
+        setCurrentAssistant(assistantList[0]);
       }
 
       return {

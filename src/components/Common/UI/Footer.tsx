@@ -1,10 +1,9 @@
-import { ArrowDown01, Command, CornerDownLeft } from "lucide-react";
+import { ArrowDown01, CornerDownLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 
 import TypeIcon from "@/components/Common/Icons/TypeIcon";
 import Copyright from "@/components/Common/Copyright";
-import { isMac } from "@/utils/platform";
 import PinOffIcon from "@/icons/PinOff";
 import PinIcon from "@/icons/Pin";
 import logoImg from "@/assets/icon.svg";
@@ -13,6 +12,7 @@ import { useSearchStore } from "@/stores/searchStore";
 import { useUpdateStore } from "@/stores/updateStore";
 import VisibleKey from "../VisibleKey";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
+import { formatKey } from "@/utils/keyboardUtils";
 
 interface FooterProps {
   isTauri: boolean;
@@ -35,6 +35,7 @@ export default function Footer({
   const fixedWindow = useShortcutsStore((state) => {
     return state.fixedWindow;
   });
+  const modifierKey = useShortcutsStore((state) => state.modifierKey);
 
   const togglePin = async () => {
     try {
@@ -99,19 +100,13 @@ export default function Footer({
         <Copyright />
       )}
 
-      <div
-        className={`flex mobile:hidden items-center gap-3`}
-      >
+      <div className={`flex mobile:hidden items-center gap-3`}>
         <div className="gap-1 flex items-center text-[#666] dark:text-[#666] text-xs">
           <span className="mr-1.5">{t("search.footer.select")}:</span>
           <kbd className="coco-modal-footer-commands-key pr-1">
-            {isMac ? (
-              <Command className="w-3 h-3" />
-            ) : (
-              <span className="h-3 leading-3 inline-flex items-center text-xs">
-                Ctrl
-              </span>
-            )}
+            <div className="flex items-center justify-center min-w-3 h-3">
+              {formatKey(modifierKey)}
+            </div>
           </kbd>
           +
           <kbd className="coco-modal-footer-commands-key pr-1">

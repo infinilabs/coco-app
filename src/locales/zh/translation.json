@@ -160,7 +160,7 @@
         },
         "queryTimeout": {
           "title": "查询超时",
-          "description": "在此时间内未返回搜索结果，则终止查询。默认值：5 秒。"
+          "description": "在此时间内未返回搜索结果，则终止查询。默认值：500 毫秒。"
         }
       }
     },
@@ -175,16 +175,34 @@
     },
     "extensions": {
       "title": "扩展",
-
-      "application": {
+      "list": {
         "name": "名称",
-        "where": "来源",
         "type": "类型",
-        "typeValue": "应用程序",
-        "size": "大小",
-        "created": "创建时间",
-        "modified": "修改时间",
-        "lastOpened": "上次打开时间"
+        "alias": "别名",
+        "hotkey": "热键",
+        "enabled": "启用状态"
+      },
+      "application": {
+        "title": "应用程序",
+        "hits": {
+          "addAlias": "添加别名",
+          "recordHotkey": "录制热键"
+        },
+        "button": {
+          "addDirectories": "添加目录"
+        },
+        "details": {
+          "searchScope": "搜索范围",
+          "searchScopeDescription": "在此添加的目录将用于搜索应用程序。",
+          "name": "名称",
+          "where": "来源",
+          "type": "类型",
+          "typeValue": "应用程序",
+          "size": "大小",
+          "created": "创建时间",
+          "modified": "修改时间",
+          "lastOpened": "上次打开时间"
+        }
       }
     }
   },
