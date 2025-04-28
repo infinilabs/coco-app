@@ -83,7 +83,7 @@ export default function SearchPopover({
       setDataList(data);
     } catch (err) {
       setDataList([]);
-      console.error("datasource_search", err);
+      console.error("mcp_server_search", err);
     }
   }, [currentService?.id, debouncedKeyword]);
 

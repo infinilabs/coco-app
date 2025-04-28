@@ -242,6 +242,7 @@ function SearchChat({
       }
       let ids = currentAssistant?._source?.datasource?.ids;
       if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
+        console.log("ids", ids, response);
         response = response?.filter((item: any) => ids.includes(item.id));
       }
       return response || [];
