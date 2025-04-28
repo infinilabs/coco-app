@@ -22,7 +22,7 @@ pub fn platform(app: &mut App, main_window: WebviewWindow, _settings_window: Web
     let panel = main_window.to_panel().unwrap();
 
     // Make the window above the dock
-    panel.set_level(NSMainMenuWindowLevel + 1);
+    panel.set_level(20);
 
     // Do not steal focus from other windows
     panel.set_style_mask(NSWindowStyleMaskNonActivatingPanel);
