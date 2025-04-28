@@ -1,9 +1,6 @@
 //credits to: https://github.com/ayangweb/ayangweb-EcoPaste/blob/169323dbe6365ffe4abb64d867439ed2ea84c6d1/src-tauri/src/core/setup/mac.rs
 use tauri::{ActivationPolicy, App, Emitter, EventTarget, WebviewWindow};
-use tauri_nspanel::{
-    cocoa::appkit::{NSMainMenuWindowLevel, NSWindowCollectionBehavior},
-    panel_delegate, WebviewWindowExt,
-};
+use tauri_nspanel::{cocoa::appkit::NSWindowCollectionBehavior, panel_delegate, WebviewWindowExt};
 
 use crate::common::MAIN_WINDOW_LABEL;
 
