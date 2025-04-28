@@ -9,11 +9,12 @@ import RehypeHighlight from "rehype-highlight";
 import mermaid from "mermaid";
 import { useDebouncedCallback } from "use-debounce";
 
-import { copyToClipboard, 
-  // useWindowSize 
+import {
+  copyToClipboard,
+  // useWindowSize
 } from "@/utils";
 
-import "./markdown.css";
+import "./markdown.scss";
 import "./highlight.css";
 
 // 8
@@ -296,18 +297,20 @@ export default function Markdown(
   const mdRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div
-      className="markdown-body"
-      style={{
-        fontSize: `${props.fontSize ?? 14}px`,
-        fontFamily: props.fontFamily || "inherit",
-      }}
-      ref={mdRef}
-      onContextMenu={props.onContextMenu}
-      onDoubleClickCapture={props.onDoubleClickCapture}
-      dir="auto"
-    >
-      <MarkdownContent content={props.content} />
+    <div className="coco-chat">
+      <div
+        className="markdown-body"
+        style={{
+          fontSize: `${props.fontSize ?? 14}px`,
+          fontFamily: props.fontFamily || "inherit",
+        }}
+        ref={mdRef}
+        onContextMenu={props.onContextMenu}
+        onDoubleClickCapture={props.onDoubleClickCapture}
+        dir="auto"
+      >
+        <MarkdownContent content={props.content} />
+      </div>
     </div>
   );
 }
