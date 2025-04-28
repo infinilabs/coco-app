@@ -7,11 +7,15 @@ title: "Release Notes"
 
 Information about release notes of Coco Server is provided here.
 
-## Latest (In development)  
-### ❌ Breaking changes  
-### 🚀 Features  
-### 🐛 Bug fix  
-### ✈️ Improvements  
+## Latest (In development)
+
+### ❌ Breaking changes
+
+### 🚀 Features
+
+### 🐛 Bug fix
+
+### ✈️ Improvements
 
 ## 0.4.0 (2025-04-27)
 
@@ -49,6 +53,7 @@ Information about release notes of Coco Server is provided here.
 - fix: get attachments in chat sessions
 - fix: filter http query_args and convert only supported values
 - fix：fixed several search & chat bugs #412
+- fix: fixed carriage return problem with chinese input method #464
 
 ### Improvements
 
