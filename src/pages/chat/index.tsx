@@ -36,6 +36,9 @@ interface ChatProps {}
 export default function Chat({}: ChatProps) {
   const currentService = useConnectStore((state) => state.currentService);
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
+  const setVisibleStartPage = useConnectStore((state) => {
+    return state.setVisibleStartPage;
+  });
 
   const chatAIRef = useRef<ChatAIRef>(null);
 
@@ -145,6 +148,7 @@ export default function Chat({}: ChatProps) {
       response = response ? JSON.parse(response) : null;
       console.log("_open", response);
       chatHistory(response);
+      setVisibleStartPage(false);
     } catch (error) {
       console.error("open_session_chat:", error);
     }
