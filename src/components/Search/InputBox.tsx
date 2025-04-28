@@ -275,6 +275,8 @@ export default function ChatInput({
     setIsDeepThinkActive();
   };
 
+  const source = currentAssistant?._source
+
   return (
     <div className={`w-full relative`}>
       <div
@@ -440,7 +442,7 @@ export default function ChatInput({
               />
             )} */}
 
-            {currentAssistant?._source?.type === "deep_think" && (
+            {source?.type === "deep_think" && source?.config?.visible && (
               <button
                 className={clsx(
                   "flex items-center gap-1 py-[3px] pl-1 pr-1.5 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
@@ -471,7 +473,7 @@ export default function ChatInput({
               </button>
             )}
 
-            {currentAssistant?._source?.datasource?.visible && (
+            {source?.datasource?.visible && (
               <SearchPopover
                 isSearchActive={isSearchActive}
                 setIsSearchActive={setIsSearchActive}
@@ -479,7 +481,7 @@ export default function ChatInput({
               />
             )}
 
-            {currentAssistant?._source?.mcp_servers?.visible && (
+            {source?.mcp_servers?.visible && (
               <MCPPopover
                 isMCPActive={isMCPActive}
                 setIsMCPActive={setIsMCPActive}
@@ -487,9 +489,9 @@ export default function ChatInput({
               />
             )}
 
-            {!currentAssistant?._source?.datasource?.visible &&
-            currentAssistant?._source?.type !== "deep_think" &&
-            !currentAssistant?._source?.mcp_servers?.visible ? (
+            {!source?.datasource?.visible &&
+            (source?.type !== "deep_think" || !source?.config?.visible) &&
+            !source?.mcp_servers?.visible ? (
               <div className="px-[9px]">
                 <Copyright />
               </div>
