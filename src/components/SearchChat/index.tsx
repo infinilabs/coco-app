@@ -184,7 +184,7 @@ function SearchChat({
     ): Promise<DataSource[]> => {
       let response: any;
       if (isTauri) {
-        response = platformAdapter.invokeBackend("datasource_search", {
+        response = await platformAdapter.invokeBackend("datasource_search", {
           id: serverId,
           options,
         });
@@ -222,7 +222,7 @@ function SearchChat({
     ): Promise<DataSource[]> => {
       let response: any;
       if (isTauri) {
-        response = platformAdapter.invokeBackend("mcp_server_search", {
+        response = await platformAdapter.invokeBackend("mcp_server_search", {
           id: serverId,
           options,
         });
@@ -240,7 +240,7 @@ function SearchChat({
           };
         });
       }
-      let ids = currentAssistant?._source?.datasource?.ids;
+      let ids = currentAssistant?._source?.mcp_servers?.ids;
       if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
         response = response?.filter((item: any) => ids.includes(item.id));
       }
