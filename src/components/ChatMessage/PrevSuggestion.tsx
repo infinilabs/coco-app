@@ -19,7 +19,7 @@ const PrevSuggestion: FC<PrevSuggestionProps> = (props) => {
     if (suggested.enabled) {
       setList(suggested.questions || []);
     } else {
-      setList(["123123123", "123123"]);
+      setList([]);
     }
   }, [JSON.stringify(currentAssistant)]);
 
