@@ -96,8 +96,6 @@ const ChatAI = memo(
 
       const [Question, setQuestion] = useState<string>("");
 
-      const [showPrevSuggestion, setShowPrevSuggestion] = useState(true);
-
       const [websocketSessionId, setWebsocketSessionId] = useState("");
 
       const onWebsocketSessionId = useCallback((sessionId: string) => {
@@ -212,7 +210,6 @@ const ChatAI = memo(
               addError("Please wait for the current conversation to complete");
               return;
             }
-            setShowPrevSuggestion(false);
             if (!activeChat?._id) {
               await createNewChat(value, activeChat, websocketSessionId);
             } else {
@@ -408,7 +405,7 @@ const ChatAI = memo(
             <ConnectPrompt />
           )}
 
-          {showPrevSuggestion && !visibleStartPage && (
+          {!activeChat?._id && !visibleStartPage && (
             <PrevSuggestion sendMessage={init} />
           )}
         </div>

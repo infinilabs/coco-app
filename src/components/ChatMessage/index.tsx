@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 
@@ -47,8 +47,23 @@ export const ChatMessage = memo(function ChatMessage({
   const { t } = useTranslation();
 
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
+  const assistantList = useConnectStore((state) => state.assistantList);
+  const [assistant, setAssistant] = useState<any>({});
 
   const isAssistant = message?._source?.type === "assistant";
+  const assistant_id = message?._source?.assistant_id;
+
+  useEffect(() => {
+    let target = currentAssistant;
+    if (isAssistant && assistant_id && Array.isArray(assistantList)) {
+      const found = assistantList.find((item) => item._id === assistant_id);
+      if (found) {
+        target = found;
+      }
+    }
+    setAssistant(target);
+  }, [isAssistant, assistant_id, assistantList, currentAssistant]);
+
   const messageContent = message?._source?.message || "";
   const details = message?._source?.details || [];
   const question = message?._source?.question || "";
@@ -82,7 +97,7 @@ export const ChatMessage = memo(function ChatMessage({
           ChunkData={tools}
           loading={loadingStep?.tools}
         />
-        
+
         <FetchSource
           Detail={details.find((item) => item.type === "fetch_source")}
           ChunkData={fetch_source}
@@ -154,11 +169,8 @@ export const ChatMessage = memo(function ChatMessage({
           <div className="w-full flex items-center gap-1 font-semibold text-sm text-[#333] dark:text-[#d8d8d8]">
             {isAssistant ? (
               <div className="w-6 h-6 flex justify-center items-center rounded-full bg-white border border-[#E6E6E6]">
-                {currentAssistant?._source?.icon?.startsWith("font_") ? (
-                  <FontIcon
-                    name={currentAssistant._source.icon}
-                    className="w-4 h-4"
-                  />
+                {assistant?._source?.icon?.startsWith("font_") ? (
+                  <FontIcon name={assistant._source.icon} className="w-4 h-4" />
                 ) : (
                   <img
                     src={logoImg}
@@ -168,7 +180,7 @@ export const ChatMessage = memo(function ChatMessage({
                 )}
               </div>
             ) : null}
-            {isAssistant ? currentAssistant?._source?.name || "Coco AI" : ""}
+            {isAssistant ? assistant?._source?.name || "Coco AI" : ""}
           </div>
           <div className="w-full prose dark:prose-invert prose-sm max-w-none">
             <div className="w-full pl-7 text-[#333] dark:text-[#d8d8d8] leading-relaxed">

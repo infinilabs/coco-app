@@ -335,6 +335,7 @@ export function useChatActions(
   const openSessionChat = useCallback(
     async (chat: Chat) => {
       if (!chat?._id) return;
+      setVisibleStartPage(false);
       try {
         let response: any;
         if (isTauri) {
@@ -359,7 +360,6 @@ export function useChatActions(
         console.error("open_session_chat:", error);
         return null;
       }
-      setVisibleStartPage(false);
     },
     [currentServiceId]
   );
