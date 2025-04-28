@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 import SearchChat from "@/components/SearchChat";
 import platformAdapter from "@/utils/platformAdapter";
@@ -7,7 +7,9 @@ import { useSyncStore } from "@/hooks/useSyncStore";
 
 function MainApp() {
   const setIsTauri = useAppStore((state) => state.setIsTauri);
-  setIsTauri(true);
+  useEffect(() => {
+    setIsTauri(true);
+  }, []);
 
   const hideCoco = useCallback(() => {
     return platformAdapter.hideWindow();
