@@ -2,7 +2,7 @@ import { ArrowBigLeft, Search, Send, Brain } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
-import { useKeyPress } from "ahooks";
+import { useBoolean, useKeyPress } from "ahooks";
 
 import ChatSwitch from "@/components/Common/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
@@ -108,6 +108,7 @@ export default function ChatInput({
   const modeSwitch = useShortcutsStore((state) => state.modeSwitch);
   const returnToInput = useShortcutsStore((state) => state.returnToInput);
   const deepThinking = useShortcutsStore((state) => state.deepThinking);
+  const [isComposition, { setTrue, setFalse }] = useBoolean();
 
   useEffect(() => {
     return () => {
@@ -301,14 +302,10 @@ export default function ChatInput({
               }}
               connected={connected}
               handleKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-                if (e.key === "Enter") {
-                  if (e.nativeEvent.isComposing) {
-                    return;
-                  }
-                  console.log("handleKeyDown", e.nativeEvent.isComposing);
-                  e.preventDefault();
-                  handleSubmit();
-                }
+                if (e.key !== "Enter") return;
+
+                e.preventDefault();
+                handleSubmit();
               }}
               chatPlaceholder={chatPlaceholder}
             />
@@ -325,6 +322,17 @@ export default function ChatInput({
                 searchPlaceholder || t("search.input.searchPlaceholder")
               }
               value={inputValue}
+              onCompositionStart={setTrue}
+              onCompositionEnd={() => {
+                setTimeout(setFalse, 0);
+              }}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter") return;
+
+                if (isComposition) {
+                  event.stopPropagation();
+                }
+              }}
               onChange={(e) => {
                 onSend(e.target.value);
               }}
