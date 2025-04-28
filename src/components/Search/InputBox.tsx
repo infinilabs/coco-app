@@ -440,7 +440,7 @@ export default function ChatInput({
               />
             )} */}
 
-            {currentAssistant?._source?.config?.visible && (
+            {currentAssistant?._source?.type === "deep_think" && (
               <button
                 className={clsx(
                   "flex items-center gap-1 py-[3px] pl-1 pr-1.5 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
@@ -488,7 +488,7 @@ export default function ChatInput({
             )}
 
             {!currentAssistant?._source?.datasource?.visible &&
-            !currentAssistant?._source?.config?.visible &&
+            currentAssistant?._source?.type !== "deep_think" &&
             !currentAssistant?._source?.mcp_servers?.visible ? (
               <div className="px-[9px]">
                 <Copyright />
