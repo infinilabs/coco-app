@@ -23,7 +23,6 @@ import {
   session_chat_history,
   close_session_chat,
   open_session_chat,
-  datasource_search,
   delete_session_chat,
   update_session_chat,
 } from "@/commands";
@@ -168,13 +167,6 @@ export default function Chat({}: ChatProps) {
     return convertFileSrc(path);
   }, []);
 
-  const getDataSourcesByServer = useCallback(
-    async (serverId: string): Promise<DataSource[]> => {
-      return datasource_search(serverId);
-    },
-    []
-  );
-
   const setupWindowFocusListener = useCallback(async (callback: () => void) => {
     return listen("tauri://focus", callback);
   }, []);
@@ -264,6 +256,29 @@ export default function Chat({}: ChatProps) {
     await delete_session_chat(currentService.id, id);
   };
 
+  const getDataSourcesByServer = useCallback(
+    async (
+      serverId: string,
+      options?: {
+        from?: number;
+        size?: number;
+        query?: string;
+      }
+    ): Promise<DataSource[]> => {
+      let response: any;
+      response = await platformAdapter.invokeBackend("datasource_search", {
+        id: serverId,
+        options,
+      });
+      let ids = currentAssistant?._source?.datasource?.ids;
+      if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
+        response = response?.filter((item: any) => ids.includes(item.id));
+      }
+      return response || [];
+    },
+    [JSON.stringify(currentAssistant)]
+  );
+
   const getMCPByServer = useCallback(
     async (
       serverId: string,
@@ -274,11 +289,11 @@ export default function Chat({}: ChatProps) {
       }
     ): Promise<DataSource[]> => {
       let response: any;
-      response = platformAdapter.invokeBackend("mcp_server_search", {
+      response = await platformAdapter.invokeBackend("mcp_server_search", {
         id: serverId,
         options,
       });
-      let ids = currentAssistant?._source?.datasource?.ids;
+      let ids = currentAssistant?._source?.mcp_servers?.ids;
       if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
         response = response?.filter((item: any) => ids.includes(item.id));
       }
