@@ -1,4 +1,5 @@
-import { useRef, useImperativeHandle, forwardRef } from "react";
+import { useBoolean } from "ahooks";
+import { useRef, useImperativeHandle, forwardRef, KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 interface AutoResizeTextareaProps {
@@ -16,6 +17,7 @@ const AutoResizeTextarea = forwardRef<
 >(({ input, setInput, handleKeyDown, connected, chatPlaceholder }, ref) => {
   const { t } = useTranslation();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isComposition, { setTrue, setFalse }] = useBoolean();
 
   // Expose methods to the parent via ref
   useImperativeHandle(ref, () => ({
@@ -26,6 +28,12 @@ const AutoResizeTextarea = forwardRef<
       textareaRef.current?.focus();
     },
   }));
+
+  const handleKeyPress = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (isComposition) return;
+
+    handleKeyDown?.(event);
+  };
 
   return (
     <textarea
@@ -41,7 +49,11 @@ const AutoResizeTextarea = forwardRef<
       aria-label={t("search.textarea.ariaLabel")}
       value={input}
       onChange={(e) => setInput(e.target.value)}
-      onKeyDown={(e) => handleKeyDown?.(e)}
+      onKeyDown={handleKeyPress}
+      onCompositionStart={setTrue}
+      onCompositionEnd={() => {
+        setTimeout(setFalse, 0);
+      }}
       rows={1}
       style={{
         resize: "none", // Prevent manual resize
