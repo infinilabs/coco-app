@@ -11,6 +11,7 @@ import darkIcon from "./imgs/dark-icon.png";
 import { useThemeStore } from "@/stores/themeStore";
 import { useUpdateStore } from "@/stores/updateStore";
 import { OpenURLWithBrowser } from "@/utils/index";
+import { useAppStore } from "@/stores/appStore";
 
 interface State {
   loading?: boolean;
@@ -33,6 +34,7 @@ const UpdateApp = ({ checkUpdate, relaunchApp }: UpdateAppProps) => {
   const isOptional = useUpdateStore((state) => state.isOptional);
   const updateInfo = useUpdateStore((state) => state.updateInfo);
   const setUpdateInfo = useUpdateStore((state) => state.setUpdateInfo);
+  const addError = useAppStore((state) => state.addError);
 
   const state = useReactive<State>({ download: 0 });
 
@@ -65,24 +67,28 @@ const UpdateApp = ({ checkUpdate, relaunchApp }: UpdateAppProps) => {
   }, [state.total, state.download]);
 
   const handleDownload = async () => {
-    if (state.loading) return;
+    try {
+      if (state.loading) return;
 
-    state.loading = true;
+      state.loading = true;
 
-    await updateInfo?.downloadAndInstall((progress: any) => {
-      switch (progress.event) {
-        case "Started":
-          state.total = progress.data.contentLength;
-          break;
-        case "Progress":
-          state.download += progress.data.chunkLength;
-          break;
-      }
-    });
+      await updateInfo?.downloadAndInstall((progress: any) => {
+        switch (progress.event) {
+          case "Started":
+            state.total = progress.data.contentLength;
+            break;
+          case "Progress":
+            state.download += progress.data.chunkLength;
+            break;
+        }
+      });
 
-    state.loading = false;
-
-    relaunchApp();
+      relaunchApp();
+    } catch (error) {
+      addError(String(error));
+    } finally {
+      state.loading = false;
+    }
   };
 
   const handleCancel = () => {
