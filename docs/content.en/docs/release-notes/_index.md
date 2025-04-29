@@ -13,6 +13,8 @@ Information about release notes of Coco Server is provided here.
 
 ### 🚀 Features
 
+- feat: check or enter to close the list of assistants #469
+
 ### 🐛 Bug fix
 
 ### ✈️ Improvements
