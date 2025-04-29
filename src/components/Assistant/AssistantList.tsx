@@ -51,6 +51,7 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
   const aiAssistant = useShortcutsStore((state) => state.aiAssistant);
   const [assistants, setAssistants] = useState<any[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const popoverRef = useRef<HTMLDivElement>(null);
   const popoverButtonRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [keyword, setKeyword] = useState("");
@@ -195,25 +196,41 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
     setTimeout(() => setIsRefreshing(false), 1000);
   };
 
-  useKeyPress(["uparrow", "downarrow"], (_, key) => {
-    const isClose = isNil(popoverButtonRef.current?.dataset["open"]);
-    const index = assistants.findIndex(
-      (item) => item._id === currentAssistant?._id
-    );
-    const length = assistants.length;
+  useKeyPress(
+    ["uparrow", "downarrow", "enter"],
+    (event, key) => {
+      const isClose = isNil(popoverButtonRef.current?.dataset["open"]);
 
-    if (isClose || length <= 1) return;
+      if (isClose) return;
 
-    let nextIndex = index;
+      event.stopPropagation();
+      event.preventDefault();
 
-    if (key === "uparrow") {
-      nextIndex = index > 0 ? index - 1 : length - 1;
-    } else {
-      nextIndex = index < length - 1 ? index + 1 : 0;
+      if (key === "enter") {
+        return popoverButtonRef.current?.click();
+      }
+
+      const index = assistants.findIndex(
+        (item) => item._id === currentAssistant?._id
+      );
+      const length = assistants.length;
+
+      if (length <= 1) return;
+
+      let nextIndex = index;
+
+      if (key === "uparrow") {
+        nextIndex = index > 0 ? index - 1 : length - 1;
+      } else {
+        nextIndex = index < length - 1 ? index + 1 : 0;
+      }
+
+      setCurrentAssistant(assistants[nextIndex]);
+    },
+    {
+      target: popoverRef,
     }
-
-    setCurrentAssistant(assistants[nextIndex]);
-  });
+  );
 
   const handlePrev = useCallback(() => {
     if (pagination.current <= 1) return;
@@ -231,7 +248,7 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
 
   return (
     <div className="relative">
-      <Popover>
+      <Popover ref={popoverRef}>
         <PopoverButton
           ref={popoverButtonRef}
           className="h-6  p-1 px-1.5 flex items-center gap-1 rounded-full bg-white dark:bg-[#202126] text-sm/6 font-semibold text-gray-800 dark:text-[#d8d8d8] border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none"
@@ -326,6 +343,7 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
                     )}
                     onClick={() => {
                       setCurrentAssistant(assistant);
+                      popoverButtonRef.current?.click();
                     }}
                   >
                     <div className="flex items-center justify-center size-6 bg-white border border-[#E6E6E6] rounded-full overflow-hidden">

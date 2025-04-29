@@ -125,7 +125,7 @@ const SessionFile = (props: SessionFileProps) => {
             onChange={handleCheckAll}
           />
         </div>
-        <ul className="flex-1 overflow-auto flex flex-col gap-2 mt-6">
+        <ul className="flex-1 overflow-auto flex flex-col gap-2 mt-6 p-0">
           {uploadedFiles.map((item) => {
             const { id, name, icon, size } = item._source;
 

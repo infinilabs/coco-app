@@ -206,7 +206,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
                 <div key={label}>
                   <span className="text-xs text-[#999] px-3">{t(label)}</span>
 
-                  <ul>
+                  <ul className="p-0">
                     {list.map((item) => {
                       const { _id, _source } = item;
 

@@ -206,7 +206,7 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
       >
         <div className="text-[#999] dark:text-[#666] truncate">{title}</div>
 
-        <ul className="flex flex-col -mx-2">
+        <ul className="flex flex-col -mx-2 p-0">
           {searchMenus.map((item, index) => {
             const { name, icon, keys, clickEvent } = item;
 

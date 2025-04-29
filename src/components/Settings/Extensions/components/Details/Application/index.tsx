@@ -44,7 +44,7 @@ const App: FC<AppProps> = (props) => {
   ];
 
   return (
-    <ul className="flex flex-col gap-2">
+    <ul className="flex flex-col gap-2 p-0">
       {metadata.map((item) => {
         const { label, value } = item;
 

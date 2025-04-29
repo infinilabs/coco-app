@@ -40,7 +40,7 @@ const Applications = () => {
         {t("settings.extensions.application.button.addDirectories")}
       </Button>
 
-      <ul className="flex flex-col gap-2">
+      <ul className="flex flex-col gap-2 p-0">
         {searchPaths.map((item) => {
           return (
             <li key={item} className="flex items-center justify-between gap-2">

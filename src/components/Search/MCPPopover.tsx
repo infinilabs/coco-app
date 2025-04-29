@@ -261,7 +261,7 @@ export default function SearchPopover({
                   </div>
 
                   {visibleList.length > 0 ? (
-                    <ul className="flex flex-col gap-2">
+                    <ul className="flex flex-col gap-2 p-0">
                       {visibleList?.map((item, index) => {
                         const { id, name } = item;
 
