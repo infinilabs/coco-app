@@ -1,3 +1,5 @@
+import { useStartupStore } from "@/stores/startupStore";
+
 export type AppState = {
   isChatMode: boolean;
   input: string;
@@ -10,21 +12,18 @@ export type AppState = {
 };
 
 export type AppAction =
-  | { type: 'SET_CHAT_MODE'; payload: boolean }
-  | { type: 'SET_INPUT'; payload: string }
-  | { type: 'TOGGLE_SEARCH_ACTIVE' }
-  | { type: 'TOGGLE_DEEP_THINK_ACTIVE' }
-  | { type: 'TOGGLE_MCP_ACTIVE' }
-  | { type: 'SET_TYPING'; payload: boolean }
-  | { type: 'SET_LOADING'; payload: boolean };
+  | { type: "SET_CHAT_MODE"; payload: boolean }
+  | { type: "SET_INPUT"; payload: string }
+  | { type: "TOGGLE_SEARCH_ACTIVE" }
+  | { type: "TOGGLE_DEEP_THINK_ACTIVE" }
+  | { type: "TOGGLE_MCP_ACTIVE" }
+  | { type: "SET_TYPING"; payload: boolean }
+  | { type: "SET_LOADING"; payload: boolean };
 
 const getCachedChatMode = (): boolean => {
-  try {
-    const cached = localStorage.getItem('coco-chat-mode');
-    return cached === 'true';
-  } catch {
-    return false;
-  }
+  const { defaultStartupWindow } = useStartupStore.getState();
+
+  return defaultStartupWindow === "chatMode";
 };
 
 export const initialAppState: AppState = {
@@ -35,24 +34,28 @@ export const initialAppState: AppState = {
   isDeepThinkActive: false,
   isMCPActive: false,
   isTyping: false,
-  isLoading: false
+  isLoading: false,
 };
 
 export function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
-    case 'SET_CHAT_MODE':
-      return { ...state, isChatMode: action.payload, isTransitioned: action.payload };
-    case 'SET_INPUT':
+    case "SET_CHAT_MODE":
+      return {
+        ...state,
+        isChatMode: action.payload,
+        isTransitioned: action.payload,
+      };
+    case "SET_INPUT":
       return { ...state, input: action.payload };
-    case 'TOGGLE_SEARCH_ACTIVE':
+    case "TOGGLE_SEARCH_ACTIVE":
       return { ...state, isSearchActive: !state.isSearchActive };
-    case 'TOGGLE_DEEP_THINK_ACTIVE':
+    case "TOGGLE_DEEP_THINK_ACTIVE":
       return { ...state, isDeepThinkActive: !state.isDeepThinkActive };
-    case 'TOGGLE_MCP_ACTIVE':
+    case "TOGGLE_MCP_ACTIVE":
       return { ...state, isMCPActive: !state.isMCPActive };
-    case 'SET_TYPING':
+    case "SET_TYPING":
       return { ...state, isTyping: action.payload };
-    case 'SET_LOADING':
+    case "SET_LOADING":
       return { ...state, isLoading: action.payload };
     default:
       return state;
