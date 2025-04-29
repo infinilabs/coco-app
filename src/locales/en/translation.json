@@ -162,6 +162,13 @@
           "title": "Query Timeout",
           "description": "Terminates the query if no search results are returned within this time. Default: 500ms."
         }
+      },
+      "appearance": {
+        "title": "Appearance Settings",
+        "opacity": {
+          "title": "Transparency When Pinned and Unfocused",
+          "description": "Sets the opacity of the Coco AI window when pinned and unfocused (10%–100%, 100% means fully opaque)."
+        }
       }
     },
     "tabs": {

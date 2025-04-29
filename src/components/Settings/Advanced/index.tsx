@@ -4,8 +4,10 @@ import SettingsItem from "../SettingsItem";
 import { AppWindowMac, MessageSquareMore, Search, Unplug } from "lucide-react";
 import { useStartupStore } from "@/stores/startupStore";
 import { useEffect } from "react";
-import { emit } from "@tauri-apps/api/event";
 import { useConnectStore } from "@/stores/connectStore";
+import Appearance from "./components/Appearance";
+import SettingsInput from "../SettingsInput";
+import platformAdapter from "@/utils/platformAdapter";
 
 const Advanced = () => {
   const { t } = useTranslation();
@@ -42,11 +44,11 @@ const Advanced = () => {
 
   useEffect(() => {
     const unsubscribeStartup = useStartupStore.subscribe((state) => {
-      emit("change-startup-store", state);
+      platformAdapter.emitEvent("change-startup-store", state);
     });
 
     const unsubscribeConnect = useConnectStore.subscribe((state) => {
-      emit("change-connect-store", state);
+      platformAdapter.emitEvent("change-connect-store", state);
     });
 
     return () => {
@@ -165,12 +167,17 @@ const Advanced = () => {
             "settings.advanced.connect.connectionTimeout.description"
           )}
         >
-          <input
+          <SettingsInput
             type="number"
             min={10}
             value={connectionTimeout}
-            className="w-20 h-8 px-2 rounded-md border bg-transparent border-black/5 dark:border-white/10"
             onChange={(event) => {
+              const nextValue = Number(event.target.value);
+
+              if (nextValue < 10) {
+                return;
+              }
+
               setConnectionTimeout(Number(event.target.value) || 120);
             }}
           />
@@ -181,17 +188,24 @@ const Advanced = () => {
           title={t("settings.advanced.connect.queryTimeout.title")}
           description={t("settings.advanced.connect.queryTimeout.description")}
         >
-          <input
+          <SettingsInput
             type="number"
             min={1}
             value={queryTimeout}
-            className="w-20 h-8 px-2 rounded-md border bg-transparent border-black/5 dark:border-white/10"
             onChange={(event) => {
-              setQueryTimeout(Number(event.target.value) || 500);
+              const nextValue = Number(event.target.value);
+
+              if (nextValue < 1) {
+                return;
+              }
+
+              setQueryTimeout(nextValue || 500);
             }}
           />
         </SettingsItem>
       </div>
+
+      <Appearance />
     </div>
   );
 };

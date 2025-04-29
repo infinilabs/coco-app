@@ -26,6 +26,7 @@ import {
 import { ModifierKey } from "@/types/index";
 import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore } from "@/stores/appStore";
+import SettingsInput from "@/components/Settings/SettingsInput";
 
 export const modifierKeys: ModifierKey[] = isMac
   ? ["meta", "ctrl"]
@@ -284,7 +285,11 @@ const Shortcuts = () => {
             }}
           >
             {modifierKeys.map((item) => {
-              return <option value={item}>{formatKey(item)}</option>;
+              return (
+                <option key={item} value={item}>
+                  {formatKey(item)}
+                </option>
+              );
             })}
           </select>
         </SettingsItem>
@@ -302,10 +307,9 @@ const Shortcuts = () => {
               <div className="flex items-center gap-2">
                 <span>{formatKey(modifierKey)}</span>
                 <span>+</span>
-                <input
-                  className="w-20 h-8 px-2 rounded-md border bg-transparent border-black/5 dark:border-white/10 hover:border-[#0072FF] focus:border-[#0072FF] transition"
+                <SettingsInput
                   value={value}
-                  maxLength={1}
+                  max={1}
                   onChange={(event) => {
                     handleChange(event, setValue);
                   }}

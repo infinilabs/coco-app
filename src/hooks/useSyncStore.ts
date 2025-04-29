@@ -1,3 +1,4 @@
+import { useAppearanceStore } from "@/stores/appearance";
 import { useConnectStore } from "@/stores/connectStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useStartupStore } from "@/stores/startupStore";
@@ -77,6 +78,7 @@ export const useSyncStore = () => {
   const setQueryTimeout = useConnectStore((state) => {
     return state.setQuerySourceTimeout;
   });
+  const setOpacity = useAppearanceStore((state) => state.setOpacity);
 
   useEffect(() => {
     if (!resetFixedWindow) {
@@ -140,6 +142,12 @@ export const useSyncStore = () => {
         const { connectionTimeout, querySourceTimeout } = payload;
         setConnectionTimeout(connectionTimeout);
         setQueryTimeout(querySourceTimeout);
+      }),
+
+      platformAdapter.listenEvent("change-appearance-store", ({ payload }) => {
+        const { opacity } = payload;
+
+        setOpacity(opacity);
       }),
     ]);
 

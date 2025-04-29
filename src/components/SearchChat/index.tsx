@@ -25,6 +25,7 @@ import { DataSource } from "@/types/commands";
 import { useThemeStore } from "@/stores/themeStore";
 import { Get } from "@/api/axiosRequest";
 import { useConnectStore } from "@/stores/connectStore";
+import { useAppearanceStore } from "@/stores/appearance";
 
 interface SearchChatProps {
   isTauri?: boolean;
@@ -300,6 +301,7 @@ function SearchChat({
   const defaultStartupWindow = useStartupStore((state) => {
     return state.defaultStartupWindow;
   });
+  const opacity = useAppearanceStore((state) => state.opacity);
 
   useEffect(() => {
     if (platformAdapter.isTauri()) {
@@ -329,9 +331,9 @@ function SearchChat({
           "rounded-xl": !isMobile && !isWin,
           "border border-[#E6E6E6] dark:border-[#272626]": isTauri && isLinux,
           "border-t border-t-[#999] dark:border-t-[#333]": isTauri && isWin10,
-          "opacity-30": blurred,
         }
       )}
+      style={{ opacity: blurred ? opacity / 100 : 100 }}
     >
       <div
         data-tauri-drag-region={isTauri}
