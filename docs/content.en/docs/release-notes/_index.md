@@ -14,7 +14,7 @@ Information about release notes of Coco Server is provided here.
 ### 🚀 Features
 
 - feat: check or enter to close the list of assistants #469
-- feat: supports setting of out-of-focus transparency on top #470
+- feat: add dimness settings for pinned window #470
 
 ### 🐛 Bug fix
 
