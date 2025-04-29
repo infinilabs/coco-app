@@ -162,6 +162,13 @@
           "title": "Query Timeout",
           "description": "Terminates the query if no search results are returned within this time. Default: 500ms."
         }
+      },
+      "appearance": {
+        "title": "Appearance Settings",
+        "opacity": {
+          "title": "Pinned Window Dimness Setting",
+          "description": "Adjusts the opacity level of the Coco AI window when it’s pinned and not in focus. Set a value between 10% and 100%, where 100% means fully opaque (no dimming), and lower values increase transparency, allowing underlying content to show through."
+        }
       }
     },
     "tabs": {

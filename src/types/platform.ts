@@ -1,3 +1,4 @@
+import { IAppearanceStore } from "@/stores/appearance";
 import { IConnectStore } from "@/stores/connectStore";
 import { IShortcutsStore } from "@/stores/shortcutsStore";
 import { IStartupStore } from "@/stores/startupStore";
@@ -38,6 +39,7 @@ export interface EventPayloads {
   "change-startup-store": IStartupStore;
   "change-shortcuts-store": IShortcutsStore;
   "change-connect-store": IConnectStore;
+  "change-appearance-store": IAppearanceStore;
 }
 
 // Window operation interface
