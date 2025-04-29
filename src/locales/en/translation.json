@@ -166,8 +166,8 @@
       "appearance": {
         "title": "Appearance Settings",
         "opacity": {
-          "title": "Transparency When Pinned and Unfocused",
-          "description": "Sets the opacity of the Coco AI window when pinned and unfocused (10%–100%, 100% means fully opaque)."
+          "title": "Pinned Window Dimness Setting",
+          "description": "Adjusts the opacity level of the Coco AI window when it’s pinned and not in focus. Set a value between 10% and 100%, where 100% means fully opaque (no dimming), and lower values increase transparency, allowing underlying content to show through."
         }
       }
     },
