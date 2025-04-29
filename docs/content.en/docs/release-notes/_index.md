@@ -15,6 +15,7 @@ Information about release notes of Coco Server is provided here.
 
 - feat: check or enter to close the list of assistants #469
 - feat: add dimness settings for pinned window #470
+- feat: supports Shift + Enter input box line feeds #472
 
 ### 🐛 Bug fix
 
