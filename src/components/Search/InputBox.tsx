@@ -276,7 +276,7 @@ export default function ChatInput({
     setIsDeepThinkActive();
   };
 
-  const source = currentAssistant?._source
+  const source = currentAssistant?._source;
 
   return (
     <div className={`w-full relative`}>
@@ -302,7 +302,9 @@ export default function ChatInput({
               }}
               connected={connected}
               handleKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-                if (e.key !== "Enter") return;
+                const { key, shiftKey } = e;
+
+                if (key !== "Enter" || shiftKey) return;
 
                 e.preventDefault();
                 handleSubmit();
