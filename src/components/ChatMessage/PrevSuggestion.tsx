@@ -24,7 +24,7 @@ const PrevSuggestion: FC<PrevSuggestionProps> = (props) => {
   }, [JSON.stringify(currentAssistant)]);
 
   return (
-    <ul className="absolute left-2 bottom-2 flex flex-col gap-2">
+    <ul className="absolute left-2 bottom-2 flex flex-col gap-2 p-0">
       {list.map((item) => {
         return (
           <li
