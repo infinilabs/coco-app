@@ -28,7 +28,7 @@ interface HistoryListProps {
   list: Chat[];
   active?: Chat;
   onSearch: (keyword: string) => void;
-  onRefresh: () => Promise<void>;
+  onRefresh: () => void;
   onSelect: (chat: Chat) => void;
   onRename: (chatId: string, title: string) => void;
   onRemove: (chatId: string) => void;

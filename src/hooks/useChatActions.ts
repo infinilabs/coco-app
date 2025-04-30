@@ -39,182 +39,152 @@ export function useChatActions(
   const chatClose = useCallback(
     async (activeChat?: Chat) => {
       if (!activeChat?._id) return;
-      try {
-        let response: any;
-        if (isTauri) {
-          if (!currentServiceId) return;
-          response = await platformAdapter.commands("close_session_chat", {
-            serverId: currentServiceId,
-            sessionId: activeChat?._id,
-          });
-          response = response ? JSON.parse(response) : null;
-        } else {
-          const [error, res] = await Post(
-            `/chat/${activeChat?._id}/_close`,
-            {}
-          );
-          if (error) {
-            console.error("_close", error);
-            return;
-          }
-          response = res;
-        }
-        console.log("_close", response);
-      } catch (error) {
-        console.error("chatClose:", error);
+
+      let response: any;
+      if (isTauri) {
+        if (!currentServiceId) return;
+        response = await platformAdapter.commands("close_session_chat", {
+          serverId: currentServiceId,
+          sessionId: activeChat?._id,
+        });
+        response = response ? JSON.parse(response) : null;
+      } else {
+        const [_error, res] = await Post(
+          `/chat/${activeChat?._id}/_close`,
+          {}
+        );
+        response = res;
       }
+      console.log("_close", response);
+
     },
-    [currentServiceId]
+    [currentServiceId, isTauri]
   );
 
   const cancelChat = useCallback(
     async (activeChat?: Chat) => {
       setCurChatEnd(true);
       if (!activeChat?._id) return;
-      try {
-        let response: any;
-        if (isTauri) {
-          if (!currentServiceId) return;
-          response = await platformAdapter.commands("cancel_session_chat", {
-            serverId: currentServiceId,
-            sessionId: activeChat?._id,
-          });
-          response = response ? JSON.parse(response) : null;
-        } else {
-          const [error, res] = await Post(
-            `/chat/${activeChat?._id}/_cancel`,
-            {}
-          );
-          if (error) {
-            console.error("_cancel", error);
-            return;
-          }
-          response = res;
-        }
-        console.log("_cancel", response);
-      } catch (error) {
-        console.error("cancelChat:", error);
+      let response: any;
+      if (isTauri) {
+        if (!currentServiceId) return;
+        response = await platformAdapter.commands("cancel_session_chat", {
+          serverId: currentServiceId,
+          sessionId: activeChat?._id,
+        });
+        response = response ? JSON.parse(response) : null;
+      } else {
+        const [_error, res] = await Post(
+          `/chat/${activeChat?._id}/_cancel`,
+          {}
+        );
+        response = res;
       }
+      console.log("_cancel", response);
     },
-    [currentServiceId, setCurChatEnd]
+    [currentServiceId, isTauri]
   );
 
   const chatHistory = useCallback(
     async (chat: Chat, callback?: (chat: Chat) => void) => {
       if (!chat?._id) return;
-      try {
-        let response: any;
-        if (isTauri) {
-          if (!currentServiceId) return;
-          response = await platformAdapter.commands("session_chat_history", {
-            serverId: currentServiceId,
-            sessionId: chat?._id,
-            from: 0,
-            size: 20,
-          });
-          response = response ? JSON.parse(response) : null;
-        } else {
-          const [error, res] = await Get(`/chat/${chat?._id}/_history`, {
-            from: 0,
-            size: 20,
-          });
-          if (error) {
-            console.error("_cancel", error);
-            return;
-          }
-          response = res;
-        }
-        const hits = response?.hits?.hits || [];
-        const updatedChat: Chat = {
-          ...chat,
-          messages: hits,
-        };
-        console.log("id_history", response, updatedChat);
-        setActiveChat(updatedChat);
-        callback && callback(updatedChat);
-      } catch (error) {
-        console.error("chatHistory:", error);
+
+      let response: any;
+      if (isTauri) {
+        if (!currentServiceId) return;
+        response = await platformAdapter.commands("session_chat_history", {
+          serverId: currentServiceId,
+          sessionId: chat?._id,
+          from: 0,
+          size: 20,
+        });
+        response = response ? JSON.parse(response) : null;
+      } else {
+        const [_error, res] = await Get(`/chat/${chat?._id}/_history`, {
+          from: 0,
+          size: 20,
+        });
+        response = res;
       }
+
+      const hits = response?.hits?.hits || [];
+      const updatedChat: Chat = {
+        ...chat,
+        messages: hits,
+      };
+      console.log("id_history", updatedChat);
+      setActiveChat(updatedChat);
+      callback && callback(updatedChat);
       setVisibleStartPage(false);
     },
-    [currentServiceId, setActiveChat]
+    [currentServiceId, isTauri]
   );
 
   const createNewChat = useCallback(
     async (value: string = "", activeChat?: Chat, id?: string) => {
-      try {
-        setTimedoutShow(false);
-        await chatClose(activeChat);
-        clearAllChunkData();
-        setQuestion(value);
-        if (!(websocketSessionId || id)) {
-          addError("websocketSessionId not found");
-          console.error("websocketSessionId", websocketSessionId, id);
-          return;
-        }
-        console.log("sourceDataIds", sourceDataIds, MCPIds, websocketSessionId, id);
-        let response: any;
-        if (isTauri) {
-          if (!currentServiceId) return;
-          response = await platformAdapter.commands("new_chat", {
-            serverId: currentServiceId,
-            websocketId: websocketSessionId || id,
-            message: value,
-            queryParams: {
-              search: isSearchActive,
-              deep_thinking: isDeepThinkActive,
-              mcp: isMCPActive,
-              datasource: sourceDataIds?.join(",") || "",
-              mcp_servers: MCPIds?.join(",") || "",
-              assistant_id: currentAssistant?._id || '',
-            },
-          });
-        } else {
-          console.log("websocketSessionId", websocketSessionId, id);
-          const [error, res] = await Post(
-            "/chat/_new",
-            {
-              message: value,
-            },
-            {
-              search: isSearchActive,
-              deep_thinking: isDeepThinkActive,
-              mcp: isMCPActive,
-              datasource: sourceDataIds?.join(",") || "",
-              mcp_servers: MCPIds?.join(",") || "",
-              assistant_id: currentAssistant?._id || '',
-            },
-            {
-              "WEBSOCKET-SESSION-ID": websocketSessionId || id,
-            }
-          );
-          if (error) {
-            console.error("_new", error);
-            return;
-          }
-          response = res;
-        }
-        console.log("_new", response);
-        const newChat: Chat = response;
-        curIdRef.current = response?.payload?.id;
+      setTimedoutShow(false);
+      await chatClose(activeChat);
+      clearAllChunkData();
+      setQuestion(value);
 
-        newChat._source = {
-          message: value,
-        };
-        const updatedChat: Chat = {
-          ...newChat,
-          messages: [newChat],
-        };
-
-        changeInput && changeInput("");
-        setActiveChat(updatedChat);
-        setCurChatEnd(false);
-      } catch (error) {
-        console.error("createNewChat:", error);
+      const sessionId = websocketSessionId || id;
+      if (!sessionId) {
+        addError("websocketSessionId not found");
+        console.error("websocketSessionId", websocketSessionId, id);
+        return;
       }
+
+      //console.log("sourceDataIds", sourceDataIds, MCPIds, websocketSessionId, id);
+      const queryParams = {
+        search: isSearchActive,
+        deep_thinking: isDeepThinkActive,
+        mcp: isMCPActive,
+        datasource: sourceDataIds?.join(",") || "",
+        mcp_servers: MCPIds?.join(",") || "",
+        assistant_id: currentAssistant?._id || '',
+      };
+      let response: any;
+      if (isTauri) {
+        if (!currentServiceId) return;
+        response = await platformAdapter.commands("new_chat", {
+          serverId: currentServiceId,
+          websocketId: sessionId,
+          message: value,
+          queryParams,
+        });
+      } else {
+        const [_error, res] = await Post(
+          "/chat/_new",
+          {
+            message: value,
+          },
+          queryParams,
+          {
+            "WEBSOCKET-SESSION-ID": sessionId,
+          }
+        );
+        response = res;
+      }
+
+      console.log("_new", response);
+      const newChat: Chat = response;
+      curIdRef.current = response?.payload?.id;
+
+      newChat._source = {
+        message: value,
+      };
+      const updatedChat: Chat = {
+        ...newChat,
+        messages: [newChat],
+      };
+
+      changeInput && changeInput("");
+      setActiveChat(updatedChat);
+      setCurChatEnd(false);
       setVisibleStartPage(false);
     },
     [
+      isTauri,
       currentServiceId,
       sourceDataIds,
       MCPIds,
@@ -224,6 +194,7 @@ export function useChatActions(
       curIdRef,
       websocketSessionId,
       currentAssistant,
+      chatClose,
     ]
   );
 
@@ -232,73 +203,62 @@ export function useChatActions(
       if (!newChat?._id || !content) return;
 
       clearAllChunkData();
-      try {
-        if (!(websocketSessionId || id)) {
-          addError("websocketSessionId not found");
-          console.error("websocketSessionId", websocketSessionId, id);
-          return;
-        }
-        let response: any;
-        if (isTauri) {
-          if (!currentServiceId) return;
-          response = await platformAdapter.commands("send_message", {
-            serverId: currentServiceId,
-            websocketId: websocketSessionId || id,
-            sessionId: newChat?._id,
-            queryParams: {
-              search: isSearchActive,
-              deep_thinking: isDeepThinkActive,
-              mcp: isMCPActive,
-              datasource: sourceDataIds?.join(",") || "",
-              mcp_servers: MCPIds?.join(",") || "",
-              assistant_id: currentAssistant?._id || '',
-            },
-            message: content,
-          });
-          response = response ? JSON.parse(response) : null;
-        } else {
-          console.log("websocketSessionId", websocketSessionId, id);
-          const [error, res] = await Post(
-            `/chat/${newChat?._id}/_send`,
-            {
-              message: content,
-            },
-            {
-              search: isSearchActive,
-              deep_thinking: isDeepThinkActive,
-              mcp: isMCPActive,
-              datasource: sourceDataIds?.join(",") || "",
-              mcp_servers: MCPIds?.join(",") || "",
-              assistant_id: currentAssistant?._id || '',
-            },
-            {
-              "WEBSOCKET-SESSION-ID": websocketSessionId || id,
-            }
-          );
 
-          if (error) {
-            console.error("_cancel", error);
-            return;
-          }
-          response = res;
-        }
-        console.log("_send", response);
-        curIdRef.current = response[0]?._id;
-
-        const updatedChat: Chat = {
-          ...newChat,
-          messages: [...(newChat?.messages || []), ...(response || [])],
-        };
-
-        changeInput && changeInput("");
-        setActiveChat(updatedChat);
-        setCurChatEnd(false);
-      } catch (error) {
-        console.error("sendMessage:", error);
+      const sessionId = websocketSessionId || id;
+      if (!sessionId) {
+        addError("websocketSessionId not found");
+        console.error("websocketSessionId", websocketSessionId, id);
+        return;
       }
+
+      const queryParams = {
+        search: isSearchActive,
+        deep_thinking: isDeepThinkActive,
+        mcp: isMCPActive,
+        datasource: sourceDataIds?.join(",") || "",
+        mcp_servers: MCPIds?.join(",") || "",
+        assistant_id: currentAssistant?._id || '',
+      }
+      let response: any;
+      if (isTauri) {
+        if (!currentServiceId) return;
+        response = await platformAdapter.commands("send_message", {
+          serverId: currentServiceId,
+          websocketId: sessionId,
+          sessionId: newChat?._id,
+          queryParams,
+          message: content,
+        });
+        response = response ? JSON.parse(response) : null;
+      } else {
+        const [_error, res] = await Post(
+          `/chat/${newChat?._id}/_send`,
+          {
+            message: content,
+          },
+          queryParams,
+          {
+            "WEBSOCKET-SESSION-ID": sessionId,
+          }
+        );
+        response = res;
+      }
+
+      console.log("_send", response);
+      curIdRef.current = response[0]?._id;
+
+      const updatedChat: Chat = {
+        ...newChat,
+        messages: [...(newChat?.messages || []), ...(response || [])],
+      };
+
+      changeInput && changeInput("");
+      setActiveChat(updatedChat);
+      setCurChatEnd(false);
       setVisibleStartPage(false);
     },
     [
+      isTauri,
       currentServiceId,
       sourceDataIds,
       MCPIds,
@@ -306,8 +266,6 @@ export function useChatActions(
       isDeepThinkActive,
       isMCPActive,
       curIdRef,
-      setActiveChat,
-      setCurChatEnd,
       changeInput,
       websocketSessionId,
       currentAssistant,
@@ -326,9 +284,6 @@ export function useChatActions(
     [
       chatHistory,
       sendMessage,
-      setQuestion,
-      setTimedoutShow,
-      clearAllChunkData,
     ]
   );
 
@@ -336,66 +291,52 @@ export function useChatActions(
     async (chat: Chat) => {
       if (!chat?._id) return;
       setVisibleStartPage(false);
-      try {
-        let response: any;
-        if (isTauri) {
-          if (!currentServiceId) return;
-          response = await platformAdapter.commands("open_session_chat", {
-            serverId: currentServiceId,
-            sessionId: chat?._id,
-          });
-          response = response ? JSON.parse(response) : null;
-        } else {
-          const [error, res] = await Post(`/chat/${chat?._id}/_open`, {});
-          if (error) {
-            console.error("_open", error);
-            return null;
-          }
-          response = res;
-        }
 
-        console.log("_open", response);
-        return response;
-      } catch (error) {
-        console.error("open_session_chat:", error);
-        return null;
+      let response: any;
+      if (isTauri) {
+        if (!currentServiceId) return;
+        response = await platformAdapter.commands("open_session_chat", {
+          serverId: currentServiceId,
+          sessionId: chat?._id,
+        });
+        response = response ? JSON.parse(response) : null;
+      } else {
+        const [_error, res] = await Post(`/chat/${chat?._id}/_open`, {});
+        response = res;
       }
+
+      console.log("_open", response);
+      return response;
+
     },
-    [currentServiceId]
+    [currentServiceId, isTauri]
   );
 
   const getChatHistory = useCallback(async () => {
     let response: any;
     if (isTauri) {
-      try {
-        if (!currentServiceId) return [];
-        response = await platformAdapter.commands("chat_history", {
-          serverId: currentServiceId,
-          from: 0,
-          size: 20,
-          query: keyword,
-        });
-      } catch (error) {
-        console.error("chat_history", error);
-      }
+
+      if (!currentServiceId) return [];
+      response = await platformAdapter.commands("chat_history", {
+        serverId: currentServiceId,
+        from: 0,
+        size: 20,
+        query: keyword,
+      });
+
       response = response ? JSON.parse(response) : null;
     } else {
-      const [error, res] = await Get(`/chat/_history`, {
+      const [_error, res] = await Get(`/chat/_history`, {
         from: 0,
         size: 20,
       });
-      if (error) {
-        console.error("_history", error);
-        return [];
-      }
       response = res;
     }
     console.log("_history", response);
     const hits = response?.hits?.hits || [];
 
     setChats(hits);
-    return hits;
-  }, [currentServiceId, keyword]);
+  }, [currentServiceId, keyword, isTauri]);
 
   useEffect(() => {
     showChatHistory && connected && getChatHistory();
@@ -420,13 +361,13 @@ export function useChatActions(
           url: "/ui/chat",
         });
     }
-  }, []);
+  }, [isTauri]);
 
   const handleSearch = (keyword: string) => {
     setKeyword(keyword);
   };
 
-  const handleRename = async (chatId: string, title: string) => {
+  const handleRename = useCallback(async (chatId: string, title: string) => {
     if (!currentServiceId) return;
 
     await platformAdapter.commands("update_session_chat", {
@@ -434,13 +375,13 @@ export function useChatActions(
       sessionId: chatId,
       title,
     });
-  };
+  }, [currentServiceId]);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (chatId: string) => {
     if (!currentServiceId) return;
 
-    await platformAdapter.commands("delete_session_chat", currentServiceId, id);
-  };
+    await platformAdapter.commands("delete_session_chat", currentServiceId, chatId);
+  }, [currentServiceId]);
 
   return {
     chatClose,

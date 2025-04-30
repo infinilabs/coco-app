@@ -78,7 +78,7 @@ export function ServerList({
     fetchServers(true);
 
     const unlisten = platformAdapter.listenEvent("login_or_logout", (event) => {
-      console.log("Login or Logout:", currentService, event.payload);
+      //console.log("Login or Logout:", currentService, event.payload);
       if (event.payload !== isLogin) {
         setIsLogin(!!event.payload);
       }

@@ -59,6 +59,7 @@ export const handleApiError = (error: any) => {
     message = error.message;
   }
 
+  console.error(error);
   addError(message, "error");
   return error;
 };

@@ -679,11 +679,14 @@
     white-space: pre-wrap;
   }
 
+  .markdown-body p br,
   .markdown-body table td br,
   .markdown-body table th br {
-    display: block;
-    content: "";
-    margin-top: 8px;
+    display: block !important;
+    content: "" !important;
+    margin-top: 8px !important;
+    height: 1px !important;
+    background-color: transparent !important;
   }
 
   .markdown-body table tr {

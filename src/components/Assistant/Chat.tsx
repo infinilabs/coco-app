@@ -164,10 +164,10 @@ const ChatAI = memo(
         isMCPActive,
         changeInput,
         websocketSessionId,
-        showChatHistory,
+        showChatHistory
       );
 
-      const { dealMsg, messageTimeoutRef } = useMessageHandler(
+      const { dealMsg } = useMessageHandler(
         curIdRef,
         setCurChatEnd,
         setTimedoutShow,
@@ -184,7 +184,7 @@ const ChatAI = memo(
       }, [dealMsg, updateDealMsg]);
 
       const clearChat = useCallback(() => {
-        console.log("clearChat");
+        //console.log("clearChat");
         setTimedoutShow(false);
         chatClose(activeChat);
         setActiveChat(undefined);
@@ -193,15 +193,12 @@ const ChatAI = memo(
       }, [
         activeChat,
         chatClose,
-        clearChatPage,
-        setCurChatEnd,
-        setTimedoutShow,
       ]);
 
       const init = useCallback(
         async (value: string) => {
           try {
-            console.log("init", isLogin, curChatEnd, activeChat?._id);
+            //console.log("init", isLogin, curChatEnd, activeChat?._id);
             if (!isLogin) {
               addError("Please login to continue chatting");
               return;
@@ -222,7 +219,7 @@ const ChatAI = memo(
         [
           isLogin,
           curChatEnd,
-          activeChat,
+          activeChat?._id,
           createNewChat,
           handleSendMessage,
           websocketSessionId,
@@ -233,21 +230,6 @@ const ChatAI = memo(
       const openChatAI = useCallback(() => {
         createChatWindow(createWin);
       }, [createChatWindow, createWin]);
-
-      useEffect(() => {
-        setCurChatEnd(true);
-        return () => {
-          if (messageTimeoutRef.current) {
-            clearTimeout(messageTimeoutRef.current);
-          }
-          Promise.resolve().then(() => {
-            chatClose(activeChat);
-            setActiveChat(undefined);
-            setCurChatEnd(true);
-            disconnectWS();
-          });
-        };
-      }, [chatClose, setCurChatEnd]);
 
       const onSelectChat = useCallback(
         async (chat: Chat) => {
@@ -261,7 +243,6 @@ const ChatAI = memo(
           }
         },
         [
-          clearAllChunkData,
           cancelChat,
           activeChat,
           chatClose,
@@ -274,19 +255,21 @@ const ChatAI = memo(
         (chatId: string) => {
           handleDelete(chatId);
 
-          setChats((prev) => prev.filter((chat) => chat._id !== chatId));
+          setChats((prev) => {
+            const updatedChats = prev.filter((chat) => chat._id !== chatId);
 
-          if (activeChat?._id === chatId) {
-            const remainingChats = chats.filter((chat) => chat._id !== chatId);
-
-            if (remainingChats.length > 0) {
-              setActiveChat(remainingChats[0]);
-            } else {
-              init("");
+            if (activeChat?._id === chatId) {
+              if (updatedChats.length > 0) {
+                setActiveChat(updatedChats[0]);
+              } else {
+                init("");
+              }
             }
-          }
+
+            return updatedChats;
+          });
         },
-        [activeChat, chats, init, setActiveChat]
+        [activeChat?._id, handleDelete, init]
       );
 
       const handleOutsideClick = useCallback((e: MouseEvent) => {
@@ -317,38 +300,33 @@ const ChatAI = memo(
         !isSidebarOpenChat && getChatHistory();
       }, [isSidebarOpenChat, setIsSidebarOpen, getChatHistory]);
 
-      const renameChat = (chatId: string, title: string) => {
-        setChats((prev) => {
-          const updatedChats = prev.map((item) => {
-            if (item._id !== chatId) return item;
+      const renameChat = useCallback(
+        (chatId: string, title: string) => {
+          setChats((prev) => {
+            const chatIndex = prev.findIndex((chat) => chat._id === chatId);
+            if (chatIndex === -1) return prev;
 
-            return { ...item, _source: { ...item._source, title } };
+            const modifiedChat = {
+              ...prev[chatIndex],
+              _source: { ...prev[chatIndex]._source, title },
+            };
+
+            const result = [...prev];
+            result.splice(chatIndex, 1);
+            return [modifiedChat, ...result];
           });
 
-          const modifiedChat = updatedChats.find((item) => {
-            return item._id === chatId;
-          });
-
-          if (!modifiedChat) {
-            return updatedChats;
+          if (activeChat?._id === chatId) {
+            setActiveChat((prev) => {
+              if (!prev) return prev;
+              return { ...prev, _source: { ...prev._source, title } };
+            });
           }
 
-          return [
-            modifiedChat,
-            ...updatedChats.filter((item) => item._id !== chatId),
-          ];
-        });
-
-        if (activeChat?._id === chatId) {
-          setActiveChat((prev) => {
-            if (!prev) return prev;
-
-            return { ...prev, _source: { ...prev._source, title } };
-          });
-        }
-
-        handleRename(chatId, title);
-      };
+          handleRename(chatId, title);
+        },
+        [activeChat?._id, handleRename]
+      );
 
       return (
         <div
