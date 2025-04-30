@@ -67,7 +67,7 @@ export default function Chat({}: ChatProps) {
       let response: any = await chat_history({
         serverId: currentService?.id,
         from: 0,
-        size: 20,
+        size: 100,
         query: keyword,
       });
       response = response ? JSON.parse(response) : null;
@@ -109,7 +109,7 @@ export default function Chat({}: ChatProps) {
         serverId: currentService?.id,
         sessionId: chat?._id,
         from: 0,
-        size: 20,
+        size: 100,
       });
       response = response ? JSON.parse(response) : null;
       console.log("id_history", response);

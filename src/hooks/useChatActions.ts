@@ -96,13 +96,13 @@ export function useChatActions(
           serverId: currentServiceId,
           sessionId: chat?._id,
           from: 0,
-          size: 20,
+          size: 100,
         });
         response = response ? JSON.parse(response) : null;
       } else {
         const [_error, res] = await Get(`/chat/${chat?._id}/_history`, {
           from: 0,
-          size: 20,
+          size: 100,
         });
         response = res;
       }
@@ -320,7 +320,7 @@ export function useChatActions(
       response = await platformAdapter.commands("chat_history", {
         serverId: currentServiceId,
         from: 0,
-        size: 20,
+        size: 100,
         query: keyword,
       });
 
@@ -328,7 +328,7 @@ export function useChatActions(
     } else {
       const [_error, res] = await Get(`/chat/_history`, {
         from: 0,
-        size: 20,
+        size: 100,
       });
       response = res;
     }
