@@ -21,6 +21,8 @@ Information about release notes of Coco Server is provided here.
 
 ### ✈️ Improvements
 
+- chore: adjust list error message #475
+
 ## 0.4.0 (2025-04-27)
 
 ### Breaking changes
