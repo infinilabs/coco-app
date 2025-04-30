@@ -242,7 +242,7 @@
       "loading": "Loading...",
       "noResults": "No Results",
       "noDataAlt": "No data image",
-      "failures": "Partial results returned due to service failures."
+      "failures": "Coco server is unavailable, only local results and available services are displayed."
     },
     "footer": {
       "logoAlt": "Coco Logo",

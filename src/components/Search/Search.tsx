@@ -47,7 +47,7 @@ function Search({
   const sourceData = useSearchStore((state) => state.sourceData);
   const queryTimeout = useConnectStore((state) => state.querySourceTimeout);
 
-  const [IsError, setIsError] = useState<boolean>(false);
+  const [IsError, setIsError] = useState<any[]>([]);
   const [suggests, setSuggests] = useState<any[]>([]);
   const [SearchData, setSearchData] = useState<any>({});
   const [isSearchComplete, setIsSearchComplete] = useState(false);
@@ -69,7 +69,7 @@ function Search({
         });
         if (response && typeof response === "object" && "failed" in response) {
           const failedResult = response as any;
-          setIsError(!!failedResult.failed?.length);
+          setIsError(failedResult.failed || []);
         }
       } else {
         const [error, res]: any = await Get(
