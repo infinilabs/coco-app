@@ -22,6 +22,7 @@ Information about release notes of Coco Server is provided here.
 ### ✈️ Improvements
 
 - chore: adjust list error message #475
+- fix: solve the problem of modifying the assistant in the chat #476
 
 ## 0.4.0 (2025-04-27)
 

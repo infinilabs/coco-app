@@ -118,7 +118,7 @@ export default function useWebSocket({
     },
     [currentService]
   );
-  const disconnectWS = async () => {
+  const disconnectWS = useCallback(async () => {
     if (!connected) return;
     if (isTauri) {
       try {
@@ -131,7 +131,8 @@ export default function useWebSocket({
     } else {
       disconnect();
     }
-  };
+  }, [connected]);
+
   const updateDealMsg = useCallback(
     (newDealMsg: (msg: string) => void) => {
       dealMsgRef.current = newDealMsg;
@@ -145,16 +146,10 @@ export default function useWebSocket({
     let unlisten_message = null;
 
     if (!isTauri) return;
-    
+
     unlisten_error = platformAdapter.listenEvent(`ws-error-${clientId}`, (event) => {
-      // {
-      //   "error": {
-      //      "reason": "invalid login"
-      //   },
-      //   "status": 401
-      // }
       console.error(`ws-error-${clientId}`, event, connected);
-      if(connected) {
+      if (connected) {
         addError("WebSocket connection failed.");
       }
       setConnected(false); // error

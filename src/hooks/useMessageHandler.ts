@@ -95,6 +95,5 @@ export function useMessageHandler(
 
   return {
     dealMsg,
-    messageTimeoutRef,
   };
 }

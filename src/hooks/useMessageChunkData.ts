@@ -77,7 +77,7 @@ export default function useMessageChunkData() {
     }, []),
   };
 
-  const clearAllChunkData = useCallback(() => {
+  const clearAllChunkData = () => {
     setQuery_intent(undefined);
     setTools(undefined);
     setFetch_source(undefined);
@@ -85,7 +85,7 @@ export default function useMessageChunkData() {
     setDeep_read(undefined);
     setThink(undefined);
     setResponse(undefined);
-  }, []);
+  };
 
   return {
     data: { query_intent, tools, fetch_source, pick_source, deep_read, think, response },
