@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback, MouseEvent } from "react";
-import { CircleAlert, Bolt, X, ArrowBigRight } from "lucide-react";
+import { CircleAlert, Bolt, X, ArrowBigRight, Ellipsis } from "lucide-react";
 import { isNil } from "lodash-es";
 import { useDebounceFn, useUnmount } from "ahooks";
 import { useTranslation } from "react-i18next";
@@ -15,13 +15,14 @@ import VisibleKey from "@/components/Common/VisibleKey";
 import Calculator from "./Calculator";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import platformAdapter from "@/utils/platformAdapter";
+import Tooltip from "@/components/Common/Tooltip";
 
 type ISearchData = Record<string, any[]>;
 
 interface DropdownListProps {
   suggests: any[];
   SearchData: ISearchData;
-  IsError: boolean;
+  IsError: any[];
   isSearchComplete: boolean;
   isChatMode: boolean;
 }
@@ -39,7 +40,7 @@ function DropdownList({
 
   const setSourceData = useSearchStore((state) => state.setSourceData);
 
-  const [showError, setShowError] = useState<boolean>(IsError);
+  const [showError, setShowError] = useState<boolean>(IsError?.length > 0);
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
   const [selectedName, setSelectedName] = useState<string>("");
   const [showIndex, setShowIndex] = useState<boolean>(false);
@@ -203,6 +204,11 @@ function DropdownList({
         <div className="flex items-center gap-2 text-sm text-[#333] dark:text-[#666] p-2">
           <CircleAlert className="text-[#FF0000] size-3" />
           {t("search.list.failures")}
+
+          <Tooltip content={IsError} position="left">
+            <Ellipsis className="dark:text-white size-3 cursor-pointer" />
+          </Tooltip>
+
           <Bolt
             className="dark:text-white size-3 cursor-pointer"
             onClick={() => {

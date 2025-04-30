@@ -51,8 +51,9 @@ export const ChatContent = ({
   });
 
   useEffect(() => {
+    console.log("activeChat", activeChat);
     setCurrentSessionId(activeChat?._id);
-  }, [activeChat]);
+  }, [activeChat?._id]);
 
   const { t } = useTranslation();
 
