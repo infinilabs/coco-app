@@ -129,7 +129,7 @@ const ChatAI = memo(
       const dealMsgRef = useRef<((msg: string) => void) | null>(null);
 
       const clientId = isChatPage ? "standalone" : "popup";
-      const { reconnect, disconnectWS, updateDealMsg } = useWebSocket({
+      const { reconnect, updateDealMsg } = useWebSocket({
         clientId,
         connected,
         setConnected,
