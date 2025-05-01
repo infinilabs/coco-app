@@ -139,7 +139,7 @@ export const FetchSource = ({
                   className={`flex-1 mobile:hidden flex items-center justify-end gap-2`}
                 >
                   <span className="text-xs text-[#999999] dark:text-[#999999] truncate">
-                    { item.source?.name || item?.category}
+                    {item.source?.name || item?.category}
                   </span>
                   <SquareArrowOutUpRight className="w-3 h-3 text-[#999999] dark:text-[#999999] flex-shrink-0" />
                 </div>
