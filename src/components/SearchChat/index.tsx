@@ -90,10 +90,23 @@ function SearchChat({
 
   const setTheme = useThemeStore((state) => state.setTheme);
 
+  const isChatModeRef = useRef(false);
+  useEffect(() => {
+    isChatModeRef.current = isChatMode;
+  }, [isChatMode]);
+
   useMount(async () => {
     const isWin10 = await platformAdapter.isWindows10();
 
     setIsWin10(isWin10);
+
+    platformAdapter.listenEvent("show-coco", () => {
+      console.log("show-coco");
+
+      platformAdapter.invokeBackend("simulate_mouse_click", {
+        isChatMode: isChatModeRef.current,
+      });
+    });
   });
 
   useEffect(() => {

@@ -137,7 +137,8 @@ pub fn run() {
             local::application::get_default_search_paths,
             local::application::list_app_with_metadata_in,
             util::open,
-            server::system_settings::get_system_settings
+            server::system_settings::get_system_settings,
+            simulate_mouse_click
         ])
         .setup(|app| {
             let registry = SearchSourceRegistry::default();
@@ -251,13 +252,13 @@ async fn init_app_search_source<R: Runtime>(app_handle: &AppHandle<R>) -> Result
 #[tauri::command]
 async fn show_coco<R: Runtime>(app_handle: AppHandle<R>) {
     if let Some(window) = app_handle.get_window(MAIN_WINDOW_LABEL) {
-        let _ = app_handle.emit("show-coco", ());
-
         move_window_to_active_monitor(&window);
 
         let _ = window.show();
         let _ = window.unminimize();
         let _ = window.set_focus();
+
+        let _ = app_handle.emit("show-coco", ());
     }
 }
 
@@ -411,4 +412,50 @@ async fn get_app_search_source<R: Runtime>(app_handle: AppHandle<R>) -> Result<(
 #[tauri::command]
 async fn show_settings(app_handle: AppHandle) {
     open_settings(&app_handle);
+}
+
+#[tauri::command]
+async fn simulate_mouse_click<R: Runtime>(window: WebviewWindow<R>, is_chat_mode: bool) {
+    #[cfg(target_os = "windows")]
+    {
+        use enigo::{Button, Coordinate, Direction, Enigo, Mouse, Settings};
+        use std::{thread, time::Duration};
+
+        if let Ok(mut enigo) = Enigo::new(&Settings::default()) {
+            // Save the current mouse position
+            if let Ok((original_x, original_y)) = enigo.location() {
+                // Retrieve the window's outer position (top-left corner)
+                if let Ok(position) = window.outer_position() {
+                    // Retrieve the window's inner size (client area)
+                    if let Ok(size) = window.inner_size() {
+                        // Calculate the center position of the title bar
+                        let x = position.x + (size.width as i32 / 2);
+                        let y = if is_chat_mode {
+                            position.y + size.height as i32 - 50
+                        } else {
+                            position.y + 30
+                        };
+
+                        // Move the mouse cursor to the calculated position
+                        if enigo.move_mouse(x, y, Coordinate::Abs).is_ok() {
+                            // // Simulate a left mouse click
+                            let _ = enigo.button(Button::Left, Direction::Click);
+                            // let _ = enigo.button(Button::Left, Direction::Release);
+
+                            thread::sleep(Duration::from_millis(100));
+
+                            // Move the mouse cursor back to the original position
+                            let _ = enigo.move_mouse(original_x, original_y, Coordinate::Abs);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = window;
+        let _ = is_chat_mode;
+    }
 }
