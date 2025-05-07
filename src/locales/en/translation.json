@@ -169,6 +169,13 @@
           "title": "Pinned Window Dimness Setting",
           "description": "Adjusts the opacity level of the Coco AI window when it’s pinned and not in focus. Set a value between 10% and 100%, where 100% means fully opaque (no dimming), and lower values increase transparency, allowing underlying content to show through."
         }
+      },
+      "updateVersion": {
+        "title": "Version & Updates",
+        "snapshotUpdate": {
+          "title": "Snapshot Updates",
+          "description": "Get early access to new features. May be unstable."
+        }
       }
     },
     "tabs": {

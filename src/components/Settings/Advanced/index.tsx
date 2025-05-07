@@ -8,6 +8,7 @@ import { useConnectStore } from "@/stores/connectStore";
 import Appearance from "./components/Appearance";
 import SettingsInput from "../SettingsInput";
 import platformAdapter from "@/utils/platformAdapter";
+import UpdateSettings from "./components/UpdateSettings";
 
 const Advanced = () => {
   const { t } = useTranslation();
@@ -206,6 +207,8 @@ const Advanced = () => {
       </div>
 
       <Appearance />
+
+      <UpdateSettings />
     </div>
   );
 };

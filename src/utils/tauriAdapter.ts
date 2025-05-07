@@ -12,6 +12,7 @@ import {
 import type { BasePlatformAdapter } from "@/types/platform";
 import type { AppTheme } from "@/types/index";
 import { useAppStore } from "@/stores/appStore";
+import { useAppearanceStore } from "@/stores/appearance";
 
 export interface TauriPlatformAdapter extends BasePlatformAdapter {
   openFileDialog: (
@@ -116,7 +117,22 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
 
     async checkUpdate() {
       const { check } = await import("@tauri-apps/plugin-updater");
-      return check();
+
+      const { snapshotUpdate } = useAppearanceStore.getState();
+
+      const endpoints = [
+        "https://release.infinilabs.com/coco/app/.latest.json?target={{target}}&arch={{arch}}&current_version={{current_version}}",
+      ];
+
+      if (snapshotUpdate) {
+        endpoints.unshift(
+          "https://release.infinilabs.com/coco/app/snapshot/.latest.json?target={{target}}&arch={{arch}}&current_version={{current_version}}"
+        );
+      }
+
+      return check({
+        endpoints,
+      });
     },
 
     async relaunchApp() {
