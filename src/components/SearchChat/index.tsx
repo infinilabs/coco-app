@@ -173,6 +173,7 @@ function SearchChat({
     setIsPinned && setIsPinned(isPinned);
     return platformAdapter.setAlwaysOnTop(isPinned);
   }, []);
+  const snapshotUpdate = useAppearanceStore((state) => state.snapshotUpdate);
 
   const getDataSourcesByServer = useCallback(
     async (
@@ -314,6 +315,12 @@ function SearchChat({
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (!snapshotUpdate) return;
+
+    checkUpdate();
+  }, [snapshotUpdate]);
 
   return (
     <div

@@ -4,6 +4,8 @@ import { persist, subscribeWithSelector } from "zustand/middleware";
 export type IAppearanceStore = {
   opacity: number;
   setOpacity: (opacity: number) => void;
+  snapshotUpdate: boolean;
+  setSnapshotUpdate: (snapshotUpdate: boolean) => void;
 };
 
 export const useAppearanceStore = create<IAppearanceStore>()(
@@ -14,11 +16,16 @@ export const useAppearanceStore = create<IAppearanceStore>()(
         setOpacity: (opacity) => {
           return set({ opacity });
         },
+        snapshotUpdate: false,
+        setSnapshotUpdate: (snapshotUpdate) => {
+          return set({ snapshotUpdate });
+        },
       }),
       {
         name: "startup-store",
         partialize: (state) => ({
           opacity: state.opacity,
+          snapshotUpdate: state.snapshotUpdate,
         }),
       }
     )

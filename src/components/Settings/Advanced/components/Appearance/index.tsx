@@ -2,7 +2,7 @@ import SettingsInput from "@/components/Settings/SettingsInput";
 import SettingsItem from "@/components/Settings/SettingsItem";
 import { useAppearanceStore } from "@/stores/appearance";
 import platformAdapter from "@/utils/platformAdapter";
-import { Unplug } from "lucide-react";
+import { AppWindowMac } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -26,7 +26,7 @@ const Appearance = () => {
       </h2>
 
       <SettingsItem
-        icon={Unplug}
+        icon={AppWindowMac}
         title={t("settings.advanced.appearance.opacity.title")}
         description={t("settings.advanced.appearance.opacity.description")}
       >

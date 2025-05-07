@@ -79,6 +79,9 @@ export const useSyncStore = () => {
     return state.setQuerySourceTimeout;
   });
   const setOpacity = useAppearanceStore((state) => state.setOpacity);
+  const setSnapshotUpdate = useAppearanceStore((state) => {
+    return state.setSnapshotUpdate;
+  });
 
   useEffect(() => {
     if (!resetFixedWindow) {
@@ -145,9 +148,10 @@ export const useSyncStore = () => {
       }),
 
       platformAdapter.listenEvent("change-appearance-store", ({ payload }) => {
-        const { opacity } = payload;
+        const { opacity, snapshotUpdate } = payload;
 
         setOpacity(opacity);
+        setSnapshotUpdate(snapshotUpdate);
       }),
     ]);
 
