@@ -27,8 +27,7 @@ use_pizza_engine = ["dep:pizza-engine"]
 
 [dependencies]
 pizza-common = { git = "https://github.com/infinilabs/pizza-common", branch = "main" }
-pizza-engine = { git = "https://github.com/infinilabs/pizza", features = ["query_string_parser", "persistence"], optional = true }
-
+pizza-engine = { git = "ssh://git@github.com/infinilabs/pizza.git", features = ["query_string_parser", "persistence"], optional = true }
 
 tauri = { version = "2", features = ["protocol-asset", "macos-private-api", "tray-icon", "image-ico", "image-png", "unstable"] }
 tauri-plugin-shell = "2"
