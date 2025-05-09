@@ -2,6 +2,7 @@ import platformAdapter from "@/utils/platformAdapter";
 import { useSearchStore } from "@/stores/searchStore";
 import { useKeyPress } from "ahooks";
 import { HISTORY_PANEL_ID } from "@/constants";
+import { closeHistoryPanel } from "@/utils";
 
 const useEscape = () => {
   const visibleContextMenu = useSearchStore((state) => {
@@ -29,11 +30,7 @@ const useEscape = () => {
     const historyPanel = document.getElementById(HISTORY_PANEL_ID);
 
     if (historyPanel) {
-      const button = document.querySelector(
-        `[aria-controls="${HISTORY_PANEL_ID}"]`
-      );
-
-      return (button as HTMLElement).click();
+      return closeHistoryPanel();
     }
 
     platformAdapter.hideWindow();
