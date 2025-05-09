@@ -15,6 +15,7 @@ use crate::server::servers::{load_or_insert_default_server, load_servers_token};
 use autostart::{change_autostart, enable_autostart};
 use lazy_static::lazy_static;
 use std::sync::Mutex;
+use std::sync::OnceLock;
 use tauri::async_runtime::block_on;
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
@@ -29,6 +30,10 @@ pub(crate) const COCO_TAURI_STORE: &str = "coco_tauri_store";
 lazy_static! {
     static ref PREVIOUS_MONITOR_NAME: Mutex<Option<String>> = Mutex::new(None);
 }
+
+/// To allow us to access tauri's `AppHandle` when its context is inaccessible,
+/// store it globally. It will be set in `init()`.
+pub(crate) static GLOBAL_TAURI_APP_HANDLE: OnceLock<AppHandle> = OnceLock::new();
 
 #[tauri::command]
 async fn change_window_height(handle: AppHandle, height: u32) {
@@ -134,13 +139,29 @@ pub fn run() {
             server::attachment::get_attachment,
             server::attachment::delete_attachment,
             server::transcription::transcription,
-            local::application::get_default_search_paths,
-            local::application::list_app_with_metadata_in,
             util::open,
             server::system_settings::get_system_settings,
-            simulate_mouse_click
+            simulate_mouse_click,
+            local::get_disabled_local_query_sources,
+            local::enable_local_query_source,
+            local::disable_local_query_source,
+            local::application::get_app_list,
+            local::application::get_app_search_path,
+            local::application::get_app_metadata,
+            local::application::set_app_alias,
+            local::application::register_app_hotkey,
+            local::application::unregister_app_hotkey,
+            local::application::disable_app_search,
+            local::application::enable_app_search,
+            local::application::add_app_search_path,
+            local::application::remove_app_search_path,
         ])
         .setup(|app| {
+            let app_handle = app.handle().clone();
+            GLOBAL_TAURI_APP_HANDLE
+                .set(app_handle.clone())
+                .expect("variable already initialized");
+
             let registry = SearchSourceRegistry::default();
 
             app.manage(registry); // Store registry in Tauri's app state
@@ -234,19 +255,8 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
         crate::server::servers::try_register_server_to_search_source(app_handle.clone(), &server)
             .await;
     }
-}
 
-async fn init_app_search_source<R: Runtime>(app_handle: &AppHandle<R>) -> Result<(), String> {
-    let application_search =
-        local::application::ApplicationSearchSource::new(app_handle.clone(), 1000f64).await?;
-    let calculator_search = local::calculator::CalculatorSource::new(2000f64);
-
-    // Register the application search source
-    let registry = app_handle.state::<SearchSourceRegistry>();
-    registry.register_source(application_search).await;
-    registry.register_source(calculator_search).await;
-
-    Ok(())
+    local::start_pizza_engine_runtime();
 }
 
 #[tauri::command]
@@ -402,7 +412,7 @@ fn open_settings(app: &tauri::AppHandle) {
 
 #[tauri::command]
 async fn get_app_search_source<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), String> {
-    init_app_search_source(&app_handle).await?;
+    local::init_local_search_source(&app_handle).await?;
     let _ = server::connector::refresh_all_connectors(&app_handle).await;
     let _ = server::datasource::refresh_all_datasources(&app_handle).await;
 

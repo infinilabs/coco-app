@@ -110,24 +110,22 @@ function SearchChat({
   });
 
   useEffect(() => {
-    let mounted = true;
-
     const init = async () => {
-      if (!mounted) return;
       await initializeListeners();
       await initializeListeners_auth();
       await platformAdapter.invokeBackend("get_app_search_source");
-      if (theme && mounted) {
-        setTheme(theme);
-      }
+
+      platformAdapter.emitEvent("search-source-loaded");
     };
 
     init();
-
-    return () => {
-      mounted = false;
-    };
   }, []);
+
+  useEffect(() => {
+    if (!theme) return;
+
+    setTheme(theme);
+  }, [theme]);
 
   const chatAIRef = useRef<ChatAIRef>(null);
 

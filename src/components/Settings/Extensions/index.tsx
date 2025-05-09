@@ -5,7 +5,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { Folder } from "lucide-react";
+import { Calculator, Folder } from "lucide-react";
 import { noop } from "lodash-es";
 
 import Accordion from "./components/Accordion";
@@ -14,6 +14,9 @@ import ApplicationsDetail from "./components/Details/Applications";
 import { useApplicationsStore } from "@/stores/applicationsStore";
 import Application from "./components/Details/Application";
 import { useTranslation } from "react-i18next";
+import { useMount } from "ahooks";
+import platformAdapter from "@/utils/platformAdapter";
+import { useExtensionStore } from "@/stores/extension";
 
 export interface Plugin {
   id: string;
@@ -30,14 +33,34 @@ export interface Plugin {
 interface ExtensionsContextType {
   activeId?: string;
   setActiveId: (id: string) => void;
+  disabledExtensions: string[];
+  setDisabledExtensions: (ids: string[]) => void;
 }
 
 export const ExtensionsContext = createContext<ExtensionsContextType>({
   setActiveId: noop,
+  disabledExtensions: [],
+  setDisabledExtensions: noop,
 });
 
 const Extensions = () => {
   const { t } = useTranslation();
+  const disabledExtensions = useExtensionStore((state) => {
+    return state.disabledExtensions;
+  });
+  const setDisabledExtensions = useExtensionStore((state) => {
+    return state.setDisabledExtensions;
+  });
+
+  useMount(async () => {
+    const disabledExtensions = await platformAdapter.invokeBackend<string[]>(
+      "get_disabled_local_query_sources"
+    );
+
+    console.log("disabledExtensions", disabledExtensions);
+
+    setDisabledExtensions(disabledExtensions);
+  });
 
   const allApps = useApplicationsStore((state) => {
     return state.allApps;
@@ -45,12 +68,17 @@ const Extensions = () => {
 
   const presetPlugins: Plugin[] = [
     {
-      id: "1",
+      id: "Applications",
       icon: <Folder />,
       title: t("settings.extensions.application.title"),
       type: "Group",
       content: <ApplicationsContent />,
       detail: <ApplicationsDetail />,
+    },
+    {
+      id: "Calculator",
+      icon: <Calculator />,
+      title: t("settings.extensions.calculator.title"),
     },
     // {
     //   id: "2",
@@ -69,7 +97,7 @@ const Extensions = () => {
 
   const currentApp = useMemo(() => {
     return allApps.find((app) => {
-      return app.name === activeId;
+      return app.path === activeId;
     });
   }, [activeId, allApps]);
 
@@ -78,6 +106,8 @@ const Extensions = () => {
       value={{
         activeId,
         setActiveId,
+        disabledExtensions,
+        setDisabledExtensions,
       }}
     >
       <div className="flex h-[calc(100vh-128px)] -mx-6 gap-4">
@@ -123,7 +153,7 @@ const Extensions = () => {
 
           {currentPlugin?.detail}
 
-          {currentApp && <Application current={currentApp} />}
+          {currentApp && <Application />}
         </div>
       </div>
     </ExtensionsContext.Provider>

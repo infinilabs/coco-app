@@ -56,7 +56,7 @@ export type IAppStore = {
   setLanguage: (language: string) => void;
   isPinned: boolean;
   setIsPinned: (isPinned: boolean) => void;
-  initializeListeners: () => void;
+  initializeListeners: () => Promise<() => void>;
 
   showCocoShortcuts: string[];
   setShowCocoShortcuts: (showCocoShortcuts: string[]) => void;
@@ -130,10 +130,14 @@ export const useAppStore = create<IAppStore>()(
       isPinned: false,
       setIsPinned: (isPinned: boolean) => set({ isPinned }),
       initializeListeners: () => {
-        platformAdapter.listenEvent(ENDPOINT_CHANGE_EVENT, (event: any) => {
-          const { endpoint, endpoint_http, endpoint_websocket } = event.payload;
-          set({ endpoint, endpoint_http, endpoint_websocket });
-        });
+        return platformAdapter.listenEvent(
+          ENDPOINT_CHANGE_EVENT,
+          (event: any) => {
+            const { endpoint, endpoint_http, endpoint_websocket } =
+              event.payload;
+            set({ endpoint, endpoint_http, endpoint_websocket });
+          }
+        );
       },
       showCocoShortcuts: [],
       setShowCocoShortcuts: (showCocoShortcuts: string[]) => {

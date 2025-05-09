@@ -20,9 +20,15 @@ tauri-build = { version = "2", features = ["default"] }
 default = ["desktop"]
 desktop = []
 cargo-clippy = []
+# If enabled, dependency `pizza-engine` will be pulled in. Since it is still 
+# private, you need access to the repo to enable this feature, or Coco-AI won't
+# compile.
+use_pizza_engine = ["dep:pizza-engine"]
 
 [dependencies]
 pizza-common = { git = "https://github.com/infinilabs/pizza-common", branch = "main" }
+pizza-engine = { git = "https://github.com/infinilabs/pizza", features = ["query_string_parser", "persistence"], optional = true }
+
 
 tauri = { version = "2", features = ["protocol-asset", "macos-private-api", "tray-icon", "image-ico", "image-png", "unstable"] }
 tauri-plugin-shell = "2"
@@ -42,7 +48,7 @@ tauri-plugin-drag = "2"
 tauri-plugin-macos-permissions = "2"
 tauri-plugin-fs-pro = "2"
 tauri-plugin-screenshots = "2"
-applications = { git = "https://github.com/infinilabs/applications-rs", rev = "fb8f475993a2a774ce08d7a58f9f2ac264248a24" }
+applications = { git = "https://github.com/infinilabs/applications-rs", rev = "1f62cd25651733bf8dc961c2382a39335a26ffe7" }
 
 tokio-native-tls = "0.3"  # For wss connections
 tokio = { version = "1", features = ["full"] }
@@ -61,7 +67,6 @@ hostname = "0.3"
 plist = "1.7"
 base64 = "0.13"
 walkdir = "2"
-fuzzy_prefix_search = "0.2"
 log = "0.4"
 
 futures-util = "0.3.31"

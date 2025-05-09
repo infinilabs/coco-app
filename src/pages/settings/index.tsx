@@ -12,8 +12,7 @@ import Footer from "@/components/Common/UI/SettingsFooter";
 import { useTray } from "@/hooks/useTray";
 import Advanced from "@/components/Settings/Advanced";
 import Extensions from "@/components/Settings/Extensions";
-import { useAsyncEffect, useMount } from "ahooks";
-import { useApplicationsStore } from "@/stores/applicationsStore";
+import { Application, useApplicationsStore } from "@/stores/applicationsStore";
 import platformAdapter from "@/utils/platformAdapter";
 
 const tabIndexMap: { [key: string]: number } = {
@@ -26,9 +25,9 @@ const tabIndexMap: { [key: string]: number } = {
 
 function SettingsPage() {
   const { t } = useTranslation();
-  const searchPaths = useApplicationsStore((state) => state.searchPaths);
   const setSearchPaths = useApplicationsStore((state) => state.setSearchPaths);
   const setAllApps = useApplicationsStore((state) => state.setAllApps);
+  const allApps = useApplicationsStore((state) => state.allApps);
 
   useTray();
 
@@ -60,30 +59,33 @@ function SettingsPage() {
     document.body.style.overflow = defaultIndex !== 1 ? "auto" : "hidden";
   }, [defaultIndex]);
 
-  useMount(async () => {
-    if (searchPaths.length > 0) return;
+  useEffect(() => {
+    platformAdapter.listenEvent("search-source-loaded", async () => {
+      const apps = await platformAdapter.invokeBackend<Application[]>(
+        "get_app_list"
+      );
 
-    const paths = await platformAdapter.invokeBackend<string[]>(
-      "get_default_search_paths"
-    );
+      const sortedApps = apps.sort((a, b) => {
+        return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+      });
 
-    setSearchPaths(paths);
-  });
+      setAllApps(sortedApps);
 
-  useAsyncEffect(async () => {
-    if (searchPaths.length === 0) {
-      return setAllApps([]);
-    }
+      const paths = await platformAdapter.invokeBackend<string[]>(
+        "get_app_search_path"
+      );
 
-    const apps = await platformAdapter.invokeBackend<any[]>(
-      "list_app_with_metadata_in",
-      {
-        searchPath: searchPaths,
-      }
-    );
+      setSearchPaths(paths);
+    });
 
-    setAllApps(apps);
-  }, [searchPaths]);
+    platformAdapter.listenEvent("new-apps", ({ payload }) => {
+      const nextApps = allApps.concat(payload).sort((a, b) => {
+        return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+      });
+
+      setAllApps(nextApps);
+    });
+  }, []);
 
   return (
     <div>

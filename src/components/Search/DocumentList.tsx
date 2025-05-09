@@ -35,13 +35,20 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const { t } = useTranslation();
   const sourceData = useSearchStore((state) => state.sourceData);
   const isTauri = useAppStore((state) => state.isTauri);
-  const queryTimeout = useConnectStore((state) => state.querySourceTimeout);
+  const querySourceTimeout = useConnectStore((state) => {
+    return state.querySourceTimeout;
+  });
 
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
   const [total, setTotal] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [isKeyboardMode, setIsKeyboardMode] = useState(false);
+
+  const querySourceTimeoutRef = useRef(querySourceTimeout);
+  useEffect(() => {
+    querySourceTimeoutRef.current = querySourceTimeout;
+  }, [querySourceTimeout]);
 
   const { data, loading } = useInfiniteScroll(
     async (d) => {
@@ -65,7 +72,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
           from: from,
           size: PAGE_SIZE,
           queryStrings: queryStrings,
-          queryTimeout,
+          queryTimeout: querySourceTimeoutRef.current,
         });
       } else {
         let url = `/query/_search?query=${queryStrings.query}&datasource=${queryStrings.datasource}&from=${from}&size=${PAGE_SIZE}`;

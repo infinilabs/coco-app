@@ -55,39 +55,3 @@ pub struct Document {
     pub owner: Option<UserInfo>,
     pub last_updated_by: Option<EditorInfo>,
 }
-
-impl Document {
-    pub fn new(
-        source: Option<DataSourceReference>,
-        id: String,
-        category: String,
-        name: String,
-        url: String,
-    ) -> Self {
-        Self {
-            id,
-            created: None,
-            updated: None,
-            source,
-            r#type: None,
-            category: Some(category),
-            subcategory: None,
-            categories: None,
-            rich_categories: None,
-            title: Some(name),
-            summary: None,
-            lang: None,
-            content: None,
-            icon: None,
-            thumbnail: None,
-            cover: None,
-            tags: None,
-            url: Some(url),
-            size: None,
-            metadata: None,
-            payload: None,
-            owner: None,
-            last_updated_by: None,
-        }
-    }
-}

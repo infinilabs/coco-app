@@ -11,7 +11,7 @@ use num2words::Num2Words;
 use serde_json::Value;
 use std::collections::HashMap;
 
-const DATA_SOURCE_ID: &str = "Calculator";
+pub(crate) const DATA_SOURCE_ID: &str = "Calculator";
 
 pub struct CalculatorSource {
     base_score: f64,

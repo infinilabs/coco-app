@@ -45,7 +45,7 @@ const UpdateApp = ({ checkUpdate, relaunchApp }: UpdateAppProps) => {
   const checkUpdateStatus = useCallback(async () => {
     const update = await checkUpdate();
 
-    if (update?.available) {
+    if (update) {
       setUpdateInfo(update);
 
       if (skipVersion === update.version) return;

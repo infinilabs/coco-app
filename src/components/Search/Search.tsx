@@ -45,7 +45,9 @@ function Search({
   setWindowAlwaysOnTop,
 }: SearchProps) {
   const sourceData = useSearchStore((state) => state.sourceData);
-  const queryTimeout = useConnectStore((state) => state.querySourceTimeout);
+  const querySourceTimeout = useConnectStore((state) => {
+    return state.querySourceTimeout;
+  });
 
   const [IsError, setIsError] = useState<any[]>([]);
   const [suggests, setSuggests] = useState<any[]>([]);
@@ -53,6 +55,11 @@ function Search({
   const [isSearchComplete, setIsSearchComplete] = useState(false);
 
   const mainWindowRef = useRef<HTMLDivElement>(null);
+
+  const querySourceTimeoutRef = useRef(querySourceTimeout);
+  useEffect(() => {
+    querySourceTimeoutRef.current = querySourceTimeout;
+  }, [querySourceTimeout]);
 
   const getSuggest = useCallback(
     async (searchInput: string) => {
@@ -65,7 +72,7 @@ function Search({
           from: 0,
           size: 10,
           queryStrings: { query: searchInput },
-          queryTimeout: queryTimeout,
+          queryTimeout: querySourceTimeoutRef.current,
         });
         if (response && typeof response === "object" && "failed" in response) {
           const failedResult = response as any;
