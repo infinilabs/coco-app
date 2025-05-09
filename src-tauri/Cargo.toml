@@ -20,10 +20,14 @@ tauri-build = { version = "2", features = ["default"] }
 default = ["desktop"]
 desktop = []
 cargo-clippy = []
+# If enabled, dependency `pizza-engine` will be pulled in. Since it is still 
+# private, you need access to the repo to enable this feature, or Coco-AI won't
+# compile.
+use_pizza_engine = ["dep:pizza-engine"]
 
 [dependencies]
 pizza-common = { git = "https://github.com/infinilabs/pizza-common", branch = "main" }
-pizza-engine = { git = "https://github.com/infinilabs/pizza", features = ["query_string_parser", "persistence"] }
+pizza-engine = { git = "https://github.com/infinilabs/pizza", features = ["query_string_parser", "persistence"], optional = true }
 
 
 tauri = { version = "2", features = ["protocol-asset", "macos-private-api", "tray-icon", "image-ico", "image-png", "unstable"] }

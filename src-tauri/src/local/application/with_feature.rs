@@ -1,4 +1,7 @@
-use super::RUNTIME_TX;
+use super::super::SearchSourceState;
+use super::super::RUNTIME_TX;
+use super::AppEntry;
+use super::AppMetadata;
 use crate::common::document::{DataSourceReference, Document};
 use crate::common::error::SearchError;
 use crate::common::search::{QueryResponse, QuerySource, SearchQuery};
@@ -19,7 +22,6 @@ use pizza_engine::search::{OriginalQuery, QueryContext, SearchResult, Searcher};
 use pizza_engine::store::{DiskStore, DiskStoreSnapshot};
 use pizza_engine::writer::Writer;
 use pizza_engine::{doc, Engine, EngineBuilder};
-use serde::Serialize;
 use serde_json::Value as Json;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -29,6 +31,7 @@ use tauri_plugin_fs_pro::{icon, metadata, name, IconOptions};
 use tauri_plugin_global_shortcut::GlobalShortcutExt;
 use tauri_plugin_store::StoreExt;
 use tokio::sync::oneshot::Sender as OneshotSender;
+use super::super::Task;
 
 const FIELD_APP_NAME: &str = "app_name";
 const FIELD_ICON_PATH: &str = "icon_path";
@@ -184,7 +187,7 @@ struct ApplicationSearchSourceState {
     snapshot: DiskStoreSnapshot,
 }
 
-impl super::SearchSourceState for ApplicationSearchSourceState {
+impl SearchSourceState for ApplicationSearchSourceState {
     fn as_mut_any(&mut self) -> &mut dyn std::any::Any {
         self
     }
@@ -197,12 +200,12 @@ struct IndexAllApplicationsTask<R: Runtime> {
 }
 
 #[async_trait::async_trait(?Send)]
-impl<R: Runtime> super::Task for IndexAllApplicationsTask<R> {
+impl<R: Runtime> Task for IndexAllApplicationsTask<R> {
     fn search_source_id(&self) -> &'static str {
         APPLICATION_SEARCH_SOURCE_ID
     }
 
-    async fn exec(&mut self, state: &mut Option<Box<dyn super::SearchSourceState>>) {
+    async fn exec(&mut self, state: &mut Option<Box<dyn SearchSourceState>>) {
         let callback = self.callback.take().unwrap();
         let mut app_index_dir = self
             .tauri_app_handle
@@ -277,7 +280,7 @@ impl<R: Runtime> super::Task for IndexAllApplicationsTask<R> {
             snapshot,
             engine: pizza_engine,
             writer,
-        }) as Box<dyn super::SearchSourceState>;
+        }) as Box<dyn SearchSourceState>;
 
         *state = Some(state_to_store);
 
@@ -292,12 +295,12 @@ struct SearchApplicationsTask<R: Runtime> {
 }
 
 #[async_trait::async_trait(?Send)]
-impl<R: Runtime> super::Task for SearchApplicationsTask<R> {
+impl<R: Runtime> Task for SearchApplicationsTask<R> {
     fn search_source_id(&self) -> &'static str {
         APPLICATION_SEARCH_SOURCE_ID
     }
 
-    async fn exec(&mut self, state: &mut Option<Box<dyn super::SearchSourceState>>) {
+    async fn exec(&mut self, state: &mut Option<Box<dyn SearchSourceState>>) {
         let callback = self.callback.take().unwrap();
         let disabled_app_list = get_disabled_app_list(self.tauri_app_handle.clone());
 
@@ -346,12 +349,12 @@ struct GetApplicationsTask {
 }
 
 #[async_trait(?Send)]
-impl super::Task for GetApplicationsTask {
+impl Task for GetApplicationsTask {
     fn search_source_id(&self) -> &'static str {
         APPLICATION_SEARCH_SOURCE_ID
     }
 
-    async fn exec(&mut self, state: &mut Option<Box<dyn super::SearchSourceState>>) {
+    async fn exec(&mut self, state: &mut Option<Box<dyn SearchSourceState>>) {
         let callback = self.callback.take().unwrap();
 
         // `size` is set to u32::MAX, it should be a reasonable value
@@ -395,12 +398,12 @@ struct IndexNewApplicationsTask {
 }
 
 #[async_trait(?Send)]
-impl super::Task for IndexNewApplicationsTask {
+impl Task for IndexNewApplicationsTask {
     fn search_source_id(&self) -> &'static str {
         APPLICATION_SEARCH_SOURCE_ID
     }
 
-    async fn exec(&mut self, state: &mut Option<Box<dyn super::SearchSourceState>>) {
+    async fn exec(&mut self, state: &mut Option<Box<dyn SearchSourceState>>) {
         let callback = self
             .callback
             .take()
@@ -436,7 +439,7 @@ impl ApplicationSearchSource {
             callback: Some(tx),
         };
 
-        super::RUNTIME_TX
+        RUNTIME_TX
             .get()
             .unwrap()
             .send(Box::new(index_applications_task))
@@ -575,7 +578,7 @@ impl ApplicationSearchSource {
                             applications: new_apps_pizza_engine_documents,
                             callback: Some(callback),
                         });
-                        super::RUNTIME_TX
+                        RUNTIME_TX
                             .get()
                             .unwrap()
                             .send(index_new_apps_task)
@@ -982,17 +985,6 @@ pub async fn get_app_search_path<R: Runtime>(tauri_app_handle: AppHandle<R>) -> 
     search_path
 }
 
-#[derive(Debug, Serialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct AppEntry {
-    path: String,
-    name: String,
-    icon_path: String,
-    alias: String,
-    hotkey: String,
-    is_disabled: bool,
-}
-
 #[tauri::command]
 pub async fn get_app_list<R: Runtime>(
     tauri_app_handle: AppHandle<R>,
@@ -1002,7 +994,7 @@ pub async fn get_app_list<R: Runtime>(
     let get_applications_task = Box::new(GetApplicationsTask {
         callback: Some(callback),
     });
-    super::RUNTIME_TX
+    RUNTIME_TX
         .get()
         .unwrap()
         .send(get_applications_task)
@@ -1071,18 +1063,6 @@ pub async fn get_app_list<R: Runtime>(
     }
 
     Ok(app_entries)
-}
-
-#[derive(serde::Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct AppMetadata {
-    name: String,
-    r#where: String,
-    size: u64,
-    icon: String,
-    created: u128,
-    modified: u128,
-    last_opened: u128,
 }
 
 #[tauri::command]

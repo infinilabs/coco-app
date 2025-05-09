@@ -16,6 +16,7 @@ pub const LOCAL_QUERY_SOURCE_TYPE: &str = "local";
 pub const TAURI_STORE_LOCAL_QUERY_SOURCE_ENABLED_STATE: &str = "local_query_source_enabled_state";
 
 trait SearchSourceState {
+    #[cfg_attr(not(feature = "use_pizza_engine"), allow(unused))]
     fn as_mut_any(&mut self) -> &mut dyn Any;
 }
 
@@ -76,7 +77,9 @@ pub(crate) async fn init_local_search_source<R: Runtime>(
 
         if enabled {
             if id == application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME {
-                registry.register_source(application::ApplicationSearchSource).await;
+                registry
+                    .register_source(application::ApplicationSearchSource)
+                    .await;
             }
 
             if id == calculator::DATA_SOURCE_ID {
