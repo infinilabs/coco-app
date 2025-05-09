@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import platformAdapter from "./platformAdapter";
 import { useAppStore } from "@/stores/appStore";
+import { HISTORY_PANEL_ID } from "@/constants";
 
 // 1
 export async function copyToClipboard(text: string) {
@@ -101,4 +102,14 @@ export const isImage = (value: string) => {
   const regex = /\.(jpe?g|png|webp|avif|gif|svg|bmp|ico|tiff?|heic|apng)$/i;
 
   return regex.test(value);
+};
+
+export const closeHistoryPanel = () => {
+  const button = document.querySelector(
+    `[aria-controls="${HISTORY_PANEL_ID}"]`
+  );
+
+  if (button instanceof HTMLButtonElement) {
+    button.click();
+  }
 };
