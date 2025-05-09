@@ -4619,7 +4619,7 @@ dependencies = [
 [[package]]
 name = "pizza-common"
 version = "0.1.0"
-source = "git+https://github.com/infinilabs/pizza#de36b19726d8bc4c4be21bdedcb5d24bdc6d7306"
+source = "git+ssh://git@github.com/infinilabs/pizza.git#de36b19726d8bc4c4be21bdedcb5d24bdc6d7306"
 dependencies = [
  "bytes",
  "camino",
@@ -4637,7 +4637,7 @@ dependencies = [
 [[package]]
 name = "pizza-engine"
 version = "0.1.0"
-source = "git+https://github.com/infinilabs/pizza#de36b19726d8bc4c4be21bdedcb5d24bdc6d7306"
+source = "git+ssh://git@github.com/infinilabs/pizza.git#de36b19726d8bc4c4be21bdedcb5d24bdc6d7306"
 dependencies = [
  "async-trait",
  "bincode",
@@ -4664,7 +4664,7 @@ dependencies = [
  "num-traits",
  "ouroboros",
  "paste",
- "pizza-common 0.1.0 (git+https://github.com/infinilabs/pizza)",
+ "pizza-common 0.1.0 (git+ssh://git@github.com/infinilabs/pizza.git)",
  "rayon",
  "roaring",
  "rustc-hash",
