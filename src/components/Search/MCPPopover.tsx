@@ -24,7 +24,7 @@ import NoDataImage from "@/components/Common/NoDataImage";
 import PopoverInput from "../Common/PopoverInput";
 import FontIcon from "../Common/Icons/FontIcon";
 
-interface SearchPopoverProps {
+interface MCPPopoverProps {
   isMCPActive: boolean;
   setIsMCPActive: () => void;
   getMCPByServer: (
@@ -37,11 +37,11 @@ interface SearchPopoverProps {
   ) => Promise<DataSource[]>;
 }
 
-export default function SearchPopover({
+export default function MCPPopover({
   isMCPActive,
   setIsMCPActive,
   getMCPByServer,
-}: SearchPopoverProps) {
+}: MCPPopoverProps) {
   const { t } = useTranslation();
   const { connected } = useChatStore();
 
