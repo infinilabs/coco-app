@@ -25,3 +25,4 @@ src/components/web
 *.njsproj
 *.sln
 *.sw?
+.env
