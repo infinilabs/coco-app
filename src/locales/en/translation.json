@@ -200,7 +200,9 @@
         "title": "Applications",
         "hits": {
           "addAlias": "Add Alias",
-          "recordHotkey": "Record Hotkey"
+          "recordHotkey": "Record Hotkey",
+          "pathDuplication": "Path \"{{0}}\" is already in search scope.",
+          "pathIncluded": "Path \"{{0}}\" is already covered by another search directory."
         },
         "button": {
           "addDirectories": "Add Directories"
@@ -217,6 +219,9 @@
           "modified": "Modified",
           "lastOpened": "Last Opened"
         }
+      },
+      "calculator": {
+        "title": "Calculator"
       }
     }
   },

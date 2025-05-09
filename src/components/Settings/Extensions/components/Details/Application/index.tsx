@@ -1,47 +1,66 @@
-import { FC } from "react";
-import { Application } from "@/stores/applicationsStore";
+import { useContext, useMemo, useState } from "react";
+import { ApplicationMetadata } from "@/stores/applicationsStore";
 import { filesize } from "filesize";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
+import { useAsyncEffect } from "ahooks";
+import platformAdapter from "@/utils/platformAdapter";
+import { ExtensionsContext } from "../../..";
 
-interface AppProps {
-  current: Application;
-}
-
-const App: FC<AppProps> = (props) => {
-  const { name, where, size, created, modified, lastOpened } = props.current;
+const App = () => {
   const { t } = useTranslation();
+  const { activeId } = useContext(ExtensionsContext);
 
-  const metadata = [
-    {
-      label: t("settings.extensions.application.details.name"),
-      value: name,
-    },
-    {
-      label: t("settings.extensions.application.details.where"),
-      value: where,
-    },
-    {
-      label: t("settings.extensions.application.details.type"),
-      value: t("settings.extensions.application.details.typeValue"),
-    },
-    {
-      label: t("settings.extensions.application.details.size"),
-      value: filesize(size, { standard: "jedec", spacer: "" }),
-    },
-    {
-      label: t("settings.extensions.application.details.created"),
-      value: dayjs(created).format("YYYY/MM/DD HH:mm:ss"),
-    },
-    {
-      label: t("settings.extensions.application.details.modified"),
-      value: dayjs(modified).format("YYYY/MM/DD HH:mm:ss"),
-    },
-    {
-      label: t("settings.extensions.application.details.lastOpened"),
-      value: dayjs(lastOpened).format("YYYY/MM/DD HH:mm:ss"),
-    },
-  ];
+  const [appMetadata, setAppMetadata] = useState<ApplicationMetadata>();
+
+  useAsyncEffect(async () => {
+    const appMetadata =
+      await platformAdapter.invokeBackend<ApplicationMetadata>(
+        "get_app_metadata",
+        {
+          appPath: activeId,
+        }
+      );
+
+    setAppMetadata(appMetadata);
+  }, [activeId]);
+
+  const metadata = useMemo(() => {
+    if (!appMetadata) return [];
+
+    const { name, where, size, created, modified, lastOpened } = appMetadata;
+
+    return [
+      {
+        label: t("settings.extensions.application.details.name"),
+        value: name,
+      },
+      {
+        label: t("settings.extensions.application.details.where"),
+        value: where,
+      },
+      {
+        label: t("settings.extensions.application.details.type"),
+        value: t("settings.extensions.application.details.typeValue"),
+      },
+      {
+        label: t("settings.extensions.application.details.size"),
+        value: filesize(size, { standard: "jedec", spacer: "" }),
+      },
+      {
+        label: t("settings.extensions.application.details.created"),
+        value: dayjs(created).format("YYYY/MM/DD HH:mm:ss"),
+      },
+      {
+        label: t("settings.extensions.application.details.modified"),
+        value: dayjs(modified).format("YYYY/MM/DD HH:mm:ss"),
+      },
+      {
+        label: t("settings.extensions.application.details.lastOpened"),
+        value: dayjs(lastOpened).format("YYYY/MM/DD HH:mm:ss"),
+      },
+    ];
+  }, [appMetadata]);
 
   return (
     <ul className="flex flex-col gap-2 p-0">

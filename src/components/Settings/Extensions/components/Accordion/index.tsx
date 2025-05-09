@@ -3,6 +3,7 @@ import { ChevronRight } from "lucide-react";
 import clsx from "clsx";
 import SettingsToggle from "@/components/Settings/SettingsToggle";
 import { ExtensionsContext, Plugin } from "../..";
+import platformAdapter from "@/utils/platformAdapter";
 
 interface AccordionProps extends Plugin {}
 
@@ -14,11 +15,10 @@ const Accordion: FC<AccordionProps> = (props) => {
     type = "Extension",
     alias = "-",
     hotKey = "-",
-    enabled = true,
     content,
   } = props;
-  const { activeId, setActiveId } = useContext(ExtensionsContext);
-
+  const { activeId, setActiveId, disabledExtensions, setDisabledExtensions } =
+    useContext(ExtensionsContext);
   const [expand, setExpand] = useState(false);
 
   return (
@@ -56,12 +56,37 @@ const Accordion: FC<AccordionProps> = (props) => {
           <div className="flex-1">{type}</div>
           <div className="flex-1">{alias}</div>
           <div className="flex-1">{hotKey}</div>
-          <div className="flex-1 flex items-center justify-end">
+          <div
+            className="flex-1 flex items-center justify-end"
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          >
             <SettingsToggle
               label=""
-              checked={enabled}
+              checked={!disabledExtensions.includes(id)}
               className="scale-75"
-              onChange={() => {}}
+              onChange={(value) => {
+                console.log("value", value);
+
+                if (value) {
+                  setDisabledExtensions(
+                    disabledExtensions.filter((extensionId) => {
+                      return extensionId !== id;
+                    })
+                  );
+
+                  platformAdapter.invokeBackend("enable_local_query_source", {
+                    querySourceId: id,
+                  });
+                } else {
+                  setDisabledExtensions(disabledExtensions.concat(id));
+
+                  platformAdapter.invokeBackend("disable_local_query_source", {
+                    querySourceId: id,
+                  });
+                }
+              }}
             />
           </div>
         </div>

@@ -200,7 +200,9 @@
         "title": "应用程序",
         "hits": {
           "addAlias": "添加别名",
-          "recordHotkey": "录制热键"
+          "recordHotkey": "录制热键",
+          "pathDuplication": "路径 \"{{0}}\" 已存在于搜索范围中。",
+          "pathIncluded": "路径 \"{{0}}\" 已被其他搜索目录包含。"
         },
         "button": {
           "addDirectories": "添加目录"
@@ -217,6 +219,9 @@
           "modified": "修改时间",
           "lastOpened": "上次打开时间"
         }
+      },
+      "calculator": {
+        "title": "计算器"
       }
     }
   },

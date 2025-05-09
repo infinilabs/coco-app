@@ -52,7 +52,7 @@ pub async fn query_coco_fusion<R: Runtime>(
             timeout(timeout_duration, async {
                 query_source_clone.search(query).await
             })
-                .await
+            .await
         }));
     }
 
