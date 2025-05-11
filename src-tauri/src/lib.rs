@@ -17,6 +17,7 @@ use lazy_static::lazy_static;
 use std::sync::Mutex;
 use std::sync::OnceLock;
 use tauri::async_runtime::block_on;
+use tauri::plugin::TauriPlugin;
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
 use tauri::{
@@ -60,8 +61,6 @@ struct Payload {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let ctx = tauri::generate_context!();
-    // Initialize logger
-    env_logger::init();
 
     let mut app_builder = tauri::Builder::default();
 
@@ -88,7 +87,8 @@ pub fn run() {
         .plugin(tauri_plugin_screenshots::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
-        .plugin(tauri_plugin_windows_version::init());
+        .plugin(tauri_plugin_windows_version::init())
+        .plugin(set_up_tauri_logger());
 
     // Conditional compilation for macOS
     #[cfg(target_os = "macos")]
@@ -468,4 +468,53 @@ async fn simulate_mouse_click<R: Runtime>(window: WebviewWindow<R>, is_chat_mode
         let _ = window;
         let _ = is_chat_mode;
     }
+}
+
+/// Log format:
+///
+/// ```text
+/// [time] [log level] [file module:line] message
+/// ```
+///
+/// Example:
+///
+///
+/// ```text
+/// [05-11 17:00:00] [INF] [coco_lib:625] Coco-AI started
+/// ```
+fn set_up_tauri_logger() -> TauriPlugin<tauri::Wry> {
+    use log::Level;
+
+    fn format_log_level(level: Level) -> &'static str {
+        match level {
+            Level::Trace => "TRC",
+            Level::Debug => "DBG",
+            Level::Info => "INF",
+            Level::Warn => "WAR",
+            Level::Error => "ERR",
+        }
+    }
+
+    fn format_target_and_line(record: &log::Record) -> String {
+        let mut str = record.target().to_string();
+        if let Some(line) = record.line() {
+            str.push(':');
+            str.push_str(&line.to_string());
+        }
+
+        str
+    }
+
+    tauri_plugin_log::Builder::new()
+        .format(|out, message, record| {
+            let now = chrono::Local::now().format("%m-%d %H:%M:%S");
+            let level = format_log_level(record.level());
+            let target_and_line = format_target_and_line(record);
+            out.finish(format_args!(
+                "[{}] [{}] [{}] {}",
+                now, level, target_and_line, message
+            ));
+        })
+        .level(log::LevelFilter::Debug)
+        .build()
 }
