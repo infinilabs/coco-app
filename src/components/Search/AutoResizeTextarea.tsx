@@ -58,7 +58,7 @@ const AutoResizeTextarea = forwardRef<
       style={{
         resize: "none", // Prevent manual resize
         overflow: "auto", // Enable scrollbars when needed
-        maxHeight: "4.5rem", // Limit height to 3 rows (3 * 1.5 line-height)
+        maxHeight: "15rem", // Limit height to 10 rows (10 * 1.5 line-height)
         lineHeight: "1.5rem", // Line height to match row height
       }}
     />
