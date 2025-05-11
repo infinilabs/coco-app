@@ -76,3 +76,6 @@ clean-rebuild:
 	@echo "Cleaning up and rebuilding..."
 	rm -rf node_modules
 	$(MAKE) dev-build
+
+add-dep-pizza-engine:
+	cd src-tauri && cargo add --git ssh://git@github.com/infinilabs/pizza.git pizza-engine --features query_string_parser,persistence
