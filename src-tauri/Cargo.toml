@@ -20,14 +20,29 @@ tauri-build = { version = "2", features = ["default"] }
 default = ["desktop"]
 desktop = []
 cargo-clippy = []
-# If enabled, dependency `pizza-engine` will be pulled in. Since it is still 
-# private, you need access to the repo to enable this feature, or Coco-AI won't
-# compile.
-use_pizza_engine = ["dep:pizza-engine"]
+# If enabled, code that relies on pizza_engine will be activated.
+#
+# Only do this if:
+# 1. Pizza engine is listed in the `dependencies` section
+#  
+# ```toml
+# [dependencies]
+# pizza-engine = { git = "ssh://git@github.com/infinilabs/pizza.git", features = ["query_string_parser", "persistence"] }
+# ```
+#
+# 2. It is a private repo, you have access to it.
+#
+# So, for external contributors, do NOT enable this feature.
+# 
+# Previously, We listed it in the dependencies and marked it optional, but cargo 
+# would fetch all the dependencies regardless of wheterh they are optional or not, 
+# so we removed it.
+#
+# https://github.com/rust-lang/cargo/issues/4544#issuecomment-1906902755
+use_pizza_engine = []
 
 [dependencies]
 pizza-common = { git = "https://github.com/infinilabs/pizza-common", branch = "main" }
-pizza-engine = { git = "ssh://git@github.com/infinilabs/pizza.git", features = ["query_string_parser", "persistence"], optional = true }
 
 tauri = { version = "2", features = ["protocol-asset", "macos-private-api", "tray-icon", "image-ico", "image-png", "unstable"] }
 tauri-plugin-shell = "2"
