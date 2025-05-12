@@ -1,5 +1,11 @@
 import { useBoolean } from "ahooks";
-import { useRef, useImperativeHandle, forwardRef, KeyboardEvent } from "react";
+import {
+  useRef,
+  useImperativeHandle,
+  forwardRef,
+  KeyboardEvent,
+  useEffect,
+} from "react";
 import { useTranslation } from "react-i18next";
 
 interface AutoResizeTextareaProps {
@@ -35,6 +41,14 @@ const AutoResizeTextarea = forwardRef<
     handleKeyDown?.(event);
   };
 
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      const newHeight = Math.min(textareaRef.current.scrollHeight, 15 * 16); // 15rem ≈ 15 * 16px
+      textareaRef.current.style.height = `${newHeight}px`;
+    }
+  }, [input]);
+
   return (
     <textarea
       ref={textareaRef}
@@ -42,7 +56,7 @@ const AutoResizeTextarea = forwardRef<
       autoComplete="off"
       autoCapitalize="none"
       spellCheck="false"
-      className="text-base flex-1 outline-none min-w-[200px] text-[#333] dark:text-[#d8d8d8] placeholder-text-xs placeholder-[#999] dark:placeholder-gray-500 bg-transparent"
+      className="text-base flex-1 outline-none min-w-[200px] text-[#333] dark:text-[#d8d8d8] placeholder-text-xs placeholder-[#999] dark:placeholder-gray-500 bg-transparent custom-scrollbar"
       placeholder={
         connected ? chatPlaceholder || t("search.textarea.placeholder") : ""
       }
@@ -58,7 +72,7 @@ const AutoResizeTextarea = forwardRef<
       style={{
         resize: "none", // Prevent manual resize
         overflow: "auto", // Enable scrollbars when needed
-        maxHeight: "4.5rem", // Limit height to 3 rows (3 * 1.5 line-height)
+        maxHeight: "15rem", // Limit height to 10 rows (10 * 1.5 line-height)
         lineHeight: "1.5rem", // Line height to match row height
       }}
     />

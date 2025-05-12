@@ -337,7 +337,7 @@ function SearchChat({
     <div
       data-tauri-drag-region={isTauri}
       className={clsx(
-        "m-auto overflow-hidden relative bg-no-repeat bg-cover bg-center bg-white dark:bg-black",
+        "m-auto overflow-hidden relative bg-no-repeat bg-cover bg-center bg-white dark:bg-black flex flex-col",
         [
           isTransitioned
             ? "bg-chat_bg_light dark:bg-chat_bg_dark"
@@ -353,12 +353,31 @@ function SearchChat({
       )}
       style={{ opacity: blurred ? opacity / 100 : 1 }}
     >
+      {isTransitioned && (
+        <div
+          data-tauri-drag-region={isTauri}
+          className="flex-1 w-full overflow-hidden"
+        >
+          <Suspense fallback={<LoadingFallback />}>
+            <ChatAI
+              ref={chatAIRef}
+              key="ChatAI"
+              changeInput={setInput}
+              isSearchActive={isSearchActive}
+              isDeepThinkActive={isDeepThinkActive}
+              isMCPActive={isMCPActive}
+              getFileUrl={getFileUrl}
+              showChatHistory={showChatHistory}
+              assistantIDs={assistantIDs}
+            />
+          </Suspense>
+        </div>
+      )}
+
       <div
         data-tauri-drag-region={isTauri}
-        className={`p-2 absolute w-full flex justify-center transition-all duration-500 ${
-          isTransitioned
-            ? "top-[calc(100%-82px)] h-[82px] border-t"
-            : "top-0 h-[82px] border-b"
+        className={`p-2 w-full flex justify-center transition-all duration-500 min-h-[82px] ${
+          isTransitioned ? "border-t" : "border-b"
         } border-[#E6E6E6] dark:border-[#272626]`}
       >
         <InputBox
@@ -395,48 +414,25 @@ function SearchChat({
         />
       </div>
 
-      <div
-        data-tauri-drag-region={isTauri}
-        className={`absolute w-full transition-opacity duration-500 ${
-          isTransitioned ? "opacity-0 pointer-events-none" : "opacity-100"
-        } bottom-0 h-[calc(100%-82px)] `}
-      >
-        <Suspense fallback={<LoadingFallback />}>
-          <Search
-            key="Search"
-            isTauri={isTauri}
-            input={input}
-            isChatMode={isChatMode}
-            changeInput={setInput}
-            hideCoco={hideCoco}
-            openSetting={openSetting}
-            setWindowAlwaysOnTop={setWindowAlwaysOnTop}
-          />
-        </Suspense>
-      </div>
-
-      <div
-        data-tauri-drag-region={isTauri}
-        className={`absolute w-full transition-all duration-500 select-auto ${
-          isTransitioned
-            ? "top-0 opacity-100 pointer-events-auto"
-            : "-top-[506px] opacity-0 pointer-events-none"
-        } h-[calc(100%-90px)]`}
-      >
-        <Suspense fallback={<LoadingFallback />}>
-          <ChatAI
-            ref={chatAIRef}
-            key="ChatAI"
-            changeInput={setInput}
-            isSearchActive={isSearchActive}
-            isDeepThinkActive={isDeepThinkActive}
-            isMCPActive={isMCPActive}
-            getFileUrl={getFileUrl}
-            showChatHistory={showChatHistory}
-            assistantIDs={assistantIDs}
-          />
-        </Suspense>
-      </div>
+      {!isTransitioned && (
+        <div
+          data-tauri-drag-region={isTauri}
+          className="flex-1 overflow-auto w-full"
+        >
+          <Suspense fallback={<LoadingFallback />}>
+            <Search
+              key="Search"
+              isTauri={isTauri}
+              input={input}
+              isChatMode={isChatMode}
+              changeInput={setInput}
+              hideCoco={hideCoco}
+              openSetting={openSetting}
+              setWindowAlwaysOnTop={setWindowAlwaysOnTop}
+            />
+          </Suspense>
+        </div>
+      )}
 
       <UpdateApp checkUpdate={checkUpdate} relaunchApp={relaunchApp} />
     </div>

@@ -18,6 +18,7 @@ Information about release notes of Coco Server is provided here.
 - feat: supports Shift + Enter input box line feeds #472
 - feat: support for snapshot version updates #480
 - feat: history list add put away button #482
+- feat: the chat input box supports multi-line input #490
 
 ### 🐛 Bug fix
 

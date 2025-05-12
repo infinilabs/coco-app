@@ -434,7 +434,7 @@ export default function ChatInput({
 
       <div
         data-tauri-drag-region
-        className="flex justify-between items-center py-2"
+        className="flex justify-between items-center pt-2"
       >
         {isChatMode ? (
           <div className="flex gap-2 text-[12px] leading-3 text-[#333] dark:text-[#d8d8d8]">
