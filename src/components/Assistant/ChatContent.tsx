@@ -84,7 +84,7 @@ export const ChatContent = ({
   const allMessages = activeChat?.messages || [];
 
   return (
-    <div className="relative flex flex-col h-full justify-between overflow-hidden">
+    <div className="flex-1 overflow-hidden flex flex-col justify-between relative">
       <div className="flex-1 w-full overflow-x-hidden overflow-y-auto border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.15)] custom-scrollbar relative">
         <Greetings />
 
@@ -112,7 +112,8 @@ export const ChatContent = ({
               _id: "current",
               _source: {
                 type: "assistant",
-                assistant_id: allMessages[allMessages.length-1]?._source?.assistant_id,
+                assistant_id:
+                  allMessages[allMessages.length - 1]?._source?.assistant_id,
                 message: "",
                 question: Question,
               },
@@ -129,6 +130,7 @@ export const ChatContent = ({
             loadingStep={loadingStep}
           />
         ) : null}
+
         {timedoutShow ? (
           <ChatMessage
             key={"timedout"}

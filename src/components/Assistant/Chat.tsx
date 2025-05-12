@@ -190,10 +190,7 @@ const ChatAI = memo(
         setActiveChat(undefined);
         setCurChatEnd(true);
         clearChatPage && clearChatPage();
-      }, [
-        activeChat,
-        chatClose,
-      ]);
+      }, [activeChat, chatClose]);
 
       const init = useCallback(
         async (value: string) => {
@@ -242,13 +239,7 @@ const ChatAI = memo(
             chatHistory(response);
           }
         },
-        [
-          cancelChat,
-          activeChat,
-          chatClose,
-          openSessionChat,
-          chatHistory,
-        ]
+        [cancelChat, activeChat, chatClose, openSessionChat, chatHistory]
       );
 
       const deleteChat = useCallback(
@@ -331,7 +322,7 @@ const ChatAI = memo(
       return (
         <div
           data-tauri-drag-region
-          className={`h-full flex flex-col rounded-md relative`}
+          className={`flex flex-col rounded-md relative h-full overflow-hidden`}
         >
           {showChatHistory && !setIsSidebarOpen && (
             <ChatSidebar
@@ -360,6 +351,7 @@ const ChatAI = memo(
             showChatHistory={showChatHistory}
             assistantIDs={assistantIDs}
           />
+
           {isLogin ? (
             <ChatContent
               activeChat={activeChat}
