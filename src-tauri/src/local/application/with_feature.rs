@@ -357,9 +357,9 @@ impl Task for GetApplicationsTask {
     async fn exec(&mut self, state: &mut Option<Box<dyn SearchSourceState>>) {
         let callback = self.callback.take().unwrap();
 
-        // `size` is set to u32::MAX, it should be a reasonable value
+        // `size` is set to 100_000, it should be a reasonable value
         let dsl = r#"{
-        "size": 4294967295,
+        "size": 100000,
         "query": {
           "match_all": { }
         }
