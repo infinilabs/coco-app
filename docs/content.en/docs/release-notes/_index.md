@@ -19,6 +19,7 @@ Information about release notes of Coco Server is provided here.
 - feat: support for snapshot version updates #480
 - feat: history list add put away button #482
 - feat: the chat input box supports multi-line input #490
+- feat: add `~/Applications` to the search path #493
 
 ### 🐛 Bug fix
 
