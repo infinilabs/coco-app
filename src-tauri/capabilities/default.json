@@ -70,6 +70,7 @@
     "core:window:allow-set-theme",
     "process:default",
     "updater:default",
-    "windows-version:default"
+    "windows-version:default",
+    "log:default"
   ]
 }
