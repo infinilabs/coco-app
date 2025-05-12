@@ -196,11 +196,13 @@
         "hotkey": "热键",
         "enabled": "启用状态"
       },
+      "hits": {
+        "addAlias": "添加别名",
+        "recordHotkey": "录制热键"
+      },
       "application": {
         "title": "应用程序",
         "hits": {
-          "addAlias": "添加别名",
-          "recordHotkey": "录制热键",
           "pathDuplication": "路径 \"{{0}}\" 已存在于搜索范围中。",
           "pathIncluded": "路径 \"{{0}}\" 已被其他搜索目录包含。"
         },

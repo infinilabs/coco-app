@@ -196,11 +196,13 @@
         "hotkey": "Hotkey",
         "enabled": "Enabled"
       },
+      "hits": {
+        "addAlias": "Add Alias",
+        "recordHotkey": "Record Hotkey"
+      },
       "application": {
         "title": "Applications",
         "hits": {
-          "addAlias": "Add Alias",
-          "recordHotkey": "Record Hotkey",
           "pathDuplication": "Path \"{{0}}\" is already in search scope.",
           "pathIncluded": "Path \"{{0}}\" is already covered by another search directory."
         },

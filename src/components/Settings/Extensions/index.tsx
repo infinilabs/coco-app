@@ -1,113 +1,182 @@
 import {
   createContext,
+  Dispatch,
   ReactElement,
   ReactNode,
+  SetStateAction,
+  useEffect,
   useMemo,
   useState,
 } from "react";
 import { Calculator, Folder } from "lucide-react";
 import { noop } from "lodash-es";
+import { useMount } from "ahooks";
+import { useTranslation } from "react-i18next";
 
-import Accordion from "./components/Accordion";
-import ApplicationsContent from "./components/Content/Applications";
 import ApplicationsDetail from "./components/Details/Applications";
 import { useApplicationsStore } from "@/stores/applicationsStore";
 import Application from "./components/Details/Application";
-import { useTranslation } from "react-i18next";
-import { useMount } from "ahooks";
 import platformAdapter from "@/utils/platformAdapter";
-import { useExtensionStore } from "@/stores/extension";
+import Content from "./components/Content";
+import Details from "./components/Details";
 
 export interface Plugin {
   id: string;
   icon: ReactElement;
-  title: ReactNode;
-  type?: "Group" | "Extension";
+  name: ReactNode;
+  type?: "Group" | "Extension" | "Application";
   alias?: string;
-  hotKey?: string;
+  hotkey?: string;
   enabled?: boolean;
-  content?: ReactNode;
   detail?: ReactNode;
+  onAliasChange?: (alias: string) => void;
+  onHotkeyChange?: (hotkey: string) => void;
+  onEnabledChange?: (enabled: boolean) => void;
+  children?: Plugin[];
 }
 
 interface ExtensionsContextType {
+  plugins: Plugin[];
+  setPlugins: Dispatch<SetStateAction<Plugin[]>>;
   activeId?: string;
   setActiveId: (id: string) => void;
-  disabledExtensions: string[];
-  setDisabledExtensions: (ids: string[]) => void;
 }
 
 export const ExtensionsContext = createContext<ExtensionsContextType>({
+  plugins: [],
+  setPlugins: noop,
   setActiveId: noop,
-  disabledExtensions: [],
-  setDisabledExtensions: noop,
 });
 
 const Extensions = () => {
   const { t } = useTranslation();
-  const disabledExtensions = useExtensionStore((state) => {
-    return state.disabledExtensions;
-  });
-  const setDisabledExtensions = useExtensionStore((state) => {
-    return state.setDisabledExtensions;
-  });
-
-  useMount(async () => {
-    const disabledExtensions = await platformAdapter.invokeBackend<string[]>(
-      "get_disabled_local_query_sources"
-    );
-
-    console.log("disabledExtensions", disabledExtensions);
-
-    setDisabledExtensions(disabledExtensions);
-  });
-
   const allApps = useApplicationsStore((state) => {
     return state.allApps;
   });
+  const setAllApps = useApplicationsStore((state) => {
+    return state.setAllApps;
+  });
+  const [disabled, setDisabled] = useState<string[]>([]);
+  const [activeId, setActiveId] = useState<string>();
 
-  const presetPlugins: Plugin[] = [
-    {
-      id: "Applications",
-      icon: <Folder />,
-      title: t("settings.extensions.application.title"),
-      type: "Group",
-      content: <ApplicationsContent />,
-      detail: <ApplicationsDetail />,
-    },
-    {
-      id: "Calculator",
-      icon: <Calculator />,
-      title: t("settings.extensions.calculator.title"),
-    },
-    // {
-    //   id: "2",
-    //   icon: <File />,
-    //   title: "File Search",
-    // },
-  ];
+  useMount(async () => {
+    const disabled = await platformAdapter.invokeBackend<string[]>(
+      "get_disabled_local_query_sources"
+    );
 
-  const plugins: Plugin[] = [...presetPlugins];
+    setDisabled(disabled);
+  });
 
-  const [activeId, setActiveId] = useState(plugins[0].id);
+  const presetPlugins = useMemo<Plugin[]>(() => {
+    const plugins: Plugin[] = [
+      {
+        id: "Applications",
+        icon: <Folder />,
+        name: t("settings.extensions.application.title"),
+        type: "Group",
+        detail: <ApplicationsDetail />,
+        children: [],
+      },
+      {
+        id: "Calculator",
+        icon: <Calculator />,
+        name: t("settings.extensions.calculator.title"),
+      },
+    ];
 
-  const currentPlugin = useMemo(() => {
-    return plugins.find((plugin) => plugin.id === activeId);
-  }, [activeId, plugins]);
+    if (allApps.length > 0) {
+      for (const app of allApps) {
+        const { path, iconPath, isDisabled } = app;
 
-  const currentApp = useMemo(() => {
-    return allApps.find((app) => {
-      return app.path === activeId;
+        plugins[0].children?.push({
+          ...app,
+          id: path,
+          type: "Application",
+          icon: (
+            <img
+              src={platformAdapter.convertFileSrc(iconPath)}
+              className="size-5"
+            />
+          ),
+          enabled: !isDisabled,
+          detail: <Application />,
+          onAliasChange(alias) {
+            platformAdapter.invokeBackend("set_app_alias", {
+              appPath: path,
+              alias,
+            });
+
+            const nextApps = allApps.map((item) => {
+              if (item.path !== path) return item;
+
+              return { ...item, alias };
+            });
+
+            setAllApps(nextApps);
+          },
+          onHotkeyChange(hotkey) {
+            const command = `${hotkey ? "register" : "unregister"}_app_hotkey`;
+
+            platformAdapter.invokeBackend(command, {
+              appPath: path,
+              hotkey,
+            });
+
+            const nextApps = allApps.map((item) => {
+              if (item.path !== path) return item;
+
+              return { ...item, hotkey };
+            });
+
+            setAllApps(nextApps);
+          },
+          onEnabledChange(enabled) {
+            const command = `${enabled ? "enable" : "disable"}_app_search`;
+
+            platformAdapter.invokeBackend(command, {
+              appPath: path,
+            });
+
+            const nextApps = allApps.map((item) => {
+              if (item.path !== path) return item;
+
+              return { ...item, isDisabled: !enabled };
+            });
+
+            setAllApps(nextApps);
+          },
+        });
+      }
+    }
+
+    return plugins;
+  }, [allApps]);
+
+  const [plugins, setPlugins] = useState<Plugin[]>(presetPlugins);
+
+  useEffect(() => {
+    setPlugins(presetPlugins);
+  }, [presetPlugins]);
+
+  useEffect(() => {
+    setPlugins((prevPlugins) => {
+      return prevPlugins.map((item) => {
+        if (disabled.includes(item.id)) {
+          return { ...item, enabled: false };
+        }
+
+        return item;
+      });
     });
-  }, [activeId, allApps]);
+  }, [disabled]);
 
   return (
     <ExtensionsContext.Provider
       value={{
+        plugins,
+        setPlugins,
         activeId,
         setActiveId,
-        disabledExtensions,
-        setDisabledExtensions,
       }}
     >
       <div className="flex h-[calc(100vh-128px)] -mx-6 gap-4">
@@ -118,11 +187,9 @@ const Extensions = () => {
 
           <div>
             <div className="flex">
-              <div className="w-[220px]">
-                {t("settings.extensions.list.name")}
-              </div>
+              <div className="flex-1">{t("settings.extensions.list.name")}</div>
 
-              <div className="flex flex-1">
+              <div className="w-3/5 flex">
                 <div className="flex-1">
                   {t("settings.extensions.list.type")}
                 </div>
@@ -138,23 +205,11 @@ const Extensions = () => {
               </div>
             </div>
 
-            {plugins.map((item) => {
-              return <Accordion {...item} key={item.id} />;
-            })}
+            <Content />
           </div>
         </div>
 
-        <div className="flex-1 h-full overflow-auto">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            {currentPlugin?.title}
-
-            {currentApp?.name}
-          </h2>
-
-          {currentPlugin?.detail}
-
-          {currentApp && <Application />}
-        </div>
+        <Details />
       </div>
     </ExtensionsContext.Provider>
   );
