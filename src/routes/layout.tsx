@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAsyncEffect, useEventListener, useMount } from "ahooks";
+import { isString } from "lodash-es";
+import { error } from "@tauri-apps/plugin-log";
 
 import { useAppStore } from "@/stores/appStore";
 import useEscape from "@/hooks/useEscape";
@@ -107,6 +109,12 @@ export default function Layout() {
   });
 
   useModifierKeyPress();
+
+  useEventListener("unhandledrejection", ({ reason }) => {
+    const message = isString(reason) ? reason : JSON.stringify(reason);
+
+    error(message);
+  });
 
   return (
     <>
