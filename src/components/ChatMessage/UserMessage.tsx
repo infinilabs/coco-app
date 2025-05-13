@@ -1,7 +1,7 @@
 import { useState } from "react";
+import clsx from "clsx";
 
 import { CopyButton } from "@/components/Common/CopyButton";
-import clsx from "clsx";
 
 interface UserMessageProps {
   messageContent: string;
