@@ -86,7 +86,7 @@ export const ChatContent = ({
   return (
     <div className="flex-1 overflow-hidden flex flex-col justify-between relative">
       <div className="flex-1 w-full overflow-x-hidden overflow-y-auto border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.15)] custom-scrollbar relative">
-        {(!activeChat || activeChat?.messages?.length === 0) && <Greetings />}
+        {activeChat?.messages?.length === 0 && <Greetings />}
 
         {activeChat?.messages?.map((message, index) => (
           <ChatMessage
