@@ -29,6 +29,7 @@ Information about release notes of Coco Server is provided here.
 - chore: adjust list error message #475
 - fix: solve the problem of modifying the assistant in the chat #476
 - chore: refine wording on search failure
+- chore：search and MCP show hidden logic #494
 
 ## 0.4.0 (2025-04-27)
 

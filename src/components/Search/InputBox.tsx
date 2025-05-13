@@ -483,7 +483,7 @@ export default function ChatInput({
               </button>
             )}
 
-            {source?.datasource?.visible && (
+            {source?.datasource?.enabled && source?.datasource?.visible && (
               <SearchPopover
                 isSearchActive={isSearchActive}
                 setIsSearchActive={setIsSearchActive}
@@ -491,7 +491,7 @@ export default function ChatInput({
               />
             )}
 
-            {source?.mcp_servers?.visible && (
+            {source?.mcp_servers?.enabled && source?.mcp_servers?.visible && (
               <MCPPopover
                 isMCPActive={isMCPActive}
                 setIsMCPActive={setIsMCPActive}
@@ -499,9 +499,9 @@ export default function ChatInput({
               />
             )}
 
-            {!source?.datasource?.visible &&
+            {!(source?.datasource?.enabled && source?.datasource?.visible) &&
             (source?.type !== "deep_think" || !source?.config?.visible) &&
-            !source?.mcp_servers?.visible ? (
+            !(source?.mcp_servers?.enabled && source?.mcp_servers?.visible) ? (
               <div className="px-[9px]">
                 <Copyright />
               </div>

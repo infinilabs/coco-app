@@ -405,7 +405,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
             </Dialog>
           </>
         ) : (
-          <div className="flex items-center justify-center flex-1">
+          <div className="flex items-center justify-center flex-1 pt-8">
             <NoDataImage />
           </div>
         )}
