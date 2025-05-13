@@ -499,9 +499,9 @@ export default function ChatInput({
               />
             )}
 
-            {!source?.datasource?.visible &&
+            {!(source?.datasource?.enabled && source?.datasource?.visible) &&
             (source?.type !== "deep_think" || !source?.config?.visible) &&
-            !source?.mcp_servers?.visible ? (
+            !(source?.mcp_servers?.enabled && source?.mcp_servers?.visible) ? (
               <div className="px-[9px]">
                 <Copyright />
               </div>
