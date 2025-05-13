@@ -205,7 +205,7 @@ function DropdownList({
           <CircleAlert className="text-[#FF0000] size-3" />
           {t("search.list.failures")}
 
-          <Tooltip content={IsError} position="left">
+          <Tooltip content={IsError} position="bottom">
             <Ellipsis className="dark:text-white size-3 cursor-pointer" />
           </Tooltip>
 
@@ -221,6 +221,7 @@ function DropdownList({
           />
         </div>
       )}
+
       {Object.entries(SearchData).map(([sourceName, items]) => {
         const showHeader = Object.entries(SearchData).length < 5;
 
