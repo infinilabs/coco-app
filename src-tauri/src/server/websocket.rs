@@ -64,9 +64,6 @@ pub async fn connect_to_server(
         request.headers_mut().insert("X-API-TOKEN", token.parse().unwrap());
     }
 
-    // let (ws_stream, _) = connect_async(request).await.map_err(|e| format!("WebSocket error: {:?}", e))?;
-
-
     let tls_connector = tokio_native_tls::native_tls::TlsConnector::builder()
         .danger_accept_invalid_certs(true) // 🔥 THIS IGNORES CERT VALIDATION
         .build()
