@@ -93,6 +93,12 @@ pnpm tauri build
 - [Coco Server Documentation](https://docs.infinilabs.com/coco-server/main/)
 - [Tauri Documentation](https://tauri.app/)
 
+## Contributors
+
+<a href="https://github.com/infinilabs/coco-app/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=infinilabs/coco-app" />
+</a>
+
 ## 📄 License
 
 Coco AI is an open-source project licensed under the [MIT License](LICENSE). You can freely use, modify, and
