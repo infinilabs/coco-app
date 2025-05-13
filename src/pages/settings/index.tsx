@@ -12,8 +12,6 @@ import Footer from "@/components/Common/UI/SettingsFooter";
 import { useTray } from "@/hooks/useTray";
 import Advanced from "@/components/Settings/Advanced";
 import Extensions from "@/components/Settings/Extensions";
-import { Application, useApplicationsStore } from "@/stores/applicationsStore";
-import platformAdapter from "@/utils/platformAdapter";
 
 const tabIndexMap: { [key: string]: number } = {
   general: 0,
@@ -25,9 +23,6 @@ const tabIndexMap: { [key: string]: number } = {
 
 function SettingsPage() {
   const { t } = useTranslation();
-  const setSearchPaths = useApplicationsStore((state) => state.setSearchPaths);
-  const setAllApps = useApplicationsStore((state) => state.setAllApps);
-  const allApps = useApplicationsStore((state) => state.allApps);
 
   useTray();
 
@@ -56,36 +51,8 @@ function SettingsPage() {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = defaultIndex !== 1 ? "auto" : "hidden";
+    document.body.style.overflow = defaultIndex === 1 ? "hidden" : "auto";
   }, [defaultIndex]);
-
-  useEffect(() => {
-    platformAdapter.listenEvent("search-source-loaded", async () => {
-      const apps = await platformAdapter.invokeBackend<Application[]>(
-        "get_app_list"
-      );
-
-      const sortedApps = apps.sort((a, b) => {
-        return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
-      });
-
-      setAllApps(sortedApps);
-
-      const paths = await platformAdapter.invokeBackend<string[]>(
-        "get_app_search_path"
-      );
-
-      setSearchPaths(paths);
-    });
-
-    platformAdapter.listenEvent("new-apps", ({ payload }) => {
-      const nextApps = allApps.concat(payload).sort((a, b) => {
-        return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
-      });
-
-      setAllApps(nextApps);
-    });
-  }, []);
 
   return (
     <div>

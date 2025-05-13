@@ -62,7 +62,7 @@ tauri-plugin-drag = "2"
 tauri-plugin-macos-permissions = "2"
 tauri-plugin-fs-pro = "2"
 tauri-plugin-screenshots = "2"
-applications = { git = "https://github.com/infinilabs/applications-rs", rev = "9a738215cb3bbd4fc7a563dbb44ec78271ee35f2" }
+applications = { git = "https://github.com/infinilabs/applications-rs", rev = "7bb507e6b12f73c96f3a52f0578d0246a689f381" }
 
 tokio-native-tls = "0.3"  # For wss connections
 tokio = { version = "1", features = ["full"] }
@@ -94,6 +94,7 @@ chinese-number = "0.7"
 num2words = "1"
 tauri-plugin-log = "2"
 chrono = "0.4.41"
+pizza-engine = { git = "ssh://git@github.com/infinilabs/pizza.git", version = "0.1.0", features = ["query_string_parser", "persistence"] }
 
 [target."cfg(target_os = \"macos\")".dependencies]
 tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }
