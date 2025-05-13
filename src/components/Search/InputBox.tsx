@@ -2,7 +2,7 @@ import { ArrowBigLeft, Search, Send, Brain } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
-import { useBoolean, useKeyPress } from "ahooks";
+import { useKeyPress } from "ahooks";
 
 import ChatSwitch from "@/components/Common/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
@@ -108,7 +108,6 @@ export default function ChatInput({
   const modeSwitch = useShortcutsStore((state) => state.modeSwitch);
   const returnToInput = useShortcutsStore((state) => state.returnToInput);
   const deepThinking = useShortcutsStore((state) => state.deepThinking);
-  const [isComposition, { setTrue, setFalse }] = useBoolean();
 
   useEffect(() => {
     return () => {
@@ -119,7 +118,6 @@ export default function ChatInput({
     };
   }, []);
 
-  const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<{ reset: () => void; focus: () => void }>(null);
 
   const { curChatEnd, connected } = useChatStore();
@@ -160,12 +158,8 @@ export default function ChatInput({
   }, []);
 
   const handleToggleFocus = useCallback(() => {
-    if (isChatMode) {
-      textareaRef.current?.focus();
-    } else {
-      inputRef.current?.focus();
-    }
-  }, [isChatMode, textareaRef, inputRef]);
+    textareaRef.current?.focus();
+  }, [isChatMode, textareaRef]);
 
   const handleSubmit = useCallback(() => {
     const trimmedValue = inputValue.trim();
@@ -258,11 +252,7 @@ export default function ChatInput({
     let unlisten: (() => void) | undefined;
 
     setupWindowFocusListener(() => {
-      if (isChatMode) {
-        textareaRef.current?.focus();
-      } else {
-        inputRef.current?.focus();
-      }
+      textareaRef.current?.focus();
     }).then((unlistener) => {
       unlisten = unlistener;
     });
@@ -293,53 +283,36 @@ export default function ChatInput({
             />
           ) : null}
 
-          {isChatMode ? (
-            <AutoResizeTextarea
-              ref={textareaRef}
-              input={inputValue}
-              setInput={(value: string) => {
-                changeInput(value);
-              }}
-              connected={connected}
-              handleKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-                const { key, shiftKey } = e;
+          <AutoResizeTextarea
+            ref={textareaRef}
+            input={inputValue}
+            setInput={(value: string) => {
+              changeInput(value);
 
-                if (key !== "Enter" || shiftKey) return;
-
-                e.preventDefault();
-                handleSubmit();
-              }}
-              chatPlaceholder={chatPlaceholder}
-            />
-          ) : (
-            <input
-              ref={inputRef}
-              type="text"
-              autoFocus
-              autoComplete="off"
-              autoCapitalize="none"
-              spellCheck="false"
-              className="text-base font-normal flex-1 outline-none min-w-[200px] text-[#333] dark:text-[#d8d8d8] placeholder-text-xs placeholder-[#999] dark:placeholder-gray-500 bg-transparent"
-              placeholder={
-                searchPlaceholder || t("search.input.searchPlaceholder")
+              if (!isChatMode) {
+                onSend(value);
               }
-              value={inputValue}
-              onCompositionStart={setTrue}
-              onCompositionEnd={() => {
-                setTimeout(setFalse, 0);
-              }}
-              onKeyDown={(event) => {
-                if (event.key !== "Enter") return;
+            }}
+            connected={connected}
+            handleKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+              const { key, shiftKey } = e;
 
-                if (isComposition) {
-                  event.stopPropagation();
-                }
-              }}
-              onChange={(e) => {
-                onSend(e.target.value);
-              }}
-            />
-          )}
+              if (key !== "Enter" || shiftKey) return;
+
+              e.preventDefault();
+              handleSubmit();
+
+              if (!isChatMode) {
+                onSend(inputValue);
+              }
+            }}
+            chatPlaceholder={
+              isChatMode
+                ? chatPlaceholder
+                : searchPlaceholder || t("search.input.searchPlaceholder")
+            }
+          />
+
           {showTooltip && !isChatMode && sourceData && (
             <div className="absolute -top-[5px] left-2">
               <VisibleKey shortcut="←" />
