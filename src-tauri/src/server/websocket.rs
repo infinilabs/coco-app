@@ -5,11 +5,12 @@ use std::sync::Arc;
 use tauri::{AppHandle, Emitter};
 use tokio::net::TcpStream;
 use tokio::sync::{mpsc, Mutex};
+use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 use tokio_tungstenite::tungstenite::handshake::client::generate_key;
 use tokio_tungstenite::tungstenite::Message;
+use tokio_tungstenite::MaybeTlsStream;
 use tokio_tungstenite::WebSocketStream;
-use tokio_tungstenite::{connect_async, MaybeTlsStream};
-
+use tokio_tungstenite::{connect_async_tls_with_config, Connector};
 #[derive(Default)]
 pub struct WebSocketManager {
     connections: Arc<Mutex<HashMap<String, Arc<WebSocketInstance>>>>,
@@ -63,7 +64,25 @@ pub async fn connect_to_server(
         request.headers_mut().insert("X-API-TOKEN", token.parse().unwrap());
     }
 
-    let (ws_stream, _) = connect_async(request).await.map_err(|e| format!("WebSocket error: {:?}", e))?;
+    // let (ws_stream, _) = connect_async(request).await.map_err(|e| format!("WebSocket error: {:?}", e))?;
+
+
+    let tls_connector = tokio_native_tls::native_tls::TlsConnector::builder()
+        .danger_accept_invalid_certs(true) // 🔥 THIS IGNORES CERT VALIDATION
+        .build()
+        .map_err(|e| format!("TLS build error: {:?}", e))?;
+
+    let connector = Connector::NativeTls(tls_connector.into());
+
+    let (ws_stream, _) = connect_async_tls_with_config(
+        request,
+        None,             // WebSocketConfig
+        true,             // disable_nagle
+        Some(connector),  // Connector
+    )
+        .await
+        .map_err(|e| format!("WebSocket TLS error: {:?}", e))?;
+
     let (cancel_tx, mut cancel_rx) = mpsc::channel(1);
 
     let instance = Arc::new(WebSocketInstance {
