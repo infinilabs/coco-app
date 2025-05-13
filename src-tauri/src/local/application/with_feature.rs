@@ -1,4 +1,5 @@
 use super::super::SearchSourceState;
+use super::super::Task;
 use super::super::RUNTIME_TX;
 use super::AppEntry;
 use super::AppMetadata;
@@ -31,7 +32,6 @@ use tauri_plugin_fs_pro::{icon, metadata, name, IconOptions};
 use tauri_plugin_global_shortcut::GlobalShortcutExt;
 use tauri_plugin_store::StoreExt;
 use tokio::sync::oneshot::Sender as OneshotSender;
-use super::super::Task;
 
 const FIELD_APP_NAME: &str = "app_name";
 const FIELD_ICON_PATH: &str = "icon_path";
@@ -52,11 +52,20 @@ pub(crate) const QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME: &str = "Applicati
 
 pub fn get_default_search_paths() -> Vec<String> {
     #[cfg(target_os = "macos")]
-    return vec![
-        "/Applications".into(),
-        "/System/Applications".into(),
-        "/System/Library/CoreServices".into(),
-    ];
+    {
+        let home_dir =
+            PathBuf::from(std::env::var_os("HOME").expect("environment variable $HOME not found"));
+        return vec![
+            "/Applications".into(),
+            "/System/Applications".into(),
+            "/System/Library/CoreServices".into(),
+            home_dir
+                .join("Applications")
+                .into_os_string()
+                .into_string()
+                .expect("this path should be UTF-8 encoded"),
+        ];
+    }
 
     #[cfg(not(target_os = "macos"))]
     {
