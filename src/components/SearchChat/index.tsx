@@ -64,8 +64,8 @@ function SearchChat({
   const customInitialState = {
     ...initialAppState,
     isDeepThinkActive: currentAssistant?._source?.type === "deep_think",
-    isSearchActive: currentAssistant?._source?.datasource?.enabled === true,
-    isMCPActive: currentAssistant?._source?.mcp_servers?.enabled === true,
+    isSearchActive: currentAssistant?._source?.datasource?.enabled_by_default === true,
+    isMCPActive: currentAssistant?._source?.mcp_servers?.enabled_by_default === true,
   };
 
   const [state, dispatch] = useReducer(appReducer, customInitialState);
