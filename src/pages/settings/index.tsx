@@ -60,7 +60,7 @@ function SettingsPage() {
   }, [defaultIndex]);
 
   useEffect(() => {
-    platformAdapter.listenEvent("search-source-loaded", async () => {
+    const unlistenSearchSource = platformAdapter.listenEvent("search-source-loaded", async () => {
       const apps = await platformAdapter.invokeBackend<Application[]>(
         "get_app_list"
       );
@@ -78,14 +78,19 @@ function SettingsPage() {
       setSearchPaths(paths);
     });
 
-    platformAdapter.listenEvent("new-apps", ({ payload }) => {
+    const unlistenNewApps = platformAdapter.listenEvent("new-apps", ({ payload }) => {
       const nextApps = allApps.concat(payload).sort((a, b) => {
         return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
       });
 
       setAllApps(nextApps);
     });
-  }, []);
+
+    return () => {
+      unlistenSearchSource.then((fn) => fn());
+      unlistenNewApps.then((fn) => fn());
+    };
+  }, [allApps]);
 
   return (
     <div>

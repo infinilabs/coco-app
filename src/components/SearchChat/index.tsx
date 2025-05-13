@@ -6,6 +6,7 @@ import {
   Suspense,
   memo,
   useState,
+  useMemo,
 } from "react";
 import clsx from "clsx";
 import { useMount } from "ahooks";
@@ -101,13 +102,18 @@ function SearchChat({
 
     setIsWin10(isWin10);
 
-    platformAdapter.listenEvent("show-coco", () => {
+    const unlisten = platformAdapter.listenEvent("show-coco", () => {
       console.log("show-coco");
 
       platformAdapter.invokeBackend("simulate_mouse_click", {
         isChatMode: isChatModeRef.current,
       });
     });
+
+    return () => {
+      // Cleanup logic if needed
+      unlisten.then((fn) => fn());
+    };
   });
 
   useEffect(() => {
@@ -186,6 +192,17 @@ function SearchChat({
     return platformAdapter.setAlwaysOnTop(isPinned);
   }, []);
 
+  const assistantConfig = useMemo(() => {
+    return {
+      datasourceEnabled: source?.datasource?.enabled,
+      datasourceVisible: source?.datasource?.visible,
+      datasourceIds: source?.datasource?.ids,
+      mcpEnabled: source?.mcp_servers?.enabled,
+      mcpVisible: source?.mcp_servers?.visible,
+      mcpIds: source?.mcp_servers?.ids
+    };
+  }, [currentAssistant]);
+
   const getDataSourcesByServer = useCallback(
     async (
       serverId: string,
@@ -195,7 +212,7 @@ function SearchChat({
         query?: string;
       }
     ): Promise<DataSource[]> => {
-      if (!(source?.datasource?.enabled && source?.datasource?.visible)) {
+      if (!(assistantConfig.datasourceEnabled && assistantConfig.datasourceVisible)) {
         return [];
       }
       let response: any;
@@ -218,13 +235,13 @@ function SearchChat({
           };
         });
       }
-      let ids = source?.datasource?.ids;
+      let ids = assistantConfig.datasourceIds;
       if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
         response = response?.filter((item: any) => ids.includes(item.id));
       }
       return response || [];
     },
-    [JSON.stringify(currentAssistant)]
+    [assistantConfig]
   );
 
   const getMCPByServer = useCallback(
@@ -236,7 +253,7 @@ function SearchChat({
         query?: string;
       }
     ): Promise<DataSource[]> => {
-      if (!(source?.mcp_servers?.enabled && source?.mcp_servers?.visible)) {
+      if (!(assistantConfig.mcpEnabled && assistantConfig.mcpVisible)) {
         return [];
       }
       let response: any;
@@ -259,13 +276,13 @@ function SearchChat({
           };
         });
       }
-      let ids = source?.mcp_servers?.ids;
+      let ids = assistantConfig.mcpIds;
       if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
         response = response?.filter((item: any) => ids.includes(item.id));
       }
       return response || [];
     },
-    [JSON.stringify(currentAssistant)]
+    [assistantConfig]
   );
 
   const setupWindowFocusListener = useCallback(async (callback: () => void) => {
