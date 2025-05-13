@@ -61,11 +61,13 @@ function SearchChat({
 }: SearchChatProps) {
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
 
+  const source = currentAssistant?._source;
+
   const customInitialState = {
     ...initialAppState,
-    isDeepThinkActive: currentAssistant?._source?.type === "deep_think",
-    isSearchActive: currentAssistant?._source?.datasource?.enabled_by_default === true,
-    isMCPActive: currentAssistant?._source?.mcp_servers?.enabled_by_default === true,
+    isDeepThinkActive: source?.type === "deep_think",
+    isSearchActive: source?.datasource?.enabled_by_default === true,
+    isMCPActive: source?.mcp_servers?.enabled_by_default === true,
   };
 
   const [state, dispatch] = useReducer(appReducer, customInitialState);
@@ -195,6 +197,9 @@ function SearchChat({
         query?: string;
       }
     ): Promise<DataSource[]> => {
+      if (!(source?.datasource?.enabled && source?.datasource?.visible))  {
+        return [];
+      }
       let response: any;
       if (isTauri) {
         response = await platformAdapter.invokeBackend("datasource_search", {
@@ -215,7 +220,7 @@ function SearchChat({
           };
         });
       }
-      let ids = currentAssistant?._source?.datasource?.ids;
+      let ids = source?.datasource?.ids;
       if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
         response = response?.filter((item: any) => ids.includes(item.id));
       }
@@ -233,6 +238,9 @@ function SearchChat({
         query?: string;
       }
     ): Promise<DataSource[]> => {
+      if (!(source?.mcp_servers?.enabled && source?.mcp_servers?.visible))  {
+        return [];
+      }
       let response: any;
       if (isTauri) {
         response = await platformAdapter.invokeBackend("mcp_server_search", {
@@ -253,7 +261,7 @@ function SearchChat({
           };
         });
       }
-      let ids = currentAssistant?._source?.mcp_servers?.ids;
+      let ids = source?.mcp_servers?.ids;
       if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
         response = response?.filter((item: any) => ids.includes(item.id));
       }
