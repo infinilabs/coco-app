@@ -12,6 +12,7 @@ import { useConnectStore } from "@/stores/connectStore";
 import SessionFile from "./SessionFile";
 import Splash from "./Splash";
 import { ArrowDown } from "lucide-react";
+import clsx from "clsx";
 
 interface ChatContentProps {
   activeChat?: Chat;
@@ -89,7 +90,7 @@ export const ChatContent = ({
     const { scrollHeight, scrollTop, clientHeight } =
       event.currentTarget as HTMLDivElement;
 
-    const isAtBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 50;
+    const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
 
     setIsAtBottom(isAtBottom);
   };
@@ -174,19 +175,22 @@ export const ChatContent = ({
 
       <Splash />
 
-      {!isAtBottom && (
-        <button
-          className="absolute right-4 bottom-4 flex items-center justify-center size-8 border bg-white rounded-full shadow dark:border-[#272828] dark:bg-black dark:shadow-white/15"
-          onClick={() => {
-            scrollRef.current?.scrollTo({
-              top: scrollRef.current?.scrollHeight,
-              behavior: "smooth",
-            });
-          }}
-        >
-          <ArrowDown className="size-5" />
-        </button>
-      )}
+      <button
+        className={clsx(
+          "absolute right-4 bottom-4 flex items-center justify-center size-8 border bg-white rounded-full shadow dark:border-[#272828] dark:bg-black dark:shadow-white/15",
+          {
+            hidden: isAtBottom,
+          }
+        )}
+        onClick={() => {
+          scrollRef.current?.scrollTo({
+            top: scrollRef.current?.scrollHeight,
+            behavior: "smooth",
+          });
+        }}
+      >
+        <ArrowDown className="size-5" />
+      </button>
     </div>
   );
 };
