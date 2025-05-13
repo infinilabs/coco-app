@@ -13,7 +13,6 @@ import { useMount } from "ahooks";
 import Search from "@/components/Search/Search";
 import InputBox from "@/components/Search/InputBox";
 import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
-import UpdateApp from "@/components/UpdateApp";
 import { isLinux, isWin } from "@/utils/platform";
 import { appReducer, initialAppState } from "@/reducers/appReducer";
 import { useWindowEvents } from "@/hooks/useWindowEvents";
@@ -186,7 +185,6 @@ function SearchChat({
     setIsPinned && setIsPinned(isPinned);
     return platformAdapter.setAlwaysOnTop(isPinned);
   }, []);
-  const snapshotUpdate = useAppearanceStore((state) => state.snapshotUpdate);
 
   const getDataSourcesByServer = useCallback(
     async (
@@ -197,7 +195,7 @@ function SearchChat({
         query?: string;
       }
     ): Promise<DataSource[]> => {
-      if (!(source?.datasource?.enabled && source?.datasource?.visible))  {
+      if (!(source?.datasource?.enabled && source?.datasource?.visible)) {
         return [];
       }
       let response: any;
@@ -238,7 +236,7 @@ function SearchChat({
         query?: string;
       }
     ): Promise<DataSource[]> => {
-      if (!(source?.mcp_servers?.enabled && source?.mcp_servers?.visible))  {
+      if (!(source?.mcp_servers?.enabled && source?.mcp_servers?.visible)) {
         return [];
       }
       let response: any;
@@ -310,14 +308,6 @@ function SearchChat({
     return platformAdapter.getFileIcon(path, size);
   }, []);
 
-  const checkUpdate = useCallback(async () => {
-    return platformAdapter.checkUpdate();
-  }, []);
-
-  const relaunchApp = useCallback(async () => {
-    return platformAdapter.relaunchApp();
-  }, []);
-
   const defaultStartupWindow = useStartupStore((state) => {
     return state.defaultStartupWindow;
   });
@@ -334,12 +324,6 @@ function SearchChat({
       }
     }
   }, []);
-
-  useEffect(() => {
-    if (!snapshotUpdate) return;
-
-    checkUpdate();
-  }, [snapshotUpdate]);
 
   return (
     <div
@@ -425,7 +409,7 @@ function SearchChat({
       {!isTransitioned && (
         <div
           data-tauri-drag-region={isTauri}
-          className="flex-1 overflow-auto w-full"
+          className="flex-1 w-full overflow-auto"
         >
           <Suspense fallback={<LoadingFallback />}>
             <Search
@@ -441,8 +425,6 @@ function SearchChat({
           </Suspense>
         </div>
       )}
-
-      <UpdateApp checkUpdate={checkUpdate} relaunchApp={relaunchApp} />
     </div>
   );
 }

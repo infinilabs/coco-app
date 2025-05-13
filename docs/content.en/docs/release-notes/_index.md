@@ -31,6 +31,7 @@ Information about release notes of Coco Server is provided here.
 - chore: refine wording on search failure
 - chore：search and MCP show hidden logic #494
 - chore: greetings show hidden logic #496
+- chore: UpdateApp component loading location #499
 
 ## 0.4.0 (2025-04-27)
 
