@@ -137,7 +137,7 @@ function Search({
     <div ref={mainWindowRef} className={`h-full pb-10 w-full relative`}>
       {/* Search Results Panel */}
       {suggests.length > 0 ? (
-        sourceData ? (
+          sourceData ? (
           <SearchResults input={input} isChatMode={isChatMode} />
         ) : (
           <DropdownList

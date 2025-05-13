@@ -32,7 +32,7 @@ pub fn save_datasource_to_cache(server_id: &str, datasources: Vec<DataSource>) {
 #[allow(dead_code)]
 pub fn get_datasources_from_cache(server_id: &str) -> Option<HashMap<String, DataSource>> {
     let cache = DATASOURCE_CACHE.read().unwrap(); // Acquire read lock
-                                                  // dbg!("cache: {:?}", &cache);
+    // dbg!("cache: {:?}", &cache);
     let server_cache = cache.get(server_id)?; // Get the server's cache
     Some(server_cache.clone())
 }
@@ -46,6 +46,10 @@ pub async fn refresh_all_datasources<R: Runtime>(_app_handle: &AppHandle<R>) -> 
 
     for server in servers {
         // dbg!("fetch datasources for server: {}", &server.id);
+
+        if !server.enabled {
+            continue;
+        }
 
         // Attempt to get datasources by server, and continue even if it fails
         let connectors = match datasource_search(server.id.as_str(), None).await {
@@ -130,8 +134,8 @@ pub async fn datasource_search(
         None,
         Some(reqwest::Body::from(body.to_string())),
     )
-    .await
-    .map_err(|e| format!("Error fetching datasource: {}", e))?;
+        .await
+        .map_err(|e| format!("Error fetching datasource: {}", e))?;
 
     // Parse the search results from the response
     let datasources: Vec<DataSource> = parse_search_results(resp).await.map_err(|e| {
@@ -186,8 +190,8 @@ pub async fn mcp_server_search(
         None,
         Some(reqwest::Body::from(body.to_string())),
     )
-    .await
-    .map_err(|e| format!("Error fetching datasource: {}", e))?;
+        .await
+        .map_err(|e| format!("Error fetching datasource: {}", e))?;
 
     // Parse the search results from the response
     let mcp_server: Vec<DataSource> = parse_search_results(resp).await.map_err(|e| {

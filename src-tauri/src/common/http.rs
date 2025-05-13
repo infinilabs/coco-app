@@ -24,7 +24,9 @@ pub async fn get_response_body_text(response: Response) -> Result<String, String
     let body = response
         .text()
         .await
-        .map_err(|e| format!("Failed to read response body: {}", e))?;
+        .map_err(|e| format!("Failed to read response body: {}, code: {}", e, status))?;
+
+    log::debug!("Response status: {}, body: {}", status, &body);
 
     if status < 200 || status >= 400 {
         // Try to parse the error body
