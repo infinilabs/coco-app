@@ -4,8 +4,12 @@ import SearchChat from "@/components/SearchChat";
 import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore } from "@/stores/appStore";
 import { useSyncStore } from "@/hooks/useSyncStore";
+import UpdateApp from "@/components/UpdateApp";
+import { useAppearanceStore } from "@/stores/appearance";
 
 function MainApp() {
+  const addError = useAppStore((state) => state.addError);
+
   const setIsTauri = useAppStore((state) => state.setIsTauri);
   useEffect(() => {
     setIsTauri(true);
@@ -17,12 +21,33 @@ function MainApp() {
 
   useSyncStore();
 
+  const snapshotUpdate = useAppearanceStore((state) => state.snapshotUpdate);
+
+  const checkUpdate = useCallback(async () => {
+    return platformAdapter.checkUpdate();
+  }, []);
+
+  const relaunchApp = useCallback(async () => {
+    return platformAdapter.relaunchApp();
+  }, []);
+
+  useEffect(() => {
+    if (!snapshotUpdate) return;
+
+    checkUpdate().catch((error) => {
+      addError("Update failed:" + error, "error");
+    });
+  }, [snapshotUpdate]);
+
   return (
-    <SearchChat
-      isTauri={true}
-      hideCoco={hideCoco}
-      hasModules={["search", "chat"]}
-    />
+    <>
+      <SearchChat
+        isTauri={true}
+        hideCoco={hideCoco}
+        hasModules={["search", "chat"]}
+      />
+      <UpdateApp checkUpdate={checkUpdate} relaunchApp={relaunchApp} />
+    </>
   );
 }
 
