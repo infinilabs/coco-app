@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { CopyButton } from "@/components/Common/CopyButton";
+import clsx from "clsx";
 
 interface UserMessageProps {
   messageContent: string;
@@ -15,7 +16,13 @@ export const UserMessage = ({ messageContent }: UserMessageProps) => {
       onMouseEnter={() => setShowCopyButton(true)}
       onMouseLeave={() => setShowCopyButton(false)}
     >
-      {showCopyButton && <CopyButton textToCopy={messageContent} />}
+      <div
+        className={clsx("size-6 transition", {
+          "opacity-0": !showCopyButton,
+        })}
+      >
+        <CopyButton textToCopy={messageContent} />
+      </div>
       <div
         className="px-3 py-2 bg-white dark:bg-[#202126] rounded-xl border border-black/12 dark:border-black/15 font-normal text-sm text-[#333333] dark:text-[#D8D8D8] cursor-pointer select-none"
         onDoubleClick={(e) => {
