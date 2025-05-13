@@ -1,9 +1,9 @@
 import { cloneElement, Fragment, MouseEvent, useContext } from "react";
 import { ExtensionsContext, Plugin } from "../..";
 import { useReactive } from "ahooks";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, LoaderCircle } from "lucide-react";
 import clsx from "clsx";
-import { isFunction } from "lodash-es";
+import { isArray, isFunction } from "lodash-es";
 import SettingsToggle from "@/components/Settings/SettingsToggle";
 import platformAdapter from "@/utils/platformAdapter";
 import Shortcut from "../Shortcut";
@@ -136,9 +136,9 @@ const Content = () => {
 
   const renderContent = (data = plugins, level = 1) => {
     return data.map((plugin) => {
-      const { id, icon, name, children = [], type = "Extension" } = plugin;
+      const { id, icon, name, children, type = "Extension" } = plugin;
 
-      const hasChildren = children.length > 0;
+      const hasChildren = isArray(children);
       const expanded = state.expands.includes(id);
 
       return (
@@ -158,16 +158,23 @@ const Content = () => {
                 className="flex-1 flex items-center gap-1 overflow-hidden"
                 style={{ paddingLeft: (level - 1) * 20 }}
               >
-                <div className="size-4">
-                  <ChevronRight
-                    onClick={(event) => {
-                      handleExpand(event, id);
-                    }}
-                    className={clsx("size-full transition cursor-pointer", {
-                      hidden: !hasChildren,
-                      "rotate-90": expanded,
-                    })}
-                  />
+                <div className="min-w-4 h-4">
+                  {hasChildren && (
+                    <>
+                      {children.length === 0 ? (
+                        <LoaderCircle className="size-4 animate-spin" />
+                      ) : (
+                        <ChevronRight
+                          onClick={(event) => {
+                            handleExpand(event, id);
+                          }}
+                          className={clsx("size-4 transition cursor-pointer", {
+                            "rotate-90": expanded,
+                          })}
+                        />
+                      )}
+                    </>
+                  )}
                 </div>
 
                 {cloneElement(icon, {
@@ -188,13 +195,15 @@ const Content = () => {
             </div>
           </div>
 
-          <div
-            className={clsx({
-              hidden: !expanded,
-            })}
-          >
-            {renderContent(children, level + 1)}
-          </div>
+          {hasChildren && (
+            <div
+              className={clsx({
+                hidden: !expanded,
+              })}
+            >
+              {renderContent(children, level + 1)}
+            </div>
+          )}
         </Fragment>
       );
     });

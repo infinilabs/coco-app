@@ -14,11 +14,19 @@ import { useMount } from "ahooks";
 import { useTranslation } from "react-i18next";
 
 import ApplicationsDetail from "./components/Details/Applications";
-import { useApplicationsStore } from "@/stores/applicationsStore";
 import Application from "./components/Details/Application";
 import platformAdapter from "@/utils/platformAdapter";
 import Content from "./components/Content";
 import Details from "./components/Details";
+
+export interface IApplication {
+  path: string;
+  name: string;
+  iconPath: string;
+  alias: string;
+  hotkey: string;
+  isDisabled: boolean;
+}
 
 export interface Plugin {
   id: string;
@@ -50,12 +58,7 @@ export const ExtensionsContext = createContext<ExtensionsContextType>({
 
 const Extensions = () => {
   const { t } = useTranslation();
-  const allApps = useApplicationsStore((state) => {
-    return state.allApps;
-  });
-  const setAllApps = useApplicationsStore((state) => {
-    return state.setAllApps;
-  });
+  const [apps, setApps] = useState<IApplication[]>([]);
   const [disabled, setDisabled] = useState<string[]>([]);
   const [activeId, setActiveId] = useState<string>();
 
@@ -65,6 +68,16 @@ const Extensions = () => {
     );
 
     setDisabled(disabled);
+
+    const apps = await platformAdapter.invokeBackend<IApplication[]>(
+      "get_app_list"
+    );
+
+    const sortedApps = apps.sort((a, b) => {
+      return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+    });
+
+    setApps(sortedApps);
   });
 
   const presetPlugins = useMemo<Plugin[]>(() => {
@@ -84,8 +97,8 @@ const Extensions = () => {
       },
     ];
 
-    if (allApps.length > 0) {
-      for (const app of allApps) {
+    if (apps.length > 0) {
+      for (const app of apps) {
         const { path, iconPath, isDisabled } = app;
 
         plugins[0].children?.push({
@@ -106,13 +119,13 @@ const Extensions = () => {
               alias,
             });
 
-            const nextApps = allApps.map((item) => {
+            const nextApps = apps.map((item) => {
               if (item.path !== path) return item;
 
               return { ...item, alias };
             });
 
-            setAllApps(nextApps);
+            setApps(nextApps);
           },
           onHotkeyChange(hotkey) {
             const command = `${hotkey ? "register" : "unregister"}_app_hotkey`;
@@ -122,13 +135,13 @@ const Extensions = () => {
               hotkey,
             });
 
-            const nextApps = allApps.map((item) => {
+            const nextApps = apps.map((item) => {
               if (item.path !== path) return item;
 
               return { ...item, hotkey };
             });
 
-            setAllApps(nextApps);
+            setApps(nextApps);
           },
           onEnabledChange(enabled) {
             const command = `${enabled ? "enable" : "disable"}_app_search`;
@@ -137,20 +150,20 @@ const Extensions = () => {
               appPath: path,
             });
 
-            const nextApps = allApps.map((item) => {
+            const nextApps = apps.map((item) => {
               if (item.path !== path) return item;
 
               return { ...item, isDisabled: !enabled };
             });
 
-            setAllApps(nextApps);
+            setApps(nextApps);
           },
         });
       }
     }
 
     return plugins;
-  }, [allApps]);
+  }, [apps]);
 
   const [plugins, setPlugins] = useState<Plugin[]>(presetPlugins);
 

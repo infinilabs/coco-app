@@ -27,7 +27,7 @@ use serde_json::Value as Json;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::PathBuf;
-use tauri::{async_runtime, AppHandle, Emitter, Manager, Runtime};
+use tauri::{async_runtime, AppHandle, Manager, Runtime};
 use tauri_plugin_fs_pro::{icon, metadata, name, IconOptions};
 use tauri_plugin_global_shortcut::GlobalShortcutExt;
 use tauri_plugin_store::StoreExt;
@@ -40,6 +40,8 @@ const APPLICATION_SEARCH_SOURCE_ID: &str = "application";
 
 const TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH: &str = "disabled_app_list_and_search_path";
 const TAURI_STORE_APP_HOTKEY: &str = "app_hotkey";
+const TAURI_STORE_APP_ALIAS: &str = "app_alias";
+
 const TAURI_STORE_KEY_SEARCH_PATH: &str = "search_path";
 const TAURI_STORE_KEY_DISABLED_APP_LIST: &str = "disabled_app_list";
 
@@ -261,8 +263,7 @@ impl<R: Runtime> Task for IndexAllApplicationsTask<R> {
                     get_app_icon_path(&self.tauri_app_handle, app).await,
                     callback
                 );
-                // Every app has an empty alias by default
-                let app_alias = String::new();
+                let app_alias = get_app_alias(&self.tauri_app_handle, &app_path).unwrap_or(String::new());
 
                 if app_name.is_empty() || app_name.eq(&self.tauri_app_handle.package_info().name) {
                     continue;
@@ -350,49 +351,6 @@ impl<R: Runtime> Task for SearchApplicationsTask<R> {
         if rx_dropped_error {
             warn!("failed to send local app search result back because the corresponding channel receiver end has been unexpected dropped, which could happen due to a low query timeout")
         }
-    }
-}
-
-struct GetApplicationsTask {
-    callback: Option<OneshotSender<Result<Option<Vec<PizzaEngineDocument>>, PizzaEngineError>>>,
-}
-
-#[async_trait(?Send)]
-impl Task for GetApplicationsTask {
-    fn search_source_id(&self) -> &'static str {
-        APPLICATION_SEARCH_SOURCE_ID
-    }
-
-    async fn exec(&mut self, state: &mut Option<Box<dyn SearchSourceState>>) {
-        let callback = self.callback.take().unwrap();
-
-        // `size` is set to 100_000, it should be a reasonable value
-        let dsl = r#"{
-        "size": 100000,
-        "query": {
-          "match_all": { }
-        }
-      }"#;
-
-        let state = state
-            .as_mut()
-            .expect("should be set before")
-            .as_mut_any()
-            .downcast_mut::<ApplicationSearchSourceState>()
-            .unwrap();
-
-        let query = OriginalQuery::QueryDSL(dsl.into());
-        let query_ctx = QueryContext::new(query, true);
-        let search_result = match state.searcher.parse_and_query(&query_ctx, &state.snapshot) {
-            Ok(search_result) => search_result,
-            Err(engine_err) => {
-                callback.send(Err(engine_err)).unwrap();
-                return;
-            }
-        };
-        let hits = search_result.hits;
-
-        callback.send(Ok(hits)).unwrap();
     }
 }
 
@@ -548,25 +506,13 @@ impl ApplicationSearchSource {
                         // Synchronize the stored app list
                         let mut new_apps_pizza_engine_documents = Vec::new();
 
-                        // Inform the frontend
-                        let mut new_app_entries = Vec::new();
-
                         for new_app_path in new_apps {
                             let idx = *current_app_list_path_hash_index.get(new_app_path).unwrap();
                             let new_app = current_app_list.get(idx).unwrap();
                             let new_app_name = get_app_name(new_app).await;
                             let new_app_icon_path =
                                 get_app_icon_path(&app_handle_clone, new_app).await.unwrap();
-                            let new_app_alias = String::new();
-
-                            let new_app_entry = AppEntry {
-                                path: new_app_path.clone(),
-                                name: new_app_name.clone(),
-                                icon_path: new_app_icon_path.clone(),
-                                alias: new_app_alias.clone(),
-                                hotkey: String::new(),
-                                is_disabled: false,
-                            };
+                            let new_app_alias = get_app_alias(&app_handle_clone, &new_app_path).unwrap_or(String::new());
 
                             let new_app_pizza_engine_document = doc!(new_app_path.clone(),  {
                                 FIELD_APP_NAME => new_app_name,
@@ -576,12 +522,8 @@ impl ApplicationSearchSource {
                             );
 
                             new_apps_pizza_engine_documents.push(new_app_pizza_engine_document);
-                            new_app_entries.push(new_app_entry);
                         }
 
-                        // NOTE: always update the backend data before sending events to
-                        // the frontend, or the backend could receive requests that manipulate
-                        // the data that does not exist.
                         let (callback, wait_for_complete) = tokio::sync::oneshot::channel();
                         let index_new_apps_task = Box::new(IndexNewApplicationsTask {
                             applications: new_apps_pizza_engine_documents,
@@ -598,8 +540,6 @@ impl ApplicationSearchSource {
                             .unwrap_or_else(|e| {
                                 panic!("failed to index new apps due to error [{}]", e)
                             });
-
-                        app_handle_clone.emit("new-apps", new_app_entries).unwrap();
                     }
                 });
             })
@@ -717,8 +657,32 @@ fn pizza_engine_hits_to_coco_hits(
 }
 
 #[tauri::command]
-pub async fn set_app_alias(_app_path: String, _alias: String) -> Result<(), String> {
-    unimplemented!("until Pizza-engine supports update")
+pub async fn set_app_alias<R: Runtime>(tauri_app_handle: AppHandle<R>, app_path: String, alias: String) {
+    let store = tauri_app_handle.store(TAURI_STORE_APP_ALIAS).unwrap_or_else(|_| {
+      panic!("store [{}] not found/loaded", TAURI_STORE_APP_ALIAS)
+    });
+
+    store.set(app_path, alias);
+
+    // TODO: When pizza supports update, update index if this app's document exists there.
+    // 
+    // NOTE: possible (depends on how we impl concurrency control in Pizza) TOCTOU: document gets 
+    // deleted while updating it.
+}
+
+fn get_app_alias<R: Runtime>(tauri_app_handle: &AppHandle<R>, app_path: &str) -> Option<String> {
+    let store = tauri_app_handle.store(TAURI_STORE_APP_ALIAS).unwrap_or_else(|_| {
+      panic!("store [{}] not found/loaded", TAURI_STORE_APP_ALIAS)
+    });
+
+    let json = store.get(app_path)?;
+
+    let string = match json {
+      Json::String(s) => s,
+      _ => unreachable!("app alias should be stored in a string"),
+    };
+
+    Some(string)
 }
 
 fn register_app_hotkey_upon_start<R: Runtime>(
@@ -998,66 +962,69 @@ pub async fn get_app_search_path<R: Runtime>(tauri_app_handle: AppHandle<R>) -> 
 pub async fn get_app_list<R: Runtime>(
     tauri_app_handle: AppHandle<R>,
 ) -> Result<Vec<AppEntry>, String> {
-    let (callback, wait_for_result) = tokio::sync::oneshot::channel();
+    let search_paths = get_app_search_path(tauri_app_handle.clone()).await;
+    let apps = list_app_in(search_paths)?;
 
-    let get_applications_task = Box::new(GetApplicationsTask {
-        callback: Some(callback),
-    });
-    RUNTIME_TX
-        .get()
-        .unwrap()
-        .send(get_applications_task)
-        .unwrap();
+    let mut app_entries = Vec::with_capacity(apps.len());
 
-    let opt_pizza_engine_documents = wait_for_result.await.unwrap().map_err(|e| e.to_string())?;
+    for app in apps {
+        let name = get_app_name(&app).await;
 
-    let Some(pizza_engine_documents) = opt_pizza_engine_documents else {
-        return Ok(Vec::new());
-    };
+        // filter out Coco-AI
+        if name.eq(&tauri_app_handle.package_info().name) {
+            continue;
+        }
 
-    let app_hotkey_store = tauri_app_handle
-        .store(TAURI_STORE_APP_HOTKEY)
-        .unwrap_or_else(|_| panic!("tauri store [{}] not found/loaded", TAURI_STORE_APP_HOTKEY));
-    let disabled_app_list = get_disabled_app_list(tauri_app_handle);
+        let path = get_app_path(&app);
+        let icon_path = get_app_icon_path(&tauri_app_handle, &app).await.unwrap();
+        let alias = {
+            let store = tauri_app_handle
+                .store(TAURI_STORE_APP_ALIAS)
+                .map_err(|e| e.to_string())?;
+            let opt_string = store.get(&path).map(|json| match json {
+                Json::String(s) => s,
+                _ => unreachable!("app alias should be stored in a string"),
+            });
 
-    let mut app_entries = Vec::with_capacity(pizza_engine_documents.len());
-
-    for pizza_engine_document in pizza_engine_documents {
-        let mut fields = pizza_engine_document.fields;
-
-        let path = pizza_engine_document
-            .key
-            .expect("key should be set to app_path");
-        let name = match fields
-            .remove(FIELD_APP_NAME)
-            .unwrap_or_else(|| panic!("field [{}] not found", FIELD_APP_NAME))
-        {
-            FieldValue::Text(str) => str,
-            _ => unreachable!("app name is stored in a string"),
+            opt_string.unwrap_or(String::new())
         };
-        let icon_path = match fields
-            .remove(FIELD_ICON_PATH)
-            .unwrap_or_else(|| panic!("field [{}] not found", FIELD_ICON_PATH))
-        {
-            FieldValue::Text(str) => str,
-            _ => unreachable!("app icon path is stored in a string"),
+        let hotkey = {
+            let store = tauri_app_handle
+                .store(TAURI_STORE_APP_HOTKEY)
+                .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_HOTKEY));
+            let opt_string = store.get(&path).map(|json| match json {
+                Json::String(s) => s,
+                _ => unreachable!("app hotkey should be stored in a string"),
+            });
+
+            opt_string.unwrap_or(String::new())
         };
-        let alias = match fields
-            .remove(FIELD_APP_ALIAS)
-            .unwrap_or_else(|| panic!("field [{}] not found", FIELD_APP_ALIAS))
-        {
-            FieldValue::Text(str) => str,
-            _ => unreachable!("app alias is stored in a string"),
+        let is_disabled = {
+            let store = tauri_app_handle
+                .store(TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH)
+                .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_HOTKEY));
+            let disabled_app_list_json = store
+                .get(TAURI_STORE_KEY_DISABLED_APP_LIST)
+                .unwrap_or_else(|| {
+                    panic!(
+                        "store [{}] does not contain key [{}]",
+                        TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH,
+                        TAURI_STORE_KEY_DISABLED_APP_LIST
+                    )
+                });
+
+            let disabled_app_list = match disabled_app_list_json {
+                Json::Array(v) => v.into_iter().map(|json| {
+                    match json {
+                        Json::String(str) => str,
+                        _ => unreachable!("app path should be stored in a string"),
+                    }
+                }).collect::<Vec<String>>(),
+                _ => unreachable!("disabled app list should be stored in an array"),
+            };
+
+            disabled_app_list.contains(&path)
         };
-        let hotkey = app_hotkey_store
-            .get(&path)
-            .map(|json| match json {
-                Json::String(str) => str,
-                _ => unreachable!("app hotkey is stored in a string"),
-            })
-            // If a hotkey is not set, we use an empty string
-            .unwrap_or(String::new());
-        let is_disabled = disabled_app_list.contains(&path);
 
         let app_entry = AppEntry {
             path,
@@ -1099,12 +1066,13 @@ pub async fn get_app_metadata<R: Runtime>(
 
     let raw_app_metadata = metadata(app_path.into(), None).await?;
 
-    let app_exe_path = app
-        .app_path_exe
-        .as_ref()
-        .expect("exe path should be Some")
-        .clone();
-    let raw_app_exe_metadata = metadata(app_exe_path, None).await?;
+    let last_opened = if cfg!(any(target_os = "macos", target_os = "windows")) {
+        let app_exe_path = app.app_path_exe.as_ref().expect("exe path should be Some").clone();
+        let raw_app_exe_metadata = metadata(app_exe_path, None).await?;
+        raw_app_exe_metadata.accessed_at
+      } else {
+        raw_app_metadata.accessed_at
+      };
 
     Ok(AppMetadata {
         name: app_name,
@@ -1113,6 +1081,6 @@ pub async fn get_app_metadata<R: Runtime>(
         icon,
         created: raw_app_metadata.created_at,
         modified: raw_app_metadata.modified_at,
-        last_opened: raw_app_exe_metadata.accessed_at,
+        last_opened,
     })
 }

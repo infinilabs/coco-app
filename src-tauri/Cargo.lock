@@ -117,7 +117,7 @@ checksum = "e16d2d3311acee920a9eb8d33b8cbc1787ce4a264e85f964c2404b969bdcd487"
 [[package]]
 name = "applications"
 version = "0.3.1"
-source = "git+https://github.com/infinilabs/applications-rs?rev=9a738215cb3bbd4fc7a563dbb44ec78271ee35f2#9a738215cb3bbd4fc7a563dbb44ec78271ee35f2"
+source = "git+https://github.com/infinilabs/applications-rs?rev=7bb507e6b12f73c96f3a52f0578d0246a689f381#7bb507e6b12f73c96f3a52f0578d0246a689f381"
 dependencies = [
  "anyhow",
  "cocoa 0.25.0",
