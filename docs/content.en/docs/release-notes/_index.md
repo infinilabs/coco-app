@@ -22,6 +22,7 @@ Information about release notes of Coco Server is provided here.
 - feat: add `~/Applications` to the search path #493
 - feat: the chat content has added a button to return to the bottom #495
 - feat: the search input box supports multi-line input #501
+- feat: websocket support self-signed TLS #504
 
 ### 🐛 Bug fix
 - fix: several issues around search #502
