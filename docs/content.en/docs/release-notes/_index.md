@@ -20,6 +20,8 @@ Information about release notes of Coco Server is provided here.
 - feat: history list add put away button #482
 - feat: the chat input box supports multi-line input #490
 - feat: add `~/Applications` to the search path #493
+- feat: the chat content has added a button to return to the bottom #495
+- feat: the search input box supports multi-line input #501
 
 ### 🐛 Bug fix
 
@@ -28,6 +30,10 @@ Information about release notes of Coco Server is provided here.
 - chore: adjust list error message #475
 - fix: solve the problem of modifying the assistant in the chat #476
 - chore: refine wording on search failure
+- chore：search and MCP show hidden logic #494
+- chore: greetings show hidden logic #496
+- chore: UpdateApp component loading location #499
+- chore: add clear monitoring & cache calculation to optimize performance #500
 
 ## 0.4.0 (2025-04-27)
 

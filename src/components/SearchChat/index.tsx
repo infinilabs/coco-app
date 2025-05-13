@@ -6,6 +6,7 @@ import {
   Suspense,
   memo,
   useState,
+  useMemo,
 } from "react";
 import clsx from "clsx";
 import { useMount } from "ahooks";
@@ -13,7 +14,6 @@ import { useMount } from "ahooks";
 import Search from "@/components/Search/Search";
 import InputBox from "@/components/Search/InputBox";
 import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
-import UpdateApp from "@/components/UpdateApp";
 import { isLinux, isWin } from "@/utils/platform";
 import { appReducer, initialAppState } from "@/reducers/appReducer";
 import { useWindowEvents } from "@/hooks/useWindowEvents";
@@ -61,11 +61,13 @@ function SearchChat({
 }: SearchChatProps) {
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
 
+  const source = currentAssistant?._source;
+
   const customInitialState = {
     ...initialAppState,
-    isDeepThinkActive: currentAssistant?._source?.type === "deep_think",
-    isSearchActive: currentAssistant?._source?.datasource?.enabled === true,
-    isMCPActive: currentAssistant?._source?.mcp_servers?.enabled === true,
+    isDeepThinkActive: source?.type === "deep_think",
+    isSearchActive: source?.datasource?.enabled_by_default === true,
+    isMCPActive: source?.mcp_servers?.enabled_by_default === true,
   };
 
   const [state, dispatch] = useReducer(appReducer, customInitialState);
@@ -100,13 +102,18 @@ function SearchChat({
 
     setIsWin10(isWin10);
 
-    platformAdapter.listenEvent("show-coco", () => {
+    const unlisten = platformAdapter.listenEvent("show-coco", () => {
       console.log("show-coco");
 
       platformAdapter.invokeBackend("simulate_mouse_click", {
         isChatMode: isChatModeRef.current,
       });
     });
+
+    return () => {
+      // Cleanup logic if needed
+      unlisten.then((fn) => fn());
+    };
   });
 
   useEffect(() => {
@@ -182,7 +189,17 @@ function SearchChat({
     setIsPinned && setIsPinned(isPinned);
     return platformAdapter.setAlwaysOnTop(isPinned);
   }, []);
-  const snapshotUpdate = useAppearanceStore((state) => state.snapshotUpdate);
+
+  const assistantConfig = useMemo(() => {
+    return {
+      datasourceEnabled: source?.datasource?.enabled,
+      datasourceVisible: source?.datasource?.visible,
+      datasourceIds: source?.datasource?.ids,
+      mcpEnabled: source?.mcp_servers?.enabled,
+      mcpVisible: source?.mcp_servers?.visible,
+      mcpIds: source?.mcp_servers?.ids
+    };
+  }, [currentAssistant]);
 
   const getDataSourcesByServer = useCallback(
     async (
@@ -193,6 +210,9 @@ function SearchChat({
         query?: string;
       }
     ): Promise<DataSource[]> => {
+      if (!(assistantConfig.datasourceEnabled && assistantConfig.datasourceVisible)) {
+        return [];
+      }
       let response: any;
       if (isTauri) {
         response = await platformAdapter.invokeBackend("datasource_search", {
@@ -213,13 +233,13 @@ function SearchChat({
           };
         });
       }
-      let ids = currentAssistant?._source?.datasource?.ids;
+      let ids = assistantConfig.datasourceIds;
       if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
         response = response?.filter((item: any) => ids.includes(item.id));
       }
       return response || [];
     },
-    [JSON.stringify(currentAssistant)]
+    [assistantConfig]
   );
 
   const getMCPByServer = useCallback(
@@ -231,6 +251,9 @@ function SearchChat({
         query?: string;
       }
     ): Promise<DataSource[]> => {
+      if (!(assistantConfig.mcpEnabled && assistantConfig.mcpVisible)) {
+        return [];
+      }
       let response: any;
       if (isTauri) {
         response = await platformAdapter.invokeBackend("mcp_server_search", {
@@ -251,13 +274,13 @@ function SearchChat({
           };
         });
       }
-      let ids = currentAssistant?._source?.mcp_servers?.ids;
+      let ids = assistantConfig.mcpIds;
       if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
         response = response?.filter((item: any) => ids.includes(item.id));
       }
       return response || [];
     },
-    [JSON.stringify(currentAssistant)]
+    [assistantConfig]
   );
 
   const setupWindowFocusListener = useCallback(async (callback: () => void) => {
@@ -300,14 +323,6 @@ function SearchChat({
     return platformAdapter.getFileIcon(path, size);
   }, []);
 
-  const checkUpdate = useCallback(async () => {
-    return platformAdapter.checkUpdate();
-  }, []);
-
-  const relaunchApp = useCallback(async () => {
-    return platformAdapter.relaunchApp();
-  }, []);
-
   const defaultStartupWindow = useStartupStore((state) => {
     return state.defaultStartupWindow;
   });
@@ -324,12 +339,6 @@ function SearchChat({
       }
     }
   }, []);
-
-  useEffect(() => {
-    if (!snapshotUpdate) return;
-
-    checkUpdate();
-  }, [snapshotUpdate]);
 
   return (
     <div
@@ -415,7 +424,7 @@ function SearchChat({
       {!isTransitioned && (
         <div
           data-tauri-drag-region={isTauri}
-          className="flex-1 overflow-auto w-full"
+          className="flex-1 w-full overflow-auto"
         >
           <Suspense fallback={<LoadingFallback />}>
             <Search
@@ -431,8 +440,6 @@ function SearchChat({
           </Suspense>
         </div>
       )}
-
-      <UpdateApp checkUpdate={checkUpdate} relaunchApp={relaunchApp} />
     </div>
   );
 }
