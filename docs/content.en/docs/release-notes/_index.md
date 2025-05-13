@@ -24,6 +24,8 @@ Information about release notes of Coco Server is provided here.
 - feat: the search input box supports multi-line input #501
 
 ### 🐛 Bug fix
+- fix: several issues around search #502
+
 
 ### ✈️ Improvements
 
