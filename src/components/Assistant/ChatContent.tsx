@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, UIEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ChatMessage } from "@/components/ChatMessage";
@@ -11,6 +11,8 @@ import type { Chat, IChunkData } from "./types";
 import { useConnectStore } from "@/stores/connectStore";
 import SessionFile from "./SessionFile";
 import Splash from "./Splash";
+import { ArrowDown } from "lucide-react";
+import clsx from "clsx";
 
 interface ChatContentProps {
   activeChat?: Chat;
@@ -57,10 +59,11 @@ export const ChatContent = ({
   const { t } = useTranslation();
 
   const uploadFiles = useChatStore((state) => state.uploadFiles);
-
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { scrollToBottom } = useChatScroll(messagesEndRef);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isAtBottom, setIsAtBottom] = useState(true);
 
   useEffect(() => {
     scrollToBottom();
@@ -83,9 +86,22 @@ export const ChatContent = ({
 
   const allMessages = activeChat?.messages || [];
 
+  const handleScroll = (event: UIEvent<HTMLDivElement>) => {
+    const { scrollHeight, scrollTop, clientHeight } =
+      event.currentTarget as HTMLDivElement;
+
+    const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+
+    setIsAtBottom(isAtBottom);
+  };
+
   return (
     <div className="flex-1 overflow-hidden flex flex-col justify-between relative">
-      <div className="flex-1 w-full overflow-x-hidden overflow-y-auto border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.15)] custom-scrollbar relative">
+      <div
+        ref={scrollRef}
+        className="flex-1 w-full overflow-x-hidden overflow-y-auto border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.15)] custom-scrollbar relative"
+        onScroll={handleScroll}
+      >
         {activeChat?.messages?.length === 0 && <Greetings />}
 
         {activeChat?.messages?.map((message, index) => (
@@ -158,6 +174,23 @@ export const ChatContent = ({
       {sessionId && <SessionFile sessionId={sessionId} />}
 
       <Splash />
+
+      <button
+        className={clsx(
+          "absolute right-4 bottom-4 flex items-center justify-center size-8 border bg-white rounded-full shadow dark:border-[#272828] dark:bg-black dark:shadow-white/15",
+          {
+            hidden: isAtBottom,
+          }
+        )}
+        onClick={() => {
+          scrollRef.current?.scrollTo({
+            top: scrollRef.current?.scrollHeight,
+            behavior: "smooth",
+          });
+        }}
+      >
+        <ArrowDown className="size-5" />
+      </button>
     </div>
   );
 };
