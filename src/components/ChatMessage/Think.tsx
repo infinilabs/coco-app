@@ -14,7 +14,7 @@ export const Think = ({ Detail, ChunkData, loading }: ThinkProps) => {
   const { t } = useTranslation();
   const [isThinkingExpanded, setIsThinkingExpanded] = useState(true);
 
-  const [Data, setData] = useState("");
+  const [data, setData] = useState("");
 
   useEffect(() => {
     if (!Detail?.description) return;
@@ -24,7 +24,7 @@ export const Think = ({ Detail, ChunkData, loading }: ThinkProps) => {
   useEffect(() => {
     if (!ChunkData?.message_chunk) return;
     setData(ChunkData?.message_chunk);
-  }, [ChunkData?.message_chunk, Data]);
+  }, [ChunkData?.message_chunk, data]);
 
   // Must be after hooks !!!
   if (!ChunkData && !Detail) return null;
@@ -59,7 +59,7 @@ export const Think = ({ Detail, ChunkData, loading }: ThinkProps) => {
       {isThinkingExpanded && (
         <div className="pl-2 border-l-2 border-[#e5e5e5] dark:border-[#4e4e56]">
           <div className="text-[#8b8b8b] dark:text-[#a6a6a6] space-y-2">
-            {Data?.split("\n").map(
+            {data?.split("\n").map(
               (paragraph, idx) =>
                 paragraph.trim() && (
                   <p key={idx} className="text-sm">

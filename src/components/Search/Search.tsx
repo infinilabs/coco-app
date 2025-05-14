@@ -49,9 +49,9 @@ function Search({
     return state.querySourceTimeout;
   });
 
-  const [IsError, setIsError] = useState<any[]>([]);
+  const [isError, setIsError] = useState<any[]>([]);
   const [suggests, setSuggests] = useState<any[]>([]);
-  const [SearchData, setSearchData] = useState<any>({});
+  const [searchData, setSearchData] = useState<any>({});
   const [isSearchComplete, setIsSearchComplete] = useState(false);
 
   const mainWindowRef = useRef<HTMLDivElement>(null);
@@ -142,8 +142,8 @@ function Search({
         ) : (
           <DropdownList
             suggests={suggests}
-            SearchData={SearchData}
-            IsError={IsError}
+            searchData={searchData}
+            isError={isError}
             isSearchComplete={isSearchComplete}
             isChatMode={isChatMode}
           />

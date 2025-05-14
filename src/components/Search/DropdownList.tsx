@@ -1,5 +1,12 @@
-import { useEffect, useRef, useState, useCallback, MouseEvent } from "react";
-import { CircleAlert, Bolt, X, ArrowBigRight, Ellipsis } from "lucide-react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  MouseEvent,
+  useMemo,
+} from "react";
+import { ArrowBigRight } from "lucide-react";
 import { isNil } from "lodash-es";
 import { useDebounceFn, useUnmount } from "ahooks";
 import { useTranslation } from "react-i18next";
@@ -14,23 +21,22 @@ import { copyToClipboard, OpenURLWithBrowser } from "@/utils/index";
 import VisibleKey from "@/components/Common/VisibleKey";
 import Calculator from "./Calculator";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
-import platformAdapter from "@/utils/platformAdapter";
-import Tooltip from "@/components/Common/Tooltip";
+import ErrorSearch from "@/components/Common/ErrorNotification/ErrorSearch";
 
 type ISearchData = Record<string, any[]>;
 
 interface DropdownListProps {
   suggests: any[];
-  SearchData: ISearchData;
-  IsError: any[];
+  searchData: ISearchData;
+  isError: any[];
   isSearchComplete: boolean;
   isChatMode: boolean;
 }
 
 function DropdownList({
   suggests,
-  SearchData,
-  IsError,
+  searchData,
+  isError,
   isChatMode,
 }: DropdownListProps) {
   const { t } = useTranslation();
@@ -40,7 +46,6 @@ function DropdownList({
 
   const setSourceData = useSearchStore((state) => state.setSourceData);
 
-  const [showError, setShowError] = useState<boolean>(IsError?.length > 0);
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
   const [selectedName, setSelectedName] = useState<string>("");
   const [showIndex, setShowIndex] = useState<boolean>(false);
@@ -84,7 +89,7 @@ function DropdownList({
     setSelectedItem(null);
 
     run();
-  }, [SearchData]);
+  }, [searchData]);
 
   const openPopover = useShortcutsStore((state) => state.openPopover);
 
@@ -124,7 +129,7 @@ function DropdownList({
         goToTwoPage(item);
       }
 
-      if (e.key === "Enter" && selectedItem !== null) {
+      if (e.key === "Enter" && !e.shiftKey && selectedItem !== null) {
         // console.log("Enter key pressed", selectedItem);
         const item = globalItemIndexMap[selectedItem];
         if (item?.url) {
@@ -193,38 +198,35 @@ function DropdownList({
     setVisibleContextMenu(true);
   };
 
+  const memoizedCallbacks = useMemo(() => {
+    return {
+      onMouseEnter: (index: number) => () => setSelectedItem(index),
+      onItemClick: (item: any) => () => {
+        if (item?.url) {
+          OpenURLWithBrowser(item.url);
+        }
+      },
+      goToTwoPage: (item: any) => () => setSourceData(item),
+    };
+  }, []);
+
+  const showHeader = useMemo(
+    () => Object.entries(searchData).length < 5,
+    [searchData]
+  );
+
   return (
     <div
       ref={containerRef}
       data-tauri-drag-region
       className="h-full w-full p-2 flex flex-col overflow-y-auto custom-scrollbar focus:outline-none"
       tabIndex={0}
+      role="listbox"
+      aria-label={t("search.header.results")}
     >
-      {showError && (
-        <div className="flex items-center gap-2 text-sm text-[#333] dark:text-[#666] p-2">
-          <CircleAlert className="text-[#FF0000] size-3" />
-          {t("search.list.failures")}
+      <ErrorSearch isError={isError} />
 
-          <Tooltip content={IsError} position="bottom">
-            <Ellipsis className="dark:text-white size-3 cursor-pointer" />
-          </Tooltip>
-
-          <Bolt
-            className="dark:text-white size-3 cursor-pointer"
-            onClick={() => {
-              platformAdapter.emitEvent("open_settings", "connect");
-            }}
-          />
-          <X
-            className="text-[#666] size-4 cursor-pointer"
-            onClick={() => setShowError(false)}
-          />
-        </div>
-      )}
-
-      {Object.entries(SearchData).map(([sourceName, items]) => {
-        const showHeader = Object.entries(SearchData).length < 5;
-
+      {Object.entries(searchData).map(([sourceName, items]) => {
         return (
           <div key={sourceName}>
             {showHeader && (
@@ -268,7 +270,12 @@ function DropdownList({
                   {hideArrowRight(item) ? (
                     <div
                       ref={(el) => (itemRefs.current[currentIndex] = el)}
-                      onMouseEnter={() => setSelectedItem(currentIndex)}
+                      onMouseEnter={memoizedCallbacks.onMouseEnter(
+                        currentIndex
+                      )}
+                      role="option"
+                      aria-selected={isSelected}
+                      id={`search-item-${currentIndex}`}
                     >
                       <Calculator item={item} isSelected={isSelected} />
                     </div>
@@ -278,7 +285,9 @@ function DropdownList({
                       isSelected={isSelected}
                       currentIndex={currentIndex}
                       showIndex={showIndex}
-                      onMouseEnter={() => setSelectedItem(currentIndex)}
+                      onMouseEnter={memoizedCallbacks.onMouseEnter(
+                        currentIndex
+                      )}
                       onItemClick={() => {
                         if (item?.url) {
                           OpenURLWithBrowser(item?.url);

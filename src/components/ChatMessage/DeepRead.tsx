@@ -20,7 +20,7 @@ export const DeepRead = ({
 
   const [isThinkingExpanded, setIsThinkingExpanded] = useState(false);
 
-  const [Data, setData] = useState<string[]>([]);
+  const [data, setData] = useState<string[]>([]);
   const [description, setDescription] = useState("");
 
   useEffect(() => {
@@ -71,7 +71,7 @@ export const DeepRead = ({
                   ChunkData?.chunk_type || Detail?.type
                 }`,
                 {
-                  count: Number(Data.length),
+                  count: Number(data.length),
                 }
               )}
             </span>
@@ -87,7 +87,7 @@ export const DeepRead = ({
         <div className="pl-2 border-l-2 border-[#e5e5e5] dark:border-[#4e4e56]">
           <div className="text-[#8b8b8b] dark:text-[#a6a6a6] space-y-2">
             <div className="mb-4 space-y-3 text-xs">
-              {Data?.map((item) => (
+              {data?.map((item) => (
                 <div key={item} className="flex flex-col gap-2">
                   <div className="text-xs text-[#999999] dark:text-[#808080]">
                     - {item}
