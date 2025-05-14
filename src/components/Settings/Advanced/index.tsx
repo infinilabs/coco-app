@@ -172,14 +172,8 @@ const Advanced = () => {
             type="number"
             min={10}
             value={connectionTimeout}
-            onChange={(event) => {
-              const nextValue = Number(event.target.value);
-
-              if (nextValue < 10) {
-                return;
-              }
-
-              setConnectionTimeout(Number(event.target.value) || 120);
+            onChange={(value) => {
+              setConnectionTimeout(!value ? void 0 : Number(value));
             }}
           />
         </SettingsItem>
@@ -193,14 +187,8 @@ const Advanced = () => {
             type="number"
             min={1}
             value={queryTimeout}
-            onChange={(event) => {
-              const nextValue = Number(event.target.value);
-
-              if (nextValue < 1) {
-                return;
-              }
-
-              setQueryTimeout(nextValue || 500);
+            onChange={(value) => {
+              setQueryTimeout(!value ? void 0 : Number(value));
             }}
           />
         </SettingsItem>
