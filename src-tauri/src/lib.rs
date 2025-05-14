@@ -4,6 +4,7 @@ mod common;
 mod local;
 mod search;
 mod server;
+mod settings;
 mod setup;
 mod shortcut;
 mod util;
@@ -215,7 +216,7 @@ pub fn run() {
         })
         .build(ctx)
         .expect("error while running tauri application");
-    
+
     app.run(|app_handle, event| match event {
         #[cfg(target_os = "macos")]
         tauri::RunEvent::Reopen {

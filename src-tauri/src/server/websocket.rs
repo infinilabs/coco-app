@@ -2,7 +2,7 @@ use crate::server::servers::{get_server_by_id, get_server_token};
 use futures::StreamExt;
 use std::collections::HashMap;
 use std::sync::Arc;
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Runtime};
 use tokio::net::TcpStream;
 use tokio::sync::{mpsc, Mutex};
 use tokio_tungstenite::tungstenite::client::IntoClientRequest;
@@ -23,9 +23,15 @@ struct WebSocketInstance {
 
 fn convert_to_websocket(endpoint: &str) -> Result<String, String> {
     let url = url::Url::parse(endpoint).map_err(|e| format!("Invalid URL: {}", e))?;
-    let ws_protocol = if url.scheme() == "https" { "wss://" } else { "ws://" };
+    let ws_protocol = if url.scheme() == "https" {
+        "wss://"
+    } else {
+        "ws://"
+    };
     let host = url.host_str().ok_or("No host found in URL")?;
-    let port = url.port_or_known_default().unwrap_or(if url.scheme() == "https" { 443 } else { 80 });
+    let port = url
+        .port_or_known_default()
+        .unwrap_or(if url.scheme() == "https" { 443 } else { 80 });
 
     let ws_endpoint = if port == 80 || port == 443 {
         format!("{}{}{}", ws_protocol, host, "/ws")
@@ -36,7 +42,8 @@ fn convert_to_websocket(endpoint: &str) -> Result<String, String> {
 }
 
 #[tauri::command]
-pub async fn connect_to_server(
+pub async fn connect_to_server<R: Runtime>(
+    tauri_app_handle: AppHandle<R>,
     id: String,
     client_id: String,
     state: tauri::State<'_, WebSocketManager>,
@@ -55,17 +62,29 @@ pub async fn connect_to_server(
         tokio_tungstenite::tungstenite::client::IntoClientRequest::into_client_request(&endpoint)
             .map_err(|e| format!("Failed to create WebSocket request: {}", e))?;
 
-    request.headers_mut().insert("Connection", "Upgrade".parse().unwrap());
-    request.headers_mut().insert("Upgrade", "websocket".parse().unwrap());
-    request.headers_mut().insert("Sec-WebSocket-Version", "13".parse().unwrap());
-    request.headers_mut().insert("Sec-WebSocket-Key", generate_key().parse().unwrap());
+    request
+        .headers_mut()
+        .insert("Connection", "Upgrade".parse().unwrap());
+    request
+        .headers_mut()
+        .insert("Upgrade", "websocket".parse().unwrap());
+    request
+        .headers_mut()
+        .insert("Sec-WebSocket-Version", "13".parse().unwrap());
+    request
+        .headers_mut()
+        .insert("Sec-WebSocket-Key", generate_key().parse().unwrap());
 
     if let Some(token) = token {
-        request.headers_mut().insert("X-API-TOKEN", token.parse().unwrap());
+        request
+            .headers_mut()
+            .insert("X-API-TOKEN", token.parse().unwrap());
     }
 
+    let allow_self_signature =
+        crate::settings::get_allow_self_signature(tauri_app_handle.clone()).await;
     let tls_connector = tokio_native_tls::native_tls::TlsConnector::builder()
-        .danger_accept_invalid_certs(true) // 🔥 THIS IGNORES CERT VALIDATION
+        .danger_accept_invalid_certs(allow_self_signature)
         .build()
         .map_err(|e| format!("TLS build error: {:?}", e))?;
 
@@ -73,12 +92,12 @@ pub async fn connect_to_server(
 
     let (ws_stream, _) = connect_async_tls_with_config(
         request,
-        None,             // WebSocketConfig
-        true,             // disable_nagle
-        Some(connector),  // Connector
+        None,            // WebSocketConfig
+        true,            // disable_nagle
+        Some(connector), // Connector
     )
-        .await
-        .map_err(|e| format!("WebSocket TLS error: {:?}", e))?;
+    .await
+    .map_err(|e| format!("WebSocket TLS error: {:?}", e))?;
 
     let (cancel_tx, mut cancel_rx) = mpsc::channel(1);
 
@@ -128,9 +147,11 @@ pub async fn connect_to_server(
     Ok(())
 }
 
-
 #[tauri::command]
-pub async fn disconnect(client_id: String, state: tauri::State<'_, WebSocketManager>) -> Result<(), String> {
+pub async fn disconnect(
+    client_id: String,
+    state: tauri::State<'_, WebSocketManager>,
+) -> Result<(), String> {
     let instance = {
         let mut connections = state.connections.lock().await;
         connections.remove(&client_id)
