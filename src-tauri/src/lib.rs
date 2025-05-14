@@ -156,6 +156,8 @@ pub fn run() {
             local::application::enable_app_search,
             local::application::add_app_search_path,
             local::application::remove_app_search_path,
+            settings::set_allow_self_signature,
+            settings::get_allow_self_signature,
         ])
         .setup(|app| {
             let app_handle = app.handle().clone();

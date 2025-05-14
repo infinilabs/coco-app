@@ -5,6 +5,7 @@ use tauri_plugin_store::StoreExt;
 
 const SETTINGS_ALLOW_SELF_SIGNATURE: &str = "settings_allow_self_signature";
 
+#[tauri::command]
 pub async fn set_allow_self_signature<R: Runtime>(tauri_app_handle: AppHandle<R>, value: bool) {
     let store = tauri_app_handle
         .store(COCO_TAURI_STORE)
@@ -18,6 +19,7 @@ pub async fn set_allow_self_signature<R: Runtime>(tauri_app_handle: AppHandle<R>
     store.set(SETTINGS_ALLOW_SELF_SIGNATURE, value);
 }
 
+#[tauri::command]
 pub async fn get_allow_self_signature<R: Runtime>(tauri_app_handle: AppHandle<R>) -> bool {
     let store = tauri_app_handle
         .store(COCO_TAURI_STORE)
