@@ -46,6 +46,9 @@ const SearchListItem: React.FC<SearchListItemProps> = React.memo(
             "gap-7 mobile:gap-1": showListRight,
           }
         )}
+        role="option"
+        aria-selected={isSelected}
+        id={`search-item-${currentIndex}`}
       >
         <div
           className={`${

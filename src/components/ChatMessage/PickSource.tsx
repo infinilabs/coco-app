@@ -26,7 +26,7 @@ export const PickSource = ({
 
   const [isThinkingExpanded, setIsThinkingExpanded] = useState(false);
 
-  const [Data, setData] = useState<IData[]>([]);
+  const [data, setData] = useState<IData[]>([]);
 
   useEffect(() => {
     if (!Detail?.payload) return;
@@ -90,7 +90,7 @@ export const PickSource = ({
                   ChunkData?.chunk_type || Detail.type
                 }`,
                 {
-                  count: Data?.length,
+                  count: data?.length,
                 }
               )}
             </span>
@@ -106,7 +106,7 @@ export const PickSource = ({
         <div className="pl-2 border-l-2 border-[#e5e5e5] dark:border-[#4e4e56]">
           <div className="text-[#8b8b8b] dark:text-[#a6a6a6] space-y-2">
             <div className="mb-4 space-y-3 text-xs">
-              {Data?.map((item) => (
+              {data?.map((item) => (
                 <div
                   key={item.id}
                   className="p-3 rounded-lg border border-[#E6E6E6] dark:border-[#272626] bg-white dark:bg-[#1E1E1E] hover:bg-gray-50 dark:hover:bg-[#2C2C2C] transition-colors"

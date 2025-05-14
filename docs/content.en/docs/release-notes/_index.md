@@ -35,9 +35,10 @@ Information about release notes of Coco Server is provided here.
 - chore: refine wording on search failure
 - chore：search and MCP show hidden logic #494
 - chore: greetings show hidden logic #496
+- refactor: fetch app list in settings in real time #498
 - chore: UpdateApp component loading location #499
 - chore: add clear monitoring & cache calculation to optimize performance #500
-- refactor: fetch app list in settings in real time #498
+- refactor: optimizing the code #505
 
 ## 0.4.0 (2025-04-27)
 

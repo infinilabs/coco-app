@@ -30,7 +30,7 @@ export const QueryIntent = ({
 
   const [isThinkingExpanded, setIsThinkingExpanded] = useState(false);
 
-  const [Data, setData] = useState<IQueryData | null>(null);
+  const [data, setData] = useState<IQueryData | null>(null);
 
   useEffect(() => {
     if (!Detail?.payload) return;
@@ -100,13 +100,13 @@ export const QueryIntent = ({
         <div className="pl-2 border-l-2 border-[#e5e5e5] dark:border-[#4e4e56]">
           <div className="text-[#8b8b8b] dark:text-[#a6a6a6] space-y-2">
             <div className="mb-4 space-y-2 text-xs">
-              {Data?.keyword ? (
+              {data?.keyword ? (
                 <div className="flex gap-1">
                   <span className="text-[#999999]">
                     - {t("assistant.message.steps.keywords")}：
                   </span>
                   <div className="flex flex-wrap gap-1">
-                    {Data?.keyword?.map((keyword, index) => (
+                    {data?.keyword?.map((keyword, index) => (
                       <span
                         key={keyword + index}
                         className="text-[#333333] dark:text-[#D8D8D8]"
@@ -118,33 +118,33 @@ export const QueryIntent = ({
                   </div>
                 </div>
               ) : null}
-              {Data?.category ? (
+              {data?.category ? (
                 <div className="flex items-center gap-1">
                   <span className="text-[#999999]">
                     - {t("assistant.message.steps.questionType")}：
                   </span>
                   <span className="text-[#333333] dark:text-[#D8D8D8]">
-                    {Data?.category}
+                    {data?.category}
                   </span>
                 </div>
               ) : null}
-              {Data?.intent ? (
+              {data?.intent ? (
                 <div className="flex items-start gap-1">
                   <span className="text-[#999999]">
                     - {t("assistant.message.steps.userIntent")}：
                   </span>
                   <div className="flex-1 text-[#333333] dark:text-[#D8D8D8]">
-                    {Data?.intent}
+                    {data?.intent}
                   </div>
                 </div>
               ) : null}
-              {Data?.query ? (
+              {data?.query ? (
                 <div className="flex items-start gap-1">
                   <span className="text-[#999999]">
                     - {t("assistant.message.steps.relatedQuestions")}：
                   </span>
                   <div className="flex-1 flex flex-col text-[#333333] dark:text-[#D8D8D8]">
-                    {Data?.query?.map((question, qIndex) => (
+                    {data?.query?.map((question, qIndex) => (
                       <span key={question + qIndex}>- {question}</span>
                     ))}
                   </div>
