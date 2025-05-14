@@ -161,6 +161,10 @@
         "queryTimeout": {
           "title": "查询超时",
           "description": "在此时间内未返回搜索结果，则终止查询。默认值：500 毫秒。"
+        },
+        "allowSelfSignature": {
+          "title": "允许自签名证书",
+          "description": "允许连接使用自签名证书的服务器。仅在信任来源的情况下启用。"
         }
       },
       "appearance": {
