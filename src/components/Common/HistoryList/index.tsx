@@ -368,7 +368,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
                     </DialogTitle>
                     <Description className="text-sm">
                       {t("history_list.delete_modal.description", {
-                        replace: [active?._source?.title || active?._id],
+                        replace: [active?._source?.title || active?._source?.message || active?._id],
                       })}
                     </Description>
                   </div>
