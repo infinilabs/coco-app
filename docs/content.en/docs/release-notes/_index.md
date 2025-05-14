@@ -28,6 +28,7 @@ Information about release notes of Coco Server is provided here.
 ### 🐛 Bug fix
 
 - fix: several issues around search #502
+- fix: fixed the newly created session has no title when it is deleted #511
 
 ### ✈️ Improvements
 
