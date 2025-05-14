@@ -37,10 +37,12 @@ export interface Plugin {
   hotkey?: string;
   enabled?: boolean;
   detail?: ReactNode;
+  children?: Plugin[];
+  manualLoad?: boolean;
+  loadChildren?: () => Promise<void>;
   onAliasChange?: (alias: string) => void;
   onHotkeyChange?: (hotkey: string) => void;
   onEnabledChange?: (enabled: boolean) => void;
-  children?: Plugin[];
 }
 
 interface ExtensionsContextType {
@@ -68,17 +70,21 @@ const Extensions = () => {
     );
 
     setDisabled(disabled);
+  });
 
+  const loadApps = async () => {
     const apps = await platformAdapter.invokeBackend<IApplication[]>(
       "get_app_list"
     );
 
     const sortedApps = apps.sort((a, b) => {
-      return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+      return a.name.localeCompare(b.name, undefined, {
+        sensitivity: "base",
+      });
     });
 
     setApps(sortedApps);
-  });
+  };
 
   const presetPlugins = useMemo<Plugin[]>(() => {
     const plugins: Plugin[] = [
@@ -89,6 +95,8 @@ const Extensions = () => {
         type: "Group",
         detail: <ApplicationsDetail />,
         children: [],
+        manualLoad: true,
+        loadChildren: loadApps,
       },
       {
         id: "Calculator",
