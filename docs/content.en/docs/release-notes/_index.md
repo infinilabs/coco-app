@@ -25,8 +25,8 @@ Information about release notes of Coco Server is provided here.
 - feat: websocket support self-signed TLS #504
 
 ### 🐛 Bug fix
-- fix: several issues around search #502
 
+- fix: several issues around search #502
 
 ### ✈️ Improvements
 
@@ -39,6 +39,7 @@ Information about release notes of Coco Server is provided here.
 - chore: UpdateApp component loading location #499
 - chore: add clear monitoring & cache calculation to optimize performance #500
 - refactor: optimizing the code #505
+- refactor: optimized the modification operation of the numeric input box #508
 
 ## 0.4.0 (2025-04-27)
 

@@ -20,16 +20,16 @@ export type IConnectStore = {
   setConnectorData: (connector_data: any[], key: string) => void;
   datasourceData: keyArrayObject;
   setDatasourceData: (datasourceData: any[], key: string) => void;
-  connectionTimeout: number;
-  setConnectionTimeout: (connectionTimeout: number) => void;
+  connectionTimeout?: number;
+  setConnectionTimeout: (connectionTimeout?: number) => void;
   currentSessionId?: string;
   setCurrentSessionId: (currentSessionId?: string) => void;
   assistantList: any[];
   setAssistantList: (assistantList: []) => void;
   currentAssistant: any;
   setCurrentAssistant: (assistant: any) => void;
-  querySourceTimeout: number;
-  setQuerySourceTimeout: (queryTimeout: number) => void;
+  querySourceTimeout?: number;
+  setQuerySourceTimeout: (queryTimeout?: number) => void;
   visibleStartPage: boolean;
   setVisibleStartPage: (visibleStartPage: boolean) => void;
 };
@@ -89,7 +89,7 @@ export const useConnectStore = create<IConnectStore>()(
           });
         },
         connectionTimeout: 120,
-        setConnectionTimeout: (connectionTimeout: number) => {
+        setConnectionTimeout: (connectionTimeout) => {
           return set(() => ({ connectionTimeout }));
         },
         setCurrentSessionId(currentSessionId) {
@@ -108,7 +108,7 @@ export const useConnectStore = create<IConnectStore>()(
           );
         },
         querySourceTimeout: 500,
-        setQuerySourceTimeout: (queryTimeout: number) => {
+        setQuerySourceTimeout: (queryTimeout) => {
           set(
             produce((draft) => {
               draft.querySourceTimeout = queryTimeout;

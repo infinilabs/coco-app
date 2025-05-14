@@ -35,14 +35,8 @@ const Appearance = () => {
           min={10}
           max={100}
           value={opacity}
-          onChange={(event) => {
-            const nextOpacity = Number(event.target.value);
-
-            if (nextOpacity < 10 || nextOpacity > 100) {
-              return;
-            }
-
-            return setOpacity(nextOpacity || 30);
+          onChange={(value) => {
+            return setOpacity(!value ? void 0 : Number(value));
           }}
         />
       </SettingsItem>

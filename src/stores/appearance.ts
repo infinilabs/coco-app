@@ -2,8 +2,8 @@ import { create } from "zustand";
 import { persist, subscribeWithSelector } from "zustand/middleware";
 
 export type IAppearanceStore = {
-  opacity: number;
-  setOpacity: (opacity: number) => void;
+  opacity?: number;
+  setOpacity: (opacity?: number) => void;
   snapshotUpdate: boolean;
   setSnapshotUpdate: (snapshotUpdate: boolean) => void;
 };

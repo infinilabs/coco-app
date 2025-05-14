@@ -3,6 +3,7 @@ import { useConnectStore } from "@/stores/connectStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useStartupStore } from "@/stores/startupStore";
 import platformAdapter from "@/utils/platformAdapter";
+import { isNumber } from "lodash-es";
 import { useEffect } from "react";
 
 export const useSyncStore = () => {
@@ -143,14 +144,20 @@ export const useSyncStore = () => {
 
       platformAdapter.listenEvent("change-connect-store", ({ payload }) => {
         const { connectionTimeout, querySourceTimeout } = payload;
-        setConnectionTimeout(connectionTimeout);
-        setQueryTimeout(querySourceTimeout);
+        if (isNumber(connectionTimeout)) {
+          setConnectionTimeout(connectionTimeout);
+        }
+        if (isNumber(querySourceTimeout)) {
+          setQueryTimeout(querySourceTimeout);
+        }
       }),
 
       platformAdapter.listenEvent("change-appearance-store", ({ payload }) => {
         const { opacity, snapshotUpdate } = payload;
 
-        setOpacity(opacity);
+        if (isNumber(opacity)) {
+          setOpacity(opacity);
+        }
         setSnapshotUpdate(snapshotUpdate);
       }),
     ]);
