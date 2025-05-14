@@ -32,6 +32,8 @@ export type IConnectStore = {
   setQuerySourceTimeout: (queryTimeout?: number) => void;
   visibleStartPage: boolean;
   setVisibleStartPage: (visibleStartPage: boolean) => void;
+  allowSelfSignature: boolean;
+  setAllowSelfSignature: (allowSelfSignature: boolean) => void;
 };
 
 export const useConnectStore = create<IConnectStore>()(
@@ -119,6 +121,10 @@ export const useConnectStore = create<IConnectStore>()(
         setVisibleStartPage: (visibleStartPage: boolean) => {
           return set(() => ({ visibleStartPage }));
         },
+        allowSelfSignature: false,
+        setAllowSelfSignature: (allowSelfSignature: boolean) => {
+          return set(() => ({ allowSelfSignature }));
+        },
       }),
       {
         name: "connect-store",
@@ -129,6 +135,7 @@ export const useConnectStore = create<IConnectStore>()(
           connectionTimeout: state.connectionTimeout,
           currentAssistant: state.currentAssistant,
           querySourceTimeout: state.querySourceTimeout,
+          allowSelfSignature: state.allowSelfSignature,
         }),
       }
     )

@@ -1,7 +1,13 @@
 import { useTranslation } from "react-i18next";
 import Shortcuts from "./components/Shortcuts";
 import SettingsItem from "../SettingsItem";
-import { AppWindowMac, MessageSquareMore, Search, Unplug } from "lucide-react";
+import {
+  AppWindowMac,
+  MessageSquareMore,
+  Search,
+  ShieldCheck,
+  Unplug,
+} from "lucide-react";
 import { useStartupStore } from "@/stores/startupStore";
 import { useEffect } from "react";
 import { useConnectStore } from "@/stores/connectStore";
@@ -9,6 +15,7 @@ import Appearance from "./components/Appearance";
 import SettingsInput from "../SettingsInput";
 import platformAdapter from "@/utils/platformAdapter";
 import UpdateSettings from "./components/UpdateSettings";
+import SettingsToggle from "../SettingsToggle";
 
 const Advanced = () => {
   const { t } = useTranslation();
@@ -41,6 +48,12 @@ const Advanced = () => {
   });
   const setQueryTimeout = useConnectStore((state) => {
     return state.setQuerySourceTimeout;
+  });
+  const allowSelfSignature = useConnectStore((state) => {
+    return state.allowSelfSignature;
+  });
+  const setAllowSelfSignature = useConnectStore((state) => {
+    return state.setAllowSelfSignature;
   });
 
   useEffect(() => {
@@ -189,6 +202,22 @@ const Advanced = () => {
             value={queryTimeout}
             onChange={(value) => {
               setQueryTimeout(!value ? void 0 : Number(value));
+            }}
+          />
+        </SettingsItem>
+
+        <SettingsItem
+          icon={ShieldCheck}
+          title={t("settings.advanced.connect.allowSelfSignature.title")}
+          description={t(
+            "settings.advanced.connect.allowSelfSignature.description"
+          )}
+        >
+          <SettingsToggle
+            label={t("settings.advanced.connect.allowSelfSignature.title")}
+            checked={allowSelfSignature}
+            onChange={(value) => {
+              setAllowSelfSignature(value);
             }}
           />
         </SettingsItem>

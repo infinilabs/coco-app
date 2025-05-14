@@ -23,6 +23,7 @@ Information about release notes of Coco Server is provided here.
 - feat: the chat content has added a button to return to the bottom #495
 - feat: the search input box supports multi-line input #501
 - feat: websocket support self-signed TLS #504
+- feat: add option to allow self-signed certificates #509
 
 ### 🐛 Bug fix
 

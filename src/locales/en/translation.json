@@ -161,6 +161,10 @@
         "queryTimeout": {
           "title": "Query Timeout",
           "description": "Terminates the query if no search results are returned within this time. Default: 500ms."
+        },
+        "allowSelfSignature": {
+          "title": "Allow Self-Signed Certificates",
+          "description": "Allow connections to servers using self-signed certificates. Enable only if you trust the source."
         }
       },
       "appearance": {

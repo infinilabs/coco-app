@@ -83,6 +83,9 @@ export const useSyncStore = () => {
   const setSnapshotUpdate = useAppearanceStore((state) => {
     return state.setSnapshotUpdate;
   });
+  const setAllowSelfSignature = useConnectStore((state) => {
+    return state.setAllowSelfSignature;
+  });
 
   useEffect(() => {
     if (!resetFixedWindow) {
@@ -143,13 +146,15 @@ export const useSyncStore = () => {
       }),
 
       platformAdapter.listenEvent("change-connect-store", ({ payload }) => {
-        const { connectionTimeout, querySourceTimeout } = payload;
+        const { connectionTimeout, querySourceTimeout, allowSelfSignature } =
+          payload;
         if (isNumber(connectionTimeout)) {
           setConnectionTimeout(connectionTimeout);
         }
         if (isNumber(querySourceTimeout)) {
           setQueryTimeout(querySourceTimeout);
         }
+        setAllowSelfSignature(allowSelfSignature);
       }),
 
       platformAdapter.listenEvent("change-appearance-store", ({ payload }) => {
