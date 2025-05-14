@@ -34,6 +34,10 @@ pub async fn refresh_all_connectors<R: Runtime>(app_handle: &AppHandle<R>) -> Re
     // Collect all the tasks for fetching and refreshing connectors
     let mut server_map = HashMap::new();
     for server in servers {
+        if !server.enabled {
+            continue;
+        }
+
         // dbg!("start fetch connectors for server: {}", &server.id);
         let connectors = match get_connectors_by_server(app_handle.clone(), server.id.clone()).await
         {

@@ -12,7 +12,7 @@ pub static HTTP_CLIENT: Lazy<Mutex<Client>> = Lazy::new(|| {
         .read_timeout(Duration::from_secs(3)) // Set a timeout of 3 second
         .connect_timeout(Duration::from_secs(3)) // Set a timeout of 3 second
         .timeout(Duration::from_secs(10)) // Set a timeout of 10 seconds
-        .danger_accept_invalid_certs(true) // example for self-signed certificates
+        .danger_accept_invalid_certs(true) // allow self-signed certificates
         .build()
         .expect("Failed to build client");
     Mutex::new(client)
@@ -35,6 +35,9 @@ impl HttpClient {
         headers: Option<HashMap<String, String>>,
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
+        log::debug!("Sending Request: {}, query_params: {:?}, header: {:?}, body: {:?}",&url, &query_params, &headers, &body);
+
+
         let request_builder =
             Self::get_request_builder(method, url, headers, query_params, body).await;
 
@@ -42,6 +45,9 @@ impl HttpClient {
             dbg!("Failed to send request: {}", &e);
             format!("Failed to send request: {}", e)
         })?;
+
+        log::debug!("Request: {}, Response status: {:?}, header: {:?}",&url, &response.status(),&response.headers());
+
         Ok(response)
     }
 
@@ -140,9 +146,7 @@ impl HttpClient {
                 headers.insert("X-API-TOKEN".to_string(), t);
             }
 
-            // dbg!(&server_id);
-            // dbg!(&url);
-            // dbg!(&headers);
+            log::debug!("Sending request to server: {}, url: {}, headers: {:?}", &server_id, &url,&headers);
 
             Self::send_raw_request(method, &url, query_params, Some(headers), body).await
         } else {

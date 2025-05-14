@@ -1,5 +1,4 @@
 import { useContext, useMemo, useState } from "react";
-import { ApplicationMetadata } from "@/stores/applicationsStore";
 import { filesize } from "filesize";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
@@ -7,20 +6,29 @@ import { useAsyncEffect } from "ahooks";
 import platformAdapter from "@/utils/platformAdapter";
 import { ExtensionsContext } from "../../..";
 
+interface Metadata {
+  name: string;
+  where: string;
+  size: number;
+  icon: string;
+  created: number;
+  modified: number;
+  lastOpened: number;
+}
+
 const App = () => {
   const { t } = useTranslation();
   const { activeId } = useContext(ExtensionsContext);
 
-  const [appMetadata, setAppMetadata] = useState<ApplicationMetadata>();
+  const [appMetadata, setAppMetadata] = useState<Metadata>();
 
   useAsyncEffect(async () => {
-    const appMetadata =
-      await platformAdapter.invokeBackend<ApplicationMetadata>(
-        "get_app_metadata",
-        {
-          appPath: activeId,
-        }
-      );
+    const appMetadata = await platformAdapter.invokeBackend<Metadata>(
+      "get_app_metadata",
+      {
+        appPath: activeId,
+      }
+    );
 
     setAppMetadata(appMetadata);
   }, [activeId]);

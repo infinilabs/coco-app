@@ -22,8 +22,11 @@ Information about release notes of Coco Server is provided here.
 - feat: add `~/Applications` to the search path #493
 - feat: the chat content has added a button to return to the bottom #495
 - feat: the search input box supports multi-line input #501
+- feat: websocket support self-signed TLS #504
 
 ### 🐛 Bug fix
+- fix: several issues around search #502
+
 
 ### ✈️ Improvements
 
@@ -32,6 +35,7 @@ Information about release notes of Coco Server is provided here.
 - chore: refine wording on search failure
 - chore：search and MCP show hidden logic #494
 - chore: greetings show hidden logic #496
+- refactor: fetch app list in settings in real time #498
 - chore: UpdateApp component loading location #499
 - chore: add clear monitoring & cache calculation to optimize performance #500
 - refactor: optimizing the code #505

@@ -215,7 +215,7 @@ pub fn run() {
         })
         .build(ctx)
         .expect("error while running tauri application");
-
+    
     app.run(|app_handle, event| match event {
         #[cfg(target_os = "macos")]
         tauri::RunEvent::Reopen {

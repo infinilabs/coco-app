@@ -52,7 +52,7 @@ pub async fn query_coco_fusion<R: Runtime>(
             timeout(timeout_duration, async {
                 query_source_clone.search(query).await
             })
-            .await
+                .await
         }));
     }
 
@@ -82,6 +82,18 @@ pub async fn query_coco_fusion<R: Runtime>(
                         .push((query_hit, score));
                 }
             }
+            Ok(Ok(Err(err))) => {
+                failed_requests.push(FailedRequest {
+                    source: QuerySource {
+                        r#type: "N/A".into(),
+                        name: "N/A".into(),
+                        id: "N/A".into(),
+                    },
+                    status: 0,
+                    error: Some(err.to_string()),
+                    reason: None,
+                });
+            }
             Ok(Err(err)) => {
                 failed_requests.push(FailedRequest {
                     source: QuerySource {
@@ -95,7 +107,7 @@ pub async fn query_coco_fusion<R: Runtime>(
                 });
             }
             // Timeout reached, skip this request
-            Ok(_) => {
+            _ => {
                 failed_requests.push(FailedRequest {
                     source: QuerySource {
                         r#type: "N/A".into(),
@@ -103,19 +115,7 @@ pub async fn query_coco_fusion<R: Runtime>(
                         id: "N/A".into(),
                     },
                     status: 0,
-                    error: Some("Query source timed out".to_string()),
-                    reason: None,
-                });
-            }
-            Err(_) => {
-                failed_requests.push(FailedRequest {
-                    source: QuerySource {
-                        r#type: "N/A".into(),
-                        name: "N/A".into(),
-                        id: "N/A".into(),
-                    },
-                    status: 0,
-                    error: Some("Task panicked".to_string()),
+                    error: Some(format!("{:?}", &result)),
                     reason: None,
                 });
             }

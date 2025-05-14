@@ -7,7 +7,7 @@ use crate::server::http_client::HttpClient;
 use crate::server::search::CocoSearchSource;
 use crate::COCO_TAURI_STORE;
 use lazy_static::lazy_static;
-use reqwest::{Client, Method};
+use reqwest::Method;
 use serde_json::from_value;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
@@ -447,7 +447,7 @@ pub async fn try_register_server_to_search_source(
 ) {
     if server.enabled {
         let registry = app_handle.state::<SearchSourceRegistry>();
-        let source = CocoSearchSource::new(server.clone(), Client::new());
+        let source = CocoSearchSource::new(server.clone());
         registry.register_source(source).await;
     }
 }

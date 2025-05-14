@@ -1,16 +1,24 @@
-import { useApplicationsStore } from "@/stores/applicationsStore";
 import { useAppStore } from "@/stores/appStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { Button } from "@headlessui/react";
+import { useMount } from "ahooks";
 import { castArray } from "lodash-es";
 import { Folder, SquareArrowOutUpRight, X } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const Applications = () => {
   const { t } = useTranslation();
-  const searchPaths = useApplicationsStore((state) => state.searchPaths);
-  const setSearchPaths = useApplicationsStore((state) => state.setSearchPaths);
   const addError = useAppStore((state) => state.addError);
+  const [paths, setPaths] = useState<string[]>([]);
+
+  useMount(async () => {
+    const paths = await platformAdapter.invokeBackend<string[]>(
+      "get_app_search_path"
+    );
+
+    setPaths(paths);
+  });
 
   const handleAdd = async () => {
     const selected = await platformAdapter.openFileDialog({
@@ -21,7 +29,7 @@ const Applications = () => {
     if (!selected) return;
 
     const selectedPaths = castArray(selected).filter((selectedPath) => {
-      if (searchPaths.includes(selectedPath)) {
+      if (paths.includes(selectedPath)) {
         addError(
           t("settings.extensions.application.hits.pathDuplication", {
             replace: [selectedPath],
@@ -31,7 +39,7 @@ const Applications = () => {
         return false;
       }
 
-      const isChildPath = searchPaths.some((item) => {
+      const isChildPath = paths.some((item) => {
         return selectedPath.startsWith(item);
       });
 
@@ -48,7 +56,7 @@ const Applications = () => {
       return true;
     });
 
-    setSearchPaths(searchPaths.concat(selectedPaths));
+    setPaths((prev) => prev.concat(selectedPaths));
 
     for await (const path of selectedPaths) {
       await platformAdapter.invokeBackend("add_app_search_path", {
@@ -58,7 +66,7 @@ const Applications = () => {
   };
 
   const handleRemove = (path: string) => {
-    setSearchPaths(searchPaths.filter((item) => item !== path));
+    setPaths((prev) => prev.filter((item) => item !== path));
 
     platformAdapter.invokeBackend("remove_app_search_path", {
       searchPath: path,
@@ -85,7 +93,7 @@ const Applications = () => {
       </Button>
 
       <ul className="flex flex-col gap-2 p-0">
-        {searchPaths.map((item) => {
+        {paths.map((item) => {
           return (
             <li key={item} className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-1 flex-1 overflow-hidden">

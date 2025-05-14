@@ -121,8 +121,6 @@ function SearchChat({
       await initializeListeners();
       await initializeListeners_auth();
       await platformAdapter.invokeBackend("get_app_search_source");
-
-      platformAdapter.emitEvent("search-source-loaded");
     };
 
     init();

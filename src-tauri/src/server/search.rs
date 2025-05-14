@@ -5,12 +5,11 @@ use crate::common::search::{QueryHits, QueryResponse, QuerySource, SearchQuery, 
 use crate::common::server::Server;
 use crate::common::traits::SearchSource;
 use crate::server::http_client::HttpClient;
-use crate::server::servers::get_server_token;
 use async_trait::async_trait;
 // use futures::stream::StreamExt;
 use ordered_float::OrderedFloat;
-use reqwest::{Client, Method, RequestBuilder};
 use std::collections::HashMap;
+use tauri_plugin_store::JsonValue;
 // use std::hash::Hash;
 
 #[allow(dead_code)]
@@ -74,45 +73,11 @@ const COCO_SERVERS: &str = "coco-servers";
 
 pub struct CocoSearchSource {
     server: Server,
-    client: Client,
 }
 
 impl CocoSearchSource {
-    pub fn new(server: Server, client: Client) -> Self {
-        CocoSearchSource { server, client }
-    }
-
-    async fn build_request_from_query(
-        &self,
-        query: &SearchQuery,
-    ) -> Result<RequestBuilder, String> {
-        self.build_request(query.from, query.size, &query.query_strings)
-            .await
-    }
-
-    async fn build_request(
-        &self,
-        from: u64,
-        size: u64,
-        query_strings: &HashMap<String, String>,
-    ) -> Result<RequestBuilder, String> {
-        let url = HttpClient::join_url(&self.server.endpoint, "/query/_search");
-        let mut request_builder = self.client.request(Method::GET, url);
-
-        if !self.server.public {
-            if let Some(token) = get_server_token(&self.server.id)
-                .await?
-                .map(|t| t.access_token)
-            {
-                request_builder = request_builder.header("X-API-TOKEN", token);
-            }
-        }
-
-        let result = request_builder
-            .query(&[("from", &from.to_string()), ("size", &size.to_string())])
-            .query(query_strings);
-
-        Ok(result)
+    pub fn new(server: Server) -> Self {
+        CocoSearchSource { server }
     }
 }
 
@@ -127,17 +92,22 @@ impl SearchSource for CocoSearchSource {
     }
 
     async fn search(&self, query: SearchQuery) -> Result<QueryResponse, SearchError> {
-        // Build the request from the provided query
-        let request_builder = self
-            .build_request_from_query(&query)
-            .await
-            .map_err(|e| SearchError::InternalError(e.to_string()))?;
+        let url = "/query/_search";
 
-        // Send the HTTP request and handle errors
-        let response = request_builder
-            .send()
+        let mut query_args: HashMap<String, JsonValue> = HashMap::new();
+        query_args.insert("from".into(), JsonValue::Number(query.from.into()));
+        query_args.insert("size".into(), JsonValue::Number(query.size.into()));
+        for (key, value) in query.query_strings {
+            query_args.insert(key, JsonValue::String(value));
+        }
+
+        let response = HttpClient::get(
+            &self.server.id,
+            &url,
+            Some(query_args),
+        )
             .await
-            .map_err(|e| SearchError::HttpError(format!("Failed to send search request: {}", e)))?;
+            .map_err(|e| SearchError::HttpError(format!("Error to send search request: {}", e)))?;
 
         // Use the helper function to parse the response body
         let response_body = get_response_body_text(response)
