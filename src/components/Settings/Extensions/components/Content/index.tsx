@@ -90,8 +90,8 @@ const Item: FC<Plugin & { level: number }> = (props) => {
             defaultValue={alias}
             placeholder={t("settings.extensions.hits.addAlias")}
             className="!w-[90%] !h-6 !border-transparent rounded-[4px]"
-            onChange={(event) => {
-              handleChange(event.target.value);
+            onChange={(value) => {
+              handleChange(String(value));
             }}
           />
         </div>

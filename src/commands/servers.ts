@@ -30,8 +30,8 @@ async function invokeWithErrorHandler<T>(
       const failedResult = result as any;
       if (failedResult.failed?.length > 0) {
         failedResult.failed.forEach((error: any) => {
-          if (result?.hits?.length == 0) {
-            addError(error.error, 'error');
+          if ((result as any)?.hits?.length == 0) {
+            addError(error.error, "error");
           }
           console.error(error.error);
         });
