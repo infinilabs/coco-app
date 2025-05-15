@@ -1,6 +1,6 @@
 import SettingsItem from "@/components/Settings/SettingsItem";
 import SettingsToggle from "@/components/Settings/SettingsToggle";
-import { useAppearanceStore } from "@/stores/appearance";
+import { useAppearanceStore } from "@/stores/appearanceStore";
 import { FlaskConical } from "lucide-react";
 import { useTranslation } from "react-i18next";
 

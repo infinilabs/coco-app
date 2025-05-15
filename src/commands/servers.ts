@@ -28,12 +28,10 @@ async function invokeWithErrorHandler<T>(
 
     if (result && typeof result === "object" && "failed" in result) {
       const failedResult = result as any;
-      if (failedResult.failed?.length > 0) {
+      if (failedResult.failed?.length > 0 && failedResult?.hits?.length == 0) {
         failedResult.failed.forEach((error: any) => {
-          if ((result as any)?.hits?.length == 0) {
-            addError(error.error, "error");
-          }
-          console.error(error.error);
+          addError(error.error, 'error');
+          // console.error(error.error);
         });
       }
     }

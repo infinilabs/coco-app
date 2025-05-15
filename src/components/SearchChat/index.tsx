@@ -25,7 +25,7 @@ import { DataSource } from "@/types/commands";
 import { useThemeStore } from "@/stores/themeStore";
 import { Get } from "@/api/axiosRequest";
 import { useConnectStore } from "@/stores/connectStore";
-import { useAppearanceStore } from "@/stores/appearance";
+import { useAppearanceStore } from "@/stores/appearanceStore";
 
 interface SearchChatProps {
   isTauri?: boolean;
@@ -330,6 +330,7 @@ function SearchChat({
   const defaultStartupWindow = useStartupStore((state) => {
     return state.defaultStartupWindow;
   });
+
   const opacity = useAppearanceStore((state) => state.opacity);
 
   useEffect(() => {
