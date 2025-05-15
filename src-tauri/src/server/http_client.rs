@@ -7,15 +7,24 @@ use std::time::Duration;
 use tauri_plugin_store::JsonValue;
 use tokio::sync::Mutex;
 
-pub static HTTP_CLIENT: Lazy<Mutex<Client>> = Lazy::new(|| {
-    let client = Client::builder()
+pub(crate) fn new_reqwest_http_client(accept_invalid_certs: bool) -> Client {
+    Client::builder()
         .read_timeout(Duration::from_secs(3)) // Set a timeout of 3 second
         .connect_timeout(Duration::from_secs(3)) // Set a timeout of 3 second
         .timeout(Duration::from_secs(10)) // Set a timeout of 10 seconds
-        .danger_accept_invalid_certs(true) // allow self-signed certificates
+        .danger_accept_invalid_certs(accept_invalid_certs) // allow self-signed certificates
         .build()
-        .expect("Failed to build client");
-    Mutex::new(client)
+        .expect("Failed to build client")
+}
+
+pub static HTTP_CLIENT: Lazy<Mutex<Client>> = Lazy::new(|| {
+    let allow_self_signature = crate::settings::_get_allow_self_signature(
+        crate::GLOBAL_TAURI_APP_HANDLE
+            .get()
+            .expect("global tauri app store not set")
+            .clone(),
+    );
+    Mutex::new(new_reqwest_http_client(allow_self_signature))
 });
 
 pub struct HttpClient;
@@ -35,8 +44,13 @@ impl HttpClient {
         headers: Option<HashMap<String, String>>,
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
-        log::debug!("Sending Request: {}, query_params: {:?}, header: {:?}, body: {:?}",&url, &query_params, &headers, &body);
-
+        log::debug!(
+            "Sending Request: {}, query_params: {:?}, header: {:?}, body: {:?}",
+            &url,
+            &query_params,
+            &headers,
+            &body
+        );
 
         let request_builder =
             Self::get_request_builder(method, url, headers, query_params, body).await;
@@ -46,7 +60,12 @@ impl HttpClient {
             format!("Failed to send request: {}", e)
         })?;
 
-        log::debug!("Request: {}, Response status: {:?}, header: {:?}",&url, &response.status(),&response.headers());
+        log::debug!(
+            "Request: {}, Response status: {:?}, header: {:?}",
+            &url,
+            &response.status(),
+            &response.headers()
+        );
 
         Ok(response)
     }
@@ -146,7 +165,12 @@ impl HttpClient {
                 headers.insert("X-API-TOKEN".to_string(), t);
             }
 
-            log::debug!("Sending request to server: {}, url: {}, headers: {:?}", &server_id, &url,&headers);
+            log::debug!(
+                "Sending request to server: {}, url: {}, headers: {:?}",
+                &server_id,
+                &url,
+                &headers
+            );
 
             Self::send_raw_request(method, &url, query_params, Some(headers), body).await
         } else {
@@ -188,7 +212,7 @@ impl HttpClient {
             query_params,
             body,
         )
-            .await
+        .await
     }
 
     // Convenience method for PUT requests
@@ -208,7 +232,7 @@ impl HttpClient {
             query_params,
             body,
         )
-            .await
+        .await
     }
 
     // Convenience method for DELETE requests
@@ -227,6 +251,6 @@ impl HttpClient {
             query_params,
             None,
         )
-            .await
+        .await
     }
 }

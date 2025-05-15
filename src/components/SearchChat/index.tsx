@@ -363,7 +363,7 @@ function SearchChat({
           "border-t border-t-[#999] dark:border-t-[#333]": isTauri && isWin10,
         }
       )}
-      style={{ opacity: blurred ? opacity / 100 : 1 }}
+      style={{ opacity: blurred ? (opacity ?? 30) / 100 : 1 }}
     >
       {isTransitioned && (
         <div

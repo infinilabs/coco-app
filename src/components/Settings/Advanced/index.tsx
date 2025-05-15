@@ -1,6 +1,5 @@
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import Shortcuts from "./components/Shortcuts";
-import SettingsItem from "../SettingsItem";
 import {
   AppWindowMac,
   MessageSquareMore,
@@ -8,8 +7,11 @@ import {
   ShieldCheck,
   Unplug,
 } from "lucide-react";
+import { useMount } from "ahooks";
+
+import Shortcuts from "./components/Shortcuts";
+import SettingsItem from "../SettingsItem";
 import { useStartupStore } from "@/stores/startupStore";
-import { useEffect } from "react";
 import { useConnectStore } from "@/stores/connectStore";
 import Appearance from "./components/Appearance";
 import SettingsInput from "../SettingsInput";
@@ -54,6 +56,14 @@ const Advanced = () => {
   });
   const setAllowSelfSignature = useConnectStore((state) => {
     return state.setAllowSelfSignature;
+  });
+
+  useMount(async () => {
+    const allowSelfSignature = await platformAdapter.invokeBackend<boolean>(
+      "get_allow_self_signature"
+    );
+
+    setAllowSelfSignature(allowSelfSignature);
   });
 
   useEffect(() => {
@@ -218,6 +228,10 @@ const Advanced = () => {
             checked={allowSelfSignature}
             onChange={(value) => {
               setAllowSelfSignature(value);
+
+              platformAdapter.invokeBackend("set_allow_self_signature", {
+                value,
+              });
             }}
           />
         </SettingsItem>
