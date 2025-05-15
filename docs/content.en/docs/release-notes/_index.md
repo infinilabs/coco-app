@@ -42,6 +42,7 @@ Information about release notes of Coco Server is provided here.
 - chore: add clear monitoring & cache calculation to optimize performance #500
 - refactor: optimizing the code #505
 - refactor: optimized the modification operation of the numeric input box #508
+- style: modify the style of the search input box #513
 
 ## 0.4.0 (2025-04-27)
 

@@ -335,32 +335,67 @@ export default function ChatInput({
           }}
         /> */}
 
-        {isChatMode && curChatEnd ? (
-          <button
-            className={`ml-1 p-1 ${
-              inputValue
-                ? "bg-[#0072FF]"
-                : "bg-[#E4E5F0] dark:bg-[rgb(84,84,84)]"
-            } rounded-full transition-colors`}
-            type="submit"
-            onClick={() => onSend(inputValue.trim())}
-          >
-            <Send className="w-4 h-4 text-white" />
-          </button>
-        ) : null}
-        {isChatMode && !curChatEnd ? (
-          <button
-            className={`ml-1 px-1 bg-[#0072FF] rounded-full transition-colors`}
-            type="submit"
-            onClick={() => disabledChange()}
-          >
-            <StopIcon
-              size={16}
-              className="w-4 h-4 text-white"
-              aria-label="Stop message"
-            />
-          </button>
-        ) : null}
+        {lineCount === 1 ? (
+          <>
+            {isChatMode && curChatEnd ? (
+              <button
+                className={`ml-1 p-1 ${
+                  inputValue
+                    ? "bg-[#0072FF]"
+                    : "bg-[#E4E5F0] dark:bg-[rgb(84,84,84)]"
+                } rounded-full transition-colors`}
+                type="submit"
+                onClick={() => onSend(inputValue.trim())}
+              >
+                <Send className="w-4 h-4 text-white" />
+              </button>
+            ) : null}
+
+            {isChatMode && !curChatEnd ? (
+              <button
+                className={`ml-1 px-1 bg-[#0072FF] rounded-full transition-colors`}
+                type="submit"
+                onClick={() => disabledChange()}
+              >
+                <StopIcon
+                  size={16}
+                  className="w-4 h-4 text-white"
+                  aria-label="Stop message"
+                />
+              </button>
+            ) : null}
+          </>
+        ) : (
+          <div className="w-full flex justify-end mt-2">
+            {isChatMode && curChatEnd ? (
+              <button
+                className={`ml-1 p-1 ${
+                  inputValue
+                    ? "bg-[#0072FF]"
+                    : "bg-[#E4E5F0] dark:bg-[rgb(84,84,84)]"
+                } rounded-full transition-colors`}
+                type="submit"
+                onClick={() => onSend(inputValue.trim())}
+              >
+                <Send className="w-4 h-4 text-white" />
+              </button>
+            ) : null}
+
+            {isChatMode && !curChatEnd ? (
+              <button
+                className={`ml-1 px-1 bg-[#0072FF] rounded-full transition-colors`}
+                type="submit"
+                onClick={() => disabledChange()}
+              >
+                <StopIcon
+                  size={16}
+                  className="w-4 h-4 text-white"
+                  aria-label="Stop message"
+                />
+              </button>
+            ) : null}
+          </div>
+        )}
 
         {/* {showTooltip && isChatMode && isCommandPressed ? (
           <div
