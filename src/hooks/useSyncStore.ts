@@ -1,4 +1,4 @@
-import { useAppearanceStore } from "@/stores/appearance";
+import { useAppearanceStore } from "@/stores/appearanceStore";
 import { useConnectStore } from "@/stores/connectStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useStartupStore } from "@/stores/startupStore";

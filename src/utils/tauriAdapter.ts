@@ -11,7 +11,7 @@ import {
 } from "./wrappers/tauriWrappers";
 import type { BasePlatformAdapter } from "@/types/platform";
 import type { AppTheme } from "@/types/index";
-import { useAppearanceStore } from "@/stores/appearance";
+import { useAppearanceStore } from "@/stores/appearanceStore";
 
 export interface TauriPlatformAdapter extends BasePlatformAdapter {
   openFileDialog: (

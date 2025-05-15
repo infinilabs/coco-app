@@ -1,6 +1,6 @@
 import SettingsInput from "@/components/Settings/SettingsInput";
 import SettingsItem from "@/components/Settings/SettingsItem";
-import { useAppearanceStore } from "@/stores/appearance";
+import { useAppearanceStore } from "@/stores/appearanceStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { AppWindowMac } from "lucide-react";
 import { useEffect } from "react";
