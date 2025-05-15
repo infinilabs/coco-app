@@ -22,6 +22,8 @@ import VisibleKey from "@/components/Common/VisibleKey";
 import Calculator from "./Calculator";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import ErrorSearch from "@/components/Common/ErrorNotification/ErrorSearch";
+// import AiSummary from "./AiSummary";
+import clsx from "clsx";
 
 type ISearchData = Record<string, any[]>;
 
@@ -276,6 +278,9 @@ function DropdownList({
                       role="option"
                       aria-selected={isSelected}
                       id={`search-item-${currentIndex}`}
+                      className={clsx("p-2 transition rounded-lg", {
+                        "bg-[#EDEDED] dark:bg-[#202126]": isSelected,
+                      })}
                     >
                       <Calculator item={item} isSelected={isSelected} />
                     </div>
