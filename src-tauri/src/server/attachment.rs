@@ -40,14 +40,14 @@ pub struct AttachmentHit {
 pub struct AttachmentHits {
     pub total: Value,
     pub max_score: Option<f64>,
-    pub hits: Vec<AttachmentHit>,
+    pub hits: Option<Vec<AttachmentHit>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GetAttachmentResponse {
     pub took: u32,
     pub timed_out: bool,
-    pub _shards: Value,
+    pub _shards: Option<Value>,
     pub hits: AttachmentHits,
 }
 
@@ -119,7 +119,7 @@ pub async fn get_attachment(
         .map_err(|e| format!("Request error: {}", e))?;
 
     let body = get_response_body_text(response).await?;
-
+    
     serde_json::from_str::<GetAttachmentResponse>(&body)
         .map_err(|e| format!("Failed to parse attachment response: {}", e))
 }
