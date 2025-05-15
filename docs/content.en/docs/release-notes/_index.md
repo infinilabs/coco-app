@@ -29,6 +29,7 @@ Information about release notes of Coco Server is provided here.
 
 - fix: several issues around search #502
 - fix: fixed the newly created session has no title when it is deleted #511
+- fix: loading chat history for potential empty attachments
 
 ### ✈️ Improvements
 
