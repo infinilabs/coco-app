@@ -1,4 +1,4 @@
-import { Send, Brain } from "lucide-react";
+import { Brain } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
@@ -7,7 +7,6 @@ import { useKeyPress } from "ahooks";
 import ChatSwitch from "@/components/Common/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import { useChatStore } from "@/stores/chatStore";
-import StopIcon from "@/icons/Stop";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
@@ -22,6 +21,7 @@ import Copyright from "@/components/Common/Copyright";
 import VisibleKey from "@/components/Common/VisibleKey";
 import ConnectionError from "./ConnectionError";
 import SearchIcons from "./SearchIcons";
+import ChatIcons from "./ChatIcons";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -302,6 +302,15 @@ export default function ChatInput({
             />
           )}
 
+          <ChatIcons
+            lineCount={lineCount}
+            isChatMode={isChatMode}
+            curChatEnd={curChatEnd}
+            inputValue={inputValue}
+            onSend={onSend}
+            disabledChange={disabledChange}
+          />
+
           {showTooltip && !isChatMode && sourceData && (
             <div
               className={`absolute ${
@@ -326,43 +335,15 @@ export default function ChatInput({
               <VisibleKey shortcut={returnToInput} />
             </div>
           )}
-        </div>
 
-        {/* <AudioRecording
+          {/* <AudioRecording
           key={isChatMode ? "chat" : "search"}
           onChange={(text) => {
             changeInput(inputValue + text);
           }}
         /> */}
 
-        {isChatMode && curChatEnd ? (
-          <button
-            className={`ml-1 p-1 ${
-              inputValue
-                ? "bg-[#0072FF]"
-                : "bg-[#E4E5F0] dark:bg-[rgb(84,84,84)]"
-            } rounded-full transition-colors`}
-            type="submit"
-            onClick={() => onSend(inputValue.trim())}
-          >
-            <Send className="w-4 h-4 text-white" />
-          </button>
-        ) : null}
-        {isChatMode && !curChatEnd ? (
-          <button
-            className={`ml-1 px-1 bg-[#0072FF] rounded-full transition-colors`}
-            type="submit"
-            onClick={() => disabledChange()}
-          >
-            <StopIcon
-              size={16}
-              className="w-4 h-4 text-white"
-              aria-label="Stop message"
-            />
-          </button>
-        ) : null}
-
-        {/* {showTooltip && isChatMode && isCommandPressed ? (
+          {/* {showTooltip && isChatMode && isCommandPressed ? (
           <div
             className={`absolute right-10 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
           >
@@ -370,15 +351,20 @@ export default function ChatInput({
           </div>
         ) : null} */}
 
-        {showTooltip && isChatMode && (
-          <div className="absolute top-[2px] right-[18px]">
-            <VisibleKey shortcut="↩︎" />
-          </div>
-        )}
+          {showTooltip && isChatMode && (
+            <div
+              className={`absolute ${
+                lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-30px)]"
+              }  right-[12px]`}
+            >
+              <VisibleKey shortcut="↩︎" />
+            </div>
+          )}
 
-        {!connected && isChatMode ? (
-          <ConnectionError reconnect={reconnect} connected={connected} />
-        ) : null}
+          {!connected && isChatMode ? (
+            <ConnectionError reconnect={reconnect} connected={connected} />
+          ) : null}
+        </div>
       </div>
 
       <div
