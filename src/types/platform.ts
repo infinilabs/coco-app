@@ -1,4 +1,4 @@
-import { IAppearanceStore } from "@/stores/appearance";
+import { IAppearanceStore } from "@/stores/appearanceStore";
 import { IConnectStore } from "@/stores/connectStore";
 import { IShortcutsStore } from "@/stores/shortcutsStore";
 import { IStartupStore } from "@/stores/startupStore";

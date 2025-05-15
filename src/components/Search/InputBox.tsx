@@ -1,4 +1,4 @@
-import { ArrowBigLeft, Search, Send, Brain } from "lucide-react";
+import { Send, Brain } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
@@ -20,6 +20,8 @@ import { useConnectStore } from "@/stores/connectStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import Copyright from "@/components/Common/Copyright";
 import VisibleKey from "@/components/Common/VisibleKey";
+import ConnectionError from "./ConnectionError";
+import SearchIcons from "./SearchIcons";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -113,7 +115,6 @@ export default function ChatInput({
     return () => {
       changeInput("");
       setSourceData(undefined);
-      setIsCommandPressed(false);
       pressedKeys.clear();
     };
   }, []);
@@ -122,22 +123,6 @@ export default function ChatInput({
 
   const { curChatEnd, connected } = useChatStore();
 
-  const [reconnectCountdown, setReconnectCountdown] = useState<number>(0);
-  useEffect(() => {
-    if (!reconnectCountdown || connected) {
-      setReconnectCountdown(0);
-      return;
-    }
-
-    if (reconnectCountdown > 0) {
-      const timer = setTimeout(() => {
-        setReconnectCountdown(reconnectCountdown - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [reconnectCountdown, connected]);
-
-  const [_isCommandPressed, setIsCommandPressed] = useState(false);
   const setModifierKeyPressed = useShortcutsStore((state) => {
     return state.setModifierKeyPressed;
   });
@@ -146,7 +131,6 @@ export default function ChatInput({
   useEffect(() => {
     const handleFocus = () => {
       setBlurred(false);
-      setIsCommandPressed(false);
       setModifierKeyPressed(false);
     };
 
@@ -159,7 +143,7 @@ export default function ChatInput({
 
   const handleToggleFocus = useCallback(() => {
     textareaRef.current?.focus();
-  }, [isChatMode, textareaRef]);
+  }, [textareaRef]);
 
   const handleSubmit = useCallback(() => {
     const trimmedValue = inputValue.trim();
@@ -182,16 +166,11 @@ export default function ChatInput({
     (e: KeyboardEvent) => {
       pressedKeys.add(e.key);
 
-      if (e.key === metaOrCtrlKey()) {
-        setIsCommandPressed(true);
-      }
-
       if (pressedKeys.has(metaOrCtrlKey())) {
         // e.preventDefault();
         switch (e.code) {
           case "Comma":
-            setIsCommandPressed(false);
-            break;
+            console.log("Comma");
             break;
           case "ArrowLeft":
             setSourceData(undefined);
@@ -224,7 +203,6 @@ export default function ChatInput({
       isChatMode,
       handleSubmit,
       setSourceData,
-      setIsCommandPressed,
       disabledChange,
       curChatEnd,
       visibleContextMenu,
@@ -234,9 +212,18 @@ export default function ChatInput({
   const handleKeyUp = useCallback((e: KeyboardEvent) => {
     pressedKeys.delete(e.key);
     if (e.key === metaOrCtrlKey()) {
-      setIsCommandPressed(false);
     }
   }, []);
+
+  const handleInputChange = useCallback(
+    (value: string) => {
+      changeInput(value);
+      if (!isChatMode) {
+        onSend(value);
+      }
+    },
+    [changeInput, isChatMode, onSend]
+  );
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -262,9 +249,7 @@ export default function ChatInput({
     };
   }, [isChatMode]);
 
-  const DeepThinkClick = () => {
-    setIsDeepThinkActive();
-  };
+  const [lineCount, setLineCount] = useState(1);
 
   const source = currentAssistant?._source;
 
@@ -274,25 +259,19 @@ export default function ChatInput({
         className={`p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded-md transition-all relative overflow-hidden`}
       >
         <div className="flex flex-wrap gap-2 flex-1 items-center relative">
-          {!isChatMode && !sourceData ? (
-            <Search className="w-4 h-4 text-[#ccc] dark:text-[#d8d8d8]" />
-          ) : !isChatMode && sourceData ? (
-            <ArrowBigLeft
-              className="w-4 h-4 text-[#ccc] dark:text-[#d8d8d8] cursor-pointer"
-              onClick={() => setSourceData(undefined)}
+          {lineCount === 1 && (
+            <SearchIcons
+              lineCount={lineCount}
+              isChatMode={isChatMode}
+              sourceData={sourceData}
+              setSourceData={setSourceData}
             />
-          ) : null}
+          )}
 
           <AutoResizeTextarea
             ref={textareaRef}
             input={inputValue}
-            setInput={(value: string) => {
-              changeInput(value);
-
-              if (!isChatMode) {
-                onSend(value);
-              }
-            }}
+            setInput={handleInputChange}
             connected={connected}
             handleKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
               const { key, shiftKey } = e;
@@ -311,18 +290,38 @@ export default function ChatInput({
                 ? chatPlaceholder
                 : searchPlaceholder || t("search.input.searchPlaceholder")
             }
+            onLineCountChange={setLineCount}
           />
 
+          {lineCount > 1 && (
+            <SearchIcons
+              lineCount={lineCount}
+              isChatMode={isChatMode}
+              sourceData={sourceData}
+              setSourceData={setSourceData}
+            />
+          )}
+
           {showTooltip && !isChatMode && sourceData && (
-            <div className="absolute -top-[5px] left-2">
+            <div
+              className={`absolute ${
+                lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-25px)]"
+              } left-2`}
+            >
               <VisibleKey shortcut="←" />
             </div>
           )}
+
           {showTooltip && (
             <div
-              className={clsx("absolute -top-[5px] left-2", {
-                "left-8": !isChatMode && sourceData,
-              })}
+              className={clsx(
+                `absolute ${
+                  lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-25px)]"
+                } left-2`,
+                {
+                  "left-8": !isChatMode && sourceData,
+                }
+              )}
             >
               <VisibleKey shortcut={returnToInput} />
             </div>
@@ -378,30 +377,7 @@ export default function ChatInput({
         )}
 
         {!connected && isChatMode ? (
-          <div className="absolute top-0 right-0 bottom-0 left-0 px-2 py-4 bg-[rgba(238,238,238,0.98)] dark:bg-[rgba(32,33,38,0.9)] backdrop-blur-[2px] rounded-md font-normal text-xs text-gray-400 flex items-center gap-4 z-10">
-            {t("search.input.connectionError")}
-            <div
-              className="px-1 h-[24px] text-[#0061FF] font-normal text-xs flex items-center justify-center cursor-pointer underline"
-              onClick={() => {
-                reconnect();
-                setReconnectCountdown(10);
-              }}
-            >
-              {reconnectCountdown > 0 ? (
-                `${t("search.input.connecting")}(${reconnectCountdown}s)`
-              ) : (
-                <VisibleKey
-                  shortcut="R"
-                  onKeyPress={() => {
-                    reconnect();
-                    setReconnectCountdown(10);
-                  }}
-                >
-                  {t("search.input.reconnect")}
-                </VisibleKey>
-              )}
-            </div>
-          </div>
+          <ConnectionError reconnect={reconnect} connected={connected} />
         ) : null}
       </div>
 
@@ -433,9 +409,12 @@ export default function ChatInput({
                     "!bg-[rgba(0,114,255,0.3)]": isDeepThinkActive,
                   }
                 )}
-                onClick={DeepThinkClick}
+                onClick={setIsDeepThinkActive}
               >
-                <VisibleKey shortcut={deepThinking} onKeyPress={DeepThinkClick}>
+                <VisibleKey
+                  shortcut={deepThinking}
+                  onKeyPress={setIsDeepThinkActive}
+                >
                   <Brain
                     className={`size-3 ${
                       isDeepThinkActive

@@ -5,7 +5,7 @@ import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore } from "@/stores/appStore";
 import { useSyncStore } from "@/hooks/useSyncStore";
 import UpdateApp from "@/components/UpdateApp";
-import { useAppearanceStore } from "@/stores/appearance";
+import { useAppearanceStore } from "@/stores/appearanceStore";
 
 function MainApp() {
   const addError = useAppStore((state) => state.addError);
