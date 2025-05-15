@@ -13,6 +13,7 @@ import platformAdapter from "@/utils/platformAdapter";
 import { AppTheme } from "@/types/index";
 import ErrorNotification from "@/components/Common/ErrorNotification";
 import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
+import { useIconfontScript } from "@/hooks/useScript";
 
 export default function Layout() {
   const location = useLocation();
@@ -115,6 +116,8 @@ export default function Layout() {
 
     error(message);
   });
+
+  useIconfontScript();
 
   return (
     <>

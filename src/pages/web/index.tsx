@@ -7,6 +7,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 import useEscape from "@/hooks/useEscape";
 import { useViewportHeight } from "@/hooks/useViewportHeight";
+import { useIconfontScript } from "@/hooks/useScript";
 
 import "@/i18n";
 import "@/web.css";
@@ -74,6 +75,7 @@ function WebApp({
   useEscape();
   useModifierKeyPress();
   useViewportHeight();
+  useIconfontScript();
 
   return (
     <div
