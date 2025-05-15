@@ -25,7 +25,7 @@ import { DataSource } from "@/types/commands";
 import { useThemeStore } from "@/stores/themeStore";
 import { Get } from "@/api/axiosRequest";
 import { useConnectStore } from "@/stores/connectStore";
-import { useAppearanceStore } from "@/stores/appearance";
+import { useAppearanceStore } from "@/stores/appearanceStore";
 
 interface SearchChatProps {
   isTauri?: boolean;
@@ -197,7 +197,7 @@ function SearchChat({
       datasourceIds: source?.datasource?.ids,
       mcpEnabled: source?.mcp_servers?.enabled,
       mcpVisible: source?.mcp_servers?.visible,
-      mcpIds: source?.mcp_servers?.ids
+      mcpIds: source?.mcp_servers?.ids,
     };
   }, [currentAssistant]);
 
@@ -210,7 +210,11 @@ function SearchChat({
         query?: string;
       }
     ): Promise<DataSource[]> => {
-      if (!(assistantConfig.datasourceEnabled && assistantConfig.datasourceVisible)) {
+      if (
+        !(
+          assistantConfig.datasourceEnabled && assistantConfig.datasourceVisible
+        )
+      ) {
         return [];
       }
       let response: any;
@@ -326,6 +330,7 @@ function SearchChat({
   const defaultStartupWindow = useStartupStore((state) => {
     return state.defaultStartupWindow;
   });
+
   const opacity = useAppearanceStore((state) => state.opacity);
 
   useEffect(() => {
@@ -358,7 +363,7 @@ function SearchChat({
           "border-t border-t-[#999] dark:border-t-[#333]": isTauri && isWin10,
         }
       )}
-      style={{ opacity: blurred ? opacity / 100 : 1 }}
+      style={{ opacity: blurred ? (opacity ?? 30) / 100 : 1 }}
     >
       {isTransitioned && (
         <div

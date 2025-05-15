@@ -4,6 +4,7 @@ mod common;
 mod local;
 mod search;
 mod server;
+mod settings;
 mod setup;
 mod shortcut;
 mod util;
@@ -155,6 +156,8 @@ pub fn run() {
             local::application::enable_app_search,
             local::application::add_app_search_path,
             local::application::remove_app_search_path,
+            settings::set_allow_self_signature,
+            settings::get_allow_self_signature,
         ])
         .setup(|app| {
             let app_handle = app.handle().clone();
@@ -215,7 +218,7 @@ pub fn run() {
         })
         .build(ctx)
         .expect("error while running tauri application");
-    
+
     app.run(|app_handle, event| match event {
         #[cfg(target_os = "macos")]
         tauri::RunEvent::Reopen {

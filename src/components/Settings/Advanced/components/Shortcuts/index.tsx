@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Command, RotateCcw } from "lucide-react";
-import { ChangeEvent, useEffect } from "react";
+import { useEffect } from "react";
 
 import { formatKey } from "@/utils/keyboardUtils";
 import SettingsItem from "@/components/Settings/SettingsItem";
@@ -235,12 +235,7 @@ const Shortcuts = () => {
     },
   ];
 
-  const handleChange = (
-    event: ChangeEvent<HTMLInputElement>,
-    setValue: (value: string) => void
-  ) => {
-    const value = event.target.value.toUpperCase();
-
+  const handleChange = (value: string, setValue: (value: string) => void) => {
     if (value.length > 1) return;
 
     const systemKeys = ["C", "V", "X", "Z", "Q", "H"];
@@ -310,8 +305,8 @@ const Shortcuts = () => {
                 <SettingsInput
                   value={value}
                   max={1}
-                  onChange={(event) => {
-                    handleChange(event, setValue);
+                  onChange={(value) => {
+                    handleChange(String(value).toUpperCase(), setValue);
                   }}
                 />
 

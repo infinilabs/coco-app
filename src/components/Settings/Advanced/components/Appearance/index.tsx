@@ -1,6 +1,6 @@
 import SettingsInput from "@/components/Settings/SettingsInput";
 import SettingsItem from "@/components/Settings/SettingsItem";
-import { useAppearanceStore } from "@/stores/appearance";
+import { useAppearanceStore } from "@/stores/appearanceStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { AppWindowMac } from "lucide-react";
 import { useEffect } from "react";
@@ -35,14 +35,8 @@ const Appearance = () => {
           min={10}
           max={100}
           value={opacity}
-          onChange={(event) => {
-            const nextOpacity = Number(event.target.value);
-
-            if (nextOpacity < 10 || nextOpacity > 100) {
-              return;
-            }
-
-            return setOpacity(nextOpacity || 30);
+          onChange={(value) => {
+            return setOpacity(!value ? void 0 : Number(value));
           }}
         />
       </SettingsItem>

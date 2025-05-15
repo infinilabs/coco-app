@@ -16,7 +16,7 @@ export default function SettingsItem({
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center space-x-3">
-        <Icon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+        <Icon className="h-5 min-w-5 text-gray-400 dark:text-gray-500" />
         <div>
           <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
             {title}

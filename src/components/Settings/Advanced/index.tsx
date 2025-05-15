@@ -1,14 +1,23 @@
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  AppWindowMac,
+  MessageSquareMore,
+  Search,
+  ShieldCheck,
+  Unplug,
+} from "lucide-react";
+import { useMount } from "ahooks";
+
 import Shortcuts from "./components/Shortcuts";
 import SettingsItem from "../SettingsItem";
-import { AppWindowMac, MessageSquareMore, Search, Unplug } from "lucide-react";
 import { useStartupStore } from "@/stores/startupStore";
-import { useEffect } from "react";
 import { useConnectStore } from "@/stores/connectStore";
 import Appearance from "./components/Appearance";
 import SettingsInput from "../SettingsInput";
 import platformAdapter from "@/utils/platformAdapter";
 import UpdateSettings from "./components/UpdateSettings";
+import SettingsToggle from "../SettingsToggle";
 
 const Advanced = () => {
   const { t } = useTranslation();
@@ -41,6 +50,20 @@ const Advanced = () => {
   });
   const setQueryTimeout = useConnectStore((state) => {
     return state.setQuerySourceTimeout;
+  });
+  const allowSelfSignature = useConnectStore((state) => {
+    return state.allowSelfSignature;
+  });
+  const setAllowSelfSignature = useConnectStore((state) => {
+    return state.setAllowSelfSignature;
+  });
+
+  useMount(async () => {
+    const allowSelfSignature = await platformAdapter.invokeBackend<boolean>(
+      "get_allow_self_signature"
+    );
+
+    setAllowSelfSignature(allowSelfSignature);
   });
 
   useEffect(() => {
@@ -172,14 +195,8 @@ const Advanced = () => {
             type="number"
             min={10}
             value={connectionTimeout}
-            onChange={(event) => {
-              const nextValue = Number(event.target.value);
-
-              if (nextValue < 10) {
-                return;
-              }
-
-              setConnectionTimeout(Number(event.target.value) || 120);
+            onChange={(value) => {
+              setConnectionTimeout(!value ? void 0 : Number(value));
             }}
           />
         </SettingsItem>
@@ -193,14 +210,28 @@ const Advanced = () => {
             type="number"
             min={1}
             value={queryTimeout}
-            onChange={(event) => {
-              const nextValue = Number(event.target.value);
+            onChange={(value) => {
+              setQueryTimeout(!value ? void 0 : Number(value));
+            }}
+          />
+        </SettingsItem>
 
-              if (nextValue < 1) {
-                return;
-              }
+        <SettingsItem
+          icon={ShieldCheck}
+          title={t("settings.advanced.connect.allowSelfSignature.title")}
+          description={t(
+            "settings.advanced.connect.allowSelfSignature.description"
+          )}
+        >
+          <SettingsToggle
+            label={t("settings.advanced.connect.allowSelfSignature.title")}
+            checked={allowSelfSignature}
+            onChange={(value) => {
+              setAllowSelfSignature(value);
 
-              setQueryTimeout(nextValue || 500);
+              platformAdapter.invokeBackend("set_allow_self_signature", {
+                value,
+              });
             }}
           />
         </SettingsItem>

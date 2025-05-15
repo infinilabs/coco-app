@@ -23,10 +23,12 @@ Information about release notes of Coco Server is provided here.
 - feat: the chat content has added a button to return to the bottom #495
 - feat: the search input box supports multi-line input #501
 - feat: websocket support self-signed TLS #504
+- feat: add option to allow self-signed certificates #509
 
 ### 🐛 Bug fix
-- fix: several issues around search #502
 
+- fix: several issues around search #502
+- fix: fixed the newly created session has no title when it is deleted #511
 
 ### ✈️ Improvements
 
@@ -39,6 +41,7 @@ Information about release notes of Coco Server is provided here.
 - chore: UpdateApp component loading location #499
 - chore: add clear monitoring & cache calculation to optimize performance #500
 - refactor: optimizing the code #505
+- refactor: optimized the modification operation of the numeric input box #508
 
 ## 0.4.0 (2025-04-27)
 

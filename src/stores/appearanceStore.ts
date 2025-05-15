@@ -3,7 +3,7 @@ import { persist, subscribeWithSelector } from "zustand/middleware";
 
 export type IAppearanceStore = {
   opacity: number;
-  setOpacity: (opacity: number) => void;
+  setOpacity: (opacity?: number) => void;
   snapshotUpdate: boolean;
   setSnapshotUpdate: (snapshotUpdate: boolean) => void;
 };
@@ -14,7 +14,7 @@ export const useAppearanceStore = create<IAppearanceStore>()(
       (set) => ({
         opacity: 30,
         setOpacity: (opacity) => {
-          return set({ opacity });
+          return set({ opacity: opacity || 30 });
         },
         snapshotUpdate: false,
         setSnapshotUpdate: (snapshotUpdate) => {
