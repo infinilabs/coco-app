@@ -5,6 +5,7 @@ import IconWrapper from "./IconWrapper";
 import ThemedIcon from "./ThemedIcon";
 import { useFindConnectorIcon } from "@/hooks/useFindConnectorIcon";
 import { useAppStore } from "@/stores/appStore";
+import FontIcon from "@/components/Common/Icons/FontIcon.tsx";
 
 interface TypeIconProps {
   item: any;
@@ -31,21 +32,44 @@ function TypeIcon({
   }
 
   if (item?.source?.icon) {
+
+    const icon = item?.source?.icon;
+
+    //1. auto get icon, try datasource, then connector
+    //2. choose the right component to show icon
+
     if (
-      item?.source?.icon.startsWith("http://") ||
-      item?.source?.icon.startsWith("https://")
+        icon.startsWith("http://") ||
+        icon.startsWith("https://")
     ) {
       return (
         <IconWrapper className={className} onClick={onClick}>
-          <img className={className} src={item?.source?.icon} alt="icon" />
+          <img className={className} src={icon} alt="icon" />
         </IconWrapper>
       );
     }
+
+    if (icon.startsWith("data:image/")) {
+      console.log("isBase64", icon);
+      return (
+          <IconWrapper className={className} onClick={onClick}>
+            <img className={className} src={icon} alt="icon" />
+          </IconWrapper>
+      );
+    }
+
+    if (icon.startsWith("font_")) {
+      console.log("isFontIcon", icon);
+      return <FontIcon name={icon} className={className} />;
+    }
+
   }
+
 
   // If the icon is a valid base64-encoded image
   const isBase64 = connectorSource?.icon?.startsWith("data:image/");
   if (isBase64) {
+    console.log("isBase64", connectorSource?.icon);
     return (
       <IconWrapper className={className} onClick={onClick}>
         <img className={className} src={connectorSource?.icon} alt="icon" />
