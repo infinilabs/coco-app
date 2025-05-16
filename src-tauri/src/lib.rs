@@ -210,7 +210,7 @@ pub fn run() {
         })
         .on_window_event(|window, event| match event {
             WindowEvent::CloseRequested { api, .. } => {
-                dbg!("Close requested event received");
+                //dbg!("Close requested event received");
                 window.hide().unwrap();
                 api.prevent_close();
             }
@@ -225,10 +225,10 @@ pub fn run() {
             has_visible_windows,
             ..
         } => {
-            dbg!(
-                "Reopen event received: has_visible_windows = {}",
-                has_visible_windows
-            );
+            // dbg!(
+            //     "Reopen event received: has_visible_windows = {}",
+            //     has_visible_windows
+            // );
             if has_visible_windows {
                 return;
             }
@@ -289,7 +289,7 @@ async fn hide_coco<R: Runtime>(app: AppHandle<R>) {
 }
 
 fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
-    dbg!("Moving window to active monitor");
+    //dbg!("Moving window to active monitor");
     // Try to get the available monitors, handle failure gracefully
     let available_monitors = match window.available_monitors() {
         Ok(monitors) => monitors,

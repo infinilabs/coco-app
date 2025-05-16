@@ -32,7 +32,7 @@ pub fn save_datasource_to_cache(server_id: &str, datasources: Vec<DataSource>) {
 #[allow(dead_code)]
 pub fn get_datasources_from_cache(server_id: &str) -> Option<HashMap<String, DataSource>> {
     let cache = DATASOURCE_CACHE.read().unwrap(); // Acquire read lock
-    // dbg!("cache: {:?}", &cache);
+                                                  // dbg!("cache: {:?}", &cache);
     let server_cache = cache.get(server_id)?; // Get the server's cache
     Some(server_cache.clone())
 }
@@ -109,23 +109,22 @@ pub async fn datasource_search(
         "size": size,
     });
 
-    if !query.is_empty() {
-        body["query"] = serde_json::json!({
-              "bool": {
-                  "must": [{
-                      "query_string": {
-                          "fields": ["combined_fulltext"],
-                          "query": query,
-                          "fuzziness": "AUTO",
-                          "fuzzy_prefix_length": 2,
-                          "fuzzy_max_expansions": 10,
-                          "fuzzy_transpositions": true,
-                          "allow_leading_wildcard": false
-                      }
-                  }]
-              }
-        });
-    }
+    body["query"] = serde_json::json!({
+          "bool": {
+              "must": [
+                  {"term": {"enabled": true}},
+                  {"query_string": {
+                      "fields": ["combined_fulltext"],
+                      "query": query,
+                      "fuzziness": "AUTO",
+                      "fuzzy_prefix_length": 2,
+                      "fuzzy_max_expansions": 10,
+                      "fuzzy_transpositions": true,
+                      "allow_leading_wildcard": false
+                  }
+              }]
+          }
+    });
 
     // Perform the async HTTP request outside the cache lock
     let resp = HttpClient::post(
@@ -134,18 +133,20 @@ pub async fn datasource_search(
         None,
         Some(reqwest::Body::from(body.to_string())),
     )
-        .await
-        .map_err(|e| format!("Error fetching datasource: {}", e))?;
+    .await
+    .map_err(|e| format!("Error fetching datasource: {}", e))?;
 
     // Parse the search results from the response
     let datasources: Vec<DataSource> = parse_search_results(resp).await.map_err(|e| {
-        dbg!("Error parsing search results: {}", &e);
+        //dbg!("Error parsing search results: {}", &e);
         e.to_string()
     })?;
 
     // Save the updated datasources to cache
     save_datasource_to_cache(&id, datasources.clone());
 
+    dbg!("body: {:?}", &body);
+    dbg!("datasources: {:?}", &datasources);
     Ok(datasources)
 }
 
@@ -165,23 +166,22 @@ pub async fn mcp_server_search(
         "size": size,
     });
 
-    if !query.is_empty() {
-        body["query"] = serde_json::json!({
-              "bool": {
-                  "must": [{
-                      "query_string": {
-                          "fields": ["combined_fulltext"],
-                          "query": query,
-                          "fuzziness": "AUTO",
-                          "fuzzy_prefix_length": 2,
-                          "fuzzy_max_expansions": 10,
-                          "fuzzy_transpositions": true,
-                          "allow_leading_wildcard": false
-                      }
-                  }]
-              }
-        });
-    }
+    body["query"] = serde_json::json!({
+          "bool": {
+              "must": [
+                  {"term": {"enabled": true}},
+                  {"query_string": {
+                      "fields": ["combined_fulltext"],
+                      "query": query,
+                      "fuzziness": "AUTO",
+                      "fuzzy_prefix_length": 2,
+                      "fuzzy_max_expansions": 10,
+                      "fuzzy_transpositions": true,
+                      "allow_leading_wildcard": false
+                  }
+              }]
+          }
+    });
 
     // Perform the async HTTP request outside the cache lock
     let resp = HttpClient::post(
@@ -190,12 +190,12 @@ pub async fn mcp_server_search(
         None,
         Some(reqwest::Body::from(body.to_string())),
     )
-        .await
-        .map_err(|e| format!("Error fetching datasource: {}", e))?;
+    .await
+    .map_err(|e| format!("Error fetching datasource: {}", e))?;
 
     // Parse the search results from the response
     let mcp_server: Vec<DataSource> = parse_search_results(resp).await.map_err(|e| {
-        dbg!("Error parsing search results: {}", &e);
+        //dbg!("Error parsing search results: {}", &e);
         e.to_string()
     })?;
 
