@@ -1,7 +1,6 @@
 import clsx from "clsx";
 
-import TypeIcon from "@/components/Common/Icons/TypeIcon";
-import RichIcon from "@/components/Common/Icons/RichIcon";
+import CommonIcon from "@/components/Common/Icons/CommonIcon";
 import VisibleKey from "@/components/Common/VisibleKey";
 
 interface ListRightProps {
@@ -25,35 +24,19 @@ export function RichCategories({
 }: RichCategoriesProps) {
   return (
     <>
-      {item?.rich_categories ? null : (
-        <div
-          className={`w-4 h-4 cursor-pointer`}
-          onClick={(e) => {
-            e.stopPropagation();
-            goToTwoPage && goToTwoPage();
-          }}
-        >
-          <TypeIcon
-            item={item}
-            className="w-4 h-4 cursor-pointer"
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
-              goToTwoPage && goToTwoPage();
-            }}
-          />
-        </div>
-      )}
-
       {item?.rich_categories ? (
         <div className="flex items-center justify-end max-w-[calc(100%-20px)] whitespace-nowrap">
-          <RichIcon
+          <CommonIcon
             item={item}
+            renderOrder={["item_icon", "connector_icon"]}
+            itemIcon={item?.rich_categories?.[0]?.icon}
             className={`w-4 h-4 mr-2 cursor-pointer`}
             onClick={(e) => {
               e.stopPropagation();
               goToTwoPage && goToTwoPage();
             }}
           />
+
           <span
             className={`${
               isSelected ? "text-[#C8C8C8]" : "text-[#666]"
@@ -78,28 +61,50 @@ export function RichCategories({
             </span>
           ) : null}
         </div>
-      ) : item?.category || item?.subcategory ? (
-        <span
-          className={`text-[12px] truncate ${
-            isSelected ? "text-[#DCDCDC]" : "text-[#999] dark:text-[#666]"
-          }`}
-        >
-          {(item?.category || "") +
-            (item?.subcategory ? `/${item?.subcategory}` : "")}
-        </span>
       ) : (
-        <span
-          className={`text-[12px] truncate ${
-            isSelected ? "text-[#DCDCDC]" : "text-[#999] dark:text-[#666]"
-          }`}
-        >
-          {item?.last_updated_by?.user?.username ||
-            item?.owner?.username ||
-            item?.updated ||
-            item?.created ||
-            item?.type ||
-            ""}
-        </span>
+        <>
+          <div
+            className={`w-4 h-4 cursor-pointer`}
+            onClick={(e) => {
+              e.stopPropagation();
+              goToTwoPage && goToTwoPage();
+            }}
+          >
+            <CommonIcon
+              item={item}
+              renderOrder={["item_icon", "connector_icon"]}
+              itemIcon={item?.source?.icon}
+              className="w-4 h-4 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                goToTwoPage && goToTwoPage();
+              }}
+            />
+          </div>
+          {item?.category || item?.subcategory ? (
+            <span
+              className={`text-[12px] truncate ${
+                isSelected ? "text-[#DCDCDC]" : "text-[#999] dark:text-[#666]"
+              }`}
+            >
+              {(item?.category || "") +
+                (item?.subcategory ? `/${item?.subcategory}` : "")}
+            </span>
+          ) : (
+            <span
+              className={`text-[12px] truncate ${
+                isSelected ? "text-[#DCDCDC]" : "text-[#999] dark:text-[#666]"
+              }`}
+            >
+              {item?.last_updated_by?.user?.username ||
+                item?.owner?.username ||
+                item?.updated ||
+                item?.created ||
+                item?.type ||
+                ""}
+            </span>
+          )}
+        </>
       )}
     </>
   );

@@ -1,4 +1,3 @@
-import { useIconfontScript } from "@/hooks/useScript";
 import { useAppStore } from "@/stores/appStore";
 import logoImg from "@/assets/icon.svg";
 
@@ -9,8 +8,6 @@ interface FontIconProps {
 }
 
 const FontIcon = ({ name, className, style, ...rest }: FontIconProps) => {
-  useIconfontScript();
-
   const isTauri = useAppStore((state) => state.isTauri);
 
   if (isTauri) {

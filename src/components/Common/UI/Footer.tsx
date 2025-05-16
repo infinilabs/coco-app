@@ -2,7 +2,7 @@ import { ArrowDown01, CornerDownLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 
-import TypeIcon from "@/components/Common/Icons/TypeIcon";
+import CommonIcon from "@/components/Common/Icons/CommonIcon";
 import Copyright from "@/components/Common/Copyright";
 import PinOffIcon from "@/icons/PinOff";
 import PinIcon from "@/icons/Pin";
@@ -57,7 +57,12 @@ export default function Footer({
         <div className="flex items-center">
           <div className="flex items-center space-x-2">
             {sourceData?.source?.name ? (
-              <TypeIcon item={sourceData} className="w-4 h-4" />
+              <CommonIcon
+                item={sourceData}
+                renderOrder={["item_icon", "connector_icon"]}
+                itemIcon={sourceData?.source?.icon}
+                className="w-4 h-4"
+              />
             ) : (
               <img
                 src={logoImg}

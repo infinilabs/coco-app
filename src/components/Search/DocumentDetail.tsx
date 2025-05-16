@@ -1,10 +1,10 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { File } from "lucide-react";
 
 import { formatter } from "@/utils/index";
-import TypeIcon from "@/components/Common/Icons/TypeIcon";
+import CommonIcon from "@/components/Common/Icons/CommonIcon";
 import defaultThumbnail from "@/assets/coconut-tree.png";
-import ItemIcon from "@/components/Common/Icons/ItemIcon";
 import { RichCategories } from "./ListRight";
 
 interface DocumentDetailProps {
@@ -20,7 +20,9 @@ interface DetailItemProps {
 
 const DetailItem: React.FC<DetailItemProps> = ({ label, value, icon }) => (
   <div className="flex justify-between flex-wrap font-normal text-xs mb-2.5 border-t border-[rgba(238,240,243,1)] dark:border-[#272626] pt-2.5">
-    <div className="text-[rgba(153,153,153,1)] dark:text-[#666] min-w-[80px]">{label}</div>
+    <div className="text-[rgba(153,153,153,1)] dark:text-[#666] min-w-[80px]">
+      {label}
+    </div>
     <div
       className="text-[rgba(51,51,51,1);] dark:text-[#D8D8D8] flex justify-end text-right flex-1 truncate group relative"
       title={typeof value === "string" ? value : undefined}
@@ -39,52 +41,6 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
     if (url.length <= 40) return url;
     return `${url.slice(0, 20)}...${url.slice(-20)}`;
   };
-
-  //   categories: null
-
-  // category: null
-
-  // content: null
-
-  // cover: null
-
-  // created: null
-
-  // icon: "http://localhost:9000/assets/icons/connector/hugo_site/web.png"
-
-  // id: "31a8db836fe503d8f1d3ce2ea7c2fe6d"
-
-  // lang: null
-
-  // last_updated_by: null
-
-  // metadata: null
-
-  // owner: null
-
-  // payload: null
-
-  // rich_categories: null
-
-  // size: null
-
-  // source: {type: "connector", name: "INFINI Labs 官网", id: "cu4vj5o2sdb34a5pcbfg", icon: "http://localhost:9000/assets/icons/connector/hugo_site/icon.png"}
-
-  // subcategory: null
-
-  // summary: null
-
-  // tags: null
-
-  // thumbnail: null
-
-  // title: "dump_hash"
-
-  // type: "web_page"
-
-  // updated: null
-
-  // url: "https://infi
 
   return (
     <div className="p-3">
@@ -109,7 +65,13 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
               }}
             />
           ) : (
-            <ItemIcon item={document} className="w-16 h-16" />
+            <CommonIcon
+              renderOrder={["item_icon", "connector_icon", "default_icon"]}
+              item={document}
+              itemIcon={document?.icon}
+              defaultIcon={File}
+              className="w-16 h-16"
+            />
           )}
         </div>
 
@@ -137,7 +99,14 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
         <DetailItem
           label={t("search.document.source")}
           value={document?.source?.name || "-"}
-          icon={<TypeIcon item={document} className="w-4 h-4 mr-1" />}
+          icon={
+            <CommonIcon
+              item={document}
+              renderOrder={["item_icon", "connector_icon"]}
+              itemIcon={document?.source?.icon}
+              className="w-4 h-4 mr-1"
+            />
+          }
         />
 
         {/* Rich Categories */}

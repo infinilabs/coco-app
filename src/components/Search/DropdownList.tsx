@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next";
 import { useSearchStore } from "@/stores/searchStore";
 import ThemedIcon from "@/components/Common/Icons/ThemedIcon";
 import IconWrapper from "@/components/Common/Icons/IconWrapper";
-import TypeIcon from "@/components/Common/Icons/TypeIcon";
+import CommonIcon from "@/components/Common/Icons/CommonIcon";
 import SearchListItem from "./SearchListItem";
 import { metaOrCtrlKey, isMetaOrCtrlKey } from "@/utils/keyboardUtils";
 import { copyToClipboard, OpenURLWithBrowser } from "@/utils/index";
@@ -233,7 +233,12 @@ function DropdownList({
           <div key={sourceName}>
             {showHeader && (
               <div className="p-2 text-xs text-[#999] dark:text-[#666] flex items-center gap-2.5 relative">
-                <TypeIcon item={items[0]?.document} className="w-4 h-4" />
+                <CommonIcon
+                  item={items[0]?.document}
+                  renderOrder={["item_icon", "connector_icon"]}
+                  itemIcon={items[0]?.document?.source?.icon}
+                  className="w-4 h-4"
+                />
                 {sourceName} - {items[0]?.source.name}
                 <div className="flex-1 border-b border-b-[#e6e6e6] dark:border-b-[#272626]"></div>
                 {!hideArrowRight({ category: sourceName }) && (

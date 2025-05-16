@@ -46,6 +46,7 @@ Information about release notes of Coco Server is provided here.
 - refactor: optimized the modification operation of the numeric input box #508
 - style: modify the style of the search input box #513
 - style: chat input icons show #515
+- refactor: refactoring icon component #514
 - refactor: optimizing list styles in markdown content #520
 
 ## 0.4.0 (2025-04-27)

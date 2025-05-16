@@ -12,7 +12,7 @@ import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { useDebounce } from "ahooks";
 
-import TypeIcon from "@/components/Common/Icons/TypeIcon";
+import CommonIcon from "@/components/Common/Icons/CommonIcon";
 import { useConnectStore } from "@/stores/connectStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { DataSource } from "@/types/commands";
@@ -21,7 +21,6 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 import VisibleKey from "@/components/Common/VisibleKey";
 import { useChatStore } from "@/stores/chatStore";
 import NoDataImage from "@/components/Common/NoDataImage";
-import FontIcon from "../Common/Icons/FontIcon";
 import PopoverInput from "../Common/PopoverInput";
 
 interface SearchPopoverProps {
@@ -290,10 +289,13 @@ export default function SearchPopover({
                             <div className="flex items-center gap-2 overflow-hidden">
                               {isAll ? (
                                 <Layers className="size-[16px] text-[#0287FF]" />
-                              ) : item.icon?.startsWith("font_") ? (
-                                <FontIcon name={item.icon} className="size-4" />
                               ) : (
-                                <TypeIcon item={item} className="size-4" />
+                                <CommonIcon
+                                  item={item}
+                                  renderOrder={["item_icon", "connector_icon"]}
+                                  itemIcon={item.icon}
+                                  className="size-4"
+                                />
                               )}
 
                               <span className="truncate">

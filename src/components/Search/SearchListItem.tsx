@@ -1,7 +1,8 @@
 import React from "react";
 import clsx from "clsx";
+import { File } from "lucide-react";
 
-import ItemIcon from "@/components/Common/Icons/ItemIcon";
+import CommonIcon from "@/components/Common/Icons/CommonIcon";
 import ListRight from "./ListRight";
 import { useAppStore } from "@/stores/appStore";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -52,10 +53,17 @@ const SearchListItem: React.FC<SearchListItemProps> = React.memo(
       >
         <div
           className={`${
-            showListRight ? "max-w-[450px] mobile:max-w-full mobile:w-full" : "flex-1"
+            showListRight
+              ? "max-w-[450px] mobile:max-w-full mobile:w-full"
+              : "flex-1"
           } min-w-0 flex gap-2 items-center justify-start `}
         >
-          <ItemIcon item={item} />
+          <CommonIcon
+            renderOrder={["item_icon", "connector_icon", "default_icon"]}
+            item={item}
+            itemIcon={item?.icon}
+            defaultIcon={File}
+          />
           <span className={`text-sm truncate text-left`}>{item?.title}</span>
         </div>
         {!isTauri && isMobile ? (
