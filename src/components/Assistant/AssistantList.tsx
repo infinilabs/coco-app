@@ -85,7 +85,9 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
       if (debounceKeyword || assistantIDs.length > 0) {
         body.query = {
           bool: {
-            must: [],
+            must: [
+              {term: {"enabled": true}}
+            ],
           },
         };
         if (debounceKeyword) {

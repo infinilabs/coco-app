@@ -88,7 +88,7 @@ export default function SearchPopover({
       setDataSourceList([]);
       console.error("datasource_search", err);
     }
-  }, [currentService?.id, debouncedKeyword]);
+  }, [currentService?.id, debouncedKeyword, getDataSourcesByServer]);
 
   const popoverButtonRef = useRef<HTMLButtonElement>(null);
   const internetSearch = useShortcutsStore((state) => state.internetSearch);

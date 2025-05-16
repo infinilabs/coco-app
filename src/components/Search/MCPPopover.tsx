@@ -85,7 +85,7 @@ export default function MCPPopover({
       setDataList([]);
       console.error("datasource_search", err);
     }
-  }, [currentService?.id, debouncedKeyword]);
+  }, [currentService?.id, debouncedKeyword, getMCPByServer]);
 
   const popoverButtonRef = useRef<HTMLButtonElement>(null);
   const mcpSearch = useShortcutsStore((state) => state.mcpSearch);
