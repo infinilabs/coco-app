@@ -22,6 +22,7 @@ import ConnectPrompt from "./ConnectPrompt";
 import type { Chat } from "./types";
 import PrevSuggestion from "@/components/ChatMessage/PrevSuggestion";
 import { useAppStore } from "@/stores/appStore";
+// import ReadAloud from "./ReadAloud";
 
 interface ChatAIProps {
   isSearchActive?: boolean;
@@ -378,6 +379,8 @@ const ChatAI = memo(
           {!activeChat?._id && !visibleStartPage && (
             <PrevSuggestion sendMessage={init} />
           )}
+
+          {/* <ReadAloud /> */}
         </div>
       );
     }
