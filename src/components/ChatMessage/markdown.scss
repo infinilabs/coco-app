@@ -125,6 +125,11 @@
         border: 1px solid var(--color-border-muted) !important;
       }
     }
+
+    ul,
+    ol {
+      all: revert !important;
+    }
   }
 
   .markdown-body .octicon {
@@ -415,25 +420,6 @@
     border-left: 0.25em solid var(--color-border-default);
   }
 
-  .markdown-body ul,
-  .markdown-body ol {
-    margin-top: 0;
-    margin-bottom: 0;
-    padding-left: 2em;
-  }
-
-  .markdown-body ol ol,
-  .markdown-body ul ol {
-    list-style-type: lower-roman;
-  }
-
-  .markdown-body ul ul ol,
-  .markdown-body ul ol ol,
-  .markdown-body ol ul ol,
-  .markdown-body ol ol ol {
-    list-style-type: lower-alpha;
-  }
-
   .markdown-body dd {
     margin-left: 0;
   }
@@ -510,8 +496,6 @@
 
   .markdown-body p,
   .markdown-body blockquote,
-  .markdown-body ul,
-  .markdown-body ol,
   .markdown-body dl,
   .markdown-body table,
   .markdown-body pre,
@@ -625,14 +609,6 @@
 
   .markdown-body div > ol:not([type]) {
     list-style-type: decimal;
-  }
-
-  .markdown-body ul ul,
-  .markdown-body ul ol,
-  .markdown-body ol ol,
-  .markdown-body ol ul {
-    margin-top: 0;
-    margin-bottom: 0;
   }
 
   .markdown-body li > p {

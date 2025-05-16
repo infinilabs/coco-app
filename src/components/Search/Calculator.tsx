@@ -1,6 +1,5 @@
 import { ChevronsRight } from "lucide-react";
 import { FC } from "react";
-import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { copyToClipboard } from "@/utils";
 
@@ -10,7 +9,7 @@ interface CalculatorProps {
 }
 
 const Calculator: FC<CalculatorProps> = (props) => {
-  const { item, isSelected } = props;
+  const { item } = props;
   const {
     payload: { query, result },
   } = item;
@@ -31,12 +30,7 @@ const Calculator: FC<CalculatorProps> = (props) => {
 
   return (
     <div
-      className={clsx(
-        "flex items-center gap-1 p-2 w-full rounded-lg transition",
-        {
-          "bg-[#EDEDED] dark:bg-[#202126]": isSelected,
-        }
-      )}
+      className="flex items-center gap-1"
       onDoubleClick={() => {
         copyToClipboard(result.value);
       }}

@@ -24,11 +24,13 @@ Information about release notes of Coco Server is provided here.
 - feat: the search input box supports multi-line input #501
 - feat: websocket support self-signed TLS #504
 - feat: add option to allow self-signed certificates #509
+- feat: add AI summary component #518
 
 ### 🐛 Bug fix
 
 - fix: several issues around search #502
 - fix: fixed the newly created session has no title when it is deleted #511
+- fix: loading chat history for potential empty attachments
 
 ### ✈️ Improvements
 
@@ -45,6 +47,7 @@ Information about release notes of Coco Server is provided here.
 - style: modify the style of the search input box #513
 - style: chat input icons show #515
 - refactor: refactoring icon component #514
+- refactor: optimizing list styles in markdown content #520
 
 ## 0.4.0 (2025-04-27)
 

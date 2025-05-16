@@ -22,6 +22,7 @@ import VisibleKey from "@/components/Common/VisibleKey";
 import ConnectionError from "./ConnectionError";
 import SearchIcons from "./SearchIcons";
 import ChatIcons from "./ChatIcons";
+// import AiSummaryIcon from "../Common/Icons/AiSummaryIcon";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -446,10 +447,9 @@ export default function ChatInput({
             ) : null}
           </div>
         ) : (
-          <div
-            data-tauri-drag-region
-            className="w-28 flex gap-2 relative"
-          ></div>
+          <div data-tauri-drag-region className="w-28 flex gap-2 relative">
+            {/* <AiSummaryIcon color={"#881c94"} /> */}
+          </div>
         )}
 
         {isChatPage || hasModules?.length !== 2 ? null : (
