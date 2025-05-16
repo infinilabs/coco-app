@@ -49,6 +49,7 @@ Information about release notes of Coco Server is provided here.
 - style: chat input icons show #515
 - refactor: refactoring icon component #514
 - refactor: optimizing list styles in markdown content #520
+- feat: add a component for text reading aloud #522
 
 ## 0.4.0 (2025-04-27)
 
