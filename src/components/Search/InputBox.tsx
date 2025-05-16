@@ -22,7 +22,7 @@ import VisibleKey from "@/components/Common/VisibleKey";
 import ConnectionError from "./ConnectionError";
 import SearchIcons from "./SearchIcons";
 import ChatIcons from "./ChatIcons";
-import AiSummaryIcon from "../Common/Icons/AiSummaryIcon";
+// import AiSummaryIcon from "../Common/Icons/AiSummaryIcon";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
