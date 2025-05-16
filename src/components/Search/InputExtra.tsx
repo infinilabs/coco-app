@@ -73,6 +73,7 @@ const InputExtra = ({
   const modifierKeyPressed = useShortcutsStore((state) => {
     return state.modifierKeyPressed;
   });
+  const addError = useAppStore((state) => state.addError);
 
   const state = useReactive<State>({
     screenshotableMonitors: [],
@@ -104,6 +105,8 @@ const InputExtra = ({
       const stat = await getFileMetadata(path);
 
       if (stat.size / 1024 / 1024 > 100) {
+        addError(t("search.input.uploadFileHints.maxSize"));
+
         continue;
       }
 
@@ -184,8 +187,8 @@ const InputExtra = ({
 
   return (
     <Menu>
-      <MenuButton className="size-6">
-        <Tooltip content="支持截图、上传文件，最多 50个，单个文件最大 100 MB。">
+      <MenuButton as="div" className="size-6">
+        <Tooltip content={t("search.input.uploadFileHints.tooltip")}>
           <div className="size-full flex justify-center items-center rounded-lg transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]">
             <Plus
               className={clsx("size-5", {

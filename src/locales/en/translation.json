@@ -287,6 +287,10 @@
       "searchPopover": {
         "title": "Search Scope",
         "allScope": "All Scope"
+      },
+      "uploadFileHints": {
+        "tooltip": "Support screenshots, upload files, up to 50, single file up to 100 MB.",
+        "maxSize": "The file size cannot exceed 100 MB."
       }
     },
     "main": {
