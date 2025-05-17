@@ -82,34 +82,31 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
         size,
       };
 
-      if (debounceKeyword || assistantIDs.length > 0) {
-        body.query = {
-          bool: {
-            must: [
-              {term: {"enabled": true}}
-            ],
+      body.query = {
+        bool: {
+          must: [{ term: { enabled: true } }],
+        },
+      };
+
+      if (debounceKeyword) {
+        body.query.bool.must.push({
+          query_string: {
+            fields: ["combined_fulltext"],
+            query: debounceKeyword,
+            fuzziness: "AUTO",
+            fuzzy_prefix_length: 2,
+            fuzzy_max_expansions: 10,
+            fuzzy_transpositions: true,
+            allow_leading_wildcard: false,
           },
-        };
-        if (debounceKeyword) {
-          body.query.bool.must.push({
-            query_string: {
-              fields: ["combined_fulltext"],
-              query: debounceKeyword,
-              fuzziness: "AUTO",
-              fuzzy_prefix_length: 2,
-              fuzzy_max_expansions: 10,
-              fuzzy_transpositions: true,
-              allow_leading_wildcard: false,
-            },
-          });
-        }
-        if (assistantIDs.length > 0) {
-          body.query.bool.must.push({
-            terms: {
-              id: assistantIDs.map((id) => id),
-            },
-          });
-        }
+        });
+      }
+      if (assistantIDs.length > 0) {
+        body.query.bool.must.push({
+          terms: {
+            id: assistantIDs.map((id) => id),
+          },
+        });
       }
 
       if (isTauri) {

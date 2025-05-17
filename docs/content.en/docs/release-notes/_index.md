@@ -32,6 +32,7 @@ Information about release notes of Coco Server is provided here.
 - fix: fixed the newly created session has no title when it is deleted #511
 - fix: loading chat history for potential empty attachments
 - fix: datasource & MCP list synchronization update #521
+- fix: show only enabled datasource & MCP list
 
 ### ✈️ Improvements
 

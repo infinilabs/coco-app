@@ -44,28 +44,28 @@ impl HttpClient {
         headers: Option<HashMap<String, String>>,
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
-        log::debug!(
-            "Sending Request: {}, query_params: {:?}, header: {:?}, body: {:?}",
-            &url,
-            &query_params,
-            &headers,
-            &body
-        );
+        // log::debug!(
+        //     "Sending Request: {}, query_params: {:?}, header: {:?}, body: {:?}",
+        //     &url,
+        //     &query_params,
+        //     &headers,
+        //     &body
+        // );
 
         let request_builder =
             Self::get_request_builder(method, url, headers, query_params, body).await;
 
         let response = request_builder.send().await.map_err(|e| {
-            dbg!("Failed to send request: {}", &e);
+            //dbg!("Failed to send request: {}", &e);
             format!("Failed to send request: {}", e)
         })?;
 
-        log::debug!(
-            "Request: {}, Response status: {:?}, header: {:?}",
-            &url,
-            &response.status(),
-            &response.headers()
-        );
+        // log::debug!(
+        //     "Request: {}, Response status: {:?}, header: {:?}",
+        //     &url,
+        //     &response.status(),
+        //     &response.headers()
+        // );
 
         Ok(response)
     }
@@ -165,12 +165,12 @@ impl HttpClient {
                 headers.insert("X-API-TOKEN".to_string(), t);
             }
 
-            log::debug!(
-                "Sending request to server: {}, url: {}, headers: {:?}",
-                &server_id,
-                &url,
-                &headers
-            );
+            // log::debug!(
+            //     "Sending request to server: {}, url: {}, headers: {:?}",
+            //     &server_id,
+            //     &url,
+            //     &headers
+            // );
 
             Self::send_raw_request(method, &url, query_params, Some(headers), body).await
         } else {
