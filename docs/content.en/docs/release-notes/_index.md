@@ -13,6 +13,16 @@ Information about release notes of Coco Server is provided here.
 
 ### 🚀 Features
 
+### 🐛 Bug fix
+
+### ✈️ Improvements
+
+## 0.5.0 (2025-05-17)
+
+### ❌ Breaking changes
+
+### 🚀 Features
+
 - feat: check or enter to close the list of assistants #469
 - feat: add dimness settings for pinned window #470
 - feat: supports Shift + Enter input box line feeds #472
