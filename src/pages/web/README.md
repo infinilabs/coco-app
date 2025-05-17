@@ -3,72 +3,90 @@
 ## Props
 
 ### `serverUrl`
-- **类型**: `string`
-- **可选**: 是
-- **默认值**: `""`
-- **描述**: 设置服务器地址
+- **Type**: `string`
+- **Optional**: Yes
+- **Default**: `""`
+- **Description**: Set the server address
 
 ### `headers`
-- **类型**: `Record<string, unknown>`
-- **可选**: 是
-- **默认值**: `{}`
-- **描述**: 请求头配置
+- **Type**: `Record<string, unknown>`
+- **Optional**: Yes
+- **Default**: `{}`
+- **Description**: Request header configuration for API calls, such as X-API-TOKEN and APP-INTEGRATION-ID
 
 ### `width`
-- **类型**: `number`
-- **可选**: 是
-- **默认值**: `680`
-- **描述**: 组件容器的宽度，单位为像素
+- **Type**: `number`
+- **Optional**: Yes
+- **Default**: `680`
+- **Description**: Width of the component container in pixels
 
 ### `height`
-- **类型**: `number`
-- **可选**: 是
-- **默认值**: `590`
-- **描述**: 组件容器的高度，单位为像素
+- **Type**: `number`
+- **Optional**: Yes
+- **Default**: `590`
+- **Description**: Height of the component container in pixels. On mobile devices, it automatically adapts to the viewport height
 
 ### `hasModules`
-- **类型**: `string[]`
-- **可选**: 是
-- **默认值**: `['search', 'chat']`
-- **描述**: 启用的功能模块列表，目前支持 'search' 和 'chat' 模块
+- **Type**: `string[]`
+- **Optional**: Yes
+- **Default**: `['search', 'chat']`
+- **Description**: List of enabled feature modules, currently supports 'search' and 'chat' modules
+
+### `defaultModule`
+- **Type**: `'search' | 'chat'`
+- **Optional**: Yes
+- **Default**: `'search'`
+- **Description**: The default module to display
+
+### `assistantIDs`
+- **Type**: `string[]`
+- **Optional**: Yes
+- **Default**: `[]`
+- **Description**: List of available assistant IDs
 
 ### `hideCoco`
-- **类型**: `() => void`
-- **可选**: 是
-- **默认值**: `() => {}`
-- **描述**: 隐藏搜索窗口的回调函数
+- **Type**: `() => void`
+- **Optional**: Yes
+- **Default**: `() => {}`
+- **Description**: Callback function to hide the search window
 
 ### `theme`
-- **类型**: `"auto" | "light" | "dark"`
-- **可选**: 是
-- **默认值**: `"dark"`
-- **描述**: 主题设置，支持自动（跟随系统）、亮色和暗色三种模式
+- **Type**: `"auto" | "light" | "dark"`
+- **Optional**: Yes
+- **Default**: `"dark"`
+- **Description**: Theme setting, supports auto (follows system), light, and dark modes
 
 ### `searchPlaceholder`
-- **类型**: `string`
-- **可选**: 是
-- **默认值**: `""`
-- **描述**: 搜索框的占位文本
+- **Type**: `string`
+- **Optional**: Yes
+- **Default**: `""`
+- **Description**: Placeholder text for the search input
 
 ### `chatPlaceholder`
-- **类型**: `string`
-- **可选**: 是
-- **默认值**: `""`
-- **描述**: 聊天输入框的占位文本
+- **Type**: `string`
+- **Optional**: Yes
+- **Default**: `""`
+- **Description**: Placeholder text for the chat input
 
 ### `showChatHistory`
-- **类型**: `boolean`
-- **可选**: 是
-- **默认值**: `true`
-- **描述**: 是否显示聊天历史记录
+- **Type**: `boolean`
+- **Optional**: Yes
+- **Default**: `false`
+- **Description**: Whether to display chat history
 
 ### `setIsPinned`
-- **类型**: `(value: boolean) => void`
-- **可选**: 是
-- **默认值**: `undefined`
-- **描述**: 设置窗口置顶状态的回调函数
+- **Type**: `(value: boolean) => void`
+- **Optional**: Yes
+- **Default**: `undefined`
+- **Description**: Callback function to set window pin status
 
-## 使用示例
+### `onCancel`
+- **Type**: `() => void`
+- **Optional**: Yes
+- **Default**: `undefined`
+- **Description**: Callback function for clicking the close button on mobile devices
+
+## Usage Example
 
 ```tsx
 import SearchChat from 'search-chat';
@@ -77,17 +95,24 @@ function App() {
   return (
     <SearchChat
       serverUrl=""
-      headers={{}}
+      headers={{
+        "X-API-TOKEN": "your-api-token",
+        "APP-INTEGRATION-ID": "your-integration-id"
+      }}
       width={680}
       height={590}
       hasModules={['search', 'chat']}
+      defaultModule="search"
+      assistantIDs={[]}
       hideCoco={() => console.log('hide')}
       theme="dark"
       searchPlaceholder=""
       chatPlaceholder=""
       showChatHistory={false}
       setIsPinned={(isPinned) => console.log('isPinned:', isPinned)}
+      onCancel={() => console.log('cancel')}
     />
   );
 }
 ```
+        
