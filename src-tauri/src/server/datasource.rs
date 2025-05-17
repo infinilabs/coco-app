@@ -107,7 +107,7 @@ pub async fn datasource_search(
         "size": size,
     });
 
-    if let Some(q) = options.unwrap().query {
+    if let Some(q) = options.and_then(|get_data_source_options| get_data_source_options.query ) {
         body["query"] = q;
     }
 
