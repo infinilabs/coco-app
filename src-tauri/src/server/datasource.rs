@@ -4,6 +4,7 @@ use crate::server::connector::get_connector_by_id;
 use crate::server::http_client::HttpClient;
 use crate::server::servers::get_all_servers;
 use lazy_static::lazy_static;
+use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use tauri::{AppHandle, Runtime};
@@ -12,7 +13,7 @@ use tauri::{AppHandle, Runtime};
 pub struct GetDatasourcesByServerOptions {
     pub from: Option<u32>,
     pub size: Option<u32>,
-    pub query: Option<String>,
+    pub query: Option<serde_json::Value>,
 }
 
 lazy_static! {
@@ -100,31 +101,15 @@ pub async fn datasource_search(
 ) -> Result<Vec<DataSource>, String> {
     let from = options.as_ref().and_then(|opt| opt.from).unwrap_or(0);
     let size = options.as_ref().and_then(|opt| opt.size).unwrap_or(10000);
-    let query = options
-        .and_then(|opt| opt.query)
-        .unwrap_or(String::default());
 
     let mut body = serde_json::json!({
         "from": from,
         "size": size,
     });
 
-    body["query"] = serde_json::json!({
-          "bool": {
-              "must": [
-                  {"term": {"enabled": true}},
-                  {"query_string": {
-                      "fields": ["combined_fulltext"],
-                      "query": query,
-                      "fuzziness": "AUTO",
-                      "fuzzy_prefix_length": 2,
-                      "fuzzy_max_expansions": 10,
-                      "fuzzy_transpositions": true,
-                      "allow_leading_wildcard": false
-                  }
-              }]
-          }
-    });
+    if let Some(q) = options.unwrap().query {
+        body["query"] = q;
+    }
 
     // Perform the async HTTP request outside the cache lock
     let resp = HttpClient::post(
@@ -145,43 +130,24 @@ pub async fn datasource_search(
     // Save the updated datasources to cache
     save_datasource_to_cache(&id, datasources.clone());
 
-    dbg!("body: {:?}", &body);
-    dbg!("datasources: {:?}", &datasources);
     Ok(datasources)
 }
 
 #[tauri::command]
 pub async fn mcp_server_search(
     id: &str,
-    options: Option<GetDatasourcesByServerOptions>,
+    from: u32,
+    size: u32,
+    query: Option<HashMap<String, Value>>,
 ) -> Result<Vec<DataSource>, String> {
-    let from = options.as_ref().and_then(|opt| opt.from).unwrap_or(0);
-    let size = options.as_ref().and_then(|opt| opt.size).unwrap_or(10000);
-    let query = options
-        .and_then(|opt| opt.query)
-        .unwrap_or(String::default());
-
     let mut body = serde_json::json!({
-        "from": from,
-        "size": size,
+      "from": from,
+      "size": size,
     });
 
-    body["query"] = serde_json::json!({
-          "bool": {
-              "must": [
-                  {"term": {"enabled": true}},
-                  {"query_string": {
-                      "fields": ["combined_fulltext"],
-                      "query": query,
-                      "fuzziness": "AUTO",
-                      "fuzzy_prefix_length": 2,
-                      "fuzzy_max_expansions": 10,
-                      "fuzzy_transpositions": true,
-                      "allow_leading_wildcard": false
-                  }
-              }]
-          }
-    });
+    if let Some(q) = query {
+        body["query"] = serde_json::to_value(q).map_err(|e| e.to_string())?;
+    }
 
     // Perform the async HTTP request outside the cache lock
     let resp = HttpClient::post(

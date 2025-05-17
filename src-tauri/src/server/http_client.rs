@@ -56,7 +56,7 @@ impl HttpClient {
             Self::get_request_builder(method, url, headers, query_params, body).await;
 
         let response = request_builder.send().await.map_err(|e| {
-            dbg!("Failed to send request: {}", &e);
+            //dbg!("Failed to send request: {}", &e);
             format!("Failed to send request: {}", e)
         })?;
 

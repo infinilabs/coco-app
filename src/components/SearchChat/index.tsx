@@ -23,7 +23,7 @@ import platformAdapter from "@/utils/platformAdapter";
 import { useStartupStore } from "@/stores/startupStore";
 import { DataSource } from "@/types/commands";
 import { useThemeStore } from "@/stores/themeStore";
-import { Get } from "@/api/axiosRequest";
+import { Post } from "@/api/axiosRequest";
 import { useConnectStore } from "@/stores/connectStore";
 import { useAppearanceStore } from "@/stores/appearanceStore";
 
@@ -217,14 +217,41 @@ function SearchChat({
       ) {
         return [];
       }
+
+      const body: Record<string, any> = {
+        id: serverId,
+        from: options?.from || 0,
+        size: options?.size || 1000,
+      };
+
+      body.query = {
+        bool: {
+          must: [{ term: { enabled: true } }],
+        },
+      };
+
+      if (options?.query) {
+        body.query.bool.must.push({
+          query_string: {
+            fields: ["combined_fulltext"],
+            query: options?.query,
+            fuzziness: "AUTO",
+            fuzzy_prefix_length: 2,
+            fuzzy_max_expansions: 10,
+            fuzzy_transpositions: true,
+            allow_leading_wildcard: false,
+          },
+        });
+      }
+
       let response: any;
       if (isTauri) {
         response = await platformAdapter.invokeBackend("datasource_search", {
           id: serverId,
-          options,
+          options: body,
         });
       } else {
-        const [error, res]: any = await Get("/datasource/_search");
+        const [error, res]: any = await Post("/datasource/_search", body);
         if (error) {
           console.error("_search", error);
           return [];
@@ -258,14 +285,39 @@ function SearchChat({
       if (!(assistantConfig.mcpEnabled && assistantConfig.mcpVisible)) {
         return [];
       }
+      const body: Record<string, any> = {
+        id: serverId,
+        from: options?.from || 0,
+        size: options?.size || 1000,
+      };
+      body.query = {
+        bool: {
+          must: [{ term: { enabled: true } }],
+        },
+      };
+
+      if (options?.query) {
+        body.query.bool.must.push({
+          query_string: {
+            fields: ["combined_fulltext"],
+            query: options?.query,
+            fuzziness: "AUTO",
+            fuzzy_prefix_length: 2,
+            fuzzy_max_expansions: 10,
+            fuzzy_transpositions: true,
+            allow_leading_wildcard: false,
+          },
+        });
+      }
+
       let response: any;
       if (isTauri) {
-        response = await platformAdapter.invokeBackend("mcp_server_search", {
-          id: serverId,
-          options,
-        });
+        response = await platformAdapter.invokeBackend(
+          "mcp_server_search",
+          body
+        );
       } else {
-        const [error, res]: any = await Get("/mcp_server/_search");
+        const [error, res]: any = await Post("/mcp_server/_search", body);
         if (error) {
           console.error("_search", error);
           return [];
