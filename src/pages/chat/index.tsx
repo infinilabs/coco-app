@@ -15,7 +15,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { metadata, icon } from "tauri-plugin-fs-pro-api";
 
 import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
-import type { Chat as typeChat } from "@/components/Assistant/types";
+import type { Chat as typeChat } from "@/types/chat";
 import { useConnectStore } from "@/stores/connectStore";
 import InputBox from "@/components/Search/InputBox";
 import {
