@@ -6,7 +6,7 @@ import PinOffIcon from "@/icons/PinOff";
 import PinIcon from "@/icons/Pin";
 import WindowsFullIcon from "@/icons/WindowsFull";
 import { useAppStore, IServer } from "@/stores/appStore";
-import type { Chat } from "./types";
+import type { Chat } from "@/types/chat";
 import platformAdapter from "@/utils/platformAdapter";
 import VisibleKey from "../Common/VisibleKey";
 import { useShortcutsStore } from "@/stores/shortcutsStore";

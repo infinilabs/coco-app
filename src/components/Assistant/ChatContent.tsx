@@ -1,18 +1,18 @@
 import { useRef, useEffect, UIEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ArrowDown } from "lucide-react";
+import clsx from "clsx";
 
 import { ChatMessage } from "@/components/ChatMessage";
 import { Greetings } from "./Greetings";
 import FileList from "@/components/Assistant/FileList";
 import { useChatScroll } from "@/hooks/useChatScroll";
 import { useChatStore } from "@/stores/chatStore";
-import type { Chat, IChunkData } from "./types";
+import type { Chat, IChunkData } from "@/types/chat";
 // import SessionFile from "./SessionFile";
 import { useConnectStore } from "@/stores/connectStore";
 import SessionFile from "./SessionFile";
 import Splash from "./Splash";
-import { ArrowDown } from "lucide-react";
-import clsx from "clsx";
 
 interface ChatContentProps {
   activeChat?: Chat;

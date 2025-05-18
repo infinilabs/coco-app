@@ -19,7 +19,7 @@ import { ChatSidebar } from "./ChatSidebar";
 import { ChatHeader } from "./ChatHeader";
 import { ChatContent } from "./ChatContent";
 import ConnectPrompt from "./ConnectPrompt";
-import type { Chat } from "./types";
+import type { Chat } from "@/types/chat";
 import PrevSuggestion from "@/components/ChatMessage/PrevSuggestion";
 import { useAppStore } from "@/stores/appStore";
 // import ReadAloud from "./ReadAloud";
