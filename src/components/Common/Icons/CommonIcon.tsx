@@ -4,7 +4,7 @@ import { useAsyncEffect } from "ahooks";
 import { Box } from "lucide-react";
 
 import platformAdapter from "@/utils/platformAdapter";
-import UniversalIcon from "./UniversalIcon";
+import UniversalIcon, { getIconType } from "./UniversalIcon";
 import { useFindConnectorIcon } from "@/hooks/useFindConnectorIcon";
 
 interface CommonIconProps {
@@ -72,6 +72,7 @@ function CommonIcon({
         return null;
       }
       case "item_icon":
+        if (getIconType(itemIcon) === "default") return null;
         return (
           <UniversalIcon
             icon={itemIcon}
@@ -81,7 +82,7 @@ function CommonIcon({
         );
       case "connector_icon": {
         const icons = connectorSource?.assets?.icons || {};
-        const selectedIcon = itemIcon && icons[itemIcon] || itemIcon;
+        const selectedIcon = (itemIcon && icons[itemIcon]) || itemIcon;
         if (!selectedIcon) return null;
         return (
           <UniversalIcon
@@ -106,8 +107,8 @@ function CommonIcon({
 
   for (const renderType of renderOrder) {
     const icon = renderIconByType(renderType);
-    if (icon) return icon;
-    continue;
+    if (!icon) continue;
+    return icon;
   }
 
   return null;

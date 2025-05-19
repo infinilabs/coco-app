@@ -4,10 +4,10 @@ import { useAppStore } from "@/stores/appStore";
 export function useFindConnectorIcon(item: any) {
   const connector_data = useConnectStore((state) => state.connector_data);
   const datasourceData = useConnectStore((state) => state.datasourceData);
-  const currentService = useConnectStore((state) => state.currentService);
   const isTauri = useAppStore((state) => state.isTauri);
 
-  let currentServiceId = currentService?.id;
+
+  let currentServiceId = item?.querySource?.id;
   if (!isTauri) {
     currentServiceId = "web"
   }
