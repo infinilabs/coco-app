@@ -81,7 +81,7 @@ function CommonIcon({
         );
       case "connector_icon": {
         const icons = connectorSource?.assets?.icons || {};
-        const selectedIcon = itemIcon && icons[itemIcon];
+        const selectedIcon = itemIcon && icons[itemIcon] || itemIcon;
         if (!selectedIcon) return null;
         return (
           <UniversalIcon

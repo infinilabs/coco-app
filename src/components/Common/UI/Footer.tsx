@@ -63,7 +63,7 @@ export default function Footer({
             {sourceData?.source?.name ? (
               <CommonIcon
                 item={sourceData}
-                renderOrder={["item_icon", "connector_icon", "default_icon"]}
+                renderOrder={["connector_icon", "default_icon"]}
                 itemIcon={sourceData?.source?.icon}
                 defaultIcon={isDark ? source_default_dark_img : source_default_img}
                 className="w-4 h-4"
