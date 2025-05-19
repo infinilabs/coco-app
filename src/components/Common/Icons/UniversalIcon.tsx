@@ -9,7 +9,7 @@ import platformAdapter from "@/utils/platformAdapter";
 
 interface UniversalIconProps {
   icon?: string;                 // Icon source
-  defaultIcon?: React.FC;        // Default icon component
+  defaultIcon?: React.FC | string;        // Default icon component
   appIcon?: boolean;           // Whether the icon is local
   className?: string;           // Style class name
   onClick?: React.MouseEventHandler<HTMLDivElement>;
@@ -62,6 +62,9 @@ function UniversalIcon({
 
   // Render default icon
   const renderDefaultIcon = () => {
+    if (typeof defaultIcon === 'string') {
+      return renderImageIcon(defaultIcon);
+    }
     const defaultComponent = <ThemedIcon component={defaultIcon} className={className} />;
     return wrapWithIconWrapper ? (
       <IconWrapper className={className} onClick={onClick}>

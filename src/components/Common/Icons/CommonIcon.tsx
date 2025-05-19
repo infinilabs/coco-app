@@ -11,7 +11,7 @@ interface CommonIconProps {
   renderOrder: string[];
   item: any;
   itemIcon?: string;
-  defaultIcon?: React.FC;
+  defaultIcon?: React.FC | string;
   className?: string;
   onClick?: (e: React.MouseEvent) => void;
 }
@@ -28,7 +28,7 @@ function CommonIcon({
 
   const [isAbsolute, setIsAbsolute] = useState<boolean>();
   const [defaultIconState, setDefaultIconState] = useState<
-    React.FC | undefined
+    React.FC | string | undefined
   >(defaultIcon);
 
   useAsyncEffect(async () => {

@@ -102,7 +102,7 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
           icon={
             <CommonIcon
               item={document}
-              renderOrder={["special_icon", "item_icon", "connector_icon", "default_icon"]}
+              renderOrder={["connector_icon", "default_icon"]}
               itemIcon={document?.source?.icon}
               className="w-4 h-4 mr-1"
             />
