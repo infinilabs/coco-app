@@ -30,6 +30,9 @@ use std::path::PathBuf;
 use tauri::{async_runtime, AppHandle, Manager, Runtime};
 use tauri_plugin_fs_pro::{icon, metadata, name, IconOptions};
 use tauri_plugin_global_shortcut::GlobalShortcutExt;
+use tauri_plugin_global_shortcut::Shortcut;
+use tauri_plugin_global_shortcut::ShortcutEvent;
+use tauri_plugin_global_shortcut::ShortcutState;
 use tauri_plugin_store::StoreExt;
 use tokio::sync::oneshot::Sender as OneshotSender;
 
@@ -717,6 +720,26 @@ fn get_app_alias<R: Runtime>(tauri_app_handle: &AppHandle<R>, app_path: &str) ->
     Some(string)
 }
 
+/// The handler that will be invoked when an application hotkey is pressed.
+///
+/// The `app_path` argument is for logging-only.
+fn app_hotkey_handler<R: Runtime>(
+    app_path: String,
+) -> impl Fn(&AppHandle<R>, &Shortcut, ShortcutEvent) + Send + Sync + 'static {
+    move |tauri_app_handle, _hot_key, event| {
+        if event.state() == ShortcutState::Pressed {
+            let app_path_clone = app_path.clone();
+            let tauri_app_handle_clone = tauri_app_handle.clone();
+            // This closure will be executed on the main thread, so we spawn to reduce the potential UI lag.
+            async_runtime::spawn(async move {
+                if let Err(e) = open(tauri_app_handle_clone, app_path_clone).await {
+                    warn!("failed to open app due to [{}]", e);
+                }
+            });
+        }
+    }
+}
+
 fn register_app_hotkey_upon_start<R: Runtime>(
     tauri_app_handle: AppHandle<R>,
 ) -> Result<(), String> {
@@ -732,19 +755,7 @@ fn register_app_hotkey_upon_start<R: Runtime>(
 
         tauri_app_handle
             .global_shortcut()
-            .on_shortcut(
-                hotkey.as_str(),
-                move |tauri_app_handle, _hot_key, _event| {
-                    let app_path_clone = app_path.clone();
-                    let tauri_app_handle_clone = tauri_app_handle.clone();
-                    // This closure will be executed on the main thread, so we spawn to reduce the potential UI lag.
-                    async_runtime::spawn(async move {
-                        if let Err(e) = open(tauri_app_handle_clone, app_path_clone).await {
-                            warn!("failed to open app due to [{}]", e);
-                        }
-                    });
-                },
-            )
+            .on_shortcut(hotkey.as_str(), app_hotkey_handler(app_path))
             .map_err(|e| e.to_string())?;
     }
 
@@ -765,19 +776,7 @@ pub async fn register_app_hotkey<R: Runtime>(
 
     tauri_app_handle
         .global_shortcut()
-        .on_shortcut(
-            hotkey.as_str(),
-            move |tauri_app_handle, _hot_key, _event| {
-                let app_path_clone = app_path.clone();
-                let tauri_app_handle_clone = tauri_app_handle.clone();
-                // This closure will be executed on the main thread, so we spawn to reduce the potential UI lag.
-                async_runtime::spawn(async move {
-                    if let Err(e) = open(tauri_app_handle_clone, app_path_clone).await {
-                        warn!("failed to open app due to [{}]", e);
-                    }
-                });
-            },
-        )
+        .on_shortcut(hotkey.as_str(), app_hotkey_handler(app_path))
         .map_err(|e| e.to_string())?;
 
     Ok(())
