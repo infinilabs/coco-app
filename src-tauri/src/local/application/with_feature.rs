@@ -12,7 +12,7 @@ use crate::util::open;
 use crate::GLOBAL_TAURI_APP_HANDLE;
 use applications::{App, AppTrait};
 use async_trait::async_trait;
-use log::{debug, info, warn};
+use log::{debug, error, info, warn};
 use pizza_engine::document::FieldType;
 use pizza_engine::document::{
     Document as PizzaEngineDocument, DraftDoc as PizzaEngineDraftDoc, FieldValue,
@@ -44,6 +44,8 @@ const TAURI_STORE_APP_ALIAS: &str = "app_alias";
 
 const TAURI_STORE_KEY_SEARCH_PATH: &str = "search_path";
 const TAURI_STORE_KEY_DISABLED_APP_LIST: &str = "disabled_app_list";
+
+const THREAD_NAME_APP_SYNCHRONIZER: &str = "local app search - app list synchronizer";
 
 /// We use this as:
 ///
@@ -263,20 +265,29 @@ impl<R: Runtime> Task for IndexAllApplicationsTask<R> {
                     get_app_icon_path(&self.tauri_app_handle, app).await,
                     callback
                 );
-                let app_alias = get_app_alias(&self.tauri_app_handle, &app_path).unwrap_or(String::new());
+                let app_alias =
+                    get_app_alias(&self.tauri_app_handle, &app_path).unwrap_or(String::new());
 
                 if app_name.is_empty() || app_name.eq(&self.tauri_app_handle.package_info().name) {
                     continue;
                 }
 
-                let document = doc!( app_path,  {
-                    FIELD_APP_NAME => app_name,
+                // You cannot write `app_name.clone()` within the `doc!()` macro, we should fix this.
+                let app_name_clone = app_name.clone();
+                let app_path_clone = app_path.clone();
+                let document = doc!( app_path_clone,  {
+                    FIELD_APP_NAME => app_name_clone,
                     FIELD_ICON_PATH => app_icon_path,
                     FIELD_APP_ALIAS => app_alias,
                   }
                 );
 
-                task_exec_try!(writer.create_document(document).await, callback);
+                // We don't error out because one failure won't break the whole thing
+                if let Err(e) = writer.create_document(document).await {
+                    warn!(
+                      "failed to index application [app name: '{}', app path: '{}'] due to error [{}]", app_name, app_path, e
+                    )
+                }
             }
 
             task_exec_try!(writer.commit(), callback);
@@ -412,7 +423,13 @@ impl ApplicationSearchSource {
             .send(Box::new(index_applications_task))
             .unwrap();
 
-        rx.await.unwrap()?;
+        let indexing_applications_result = rx.await.unwrap();
+        if let Err(ref e) = indexing_applications_result {
+            error!(
+                "indexing local applications failed, app search won't work, error [{}]",
+                e
+            )
+        }
 
         app_handle
             .store(TAURI_STORE_APP_HOTKEY)
@@ -439,111 +456,122 @@ impl ApplicationSearchSource {
 
         register_app_hotkey_upon_start(app_handle.clone())?;
 
-        let app_handle_clone = app_handle.clone();
-        std::thread::Builder::new()
-            .name("local app search - app list synchronizer".into())
-            .spawn(move || {
-                let tokio_rt = tokio::runtime::Builder::new_current_thread()
-                    .enable_all()
-                    .build()
-                    .expect("failed to start a tokio runtime");
+        if indexing_applications_result.is_err() {
+            warn!(
+                "thread [{}] won't start because indexing applications failed",
+                THREAD_NAME_APP_SYNCHRONIZER
+            )
+        } else {
+            let app_handle_clone = app_handle.clone();
+            std::thread::Builder::new()
+                .name(THREAD_NAME_APP_SYNCHRONIZER.into())
+                .spawn(move || {
+                    let tokio_rt = tokio::runtime::Builder::new_current_thread()
+                        .enable_all()
+                        .build()
+                        .expect("failed to start a tokio runtime");
 
-                tokio_rt.block_on(async move {
-                    info!("app list synchronizer started");
-                    loop {
-                        tokio::time::sleep(std::time::Duration::from_secs(60 * 2)).await;
-                        debug!("app list synchronizer working");
+                    tokio_rt.block_on(async move {
+                        info!("thread [{}] started", THREAD_NAME_APP_SYNCHRONIZER);
+                        loop {
+                            tokio::time::sleep(std::time::Duration::from_secs(60 * 2)).await;
+                            debug!("app list synchronizer working");
 
-                        let stored_app_list = get_app_list(app_handle_clone.clone())
-                            .await
-                            .expect("failed to fetch the stored app list");
-                        let store = app_handle_clone
-                            .store(TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH)
-                            .unwrap_or_else(|_e| {
-                                panic!(
-                                    "store [{}] not found/loaded",
-                                    TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH
-                                )
-                            });
-                        let search_path_json =
-                            store.get(TAURI_STORE_KEY_SEARCH_PATH).unwrap_or_else(|| {
-                                panic!("key [{}] not found", TAURI_STORE_KEY_SEARCH_PATH)
-                            });
-                        let search_paths: Vec<String> = match search_path_json {
-                            Json::Array(array) => array
-                                .into_iter()
-                                .map(|json| match json {
-                                    Json::String(str) => str,
-                                    _ => unreachable!("search path should be a string"),
-                                })
-                                .collect(),
-                            _ => unreachable!("search paths should be stored in an array"),
-                        };
-                        let mut current_app_list = list_app_in(search_paths).unwrap_or_else(|e| {
-                            panic!("failed to fetch app list due to error [{}]", e)
-                        });
-                        // filter out Coco-AI
-                        current_app_list.retain(|app| app.name != app_handle.package_info().name);
+                            let stored_app_list = get_app_list(app_handle_clone.clone())
+                                .await
+                                .expect("failed to fetch the stored app list");
+                            let store = app_handle_clone
+                                .store(TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH)
+                                .unwrap_or_else(|_e| {
+                                    panic!(
+                                        "store [{}] not found/loaded",
+                                        TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH
+                                    )
+                                });
+                            let search_path_json =
+                                store.get(TAURI_STORE_KEY_SEARCH_PATH).unwrap_or_else(|| {
+                                    panic!("key [{}] not found", TAURI_STORE_KEY_SEARCH_PATH)
+                                });
+                            let search_paths: Vec<String> = match search_path_json {
+                                Json::Array(array) => array
+                                    .into_iter()
+                                    .map(|json| match json {
+                                        Json::String(str) => str,
+                                        _ => unreachable!("search path should be a string"),
+                                    })
+                                    .collect(),
+                                _ => unreachable!("search paths should be stored in an array"),
+                            };
+                            let mut current_app_list =
+                                list_app_in(search_paths).unwrap_or_else(|e| {
+                                    panic!("failed to fetch app list due to error [{}]", e)
+                                });
+                            // filter out Coco-AI
+                            current_app_list
+                                .retain(|app| app.name != app_handle.package_info().name);
 
-                        let current_app_list_path_hash_index = {
-                            let mut index = HashMap::new();
-                            for (idx, app) in current_app_list.iter().enumerate() {
-                                index.insert(get_app_path(app), idx);
+                            let current_app_list_path_hash_index = {
+                                let mut index = HashMap::new();
+                                for (idx, app) in current_app_list.iter().enumerate() {
+                                    index.insert(get_app_path(app), idx);
+                                }
+
+                                index
+                            };
+                            let current_app_path_list: HashSet<String> =
+                                current_app_list.iter().map(get_app_path).collect();
+                            let stored_app_path_list: HashSet<String> = stored_app_list
+                                .iter()
+                                .map(|app_entry| app_entry.path.clone())
+                                .collect();
+
+                            let new_apps = current_app_path_list.difference(&stored_app_path_list);
+                            debug!("found new apps [{:?}]", new_apps);
+
+                            // Synchronize the stored app list
+                            let mut new_apps_pizza_engine_documents = Vec::new();
+
+                            for new_app_path in new_apps {
+                                let idx =
+                                    *current_app_list_path_hash_index.get(new_app_path).unwrap();
+                                let new_app = current_app_list.get(idx).unwrap();
+                                let new_app_name = get_app_name(new_app).await;
+                                let new_app_icon_path =
+                                    get_app_icon_path(&app_handle_clone, new_app).await.unwrap();
+                                let new_app_alias = get_app_alias(&app_handle_clone, &new_app_path)
+                                    .unwrap_or(String::new());
+
+                                let new_app_pizza_engine_document = doc!(new_app_path.clone(),  {
+                                    FIELD_APP_NAME => new_app_name,
+                                    FIELD_ICON_PATH => new_app_icon_path,
+                                    FIELD_APP_ALIAS => new_app_alias,
+                                  }
+                                );
+
+                                new_apps_pizza_engine_documents.push(new_app_pizza_engine_document);
                             }
 
-                            index
-                        };
-                        let current_app_path_list: HashSet<String> =
-                            current_app_list.iter().map(get_app_path).collect();
-                        let stored_app_path_list: HashSet<String> = stored_app_list
-                            .iter()
-                            .map(|app_entry| app_entry.path.clone())
-                            .collect();
-
-                        let new_apps = current_app_path_list.difference(&stored_app_path_list);
-                        debug!("found new apps [{:?}]", new_apps);
-
-                        // Synchronize the stored app list
-                        let mut new_apps_pizza_engine_documents = Vec::new();
-
-                        for new_app_path in new_apps {
-                            let idx = *current_app_list_path_hash_index.get(new_app_path).unwrap();
-                            let new_app = current_app_list.get(idx).unwrap();
-                            let new_app_name = get_app_name(new_app).await;
-                            let new_app_icon_path =
-                                get_app_icon_path(&app_handle_clone, new_app).await.unwrap();
-                            let new_app_alias = get_app_alias(&app_handle_clone, &new_app_path).unwrap_or(String::new());
-
-                            let new_app_pizza_engine_document = doc!(new_app_path.clone(),  {
-                                FIELD_APP_NAME => new_app_name,
-                                FIELD_ICON_PATH => new_app_icon_path,
-                                FIELD_APP_ALIAS => new_app_alias,
-                              }
-                            );
-
-                            new_apps_pizza_engine_documents.push(new_app_pizza_engine_document);
-                        }
-
-                        let (callback, wait_for_complete) = tokio::sync::oneshot::channel();
-                        let index_new_apps_task = Box::new(IndexNewApplicationsTask {
-                            applications: new_apps_pizza_engine_documents,
-                            callback: Some(callback),
-                        });
-                        RUNTIME_TX
-                            .get()
-                            .unwrap()
-                            .send(index_new_apps_task)
-                            .expect("rx dropped, pizza runtime could possibly be dead");
-                        wait_for_complete
-                            .await
-                            .expect("tx dropped, pizza runtime could possibly be dead")
-                            .unwrap_or_else(|e| {
-                                panic!("failed to index new apps due to error [{}]", e)
+                            let (callback, wait_for_complete) = tokio::sync::oneshot::channel();
+                            let index_new_apps_task = Box::new(IndexNewApplicationsTask {
+                                applications: new_apps_pizza_engine_documents,
+                                callback: Some(callback),
                             });
-                    }
-                });
-            })
-            .unwrap();
+                            RUNTIME_TX
+                                .get()
+                                .unwrap()
+                                .send(index_new_apps_task)
+                                .expect("rx dropped, pizza runtime could possibly be dead");
+                            wait_for_complete
+                                .await
+                                .expect("tx dropped, pizza runtime could possibly be dead")
+                                .unwrap_or_else(|e| {
+                                    panic!("failed to index new apps due to error [{}]", e)
+                                });
+                        }
+                    });
+                })
+                .unwrap();
+        }
 
         Ok(())
     }
@@ -657,29 +685,33 @@ fn pizza_engine_hits_to_coco_hits(
 }
 
 #[tauri::command]
-pub async fn set_app_alias<R: Runtime>(tauri_app_handle: AppHandle<R>, app_path: String, alias: String) {
-    let store = tauri_app_handle.store(TAURI_STORE_APP_ALIAS).unwrap_or_else(|_| {
-      panic!("store [{}] not found/loaded", TAURI_STORE_APP_ALIAS)
-    });
+pub async fn set_app_alias<R: Runtime>(
+    tauri_app_handle: AppHandle<R>,
+    app_path: String,
+    alias: String,
+) {
+    let store = tauri_app_handle
+        .store(TAURI_STORE_APP_ALIAS)
+        .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_ALIAS));
 
     store.set(app_path, alias);
 
     // TODO: When pizza supports update, update index if this app's document exists there.
-    // 
-    // NOTE: possible (depends on how we impl concurrency control in Pizza) TOCTOU: document gets 
+    //
+    // NOTE: possible (depends on how we impl concurrency control in Pizza) TOCTOU: document gets
     // deleted while updating it.
 }
 
 fn get_app_alias<R: Runtime>(tauri_app_handle: &AppHandle<R>, app_path: &str) -> Option<String> {
-    let store = tauri_app_handle.store(TAURI_STORE_APP_ALIAS).unwrap_or_else(|_| {
-      panic!("store [{}] not found/loaded", TAURI_STORE_APP_ALIAS)
-    });
+    let store = tauri_app_handle
+        .store(TAURI_STORE_APP_ALIAS)
+        .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_ALIAS));
 
     let json = store.get(app_path)?;
 
     let string = match json {
-      Json::String(s) => s,
-      _ => unreachable!("app alias should be stored in a string"),
+        Json::String(s) => s,
+        _ => unreachable!("app alias should be stored in a string"),
     };
 
     Some(string)
@@ -1014,12 +1046,13 @@ pub async fn get_app_list<R: Runtime>(
                 });
 
             let disabled_app_list = match disabled_app_list_json {
-                Json::Array(v) => v.into_iter().map(|json| {
-                    match json {
+                Json::Array(v) => v
+                    .into_iter()
+                    .map(|json| match json {
                         Json::String(str) => str,
                         _ => unreachable!("app path should be stored in a string"),
-                    }
-                }).collect::<Vec<String>>(),
+                    })
+                    .collect::<Vec<String>>(),
                 _ => unreachable!("disabled app list should be stored in an array"),
             };
 
@@ -1067,12 +1100,16 @@ pub async fn get_app_metadata<R: Runtime>(
     let raw_app_metadata = metadata(app_path.into(), None).await?;
 
     let last_opened = if cfg!(any(target_os = "macos", target_os = "windows")) {
-        let app_exe_path = app.app_path_exe.as_ref().expect("exe path should be Some").clone();
+        let app_exe_path = app
+            .app_path_exe
+            .as_ref()
+            .expect("exe path should be Some")
+            .clone();
         let raw_app_exe_metadata = metadata(app_exe_path, None).await?;
         raw_app_exe_metadata.accessed_at
-      } else {
+    } else {
         raw_app_metadata.accessed_at
-      };
+    };
 
     Ok(AppMetadata {
         name: app_name,
