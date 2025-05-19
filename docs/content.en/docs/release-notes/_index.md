@@ -53,6 +53,7 @@ Information about release notes of Coco Server is provided here.
 - feat: add a component for text reading aloud #522
 - style: history component styles #528
 - fix: app icon & category icon #529
+- style: search error styles #533
 
 ## 0.4.0 (2025-04-27)
 
