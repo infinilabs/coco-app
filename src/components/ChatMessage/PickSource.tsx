@@ -2,7 +2,7 @@ import { ChevronDown, ChevronUp, Loader } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
-import type { IChunkData } from "@/components/Assistant/types";
+import type { IChunkData } from "@/types/chat";
 import SelectionIcon from "@/icons/Selection";
 
 interface PickSourceProps {

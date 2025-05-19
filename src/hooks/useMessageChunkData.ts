@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 
-import type { IChunkData } from "@/components/Assistant/types";
+import type { IChunkData } from "@/types/chat";
 
 export default function useMessageChunkData() {
   const [query_intent, setQuery_intent] = useState<IChunkData>();
