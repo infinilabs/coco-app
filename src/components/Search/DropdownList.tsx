@@ -6,7 +6,7 @@ import {
   MouseEvent,
   useMemo,
 } from "react";
-import { ArrowBigRight } from "lucide-react";
+import { ArrowBigRight, FolderOpen } from "lucide-react";
 import { isNil } from "lodash-es";
 import { useDebounceFn, useUnmount } from "ahooks";
 import { useTranslation } from "react-i18next";
@@ -237,6 +237,7 @@ function DropdownList({
                   item={items[0]?.document}
                   renderOrder={["connector_icon", "default_icon"]}
                   itemIcon={items[0]?.document?.source?.icon}
+                  defaultIcon={FolderOpen}
                   className="w-4 h-4"
                 />
                 {sourceName} - {items[0]?.source.name}
