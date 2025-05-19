@@ -25,7 +25,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import VisibleKey from "../VisibleKey";
-import { Chat } from "@/components/Assistant/types";
+import { Chat } from "@/types/chat";
 import NoDataImage from "../NoDataImage";
 import { closeHistoryPanel } from "@/utils";
 

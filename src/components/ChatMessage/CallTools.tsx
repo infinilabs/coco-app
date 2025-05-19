@@ -2,7 +2,7 @@ import { Loader, Hammer, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
-import type { IChunkData } from "@/components/Assistant/types";
+import type { IChunkData } from "@/types/chat";
 import Markdown from "./Markdown";
 
 interface CallToolsProps {

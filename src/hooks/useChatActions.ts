@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import type { Chat } from "@/components/Assistant/types";
+import type { Chat } from "@/types/chat";
 import { useAppStore } from "@/stores/appStore";
 import { Get, Post } from "@/api/axiosRequest";
 import platformAdapter from "@/utils/platformAdapter";
