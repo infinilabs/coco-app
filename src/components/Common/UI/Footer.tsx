@@ -1,4 +1,4 @@
-import { ArrowDown01, CornerDownLeft, FolderOpen } from "lucide-react";
+import { ArrowDown01, CornerDownLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 
@@ -61,7 +61,6 @@ export default function Footer({
                 item={sourceData}
                 renderOrder={["connector_icon", "default_icon"]}
                 itemIcon={sourceData?.source?.icon}
-                defaultIcon={FolderOpen}
                 className="w-4 h-4"
               />
             ) : (
