@@ -28,7 +28,7 @@ export function RichCategories({
         <div className="flex items-center justify-end max-w-[calc(100%-20px)] whitespace-nowrap">
           <CommonIcon
             item={item}
-            renderOrder={["item_icon", "connector_icon"]}
+            renderOrder={["connector_icon", "default_icon"]}
             itemIcon={item?.rich_categories?.[0]?.icon}
             className={`w-4 h-4 mr-2 cursor-pointer`}
             onClick={(e) => {
@@ -72,7 +72,7 @@ export function RichCategories({
           >
             <CommonIcon
               item={item}
-              renderOrder={["item_icon", "connector_icon"]}
+              renderOrder={["connector_icon", "default_icon"]}
               itemIcon={item?.source?.icon}
               className="w-4 h-4 cursor-pointer"
               onClick={(e) => {

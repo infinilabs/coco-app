@@ -235,7 +235,7 @@ function DropdownList({
               <div className="p-2 text-xs text-[#999] dark:text-[#666] flex items-center gap-2.5 relative">
                 <CommonIcon
                   item={items[0]?.document}
-                  renderOrder={["item_icon", "connector_icon"]}
+                  renderOrder={["connector_icon", "default_icon"]}
                   itemIcon={items[0]?.document?.source?.icon}
                   className="w-4 h-4"
                 />

@@ -59,7 +59,7 @@ const SearchListItem: React.FC<SearchListItemProps> = React.memo(
           } min-w-0 flex gap-2 items-center justify-start `}
         >
           <CommonIcon
-            renderOrder={["item_icon", "connector_icon", "default_icon"]}
+            renderOrder={["special_icon", "item_icon", "connector_icon", "default_icon"]}
             item={item}
             itemIcon={item?.icon}
             defaultIcon={File}
