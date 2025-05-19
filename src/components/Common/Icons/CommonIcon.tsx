@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { isEmpty } from "lodash-es";
 import { useAsyncEffect } from "ahooks";
+import { Box } from "lucide-react";
 
 import platformAdapter from "@/utils/platformAdapter";
-import UniversalIcon from "./UniversalIcon";
+import UniversalIcon, { getIconType } from "./UniversalIcon";
 import { useFindConnectorIcon } from "@/hooks/useFindConnectorIcon";
 
 interface CommonIconProps {
   renderOrder: string[];
   item: any;
   itemIcon?: string;
-  defaultIcon?: React.FC;
+  defaultIcon?: React.FC | string;
   className?: string;
   onClick?: (e: React.MouseEvent) => void;
 }
@@ -26,6 +27,9 @@ function CommonIcon({
   const connectorSource = useFindConnectorIcon(item);
 
   const [isAbsolute, setIsAbsolute] = useState<boolean>();
+  const [defaultIconState, setDefaultIconState] = useState<
+    React.FC | string | undefined
+  >(defaultIcon);
 
   useAsyncEffect(async () => {
     if (isEmpty(item)) return;
@@ -35,40 +39,40 @@ function CommonIcon({
         omitSize: true,
       });
       setIsAbsolute(Boolean(isAbsolute));
+      setDefaultIconState(defaultIcon || Box);
     } catch (error) {
       setIsAbsolute(false);
     }
   }, [item]);
 
-  // Handle special icon types
-  const renderSpecialIcon = () => {
-    if (item.id === "Calculator") {
-      return (
-        <UniversalIcon
-          icon="/assets/calculator.png"
-          className={className}
-          onClick={onClick}
-        />
-      );
-    }
-
-    if (isAbsolute) {
-      return (
-        <UniversalIcon
-          icon={platformAdapter.convertFileSrc(item?.icon)}
-          className={className}
-          onClick={onClick}
-        />
-      );
-    }
-
-    return null;
-  };
-
   // Handle regular icon types
   const renderIconByType = (renderType: string) => {
     switch (renderType) {
+      case "special_icon": {
+        if (item.id === "Calculator") {
+          return (
+            <UniversalIcon
+              icon="/assets/calculator.png"
+              className={className}
+              onClick={onClick}
+            />
+          );
+        }
+
+        if (isAbsolute) {
+          return (
+            <UniversalIcon
+              icon={item?.icon}
+              appIcon={true}
+              className={className}
+              onClick={onClick}
+            />
+          );
+        }
+        return null;
+      }
       case "item_icon":
+        if (getIconType(itemIcon) === "default") return null;
         return (
           <UniversalIcon
             icon={itemIcon}
@@ -78,7 +82,8 @@ function CommonIcon({
         );
       case "connector_icon": {
         const icons = connectorSource?.assets?.icons || {};
-        const selectedIcon = itemIcon && icons[itemIcon];
+        const selectedIcon = (itemIcon && icons[itemIcon]) || itemIcon;
+        if (!selectedIcon) return null;
         return (
           <UniversalIcon
             icon={selectedIcon}
@@ -90,7 +95,7 @@ function CommonIcon({
       case "default_icon":
         return (
           <UniversalIcon
-            defaultIcon={defaultIcon}
+            defaultIcon={defaultIconState}
             className={className}
             onClick={onClick}
           />
@@ -100,13 +105,10 @@ function CommonIcon({
     }
   };
 
-  // Render logic
-  const specialIcon = renderSpecialIcon();
-  if (specialIcon) return specialIcon;
-
   for (const renderType of renderOrder) {
     const icon = renderIconByType(renderType);
-    if (icon) return icon;
+    if (!icon) continue;
+    return icon;
   }
 
   return null;

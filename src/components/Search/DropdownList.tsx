@@ -10,6 +10,7 @@ import { ArrowBigRight } from "lucide-react";
 import { isNil } from "lodash-es";
 import { useDebounceFn, useUnmount } from "ahooks";
 import { useTranslation } from "react-i18next";
+import clsx from "clsx";
 
 import { useSearchStore } from "@/stores/searchStore";
 import ThemedIcon from "@/components/Common/Icons/ThemedIcon";
@@ -23,7 +24,9 @@ import Calculator from "./Calculator";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import ErrorSearch from "@/components/Common/ErrorNotification/ErrorSearch";
 // import AiSummary from "./AiSummary";
-import clsx from "clsx";
+import source_default_img from "@/assets/images/source_default.png";
+import source_default_dark_img from "@/assets/images/source_default_dark.png";
+import { useThemeStore } from "@/stores/themeStore";
 
 type ISearchData = Record<string, any[]>;
 
@@ -47,6 +50,7 @@ function DropdownList({
   const globalItemIndexMap: any[] = [];
 
   const setSourceData = useSearchStore((state) => state.setSourceData);
+  const isDark = useThemeStore((state) => state.isDark);
 
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
   const [selectedName, setSelectedName] = useState<string>("");
@@ -235,8 +239,9 @@ function DropdownList({
               <div className="p-2 text-xs text-[#999] dark:text-[#666] flex items-center gap-2.5 relative">
                 <CommonIcon
                   item={items[0]?.document}
-                  renderOrder={["item_icon", "connector_icon"]}
+                  renderOrder={["connector_icon", "default_icon"]}
                   itemIcon={items[0]?.document?.source?.icon}
+                  defaultIcon={isDark ? source_default_dark_img : source_default_img}
                   className="w-4 h-4"
                 />
                 {sourceName} - {items[0]?.source.name}

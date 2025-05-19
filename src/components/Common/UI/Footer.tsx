@@ -13,6 +13,9 @@ import { useUpdateStore } from "@/stores/updateStore";
 import VisibleKey from "../VisibleKey";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { formatKey } from "@/utils/keyboardUtils";
+import source_default_img from "@/assets/images/source_default.png";
+import source_default_dark_img from "@/assets/images/source_default_dark.png";
+import { useThemeStore } from "@/stores/themeStore";
 
 interface FooterProps {
   isTauri: boolean;
@@ -27,6 +30,7 @@ export default function Footer({
 }: FooterProps) {
   const { t } = useTranslation();
   const sourceData = useSearchStore((state) => state.sourceData);
+  const isDark = useThemeStore((state) => state.isDark);
 
   const isPinned = useAppStore((state) => state.isPinned);
   const setIsPinned = useAppStore((state) => state.setIsPinned);
@@ -59,8 +63,9 @@ export default function Footer({
             {sourceData?.source?.name ? (
               <CommonIcon
                 item={sourceData}
-                renderOrder={["item_icon", "connector_icon"]}
+                renderOrder={["connector_icon", "default_icon"]}
                 itemIcon={sourceData?.source?.icon}
+                defaultIcon={isDark ? source_default_dark_img : source_default_img}
                 className="w-4 h-4"
               />
             ) : (

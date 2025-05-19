@@ -287,7 +287,7 @@ export default function MCPPopover({
                               ) : (
                                 <CommonIcon
                                   item={item}
-                                  renderOrder={["item_icon", "connector_icon"]}
+                                  renderOrder={["item_icon", "connector_icon", "default_icon"]}
                                   itemIcon={item.icon}
                                   className="size-4"
                                 />

@@ -7,17 +7,7 @@ title: "Release Notes"
 
 Information about release notes of Coco Server is provided here.
 
-## Latest (In development)
-
-### ❌ Breaking changes
-
-### 🚀 Features
-
-### 🐛 Bug fix
-
-### ✈️ Improvements
-
-## 0.5.0 (2025-05-17)
+## 0.5.0 (In development)
 
 ### ❌ Breaking changes
 
@@ -62,6 +52,7 @@ Information about release notes of Coco Server is provided here.
 - refactor: optimizing list styles in markdown content #520
 - feat: add a component for text reading aloud #522
 - style: history component styles #528
+- fix: app icon & category icon #529
 
 ## 0.4.0 (2025-04-27)
 
