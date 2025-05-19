@@ -108,11 +108,17 @@ impl SearchSource for CalculatorSource {
     }
 
     async fn search(&self, query: SearchQuery) -> Result<QueryResponse, SearchError> {
-        let query_string = query
-            .query_strings
-            .get("query")
-            .unwrap_or(&"".to_string())
-            .to_string();
+        let Some(query_string) = query.query_strings.get("query") else {
+            return Ok(QueryResponse {
+                source: self.get_type(),
+                hits: Vec::new(),
+                total_hits: 0,
+            });
+        };
+
+        // Trim the leading and tailing whitespace so that our later if condition 
+        // will only be evaluated against non-whitespace characters.
+        let query_string = query_string.trim();
 
         if query_string.is_empty() || query_string.len() == 1 {
             return Ok(QueryResponse {
@@ -122,11 +128,11 @@ impl SearchSource for CalculatorSource {
             });
         }
 
-        match meval::eval_str(&query_string) {
+        match meval::eval_str(query_string) {
             Ok(num) => {
                 let mut payload: HashMap<String, Value> = HashMap::new();
 
-                let payload_query = parse_query(query_string);
+                let payload_query = parse_query(query_string.into());
                 let payload_result = parse_result(num);
 
                 payload.insert("query".to_string(), payload_query);
