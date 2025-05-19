@@ -1,20 +1,21 @@
-import { useThemeStore } from "@/stores/themeStore";
-import loadingLight from "./imgs/loading-light.png";
-import loadingDark from "./imgs/loading-dark.png";
-import playLight from "./imgs/play-light.png";
-import playDark from "./imgs/play-dark.png";
-import pauseLight from "./imgs/pause-light.png";
-import pauseDark from "./imgs/pause-dark.png";
-import backLight from "./imgs/back-light.png";
-import backDark from "./imgs/back-dark.png";
-import forwardLight from "./imgs/forward-light.png";
-import forwardDark from "./imgs/forward-dark.png";
-import closeLight from "./imgs/close-light.png";
-import closeDark from "./imgs/close-dark.png";
 import { useEffect, useMemo, useRef } from "react";
 import { useReactive } from "ahooks";
 import dayjs from "dayjs";
 import durationPlugin from "dayjs/plugin/duration";
+
+import { useThemeStore } from "@/stores/themeStore";
+import loadingLight from "@/assets/images/ReadAloud/loading-light.png";
+import loadingDark from "@/assets/images/ReadAloud/loading-dark.png";
+import playLight from "@/assets/images/ReadAloud/play-light.png";
+import playDark from "@/assets/images/ReadAloud/play-dark.png";
+import pauseLight from "@/assets/images/ReadAloud/pause-light.png";
+import pauseDark from "@/assets/images/ReadAloud/pause-dark.png";
+import backLight from "@/assets/images/ReadAloud/back-light.png";
+import backDark from "@/assets/images/ReadAloud/back-dark.png";
+import forwardLight from "@/assets/images/ReadAloud/forward-light.png";
+import forwardDark from "@/assets/images/ReadAloud/forward-dark.png";
+import closeLight from "@/assets/images/ReadAloud/close-light.png";
+import closeDark from "@/assets/images/ReadAloud/close-dark.png";
 
 dayjs.extend(durationPlugin);
 

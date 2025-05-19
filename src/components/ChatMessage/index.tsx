@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 
 import logoImg from "@/assets/icon.svg";
-import type { Message, IChunkData } from "@/components/Assistant/types";
+import type { Message, IChunkData } from "@/types/chat";
 import { QueryIntent } from "./QueryIntent";
 import { CallTools } from "./CallTools";
 import { FetchSource } from "./FetchSource";

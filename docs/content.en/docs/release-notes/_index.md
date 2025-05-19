@@ -61,6 +61,7 @@ Information about release notes of Coco Server is provided here.
 - refactor: refactoring icon component #514
 - refactor: optimizing list styles in markdown content #520
 - feat: add a component for text reading aloud #522
+- style: history component styles #528
 
 ## 0.4.0 (2025-04-27)
 

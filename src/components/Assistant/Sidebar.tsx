@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MessageSquare, Plus, RefreshCw } from "lucide-react";
 
-import type { Chat } from "./types";
+import type { Chat } from "@/types/chat";
 
 interface SidebarProps {
   chats: Chat[];

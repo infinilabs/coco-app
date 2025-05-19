@@ -1,7 +1,7 @@
 import React from "react";
 
 // import { Sidebar } from "@/components/Assistant/Sidebar";
-import type { Chat } from "./types";
+import type { Chat } from "@/types/chat";
 import HistoryList from "../Common/HistoryList";
 import { HISTORY_PANEL_ID } from "@/constants";
 
@@ -32,7 +32,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     <div
       data-sidebar
       className={`
-        h-screen fixed top-0 left-0 z-100 w-64 
+        h-screen fixed top-0 left-0 z-100 w-64
         transform transition-all duration-300 ease-in-out 
         ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         bg-gray-100 dark:bg-gray-800

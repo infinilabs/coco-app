@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react";
 
-import type { IChunkData, Chat } from "@/components/Assistant/types";
+import type { IChunkData, Chat } from "@/types/chat";
 import { useConnectStore } from "@/stores/connectStore";
 
 export function useMessageHandler(
