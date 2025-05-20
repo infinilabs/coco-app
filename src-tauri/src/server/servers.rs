@@ -446,6 +446,14 @@ pub async fn try_register_server_to_search_source(
     server: &Server,
 ) {
     if server.enabled {
+        if !server.public {
+            let token = get_server_token(&server.id).await;
+
+            if !token.is_ok() || token.is_ok() && token.unwrap().is_none() {
+                log::debug!("Server {} is not public and no token was found", &server.id);
+                return;
+            }
+        }
         let registry = app_handle.state::<SearchSourceRegistry>();
         let source = CocoSearchSource::new(server.clone());
         registry.register_source(source).await;
