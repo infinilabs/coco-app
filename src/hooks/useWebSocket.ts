@@ -145,6 +145,7 @@ export default function useWebSocket({
   );
 
   const unlistenErrorRef = useRef<Promise<() => void> | null>(null);
+  const unlistenCancelRef = useRef<Promise<() => void> | null>(null);
   useEffect(() => {
     if (!isTauri || !currentService?.id) return;
 
@@ -160,14 +161,19 @@ export default function useWebSocket({
           onWebsocketSessionId(sessionId);
         }
         // Listen for errors
-        unlistenErrorRef.current = platformAdapter.listenEvent(`ws-error-${clientId}`, (event: any) => {
+        unlistenErrorRef.current = platformAdapter.listenEvent(`ws-error-${clientId}`, (event) => {
           if (connected) {
-            console.error(`ws-error-${clientId}`, event, event?.payload === currentService?.id, connected);
-            if (event?.payload === currentService?.id) {
+            const id = event.payload as string;
+            console.error(`ws-error-${clientId}`, id === currentService?.id, connected);
+            if (id === currentService?.id) {
               addError("WebSocket connection failed.");
             }
           }
           setConnected(false); // error
+        });
+        // Listen for cancel
+        unlistenCancelRef.current = platformAdapter.listenEvent(`ws-cancel-${clientId}`, () => {
+          setConnected(false);
         });
 
         return;
@@ -179,6 +185,9 @@ export default function useWebSocket({
       unlisten_message.then((fn) => fn());
       if (unlistenErrorRef.current) {
         unlistenErrorRef.current.then((fn) => fn());
+      }
+      if (unlistenCancelRef.current) {
+        unlistenCancelRef.current.then((fn) => fn());
       }
     };
   }, [currentService?.id, dealMsgRef, connected, clientId]);
