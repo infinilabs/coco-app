@@ -319,6 +319,10 @@ export default function Cloud() {
                 width="100%"
                 src={currentService?.provider?.banner || bannerImg}
                 alt="banner"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = bannerImg;
+                }}
               />
             </div>
             <div className="flex items-center justify-between mb-4">

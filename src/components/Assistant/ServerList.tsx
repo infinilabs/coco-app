@@ -205,6 +205,10 @@ export function ServerList({
                       src={server?.provider?.icon || logoImg}
                       alt={server.name}
                       className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = logoImg;
+                      }}
                     />
                     <div className="text-left flex-1 min-w-0">
                       <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-[200px]">
