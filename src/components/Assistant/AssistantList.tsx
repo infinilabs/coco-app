@@ -7,6 +7,16 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { isNil } from "lodash-es";
+import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+import {
+  useAsyncEffect,
+  useDebounce,
+  useKeyPress,
+  usePagination,
+  useReactive,
+} from "ahooks";
+import clsx from "clsx";
 
 import { useAppStore } from "@/stores/appStore";
 import logoImg from "@/assets/icon.svg";
@@ -17,18 +27,8 @@ import FontIcon from "@/components/Common/Icons/FontIcon";
 import { useChatStore } from "@/stores/chatStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { Post } from "@/api/axiosRequest";
-import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
-import {
-  useAsyncEffect,
-  useDebounce,
-  useKeyPress,
-  usePagination,
-  useReactive,
-} from "ahooks";
-import clsx from "clsx";
 import NoDataImage from "../Common/NoDataImage";
 import PopoverInput from "../Common/PopoverInput";
-import { isNil } from "lodash-es";
 
 interface AssistantListProps {
   assistantIDs?: string[];
@@ -41,6 +41,7 @@ interface State {
 export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
   const { t } = useTranslation();
   const { connected } = useChatStore();
+
   const isTauri = useAppStore((state) => state.isTauri);
   const setAssistantList = useConnectStore((state) => state.setAssistantList);
   const currentService = useConnectStore((state) => state.currentService);

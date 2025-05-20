@@ -17,7 +17,7 @@ import { Server } from "@/types/server"
 
 
 interface ChatHeaderProps {
-  onCreateNewChat: () => void;
+  clearChat: () => void;
   onOpenChatAI: () => void;
   setIsSidebarOpen: () => void;
   isSidebarOpen: boolean;
@@ -31,7 +31,7 @@ interface ChatHeaderProps {
 }
 
 export function ChatHeader({
-  onCreateNewChat,
+  clearChat,
   onOpenChatAI,
   isSidebarOpen,
   setIsSidebarOpen,
@@ -99,10 +99,10 @@ export function ChatHeader({
 
         {showChatHistory ? (
           <button
-            onClick={onCreateNewChat}
+            onClick={clearChat}
             className="p-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
           >
-            <VisibleKey shortcut={newSession} onKeyPress={onCreateNewChat}>
+            <VisibleKey shortcut={newSession} onKeyPress={clearChat}>
               <MessageSquarePlus className="h-4 w-4 relative top-0.5" />
             </VisibleKey>
           </button>
@@ -131,7 +131,7 @@ export function ChatHeader({
             isLogin={isLogin}
             setIsLogin={setIsLogin}
             reconnect={reconnect}
-            onCreateNewChat={onCreateNewChat}
+            clearChat={clearChat}
           />
 
           {isChatPage ? null : (

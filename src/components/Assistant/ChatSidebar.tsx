@@ -1,6 +1,5 @@
 import React from "react";
 
-// import { Sidebar } from "@/components/Assistant/Sidebar";
 import type { Chat } from "@/types/chat";
 import HistoryList from "../Common/HistoryList";
 import { HISTORY_PANEL_ID } from "@/constants";
@@ -9,7 +8,6 @@ interface ChatSidebarProps {
   isSidebarOpen: boolean;
   chats: Chat[];
   activeChat?: Chat;
-  // onNewChat: () => void;
   onSelectChat: (chat: any) => void;
   onDeleteChat: (chatId: string) => void;
   fetchChatHistory: () => void;
@@ -21,7 +19,6 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   isSidebarOpen,
   chats,
   activeChat,
-  // onNewChat,
   onSelectChat,
   onDeleteChat,
   fetchChatHistory,
@@ -52,14 +49,6 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
           onRemove={onDeleteChat}
         />
       )}
-      {/* <Sidebar
-        chats={chats}
-        activeChat={activeChat}
-        onNewChat={onNewChat}
-        onSelectChat={onSelectChat}
-        onDeleteChat={onDeleteChat}
-        fetchChatHistory={fetchChatHistory}
-      /> */}
     </div>
   );
 };
