@@ -38,6 +38,10 @@ export const Sidebar = forwardRef<{ refreshData: () => void }, SidebarProps>(
             src={item?.provider?.icon || cocoLogoImg}
             alt="LogoImg"
             className="w-5 h-5 flex-shrink-0"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = cocoLogoImg;
+            }}
           />
           <span className="font-medium truncate max-w-[140px]">{item?.name}</span>
           <div className="flex-1" />
