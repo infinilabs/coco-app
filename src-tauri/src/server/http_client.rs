@@ -44,13 +44,13 @@ impl HttpClient {
         headers: Option<HashMap<String, String>>,
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
-        // log::debug!(
-        //     "Sending Request: {}, query_params: {:?}, header: {:?}, body: {:?}",
-        //     &url,
-        //     &query_params,
-        //     &headers,
-        //     &body
-        // );
+        log::debug!(
+            "Sending Request: {}, query_params: {:?}, header: {:?}, body: {:?}",
+            &url,
+            &query_params,
+            &headers,
+            &body
+        );
 
         let request_builder =
             Self::get_request_builder(method, url, headers, query_params, body).await;
@@ -60,12 +60,12 @@ impl HttpClient {
             format!("Failed to send request: {}", e)
         })?;
 
-        // log::debug!(
-        //     "Request: {}, Response status: {:?}, header: {:?}",
-        //     &url,
-        //     &response.status(),
-        //     &response.headers()
-        // );
+        log::debug!(
+            "Request: {}, Response status: {:?}, header: {:?}",
+            &url,
+            &response.status(),
+            &response.headers()
+        );
 
         Ok(response)
     }
@@ -212,7 +212,7 @@ impl HttpClient {
             query_params,
             body,
         )
-        .await
+            .await
     }
 
     // Convenience method for PUT requests
@@ -232,7 +232,7 @@ impl HttpClient {
             query_params,
             body,
         )
-        .await
+            .await
     }
 
     // Convenience method for DELETE requests
@@ -251,6 +251,6 @@ impl HttpClient {
             query_params,
             None,
         )
-        .await
+            .await
     }
 }
