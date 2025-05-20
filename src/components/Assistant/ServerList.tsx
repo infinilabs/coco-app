@@ -14,6 +14,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useChatStore } from "@/stores/chatStore";
 import { useConnectStore } from "@/stores/connectStore";
 import { Server as IServer } from "@/types/server";
+import StatusIndicator from "@/components/Cloud/StatusIndicator";
 
 interface ServerListProps {
   isLogin: boolean;
@@ -221,12 +222,11 @@ export function ServerList({
                     </div>
                   </div>
                   <div className="flex flex-col items-center gap-2">
-                    <span
-                      className={`w-3 h-3 rounded-full ${
-                        server.health?.status
-                          ? `bg-[${server.health?.status}]`
-                          : "bg-gray-400 dark:bg-gray-600"
-                      }`}
+                    <StatusIndicator
+                      enabled={server.enabled}
+                      public={server.public}
+                      hasProfile={!!server?.profile}
+                      status={server.health?.status}
                     />
                     <div className="size-4 flex justify-end">
                       {currentService?.id === server.id && (

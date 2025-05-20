@@ -1,10 +1,11 @@
 import { useTranslation } from "react-i18next";
-import { forwardRef, useMemo, useCallback, memo } from "react";
+import { forwardRef, useMemo, useCallback } from "react";
 import { Plus } from "lucide-react";
 
 import cocoLogoImg from "@/assets/app-icon.png";
 import { useConnectStore } from "@/stores/connectStore";
-import { Server, Status } from "@/types/server";
+import { Server } from "@/types/server";
+import StatusIndicator from "./StatusIndicator";
 
 interface SidebarProps {
   onAddServer: () => void;
@@ -15,44 +16,6 @@ interface ServerGroups {
   builtinServers: JSX.Element[];
   customServers: JSX.Element[];
 }
-
-type StatusIndicatorProps = {
-  enabled: boolean;
-  public: boolean;
-  hasProfile: boolean;
-  status?: Status;
-};
-
-const StatusIndicator = memo(
-  ({ enabled, public: isPublic, hasProfile, status }: StatusIndicatorProps) => {
-    // If service is enabled AND (public OR (private AND logged in)) AND service is available
-    // Otherwise show gray status
-    const isActive =
-      enabled && (isPublic || (!isPublic && hasProfile)) && status;
-
-    const statusColorClass = useMemo(() => {
-      if (!isActive) return "bg-gray-400 dark:bg-gray-600";
-      switch (status) {
-        case "green":
-          return "bg-green-500";
-        case "yellow":
-          return "bg-yellow-500";
-        case "red":
-          return "bg-red-500";
-        default:
-          return "bg-gray-400 dark:bg-gray-600";
-      }
-    }, [isActive, status]);
-
-    return (
-      <div
-        className={`w-3 h-3 rounded-full ${statusColorClass}`}
-        role="status"
-        aria-label={isActive ? "active" : "inactive"}
-      />
-    );
-  }
-);
 
 export const Sidebar = forwardRef<{ refreshData: () => void }, SidebarProps>(
   ({ onAddServer, serverList }, _ref) => {
