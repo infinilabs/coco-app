@@ -141,6 +141,8 @@ pub async fn new_chat<R: Runtime>(
 
     let body_text = common::http::get_response_body_text(response).await?;
 
+    log::debug!("New chat response: {}", &body_text);
+
     let chat_response: GetResponse =
         serde_json::from_str(&body_text).map_err(|e| format!("Failed to parse response JSON: {}", e))?;
 
@@ -248,8 +250,8 @@ pub async fn assistant_search<R: Runtime>(
         None,
         Some(reqwest::Body::from(body.to_string())),
     )
-    .await
-    .map_err(|e| format!("Error searching assistants: {}", e))?;
+        .await
+        .map_err(|e| format!("Error searching assistants: {}", e))?;
 
     response
         .json::<Value>()
