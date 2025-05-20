@@ -160,10 +160,12 @@ export default function useWebSocket({
           onWebsocketSessionId(sessionId);
         }
         // Listen for errors
-        unlistenErrorRef.current = platformAdapter.listenEvent(`ws-error-${clientId}`, (event) => {
+        unlistenErrorRef.current = platformAdapter.listenEvent(`ws-error-${clientId}`, (event: any) => {
           if (connected) {
-            console.error(`ws-error-${clientId}`, event, connected);
-            addError("WebSocket connection failed.");
+            console.error(`ws-error-${clientId}`, event, event?.payload === currentService?.id, connected);
+            if (event?.payload === currentService?.id) {
+              addError("WebSocket connection failed.");
+            }
           }
           setConnected(false); // error
         });
