@@ -68,7 +68,7 @@ pub fn run() {
     #[cfg(desktop)]
     {
         app_builder = app_builder.plugin(tauri_plugin_single_instance::init(|_app, argv, _cwd| {
-            println!("a new app instance was opened with {argv:?} and the deep link event was already triggered");
+            log::debug!("a new app instance was opened with {argv:?} and the deep link event was already triggered");
             // when defining deep link schemes at runtime, you must also check `argv` here
         }));
     }
@@ -184,7 +184,7 @@ pub fn run() {
             // app.listen("theme-changed", move |event| {
             //     if let Ok(payload) = serde_json::from_str::<ThemeChangedPayload>(event.payload()) {
             //         // switch_tray_icon(app.app_handle(), payload.is_dark_mode);
-            //         println!("Theme changed: is_dark_mode = {}", payload.is_dark_mode);
+            //         log::debug!("Theme changed: is_dark_mode = {}", payload.is_dark_mode);
             //     }
             // });
 
@@ -242,11 +242,11 @@ pub fn run() {
 pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
     // Await the async functions to load the servers and tokens
     if let Err(err) = load_or_insert_default_server(app_handle).await {
-        eprintln!("Failed to load servers: {}", err);
+        log::error!("Failed to load servers: {}", err);
     }
 
     if let Err(err) = load_servers_token(app_handle).await {
-        eprintln!("Failed to load server tokens: {}", err);
+        log::error!("Failed to load server tokens: {}", err);
     }
 
     let coco_servers = server::servers::get_all_servers();
@@ -279,12 +279,12 @@ async fn show_coco<R: Runtime>(app_handle: AppHandle<R>) {
 async fn hide_coco<R: Runtime>(app: AppHandle<R>) {
     if let Some(window) = app.get_window(MAIN_WINDOW_LABEL) {
         if let Err(err) = window.hide() {
-            eprintln!("Failed to hide the window: {}", err);
+            log::error!("Failed to hide the window: {}", err);
         } else {
-            println!("Window successfully hidden.");
+            log::debug!("Window successfully hidden.");
         }
     } else {
-        eprintln!("Main window not found.");
+        log::error!("Main window not found.");
     }
 }
 
@@ -294,7 +294,7 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
     let available_monitors = match window.available_monitors() {
         Ok(monitors) => monitors,
         Err(e) => {
-            eprintln!("Failed to get monitors: {}", e);
+            log::error!("Failed to get monitors: {}", e);
             return;
         }
     };
@@ -303,7 +303,7 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
     let cursor_position = match window.cursor_position() {
         Ok(pos) => Some(pos),
         Err(e) => {
-            eprintln!("Failed to get cursor position: {}", e);
+            log::error!("Failed to get cursor position: {}", e);
             None
         }
     };
@@ -332,7 +332,7 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
     let monitor = match target_monitor.or_else(|| window.primary_monitor().ok().flatten()) {
         Some(monitor) => monitor,
         None => {
-            eprintln!("No monitor found!");
+            log::error!("No monitor found!");
             return;
         }
     };
@@ -342,7 +342,7 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
 
         if let Some(ref prev_name) = *previous_monitor_name {
             if name.to_string() == *prev_name {
-                println!("Currently on the same monitor");
+                log::debug!("Currently on the same monitor");
 
                 return;
             }
@@ -356,7 +356,7 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
     let window_size = match window.inner_size() {
         Ok(size) => size,
         Err(e) => {
-            eprintln!("Failed to get window size: {}", e);
+            log::error!("Failed to get window size: {}", e);
             return;
         }
     };
@@ -370,11 +370,11 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
 
     // Move the window to the new position
     if let Err(e) = window.set_position(PhysicalPosition::new(window_x, window_y)) {
-        eprintln!("Failed to move window: {}", e);
+        log::error!("Failed to move window: {}", e);
     }
 
     if let Some(name) = monitor.name() {
-        println!("Window moved to monitor: {}", name);
+        log::debug!("Window moved to monitor: {}", name);
 
         let mut previous_monitor = PREVIOUS_MONITOR_NAME.lock().unwrap();
         *previous_monitor = Some(name.to_string());
@@ -384,7 +384,7 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
 #[allow(dead_code)]
 fn open_settings(app: &tauri::AppHandle) {
     use tauri::webview::WebviewBuilder;
-    println!("settings menu item was clicked");
+    log::debug!("settings menu item was clicked");
     let window = app.get_webview_window("settings");
     if let Some(window) = window {
         let _ = window.show();
