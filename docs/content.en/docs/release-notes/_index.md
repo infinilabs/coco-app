@@ -25,6 +25,7 @@ Information about release notes of Coco Server is provided here.
 - feat: websocket support self-signed TLS #504
 - feat: add option to allow self-signed certificates #509
 - feat: add AI summary component #518
+- feat: dynamic log level via env var COCO_LOG #535
 
 ### 🐛 Bug fix
 
@@ -55,6 +56,7 @@ Information about release notes of Coco Server is provided here.
 - fix: app icon & category icon #529
 - style: search error styles #533
 - fix: server image loading failure #534
+- chore: skip register server that not logged in #536
 - refactor: service info related components #537
 
 ## 0.4.0 (2025-04-27)

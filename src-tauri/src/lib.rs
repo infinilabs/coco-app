@@ -68,7 +68,7 @@ pub fn run() {
     #[cfg(desktop)]
     {
         app_builder = app_builder.plugin(tauri_plugin_single_instance::init(|_app, argv, _cwd| {
-            println!("a new app instance was opened with {argv:?} and the deep link event was already triggered");
+            log::debug!("a new app instance was opened with {argv:?} and the deep link event was already triggered");
             // when defining deep link schemes at runtime, you must also check `argv` here
         }));
     }
@@ -184,7 +184,7 @@ pub fn run() {
             // app.listen("theme-changed", move |event| {
             //     if let Ok(payload) = serde_json::from_str::<ThemeChangedPayload>(event.payload()) {
             //         // switch_tray_icon(app.app_handle(), payload.is_dark_mode);
-            //         println!("Theme changed: is_dark_mode = {}", payload.is_dark_mode);
+            //         log::debug!("Theme changed: is_dark_mode = {}", payload.is_dark_mode);
             //     }
             // });
 
@@ -242,11 +242,11 @@ pub fn run() {
 pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
     // Await the async functions to load the servers and tokens
     if let Err(err) = load_or_insert_default_server(app_handle).await {
-        eprintln!("Failed to load servers: {}", err);
+        log::error!("Failed to load servers: {}", err);
     }
 
     if let Err(err) = load_servers_token(app_handle).await {
-        eprintln!("Failed to load server tokens: {}", err);
+        log::error!("Failed to load server tokens: {}", err);
     }
 
     let coco_servers = server::servers::get_all_servers();
@@ -279,12 +279,12 @@ async fn show_coco<R: Runtime>(app_handle: AppHandle<R>) {
 async fn hide_coco<R: Runtime>(app: AppHandle<R>) {
     if let Some(window) = app.get_window(MAIN_WINDOW_LABEL) {
         if let Err(err) = window.hide() {
-            eprintln!("Failed to hide the window: {}", err);
+            log::error!("Failed to hide the window: {}", err);
         } else {
-            println!("Window successfully hidden.");
+            log::debug!("Window successfully hidden.");
         }
     } else {
-        eprintln!("Main window not found.");
+        log::error!("Main window not found.");
     }
 }
 
@@ -294,7 +294,7 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
     let available_monitors = match window.available_monitors() {
         Ok(monitors) => monitors,
         Err(e) => {
-            eprintln!("Failed to get monitors: {}", e);
+            log::error!("Failed to get monitors: {}", e);
             return;
         }
     };
@@ -303,7 +303,7 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
     let cursor_position = match window.cursor_position() {
         Ok(pos) => Some(pos),
         Err(e) => {
-            eprintln!("Failed to get cursor position: {}", e);
+            log::error!("Failed to get cursor position: {}", e);
             None
         }
     };
@@ -332,7 +332,7 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
     let monitor = match target_monitor.or_else(|| window.primary_monitor().ok().flatten()) {
         Some(monitor) => monitor,
         None => {
-            eprintln!("No monitor found!");
+            log::error!("No monitor found!");
             return;
         }
     };
@@ -342,7 +342,7 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
 
         if let Some(ref prev_name) = *previous_monitor_name {
             if name.to_string() == *prev_name {
-                println!("Currently on the same monitor");
+                log::debug!("Currently on the same monitor");
 
                 return;
             }
@@ -356,7 +356,7 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
     let window_size = match window.inner_size() {
         Ok(size) => size,
         Err(e) => {
-            eprintln!("Failed to get window size: {}", e);
+            log::error!("Failed to get window size: {}", e);
             return;
         }
     };
@@ -370,11 +370,11 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
 
     // Move the window to the new position
     if let Err(e) = window.set_position(PhysicalPosition::new(window_x, window_y)) {
-        eprintln!("Failed to move window: {}", e);
+        log::error!("Failed to move window: {}", e);
     }
 
     if let Some(name) = monitor.name() {
-        println!("Window moved to monitor: {}", name);
+        log::debug!("Window moved to monitor: {}", name);
 
         let mut previous_monitor = PREVIOUS_MONITOR_NAME.lock().unwrap();
         *previous_monitor = Some(name.to_string());
@@ -384,7 +384,7 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
 #[allow(dead_code)]
 fn open_settings(app: &tauri::AppHandle) {
     use tauri::webview::WebviewBuilder;
-    println!("settings menu item was clicked");
+    log::debug!("settings menu item was clicked");
     let window = app.get_webview_window("settings");
     if let Some(window) = window {
         let _ = window.show();
@@ -487,6 +487,12 @@ async fn simulate_mouse_click<R: Runtime>(window: WebviewWindow<R>, is_chat_mode
 /// ```
 fn set_up_tauri_logger() -> TauriPlugin<tauri::Wry> {
     use log::Level;
+    use log::LevelFilter;
+    use tauri_plugin_log::Builder;
+
+    /// Coco-AI app's default log level.
+    const DEFAULT_LOG_LEVEL: LevelFilter = LevelFilter::Info;
+    const LOG_LEVEL_ENV_VAR: &str = "COCO_LOG";
 
     fn format_log_level(level: Level) -> &'static str {
         match level {
@@ -508,16 +514,82 @@ fn set_up_tauri_logger() -> TauriPlugin<tauri::Wry> {
         str
     }
 
-    tauri_plugin_log::Builder::new()
-        .format(|out, message, record| {
-            let now = chrono::Local::now().format("%m-%d %H:%M:%S");
-            let level = format_log_level(record.level());
-            let target_and_line = format_target_and_line(record);
-            out.finish(format_args!(
-                "[{}] [{}] [{}] {}",
-                now, level, target_and_line, message
-            ));
-        })
-        .level(log::LevelFilter::Debug)
-        .build()
+    /// Allow us to configure dynamic log levels via environment variable `COCO_LOG`.
+    ///
+    /// Generally, it mirros the behavior of `env_logger`. Syntax: `COCO_LOG=[target][=][level][,...]`
+    ///
+    /// * If this environment variable is not set, use the default log level.
+    /// * If it is set, respect it:
+    ///
+    /// * `COCO_LOG=coco_lib` turns on all logging for the `coco_lib` module, which is
+    ///   equivalent to `COCO_LOG=coco_lib=trace`
+    /// * `COCO_LOG=trace` turns on all logging for the application, regardless of its name
+    /// * `COCO_LOG=TRACE` turns on all logging for the application, regardless of its name (same as previous)
+    /// * `COCO_LOG=reqwest=debug` turns on debug logging for `reqwest`
+    /// * `COCO_LOG=trace,tauri=off` turns on all the logging except for the logs come from `tauri`
+    /// * `COCO_LOG=off` turns off all logging for the application
+    /// * `COCO_LOG=` Since the value is empty, turns off all logging for the application as well
+    fn dynamic_log_level(mut builder: Builder) -> Builder {
+        let Some(log_levels) = std::env::var_os(LOG_LEVEL_ENV_VAR) else {
+            return builder.level(DEFAULT_LOG_LEVEL);
+        };
+
+        builder = builder.level(LevelFilter::Off);
+
+        let log_levels = log_levels.into_string().unwrap_or_else(|e| {
+            panic!(
+                "The value '{}' set in environment varaible '{}' is not UTF-8 encoded",
+                // Cannot use `.display()` here becuase that requires MSRV 1.87.0
+                e.to_string_lossy(),
+                LOG_LEVEL_ENV_VAR
+            )
+        });
+
+        // COCO_LOG=[target][=][level][,...]
+        let target_log_levels = log_levels.split(',');
+        for target_log_level in target_log_levels {
+            #[allow(clippy::collapsible_else_if)]
+            if let Some(char_index) = target_log_level.chars().position(|c| c == '=') {
+                let (target, equal_sign_and_level) = target_log_level.split_at(char_index);
+                // Remove the equal sign, we know it takes 1 byte
+                let level = &equal_sign_and_level[1..];
+
+                if let Ok(level) = level.parse::<LevelFilter>() {
+                    // Here we have to call `.to_string()` because `Cow<'static, str>` requires `&'static str`
+                    builder = builder.level_for(target.to_string(), level);
+                } else {
+                    panic!(
+                        "log level '{}' set in '{}={}' is invalid",
+                        level, target, level
+                    );
+                }
+            } else {
+                if let Ok(level) = target_log_level.parse::<LevelFilter>() {
+                    // This is a level
+                    builder = builder.level(level);
+                } else {
+                    // This is a target, enable all the logging
+                    //
+                    // Here we have to call `.to_string()` because `Cow<'static, str>` requires `&'static str`
+                    builder = builder.level_for(target_log_level.to_string(), LevelFilter::Trace);
+                }
+            }
+        }
+
+        builder
+    }
+
+    let mut builder = tauri_plugin_log::Builder::new();
+    builder = builder.format(|out, message, record| {
+        let now = chrono::Local::now().format("%m-%d %H:%M:%S");
+        let level = format_log_level(record.level());
+        let target_and_line = format_target_and_line(record);
+        out.finish(format_args!(
+            "[{}] [{}] [{}] {}",
+            now, level, target_and_line, message
+        ));
+    });
+    builder = dynamic_log_level(builder);
+
+    builder.build()
 }
