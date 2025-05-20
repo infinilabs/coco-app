@@ -55,6 +55,7 @@ Information about release notes of Coco Server is provided here.
 - fix: app icon & category icon #529
 - style: search error styles #533
 - fix: server image loading failure #534
+- refactor: service info related components #537
 
 ## 0.4.0 (2025-04-27)
 
