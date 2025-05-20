@@ -12,7 +12,6 @@ pub use with_feature::*;
 #[cfg(not(feature = "use_pizza_engine"))]
 pub use without_feature::*;
 
-
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AppEntry {
@@ -24,14 +23,12 @@ pub struct AppEntry {
     is_disabled: bool,
 }
 
-
 #[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppMetadata {
     name: String,
     r#where: String,
     size: u64,
-    icon: String,
     created: u128,
     modified: u128,
     last_opened: u128,

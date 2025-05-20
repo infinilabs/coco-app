@@ -117,10 +117,10 @@ fn get_app_path(app: &App) -> String {
 
 /// Helper function to return `app`'s path.
 ///
-/// * Windows/macOS: extract `app_path`'s file name and remove the file extension
-/// * Linux: return the name specified in `.desktop` file
+/// * macOS: extract `app_path`'s file name and remove the file extension
+/// * Windows/Linux: return the name specified in `.desktop` file
 async fn get_app_name(app: &App) -> String {
-    if cfg!(target_os = "linux") {
+    if cfg!(any(target_os = "linux", target_os = "windows")) {
         app.name.clone()
     } else {
         let app_path = get_app_path(app);
@@ -1074,15 +1074,7 @@ pub async fn get_app_list<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn get_app_metadata<R: Runtime>(
-    tauri_app_handle: AppHandle<R>,
-    app_path: String,
-) -> Result<AppMetadata, String> {
-    let app =
-        App::from_path(std::path::Path::new(&app_path)).expect("frontend sends an invalid app");
-
-    let app_path = get_app_path(&app);
-    let app_name = get_app_name(&app).await;
+pub async fn get_app_metadata(app_name: String, app_path: String) -> Result<AppMetadata, String> {
     let app_path_where = {
         let app_path_borrowed_path = std::path::Path::new(app_path.as_str());
         let app_path_where = app_path_borrowed_path
@@ -1094,11 +1086,13 @@ pub async fn get_app_metadata<R: Runtime>(
             .expect("it is guaranteed to be UTF-8 encoded")
             .to_string()
     };
-    let icon = get_app_icon_path(&tauri_app_handle, &app).await?;
 
-    let raw_app_metadata = metadata(app_path.into(), None).await?;
+    let raw_app_metadata = metadata(app_path.clone().into(), None).await?;
 
-    let last_opened = if cfg!(any(target_os = "macos", target_os = "windows")) {
+    let last_opened = if cfg!(target_os = "macos") {
+        let app = App::from_path(std::path::Path::new(&app_path))
+            .unwrap_or_else(|e| panic!("App::from_path({}) failed due to error '{}'", app_path, e));
+
         let app_exe_path = app
             .app_path_exe
             .as_ref()
@@ -1114,7 +1108,6 @@ pub async fn get_app_metadata<R: Runtime>(
         name: app_name,
         r#where: app_path_where,
         size: raw_app_metadata.size,
-        icon,
         created: raw_app_metadata.created_at,
         modified: raw_app_metadata.modified_at,
         last_opened,
