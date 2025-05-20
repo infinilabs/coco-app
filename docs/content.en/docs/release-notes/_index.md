@@ -25,6 +25,7 @@ Information about release notes of Coco Server is provided here.
 - feat: websocket support self-signed TLS #504
 - feat: add option to allow self-signed certificates #509
 - feat: add AI summary component #518
+- feat: dynamic log level via env var COCO_LOG #535
 
 ### 🐛 Bug fix
 
