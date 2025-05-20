@@ -27,7 +27,7 @@ export async function copyToClipboard(text: string) {
       document.execCommand("copy");
       console.info("Copy Success");
     } catch (error) {
-      console.info("Copy Failed");
+      console.error("Copy Failed");
     }
     document.body.removeChild(textArea);
   }
@@ -68,7 +68,7 @@ export const IsTauri = () => {
   );
 };
 
-export const OpenURLWithBrowser = async (url: string) => {
+export const OpenURLWithBrowser = async (url?: string) => {
   if (!url) return;
   if (IsTauri()) {
     try {

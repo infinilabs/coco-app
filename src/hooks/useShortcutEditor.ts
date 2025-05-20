@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
-import { Shortcut } from "@/components/Settings/shortcut";
+import { Shortcut } from "@/types/shortcut";
 import { normalizeKey, isModifierKey, sortKeys } from "@/utils/keyboardUtils";
 
 const RESERVED_SHORTCUTS = [

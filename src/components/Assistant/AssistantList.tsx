@@ -125,8 +125,6 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
         response = res;
       }
 
-      console.log("assistant_search", response);
-
       let assistantList = response?.hits?.hits ?? [];
 
       console.log("assistantList", assistantList);
@@ -143,13 +141,13 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
         }
       }
 
-      console.log("state.allAssistants", state.allAssistants);
+      //console.log("state.allAssistants", state.allAssistants);
 
       const matched = state.allAssistants.find((item: any) => {
         return item._id === currentAssistant?._id;
       });
 
-      console.log("matched", matched);
+      //console.log("matched", matched);
 
       if (matched) {
         setCurrentAssistant(matched);
@@ -318,7 +316,6 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
               placeholder={t("assistant.popover.search")}
               className="w-full h-8 px-2 bg-transparent border rounded-md dark:border-white/10"
               onChange={(event) => {
-                console.log("onChange", event.target.value);
                 setKeyword(event.target.value.trim());
               }}
             />

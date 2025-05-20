@@ -77,7 +77,7 @@ const Splash = () => {
   });
 
   const settingsAssistantList = useMemo(() => {
-    console.log("assistantList", assistantList);
+    //console.log("assistantList", assistantList);
 
     return assistantList.filter((item) => {
       return settings?.display_assistants?.includes(item?._source?.id);
