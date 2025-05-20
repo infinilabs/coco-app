@@ -1,16 +1,6 @@
 import { User, LogOut } from "lucide-react";
 
-interface UserPreferences {
-  theme: "dark" | "light";
-  language: string;
-}
-interface UserInfo {
-  name: string;
-  email: string;
-  avatar?: string;
-  roles: string[]; // ["admin", "editor"]
-  preferences: UserPreferences;
-}
+import { UserProfile as UserInfo } from "@/types/server";
 
 interface UserProfileProps {
   server: string; //server's id

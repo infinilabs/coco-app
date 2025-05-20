@@ -57,6 +57,7 @@ Information about release notes of Coco Server is provided here.
 - style: search error styles #533
 - fix: server image loading failure #534
 - chore: skip register server that not logged in #536
+- refactor: service info related components #537
 
 ## 0.4.0 (2025-04-27)
 

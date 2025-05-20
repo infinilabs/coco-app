@@ -5,7 +5,7 @@ import HistoryIcon from "@/icons/History";
 import PinOffIcon from "@/icons/PinOff";
 import PinIcon from "@/icons/Pin";
 import WindowsFullIcon from "@/icons/WindowsFull";
-import { useAppStore, IServer } from "@/stores/appStore";
+import { useAppStore } from "@/stores/appStore";
 import type { Chat } from "@/types/chat";
 import platformAdapter from "@/utils/platformAdapter";
 import VisibleKey from "../Common/VisibleKey";
@@ -13,6 +13,8 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { HISTORY_PANEL_ID } from "@/constants";
 import { AssistantList } from "./AssistantList";
 import { ServerList } from "./ServerList";
+import { Server } from "@/types/server"
+
 
 interface ChatHeaderProps {
   onCreateNewChat: () => void;
@@ -20,7 +22,7 @@ interface ChatHeaderProps {
   setIsSidebarOpen: () => void;
   isSidebarOpen: boolean;
   activeChat: Chat | undefined;
-  reconnect: (server?: IServer) => void;
+  reconnect: (server?: Server) => void;
   isLogin: boolean;
   setIsLogin: (isLogin: boolean) => void;
   isChatPage?: boolean;

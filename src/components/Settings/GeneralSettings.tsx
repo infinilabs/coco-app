@@ -21,7 +21,7 @@ import { useCreation } from "ahooks";
 import SettingsItem from "./SettingsItem";
 import SettingsToggle from "./SettingsToggle";
 import { ShortcutItem } from "./ShortcutItem";
-import { Shortcut } from "./shortcut";
+import { Shortcut } from "../../types/shortcut";
 import { useShortcutEditor } from "@/hooks/useShortcutEditor";
 import { useAppStore } from "@/stores/appStore";
 import { AppTheme } from "@/types/index";

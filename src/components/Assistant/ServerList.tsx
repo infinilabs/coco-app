@@ -3,16 +3,18 @@ import { Settings, RefreshCw, Check, Server } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { useKeyPress } from "ahooks";
+import { isNil } from "lodash-es";
 
 import logoImg from "@/assets/icon.svg";
 import ServerIcon from "@/icons/Server";
 import VisibleKey from "../Common/VisibleKey";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import platformAdapter from "@/utils/platformAdapter";
-import { useAppStore, IServer } from "@/stores/appStore";
+import { useAppStore } from "@/stores/appStore";
 import { useChatStore } from "@/stores/chatStore";
 import { useConnectStore } from "@/stores/connectStore";
-import { isNil } from "lodash-es";
+import { Server as IServer } from "@/types/server";
+import StatusIndicator from "@/components/Cloud/StatusIndicator";
 
 interface ServerListProps {
   isLogin: boolean;
@@ -215,17 +217,16 @@ export function ServerList({
                         {server.name}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[200px]">
-                        AI Assistant: {server.assistantCount || 1}
+                        AI Assistant: {1}
                       </div>
                     </div>
                   </div>
                   <div className="flex flex-col items-center gap-2">
-                    <span
-                      className={`w-3 h-3 rounded-full ${
-                        server.health?.status
-                          ? `bg-[${server.health?.status}]`
-                          : "bg-gray-400 dark:bg-gray-600"
-                      }`}
+                    <StatusIndicator
+                      enabled={server.enabled}
+                      public={server.public}
+                      hasProfile={!!server?.profile}
+                      status={server.health?.status}
                     />
                     <div className="size-4 flex justify-end">
                       {currentService?.id === server.id && (

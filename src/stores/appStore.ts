@@ -6,26 +6,6 @@ import platformAdapter from "@/utils/platformAdapter";
 
 const ENDPOINT_CHANGE_EVENT = "endpoint-changed";
 
-export interface IServer {
-  id: string;
-  name: string;
-  endpoint: string;
-  provider: {
-    icon: string;
-  };
-  enabled: boolean;
-  public: boolean;
-  profile?: any;
-  available?: boolean;
-  health?: {
-    status: string;
-  };
-  assistantCount?: number;
-  minimal_client_version?: {
-    number: number;
-  };
-}
-
 interface ErrorMessage {
   id: string;
   type: "error" | "warning" | "info";

@@ -1,8 +1,9 @@
 import { useEffect, useCallback, useRef } from "react";
 import { useWebSocket as useWebSocketAHook } from "ahooks";
 
-import { useAppStore, IServer } from "@/stores/appStore";
+import { useAppStore } from "@/stores/appStore";
 import platformAdapter from "@/utils/platformAdapter";
+import { Server } from "@/types/server";
 
 enum ReadyState {
   Connecting = 0,
@@ -15,7 +16,7 @@ interface WebSocketProps {
   clientId: string;
   connected: boolean;
   setConnected: (connected: boolean) => void;
-  currentService: IServer | null;
+  currentService: Server | null;
   dealMsgRef: React.MutableRefObject<((msg: string) => void) | null>;
   onWebsocketSessionId?: (sessionId: string) => void;
 }
@@ -101,7 +102,7 @@ export default function useWebSocket({
   // 2. If not connected or disconnected, input box has a connect button, clicking it will connect to WebSocket
   // src/components/Search/InputBox.tsx
   const reconnect = useCallback(
-    async (server?: IServer) => {
+    async (server?: Server) => {
       if (isTauri) {
         const targetServer = server || currentService;
         if (!targetServer?.id) return;

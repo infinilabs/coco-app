@@ -3,6 +3,7 @@ import { persist, subscribeWithSelector } from "zustand/middleware";
 import { produce } from "immer";
 
 import platformAdapter from "@/utils/platformAdapter";
+import { Server } from "@/types/server"
 
 const CONNECTOR_CHANGE_EVENT = "connector_data_change";
 const DATASOURCE_CHANGE_EVENT = "datasourceData_change";
@@ -12,10 +13,10 @@ type keyArrayObject = {
 };
 
 export type IConnectStore = {
-  serverList: any[];
-  setServerList: (servers: []) => void;
-  currentService: any;
-  setCurrentService: (service: any) => void;
+  serverList: Server[];
+  setServerList: (servers: Server[]) => void;
+  currentService: Server;
+  setCurrentService: (service: Server) => void;
   connector_data: keyArrayObject;
   setConnectorData: (connector_data: any[], key: string) => void;
   datasourceData: keyArrayObject;
@@ -41,7 +42,7 @@ export const useConnectStore = create<IConnectStore>()(
     persist(
       (set) => ({
         serverList: [],
-        setServerList: (serverList: []) => {
+        setServerList: (serverList: Server[]) => {
           console.log("set serverList:", serverList);
           set(
             produce((draft) => {
@@ -49,7 +50,35 @@ export const useConnectStore = create<IConnectStore>()(
             })
           );
         },
-        currentService: "default_coco_server",
+        // ... existing code ...
+        currentService: {
+          id: "default_coco_server",
+          builtin: true,
+          enabled: true,
+          name: "Coco Cloud",
+          endpoint: "https://coco.infini.cloud",
+          provider: {
+            name: "INFINI Labs",
+            icon: "https://coco.infini.cloud/icon.png",
+            website: "http://infinilabs.com",
+            eula: "http://infinilabs.com/eula.txt",
+            privacy_policy: "http://infinilabs.com/privacy_policy.txt",
+            banner: "https://coco.infini.cloud/banner.jpg",
+            description: "Coco AI Server - Search, Connect, Collaborate, AI-powered enterprise search, all in one space."
+          },
+          version: {
+            number: "1.0.0_SNAPSHOT"
+          },
+          public: false,
+          available: true,
+          auth_provider: {
+            sso: {
+              url: "https://coco.infini.cloud/sso/login/"
+            }
+          },
+          priority: 0
+        },
+// ... existing code ...
         setCurrentService: (server: any) => {
           console.log("set default server:", server);
           set(
