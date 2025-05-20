@@ -59,7 +59,7 @@ pub fn save_server(server: &Server) -> bool {
 }
 
 fn remove_server_by_id(id: String) -> bool {
-    dbg!("remove server by id:", &id);
+    log::debug!("remove server by id: {}", &id);
     let mut cache = SERVER_CACHE.write().unwrap();
     let deleted = cache.remove(id.as_str());
     deleted.is_some()
@@ -87,7 +87,7 @@ pub async fn persist_servers<R: Runtime>(app_handle: &AppHandle<R>) -> Result<()
 }
 
 pub fn remove_server_token(id: &str) -> bool {
-    dbg!("remove server token by id:", &id);
+    log::debug!("remove server token by id: {}", &id);
     let mut cache = SERVER_TOKEN.write().unwrap();
     cache.remove(id).is_some()
 }
@@ -104,7 +104,7 @@ pub fn persist_servers_token<R: Runtime>(app_handle: &AppHandle<R>) -> Result<()
         .map(|server| serde_json::to_value(server).expect("Failed to serialize access_tokens")) // Automatically serialize all fields
         .collect();
 
-    dbg!(format!("persist servers token: {:?}", &json_servers));
+    log::debug!("persist servers token: {:?}", &json_servers);
 
     // Save the serialized servers to Tauri's store
     app_handle
@@ -153,7 +153,7 @@ fn get_default_server() -> Server {
 pub async fn load_servers_token<R: Runtime>(
     app_handle: &AppHandle<R>,
 ) -> Result<Vec<ServerAccessToken>, String> {
-    dbg!("Attempting to load servers token");
+    log::debug!("Attempting to load servers token");
 
     let store = app_handle
         .store(COCO_TAURI_STORE)
@@ -187,10 +187,10 @@ pub async fn load_servers_token<R: Runtime>(
             save_access_token(server.id.clone(), server.clone());
         }
 
-        dbg!(format!(
+        log::debug!(
             "loaded {:?} servers's token",
             &deserialized_tokens.len()
-        ));
+        );
 
         Ok(deserialized_tokens)
     } else {
@@ -231,7 +231,7 @@ pub async fn load_servers<R: Runtime>(app_handle: &AppHandle<R>) -> Result<Vec<S
             save_server(&server);
         }
 
-        // dbg!(format!("load servers: {:?}", &deserialized_servers));
+        log::debug!("load servers: {:?}", &deserialized_servers);
 
         Ok(deserialized_servers)
     } else {
@@ -243,18 +243,18 @@ pub async fn load_servers<R: Runtime>(app_handle: &AppHandle<R>) -> Result<Vec<S
 pub async fn load_or_insert_default_server<R: Runtime>(
     app_handle: &AppHandle<R>,
 ) -> Result<Vec<Server>, String> {
-    dbg!("Attempting to load or insert default server");
+    log::debug!("Attempting to load or insert default server");
 
     let exists_servers = load_servers(&app_handle).await;
     if exists_servers.is_ok() && !exists_servers.as_ref()?.is_empty() {
-        dbg!(format!("loaded {} servers", &exists_servers.clone()?.len()));
+        log::debug!("loaded {} servers", &exists_servers.clone()?.len());
         return exists_servers;
     }
 
     let default = get_default_server();
     save_server(&default);
 
-    dbg!("loaded default servers");
+    log::debug!("loaded default servers");
 
     Ok(vec![default])
 }
@@ -364,10 +364,10 @@ pub async fn add_coco_server<R: Runtime>(
     let endpoint = endpoint.trim_end_matches('/');
 
     if check_endpoint_exists(endpoint) {
-        dbg!(format!(
+        log::debug!(
             "This Coco server has already been registered: {:?}",
             &endpoint
-        ));
+        );
         return Err("This Coco server has already been registered.".into());
     }
 
@@ -376,7 +376,7 @@ pub async fn add_coco_server<R: Runtime>(
         .await
         .map_err(|e| format!("Failed to send request to the server: {}", e))?;
 
-    dbg!(format!("Get provider info response: {:?}", &response));
+    log::debug!("Get provider info response: {:?}", &response);
 
     let body = get_response_body_text(response).await?;
 
@@ -400,7 +400,7 @@ pub async fn add_coco_server<R: Runtime>(
         .await
         .map_err(|e| format!("Failed to persist Coco servers: {}", e))?;
 
-    dbg!(format!("Successfully registered server: {:?}", &endpoint));
+    log::debug!("Successfully registered server: {:?}", &endpoint);
     Ok(server)
 }
 
@@ -446,6 +446,8 @@ pub async fn try_register_server_to_search_source(
     server: &Server,
 ) {
     if server.enabled {
+        log::trace!("Server {} is public: {} and available: {}", &server.name, &server.public, &server.available);
+
         if !server.public {
             let token = get_server_token(&server.id).await;
 
@@ -454,6 +456,7 @@ pub async fn try_register_server_to_search_source(
                 return;
             }
         }
+
         let registry = app_handle.state::<SearchSourceRegistry>();
         let source = CocoSearchSource::new(server.clone());
         registry.register_source(source).await;
@@ -494,28 +497,28 @@ pub async fn logout_coco_server<R: Runtime>(
     app_handle: AppHandle<R>,
     id: String,
 ) -> Result<(), String> {
-    dbg!("Attempting to log out server by id:", &id);
+    log::debug!("Attempting to log out server by id: {}", &id);
 
     // Check if server token exists
     if let Some(_token) = get_server_token(id.as_str()).await? {
-        dbg!("Found server token for id:", &id);
+        log::debug!("Found server token for id: {}", &id);
 
         // Remove the server token from cache
         remove_server_token(id.as_str());
 
         // Persist the updated tokens
         if let Err(e) = persist_servers_token(&app_handle) {
-            dbg!("Failed to save tokens for id: {}. Error: {:?}", &id, &e);
+            log::debug!("Failed to save tokens for id: {}. Error: {:?}", &id, &e);
             return Err(format!("Failed to save tokens: {}", &e));
         }
     } else {
         // Log the case where server token is not found
-        dbg!("No server token found for id: {}", &id);
+        log::debug!("No server token found for id: {}", &id);
     }
 
     // Check if the server exists
     if let Some(mut server) = get_server_by_id(id.as_str()) {
-        dbg!("Found server for id:", &id);
+        log::debug!("Found server for id: {}", &id);
 
         // Clear server profile
         server.profile = None;
@@ -525,16 +528,16 @@ pub async fn logout_coco_server<R: Runtime>(
 
         // Persist the updated server data
         if let Err(e) = persist_servers(&app_handle).await {
-            dbg!("Failed to save server for id: {}. Error: {:?}", &id, &e);
+            log::debug!("Failed to save server for id: {}. Error: {:?}", &id, &e);
             return Err(format!("Failed to save server: {}", &e));
         }
     } else {
         // Log the case where server is not found
-        dbg!("No server found for id: {}", &id);
+        log::debug!("No server found for id: {}", &id);
         return Err(format!("No server found for id: {}", id));
     }
 
-    dbg!("Successfully logged out server with id:", &id);
+    log::debug!("Successfully logged out server with id: {}", &id);
     Ok(())
 }
 
