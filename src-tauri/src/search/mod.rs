@@ -8,7 +8,6 @@ use futures::StreamExt;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use tauri::{AppHandle, Manager, Runtime};
-use tokio::time::error::Elapsed;
 use tokio::time::{timeout, Duration};
 
 #[tauri::command]
@@ -53,7 +52,7 @@ pub async fn query_coco_fusion<R: Runtime>(
             timeout(timeout_duration, async {
                 query_source_clone.search(query).await
             })
-                .await
+            .await
         }));
     }
 
@@ -96,7 +95,7 @@ pub async fn query_coco_fusion<R: Runtime>(
                     reason: None,
                 });
             }
-            Ok(Err(err)) => {
+            Ok(Err(_elapsed)) => {
                 log::debug!("Query timeout reached, skipping request");
             }
             // Timeout reached, skip this request
@@ -174,7 +173,9 @@ pub async fn query_coco_fusion<R: Runtime>(
 
     if final_hits.len() < 5 {
         //TODO: Add a recommendation system to suggest more sources
-        log::info!("Less than 5 hits found, consider using recommendation to find more suggestions.");
+        log::info!(
+            "Less than 5 hits found, consider using recommendation to find more suggestions."
+        );
         //local: recent history, local extensions
         //remote: ai agents, quick links, other tasks, managed by server
     }

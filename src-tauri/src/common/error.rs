@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct ErrorCause {
     #[serde(default)]
     pub r#type: Option<String>,
@@ -10,6 +11,7 @@ pub struct ErrorCause {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct ErrorDetail {
     #[serde(default)]
     pub root_cause: Option<Vec<ErrorCause>>,
@@ -22,6 +24,7 @@ pub struct ErrorDetail {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct ErrorResponse {
     #[serde(default)]
     pub error: Option<ErrorDetail>,
