@@ -29,17 +29,21 @@ Information about release notes of Coco Server is provided here.
 
 ### 🐛 Bug fix
 
+- fix: solve the problem of modifying the assistant in the chat #476
 - fix: several issues around search #502
 - fix: fixed the newly created session has no title when it is deleted #511
 - fix: loading chat history for potential empty attachments
 - fix: datasource & MCP list synchronization update #521
+- fix: app icon & category icon #529
 - fix: show only enabled datasource & MCP list
+- fix: server image loading failure #534
 - fix: panic when fetching app metadata on Windows #538
+- fix: service switching error #539
+- fix: switch server assistant and session session unchanged #540
 
 ### ✈️ Improvements
 
 - chore: adjust list error message #475
-- fix: solve the problem of modifying the assistant in the chat #476
 - chore: refine wording on search failure
 - chore：search and MCP show hidden logic #494
 - chore: greetings show hidden logic #496
@@ -54,12 +58,9 @@ Information about release notes of Coco Server is provided here.
 - refactor: optimizing list styles in markdown content #520
 - feat: add a component for text reading aloud #522
 - style: history component styles #528
-- fix: app icon & category icon #529
 - style: search error styles #533
-- fix: server image loading failure #534
 - chore: skip register server that not logged in #536
 - refactor: service info related components #537
-- fix: service switching error #539
 - chore: chat content can be copied #539
 
 ## 0.4.0 (2025-04-27)
