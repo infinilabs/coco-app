@@ -118,15 +118,11 @@ export default function Cloud() {
     [fetchServers]
   );
 
-  function onAddServer() {
-    setIsConnect(false);
-  }
-
   return (
     <div className="flex bg-gray-50 dark:bg-gray-900">
       <Sidebar
         ref={SidebarRef}
-        onAddServer={onAddServer}
+        setIsConnect={setIsConnect}
         serverList={serverList}
       />
 

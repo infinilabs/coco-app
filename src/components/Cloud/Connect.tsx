@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { useAppStore } from "@/stores/appStore";
-
 interface ConnectServiceProps {
   setIsConnect: (isConnect: boolean) => void;
   onAddServer: (endpoint: string) => void;
@@ -13,8 +11,6 @@ export function Connect({ setIsConnect, onAddServer }: ConnectServiceProps) {
   const { t } = useTranslation();
   const [endpointLink, setEndpointLink] = useState("");
   const [refreshLoading] = useState(false);
-
-  const addError = useAppStore((state) => state.addError);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,17 +22,8 @@ export function Connect({ setIsConnect, onAddServer }: ConnectServiceProps) {
 
   const onAddServerClick = async (endpoint: string) => {
     console.log("onAddServer", endpoint);
-    try {
-      await onAddServer(endpoint);
-      setIsConnect(true); // Only set as connected if the server is added successfully
-    } catch (err: any) {
-      // Handle the error if something goes wrong
-      const errorMessage =
-        typeof err === "string"
-          ? err
-          : err?.message || "An unknown error occurred.";
-      addError(errorMessage);
-    }
+    await onAddServer(endpoint);
+    setIsConnect(true);
   };
 
   return (
