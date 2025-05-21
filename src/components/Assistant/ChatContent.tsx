@@ -1,7 +1,5 @@
 import { useRef, useEffect, UIEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowDown } from "lucide-react";
-import clsx from "clsx";
 
 import { ChatMessage } from "@/components/ChatMessage";
 import { Greetings } from "./Greetings";
@@ -9,10 +7,10 @@ import FileList from "@/components/Assistant/FileList";
 import { useChatScroll } from "@/hooks/useChatScroll";
 import { useChatStore } from "@/stores/chatStore";
 import type { Chat, IChunkData } from "@/types/chat";
-// import SessionFile from "./SessionFile";
 import { useConnectStore } from "@/stores/connectStore";
 import SessionFile from "./SessionFile";
 import Splash from "./Splash";
+import ScrollToBottom from "@/components/Common/ScrollToBottom";
 
 interface ChatContentProps {
   activeChat?: Chat;
@@ -27,6 +25,7 @@ interface ChatContentProps {
   loadingStep?: Record<string, boolean>;
   timedoutShow: boolean;
   Question: string;
+  assistantIDs?: string[];
   handleSendMessage: (content: string, newChat?: Chat) => void;
   getFileUrl: (path: string) => string;
 }
@@ -44,6 +43,7 @@ export const ChatContent = ({
   loadingStep,
   timedoutShow,
   Question,
+  assistantIDs,
   handleSendMessage,
   getFileUrl,
 }: ChatContentProps) => {
@@ -173,24 +173,9 @@ export const ChatContent = ({
 
       {sessionId && <SessionFile sessionId={sessionId} />}
 
-      <Splash />
+      <Splash assistantIDs={assistantIDs}/>
 
-      <button
-        className={clsx(
-          "absolute right-4 bottom-4 flex items-center justify-center size-8 border bg-white rounded-full shadow dark:border-[#272828] dark:bg-black dark:shadow-white/15",
-          {
-            hidden: isAtBottom,
-          }
-        )}
-        onClick={() => {
-          scrollRef.current?.scrollTo({
-            top: scrollRef.current?.scrollHeight,
-            behavior: "smooth",
-          });
-        }}
-      >
-        <ArrowDown className="size-5" />
-      </button>
+      <ScrollToBottom scrollRef={scrollRef} isAtBottom={isAtBottom} />
     </div>
   );
 };

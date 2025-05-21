@@ -9,7 +9,6 @@ import { useChatStore } from "@/stores/chatStore";
 import { useSearchStore } from "@/stores/searchStore";
 
 export function useChatActions(
-  currentServiceId: string | undefined,
   setActiveChat: (chat: Chat | undefined) => void,
   setCurChatEnd: (value: boolean) => void,
   setTimedoutShow: (value: boolean) => void,
@@ -34,6 +33,7 @@ export function useChatActions(
   const setVisibleStartPage = useConnectStore((state) => {
     return state.setVisibleStartPage;
   });
+  const currentService = useConnectStore((state) => state.currentService);
 
   const [keyword, setKeyword] = useState("");
 
@@ -43,9 +43,9 @@ export function useChatActions(
 
       let response: any;
       if (isTauri) {
-        if (!currentServiceId) return;
+        if (!currentService?.id) return;
         response = await platformAdapter.commands("close_session_chat", {
-          serverId: currentServiceId,
+          serverId: currentService?.id,
           sessionId: activeChat?._id,
         });
         response = response ? JSON.parse(response) : null;
@@ -59,7 +59,7 @@ export function useChatActions(
       console.log("_close", response);
 
     },
-    [currentServiceId, isTauri]
+    [currentService?.id, isTauri]
   );
 
   const cancelChat = useCallback(
@@ -68,9 +68,9 @@ export function useChatActions(
       if (!activeChat?._id) return;
       let response: any;
       if (isTauri) {
-        if (!currentServiceId) return;
+        if (!currentService?.id) return;
         response = await platformAdapter.commands("cancel_session_chat", {
-          serverId: currentServiceId,
+          serverId: currentService?.id,
           sessionId: activeChat?._id,
         });
         response = response ? JSON.parse(response) : null;
@@ -83,7 +83,7 @@ export function useChatActions(
       }
       console.log("_cancel", response);
     },
-    [currentServiceId, isTauri]
+    [currentService?.id, isTauri]
   );
 
   const chatHistory = useCallback(
@@ -92,9 +92,9 @@ export function useChatActions(
 
       let response: any;
       if (isTauri) {
-        if (!currentServiceId) return;
+        if (!currentService?.id) return;
         response = await platformAdapter.commands("session_chat_history", {
-          serverId: currentServiceId,
+          serverId: currentService?.id,
           sessionId: chat?._id,
           from: 0,
           size: 100,
@@ -118,7 +118,7 @@ export function useChatActions(
       callback && callback(updatedChat);
       setVisibleStartPage(false);
     },
-    [currentServiceId, isTauri]
+    [currentService?.id, isTauri]
   );
 
   const createNewChat = useCallback(
@@ -146,9 +146,9 @@ export function useChatActions(
       };
       let response: any;
       if (isTauri) {
-        if (!currentServiceId) return;
+        if (!currentService?.id) return;
         response = await platformAdapter.commands("new_chat", {
-          serverId: currentServiceId,
+          serverId: currentService?.id,
           websocketId: sessionId,
           message: value,
           queryParams,
@@ -186,7 +186,7 @@ export function useChatActions(
     },
     [
       isTauri,
-      currentServiceId,
+      currentService?.id,
       sourceDataIds,
       MCPIds,
       isSearchActive,
@@ -222,9 +222,9 @@ export function useChatActions(
       }
       let response: any;
       if (isTauri) {
-        if (!currentServiceId) return;
+        if (!currentService?.id) return;
         response = await platformAdapter.commands("send_message", {
-          serverId: currentServiceId,
+          serverId: currentService?.id,
           websocketId: sessionId,
           sessionId: newChat?._id,
           queryParams,
@@ -260,7 +260,7 @@ export function useChatActions(
     },
     [
       isTauri,
-      currentServiceId,
+      currentService?.id,
       sourceDataIds,
       MCPIds,
       isSearchActive,
@@ -295,9 +295,9 @@ export function useChatActions(
 
       let response: any;
       if (isTauri) {
-        if (!currentServiceId) return;
+        if (!currentService?.id) return;
         response = await platformAdapter.commands("open_session_chat", {
-          serverId: currentServiceId,
+          serverId: currentService?.id,
           sessionId: chat?._id,
         });
         response = response ? JSON.parse(response) : null;
@@ -310,19 +310,19 @@ export function useChatActions(
       return response;
 
     },
-    [currentServiceId, isTauri]
+    [currentService?.id, isTauri]
   );
 
   const getChatHistory = useCallback(async () => {
     let response: any;
     if (isTauri) {
-      if (!currentServiceId || !isLogin) {
+      if (!currentService?.id || !isLogin) {
         setChats([]);
         return
       }
 
       response = await platformAdapter.commands("chat_history", {
-        serverId: currentServiceId,
+        serverId: currentService?.id,
         from: 0,
         size: 100,
         query: keyword,
@@ -336,14 +336,15 @@ export function useChatActions(
       });
       response = res;
     }
+
     console.log("_history", response);
     const hits = response?.hits?.hits || [];
     setChats(hits);
-  }, [currentServiceId, keyword, isTauri]);
+  }, [currentService?.id, keyword, isTauri]);
 
   useEffect(() => {
     showChatHistory && connected && getChatHistory();
-  }, [showChatHistory, connected, getChatHistory]);
+  }, [showChatHistory, connected, getChatHistory, currentService?.id]);
 
   const createChatWindow = useCallback(async (createWin: any) => {
     if (isTauri) {
@@ -371,20 +372,20 @@ export function useChatActions(
   };
 
   const handleRename = useCallback(async (chatId: string, title: string) => {
-    if (!currentServiceId) return;
+    if (!currentService?.id) return;
 
     await platformAdapter.commands("update_session_chat", {
-      serverId: currentServiceId,
+      serverId: currentService?.id,
       sessionId: chatId,
       title,
     });
-  }, [currentServiceId]);
+  }, [currentService?.id]);
 
   const handleDelete = useCallback(async (chatId: string) => {
-    if (!currentServiceId) return;
+    if (!currentService?.id) return;
 
-    await platformAdapter.commands("delete_session_chat", currentServiceId, chatId);
-  }, [currentServiceId]);
+    await platformAdapter.commands("delete_session_chat", currentService?.id, chatId);
+  }, [currentService?.id]);
 
   return {
     chatClose,

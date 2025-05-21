@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback } from "react";
 import {
   ChevronDownIcon,
   RefreshCw,
@@ -10,40 +10,28 @@ import { useTranslation } from "react-i18next";
 import { isNil } from "lodash-es";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import {
-  useAsyncEffect,
   useDebounce,
   useKeyPress,
   usePagination,
-  useReactive,
 } from "ahooks";
 import clsx from "clsx";
 
-import { useAppStore } from "@/stores/appStore";
 import logoImg from "@/assets/icon.svg";
-import platformAdapter from "@/utils/platformAdapter";
 import VisibleKey from "@/components/Common/VisibleKey";
 import { useConnectStore } from "@/stores/connectStore";
 import FontIcon from "@/components/Common/Icons/FontIcon";
-import { useChatStore } from "@/stores/chatStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
-import { Post } from "@/api/axiosRequest";
-import NoDataImage from "../Common/NoDataImage";
-import PopoverInput from "../Common/PopoverInput";
+import NoDataImage from "@/components/Common/NoDataImage";
+import PopoverInput from "@/components/Common/PopoverInput";
+import { AssistantFetcher } from "./AssistantFetcher";
 
 interface AssistantListProps {
   assistantIDs?: string[];
 }
 
-interface State {
-  allAssistants: any[];
-}
-
 export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
   const { t } = useTranslation();
-  const { connected } = useChatStore();
 
-  const isTauri = useAppStore((state) => state.isTauri);
-  const setAssistantList = useConnectStore((state) => state.setAssistantList);
   const currentService = useConnectStore((state) => state.currentService);
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
   const setCurrentAssistant = useConnectStore((state) => {
@@ -57,130 +45,15 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [keyword, setKeyword] = useState("");
   const debounceKeyword = useDebounce(keyword, { wait: 500 });
-  const state = useReactive<State>({
-    allAssistants: [],
+
+  const { fetchAssistant } = AssistantFetcher({
+    debounceKeyword,
+    assistantIDs,
   });
-
-  const currentServiceId = useMemo(() => {
-    return currentService?.id;
-  }, [connected, currentService?.id]);
-
-  const fetchAssistant = async (params: {
-    current: number;
-    pageSize: number;
-  }) => {
-    try {
-      const { pageSize, current } = params;
-
-      const from = (current - 1) * pageSize;
-      const size = pageSize;
-
-      let response: any;
-
-      const body: Record<string, any> = {
-        serverId: currentServiceId,
-        from,
-        size,
-      };
-
-      body.query = {
-        bool: {
-          must: [{ term: { enabled: true } }],
-        },
-      };
-
-      if (debounceKeyword) {
-        body.query.bool.must.push({
-          query_string: {
-            fields: ["combined_fulltext"],
-            query: debounceKeyword,
-            fuzziness: "AUTO",
-            fuzzy_prefix_length: 2,
-            fuzzy_max_expansions: 10,
-            fuzzy_transpositions: true,
-            allow_leading_wildcard: false,
-          },
-        });
-      }
-      if (assistantIDs.length > 0) {
-        body.query.bool.must.push({
-          terms: {
-            id: assistantIDs.map((id) => id),
-          },
-        });
-      }
-
-      if (isTauri) {
-        if (!currentServiceId) {
-          throw new Error("currentServiceId is undefined");
-        }
-
-        response = await platformAdapter.commands("assistant_search", body);
-      } else {
-        const [error, res] = await Post(`/assistant/_search`, body);
-
-        if (error) {
-          throw new Error(error);
-        }
-
-        response = res;
-      }
-
-      let assistantList = response?.hits?.hits ?? [];
-
-      console.log("assistantList", assistantList);
-
-      for (const item of assistantList) {
-        const index = state.allAssistants.findIndex((allItem: any) => {
-          return item._id === allItem._id;
-        });
-
-        if (index === -1) {
-          state.allAssistants.push(item);
-        } else {
-          state.allAssistants[index] = item;
-        }
-      }
-
-      //console.log("state.allAssistants", state.allAssistants);
-
-      const matched = state.allAssistants.find((item: any) => {
-        return item._id === currentAssistant?._id;
-      });
-
-      //console.log("matched", matched);
-
-      if (matched) {
-        setCurrentAssistant(matched);
-      } else {
-        setCurrentAssistant(assistantList[0]);
-      }
-
-      return {
-        total: response.hits.total.value,
-        list: assistantList,
-      };
-    } catch (error) {
-      setCurrentAssistant(null);
-
-      console.error("assistant_search", error);
-
-      return {
-        total: 0,
-        list: [],
-      };
-    }
-  };
-
-  useAsyncEffect(async () => {
-    const data = await fetchAssistant({ current: 1, pageSize: 1000 });
-
-    setAssistantList(data.list);
-  }, [currentServiceId]);
 
   const { pagination, runAsync } = usePagination(fetchAssistant, {
     defaultPageSize: 5,
-    refreshDeps: [currentServiceId, debounceKeyword],
+    refreshDeps: [currentService?.id, debounceKeyword],
     onSuccess(data) {
       setAssistants(data.list);
     },

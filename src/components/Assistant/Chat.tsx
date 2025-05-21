@@ -75,7 +75,6 @@ const ChatAI = memo(
       const { curChatEnd, setCurChatEnd, connected, setConnected } =
         useChatStore();
 
-      const currentService = useConnectStore((state) => state.currentService);
       const visibleStartPage = useConnectStore((state) => {
         return state.visibleStartPage;
       });
@@ -151,7 +150,6 @@ const ChatAI = memo(
         handleRename,
         handleDelete,
       } = useChatActions(
-        currentService?.id,
         setActiveChat,
         setCurChatEnd,
         setTimedoutShow,
@@ -366,6 +364,7 @@ const ChatAI = memo(
               loadingStep={loadingStep}
               timedoutShow={timedoutShow}
               Question={Question}
+              assistantIDs={assistantIDs}
               handleSendMessage={(value) =>
                 handleSendMessage(value, activeChat)
               }
