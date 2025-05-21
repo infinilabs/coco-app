@@ -45,7 +45,7 @@ export interface Plugin {
   onEnabledChange?: (enabled: boolean) => void;
 }
 
-interface ExtensionsContextType {
+export interface ExtensionsContextType {
   plugins: Plugin[];
   setPlugins: Dispatch<SetStateAction<Plugin[]>>;
   activeId?: string;
