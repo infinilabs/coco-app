@@ -4,6 +4,7 @@ import { useWebSocket as useWebSocketAHook } from "ahooks";
 import { useAppStore } from "@/stores/appStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { Server } from "@/types/server";
+import { useConnectStore } from "@/stores/connectStore";
 
 enum ReadyState {
   Connecting = 0,
@@ -16,7 +17,6 @@ interface WebSocketProps {
   clientId: string;
   connected: boolean;
   setConnected: (connected: boolean) => void;
-  currentService: Server | null;
   dealMsgRef: React.MutableRefObject<((msg: string) => void) | null>;
   onWebsocketSessionId?: (sessionId: string) => void;
 }
@@ -25,13 +25,14 @@ export default function useWebSocket({
   clientId,
   connected,
   setConnected,
-  currentService,
   dealMsgRef,
   onWebsocketSessionId,
 }: WebSocketProps) {
   const isTauri = useAppStore((state) => state.isTauri);
   const endpoint_websocket = useAppStore((state) => state.endpoint_websocket);
   const addError = useAppStore((state) => state.addError);
+
+  const currentService = useConnectStore((state) => state.currentService);
 
   const websocketIdRef = useRef<string>("");
   const messageQueue = useRef<string[]>([]);
@@ -58,6 +59,7 @@ export default function useWebSocket({
       connect(); // web
     }
   }, [isTauri, connect]);
+
   const processMessage = useCallback(
     (msg: string) => {
       try {
@@ -103,6 +105,7 @@ export default function useWebSocket({
   // src/components/Search/InputBox.tsx
   const reconnect = useCallback(
     async (server?: Server) => {
+      setConnected(false); // Disconnect before attempting to reconnect
       if (isTauri) {
         const targetServer = server || currentService;
         if (!targetServer?.id) return;
@@ -117,7 +120,7 @@ export default function useWebSocket({
         connect();
       }
     },
-    [currentService]
+    [currentService, clientId]
   );
   const disconnectWS = useCallback(async () => {
     if (!connected) return;
@@ -140,23 +143,13 @@ export default function useWebSocket({
     },
     [dealMsgRef]
   );
+
+  const unlistenErrorRef = useRef<Promise<() => void> | null>(null);
+  const unlistenCancelRef = useRef<Promise<() => void> | null>(null);
   useEffect(() => {
-    if (!currentService?.id) return;
+    if (!isTauri || !currentService?.id) return;
 
-    let unlisten_error = null;
-    let unlisten_message = null;
-
-    if (!isTauri) return;
-
-    unlisten_error = platformAdapter.listenEvent(`ws-error-${clientId}`, (event) => {
-      console.error(`ws-error-${clientId}`, event, connected);
-      if (connected) {
-        addError("WebSocket connection failed.");
-      }
-      setConnected(false); // error
-    });
-
-    unlisten_message = platformAdapter.listenEvent(`ws-message-${clientId}`, (event) => {
+    const unlisten_message = platformAdapter.listenEvent(`ws-message-${clientId}`, (event) => {
       const msg = event.payload as string;
       // console.log(`ws-message-${clientId}`, msg);
       if (msg.includes("websocket-session-id")) {
@@ -167,16 +160,37 @@ export default function useWebSocket({
         if (onWebsocketSessionId) {
           onWebsocketSessionId(sessionId);
         }
+        // Listen for errors
+        unlistenErrorRef.current = platformAdapter.listenEvent(`ws-error-${clientId}`, (event) => {
+          if (connected) {
+            const id = event.payload as string;
+            console.error(`ws-error-${clientId}`, id === currentService?.id, connected);
+            if (id === currentService?.id) {
+              addError("WebSocket connection failed.");
+            }
+          }
+          setConnected(false); // error
+        });
+        // Listen for cancel
+        unlistenCancelRef.current = platformAdapter.listenEvent(`ws-cancel-${clientId}`, () => {
+          setConnected(false);
+        });
+
         return;
       }
-      dealMsgRef.current && dealMsgRef.current(msg);
+      dealMsgRef.current?.(msg);
     });
 
     return () => {
-      unlisten_error?.then((fn: any) => fn());
-      unlisten_message?.then((fn: any) => fn());
+      unlisten_message.then((fn) => fn());
+      if (unlistenErrorRef.current) {
+        unlistenErrorRef.current.then((fn) => fn());
+      }
+      if (unlistenCancelRef.current) {
+        unlistenCancelRef.current.then((fn) => fn());
+      }
     };
-  }, [dealMsgRef]);
+  }, [currentService?.id, dealMsgRef, connected, clientId]);
 
   return { reconnect, disconnectWS, updateDealMsg };
 }

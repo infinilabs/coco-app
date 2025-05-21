@@ -20,14 +20,14 @@ interface ServerListProps {
   isLogin: boolean;
   setIsLogin: (isLogin: boolean) => void;
   reconnect: (server?: IServer) => void;
-  onCreateNewChat: () => void;
+  clearChat: () => void;
 }
 
 export function ServerList({
   isLogin,
   setIsLogin,
   reconnect,
-  onCreateNewChat,
+  clearChat,
 }: ServerListProps) {
   const { t } = useTranslation();
 
@@ -110,12 +110,13 @@ export function ServerList({
       setCurrentService(server);
       setEndpoint(server.endpoint);
       setMessages(""); // Clear previous messages
-      onCreateNewChat();
+      clearChat(); 
       //
       if (!server.public && !server.profile) {
         setIsLogin(false);
         return;
       }
+      //
       setIsLogin(true);
       // The Rust backend will automatically disconnect,
       // so we don't need to handle disconnection on the frontend

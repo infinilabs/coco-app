@@ -95,8 +95,8 @@ pub async fn connect_to_server<R: Runtime>(
         true,            // disable_nagle
         Some(connector), // Connector
     )
-    .await
-    .map_err(|e| format!("WebSocket TLS error: {:?}", e))?;
+        .await
+        .map_err(|e| format!("WebSocket TLS error: {:?}", e))?;
 
     let (cancel_tx, mut cancel_rx) = mpsc::channel(1);
 
@@ -125,6 +125,7 @@ pub async fn connect_to_server<R: Runtime>(
                             let _ = app_handle_clone.emit(&format!("ws-message-{}", client_id_clone), text);
                         },
                         Some(Err(_)) | None => {
+                            log::debug!("WebSocket connection closed or error");
                             let _ = app_handle_clone.emit(&format!("ws-error-{}", client_id_clone), id.clone());
                             break;
                         }
@@ -132,7 +133,8 @@ pub async fn connect_to_server<R: Runtime>(
                     }
                 }
                 _ = cancel_rx.recv() => {
-                    let _ = app_handle_clone.emit(&format!("ws-error-{}", client_id_clone), id.clone());
+                    log::debug!("WebSocket connection cancelled");
+                    let _ = app_handle_clone.emit(&format!("ws-cancel-{}", client_id_clone), id.clone());
                     break;
                 }
             }

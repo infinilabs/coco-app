@@ -22,7 +22,8 @@ export function useChatActions(
   isMCPActive?: boolean,
   changeInput?: (val: string) => void,
   websocketSessionId?: string,
-  showChatHistory?: boolean
+  showChatHistory?: boolean,
+  isLogin?: boolean,
 ) {
   const isTauri = useAppStore((state) => state.isTauri);
   const addError = useAppStore((state) => state.addError);
@@ -315,8 +316,11 @@ export function useChatActions(
   const getChatHistory = useCallback(async () => {
     let response: any;
     if (isTauri) {
+      if (!currentServiceId || !isLogin) {
+        setChats([]);
+        return
+      }
 
-      if (!currentServiceId) return [];
       response = await platformAdapter.commands("chat_history", {
         serverId: currentServiceId,
         from: 0,
@@ -334,7 +338,6 @@ export function useChatActions(
     }
     console.log("_history", response);
     const hits = response?.hits?.hits || [];
-
     setChats(hits);
   }, [currentServiceId, keyword, isTauri]);
 

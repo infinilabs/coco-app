@@ -134,7 +134,6 @@ const ChatAI = memo(
         clientId,
         connected,
         setConnected,
-        currentService,
         dealMsgRef,
         onWebsocketSessionId,
       });
@@ -165,7 +164,8 @@ const ChatAI = memo(
         isMCPActive,
         changeInput,
         websocketSessionId,
-        showChatHistory
+        showChatHistory,
+        isLogin
       );
 
       const { dealMsg } = useMessageHandler(
@@ -330,7 +330,6 @@ const ChatAI = memo(
               isSidebarOpen={isSidebarOpenChat}
               chats={chats}
               activeChat={activeChat}
-              // onNewChat={clearChat}
               onSelectChat={onSelectChat}
               onDeleteChat={deleteChat}
               fetchChatHistory={getChatHistory}
@@ -340,7 +339,7 @@ const ChatAI = memo(
           )}
 
           <ChatHeader
-            onCreateNewChat={clearChat}
+            clearChat={clearChat}
             onOpenChatAI={openChatAI}
             setIsSidebarOpen={toggleSidebar}
             isSidebarOpen={isSidebarOpenChat}

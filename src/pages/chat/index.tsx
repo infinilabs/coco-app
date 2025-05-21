@@ -348,9 +348,7 @@ export default function Chat({}: ChatProps) {
           </div>
 
           {/* Input area */}
-          <div
-            className={`border-t p-4 pb-0 border-gray-200 dark:border-gray-800`}
-          >
+          <div className={`border-t p-2 border-gray-200 dark:border-gray-800`}>
             <InputBox
               isChatMode={true}
               inputValue={input}

@@ -29,13 +29,9 @@ export interface EventPayloads {
   datasourceData_change: void;
   "ws-error": void;
   "ws-message": void;
-  [key: `ws-error-${string}`]: {
-    error: {
-      reason: string;
-    };
-    status: number;
-  };
+  [key: `ws-error-${string}`]: string;
   [key: `ws-message-${string}`]: string;
+  [key: `ws-cancel-${string}`]: string;
   "change-startup-store": IStartupStore;
   "change-shortcuts-store": IShortcutsStore;
   "change-connect-store": IConnectStore;
