@@ -218,7 +218,7 @@ export function ServerList({
                         {server.name}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[200px]">
-                        AI Assistant: {1}
+                        AI Assistant: { server.stats?.assistant_count || 1}
                       </div>
                     </div>
                   </div>

@@ -25,9 +25,6 @@ export type IAppStore = {
   ssoRequestID: string;
   setSSORequestID: (ssoRequestID: string) => void;
 
-  // ssoServerID: string;
-  // setSSOServerID: (ssoServerID: string) => void,
-
   endpoint: AppEndpoint;
   endpoint_http: string;
   endpoint_websocket: string;
@@ -79,8 +76,7 @@ export const useAppStore = create<IAppStore>()(
 
       ssoRequestID: "",
       setSSORequestID: (ssoRequestID: string) => set({ ssoRequestID }),
-      //  ssoServerID: "",
-      // setSSOServerID: (ssoServerID: string) => set({ ssoServerID }),
+
       endpoint: "https://coco.infini.cloud/",
       endpoint_http: "https://coco.infini.cloud",
       endpoint_websocket: "wss://coco.infini.cloud/ws",
@@ -147,7 +143,6 @@ export const useAppStore = create<IAppStore>()(
         isTauri: state.isTauri,
         showTooltip: state.showTooltip,
         ssoRequestID: state.ssoRequestID,
-        // ssoServerID: state.ssoServerID,
         endpoint: state.endpoint,
         endpoint_http: state.endpoint_http,
         endpoint_websocket: state.endpoint_websocket,

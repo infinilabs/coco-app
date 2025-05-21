@@ -8,7 +8,7 @@ import { Server } from "@/types/server";
 import StatusIndicator from "./StatusIndicator";
 
 interface SidebarProps {
-  onAddServer: () => void;
+  setIsConnect: (isConnect: boolean) => void;
   serverList: Server[];
 }
 
@@ -18,12 +18,17 @@ interface ServerGroups {
 }
 
 export const Sidebar = forwardRef<{ refreshData: () => void }, SidebarProps>(
-  ({ onAddServer, serverList }, _ref) => {
+  ({ setIsConnect, serverList }, _ref) => {
     const { t } = useTranslation();
     const currentService = useConnectStore((state) => state.currentService);
     const setCurrentService = useConnectStore(
       (state) => state.setCurrentService
     );
+
+    const selectService = (item: Server) => {
+      setCurrentService(item);
+      setIsConnect(true);
+    };
 
     const getServerItemClassName = useCallback((isSelected: boolean) => {
       return `flex cursor-pointer items-center space-x-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg mb-2 whitespace-nowrap ${
@@ -41,7 +46,7 @@ export const Sidebar = forwardRef<{ refreshData: () => void }, SidebarProps>(
           <div
             key={item.id}
             className={getServerItemClassName(isSelected)}
-            onClick={() => setCurrentService(item)}
+            onClick={() => selectService(item)}
           >
             <img
               src={item?.provider?.icon || cocoLogoImg}
@@ -102,7 +107,7 @@ export const Sidebar = forwardRef<{ refreshData: () => void }, SidebarProps>(
           <div className="space-y-2">
             <button
               className="w-full flex items-center justify-center p-2 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
-              onClick={onAddServer}
+              onClick={() => setIsConnect(false)}
             >
               <Plus className="w-5 h-5" />
             </button>

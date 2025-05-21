@@ -147,6 +147,7 @@ fn get_default_server() -> Server {
             },
         },
         priority: 0,
+        stats: None,
     }
 }
 
@@ -187,10 +188,7 @@ pub async fn load_servers_token<R: Runtime>(
             save_access_token(server.id.clone(), server.clone());
         }
 
-        log::debug!(
-            "loaded {:?} servers's token",
-            &deserialized_tokens.len()
-        );
+        log::debug!("loaded {:?} servers's token", &deserialized_tokens.len());
 
         Ok(deserialized_tokens)
     } else {
@@ -446,7 +444,12 @@ pub async fn try_register_server_to_search_source(
     server: &Server,
 ) {
     if server.enabled {
-        log::trace!("Server {} is public: {} and available: {}", &server.name, &server.public, &server.available);
+        log::trace!(
+            "Server {} is public: {} and available: {}",
+            &server.name,
+            &server.public,
+            &server.available
+        );
 
         if !server.public {
             let token = get_server_token(&server.id).await;
@@ -588,6 +591,7 @@ fn test_trim_endpoint_last_forward_slash() {
             },
         },
         priority: 0,
+        stats: None,
     };
 
     trim_endpoint_last_forward_slash(&mut server);

@@ -78,7 +78,6 @@ export const useConnectStore = create<IConnectStore>()(
           },
           priority: 0
         },
-// ... existing code ...
         setCurrentService: (server: any) => {
           console.log("set default server:", server);
           set(
