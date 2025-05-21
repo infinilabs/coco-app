@@ -63,6 +63,7 @@ Information about release notes of Coco Server is provided here.
 - refactor: service info related components #537
 - chore: chat content can be copied #539
 - refactor: refactoring search error #541
+- chore: add assistant count #542
 
 ## 0.4.0 (2025-04-27)
 
