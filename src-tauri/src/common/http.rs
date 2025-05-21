@@ -36,15 +36,19 @@ pub async fn get_response_body_text(response: Response) -> Result<String, String
             return Err(fallback_error);
         }
 
+
         match serde_json::from_str::<common::error::ErrorResponse>(&body) {
             Ok(parsed_error) => {
                 dbg!(&parsed_error);
                 Err(format!(
-                    "Server error ({}): {}",
-                    parsed_error.error.status, parsed_error.error.reason
+                    "Server error ({}): {:?}",
+                    status, parsed_error.error
                 ))
             }
-            Err(_) => Err(fallback_error),
+            Err(_) => {
+                log::warn!("Failed to parse error response: {}", &body);
+                Err(fallback_error)
+            }
         }
     } else {
         Ok(body)

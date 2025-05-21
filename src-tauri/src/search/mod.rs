@@ -8,6 +8,7 @@ use futures::StreamExt;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use tauri::{AppHandle, Manager, Runtime};
+use tokio::time::error::Elapsed;
 use tokio::time::{timeout, Duration};
 
 #[tauri::command]
@@ -83,6 +84,7 @@ pub async fn query_coco_fusion<R: Runtime>(
                 }
             }
             Ok(Ok(Err(err))) => {
+                log::debug!("Query error: {:?}", err);
                 failed_requests.push(FailedRequest {
                     source: QuerySource {
                         r#type: "N/A".into(),
@@ -95,16 +97,7 @@ pub async fn query_coco_fusion<R: Runtime>(
                 });
             }
             Ok(Err(err)) => {
-                failed_requests.push(FailedRequest {
-                    source: QuerySource {
-                        r#type: "N/A".into(),
-                        name: "N/A".into(),
-                        id: "N/A".into(),
-                    },
-                    status: 0,
-                    error: Some(err.to_string()),
-                    reason: None,
-                });
+                log::debug!("Query timeout reached, skipping request");
             }
             // Timeout reached, skip this request
             _ => {
@@ -178,6 +171,13 @@ pub async fn query_coco_fusion<R: Runtime>(
             .partial_cmp(&a.score)
             .unwrap_or(std::cmp::Ordering::Equal)
     });
+
+    if final_hits.len() < 5 {
+        //TODO: Add a recommendation system to suggest more sources
+        log::info!("Less than 5 hits found, consider using recommendation to find more suggestions.");
+        //local: recent history, local extensions
+        //remote: ai agents, quick links, other tasks, managed by server
+    }
 
     Ok(MultiSourceQueryResponse {
         failed: failed_requests,
