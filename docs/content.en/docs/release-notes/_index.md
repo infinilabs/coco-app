@@ -62,6 +62,7 @@ Information about release notes of Coco Server is provided here.
 - chore: skip register server that not logged in #536
 - refactor: service info related components #537
 - chore: chat content can be copied #539
+- refactor: refactoring search error #541
 
 ## 0.4.0 (2025-04-27)
 

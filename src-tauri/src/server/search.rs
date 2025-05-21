@@ -107,25 +107,32 @@ impl SearchSource for CocoSearchSource {
             Some(query_args),
         )
             .await
-            .map_err(|e| SearchError::HttpError(format!("Error to send search request: {}", e)))?;
+            .map_err(|e| SearchError::HttpError(format!("{}", e)))?;
 
         // Use the helper function to parse the response body
         let response_body = get_response_body_text(response)
             .await
-            .map_err(|e| SearchError::ParseError(format!("Failed to read response body: {}", e)))?;
+            .map_err(|e| SearchError::ParseError(e))?;
 
-        // Parse the search response from the body text
-        let parsed: SearchResponse<Document> = serde_json::from_str(&response_body)
-            .map_err(|e| SearchError::ParseError(format!("Failed to parse search response: {}", e)))?;
+        let mut total_hits = 0;
+        let mut hits: Vec<(Document, f64)> = Vec::new();
 
-        // Process the parsed response
-        let total_hits = parsed.hits.total.value as usize;
-        let hits: Vec<(Document, f64)> = parsed
-            .hits
-            .hits
-            .into_iter()
-            .map(|hit| (hit._source, hit._score.unwrap_or(0.0))) // Default _score to 0.0 if None
-            .collect();
+        // Check if the response body is empty
+        if !response_body.is_empty() {
+            // Parse the search response from the body text
+            let parsed: SearchResponse<Document> = serde_json::from_str(&response_body)
+                .map_err(|e| SearchError::ParseError(format!("{}", e)))?;
+
+            // Process the parsed response
+            total_hits = parsed.hits.total.value as usize;
+            hits = parsed
+                .hits
+                .hits
+                .into_iter()
+                .map(|hit| (hit._source, hit._score.unwrap_or(0.0))) // Default _score to 0.0 if None
+                .collect();
+        }
+
 
         // Return the final result
         Ok(QueryResponse {
