@@ -2,32 +2,49 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Debug, Deserialize)]
+pub struct ErrorCause {
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub reason: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct ErrorDetail {
-    pub reason: String,
-    pub status: u16,
+    #[serde(default)]
+    pub root_cause: Option<Vec<ErrorCause>>,
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub reason: Option<String>,
+    #[serde(default)]
+    pub caused_by: Option<ErrorCause>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct ErrorResponse {
-    pub error: ErrorDetail,
+    #[serde(default)]
+    pub error: Option<ErrorDetail>,
+    #[serde(default)]
+    pub status: Option<u16>,
 }
 
 #[derive(Debug, Error, Serialize)]
 pub enum SearchError {
-    #[error("HTTP request failed: {0}")]
+    #[error("HttpError: {0}")]
     HttpError(String),
 
-    #[error("Invalid response format: {0}")]
+    #[error("ParseError: {0}")]
     ParseError(String),
 
     #[error("Timeout occurred")]
     Timeout,
 
-    #[error("Unknown error: {0}")]
+    #[error("UnknownError: {0}")]
     #[allow(dead_code)]
     Unknown(String),
 
-    #[error("InternalError error: {0}")]
+    #[error("InternalError: {0}")]
     #[allow(dead_code)]
     InternalError(String),
 }
