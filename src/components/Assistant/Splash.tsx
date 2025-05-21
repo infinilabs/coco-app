@@ -1,14 +1,14 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { CircleX, MoveRight } from "lucide-react";
-import { useMount } from "ahooks";
 
 import { useAppStore } from "@/stores/appStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { useConnectStore } from "@/stores/connectStore";
 import { useThemeStore } from "@/stores/themeStore";
-import FontIcon from "../Common/Icons/FontIcon";
+import FontIcon from "@/components/Common/Icons/FontIcon";
 import logoImg from "@/assets/icon.svg";
 import { Get } from "@/api/axiosRequest";
+import { AssistantFetcher } from "./AssistantFetcher";
 
 interface StartPage {
   enabled?: boolean;
@@ -28,7 +28,11 @@ export interface Response {
   };
 }
 
-const Splash = () => {
+interface SplashProps {
+  assistantIDs?: string[];
+}
+
+const Splash = ({ assistantIDs = [] }: SplashProps) => {
   const isTauri = useAppStore((state) => state.isTauri);
   const currentService = useConnectStore((state) => state.currentService);
   const [settings, setSettings] = useState<StartPage>();
@@ -36,49 +40,52 @@ const Splash = () => {
   const setVisibleStartPage = useConnectStore((state) => {
     return state.setVisibleStartPage;
   });
-  const addError = useAppStore((state) => state.addError);
   const isDark = useThemeStore((state) => state.isDark);
   const assistantList = useConnectStore((state) => state.assistantList);
+  const setAssistantList = useConnectStore((state) => state.setAssistantList);
   const setCurrentAssistant = useConnectStore((state) => {
     return state.setCurrentAssistant;
   });
 
-  useMount(async () => {
-    try {
-      const serverId = currentService.id;
-
-      let response: Response = {};
-
-      if (isTauri) {
-        response = await platformAdapter.invokeBackend<Response>(
-          "get_system_settings",
-          {
-            serverId,
-          }
-        );
-      } else {
-        const [err, result] = await Get("/settings");
-
-        if (err) {
-          throw new Error(err);
-        }
-
-        response = result as Response;
-      }
-
-      const settings = response?.app_settings?.chat?.start_page;
-
-      setVisibleStartPage(Boolean(settings?.enabled));
-
-      setSettings(settings);
-    } catch (error) {
-      addError(String(error), "error");
-    }
+  const { fetchAssistant } = AssistantFetcher({
+    assistantIDs,
   });
 
-  const settingsAssistantList = useMemo(() => {
-    //console.log("assistantList", assistantList);
+  const fetchData = async () => {
+    const data = await fetchAssistant({ current: 1, pageSize: 1000 });
+    setAssistantList(data.list || []);
+  };
 
+  const getSettings = async () => {
+    const serverId = currentService.id;
+
+    let response: Response = {};
+    if (isTauri) {
+      response = await platformAdapter.invokeBackend<Response>(
+        "get_system_settings",
+        {
+          serverId,
+        }
+      );
+    } else {
+      const [err, result] = await Get("/settings");
+      if (err) {
+        setSettings(undefined);
+      }
+      response = result as Response;
+    }
+
+    const settings = response?.app_settings?.chat?.start_page;
+    setVisibleStartPage(Boolean(settings?.enabled));
+    setSettings(settings);
+  };
+
+  useEffect(() => {
+    getSettings();
+    fetchData();
+  }, [currentService?.id]);
+
+  const settingsAssistantList = useMemo(() => {
     return assistantList.filter((item) => {
       return settings?.display_assistants?.includes(item?._source?.id);
     });

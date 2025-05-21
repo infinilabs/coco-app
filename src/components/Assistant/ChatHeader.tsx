@@ -114,6 +114,7 @@ export function ChatHeader({
           activeChat?._source?.message ||
           activeChat?._id}
       </h2>
+      
       {isTauri ? (
         <div className="flex items-center gap-2">
           <button
