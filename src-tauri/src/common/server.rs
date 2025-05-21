@@ -1,6 +1,8 @@
 use crate::common::health::Health;
 use crate::common::profile::UserProfile;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -60,6 +62,7 @@ pub struct Server {
     pub auth_provider: AuthProvider,
     #[serde(default = "default_priority_type")]
     pub priority: u32,
+    pub stats: Option<HashMap<String, Value>>,
 }
 
 impl PartialEq for Server {

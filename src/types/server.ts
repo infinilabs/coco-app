@@ -61,5 +61,5 @@ export interface Server {
     };
   };
   priority: number;
-  
+  stats?: Record<string, any>;
 }
