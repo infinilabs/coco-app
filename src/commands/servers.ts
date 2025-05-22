@@ -16,11 +16,31 @@ import {
   MultiSourceQueryResponse,
 } from "@/types/commands";
 import { useAppStore } from "@/stores/appStore";
+import { useAuthStore } from "@/stores/authStore";
+
+// Endpoints that don't require authentication
+const WHITELIST_SERVERS = [
+  "list_coco_servers",
+  "add_coco_server",
+  "enable_server",
+  "disable_server",
+  "remove_coco_server",
+  "logout_coco_server",
+  "refresh_coco_server_info",
+  "handle_sso_callback",
+  "query_coco_fusion",
+];
 
 async function invokeWithErrorHandler<T>(
   command: string,
   args?: Record<string, any>
 ): Promise<T> {
+  const isCurrentLogin = useAuthStore.getState().isCurrentLogin;
+  if (!WHITELIST_SERVERS.includes(command) && !isCurrentLogin) {
+    console.error("This command requires authentication");
+    throw new Error("This command requires authentication");
+  }
+  //
   const addError = useAppStore.getState().addError;
   try {
     const result = await invoke<T>(command, args);

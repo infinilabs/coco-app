@@ -39,7 +39,7 @@ Information about release notes of Coco Server is provided here.
 - fix: server image loading failure #534
 - fix: panic when fetching app metadata on Windows #538
 - fix: service switching error #539
-- fix: switch server assistant and session session unchanged #540
+- fix: switch server assistant and session unchanged #540
 
 ### ✈️ Improvements
 
@@ -65,7 +65,7 @@ Information about release notes of Coco Server is provided here.
 - refactor: refactoring search error #541
 - chore: add assistant count #542
 - chore: mark server offline on user logout #546
-
+- chore: add global login judgment #544
 
 ## 0.4.0 (2025-04-27)
 
