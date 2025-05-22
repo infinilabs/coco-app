@@ -318,7 +318,7 @@ pub async fn refresh_coco_server_info<R: Runtime>(
         .map_err(|e| format!("Failed to contact the server: {}", e))?;
 
     if !response.status().is_success() {
-        mark_server_as_offline(&id).await;
+        let _ = mark_server_as_offline(app_handle, &id).await;
         return Err(format!("Request failed with status: {}", response.status()));
     }
 
@@ -466,14 +466,20 @@ pub async fn try_register_server_to_search_source(
     }
 }
 
-pub async fn mark_server_as_offline(id: &str) {
+#[tauri::command]
+pub async fn mark_server_as_offline<R: Runtime>(
+    app_handle: AppHandle<R>, id: &str) -> Result<(), ()> {
     // println!("server_is_offline: {}", id);
     let server = get_server_by_id(id);
     if let Some(mut server) = server {
         server.available = false;
         server.health = None;
         save_server(&server);
+
+        let registry = app_handle.state::<SearchSourceRegistry>();
+        registry.remove_source(id).await;
     }
+    Ok(())
 }
 
 #[tauri::command]
@@ -525,6 +531,7 @@ pub async fn logout_coco_server<R: Runtime>(
 
         // Clear server profile
         server.profile = None;
+        let _ = mark_server_as_offline(app_handle.clone(), id.as_str()).await;
 
         // Save the updated server data
         save_server(&server);
