@@ -41,6 +41,7 @@ Information about release notes of Coco Server is provided here.
 - fix: service switching error #539
 - fix: switch server assistant and session unchanged #540
 - fix: history list height #550
+- fix: secondary page cannot be searched #551
 
 ### ✈️ Improvements
 
