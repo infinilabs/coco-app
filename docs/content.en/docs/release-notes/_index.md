@@ -64,8 +64,9 @@ Information about release notes of Coco Server is provided here.
 - chore: chat content can be copied #539
 - refactor: refactoring search error #541
 - chore: add assistant count #542
-- chore: mark server offline on user logout #546
 - chore: add global login judgment #544
+- chore: mark server offline on user logout #546
+- chore: logout update server profile #549
 
 ## 0.4.0 (2025-04-27)
 
