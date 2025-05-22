@@ -1,3 +1,4 @@
+import { ASK_AI_CLIENT_ID } from "@/constants";
 import { IAppearanceStore } from "@/stores/appearanceStore";
 import { IConnectStore } from "@/stores/connectStore";
 import { IShortcutsStore } from "@/stores/shortcutsStore";
@@ -36,6 +37,7 @@ export interface EventPayloads {
   "change-shortcuts-store": IShortcutsStore;
   "change-connect-store": IConnectStore;
   "change-appearance-store": IAppearanceStore;
+  [ASK_AI_CLIENT_ID]: any;
 }
 
 // Window operation interface

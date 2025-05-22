@@ -308,6 +308,12 @@
         "calculator": "计算器"
       },
       "search": "搜索操作"
+    },
+    "askCocoAi": {
+      "title": "问 {{0}}",
+      "placeholder": "问更多",
+      "continueInChat": "继续聊天",
+      "copy": "复制"
     }
   },
   "assistant": {

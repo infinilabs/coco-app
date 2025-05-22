@@ -40,6 +40,7 @@ export default function Footer({
     return state.fixedWindow;
   });
   const modifierKey = useShortcutsStore((state) => state.modifierKey);
+  const goAskAi = useSearchStore((state) => state.goAskAi);
 
   const togglePin = async () => {
     try {
@@ -65,7 +66,9 @@ export default function Footer({
                 item={sourceData}
                 renderOrder={["connector_icon", "default_icon"]}
                 itemIcon={sourceData?.source?.icon}
-                defaultIcon={isDark ? source_default_dark_img : source_default_img}
+                defaultIcon={
+                  isDark ? source_default_dark_img : source_default_img
+                }
                 className="w-4 h-4"
               />
             ) : (
@@ -112,7 +115,12 @@ export default function Footer({
 
       <div className={`flex mobile:hidden items-center gap-3`}>
         <div className="gap-1 flex items-center text-[#666] dark:text-[#666] text-xs">
-          <span className="mr-1.5">{t("search.footer.select")}:</span>
+          <span className="mr-1.5">
+            {goAskAi
+              ? t("search.askCocoAi.continueInChat")
+              : t("search.footer.select")}
+            :
+          </span>
           <kbd className="coco-modal-footer-commands-key pr-1">
             <div className="flex items-center justify-center min-w-3 h-3">
               {formatKey(modifierKey)}
@@ -120,11 +128,17 @@ export default function Footer({
           </kbd>
           +
           <kbd className="coco-modal-footer-commands-key pr-1">
-            <ArrowDown01 className="w-3 h-3" />
+            {goAskAi ? (
+              <CornerDownLeft className="w-3 h-3" />
+            ) : (
+              <ArrowDown01 className="w-3 h-3" />
+            )}
           </kbd>
         </div>
         <div className="flex items-center text-[#666] dark:text-[#666] text-xs">
-          <span className="mr-1.5">{t("search.footer.open")}: </span>
+          <span className="mr-1.5">
+            {goAskAi ? t("search.askCocoAi.copy") : t("search.footer.open")}:{" "}
+          </span>
           <kbd className="coco-modal-footer-commands-key pr-1">
             <CornerDownLeft className="w-3 h-3" />
           </kbd>

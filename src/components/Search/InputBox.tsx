@@ -1,4 +1,4 @@
-import { Brain } from "lucide-react";
+import { Brain, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
@@ -22,6 +22,7 @@ import VisibleKey from "@/components/Common/VisibleKey";
 import ConnectionError from "./ConnectionError";
 import SearchIcons from "./SearchIcons";
 import ChatIcons from "./ChatIcons";
+import { isEmpty } from "lodash-es";
 // import AiSummaryIcon from "../Common/Icons/AiSummaryIcon";
 
 interface ChatInputProps {
@@ -254,6 +255,10 @@ export default function ChatInput({
 
   const source = currentAssistant?._source;
 
+  const goAskAi = useSearchStore((state) => state.goAskAi);
+  const setGoAskAi = useSearchStore((state) => state.setGoAskAi);
+  const setAskAiMessage = useSearchStore((state) => state.setAskAiMessage);
+
   return (
     <div className={`w-full relative`}>
       <div
@@ -269,6 +274,28 @@ export default function ChatInput({
             />
           )}
 
+          {goAskAi && (
+            <div className="flex h-8 -my-1">
+              <div className="flex items-center gap-7 pl-2 text-sm bg-white dark:bg-black">
+                <div className="flex items-center gap-1 text-[#333] dark:text-[#D8D8D8]">
+                  <div>🌀</div>
+                  <span>Coco AI</span>
+                </div>
+
+                <X
+                  className="size-4 text-[#999] cursor-pointer"
+                  onClick={() => {
+                    setGoAskAi(false);
+                  }}
+                />
+              </div>
+
+              <div className="relative w-4 overflow-hidden">
+                <div className="absolute size-0 border-[16px] border-transparent border-l-white dark:border-l-black"></div>
+              </div>
+            </div>
+          )}
+
           <AutoResizeTextarea
             ref={textareaRef}
             input={inputValue}
@@ -277,13 +304,25 @@ export default function ChatInput({
             handleKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
               const { key, shiftKey } = e;
 
-              if (key !== "Enter" || shiftKey) return;
+              if ((goAskAi && key === "Enter") || key === "Tab") {
+                e.preventDefault();
 
-              e.preventDefault();
-              handleSubmit();
+                const { value } = e.currentTarget;
 
-              if (!isChatMode) {
-                onSend(inputValue);
+                if (isEmpty(value)) return;
+
+                changeInput("");
+                setGoAskAi(true);
+                setAskAiMessage(value);
+              }
+
+              if (key === "Enter" && !shiftKey) {
+                e.preventDefault();
+                handleSubmit();
+
+                if (!isChatMode) {
+                  onSend(inputValue);
+                }
               }
             }}
             chatPlaceholder={
@@ -334,6 +373,17 @@ export default function ChatInput({
               )}
             >
               <VisibleKey shortcut={returnToInput} />
+            </div>
+          )}
+
+          {!isChatMode && !goAskAi && (
+            <div className="flex items-center gap-2 text-sm text-[#AEAEAE] dark:text-[#545454]">
+              <span>
+                {t("search.askCocoAi.title", { replace: ["Coco AI"] })}
+              </span>
+              <div className="flex items-center justify-center w-8 h-[20px] text-xs rounded-md border border-black/10 dark:border-[#545454]">
+                Tab
+              </div>
             </div>
           )}
 

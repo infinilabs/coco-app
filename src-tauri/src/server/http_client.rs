@@ -1,4 +1,5 @@
 use crate::server::servers::{get_server_by_id, get_server_token};
+use futures_util::{Stream, StreamExt};
 use http::{HeaderName, HeaderValue};
 use once_cell::sync::Lazy;
 use reqwest::{Client, Method, RequestBuilder};
@@ -197,6 +198,34 @@ impl HttpClient {
         HttpClient::send_request(server_id, Method::POST, path, None, query_params, body).await
     }
 
+    pub async fn post_stream(
+        server_id: &str,
+        path: &str,
+        query_params: Option<HashMap<String, JsonValue>>,
+        body: Option<reqwest::Body>,
+    ) -> Result<impl Stream<Item = Result<String, String>>, String> {
+        let response =
+            HttpClient::send_request(server_id, Method::POST, path, None, query_params, body)
+                .await?;
+
+        if !response.status().is_success() {
+            return Err(format!("Request Failed: {}", response.status()));
+        }
+
+        let stream = response.bytes_stream();
+
+        let string_stream = stream.map(|result| {
+            result
+                .map_err(|e| format!("Stream read error: {}", e))
+                .and_then(|bytes| {
+                    String::from_utf8(bytes.to_vec())
+                        .map_err(|e| format!("UTF-8 decoding error: {}", e))
+                })
+        });
+
+        Ok(string_stream)
+    }
+
     pub async fn advanced_post(
         server_id: &str,
         path: &str,
@@ -212,7 +241,7 @@ impl HttpClient {
             query_params,
             body,
         )
-            .await
+        .await
     }
 
     // Convenience method for PUT requests
@@ -232,7 +261,7 @@ impl HttpClient {
             query_params,
             body,
         )
-            .await
+        .await
     }
 
     // Convenience method for DELETE requests
@@ -251,6 +280,6 @@ impl HttpClient {
             query_params,
             None,
         )
-            .await
+        .await
     }
 }
