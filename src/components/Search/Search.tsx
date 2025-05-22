@@ -64,7 +64,6 @@ function Search({
   const getSuggest = useCallback(
     async (searchInput: string) => {
       if (!searchInput) return;
-      if (sourceData) return;
 
       let response: SearchResponse;
       if (isTauri) {
