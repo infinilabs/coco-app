@@ -104,9 +104,7 @@ export const AssistantFetcher = ({
       };
     } catch (error) {
       setCurrentAssistant(null);
-
       console.error("assistant_search", error);
-
       return {
         total: 0,
         list: [],

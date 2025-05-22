@@ -33,6 +33,8 @@ export type IAuthStore = {
   userInfo: userInfoMapProp;
   setAuth: (auth: AuthProp | undefined, key: string) => void;
   resetAuth: (key: string) => void;
+  isCurrentLogin: boolean;
+  setIsCurrentLogin: (isCurrentLogin: boolean) => void;
   initializeListeners: () => Promise<() => void>;
 };
 
@@ -79,6 +81,10 @@ export const useAuthStore = create<IAuthStore>()(
             [key]: userInfo,
           },
         });
+      },
+      isCurrentLogin: true,
+      setIsCurrentLogin: (isCurrentLogin: boolean) => {
+        set({ isCurrentLogin });
       },
       initializeListeners: async () => {
         await platformAdapter.listenEvent(AUTH_CHANGE_EVENT, (event: any) => {

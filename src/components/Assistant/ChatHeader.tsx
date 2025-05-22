@@ -23,8 +23,6 @@ interface ChatHeaderProps {
   isSidebarOpen: boolean;
   activeChat: Chat | undefined;
   reconnect: (server?: Server) => void;
-  isLogin: boolean;
-  setIsLogin: (isLogin: boolean) => void;
   isChatPage?: boolean;
   showChatHistory?: boolean;
   assistantIDs?: string[];
@@ -37,8 +35,6 @@ export function ChatHeader({
   setIsSidebarOpen,
   activeChat,
   reconnect,
-  isLogin,
-  setIsLogin,
   isChatPage = false,
   showChatHistory = true,
   assistantIDs,
@@ -129,8 +125,6 @@ export function ChatHeader({
           </button>
 
           <ServerList
-            isLogin={isLogin}
-            setIsLogin={setIsLogin}
             reconnect={reconnect}
             clearChat={clearChat}
           />
