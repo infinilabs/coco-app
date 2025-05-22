@@ -93,6 +93,8 @@ impl SearchSource for CocoSearchSource {
 
     async fn search(&self, query: SearchQuery) -> Result<QueryResponse, SearchError> {
         let url = "/query/_search";
+        let mut total_hits = 0;
+        let mut hits: Vec<(Document, f64)> = Vec::new();
 
         let mut query_args: HashMap<String, JsonValue> = HashMap::new();
         query_args.insert("from".into(), JsonValue::Number(query.from.into()));
@@ -114,8 +116,6 @@ impl SearchSource for CocoSearchSource {
             .await
             .map_err(|e| SearchError::ParseError(e))?;
 
-        let mut total_hits = 0;
-        let mut hits: Vec<(Document, f64)> = Vec::new();
 
         // Check if the response body is empty
         if !response_body.is_empty() {
