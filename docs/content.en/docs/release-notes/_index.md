@@ -40,6 +40,7 @@ Information about release notes of Coco Server is provided here.
 - fix: panic when fetching app metadata on Windows #538
 - fix: service switching error #539
 - fix: switch server assistant and session unchanged #540
+- fix: history list height #550
 
 ### ✈️ Improvements
 
