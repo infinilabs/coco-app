@@ -76,7 +76,7 @@ const ChatAI = memo(
       const { curChatEnd, setCurChatEnd, connected, setConnected } =
         useChatStore();
 
-      const isCurrentLogin = useAuthStore(state => state.isCurrentLogin);
+      const isCurrentLogin = useAuthStore((state) => state.isCurrentLogin);
 
       const visibleStartPage = useConnectStore((state) => {
         return state.visibleStartPage;
@@ -164,7 +164,7 @@ const ChatAI = memo(
         isMCPActive,
         changeInput,
         websocketSessionId,
-        showChatHistory,
+        showChatHistory
       );
 
       const { dealMsg } = useMessageHandler(
@@ -320,10 +320,7 @@ const ChatAI = memo(
       );
 
       return (
-        <div
-          data-tauri-drag-region
-          className={`flex flex-col rounded-md relative h-full overflow-hidden`}
-        >
+        <>
           {showChatHistory && !setIsSidebarOpen && (
             <ChatSidebar
               isSidebarOpen={isSidebarOpenChat}
@@ -336,49 +333,53 @@ const ChatAI = memo(
               onRename={renameChat}
             />
           )}
-
-          <ChatHeader
-            clearChat={clearChat}
-            onOpenChatAI={openChatAI}
-            setIsSidebarOpen={toggleSidebar}
-            isSidebarOpen={isSidebarOpenChat}
-            activeChat={activeChat}
-            reconnect={reconnect}
-            isChatPage={isChatPage}
-            showChatHistory={showChatHistory}
-            assistantIDs={assistantIDs}
-          />
-
-          {isCurrentLogin ? (
-            <ChatContent
+          <div
+            data-tauri-drag-region
+            className={`flex flex-col rounded-md h-full overflow-hidden`}
+          >
+            <ChatHeader
+              clearChat={clearChat}
+              onOpenChatAI={openChatAI}
+              setIsSidebarOpen={toggleSidebar}
+              isSidebarOpen={isSidebarOpenChat}
               activeChat={activeChat}
-              curChatEnd={curChatEnd}
-              query_intent={query_intent}
-              tools={tools}
-              fetch_source={fetch_source}
-              pick_source={pick_source}
-              deep_read={deep_read}
-              think={think}
-              response={response}
-              loadingStep={loadingStep}
-              timedoutShow={timedoutShow}
-              Question={Question}
+              reconnect={reconnect}
+              isChatPage={isChatPage}
+              showChatHistory={showChatHistory}
               assistantIDs={assistantIDs}
-              handleSendMessage={(value) =>
-                handleSendMessage(value, activeChat)
-              }
-              getFileUrl={getFileUrl}
             />
-          ) : (
-            <ConnectPrompt />
-          )}
 
-          {!activeChat?._id && !visibleStartPage && (
-            <PrevSuggestion sendMessage={init} />
-          )}
+            {isCurrentLogin ? (
+              <ChatContent
+                activeChat={activeChat}
+                curChatEnd={curChatEnd}
+                query_intent={query_intent}
+                tools={tools}
+                fetch_source={fetch_source}
+                pick_source={pick_source}
+                deep_read={deep_read}
+                think={think}
+                response={response}
+                loadingStep={loadingStep}
+                timedoutShow={timedoutShow}
+                Question={Question}
+                assistantIDs={assistantIDs}
+                handleSendMessage={(value) =>
+                  handleSendMessage(value, activeChat)
+                }
+                getFileUrl={getFileUrl}
+              />
+            ) : (
+              <ConnectPrompt />
+            )}
 
-          {/* <ReadAloud /> */}
-        </div>
+            {!activeChat?._id && !visibleStartPage && (
+              <PrevSuggestion sendMessage={init} />
+            )}
+
+            {/* <ReadAloud /> */}
+          </div>
+        </>
       );
     }
   )
