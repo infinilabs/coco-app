@@ -54,7 +54,7 @@ export interface Server {
   public: boolean;
   available: boolean;
   health?: Health;
-  profile?: UserProfile;
+  profile?: UserProfile | null;
   auth_provider: {
     sso: {
       url: string;

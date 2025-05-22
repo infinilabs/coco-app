@@ -30,6 +30,9 @@ const ServiceAuth = memo(
     const addError = useAppStore((state) => state.addError);
 
     const currentService = useConnectStore((state) => state.currentService);
+    const setCurrentService = useConnectStore((state) => state.setCurrentService);
+    const serverList = useConnectStore((state) => state.serverList);
+    const setServerList = useConnectStore((state) => state.setServerList);
 
     const [loading, setLoading] = useState(false);
 
@@ -53,19 +56,24 @@ const ServiceAuth = memo(
 
     const onLogout = useCallback(
       (id: string) => {
-        console.log("onLogout", id);
         setRefreshLoading(true);
         logout_coco_server(id)
           .then((res: any) => {
             console.log("logout_coco_server", id, JSON.stringify(res));
-            refreshClick(id);
             emit("login_or_logout", false);
+            // update server profile
+            setCurrentService({ ...currentService, profile: null });
+            const updatedServerList = serverList.map(server => 
+              server.id === id ? { ...server, profile: null } : server
+            );
+            console.log("updatedServerList", updatedServerList);
+            setServerList(updatedServerList);
           })
           .finally(() => {
             setRefreshLoading(false);
           });
       },
-      [refreshClick]
+      [currentService, serverList]
     );
 
     const handleOAuthCallback = useCallback(
