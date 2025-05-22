@@ -15,22 +15,21 @@ import { useChatStore } from "@/stores/chatStore";
 import { useConnectStore } from "@/stores/connectStore";
 import { Server as IServer } from "@/types/server";
 import StatusIndicator from "@/components/Cloud/StatusIndicator";
+import { useAuthStore } from "@/stores/authStore";
 
 interface ServerListProps {
-  isLogin: boolean;
-  setIsLogin: (isLogin: boolean) => void;
   reconnect: (server?: IServer) => void;
   clearChat: () => void;
 }
 
 export function ServerList({
-  isLogin,
-  setIsLogin,
   reconnect,
   clearChat,
 }: ServerListProps) {
   const { t } = useTranslation();
 
+  const isCurrentLogin = useAuthStore(state => state.isCurrentLogin);
+  const setIsCurrentLogin = useAuthStore(state => state.setIsCurrentLogin);
   const serviceList = useShortcutsStore((state) => state.serviceList);
   const setEndpoint = useAppStore((state) => state.setEndpoint);
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
@@ -81,8 +80,8 @@ export function ServerList({
 
     const unlisten = platformAdapter.listenEvent("login_or_logout", (event) => {
       //console.log("Login or Logout:", currentService, event.payload);
-      if (event.payload !== isLogin) {
-        setIsLogin(!!event.payload);
+      if (event.payload !== isCurrentLogin) {
+        setIsCurrentLogin(!!event.payload);
       }
       fetchServers(true);
     });
@@ -113,11 +112,11 @@ export function ServerList({
       clearChat(); 
       //
       if (!server.public && !server.profile) {
-        setIsLogin(false);
+        setIsCurrentLogin(false);
         return;
       }
       //
-      setIsLogin(true);
+      setIsCurrentLogin(true);
       // The Rust backend will automatically disconnect,
       // so we don't need to handle disconnection on the frontend
       // src-tauri/src/server/websocket.rs

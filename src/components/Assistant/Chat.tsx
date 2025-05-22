@@ -23,6 +23,7 @@ import type { Chat } from "@/types/chat";
 import PrevSuggestion from "@/components/ChatMessage/PrevSuggestion";
 import { useAppStore } from "@/stores/appStore";
 // import ReadAloud from "./ReadAloud";
+import { useAuthStore } from "@/stores/authStore";
 
 interface ChatAIProps {
   isSearchActive?: boolean;
@@ -75,6 +76,8 @@ const ChatAI = memo(
       const { curChatEnd, setCurChatEnd, connected, setConnected } =
         useChatStore();
 
+      const isCurrentLogin = useAuthStore(state => state.isCurrentLogin);
+
       const visibleStartPage = useConnectStore((state) => {
         return state.visibleStartPage;
       });
@@ -83,7 +86,6 @@ const ChatAI = memo(
 
       const [activeChat, setActiveChat] = useState<Chat>();
       const [timedoutShow, setTimedoutShow] = useState(false);
-      const [isLogin, setIsLogin] = useState(true);
 
       const curIdRef = useRef("");
 
@@ -163,7 +165,6 @@ const ChatAI = memo(
         changeInput,
         websocketSessionId,
         showChatHistory,
-        isLogin
       );
 
       const { dealMsg } = useMessageHandler(
@@ -194,8 +195,8 @@ const ChatAI = memo(
       const init = useCallback(
         async (value: string) => {
           try {
-            //console.log("init", isLogin, curChatEnd, activeChat?._id);
-            if (!isLogin) {
+            //console.log("init", curChatEnd, activeChat?._id);
+            if (!isCurrentLogin) {
               addError("Please login to continue chatting");
               return;
             }
@@ -213,7 +214,7 @@ const ChatAI = memo(
           }
         },
         [
-          isLogin,
+          isCurrentLogin,
           curChatEnd,
           activeChat?._id,
           createNewChat,
@@ -344,13 +345,11 @@ const ChatAI = memo(
             activeChat={activeChat}
             reconnect={reconnect}
             isChatPage={isChatPage}
-            isLogin={isLogin}
-            setIsLogin={setIsLogin}
             showChatHistory={showChatHistory}
             assistantIDs={assistantIDs}
           />
 
-          {isLogin ? (
+          {isCurrentLogin ? (
             <ChatContent
               activeChat={activeChat}
               curChatEnd={curChatEnd}

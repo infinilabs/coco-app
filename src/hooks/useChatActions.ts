@@ -7,6 +7,7 @@ import platformAdapter from "@/utils/platformAdapter";
 import { useConnectStore } from "@/stores/connectStore";
 import { useChatStore } from "@/stores/chatStore";
 import { useSearchStore } from "@/stores/searchStore";
+import { useAuthStore } from "@/stores/authStore";
 
 export function useChatActions(
   setActiveChat: (chat: Chat | undefined) => void,
@@ -22,8 +23,9 @@ export function useChatActions(
   changeInput?: (val: string) => void,
   websocketSessionId?: string,
   showChatHistory?: boolean,
-  isLogin?: boolean,
 ) {
+  const isCurrentLogin = useAuthStore(state => state.isCurrentLogin);
+
   const isTauri = useAppStore((state) => state.isTauri);
   const addError = useAppStore((state) => state.addError);
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
@@ -316,7 +318,7 @@ export function useChatActions(
   const getChatHistory = useCallback(async () => {
     let response: any;
     if (isTauri) {
-      if (!currentService?.id || !isLogin) {
+      if (!currentService?.id || !isCurrentLogin) {
         setChats([]);
         return
       }
