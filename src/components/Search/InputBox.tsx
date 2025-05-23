@@ -528,7 +528,7 @@ export default function ChatInput({
               return setGoAskAi(false);
             }
 
-            if (key === "Tab") {
+            if (key === "Tab" && !isChatMode) {
               return handleAskAi(e);
             }
 
