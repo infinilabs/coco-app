@@ -177,7 +177,7 @@ const AskAi = () => {
     askAiMessage && (
       <div className="p-4 h-full">
         <div className="h-full px-3 py-4 overflow-auto">
-          <div className="text-xs text-[#999] font-semibold user-select-text truncate">
+          <div className="mb-4 text-xs text-[#999] font-semibold user-select-text truncate">
             {askAiMessage}
           </div>
 
