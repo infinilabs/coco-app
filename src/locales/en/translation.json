@@ -308,6 +308,12 @@
         "calculator": "Calculator"
       },
       "search": "Search Operation"
+    },
+    "askCocoAi": {
+      "title": "Ask {{0}}",
+      "placeholder": "Ask More",
+      "continueInChat": "Continue in chat",
+      "copy": "Copy"
     }
   },
   "assistant": {

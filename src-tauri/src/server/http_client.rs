@@ -212,7 +212,7 @@ impl HttpClient {
             query_params,
             body,
         )
-            .await
+        .await
     }
 
     // Convenience method for PUT requests
@@ -232,7 +232,7 @@ impl HttpClient {
             query_params,
             body,
         )
-            .await
+        .await
     }
 
     // Convenience method for DELETE requests
@@ -251,6 +251,6 @@ impl HttpClient {
             query_params,
             None,
         )
-            .await
+        .await
     }
 }

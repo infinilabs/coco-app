@@ -36,9 +36,9 @@ pub struct Total {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SearchHit<T> {
-    pub _index: String,
-    pub _type: String,
-    pub _id: String,
+    pub _index: Option<String>,
+    pub _type: Option<String>,
+    pub _id: Option<String>,
     pub _score: Option<f64>,
     pub _source: T, // This will hold the type we pass in (e.g., DataSource)
 }

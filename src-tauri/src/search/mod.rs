@@ -31,6 +31,12 @@ pub async fn query_coco_fusion<R: Runtime>(
     // Time limit for each query
     let timeout_duration = Duration::from_millis(query_timeout);
 
+    log::debug!(
+        "query_coco_fusion: {:?}, timeout: {:?}",
+        query_strings,
+        timeout_duration
+    );
+
     // Push all queries into futures
     for query_source in sources_list {
         let query_source_type = query_source.get_type().clone();
@@ -68,6 +74,8 @@ pub async fn query_coco_fusion<R: Runtime>(
                 let source_id = response.source.id.clone();
 
                 for (doc, score) in response.hits {
+                    log::debug!("doc: {}, {:?}, {}", doc.id, doc.title, score);
+
                     let query_hit = QueryHits {
                         source: Some(response.source.clone()),
                         score,
@@ -83,7 +91,7 @@ pub async fn query_coco_fusion<R: Runtime>(
                 }
             }
             Ok(Ok(Err(err))) => {
-                log::debug!("Query error: {:?}", err);
+                log::error!("{}", err);
                 failed_requests.push(FailedRequest {
                     source: QuerySource {
                         r#type: "N/A".into(),
@@ -95,28 +103,19 @@ pub async fn query_coco_fusion<R: Runtime>(
                     reason: None,
                 });
             }
-            Ok(Err(_elapsed)) => {
-                log::debug!("Query timeout reached, skipping request");
+            Ok(Err(err)) => {
+                log::error!("{}", err);
             }
             // Timeout reached, skip this request
             _ => {
-                failed_requests.push(FailedRequest {
-                    source: QuerySource {
-                        r#type: "N/A".into(),
-                        name: "N/A".into(),
-                        id: "N/A".into(),
-                    },
-                    status: 0,
-                    error: Some(format!("{:?}", &result)),
-                    reason: None,
-                });
+                log::debug!("timeout reached, skip this request");
             }
         }
     }
 
     // Sort hits within each source by score (descending)
     for hits in hits_per_source.values_mut() {
-        hits.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        hits.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Greater));
     }
 
     let total_sources = hits_per_source.len();
@@ -132,13 +131,21 @@ pub async fn query_coco_fusion<R: Runtime>(
     // Distribute hits fairly across sources
     for (_source_id, hits) in &mut hits_per_source {
         let take_count = hits.len().min(max_hits_per_source);
-        for (doc, _) in hits.drain(0..take_count) {
+        for (doc, score) in hits.drain(0..take_count) {
             if !seen_docs.contains(&doc.document.id) {
                 seen_docs.insert(doc.document.id.clone());
+                log::debug!(
+                    "collect doc: {}, {:?}, {}",
+                    doc.document.id,
+                    doc.document.title,
+                    score
+                );
                 final_hits.push(doc);
             }
         }
     }
+
+    log::debug!("final hits: {:?}", final_hits.len());
 
     // If we still need more hits, take the highest-scoring remaining ones
     if final_hits.len() < size as usize {

@@ -14,6 +14,14 @@ export type ISearchStore = {
   setSelectedSearchContent: (
     selectedSearchContent?: Record<string, any>
   ) => void;
+  goAskAi: boolean;
+  setGoAskAi: (goAskAi: boolean) => void;
+  askAiMessage: string;
+  setAskAiMessage: (askAiMessage: string) => void;
+  askAiSessionId?: string;
+  setAskAiSessionId: (askAiSessionId?: string) => void;
+  selectedAssistant?: any;
+  setSelectedAssistant: (selectedAssistant?: any) => void;
 };
 
 export const useSearchStore = create<ISearchStore>()(
@@ -22,7 +30,7 @@ export const useSearchStore = create<ISearchStore>()(
       sourceData: undefined,
       setSourceData: (sourceData: any) => set({ sourceData }),
       sourceDataIds: [],
-      setSourceDataIds: (sourceDataIds: string[]) => set({ sourceDataIds }), 
+      setSourceDataIds: (sourceDataIds: string[]) => set({ sourceDataIds }),
       MCPIds: [],
       setMCPIds: (MCPIds: string[]) => set({ MCPIds }),
       visibleContextMenu: false,
@@ -31,6 +39,20 @@ export const useSearchStore = create<ISearchStore>()(
       },
       setSelectedSearchContent: (selectedSearchContent) => {
         return set({ selectedSearchContent });
+      },
+      goAskAi: false,
+      setGoAskAi: (goAskAi) => {
+        return set({ goAskAi });
+      },
+      askAiMessage: "",
+      setAskAiMessage: (askAiMessage) => {
+        return set({ askAiMessage });
+      },
+      setAskAiSessionId: (askAiSessionId) => {
+        return set({ askAiSessionId });
+      },
+      setSelectedAssistant: (selectedAssistant) => {
+        return set({ selectedAssistant });
       },
     }),
     {

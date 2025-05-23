@@ -10,6 +10,7 @@ import Footer from "@/components/Common/UI/Footer";
 import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
 import { useConnectStore } from "@/stores/connectStore";
+import AskAi from "./AskAi";
 
 interface SearchResponse {
   hits: Array<{
@@ -60,6 +61,7 @@ function Search({
   useEffect(() => {
     querySourceTimeoutRef.current = querySourceTimeout;
   }, [querySourceTimeout]);
+  const goAskAi = useSearchStore((state) => state.goAskAi);
 
   const getSuggest = useCallback(
     async (searchInput: string) => {
@@ -133,10 +135,12 @@ function Search({
   }, [input, isChatMode, debouncedSearch]);
 
   return (
-    <div ref={mainWindowRef} className={`h-full pb-10 w-full relative`}>
+    <div ref={mainWindowRef} className={`h-full pb-8 w-full relative`}>
       {/* Search Results Panel */}
-      {suggests.length > 0 ? (
-          sourceData ? (
+      {goAskAi ? (
+        <AskAi />
+      ) : suggests.length > 0 ? (
+        sourceData ? (
           <SearchResults input={input} isChatMode={isChatMode} />
         ) : (
           <DropdownList

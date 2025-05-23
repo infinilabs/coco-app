@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { Calculator, Folder } from "lucide-react";
+import { Bot, Calculator, Folder } from "lucide-react";
 import { noop } from "lodash-es";
 import { useMount } from "ahooks";
 import { useTranslation } from "react-i18next";
@@ -18,6 +18,7 @@ import Application from "./components/Details/Application";
 import platformAdapter from "@/utils/platformAdapter";
 import Content from "./components/Content";
 import Details from "./components/Details";
+import QuickAiAccess from "./components/Details/QuickAiAccess";
 
 export interface IApplication {
   path: string;
@@ -102,6 +103,12 @@ const Extensions = () => {
         id: "Calculator",
         icon: <Calculator />,
         name: t("settings.extensions.calculator.title"),
+      },
+      {
+        id: "QuickAiAccess",
+        icon: <Bot />,
+        name: "Quick AI Access",
+        detail: <QuickAiAccess />,
       },
     ];
 

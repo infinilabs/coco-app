@@ -16,6 +16,7 @@ export interface ISource {
   question?: string;
   details?: any[];
   assistant_id?: string;
+  assistant_item?: any;
 }
 export interface Chat {
   _id: string;

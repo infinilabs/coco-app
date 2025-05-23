@@ -2,9 +2,12 @@ use crate::common;
 use crate::common::assistant::ChatRequestMessage;
 use crate::common::http::GetResponse;
 use crate::server::http_client::HttpClient;
+use futures_util::TryStreamExt;
+use http::Method;
 use serde_json::Value;
 use std::collections::HashMap;
-use tauri::{AppHandle, Runtime};
+use tauri::{AppHandle, Emitter, Runtime};
+use tokio::io::AsyncBufReadExt;
 
 #[tauri::command]
 pub async fn chat_history<R: Runtime>(
@@ -143,8 +146,8 @@ pub async fn new_chat<R: Runtime>(
 
     log::debug!("New chat response: {}", &body_text);
 
-    let chat_response: GetResponse =
-        serde_json::from_str(&body_text).map_err(|e| format!("Failed to parse response JSON: {}", e))?;
+    let chat_response: GetResponse = serde_json::from_str(&body_text)
+        .map_err(|e| format!("Failed to parse response JSON: {}", e))?;
 
     if chat_response.result != "created" {
         return Err(format!("Unexpected result: {}", chat_response.result));
@@ -178,8 +181,8 @@ pub async fn send_message<R: Runtime>(
         query_params,
         Some(body),
     )
-        .await
-        .map_err(|e| format!("Error cancel session: {}", e))?;
+    .await
+    .map_err(|e| format!("Error cancel session: {}", e))?;
 
     common::http::get_response_body_text(response).await
 }
@@ -221,8 +224,8 @@ pub async fn update_session_chat(
         None,
         Some(reqwest::Body::from(serde_json::to_string(&body).unwrap())),
     )
-        .await
-        .map_err(|e| format!("Error updating session: {}", e))?;
+    .await
+    .map_err(|e| format!("Error updating session: {}", e))?;
 
     Ok(response.status().is_success())
 }
@@ -250,11 +253,56 @@ pub async fn assistant_search<R: Runtime>(
         None,
         Some(reqwest::Body::from(body.to_string())),
     )
-        .await
-        .map_err(|e| format!("Error searching assistants: {}", e))?;
+    .await
+    .map_err(|e| format!("Error searching assistants: {}", e))?;
 
     response
         .json::<Value>()
         .await
         .map_err(|err| err.to_string())
+}
+
+#[tauri::command]
+pub async fn ask_ai<R: Runtime>(
+    app_handle: AppHandle<R>,
+    message: String,
+    server_id: String,
+    assistant_id: String,
+    client_id: String,
+) -> Result<(), String> {
+    let body = serde_json::json!({ "message": message });
+
+    let path = format!("/assistant/{}/_ask", assistant_id);
+
+    println!("Sending request to {}", &path);
+
+    let response = HttpClient::send_request(
+        server_id.as_str(),
+        Method::POST,
+        path.as_str(),
+        None,
+        None,
+        Some(reqwest::Body::from(body.to_string())),
+    )
+    .await?;
+
+    if !response.status().is_success() {
+        return Err(format!("Request Failed: {}", response.status()));
+    }
+
+    let stream = response.bytes_stream();
+    let reader = tokio_util::io::StreamReader::new(
+        stream.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)),
+    );
+    let mut lines = tokio::io::BufReader::new(reader).lines();
+
+    while let Ok(Some(line)) = lines.next_line().await {
+        dbg!("Received line: {}", &line);
+
+        let _ = app_handle.emit(&client_id, line).map_err(|err| {
+            println!("Failed to emit: {:?}", err);
+        });
+    }
+
+    Ok(())
 }

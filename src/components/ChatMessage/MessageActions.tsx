@@ -1,3 +1,5 @@
+import { COPY_BUTTON_ID } from "@/constants";
+import { useSearchStore } from "@/stores/searchStore";
 import {
   Check,
   Copy,
@@ -84,11 +86,13 @@ export const MessageActions = ({
       }, 1000);
     }
   };
+  const goAskAi = useSearchStore((state) => state.goAskAi);
 
   return (
     <div className="flex items-center gap-1 mt-2">
       {!isRefreshOnly && (
         <button
+          id={goAskAi ? COPY_BUTTON_ID : ""}
           onClick={handleCopy}
           className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
         >

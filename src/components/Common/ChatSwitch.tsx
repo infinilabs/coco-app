@@ -2,6 +2,7 @@ import React, { useEffect, useCallback } from "react";
 import { Bot, Search } from "lucide-react";
 
 import { useShortcutsStore } from "@/stores/shortcutsStore";
+import platformAdapter from "@/utils/platformAdapter";
 
 interface ChatSwitchProps {
   isChatMode: boolean;
@@ -38,6 +39,18 @@ const ChatSwitch: React.FC<ChatSwitchProps> = ({ isChatMode, onChange }) => {
       window.removeEventListener("keydown", handleKeydown);
     };
   }, [handleKeydown]);
+
+  useEffect(() => {
+    const unlisten = platformAdapter.listenEvent("toggle-to-chat-mode", () => {
+      onChange(true);
+    });
+
+    return () => {
+      unlisten.then((unlisten) => {
+        unlisten();
+      });
+    };
+  }, []);
 
   return (
     <div

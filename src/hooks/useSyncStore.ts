@@ -1,5 +1,6 @@
 import { useAppearanceStore } from "@/stores/appearanceStore";
 import { useConnectStore } from "@/stores/connectStore";
+import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useStartupStore } from "@/stores/startupStore";
 import platformAdapter from "@/utils/platformAdapter";
@@ -86,6 +87,12 @@ export const useSyncStore = () => {
   const setAllowSelfSignature = useConnectStore((state) => {
     return state.setAllowSelfSignature;
   });
+  const setQuickAiAccessServer = useExtensionsStore((state) => {
+    return state.setQuickAiAccessServer;
+  });
+  const setQuickAiAccessAssistant = useExtensionsStore((state) => {
+    return state.setQuickAiAccessAssistant;
+  });
 
   useEffect(() => {
     if (!resetFixedWindow) {
@@ -164,6 +171,15 @@ export const useSyncStore = () => {
           setOpacity(opacity);
         }
         setSnapshotUpdate(snapshotUpdate);
+      }),
+
+      platformAdapter.listenEvent("change-extensions-store", ({ payload }) => {
+        const { quickAiAccessServer, quickAiAccessAssistant } = payload;
+
+        console.log("quickAiAccessAssistant", quickAiAccessAssistant);
+
+        setQuickAiAccessServer(quickAiAccessServer);
+        setQuickAiAccessAssistant(quickAiAccessAssistant);
       }),
     ]);
 

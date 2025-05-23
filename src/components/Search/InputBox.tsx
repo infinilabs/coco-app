@@ -1,5 +1,5 @@
 import { Brain } from "lucide-react";
-import { useCallback, useEffect, useRef, useState, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 import { useKeyPress } from "ahooks";
@@ -22,9 +22,9 @@ import VisibleKey from "@/components/Common/VisibleKey";
 import ConnectionError from "./ConnectionError";
 import SearchIcons from "./SearchIcons";
 import ChatIcons from "./ChatIcons";
-// import AiSummaryIcon from "../Common/Icons/AiSummaryIcon";
-import { Post } from "@/api/axiosRequest";
 import platformAdapter from "@/utils/platformAdapter";
+import { Post } from "@/api/axiosRequest";
+// import AiSummaryIcon from "../Common/Icons/AiSummaryIcon";
 
 interface ChatInputProps {
   isTauri: boolean;
@@ -388,7 +388,6 @@ export default function ChatInput({
     },
     [assistantConfig]
   );
-
 
   return (
     <div className={`w-full relative`}>

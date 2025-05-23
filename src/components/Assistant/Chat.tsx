@@ -22,6 +22,7 @@ import ConnectPrompt from "./ConnectPrompt";
 import type { Chat } from "@/types/chat";
 import PrevSuggestion from "@/components/ChatMessage/PrevSuggestion";
 import { useAppStore } from "@/stores/appStore";
+import { useSearchStore } from "@/stores/searchStore";
 // import ReadAloud from "./ReadAloud";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -91,10 +92,30 @@ const ChatAI = memo(
 
       const [isSidebarOpenChat, setIsSidebarOpenChat] = useState(isSidebarOpen);
       const [chats, setChats] = useState<Chat[]>([]);
+      const askAiSessionId = useSearchStore((state) => state.askAiSessionId);
+      const setAskAiSessionId = useSearchStore(
+        (state) => state.setAskAiSessionId
+      );
 
       useEffect(() => {
         activeChatProp && setActiveChat(activeChatProp);
       }, [activeChatProp]);
+
+      useEffect(() => {
+        console.log("chats", chats);
+        console.log("askAiSessionId", askAiSessionId);
+        if (chats.length === 0 || !askAiSessionId) return;
+
+        const matched = chats.find((item) => item._id === askAiSessionId);
+
+        console.log("matched", matched);
+
+        if (matched) {
+          onSelectChat(matched);
+
+          setAskAiSessionId(void 0);
+        }
+      }, [chats, chats]);
 
       const [Question, setQuestion] = useState<string>("");
 
