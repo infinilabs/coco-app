@@ -1,5 +1,5 @@
 import { Brain } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 import { useKeyPress } from "ahooks";
@@ -23,8 +23,11 @@ import ConnectionError from "./ConnectionError";
 import SearchIcons from "./SearchIcons";
 import ChatIcons from "./ChatIcons";
 // import AiSummaryIcon from "../Common/Icons/AiSummaryIcon";
+import { Post } from "@/api/axiosRequest";
+import platformAdapter from "@/utils/platformAdapter";
 
 interface ChatInputProps {
+  isTauri: boolean;
   onSend: (message: string) => void;
   disabled: boolean;
   disabledChange: () => void;
@@ -40,22 +43,6 @@ interface ChatInputProps {
   isMCPActive: boolean;
   setIsMCPActive: () => void;
   isChatPage?: boolean;
-  getDataSourcesByServer: (
-    serverId: string,
-    options?: {
-      from?: number;
-      size?: number;
-      query?: string;
-    }
-  ) => Promise<DataSource[]>;
-  getMCPByServer: (
-    serverId: string,
-    options?: {
-      from?: number;
-      size?: number;
-      query?: string;
-    }
-  ) => Promise<DataSource[]>;
   setupWindowFocusListener: (callback: () => void) => Promise<() => void>;
   checkScreenPermission: () => Promise<boolean>;
   requestScreenPermission: () => void;
@@ -75,6 +62,7 @@ interface ChatInputProps {
 }
 
 export default function ChatInput({
+  isTauri,
   onSend,
   disabled,
   changeMode,
@@ -90,8 +78,6 @@ export default function ChatInput({
   isMCPActive,
   setIsMCPActive,
   isChatPage = false,
-  getDataSourcesByServer,
-  getMCPByServer,
   setupWindowFocusListener,
   hasModules = [],
   searchPlaceholder,
@@ -253,6 +239,156 @@ export default function ChatInput({
   const [lineCount, setLineCount] = useState(1);
 
   const source = currentAssistant?._source;
+
+  const assistantConfig = useMemo(() => {
+    return {
+      datasourceEnabled: source?.datasource?.enabled,
+      datasourceVisible: source?.datasource?.visible,
+      datasourceIds: source?.datasource?.ids,
+      mcpEnabled: source?.mcp_servers?.enabled,
+      mcpVisible: source?.mcp_servers?.visible,
+      mcpIds: source?.mcp_servers?.ids,
+    };
+  }, [currentAssistant]);
+
+  const getDataSourcesByServer = useCallback(
+    async (
+      serverId: string,
+      options?: {
+        from?: number;
+        size?: number;
+        query?: string;
+      }
+    ): Promise<DataSource[]> => {
+      if (
+        !(
+          assistantConfig.datasourceEnabled && assistantConfig.datasourceVisible
+        )
+      ) {
+        return [];
+      }
+
+      const body: Record<string, any> = {
+        id: serverId,
+        from: options?.from || 0,
+        size: options?.size || 1000,
+      };
+
+      body.query = {
+        bool: {
+          must: [{ term: { enabled: true } }],
+        },
+      };
+
+      if (options?.query) {
+        body.query.bool.must.push({
+          query_string: {
+            fields: ["combined_fulltext"],
+            query: options?.query,
+            fuzziness: "AUTO",
+            fuzzy_prefix_length: 2,
+            fuzzy_max_expansions: 10,
+            fuzzy_transpositions: true,
+            allow_leading_wildcard: false,
+          },
+        });
+      }
+
+      let response: any;
+      if (isTauri) {
+        response = await platformAdapter.invokeBackend("datasource_search", {
+          id: serverId,
+          options: body,
+        });
+      } else {
+        const [error, res]: any = await Post("/datasource/_search", body);
+        if (error) {
+          console.error("_search", error);
+          return [];
+        }
+        response = res?.hits?.hits?.map((item: any) => {
+          return {
+            ...item,
+            id: item._source.id,
+            name: item._source.name,
+          };
+        });
+      }
+      let ids = assistantConfig.datasourceIds;
+      if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
+        response = response?.filter((item: any) => ids.includes(item.id));
+      }
+      return response || [];
+    },
+    [assistantConfig]
+  );
+
+  const getMCPByServer = useCallback(
+    async (
+      serverId: string,
+      options?: {
+        from?: number;
+        size?: number;
+        query?: string;
+      }
+    ): Promise<DataSource[]> => {
+      if (!(assistantConfig.mcpEnabled && assistantConfig.mcpVisible)) {
+        return [];
+      }
+      const body: Record<string, any> = {
+        id: serverId,
+        from: options?.from || 0,
+        size: options?.size || 1000,
+      };
+      body.query = {
+        bool: {
+          must: [{ term: { enabled: true } }],
+        },
+      };
+
+      if (options?.query) {
+        body.query.bool.must.push({
+          query_string: {
+            fields: ["combined_fulltext"],
+            query: options?.query,
+            fuzziness: "AUTO",
+            fuzzy_prefix_length: 2,
+            fuzzy_max_expansions: 10,
+            fuzzy_transpositions: true,
+            allow_leading_wildcard: false,
+          },
+        });
+      }
+
+      let response: any;
+      if (isTauri) {
+        response = await platformAdapter.invokeBackend(
+          "mcp_server_search",
+          body
+        );
+      } else {
+        const [error, res]: any = await Post("/mcp_server/_search", body);
+        if (error) {
+          console.error("_search", error);
+          return [];
+        }
+        response = res?.hits?.hits?.map((item: any) => {
+          return {
+            ...item,
+            id: item._source.id,
+            name: item._source.name,
+          };
+        });
+      }
+      let ids = assistantConfig.mcpIds;
+      if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
+        response = response?.filter((item: any) => ids.includes(item.id));
+      }
+      return response || [];
+    },
+    [assistantConfig]
+  );
+
 
   return (
     <div className={`w-full relative`}>

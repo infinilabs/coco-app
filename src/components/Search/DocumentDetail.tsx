@@ -43,7 +43,7 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
   };
 
   return (
-    <div className="p-3">
+    <div className="p-3 user-select-text">
       {/* <div className="font-normal text-xs text-[#666] dark:text-[#999] mb-2">
         {t("search.document.details")}
       </div> */}

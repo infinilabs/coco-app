@@ -44,6 +44,7 @@ Information about release notes of Coco Server is provided here.
 - fix: secondary page cannot be searched #551
 - fix: the scroll button is not displayed by default #552
 - fix: suggestion list position #553
+- fix: independent chat window has no data #554
 
 ### ✈️ Improvements
 

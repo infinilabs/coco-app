@@ -26,16 +26,13 @@ import {
   delete_session_chat,
   update_session_chat,
 } from "@/commands";
-import { DataSource } from "@/types/commands";
 import HistoryList from "@/components/Common/HistoryList";
 import { useSyncStore } from "@/hooks/useSyncStore";
-import platformAdapter from "@/utils/platformAdapter";
 
 interface ChatProps {}
 
 export default function Chat({}: ChatProps) {
   const currentService = useConnectStore((state) => state.currentService);
-  const currentAssistant = useConnectStore((state) => state.currentAssistant);
   const setVisibleStartPage = useConnectStore((state) => {
     return state.setVisibleStartPage;
   });
@@ -260,52 +257,6 @@ export default function Chat({}: ChatProps) {
     await delete_session_chat(currentService.id, id);
   };
 
-  const getDataSourcesByServer = useCallback(
-    async (
-      serverId: string,
-      options?: {
-        from?: number;
-        size?: number;
-        query?: string;
-      }
-    ): Promise<DataSource[]> => {
-      let response: any;
-      response = await platformAdapter.invokeBackend("datasource_search", {
-        id: serverId,
-        options,
-      });
-      let ids = currentAssistant?._source?.datasource?.ids;
-      if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
-        response = response?.filter((item: any) => ids.includes(item.id));
-      }
-      return response || [];
-    },
-    [JSON.stringify(currentAssistant)]
-  );
-
-  const getMCPByServer = useCallback(
-    async (
-      serverId: string,
-      options?: {
-        from?: number;
-        size?: number;
-        query?: string;
-      }
-    ): Promise<DataSource[]> => {
-      let response: any;
-      response = await platformAdapter.invokeBackend("mcp_server_search", {
-        id: serverId,
-        options,
-      });
-      let ids = currentAssistant?._source?.mcp_servers?.ids;
-      if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
-        response = response?.filter((item: any) => ids.includes(item.id));
-      }
-      return response || [];
-    },
-    [JSON.stringify(currentAssistant)]
-  );
-
   return (
     <div className="h-screen">
       <div className="h-full flex">
@@ -350,6 +301,7 @@ export default function Chat({}: ChatProps) {
           {/* Input area */}
           <div className={`border-t p-2 border-gray-200 dark:border-gray-800`}>
             <InputBox
+              isTauri={true}
               isChatMode={true}
               inputValue={input}
               onSend={handleSendMessage}
@@ -364,7 +316,6 @@ export default function Chat({}: ChatProps) {
               isMCPActive={isMCPActive}
               setIsMCPActive={() => setIsMCPActive((prev) => !prev)}
               isChatPage={isChatPage}
-              getDataSourcesByServer={getDataSourcesByServer}
               setupWindowFocusListener={setupWindowFocusListener}
               checkScreenPermission={checkScreenPermission}
               requestScreenPermission={requestScreenPermission}
@@ -375,7 +326,6 @@ export default function Chat({}: ChatProps) {
               openFileDialog={openFileDialog}
               getFileMetadata={getFileMetadata}
               getFileIcon={getFileIcon}
-              getMCPByServer={getMCPByServer}
             />
           </div>
         </div>

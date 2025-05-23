@@ -6,7 +6,6 @@ import {
   Suspense,
   memo,
   useState,
-  useMemo,
 } from "react";
 import clsx from "clsx";
 import { useMount } from "ahooks";
@@ -21,9 +20,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { useStartupStore } from "@/stores/startupStore";
-import { DataSource } from "@/types/commands";
 import { useThemeStore } from "@/stores/themeStore";
-import { Post } from "@/api/axiosRequest";
 import { useConnectStore } from "@/stores/connectStore";
 import { useAppearanceStore } from "@/stores/appearanceStore";
 
@@ -190,155 +187,6 @@ function SearchChat({
     return platformAdapter.setAlwaysOnTop(isPinned);
   }, []);
 
-  const assistantConfig = useMemo(() => {
-    return {
-      datasourceEnabled: source?.datasource?.enabled,
-      datasourceVisible: source?.datasource?.visible,
-      datasourceIds: source?.datasource?.ids,
-      mcpEnabled: source?.mcp_servers?.enabled,
-      mcpVisible: source?.mcp_servers?.visible,
-      mcpIds: source?.mcp_servers?.ids,
-    };
-  }, [currentAssistant]);
-
-  const getDataSourcesByServer = useCallback(
-    async (
-      serverId: string,
-      options?: {
-        from?: number;
-        size?: number;
-        query?: string;
-      }
-    ): Promise<DataSource[]> => {
-      if (
-        !(
-          assistantConfig.datasourceEnabled && assistantConfig.datasourceVisible
-        )
-      ) {
-        return [];
-      }
-
-      const body: Record<string, any> = {
-        id: serverId,
-        from: options?.from || 0,
-        size: options?.size || 1000,
-      };
-
-      body.query = {
-        bool: {
-          must: [{ term: { enabled: true } }],
-        },
-      };
-
-      if (options?.query) {
-        body.query.bool.must.push({
-          query_string: {
-            fields: ["combined_fulltext"],
-            query: options?.query,
-            fuzziness: "AUTO",
-            fuzzy_prefix_length: 2,
-            fuzzy_max_expansions: 10,
-            fuzzy_transpositions: true,
-            allow_leading_wildcard: false,
-          },
-        });
-      }
-
-      let response: any;
-      if (isTauri) {
-        response = await platformAdapter.invokeBackend("datasource_search", {
-          id: serverId,
-          options: body,
-        });
-      } else {
-        const [error, res]: any = await Post("/datasource/_search", body);
-        if (error) {
-          console.error("_search", error);
-          return [];
-        }
-        response = res?.hits?.hits?.map((item: any) => {
-          return {
-            ...item,
-            id: item._source.id,
-            name: item._source.name,
-          };
-        });
-      }
-      let ids = assistantConfig.datasourceIds;
-      if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
-        response = response?.filter((item: any) => ids.includes(item.id));
-      }
-      return response || [];
-    },
-    [assistantConfig]
-  );
-
-  const getMCPByServer = useCallback(
-    async (
-      serverId: string,
-      options?: {
-        from?: number;
-        size?: number;
-        query?: string;
-      }
-    ): Promise<DataSource[]> => {
-      if (!(assistantConfig.mcpEnabled && assistantConfig.mcpVisible)) {
-        return [];
-      }
-      const body: Record<string, any> = {
-        id: serverId,
-        from: options?.from || 0,
-        size: options?.size || 1000,
-      };
-      body.query = {
-        bool: {
-          must: [{ term: { enabled: true } }],
-        },
-      };
-
-      if (options?.query) {
-        body.query.bool.must.push({
-          query_string: {
-            fields: ["combined_fulltext"],
-            query: options?.query,
-            fuzziness: "AUTO",
-            fuzzy_prefix_length: 2,
-            fuzzy_max_expansions: 10,
-            fuzzy_transpositions: true,
-            allow_leading_wildcard: false,
-          },
-        });
-      }
-
-      let response: any;
-      if (isTauri) {
-        response = await platformAdapter.invokeBackend(
-          "mcp_server_search",
-          body
-        );
-      } else {
-        const [error, res]: any = await Post("/mcp_server/_search", body);
-        if (error) {
-          console.error("_search", error);
-          return [];
-        }
-        response = res?.hits?.hits?.map((item: any) => {
-          return {
-            ...item,
-            id: item._source.id,
-            name: item._source.name,
-          };
-        });
-      }
-      let ids = assistantConfig.mcpIds;
-      if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
-        response = response?.filter((item: any) => ids.includes(item.id));
-      }
-      return response || [];
-    },
-    [assistantConfig]
-  );
-
   const setupWindowFocusListener = useCallback(async (callback: () => void) => {
     return platformAdapter.listenEvent("tauri://focus", callback);
   }, []);
@@ -445,6 +293,7 @@ function SearchChat({
         } border-[#E6E6E6] dark:border-[#272626]`}
       >
         <InputBox
+          isTauri={isTauri}
           isChatMode={isChatMode}
           inputValue={input}
           onSend={handleSendMessage}
@@ -459,8 +308,6 @@ function SearchChat({
           setIsDeepThinkActive={toggleDeepThinkActive}
           isMCPActive={isMCPActive}
           setIsMCPActive={toggleMCPActive}
-          getDataSourcesByServer={getDataSourcesByServer}
-          getMCPByServer={getMCPByServer}
           setupWindowFocusListener={setupWindowFocusListener}
           checkScreenPermission={checkScreenPermission}
           requestScreenPermission={requestScreenPermission}

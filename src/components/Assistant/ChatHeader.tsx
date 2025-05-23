@@ -98,7 +98,7 @@ export function ChatHeader({
             onClick={clearChat}
             className="p-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
           >
-            <VisibleKey shortcut={newSession} onKeyPress={clearChat}>
+            <VisibleKey shortcutClassName="top-2.5" shortcut={newSession} onKeyPress={clearChat}>
               <MessageSquarePlus className="h-4 w-4 relative top-0.5" />
             </VisibleKey>
           </button>
