@@ -24,7 +24,6 @@ pub async fn query_coco_fusion<R: Runtime>(
 
     let sources_future = search_sources.get_sources();
     let mut futures = FuturesUnordered::new();
-    let mut sources = HashMap::new();
 
     let sources_list = sources_future.await;
 
@@ -41,8 +40,6 @@ pub async fn query_coco_fusion<R: Runtime>(
                 continue;
             }
         }
-
-        sources.insert(query_source_type.id.clone(), query_source_type);
 
         let query = SearchQuery::new(from, size, query_strings.clone());
         let query_source_clone = query_source.clone(); // Clone Arc to avoid ownership issues

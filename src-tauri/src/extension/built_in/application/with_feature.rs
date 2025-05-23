@@ -7,7 +7,7 @@ use crate::common::document::{DataSourceReference, Document};
 use crate::common::error::SearchError;
 use crate::common::search::{QueryResponse, QuerySource, SearchQuery};
 use crate::common::traits::SearchSource;
-use crate::local::LOCAL_QUERY_SOURCE_TYPE;
+use crate::extension::LOCAL_QUERY_SOURCE_TYPE;
 use crate::util::open;
 use crate::GLOBAL_TAURI_APP_HANDLE;
 use applications::{App, AppTrait};
@@ -687,12 +687,7 @@ fn pizza_engine_hits_to_coco_hits(
     coco_hits
 }
 
-#[tauri::command]
-pub async fn set_app_alias<R: Runtime>(
-    tauri_app_handle: AppHandle<R>,
-    app_path: String,
-    alias: String,
-) {
+pub fn set_app_alias<R: Runtime>(tauri_app_handle: &AppHandle<R>, app_path: &str, alias: &str) {
     let store = tauri_app_handle
         .store(TAURI_STORE_APP_ALIAS)
         .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_ALIAS));
@@ -762,11 +757,10 @@ fn register_app_hotkey_upon_start<R: Runtime>(
     Ok(())
 }
 
-#[tauri::command]
-pub async fn register_app_hotkey<R: Runtime>(
-    tauri_app_handle: AppHandle<R>,
-    app_path: String,
-    hotkey: String,
+pub fn register_app_hotkey<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
+    app_path: &str,
+    hotkey: &str,
 ) -> Result<(), String> {
     let app_hotkey_store = tauri_app_handle
         .store(TAURI_STORE_APP_HOTKEY)
@@ -776,16 +770,15 @@ pub async fn register_app_hotkey<R: Runtime>(
 
     tauri_app_handle
         .global_shortcut()
-        .on_shortcut(hotkey.as_str(), app_hotkey_handler(app_path))
+        .on_shortcut(hotkey.as_str(), app_hotkey_handler(app_path.into()))
         .map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
-#[tauri::command]
-pub async fn unregister_app_hotkey<R: Runtime>(
-    tauri_app_handle: AppHandle<R>,
-    app_path: String,
+pub fn unregister_app_hotkey<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
+    app_path: &str,
 ) -> Result<(), String> {
     let app_hotkey_store = tauri_app_handle
         .store(TAURI_STORE_APP_HOTKEY)
@@ -845,10 +838,9 @@ fn get_disabled_app_list<R: Runtime>(tauri_app_handle: AppHandle<R>) -> Vec<Stri
     disabled_app_list
 }
 
-#[tauri::command]
-pub async fn disable_app_search<R: Runtime>(
-    tauri_app_handle: AppHandle<R>,
-    app_path: String,
+pub fn disable_app_search<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
+    app_path: &str,
 ) -> Result<(), String> {
     let store = tauri_app_handle
         .store(TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH)
@@ -868,17 +860,16 @@ pub async fn disable_app_search<R: Runtime>(
         ));
     }
 
-    disabled_app_list.push(app_path);
+    disabled_app_list.push(app_path.into());
 
     store.set(TAURI_STORE_KEY_DISABLED_APP_LIST, disabled_app_list);
 
     Ok(())
 }
 
-#[tauri::command]
-pub async fn enable_app_search<R: Runtime>(
-    tauri_app_handle: AppHandle<R>,
-    app_path: String,
+pub fn enable_app_search<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
+    app_path: &str,
 ) -> Result<(), String> {
     let store = tauri_app_handle
         .store(TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH)

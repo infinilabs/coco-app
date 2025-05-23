@@ -1,7 +1,7 @@
 mod assistant;
 mod autostart;
 mod common;
-mod local;
+mod extension;
 mod search;
 mod server;
 mod settings;
@@ -143,19 +143,12 @@ pub fn run() {
             util::open,
             server::system_settings::get_system_settings,
             simulate_mouse_click,
-            local::get_disabled_local_query_sources,
-            local::enable_local_query_source,
-            local::disable_local_query_source,
-            local::application::get_app_list,
-            local::application::get_app_search_path,
-            local::application::get_app_metadata,
-            local::application::set_app_alias,
-            local::application::register_app_hotkey,
-            local::application::unregister_app_hotkey,
-            local::application::disable_app_search,
-            local::application::enable_app_search,
-            local::application::add_app_search_path,
-            local::application::remove_app_search_path,
+
+            extension::application::get_app_list,
+            extension::application::get_app_search_path,
+            extension::application::get_app_metadata,
+            extension::application::add_app_search_path,
+            extension::application::remove_app_search_path,
             settings::set_allow_self_signature,
             settings::get_allow_self_signature,
         ])
@@ -259,7 +252,7 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
             .await;
     }
 
-    local::start_pizza_engine_runtime();
+    extension::built_in::pizza_engine_runtime::start_pizza_engine_runtime();
 }
 
 #[tauri::command]
@@ -415,7 +408,9 @@ fn open_settings(app: &tauri::AppHandle) {
 
 #[tauri::command]
 async fn get_app_search_source<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), String> {
-    local::init_local_search_source(&app_handle).await?;
+    let (_found_invalid_extensions, extensions) = extension::list_extensions()?;
+    extension::init_extensions(extensions);
+
     let _ = server::connector::refresh_all_connectors(&app_handle).await;
     let _ = server::datasource::refresh_all_datasources(&app_handle).await;
 
