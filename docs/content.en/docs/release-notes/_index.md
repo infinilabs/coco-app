@@ -43,6 +43,7 @@ Information about release notes of Coco Server is provided here.
 - fix: history list height #550
 - fix: secondary page cannot be searched #551
 - fix: the scroll button is not displayed by default #552
+- fix: suggestion list position #553
 
 ### ✈️ Improvements
 
