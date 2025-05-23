@@ -3,7 +3,7 @@ use super::AppMetadata;
 use crate::common::error::SearchError;
 use crate::common::search::{QueryResponse, QuerySource, SearchQuery};
 use crate::common::traits::SearchSource;
-use crate::local::LOCAL_QUERY_SOURCE_TYPE;
+use crate::extension::LOCAL_QUERY_SOURCE_TYPE;
 use async_trait::async_trait;
 use tauri::{AppHandle, Runtime};
 
@@ -40,9 +40,9 @@ impl SearchSource for ApplicationSearchSource {
 }
 
 pub fn set_app_alias<R: Runtime>(
-    _tauri_app_handle: AppHandle<R>,
-    _app_path: String,
-    _alias: String,
+    _tauri_app_handle: &AppHandle<R>,
+    _app_path: &str,
+    _alias: &str,
 ) -> Result<(), String> {
     unreachable!("app list should be empty, there is no way this can be invoked")
 }

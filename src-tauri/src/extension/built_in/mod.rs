@@ -46,6 +46,7 @@ pub(crate) fn is_extension_built_in(extension_id: &str) -> bool {
     false
 }
 
+// FIXME: persist this change
 pub(crate) fn enable_built_in_extension(extension_id: &str) {
     let tauri_app_handle = GLOBAL_TAURI_APP_HANDLE
         .get()
@@ -72,6 +73,7 @@ pub(crate) fn enable_built_in_extension(extension_id: &str) {
     }
 }
 
+// FIXME: persist this change
 pub(crate) fn disable_built_in_extension(extension_id: &str) {
     let tauri_app_handle = GLOBAL_TAURI_APP_HANDLE
         .get()

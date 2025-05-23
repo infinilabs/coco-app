@@ -12,19 +12,20 @@ use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::sync::OnceLock;
 
-trait SearchSourceState {
+pub(crate) trait SearchSourceState {
     #[cfg_attr(not(feature = "use_pizza_engine"), allow(unused))]
     fn as_mut_any(&mut self) -> &mut dyn Any;
 }
 
 #[async_trait::async_trait(?Send)]
-trait Task: Send + Sync {
+pub(crate) trait Task: Send + Sync {
     fn search_source_id(&self) -> &'static str;
 
     async fn exec(&mut self, state: &mut Option<Box<dyn SearchSourceState>>);
 }
 
-static RUNTIME_TX: OnceLock<tokio::sync::mpsc::UnboundedSender<Box<dyn Task>>> = OnceLock::new();
+pub(crate) static RUNTIME_TX: OnceLock<tokio::sync::mpsc::UnboundedSender<Box<dyn Task>>> =
+    OnceLock::new();
 
 pub(crate) fn start_pizza_engine_runtime() {
     std::thread::spawn(|| {

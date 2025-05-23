@@ -1,6 +1,6 @@
-use super::super::SearchSourceState;
-use super::super::Task;
-use super::super::RUNTIME_TX;
+use super::super::pizza_engine_runtime::SearchSourceState;
+use super::super::pizza_engine_runtime::Task;
+use super::super::pizza_engine_runtime::RUNTIME_TX;
 use super::AppEntry;
 use super::AppMetadata;
 use crate::common::document::{DataSourceReference, Document};
@@ -326,7 +326,7 @@ impl<R: Runtime> Task for SearchApplicationsTask<R> {
 
     async fn exec(&mut self, state: &mut Option<Box<dyn SearchSourceState>>) {
         let callback = self.callback.take().unwrap();
-        let disabled_app_list = get_disabled_app_list(self.tauri_app_handle.clone());
+        let disabled_app_list = get_disabled_app_list(&self.tauri_app_handle);
 
         // TODO: search via alias, implement this when Pizza engine supports update
         let dsl = format!(
@@ -766,11 +766,11 @@ pub fn register_app_hotkey<R: Runtime>(
         .store(TAURI_STORE_APP_HOTKEY)
         .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_HOTKEY));
 
-    app_hotkey_store.set(app_path.clone(), hotkey.as_str());
+    app_hotkey_store.set(app_path.clone(), hotkey);
 
     tauri_app_handle
         .global_shortcut()
-        .on_shortcut(hotkey.as_str(), app_hotkey_handler(app_path.into()))
+        .on_shortcut(hotkey, app_hotkey_handler(app_path.into()))
         .map_err(|e| e.to_string())?;
 
     Ok(())
@@ -784,7 +784,7 @@ pub fn unregister_app_hotkey<R: Runtime>(
         .store(TAURI_STORE_APP_HOTKEY)
         .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_HOTKEY));
 
-    let Some(hotkey) = app_hotkey_store.get(app_path.as_str()) else {
+    let Some(hotkey) = app_hotkey_store.get(app_path) else {
         let error_msg = format!(
             "unregister an Application hotkey that does not exist app: [{}]",
             app_path,
@@ -798,7 +798,7 @@ pub fn unregister_app_hotkey<R: Runtime>(
         _ => unreachable!("hotkey should be stored in a string"),
     };
 
-    let deleted = app_hotkey_store.delete(app_path.as_str());
+    let deleted = app_hotkey_store.delete(app_path);
     if !deleted {
         return Err("failed to delete application hotkey from store".into());
     }
@@ -811,7 +811,7 @@ pub fn unregister_app_hotkey<R: Runtime>(
     Ok(())
 }
 
-fn get_disabled_app_list<R: Runtime>(tauri_app_handle: AppHandle<R>) -> Vec<String> {
+fn get_disabled_app_list<R: Runtime>(tauri_app_handle: &AppHandle<R>) -> Vec<String> {
     let store = tauri_app_handle
         .store(TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH)
         .unwrap_or_else(|_| {
@@ -853,7 +853,7 @@ pub fn disable_app_search<R: Runtime>(
 
     let mut disabled_app_list = get_disabled_app_list(tauri_app_handle);
 
-    if disabled_app_list.contains(&app_path) {
+    if disabled_app_list.iter().any(|disabled_app| disabled_app == app_path) {
         return Err(format!(
             "trying to disable an app that is disabled [{}]",
             app_path

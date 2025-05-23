@@ -19,6 +19,7 @@ pub async fn query_coco_fusion<R: Runtime>(
     query_timeout: u64,
 ) -> Result<MultiSourceQueryResponse, SearchError> {
     let query_source_to_search = query_strings.get("querysource");
+    println!("DBG: query_coco_fusion {:?}", query_source_to_search);
 
     let search_sources = app_handle.state::<SearchSourceRegistry>();
 
@@ -40,6 +41,8 @@ pub async fn query_coco_fusion<R: Runtime>(
                 continue;
             }
         }
+
+        println!("DBG: searching [{}]", query_source_type.name);
 
         let query = SearchQuery::new(from, size, query_strings.clone());
         let query_source_clone = query_source.clone(); // Clone Arc to avoid ownership issues

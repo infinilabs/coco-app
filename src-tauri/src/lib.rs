@@ -143,12 +143,16 @@ pub fn run() {
             util::open,
             server::system_settings::get_system_settings,
             simulate_mouse_click,
-
-            extension::application::get_app_list,
-            extension::application::get_app_search_path,
-            extension::application::get_app_metadata,
-            extension::application::add_app_search_path,
-            extension::application::remove_app_search_path,
+            extension::built_in::application::get_app_list,
+            extension::built_in::application::get_app_search_path,
+            extension::built_in::application::get_app_metadata,
+            extension::built_in::application::add_app_search_path,
+            extension::built_in::application::remove_app_search_path,
+            extension::enable_extension,
+            extension::disable_extension,
+            extension::set_extension_alias,
+            extension::register_extension_hotkey,
+            extension::unregister_extension_hotkey,
             settings::set_allow_self_signature,
             settings::get_allow_self_signature,
         ])
@@ -408,7 +412,7 @@ fn open_settings(app: &tauri::AppHandle) {
 
 #[tauri::command]
 async fn get_app_search_source<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), String> {
-    let (_found_invalid_extensions, extensions) = extension::list_extensions()?;
+    let (_found_invalid_extensions, extensions) = extension::list_extensions().map_err(|e| e.to_string())?;
     extension::init_extensions(extensions);
 
     let _ = server::connector::refresh_all_connectors(&app_handle).await;
