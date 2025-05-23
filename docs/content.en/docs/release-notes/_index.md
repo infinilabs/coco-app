@@ -42,6 +42,7 @@ Information about release notes of Coco Server is provided here.
 - fix: switch server assistant and session unchanged #540
 - fix: history list height #550
 - fix: secondary page cannot be searched #551
+- fix: the scroll button is not displayed by default #552
 
 ### ✈️ Improvements
 
