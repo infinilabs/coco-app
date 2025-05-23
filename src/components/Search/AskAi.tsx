@@ -142,7 +142,7 @@ const AskAi = () => {
       await platformAdapter.invokeBackend("ask_ai", {
         message: askAiMessage,
         serverId: selectedAssistant
-          ? currentService?.id
+          ? selectedAssistant.querySource.id
           : quickAiAccessServer.id,
         assistantId: assistantRef.current.id,
         clientId: ASK_AI_CLIENT_ID,
