@@ -79,3 +79,7 @@ clean-rebuild:
 
 add-dep-pizza-engine:
 	cd src-tauri && cargo add --git ssh://git@github.com/infinilabs/pizza.git pizza-engine --features query_string_parser,persistence
+
+dev-build-with-pizza: add-dep-pizza-engine
+	@echo "Starting desktop development with Pizza Engine pulled in..."
+	RUST_BACKTRACE=1 pnpm tauri dev --features use_pizza_engine
