@@ -52,10 +52,6 @@ export const ChatContent = ({
     return state.setCurrentSessionId;
   });
 
-  useEffect(() => {
-    setCurrentSessionId(activeChat?._id);
-  }, [activeChat?._id]);
-
   const { t } = useTranslation();
 
   const uploadFiles = useChatStore((state) => state.uploadFiles);
@@ -66,9 +62,14 @@ export const ChatContent = ({
   const [isAtBottom, setIsAtBottom] = useState(true);
 
   useEffect(() => {
+    setIsAtBottom(true);
+    setCurrentSessionId(activeChat?._id);
+  }, [activeChat?._id]);
+
+  useEffect(() => {
     scrollToBottom();
   }, [
-    activeChat?.messages,
+    activeChat?.id,
     query_intent?.message_chunk,
     fetch_source?.message_chunk,
     pick_source?.message_chunk,
@@ -173,7 +174,7 @@ export const ChatContent = ({
 
       {sessionId && <SessionFile sessionId={sessionId} />}
 
-      <Splash assistantIDs={assistantIDs}/>
+      <Splash assistantIDs={assistantIDs} />
 
       <ScrollToBottom scrollRef={scrollRef} isAtBottom={isAtBottom} />
     </div>
