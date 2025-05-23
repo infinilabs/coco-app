@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 import { useKeyPress } from "ahooks";
+import { cloneDeep, isEmpty } from "lodash-es";
 
 import ChatSwitch from "@/components/Common/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
@@ -24,7 +25,6 @@ import SearchIcons from "./SearchIcons";
 import ChatIcons from "./ChatIcons";
 import platformAdapter from "@/utils/platformAdapter";
 import { Post } from "@/api/axiosRequest";
-import { cloneDeep, isEmpty } from "lodash-es";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 // import AiSummaryIcon from "../Common/Icons/AiSummaryIcon";
 
