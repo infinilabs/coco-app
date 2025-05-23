@@ -29,6 +29,7 @@ interface ChatMessageProps {
   response?: IChunkData;
   onResend?: (value: string) => void;
   loadingStep?: Record<string, boolean>;
+  hide_assistant?: boolean;
 }
 
 export const ChatMessage = memo(function ChatMessage({
@@ -43,6 +44,7 @@ export const ChatMessage = memo(function ChatMessage({
   response,
   onResend,
   loadingStep,
+  hide_assistant = false,
 }: ChatMessageProps) {
   const { t } = useTranslation();
 
@@ -52,17 +54,28 @@ export const ChatMessage = memo(function ChatMessage({
 
   const isAssistant = message?._source?.type === "assistant";
   const assistant_id = message?._source?.assistant_id;
+  const assistant_item = message?._source?.assistant_item;
 
   useEffect(() => {
-    let target = currentAssistant;
-    if (isAssistant && assistant_id && Array.isArray(assistantList)) {
-      const found = assistantList.find((item) => item._id === assistant_id);
-      if (found) {
-        target = found;
+    if (assistant_item) {
+      setAssistant(assistant_item);
+    } else {
+      let target = currentAssistant;
+      if (isAssistant && assistant_id && Array.isArray(assistantList)) {
+        const found = assistantList.find((item) => item._id === assistant_id);
+        if (found) {
+          target = found;
+        }
       }
+      setAssistant(target);
     }
-    setAssistant(target);
-  }, [isAssistant, assistant_id, assistantList, currentAssistant]);
+  }, [
+    isAssistant,
+    assistant_item,
+    assistant_id,
+    assistantList,
+    currentAssistant,
+  ]);
 
   const messageContent = message?._source?.message || "";
   const details = message?._source?.details || [];
@@ -166,22 +179,27 @@ export const ChatMessage = memo(function ChatMessage({
             isAssistant ? "text-left" : "text-right"
           }`}
         >
-          <div className="w-full flex items-center gap-1 font-semibold text-sm text-[#333] dark:text-[#d8d8d8]">
-            {isAssistant ? (
-              <div className="w-6 h-6 flex justify-center items-center rounded-full bg-white border border-[#E6E6E6]">
-                {assistant?._source?.icon?.startsWith("font_") ? (
-                  <FontIcon name={assistant._source.icon} className="w-4 h-4" />
-                ) : (
-                  <img
-                    src={logoImg}
-                    className="w-4 h-4"
-                    alt={t("assistant.message.logo")}
-                  />
-                )}
-              </div>
-            ) : null}
-            {isAssistant ? assistant?._source?.name || "Coco AI" : ""}
-          </div>
+          {!hide_assistant && (
+            <div className="w-full flex items-center gap-1 font-semibold text-sm text-[#333] dark:text-[#d8d8d8]">
+              {isAssistant ? (
+                <div className="w-6 h-6 flex justify-center items-center rounded-full bg-white border border-[#E6E6E6]">
+                  {assistant?._source?.icon?.startsWith("font_") ? (
+                    <FontIcon
+                      name={assistant._source.icon}
+                      className="w-4 h-4"
+                    />
+                  ) : (
+                    <img
+                      src={logoImg}
+                      className="w-4 h-4"
+                      alt={t("assistant.message.logo")}
+                    />
+                  )}
+                </div>
+              ) : null}
+              {isAssistant ? assistant?._source?.name || "Coco AI" : ""}
+            </div>
+          )}
           <div className="w-full prose dark:prose-invert prose-sm max-w-none">
             <div className="w-full pl-7 text-[#333] dark:text-[#d8d8d8] leading-relaxed">
               {renderContent()}

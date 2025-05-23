@@ -14,6 +14,7 @@ interface AutoResizeTextareaProps {
   handleKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   connected: boolean;
   chatPlaceholder?: string;
+  lineCount?: number;
   onLineCountChange?: (lineCount: number) => void;
 }
 
@@ -29,6 +30,7 @@ const AutoResizeTextarea = forwardRef<
       handleKeyDown,
       connected,
       chatPlaceholder,
+      lineCount = 1,
       onLineCountChange,
     },
     ref
@@ -47,8 +49,17 @@ const AutoResizeTextarea = forwardRef<
       },
     }));
 
+    useEffect(() => {
+      if (textareaRef.current) {
+        const length = textareaRef.current.value.length;
+        textareaRef.current.setSelectionRange(length, length);
+      }
+    }, [lineCount]);
+
     const handleKeyPress = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-      if (isComposition) return;
+      if (isComposition) {
+        return event.stopPropagation();
+      }
 
       handleKeyDown?.(event);
     };
@@ -72,7 +83,7 @@ const AutoResizeTextarea = forwardRef<
         autoComplete="off"
         autoCapitalize="none"
         spellCheck="false"
-        className="text-base flex-1 outline-none min-w-[200px] text-[#333] dark:text-[#d8d8d8] placeholder-text-xs placeholder-[#999] dark:placeholder-gray-500 bg-transparent custom-scrollbar"
+        className="text-base flex-1 outline-none w-full min-w-[200px] text-[#333] dark:text-[#d8d8d8] placeholder-text-xs placeholder-[#999] dark:placeholder-gray-500 bg-transparent custom-scrollbar"
         placeholder={
           connected ? chatPlaceholder || t("search.textarea.placeholder") : ""
         }

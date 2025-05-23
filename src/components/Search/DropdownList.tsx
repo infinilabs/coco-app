@@ -57,10 +57,15 @@ function DropdownList({
   const [showIndex, setShowIndex] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-  const setSelectedSearchContent = useSearchStore(
-    (state) => state.setSelectedSearchContent
-  );
+  const selectedSearchContent = useSearchStore((state) => {
+    return state.selectedSearchContent;
+  });
+  const setSelectedSearchContent = useSearchStore((state) => {
+    return state.setSelectedSearchContent;
+  });
+  const setSelectedAssistant = useSearchStore((state) => {
+    return state.setSelectedAssistant;
+  });
 
   const hideArrowRight = (item: any) => {
     const categories = ["Calculator"];
@@ -82,6 +87,19 @@ function DropdownList({
 
     setSelectedSearchContent(globalItemIndexMap[selectedItem]);
   }, [selectedItem]);
+
+  useEffect(() => {
+    if (!selectedSearchContent) return;
+
+    if (selectedSearchContent.source.id === "assistant") {
+      setSelectedAssistant({
+        ...selectedSearchContent,
+        name: selectedSearchContent.title,
+      });
+    } else {
+      setSelectedAssistant(void 0);
+    }
+  }, [selectedSearchContent]);
 
   useEffect(() => {
     if (isChatMode) {
@@ -241,7 +259,9 @@ function DropdownList({
                   item={items[0]?.document}
                   renderOrder={["connector_icon", "default_icon"]}
                   itemIcon={items[0]?.document?.source?.icon}
-                  defaultIcon={isDark ? source_default_dark_img : source_default_img}
+                  defaultIcon={
+                    isDark ? source_default_dark_img : source_default_img
+                  }
                   className="w-4 h-4"
                 />
                 {sourceName} - {items[0]?.source.name}

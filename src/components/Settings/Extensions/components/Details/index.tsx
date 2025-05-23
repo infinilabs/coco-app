@@ -34,7 +34,7 @@ const Details = () => {
         {currentPlugin?.name}
       </h2>
 
-      {currentPlugin?.detail}
+      <div className="pr-4">{currentPlugin?.detail}</div>
     </div>
   );
 };

@@ -9,13 +9,13 @@ pub struct ChatRequestMessage {
 #[allow(dead_code)]
 pub struct NewChatResponse {
     pub _id: String,
-    pub _source: Source,
+    pub _source: Session,
     pub result: String,
     pub payload: Option<Value>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Source {
+pub struct Session {
     pub id: String,
     pub created: String,
     pub updated: String,
@@ -23,4 +23,11 @@ pub struct Source {
     pub title: Option<String>,
     pub summary: Option<String>,
     pub manually_renamed_title: bool,
+    pub visible: Option<bool>,
+    pub context: Option<SessionContext>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SessionContext {
+    pub attachments: Option<Vec<String>>,
 }

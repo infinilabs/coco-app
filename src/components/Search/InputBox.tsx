@@ -1,8 +1,9 @@
 import { Brain } from "lucide-react";
-import { useCallback, useEffect, useRef, useState, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 import { useKeyPress } from "ahooks";
+import { cloneDeep, isEmpty } from "lodash-es";
 
 import ChatSwitch from "@/components/Common/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
@@ -22,9 +23,10 @@ import VisibleKey from "@/components/Common/VisibleKey";
 import ConnectionError from "./ConnectionError";
 import SearchIcons from "./SearchIcons";
 import ChatIcons from "./ChatIcons";
-// import AiSummaryIcon from "../Common/Icons/AiSummaryIcon";
-import { Post } from "@/api/axiosRequest";
 import platformAdapter from "@/utils/platformAdapter";
+import { Post } from "@/api/axiosRequest";
+import { useExtensionsStore } from "@/stores/extensionsStore";
+// import AiSummaryIcon from "../Common/Icons/AiSummaryIcon";
 
 interface ChatInputProps {
   isTauri: boolean;
@@ -388,32 +390,152 @@ export default function ChatInput({
     },
     [assistantConfig]
   );
+  const goAskAi = useSearchStore((state) => state.goAskAi);
+  const setGoAskAi = useSearchStore((state) => state.setGoAskAi);
+  const setAskAiMessage = useSearchStore((state) => state.setAskAiMessage);
+  const quickAiAccessAssistant = useExtensionsStore((state) => {
+    return state.quickAiAccessAssistant;
+  });
+  const selectedAssistant = useSearchStore((state) => {
+    return state.selectedAssistant;
+  });
+  const assistantRef = useRef<any>(null);
 
+  const assistant = useMemo(() => {
+    return selectedAssistant ?? quickAiAccessAssistant;
+  }, [quickAiAccessAssistant, selectedAssistant]);
 
-  return (
-    <div className={`w-full relative`}>
-      <div
-        className={`p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded-md transition-all relative overflow-hidden`}
+  const handleAskAi = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    assistantRef.current = cloneDeep(assistant);
+
+    if (!assistantRef.current) return;
+
+    event.preventDefault();
+
+    const { value } = event.currentTarget;
+
+    if (!selectedAssistant && isEmpty(value)) return;
+
+    changeInput("");
+    setGoAskAi(true);
+    setAskAiMessage(!goAskAi && selectedAssistant ? "" : value);
+  };
+
+  const renderSearchIcon = () => {
+    return (
+      <SearchIcons
+        lineCount={lineCount}
+        isChatMode={isChatMode}
+        sourceData={sourceData}
+        assistant={assistantRef.current}
+        setSourceData={setSourceData}
+      />
+    );
+  };
+
+  const renderExtraIcon = () => {
+    return (
+      <div className="flex items-center gap-2">
+        <ChatIcons
+          lineCount={lineCount}
+          isChatMode={isChatMode}
+          curChatEnd={curChatEnd}
+          inputValue={inputValue}
+          onSend={onSend}
+          disabledChange={disabledChange}
+        />
+
+        {showTooltip && !isChatMode && sourceData && (
+          <div
+            className={`absolute ${
+              lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-25px)]"
+            } left-2`}
+          >
+            <VisibleKey shortcut="←" />
+          </div>
+        )}
+
+        {/* {showTooltip && (
+          <div
+            className={clsx(
+              `absolute ${
+                lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-25px)]"
+              } left-2`,
+              {
+                "left-8": !isChatMode && sourceData,
+              }
+            )}
+          >
+            <VisibleKey shortcut={returnToInput} />
+          </div>
+        )} */}
+
+        {!isChatMode && !goAskAi && assistant && (
+          <div className="flex items-center gap-2 text-sm text-[#AEAEAE] dark:text-[#545454] whitespace-nowrap">
+            <span>
+              {t("search.askCocoAi.title", {
+                replace: [assistant.name],
+              })}
+            </span>
+            <div className="flex items-center justify-center w-8 h-[20px] text-xs rounded-md border border-black/10 dark:border-[#545454]">
+              Tab
+            </div>
+          </div>
+        )}
+
+        {/* <AudioRecording
+          key={isChatMode ? "chat" : "search"}
+          onChange={(text) => {
+            changeInput(inputValue + text);
+          }}
+        /> */}
+
+        {showTooltip && isChatMode && (
+          <div
+            className={`absolute ${
+              lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-30px)]"
+            }  right-[12px]`}
+          >
+            <VisibleKey shortcut="↩︎" />
+          </div>
+        )}
+
+        {!connected && isChatMode ? (
+          <ConnectionError reconnect={reconnect} connected={connected} />
+        ) : null}
+      </div>
+    );
+  };
+
+  const renderTextarea = () => {
+    return (
+      <VisibleKey
+        shortcut={returnToInput}
+        rootClassName="flex-1 flex items-center justify-center"
+        shortcutClassName="!left-0 !translate-x-0"
       >
-        <div className="flex flex-wrap gap-2 flex-1 items-center relative">
-          {lineCount === 1 && (
-            <SearchIcons
-              lineCount={lineCount}
-              isChatMode={isChatMode}
-              sourceData={sourceData}
-              setSourceData={setSourceData}
-            />
-          )}
+        <AutoResizeTextarea
+          ref={textareaRef}
+          input={inputValue}
+          setInput={handleInputChange}
+          connected={connected}
+          handleKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+            const { key, shiftKey } = e;
 
-          <AutoResizeTextarea
-            ref={textareaRef}
-            input={inputValue}
-            setInput={handleInputChange}
-            connected={connected}
-            handleKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-              const { key, shiftKey } = e;
+            const { value } = e.currentTarget;
 
-              if (key !== "Enter" || shiftKey) return;
+            if (key === "Backspace" && value === "") {
+              return setGoAskAi(false);
+            }
+
+            if (key === "Tab" && !isChatMode) {
+              return handleAskAi(e);
+            }
+
+            if (key === "Enter" && !shiftKey) {
+              if (goAskAi) {
+                return handleAskAi(e);
+              }
 
               e.preventDefault();
               handleSubmit();
@@ -421,87 +543,44 @@ export default function ChatInput({
               if (!isChatMode) {
                 onSend(inputValue);
               }
-            }}
-            chatPlaceholder={
-              isChatMode
-                ? chatPlaceholder
-                : searchPlaceholder || t("search.input.searchPlaceholder")
             }
-            onLineCountChange={setLineCount}
-          />
-
-          {lineCount > 1 && (
-            <SearchIcons
-              lineCount={lineCount}
-              isChatMode={isChatMode}
-              sourceData={sourceData}
-              setSourceData={setSourceData}
-            />
-          )}
-
-          <ChatIcons
-            lineCount={lineCount}
-            isChatMode={isChatMode}
-            curChatEnd={curChatEnd}
-            inputValue={inputValue}
-            onSend={onSend}
-            disabledChange={disabledChange}
-          />
-
-          {showTooltip && !isChatMode && sourceData && (
-            <div
-              className={`absolute ${
-                lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-25px)]"
-              } left-2`}
-            >
-              <VisibleKey shortcut="←" />
-            </div>
-          )}
-
-          {showTooltip && (
-            <div
-              className={clsx(
-                `absolute ${
-                  lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-25px)]"
-                } left-2`,
-                {
-                  "left-8": !isChatMode && sourceData,
-                }
-              )}
-            >
-              <VisibleKey shortcut={returnToInput} />
-            </div>
-          )}
-
-          {/* <AudioRecording
-          key={isChatMode ? "chat" : "search"}
-          onChange={(text) => {
-            changeInput(inputValue + text);
           }}
-        /> */}
+          chatPlaceholder={
+            isChatMode
+              ? chatPlaceholder
+              : searchPlaceholder || t("search.input.searchPlaceholder")
+          }
+          lineCount={lineCount}
+          onLineCountChange={setLineCount}
+        />
+      </VisibleKey>
+    );
+  };
 
-          {/* {showTooltip && isChatMode && isCommandPressed ? (
-          <div
-            className={`absolute right-10 w-4 h-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]`}
-          >
-            M
+  return (
+    <div className={`w-full relative`}>
+      <div
+        className={`p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded-md transition-all relative overflow-hidden`}
+      >
+        {lineCount === 1 ? (
+          <div className="relative flex items-center gap-2 w-full">
+            {renderSearchIcon()}
+
+            {renderTextarea()}
+
+            {renderExtraIcon()}
           </div>
-        ) : null} */}
+        ) : (
+          <div className="relative w-full">
+            {renderTextarea()}
 
-          {showTooltip && isChatMode && (
-            <div
-              className={`absolute ${
-                lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-30px)]"
-              }  right-[12px]`}
-            >
-              <VisibleKey shortcut="↩︎" />
+            <div className="flex items-center mt-2">
+              <div className="flex-1">{renderSearchIcon()}</div>
+
+              <div className="self-end">{renderExtraIcon()}</div>
             </div>
-          )}
-
-          {!connected && isChatMode ? (
-            <ConnectionError reconnect={reconnect} connected={connected} />
-          ) : null}
-        </div>
+          </div>
+        )}
       </div>
 
       <div

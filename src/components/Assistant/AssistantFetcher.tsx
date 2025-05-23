@@ -28,9 +28,10 @@ export const AssistantFetcher = ({
   const fetchAssistant = async (params: {
     current: number;
     pageSize: number;
+    serverId?: string;
   }) => {
     try {
-      const { pageSize, current } = params;
+      const { pageSize, current, serverId = currentService?.id } = params;
 
       const from = (current - 1) * pageSize;
       const size = pageSize;
@@ -38,7 +39,7 @@ export const AssistantFetcher = ({
       let response: any;
 
       const body: Record<string, any> = {
-        serverId: currentService?.id,
+        serverId,
         from,
         size,
       };

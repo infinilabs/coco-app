@@ -158,6 +158,7 @@ pub fn run() {
             local::application::remove_app_search_path,
             settings::set_allow_self_signature,
             settings::get_allow_self_signature,
+            assistant::ask_ai
         ])
         .setup(|app| {
             let app_handle = app.handle().clone();
