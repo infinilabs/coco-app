@@ -10,7 +10,6 @@ import logoImg from "@/assets/icon.svg";
 import { AssistantFetcher } from "./AssistantFetcher";
 import type { StartPage } from "@/types/chat";
 
-
 export interface Response {
   app_settings?: {
     chat?: {
@@ -27,7 +26,6 @@ interface SplashProps {
 const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
   const isTauri = useAppStore((state) => state.isTauri);
   const currentService = useConnectStore((state) => state.currentService);
-  const [settings, setSettings] = useState<StartPage>();
   const visibleStartPage = useConnectStore((state) => state.visibleStartPage);
   const setVisibleStartPage = useConnectStore((state) => {
     return state.setVisibleStartPage;
@@ -38,6 +36,8 @@ const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
   const setCurrentAssistant = useConnectStore((state) => {
     return state.setCurrentAssistant;
   });
+
+  const [settings, setSettings] = useState<StartPage>();
 
   const { fetchAssistant } = AssistantFetcher({
     assistantIDs,
@@ -61,7 +61,7 @@ const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
       );
       response = response?.app_settings?.chat?.start_page;
     } else {
-      response = startPage
+      response = startPage;
     }
     setVisibleStartPage(Boolean(response?.enabled));
     setSettings(response);
@@ -69,7 +69,7 @@ const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
 
   useEffect(() => {
     getSettings();
-    fetchData()
+    fetchData();
   }, [currentService?.id]);
 
   const settingsAssistantList = useMemo(() => {
