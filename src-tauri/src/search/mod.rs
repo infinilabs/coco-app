@@ -163,14 +163,7 @@ pub async fn query_coco_fusion<R: Runtime>(
             .enumerate()
             .map(|(idx, hit)| {
                 let title = hit.document.title.as_deref().unwrap_or("");
-                let base_score = char_jaccard_similarity(title, query_keyword.as_str());
-
-                let mut score = base_score;
-
-                if title.contains(query_keyword.as_str()) {
-                    score += 0.3;
-                }
-
+                let score = boosted_char_jaccard(query_keyword.as_str(), title);
                 (idx, score)
             })
             .collect();
@@ -229,18 +222,28 @@ pub async fn query_coco_fusion<R: Runtime>(
     })
 }
 
-fn char_jaccard_similarity(a: &str, b: &str) -> f64 {
+fn boosted_char_jaccard(query: &str, title: &str) -> f64 {
     use std::collections::HashSet;
 
-    let set_a: HashSet<char> = a.chars().filter(|c| !c.is_whitespace()).collect();
-    let set_b: HashSet<char> = b.chars().filter(|c| !c.is_whitespace()).collect();
+    // Case-sensitive match boosts more
+    let mut score = 0.0;
 
-    let intersection: usize = set_a.intersection(&set_b).count();
-    let union: usize = set_a.union(&set_b).count();
-
-    if union == 0 {
-        return 0.0;
+    if title.contains(query) {
+        score += 0.4; // Strong boost for exact match
+    } else if title.to_lowercase().contains(&query.to_lowercase()) {
+        score += 0.2; // Weaker boost for case-insensitive match
     }
 
-    intersection as f64 / union as f64
+    // Build char sets (excluding whitespace, case-sensitive)
+    let query_chars: HashSet<char> = query.chars().filter(|c| !c.is_whitespace()).collect();
+    let title_chars: HashSet<char> = title.chars().filter(|c| !c.is_whitespace()).collect();
+
+    let intersection = query_chars.intersection(&title_chars).count();
+    let union = query_chars.union(&title_chars).count();
+
+    if union > 0 {
+        score += intersection as f32 / union as f32;
+    }
+
+    score.min(1.0) as f64
 }
