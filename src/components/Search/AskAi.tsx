@@ -1,9 +1,14 @@
-import { useAsyncEffect, useKeyPress, useMount, useUnmount } from "ahooks";
+import {
+  useAsyncEffect,
+  useKeyPress,
+  useMount,
+  useReactive,
+  useUnmount,
+} from "ahooks";
 import { useEffect, useRef, useState } from "react";
 
 import { ChatMessage } from "../ChatMessage";
 import { ASK_AI_CLIENT_ID, COPY_BUTTON_ID } from "@/constants";
-import { useConnectStore } from "@/stores/connectStore";
 import { useSearchStore } from "@/stores/searchStore";
 import platformAdapter from "@/utils/platformAdapter";
 import useMessageChunkData from "@/hooks/useMessageChunkData";
@@ -12,9 +17,13 @@ import { isMac } from "@/utils/platform";
 import { noop } from "lodash-es";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 
+interface State {
+  serverId?: string;
+  assistantId?: string;
+}
+
 const AskAi = () => {
   const askAiMessage = useSearchStore((state) => state.askAiMessage);
-  const currentService = useConnectStore((state) => state.currentService);
   const addError = useAppStore((state) => state.addError);
   const setGoAskAi = useSearchStore((state) => state.setGoAskAi);
   const setSelectedAssistant = useSearchStore((state) => {
@@ -62,12 +71,27 @@ const AskAi = () => {
   const selectedAssistant = useSearchStore((state) => {
     return state.selectedAssistant;
   });
-  const assistantRef = useRef<any>(null);
+  const setAskAiServerId = useSearchStore((state) => {
+    return state.setAskAiServerId;
+  });
+  const state = useReactive<State>({});
 
   useEffect(() => {
-    if (!quickAiAccessAssistant) return;
+    if (state.serverId) return;
 
-    assistantRef.current = selectedAssistant ?? quickAiAccessAssistant;
+    const server = selectedAssistant
+      ? selectedAssistant.querySource
+      : quickAiAccessServer;
+
+    state.serverId = server?.id;
+  }, [selectedAssistant, quickAiAccessAssistant]);
+
+  useEffect(() => {
+    if (state.assistantId) return;
+
+    const assistant = selectedAssistant ?? quickAiAccessAssistant;
+
+    state.assistantId = assistant?.id;
   }, [selectedAssistant, quickAiAccessAssistant]);
 
   useMount(async () => {
@@ -134,37 +158,43 @@ const AskAi = () => {
   });
 
   useAsyncEffect(async () => {
-    if (!askAiMessage || !currentService?.id || !assistantRef.current) return;
+    if (!askAiMessage || !state.serverId || !state.assistantId) return;
 
     clearAllChunkData();
+
+    const { serverId, assistantId } = state;
+
+    console.log("serverId", serverId);
+    console.log("assistantId", assistantId);
 
     try {
       await platformAdapter.invokeBackend("ask_ai", {
         message: askAiMessage,
-        serverId: selectedAssistant
-          ? selectedAssistant.querySource.id
-          : quickAiAccessServer.id,
-        assistantId: assistantRef.current.id,
+        serverId,
+        assistantId,
         clientId: ASK_AI_CLIENT_ID,
       });
     } catch (error) {
       addError(String(error));
     }
-  }, [askAiMessage, assistantRef]);
+  }, [askAiMessage, state.serverId, state.assistantId]);
 
   useKeyPress("enter", async (event) => {
     const { metaKey, ctrlKey } = event;
 
     if (isTyping) return;
 
+    const { serverId } = state;
+
     if ((isMac && metaKey) || (!isMac && ctrlKey)) {
       await platformAdapter.commands("open_session_chat", {
-        serverId: currentService?.id,
+        serverId,
         sessionId: sessionIdRef.current,
       });
 
       platformAdapter.emitEvent("toggle-to-chat-mode");
 
+      setAskAiServerId(serverId);
       return setAskAiSessionId(sessionIdRef.current);
     }
 

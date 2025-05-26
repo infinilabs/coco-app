@@ -22,6 +22,8 @@ export type ISearchStore = {
   setAskAiSessionId: (askAiSessionId?: string) => void;
   selectedAssistant?: any;
   setSelectedAssistant: (selectedAssistant?: any) => void;
+  askAiServerId?: string;
+  setAskAiServerId: (askAiServerId?: string) => void;
 };
 
 export const useSearchStore = create<ISearchStore>()(
@@ -53,6 +55,9 @@ export const useSearchStore = create<ISearchStore>()(
       },
       setSelectedAssistant: (selectedAssistant) => {
         return set({ selectedAssistant });
+      },
+      setAskAiServerId: (askAiServerId) => {
+        return set({ askAiServerId });
       },
     }),
     {
