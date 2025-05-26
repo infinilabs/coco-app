@@ -8,7 +8,6 @@ use futures::StreamExt;
 use std::cmp::Reverse;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use strsim::jaro_winkler;
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::time::{timeout, Duration};
 

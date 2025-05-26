@@ -91,7 +91,6 @@ tauri-plugin-windows-version = "2"
 meval = "0.2"
 chinese-number = "0.7"
 num2words = "1"
-strsim = "0.10"
 tauri-plugin-log = "2"
 chrono = "0.4.41"
 pizza-engine = { git = "ssh://git@github.com/infinilabs/pizza.git", version = "0.1.0", features = ["query_string_parser", "persistence"] }
