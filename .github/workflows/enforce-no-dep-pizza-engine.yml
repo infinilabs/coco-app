@@ -12,6 +12,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: 
+        working-directory: ./src-tauri
         run: |
           # if cargo remove pizza-engine succeeds, then it is in our dependency list, fail the CI pipeline.
           if cargo remove pizza-engine; then exit 1; fi
