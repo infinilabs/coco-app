@@ -57,7 +57,6 @@ export const ChatMessage = memo(function ChatMessage({
   const assistant_item = message?._source?.assistant_item;
 
   useEffect(() => {
-    console.log("assistant_item", assistant_item);
     if (assistant_item) {
       setAssistant(assistant_item);
     } else {
