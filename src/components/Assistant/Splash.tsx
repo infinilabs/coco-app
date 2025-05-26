@@ -7,18 +7,9 @@ import { useConnectStore } from "@/stores/connectStore";
 import { useThemeStore } from "@/stores/themeStore";
 import FontIcon from "@/components/Common/Icons/FontIcon";
 import logoImg from "@/assets/icon.svg";
-import { Get } from "@/api/axiosRequest";
 import { AssistantFetcher } from "./AssistantFetcher";
+import type { StartPage } from "@/types/chat";
 
-interface StartPage {
-  enabled?: boolean;
-  logo?: {
-    light?: string;
-    dark?: string;
-  };
-  introduction?: string;
-  display_assistants?: string[];
-}
 
 export interface Response {
   app_settings?: {
@@ -30,9 +21,10 @@ export interface Response {
 
 interface SplashProps {
   assistantIDs?: string[];
+  startPage?: StartPage;
 }
 
-const Splash = ({ assistantIDs = [] }: SplashProps) => {
+const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
   const isTauri = useAppStore((state) => state.isTauri);
   const currentService = useConnectStore((state) => state.currentService);
   const [settings, setSettings] = useState<StartPage>();
@@ -51,15 +43,18 @@ const Splash = ({ assistantIDs = [] }: SplashProps) => {
     assistantIDs,
   });
 
-  const fetchData = async () => {
+  const fetchData = async (display_assistants: string[] = []) => {
     const data = await fetchAssistant({ current: 1, pageSize: 1000 });
-    setAssistantList(data.list || []);
+    const list = (data.list || []).filter((item: any) => {
+      return display_assistants?.includes(item?._source?.id);
+    });
+    setAssistantList(list);
   };
 
   const getSettings = async () => {
     const serverId = currentService.id;
 
-    let response: Response = {};
+    let response: any;
     if (isTauri) {
       response = await platformAdapter.invokeBackend<Response>(
         "get_system_settings",
@@ -67,22 +62,18 @@ const Splash = ({ assistantIDs = [] }: SplashProps) => {
           serverId,
         }
       );
+      response = response?.app_settings?.chat?.start_page;
     } else {
-      const [err, result] = await Get("/settings");
-      if (err) {
-        setSettings(undefined);
-      }
-      response = result as Response;
+      response = startPage
     }
-
-    const settings = response?.app_settings?.chat?.start_page;
-    setVisibleStartPage(Boolean(settings?.enabled));
-    setSettings(settings);
+    setVisibleStartPage(Boolean(response?.enabled));
+    setSettings(response);
+    //
+    fetchData(response?.display_assistants);
   };
 
   useEffect(() => {
     getSettings();
-    fetchData();
   }, [currentService?.id]);
 
   const settingsAssistantList = useMemo(() => {

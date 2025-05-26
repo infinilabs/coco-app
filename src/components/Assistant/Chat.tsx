@@ -19,12 +19,13 @@ import { ChatSidebar } from "./ChatSidebar";
 import { ChatHeader } from "./ChatHeader";
 import { ChatContent } from "./ChatContent";
 import ConnectPrompt from "./ConnectPrompt";
-import type { Chat } from "@/types/chat";
+import type { Chat, StartPage } from "@/types/chat";
 import PrevSuggestion from "@/components/ChatMessage/PrevSuggestion";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 // import ReadAloud from "./ReadAloud";
 import { useAuthStore } from "@/stores/authStore";
+import Splash from "./Splash";
 
 interface ChatAIProps {
   isSearchActive?: boolean;
@@ -39,6 +40,7 @@ interface ChatAIProps {
   getFileUrl: (path: string) => string;
   showChatHistory?: boolean;
   assistantIDs?: string[];
+  startPage?: StartPage;
 }
 
 export interface ChatAIRef {
@@ -64,6 +66,7 @@ const ChatAI = memo(
         getFileUrl,
         showChatHistory,
         assistantIDs,
+        startPage,
       },
       ref
     ) => {
@@ -369,7 +372,7 @@ const ChatAI = memo(
               assistantIDs={assistantIDs}
             />
 
-            {isCurrentLogin ? (
+            {isCurrentLogin ? (<>
               <ChatContent
                 activeChat={activeChat}
                 curChatEnd={curChatEnd}
@@ -383,12 +386,15 @@ const ChatAI = memo(
                 loadingStep={loadingStep}
                 timedoutShow={timedoutShow}
                 Question={Question}
-                assistantIDs={assistantIDs}
                 handleSendMessage={(value) =>
                   handleSendMessage(value, activeChat)
                 }
                 getFileUrl={getFileUrl}
               />
+              <Splash assistantIDs={assistantIDs} startPage={startPage}/>
+            </>
+              
+
             ) : (
               <ConnectPrompt />
             )}

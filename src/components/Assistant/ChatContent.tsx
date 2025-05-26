@@ -9,7 +9,6 @@ import { useChatStore } from "@/stores/chatStore";
 import type { Chat, IChunkData } from "@/types/chat";
 import { useConnectStore } from "@/stores/connectStore";
 import SessionFile from "./SessionFile";
-import Splash from "./Splash";
 import ScrollToBottom from "@/components/Common/ScrollToBottom";
 
 interface ChatContentProps {
@@ -25,7 +24,6 @@ interface ChatContentProps {
   loadingStep?: Record<string, boolean>;
   timedoutShow: boolean;
   Question: string;
-  assistantIDs?: string[];
   handleSendMessage: (content: string, newChat?: Chat) => void;
   getFileUrl: (path: string) => string;
 }
@@ -43,7 +41,6 @@ export const ChatContent = ({
   loadingStep,
   timedoutShow,
   Question,
-  assistantIDs,
   handleSendMessage,
   getFileUrl,
 }: ChatContentProps) => {
@@ -173,8 +170,6 @@ export const ChatContent = ({
       )}
 
       {sessionId && <SessionFile sessionId={sessionId} />}
-
-      <Splash assistantIDs={assistantIDs} />
 
       <ScrollToBottom scrollRef={scrollRef} isAtBottom={isAtBottom} />
     </div>
