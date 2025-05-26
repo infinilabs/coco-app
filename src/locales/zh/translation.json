@@ -287,6 +287,10 @@
       "searchPopover": {
         "title": "搜索范围",
         "allScope": "所有范围"
+      },
+      "uploadFileHints": {
+        "tooltip": "支持截图、上传文件，最多 50个，单个文件最大 100 MB。",
+        "maxSize": "文件大小不能超过 100 MB。"
       }
     },
     "main": {

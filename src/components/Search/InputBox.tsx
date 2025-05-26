@@ -15,7 +15,7 @@ import SearchPopover from "./SearchPopover";
 import MCPPopover from "./MCPPopover";
 // import AudioRecording from "../AudioRecording";
 import { DataSource } from "@/types/commands";
-// import InputExtra from "./InputExtra";
+import InputExtra from "./InputExtra";
 import { useConnectStore } from "@/stores/connectStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import Copyright from "@/components/Common/Copyright";
@@ -84,6 +84,15 @@ export default function ChatInput({
   hasModules = [],
   searchPlaceholder,
   chatPlaceholder,
+  checkScreenPermission,
+  requestScreenPermission,
+  getScreenMonitors,
+  getScreenWindows,
+  captureWindowScreenshot,
+  captureMonitorScreenshot,
+  openFileDialog,
+  getFileMetadata,
+  getFileIcon,
 }: ChatInputProps) {
   const { t } = useTranslation();
 
@@ -94,7 +103,7 @@ export default function ChatInput({
   const sourceData = useSearchStore((state) => state.sourceData);
   const setSourceData = useSearchStore((state) => state.setSourceData);
 
-  // const sessionId = useConnectStore((state) => state.currentSessionId);
+  const sessionId = useConnectStore((state) => state.currentSessionId);
   const modifierKey = useShortcutsStore((state) => state.modifierKey);
   const modeSwitch = useShortcutsStore((state) => state.modeSwitch);
   const returnToInput = useShortcutsStore((state) => state.returnToInput);
@@ -589,7 +598,7 @@ export default function ChatInput({
       >
         {isChatMode ? (
           <div className="flex gap-2 text-[12px] leading-3 text-[#333] dark:text-[#d8d8d8]">
-            {/* {sessionId && (
+            {sessionId && (
               <InputExtra
                 checkScreenPermission={checkScreenPermission}
                 requestScreenPermission={requestScreenPermission}
@@ -601,7 +610,7 @@ export default function ChatInput({
                 getFileMetadata={getFileMetadata}
                 getFileIcon={getFileIcon}
               />
-            )} */}
+            )}
 
             {source?.type === "deep_think" && source?.config?.visible && (
               <button
