@@ -76,6 +76,7 @@ Information about release notes of Coco Server is provided here.
 - chore: mark server offline on user logout #546
 - chore: logout update server profile #549
 - chore: assistant keyboard events and mouse events #559
+- chore: web component start page config #560
 
 ## 0.4.0 (2025-04-27)
 

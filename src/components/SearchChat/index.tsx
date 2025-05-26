@@ -23,6 +23,7 @@ import { useStartupStore } from "@/stores/startupStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { useConnectStore } from "@/stores/connectStore";
 import { useAppearanceStore } from "@/stores/appearanceStore";
+import type { StartPage } from "@/types/chat";
 
 interface SearchChatProps {
   isTauri?: boolean;
@@ -40,6 +41,7 @@ interface SearchChatProps {
   onModeChange?: (isChatMode: boolean) => void;
   isMobile?: boolean;
   assistantIDs?: string[];
+  startPage?: StartPage;
 }
 
 function SearchChat({
@@ -55,6 +57,7 @@ function SearchChat({
   onModeChange,
   isMobile = false,
   assistantIDs,
+  startPage,
 }: SearchChatProps) {
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
 
@@ -281,6 +284,7 @@ function SearchChat({
               getFileUrl={getFileUrl}
               showChatHistory={showChatHistory}
               assistantIDs={assistantIDs}
+              startPage={startPage}
             />
           </Suspense>
         </div>

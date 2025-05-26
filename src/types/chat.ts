@@ -41,3 +41,13 @@ export interface IChunkData {
   message_chunk: string;
   [key: string]: any;
 }
+
+export interface StartPage {
+  enabled?: boolean;
+  logo?: {
+    light?: string;
+    dark?: string;
+  };
+  introduction?: string;
+  display_assistants?: string[];
+}

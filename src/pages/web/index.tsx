@@ -8,6 +8,7 @@ import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 import useEscape from "@/hooks/useEscape";
 import { useViewportHeight } from "@/hooks/useViewportHeight";
 import { useIconfontScript } from "@/hooks/useScript";
+import type { StartPage } from "@/types/chat";
 
 import "@/i18n";
 import "@/web.css";
@@ -25,6 +26,7 @@ interface WebAppProps {
   searchPlaceholder?: string;
   chatPlaceholder?: string;
   showChatHistory?: boolean;
+  startPage?: StartPage;
   setIsPinned?: (value: boolean) => void;
   onCancel?: () => void;
 }
@@ -49,6 +51,7 @@ function WebApp({
   searchPlaceholder = "",
   chatPlaceholder = "",
   showChatHistory = false,
+  startPage,
   setIsPinned,
   onCancel,
 }: WebAppProps) {
@@ -118,6 +121,7 @@ function WebApp({
         onModeChange={setIsChatMode}
         isMobile={isMobile}
         assistantIDs={assistantIDs}
+        startPage={startPage}
       />
     </div>
   );
