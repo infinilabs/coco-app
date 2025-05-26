@@ -96,26 +96,25 @@ const ChatAI = memo(
       const setAskAiSessionId = useSearchStore(
         (state) => state.setAskAiSessionId
       );
+      const askAiServerId = useSearchStore((state) => {
+        return state.askAiServerId;
+      });
 
       useEffect(() => {
         activeChatProp && setActiveChat(activeChatProp);
       }, [activeChatProp]);
 
       useEffect(() => {
-        console.log("chats", chats);
-        console.log("askAiSessionId", askAiSessionId);
-        if (chats.length === 0 || !askAiSessionId) return;
+        if (askAiServerId || !askAiSessionId || chats.length === 0) return;
 
         const matched = chats.find((item) => item._id === askAiSessionId);
-
-        console.log("matched", matched);
 
         if (matched) {
           onSelectChat(matched);
 
           setAskAiSessionId(void 0);
         }
-      }, [chats, chats]);
+      }, [chats, askAiSessionId, askAiServerId]);
 
       const [Question, setQuestion] = useState<string>("");
 

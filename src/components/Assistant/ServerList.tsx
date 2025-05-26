@@ -16,20 +16,18 @@ import { useConnectStore } from "@/stores/connectStore";
 import { Server as IServer } from "@/types/server";
 import StatusIndicator from "@/components/Cloud/StatusIndicator";
 import { useAuthStore } from "@/stores/authStore";
+import { useSearchStore } from "@/stores/searchStore";
 
 interface ServerListProps {
   reconnect: (server?: IServer) => void;
   clearChat: () => void;
 }
 
-export function ServerList({
-  reconnect,
-  clearChat,
-}: ServerListProps) {
+export function ServerList({ reconnect, clearChat }: ServerListProps) {
   const { t } = useTranslation();
 
-  const isCurrentLogin = useAuthStore(state => state.isCurrentLogin);
-  const setIsCurrentLogin = useAuthStore(state => state.setIsCurrentLogin);
+  const isCurrentLogin = useAuthStore((state) => state.isCurrentLogin);
+  const setIsCurrentLogin = useAuthStore((state) => state.setIsCurrentLogin);
   const serviceList = useShortcutsStore((state) => state.serviceList);
   const setEndpoint = useAppStore((state) => state.setEndpoint);
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
@@ -40,7 +38,12 @@ export function ServerList({
 
   const [serverList, setServerList] = useState<IServer[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
+  const askAiServerId = useSearchStore((state) => {
+    return state.askAiServerId;
+  });
+  const setAskAiServerId = useSearchStore((state) => {
+    return state.setAskAiServerId;
+  });
   const serverListButtonRef = useRef<HTMLButtonElement>(null);
 
   const fetchServers = useCallback(
@@ -72,6 +75,19 @@ export function ServerList({
     },
     [currentService?.id]
   );
+
+  useEffect(() => {
+    if (!askAiServerId || serverList.length === 0) return;
+
+    const matched = serverList.find((server) => {
+      return server.id === askAiServerId;
+    });
+
+    if (!matched) return;
+
+    switchServer(matched);
+    setAskAiServerId(void 0);
+  }, [serverList, askAiServerId]);
 
   useEffect(() => {
     if (!isTauri) return;
@@ -109,7 +125,7 @@ export function ServerList({
       setCurrentService(server);
       setEndpoint(server.endpoint);
       setMessages(""); // Clear previous messages
-      clearChat(); 
+      clearChat();
       //
       if (!server.public && !server.profile) {
         setIsCurrentLogin(false);
@@ -217,7 +233,7 @@ export function ServerList({
                         {server.name}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[200px]">
-                        AI Assistant: { server.stats?.assistant_count || 1}
+                        AI Assistant: {server.stats?.assistant_count || 1}
                       </div>
                     </div>
                   </div>

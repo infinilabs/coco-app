@@ -176,8 +176,6 @@ export const useSyncStore = () => {
       platformAdapter.listenEvent("change-extensions-store", ({ payload }) => {
         const { quickAiAccessServer, quickAiAccessAssistant } = payload;
 
-        console.log("quickAiAccessAssistant", quickAiAccessAssistant);
-
         setQuickAiAccessServer(quickAiAccessServer);
         setQuickAiAccessAssistant(quickAiAccessAssistant);
       }),
