@@ -28,7 +28,7 @@
         "transparent": true,
         "fullscreen": false,
         "center": false,
-        "visible": false,
+        "visible": true,
         "windowEffects": {
           "effects": [],
           "radius": 6

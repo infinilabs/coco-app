@@ -43,12 +43,9 @@ const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
     assistantIDs,
   });
 
-  const fetchData = async (display_assistants: string[] = []) => {
+  const fetchData = async () => {
     const data = await fetchAssistant({ current: 1, pageSize: 1000 });
-    const list = (data.list || []).filter((item: any) => {
-      return display_assistants?.includes(item?._source?.id);
-    });
-    setAssistantList(list);
+    setAssistantList(data.list || []);
   };
 
   const getSettings = async () => {
@@ -68,12 +65,11 @@ const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
     }
     setVisibleStartPage(Boolean(response?.enabled));
     setSettings(response);
-    //
-    fetchData(response?.display_assistants);
   };
 
   useEffect(() => {
     getSettings();
+    fetchData()
   }, [currentService?.id]);
 
   const settingsAssistantList = useMemo(() => {
@@ -94,7 +90,7 @@ const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
 
   return (
     visibleStartPage && (
-      <div className="absolute inset-0 flex flex-col items-center px-6 pt-6 text-[#333] dark:text-white select-none overflow-y-auto custom-scrollbar">
+      <div className="absolute top-12 inset-0 flex flex-col items-center px-6 pt-6 text-[#333] dark:text-white select-none overflow-y-auto custom-scrollbar">
         <CircleX
           className="absolute top-3 right-3 size-4 text-[#999] cursor-pointer"
           onClick={() => {
