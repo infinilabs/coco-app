@@ -1,13 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
-import {
-  ChevronDownIcon,
-  RefreshCw,
-  Layers,
-  Globe,
-  ChevronRight,
-  ChevronLeft,
-} from "lucide-react";
+import { ChevronDownIcon, RefreshCw, Layers, Globe } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { useDebounce } from "ahooks";
@@ -21,7 +14,8 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 import VisibleKey from "@/components/Common/VisibleKey";
 import { useChatStore } from "@/stores/chatStore";
 import NoDataImage from "@/components/Common/NoDataImage";
-import PopoverInput from "../Common/PopoverInput";
+import PopoverInput from "@/components/Common/PopoverInput";
+import Pagination from "@/components/Common/Pagination";
 
 interface SearchPopoverProps {
   isSearchActive: boolean;
@@ -292,7 +286,11 @@ export default function SearchPopover({
                               ) : (
                                 <CommonIcon
                                   item={item}
-                                  renderOrder={["item_icon", "connector_icon", "default_icon"]}
+                                  renderOrder={[
+                                    "item_icon",
+                                    "connector_icon",
+                                    "default_icon",
+                                  ]}
                                   itemIcon={item.icon}
                                   className="size-4"
                                 />
@@ -334,19 +332,13 @@ export default function SearchPopover({
                 </div>
 
                 {visibleList.length > 0 && (
-                  <div className="flex items-center justify-between h-8 px-3 border-t dark:border-t-[#202126]">
-                    <VisibleKey shortcut="leftarrow" onKeyPress={handlePrev}>
-                      <ChevronLeft className="size-4" onClick={handlePrev} />
-                    </VisibleKey>
-
-                    <div className="text-xs">
-                      {page}/{totalPage}
-                    </div>
-
-                    <VisibleKey shortcut="rightarrow" onKeyPress={handleNext}>
-                      <ChevronRight className="size-4" onClick={handleNext} />
-                    </VisibleKey>
-                  </div>
+                  <Pagination
+                    current={page}
+                    totalPage={totalPage}
+                    onPrev={handlePrev}
+                    onNext={handleNext}
+                    className="dark:border-t-[#202126]"
+                  />
                 )}
               </div>
             </PopoverPanel>

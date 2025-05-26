@@ -1,19 +1,9 @@
 import { useState, useRef, useCallback } from "react";
-import {
-  ChevronDownIcon,
-  RefreshCw,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { ChevronDownIcon, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { isNil } from "lodash-es";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
-import {
-  useDebounce,
-  useKeyPress,
-  usePagination,
-} from "ahooks";
+import { useDebounce, useKeyPress, usePagination } from "ahooks";
 import clsx from "clsx";
 
 import logoImg from "@/assets/icon.svg";
@@ -24,6 +14,8 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 import NoDataImage from "@/components/Common/NoDataImage";
 import PopoverInput from "@/components/Common/PopoverInput";
 import { AssistantFetcher } from "./AssistantFetcher";
+import AssistantItem from "./AssistantItem";
+import Pagination from "@/components/Common/Pagination";
 
 interface AssistantListProps {
   assistantIDs?: string[];
@@ -67,6 +59,9 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
     setTimeout(() => setIsRefreshing(false), 1000);
   };
 
+  const [highlightIndex, setHighlightIndex] = useState<number>(-1);
+  const [isKeyboardActive, setIsKeyboardActive] = useState(false);
+
   useKeyPress(
     ["uparrow", "downarrow", "enter"],
     (event, key) => {
@@ -77,9 +72,7 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
       event.stopPropagation();
       event.preventDefault();
 
-      if (key === "enter") {
-        return popoverButtonRef.current?.click();
-      }
+      setIsKeyboardActive(true);
 
       const index = assistants.findIndex(
         (item) => item._id === currentAssistant?._id
@@ -88,15 +81,20 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
 
       if (length <= 1) return;
 
-      let nextIndex = index;
+      let nextIndex = highlightIndex === -1 ? index : highlightIndex;
 
       if (key === "uparrow") {
-        nextIndex = index > 0 ? index - 1 : length - 1;
-      } else {
-        nextIndex = index < length - 1 ? index + 1 : 0;
+        nextIndex = nextIndex > 0 ? nextIndex - 1 : length - 1;
+      } else if (key === "downarrow") {
+        nextIndex = nextIndex < length - 1 ? nextIndex + 1 : 0;
       }
 
-      setCurrentAssistant(assistants[nextIndex]);
+      if (key === "enter") {
+        setCurrentAssistant(assistants[nextIndex]);
+        return popoverButtonRef.current?.click();
+      }
+
+      setHighlightIndex(nextIndex);
     },
     {
       target: popoverRef,
@@ -116,6 +114,11 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
 
     pagination.changeCurrent(pagination.current + 1);
   }, [pagination]);
+
+  const handleMouseMove = useCallback(() => {
+    setHighlightIndex(-1);
+    setIsKeyboardActive(false);
+  }, []);
 
   return (
     <div className="relative">
@@ -151,7 +154,10 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
           </VisibleKey>
         </PopoverButton>
 
-        <PopoverPanel className="absolute z-50 top-full mt-1 left-0 w-60 rounded-xl bg-white dark:bg-[#202126] p-3 text-sm/6 text-[#333] dark:text-[#D8D8D8] shadow-lg border dark:border-white/10 focus:outline-none max-h-[calc(100vh-80px)] overflow-y-auto">
+        <PopoverPanel
+          className="absolute z-50 top-full mt-1 left-0 w-60 rounded-xl bg-white dark:bg-[#202126] p-3 text-sm/6 text-[#333] dark:text-[#D8D8D8] shadow-lg border dark:border-white/10 focus:outline-none max-h-[calc(100vh-80px)] overflow-y-auto"
+          onMouseMove={handleMouseMove}
+        >
           <div className="flex items-center justify-between text-sm font-bold">
             <div>
               {t("assistant.popover.title")}（{pagination.total}）
@@ -197,73 +203,29 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
 
           {assistants.length > 0 ? (
             <>
-              {assistants.map((assistant) => {
-                const { _id, _source, name } = assistant;
-
-                const isActive = currentAssistant?._id === _id;
-
+              {assistants.map((assistant, index) => {
                 return (
-                  <button
-                    key={_id}
-                    className={clsx(
-                      "w-full flex items-center h-[50px] gap-2 rounded-lg p-2 mb-1 hover:bg-[#E6E6E6] dark:hover:bg-[#1F2937] transition",
-                      {
-                        "bg-[#E6E6E6] dark:bg-[#1F2937]": isActive,
-                      }
-                    )}
+                  <AssistantItem
+                    key={assistant._id}
+                    {...assistant}
+                    isActive={currentAssistant?._id === assistant._id}
+                    isHighlight={highlightIndex === index}
+                    isKeyboardActive={isKeyboardActive}
                     onClick={() => {
                       setCurrentAssistant(assistant);
                       popoverButtonRef.current?.click();
                     }}
-                  >
-                    <div className="flex items-center justify-center size-6 bg-white border border-[#E6E6E6] rounded-full overflow-hidden">
-                      {_source?.icon?.startsWith("font_") ? (
-                        <FontIcon name={_source?.icon} className="size-4" />
-                      ) : (
-                        <img src={logoImg} className="size-4" alt={name} />
-                      )}
-                    </div>
-                    <div className="text-left flex-1 min-w-0">
-                      <div className="font-medium text-gray-900 dark:text-white truncate">
-                        {_source?.name || "-"}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                        {_source?.description || ""}
-                      </div>
-                    </div>
-                    {isActive && (
-                      <div className="flex items-center">
-                        <VisibleKey
-                          shortcut="↓↑"
-                          shortcutClassName="w-6 -translate-x-4"
-                        >
-                          <Check className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                        </VisibleKey>
-                      </div>
-                    )}
-                  </button>
+                  />
                 );
               })}
 
-              <div className="flex items-center justify-between h-8 -mx-3 -mb-3 px-3 text-[#999] border-t dark:border-t-white/10">
-                <VisibleKey shortcut="leftarrow" onKeyPress={handlePrev}>
-                  <ChevronLeft
-                    className="size-4 cursor-pointer"
-                    onClick={handlePrev}
-                  />
-                </VisibleKey>
-
-                <div className="text-xs">
-                  {pagination.current}/{pagination.totalPage}
-                </div>
-
-                <VisibleKey shortcut="rightarrow" onKeyPress={handleNext}>
-                  <ChevronRight
-                    className="size-4 cursor-pointer"
-                    onClick={handleNext}
-                  />
-                </VisibleKey>
-              </div>
+              <Pagination
+                current={pagination.current}
+                totalPage={pagination.totalPage}
+                onPrev={handlePrev}
+                onNext={handleNext}
+                className="-mx-3 -mb-3"
+              />
             </>
           ) : (
             <div className="flex justify-center items-center py-2">
