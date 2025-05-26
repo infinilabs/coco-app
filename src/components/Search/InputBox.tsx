@@ -24,7 +24,7 @@ import ConnectionError from "./ConnectionError";
 import SearchIcons from "./SearchIcons";
 import ChatIcons from "./ChatIcons";
 import platformAdapter from "@/utils/platformAdapter";
-import { Post } from "@/api/axiosRequest";
+import { Post, Get } from "@/api/axiosRequest";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 // import AiSummaryIcon from "../Common/Icons/AiSummaryIcon";
 
@@ -88,6 +88,7 @@ export default function ChatInput({
   const { t } = useTranslation();
 
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
+  const currentService = useConnectStore((state) => state.currentService);
 
   const showTooltip = useAppStore((state) => state.showTooltip);
 
@@ -250,6 +251,7 @@ export default function ChatInput({
       mcpEnabled: source?.mcp_servers?.enabled,
       mcpVisible: source?.mcp_servers?.visible,
       mcpIds: source?.mcp_servers?.ids,
+      placeholder: source?.chat_settings?.placeholder,
     };
   }, [currentAssistant]);
 
@@ -404,6 +406,20 @@ export default function ChatInput({
   const assistant = useMemo(() => {
     return selectedAssistant ?? quickAiAccessAssistant;
   }, [quickAiAccessAssistant, selectedAssistant]);
+  console.log("assistant", assistant);
+
+  const assistant_get = useCallback(async () => {
+    if (isTauri) { 
+
+    } else {
+      const [error, res]: any = await Get(`/assistant/`, {
+        id: assistant?.id,
+      });
+    }
+    const res =  await platformAdapter.commands("assistant_get", currentService, assistant?.id);
+    assistantRef.current = res;
+    console.log("assistantRef.current", assistantRef.current);
+  }, [assistant]);
 
   const handleAskAi = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     assistantRef.current = cloneDeep(assistant);
@@ -416,9 +432,39 @@ export default function ChatInput({
 
     if (!selectedAssistant && isEmpty(value)) return;
 
+    assistant_get()
     changeInput("");
     setGoAskAi(true);
     setAskAiMessage(!goAskAi && selectedAssistant ? "" : value);
+  };
+
+  const handleKeyDownAutoResizeTextarea = (
+    e: React.KeyboardEvent<HTMLTextAreaElement>
+  ) => {
+    const { key, shiftKey } = e;
+
+    const { value } = e.currentTarget;
+
+    if (key === "Backspace" && value === "") {
+      return setGoAskAi(false);
+    }
+
+    if (key === "Tab" && !isChatMode) {
+      return handleAskAi(e);
+    }
+
+    if (key === "Enter" && !shiftKey) {
+      if (goAskAi) {
+        return handleAskAi(e);
+      }
+
+      e.preventDefault();
+      handleSubmit();
+
+      if (!isChatMode) {
+        onSend(inputValue);
+      }
+    }
   };
 
   const renderSearchIcon = () => {
@@ -519,35 +565,10 @@ export default function ChatInput({
           input={inputValue}
           setInput={handleInputChange}
           connected={connected}
-          handleKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-            const { key, shiftKey } = e;
-
-            const { value } = e.currentTarget;
-
-            if (key === "Backspace" && value === "") {
-              return setGoAskAi(false);
-            }
-
-            if (key === "Tab" && !isChatMode) {
-              return handleAskAi(e);
-            }
-
-            if (key === "Enter" && !shiftKey) {
-              if (goAskAi) {
-                return handleAskAi(e);
-              }
-
-              e.preventDefault();
-              handleSubmit();
-
-              if (!isChatMode) {
-                onSend(inputValue);
-              }
-            }
-          }}
+          handleKeyDown={handleKeyDownAutoResizeTextarea}
           chatPlaceholder={
             isChatMode
-              ? chatPlaceholder
+              ? (assistantConfig.placeholder || chatPlaceholder)
               : searchPlaceholder || t("search.input.searchPlaceholder")
           }
           lineCount={lineCount}

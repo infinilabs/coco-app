@@ -263,6 +263,26 @@ pub async fn assistant_search<R: Runtime>(
 }
 
 #[tauri::command]
+pub async fn assistant_get<R: Runtime>(
+    _app_handle: AppHandle<R>,
+    server_id: String,
+    assistant_id: String,
+) -> Result<Value, String> {
+    let response = HttpClient::get(
+        &server_id,
+        &format!("/assistant/{}", assistant_id),
+        None, // headers
+    )
+    .await
+    .map_err(|e| format!("Error getting assistant: {}", e))?;
+
+    response
+        .json::<Value>()
+        .await
+        .map_err(|err| err.to_string())
+}
+
+#[tauri::command]
 pub async fn ask_ai<R: Runtime>(
     app_handle: AppHandle<R>,
     message: String,

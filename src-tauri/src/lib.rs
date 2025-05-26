@@ -131,6 +131,7 @@ pub fn run() {
             assistant::delete_session_chat,
             assistant::update_session_chat,
             assistant::assistant_search,
+            assistant::assistant_get,
             // server::get_coco_server_datasources,
             // server::get_coco_server_connectors,
             server::websocket::connect_to_server,
