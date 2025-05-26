@@ -27,6 +27,7 @@ Information about release notes of Coco Server is provided here.
 - feat: add AI summary component #518
 - feat: dynamic log level via env var COCO_LOG #535
 - feat: add quick AI access to search mode #556
+- feat: rerank search results #561
 
 ### 🐛 Bug fix
 

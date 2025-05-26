@@ -5,8 +5,10 @@ use crate::common::search::{
 };
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
+use std::cmp::Reverse;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use strsim::jaro_winkler;
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::time::{timeout, Duration};
 
@@ -18,6 +20,8 @@ pub async fn query_coco_fusion<R: Runtime>(
     query_strings: HashMap<String, String>,
     query_timeout: u64,
 ) -> Result<MultiSourceQueryResponse, SearchError> {
+    let query_keyword = query_strings.get("query").unwrap_or(&"".to_string()).clone();
+
     let query_source_to_search = query_strings.get("querysource");
 
     let search_sources = app_handle.state::<SearchSourceRegistry>();
@@ -38,7 +42,7 @@ pub async fn query_coco_fusion<R: Runtime>(
     );
 
     // Push all queries into futures
-    for query_source in sources_list {
+    for query_source in &sources_list {
         let query_source_type = query_source.get_type().clone();
 
         if let Some(query_source_to_search) = query_source_to_search {
@@ -58,14 +62,19 @@ pub async fn query_coco_fusion<R: Runtime>(
             timeout(timeout_duration, async {
                 query_source_clone.search(query).await
             })
-            .await
+                .await
         }));
     }
 
     let mut total_hits = 0;
+    let mut need_rerank = true; //TODO set default to false when boost supported in Pizza
     let mut failed_requests = Vec::new();
     let mut all_hits: Vec<(String, QueryHits, f64)> = Vec::new();
     let mut hits_per_source: HashMap<String, Vec<(QueryHits, f64)>> = HashMap::new();
+
+    if sources_list.len() > 1 {
+        need_rerank = true; // If we have more than one source, we need to rerank the hits
+    }
 
     while let Some(result) = futures.next().await {
         match result {
@@ -147,8 +156,34 @@ pub async fn query_coco_fusion<R: Runtime>(
 
     log::debug!("final hits: {:?}", final_hits.len());
 
-    // If we still need more hits, take the highest-scoring remaining ones
-    if final_hits.len() < size as usize {
+    if need_rerank && final_hits.len() > 1 {
+        // Compute similarity scores directly with index references
+        let mut scored_hits: Vec<(usize, f64)> = final_hits
+            .iter()
+            .enumerate()
+            .map(|(idx, hit)| {
+                let title = hit.document.title.as_deref().unwrap_or("");
+                let base_score = char_jaccard_similarity(title, query_keyword.as_str());
+
+                let mut score = base_score;
+
+                if title.contains(query_keyword.as_str()) {
+                    score += 0.3;
+                }
+
+                (idx, score)
+            })
+            .collect();
+
+        // Sort descending by score
+        scored_hits.sort_by_key(|&(_, score)| Reverse((score * 1000.0) as u64));
+
+        // Apply scores to the original final_hits
+        for (idx, score) in scored_hits.into_iter().take(size as usize) {
+            final_hits[idx].score = score;
+        }
+    } else if final_hits.len() < size as usize {     // If we still need more hits, take the highest-scoring remaining ones
+
         let remaining_needed = size as usize - final_hits.len();
 
         // Sort all hits by score descending, removing duplicates by document ID
@@ -192,4 +227,20 @@ pub async fn query_coco_fusion<R: Runtime>(
         hits: final_hits,
         total_hits,
     })
+}
+
+fn char_jaccard_similarity(a: &str, b: &str) -> f64 {
+    use std::collections::HashSet;
+
+    let set_a: HashSet<char> = a.chars().filter(|c| !c.is_whitespace()).collect();
+    let set_b: HashSet<char> = b.chars().filter(|c| !c.is_whitespace()).collect();
+
+    let intersection: usize = set_a.intersection(&set_b).count();
+    let union: usize = set_a.union(&set_b).count();
+
+    if union == 0 {
+        return 0.0;
+    }
+
+    intersection as f64 / union as f64
 }
