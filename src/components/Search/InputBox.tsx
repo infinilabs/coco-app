@@ -1,32 +1,21 @@
-import { Brain } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import clsx from "clsx";
 import { useKeyPress } from "ahooks";
-import { cloneDeep, isEmpty } from "lodash-es";
 
-import ChatSwitch from "@/components/Common/ChatSwitch";
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import { useChatStore } from "@/stores/chatStore";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
-import { metaOrCtrlKey } from "@/utils/keyboardUtils";
-import SearchPopover from "./SearchPopover";
-import MCPPopover from "./MCPPopover";
 // import AudioRecording from "../AudioRecording";
-import { DataSource } from "@/types/commands";
-// import InputExtra from "./InputExtra";
 import { useConnectStore } from "@/stores/connectStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
-import Copyright from "@/components/Common/Copyright";
 import VisibleKey from "@/components/Common/VisibleKey";
 import ConnectionError from "./ConnectionError";
 import SearchIcons from "./SearchIcons";
 import ChatIcons from "./ChatIcons";
-import platformAdapter from "@/utils/platformAdapter";
-import { Post, Get } from "@/api/axiosRequest";
-import { useExtensionsStore } from "@/stores/extensionsStore";
-// import AiSummaryIcon from "../Common/Icons/AiSummaryIcon";
+import { useKeyboardHandlers } from "@/hooks/useKeyboardHandlers";
+import { useAssistantManager } from "./AssistantManager";
+import InputControls from "./InputControls";
 
 interface ChatInputProps {
   isTauri: boolean;
@@ -88,18 +77,16 @@ export default function ChatInput({
   const { t } = useTranslation();
 
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
-  const currentService = useConnectStore((state) => state.currentService);
+  // const sessionId = useConnectStore((state) => state.currentSessionId);
 
   const showTooltip = useAppStore((state) => state.showTooltip);
+  const setBlurred = useAppStore((state) => state.setBlurred);
 
-  const sourceData = useSearchStore((state) => state.sourceData);
-  const setSourceData = useSearchStore((state) => state.setSourceData);
+  const { sourceData, setSourceData, goAskAi, setGoAskAi, setAskAiMessage } =
+    useSearchStore();
 
-  // const sessionId = useConnectStore((state) => state.currentSessionId);
-  const modifierKey = useShortcutsStore((state) => state.modifierKey);
-  const modeSwitch = useShortcutsStore((state) => state.modeSwitch);
-  const returnToInput = useShortcutsStore((state) => state.returnToInput);
-  const deepThinking = useShortcutsStore((state) => state.deepThinking);
+  const { modifierKey, returnToInput, setModifierKeyPressed } =
+    useShortcutsStore();
 
   useEffect(() => {
     return () => {
@@ -112,11 +99,6 @@ export default function ChatInput({
   const textareaRef = useRef<{ reset: () => void; focus: () => void }>(null);
 
   const { curChatEnd, connected } = useChatStore();
-
-  const setModifierKeyPressed = useShortcutsStore((state) => {
-    return state.setModifierKeyPressed;
-  });
-  const setBlurred = useAppStore((state) => state.setBlurred);
 
   useEffect(() => {
     const handleFocus = () => {
@@ -144,66 +126,15 @@ export default function ChatInput({
     }
   }, [inputValue, disabled, onSend]);
 
-  const pressedKeys = new Set<string>();
-
-  useKeyPress(`${modifierKey}.${returnToInput}`, handleToggleFocus);
-
-  const visibleContextMenu = useSearchStore((state) => {
-    return state.visibleContextMenu;
+  const { pressedKeys } = useKeyboardHandlers({
+    isChatMode,
+    handleSubmit,
+    setSourceData,
+    disabledChange,
+    curChatEnd,
   });
 
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      pressedKeys.add(e.key);
-
-      if (pressedKeys.has(metaOrCtrlKey())) {
-        // e.preventDefault();
-        switch (e.code) {
-          case "Comma":
-            console.log("Comma");
-            break;
-          case "ArrowLeft":
-            setSourceData(undefined);
-            break;
-          case "KeyM":
-            console.log("KeyM");
-            break;
-          case "Enter":
-            isChatMode && (curChatEnd ? handleSubmit() : disabledChange?.());
-            break;
-          case "KeyO":
-            console.log("KeyO");
-            break;
-          case "KeyU":
-            console.log("KeyU");
-            break;
-          case "KeyN":
-            console.log("KeyN");
-            break;
-          case "KeyG":
-            console.log("KeyG");
-            break;
-          default:
-            break;
-        }
-      }
-    },
-    [
-      handleToggleFocus,
-      isChatMode,
-      handleSubmit,
-      setSourceData,
-      disabledChange,
-      curChatEnd,
-      visibleContextMenu,
-    ]
-  );
-
-  const handleKeyUp = useCallback((e: KeyboardEvent) => {
-    pressedKeys.delete(e.key);
-    if (e.key === metaOrCtrlKey()) {
-    }
-  }, []);
+  useKeyPress(`${modifierKey}.${returnToInput}`, handleToggleFocus);
 
   const handleInputChange = useCallback(
     (value: string) => {
@@ -214,16 +145,6 @@ export default function ChatInput({
     },
     [changeInput, isChatMode, onSend]
   );
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-    };
-  }, [handleKeyDown, handleKeyUp]);
 
   useEffect(() => {
     let unlisten: (() => void) | undefined;
@@ -238,6 +159,17 @@ export default function ChatInput({
       unlisten?.();
     };
   }, [isChatMode]);
+
+  const { assistant, assistantRef, handleKeyDownAutoResizeTextarea } =
+    useAssistantManager({
+      isTauri,
+      isChatMode,
+      handleSubmit,
+      goAskAi,
+      setGoAskAi,
+      setAskAiMessage,
+      changeInput,
+    });
 
   const [lineCount, setLineCount] = useState(1);
 
@@ -255,310 +187,87 @@ export default function ChatInput({
     };
   }, [currentAssistant]);
 
-  const getDataSourcesByServer = useCallback(
-    async (
-      serverId: string,
-      options?: {
-        from?: number;
-        size?: number;
-        query?: string;
-      }
-    ): Promise<DataSource[]> => {
-      if (
-        !(
-          assistantConfig.datasourceEnabled && assistantConfig.datasourceVisible
-        )
-      ) {
-        return [];
-      }
-
-      const body: Record<string, any> = {
-        id: serverId,
-        from: options?.from || 0,
-        size: options?.size || 1000,
-      };
-
-      body.query = {
-        bool: {
-          must: [{ term: { enabled: true } }],
-        },
-      };
-
-      if (options?.query) {
-        body.query.bool.must.push({
-          query_string: {
-            fields: ["combined_fulltext"],
-            query: options?.query,
-            fuzziness: "AUTO",
-            fuzzy_prefix_length: 2,
-            fuzzy_max_expansions: 10,
-            fuzzy_transpositions: true,
-            allow_leading_wildcard: false,
-          },
-        });
-      }
-
-      let response: any;
-      if (isTauri) {
-        response = await platformAdapter.invokeBackend("datasource_search", {
-          id: serverId,
-          options: body,
-        });
-      } else {
-        const [error, res]: any = await Post("/datasource/_search", body);
-        if (error) {
-          console.error("_search", error);
-          return [];
-        }
-        response = res?.hits?.hits?.map((item: any) => {
-          return {
-            ...item,
-            id: item._source.id,
-            name: item._source.name,
-          };
-        });
-      }
-      let ids = assistantConfig.datasourceIds;
-      if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
-        response = response?.filter((item: any) => ids.includes(item.id));
-      }
-      return response || [];
-    },
-    [assistantConfig]
+  const renderSearchIcon = () => (
+    <SearchIcons
+      lineCount={lineCount}
+      isChatMode={isChatMode}
+      sourceData={sourceData}
+      assistant={assistantRef.current}
+      setSourceData={setSourceData}
+    />
   );
 
-  const getMCPByServer = useCallback(
-    async (
-      serverId: string,
-      options?: {
-        from?: number;
-        size?: number;
-        query?: string;
-      }
-    ): Promise<DataSource[]> => {
-      if (!(assistantConfig.mcpEnabled && assistantConfig.mcpVisible)) {
-        return [];
-      }
-      const body: Record<string, any> = {
-        id: serverId,
-        from: options?.from || 0,
-        size: options?.size || 1000,
-      };
-      body.query = {
-        bool: {
-          must: [{ term: { enabled: true } }],
-        },
-      };
-
-      if (options?.query) {
-        body.query.bool.must.push({
-          query_string: {
-            fields: ["combined_fulltext"],
-            query: options?.query,
-            fuzziness: "AUTO",
-            fuzzy_prefix_length: 2,
-            fuzzy_max_expansions: 10,
-            fuzzy_transpositions: true,
-            allow_leading_wildcard: false,
-          },
-        });
-      }
-
-      let response: any;
-      if (isTauri) {
-        response = await platformAdapter.invokeBackend(
-          "mcp_server_search",
-          body
-        );
-      } else {
-        const [error, res]: any = await Post("/mcp_server/_search", body);
-        if (error) {
-          console.error("_search", error);
-          return [];
-        }
-        response = res?.hits?.hits?.map((item: any) => {
-          return {
-            ...item,
-            id: item._source.id,
-            name: item._source.name,
-          };
-        });
-      }
-      let ids = assistantConfig.mcpIds;
-      if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
-        response = response?.filter((item: any) => ids.includes(item.id));
-      }
-      return response || [];
-    },
-    [assistantConfig]
-  );
-  const goAskAi = useSearchStore((state) => state.goAskAi);
-  const setGoAskAi = useSearchStore((state) => state.setGoAskAi);
-  const setAskAiMessage = useSearchStore((state) => state.setAskAiMessage);
-  const quickAiAccessAssistant = useExtensionsStore((state) => {
-    return state.quickAiAccessAssistant;
-  });
-  const selectedAssistant = useSearchStore((state) => {
-    return state.selectedAssistant;
-  });
-  const assistantRef = useRef<any>(null);
-
-  const assistant = useMemo(() => {
-    return selectedAssistant ?? quickAiAccessAssistant;
-  }, [quickAiAccessAssistant, selectedAssistant]);
-  console.log("assistant", assistant);
-
-  const assistant_get = useCallback(async () => {
-    if (isTauri) {
-      const res = await platformAdapter.commands("assistant_get", {
-        serverId: assistant?.querySource?.id,
-        assistantId: assistant?.id,
-      });
-      assistantRef.current = res;
-    } else {
-      const [error, res]: any = await Get(`/assistant/${assistant?.id}`, {
-        id: assistant?.id,
-      });
-      if (error) {
-        console.error("assistant", error);
-        return;
-      }
-      assistantRef.current = res;
-    }
-    console.log("assistantRef.current", assistantRef.current);
-  }, [assistant]);
-
-  const handleAskAi = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    assistantRef.current = cloneDeep(assistant);
-
-    if (!assistantRef.current) return;
-
-    event.preventDefault();
-
-    const { value } = event.currentTarget;
-
-    if (!selectedAssistant && isEmpty(value)) return;
-
-    assistant_get();
-    changeInput("");
-    setGoAskAi(true);
-    setAskAiMessage(!goAskAi && selectedAssistant ? "" : value);
-  };
-
-  const handleKeyDownAutoResizeTextarea = (
-    e: React.KeyboardEvent<HTMLTextAreaElement>
-  ) => {
-    const { key, shiftKey } = e;
-
-    const { value } = e.currentTarget;
-
-    if (key === "Backspace" && value === "") {
-      return setGoAskAi(false);
-    }
-
-    if (key === "Tab" && !isChatMode) {
-      return handleAskAi(e);
-    }
-
-    if (key === "Enter" && !shiftKey) {
-      if (goAskAi) {
-        return handleAskAi(e);
-      }
-
-      e.preventDefault();
-      handleSubmit();
-
-      if (!isChatMode) {
-        onSend(inputValue);
-      }
-    }
-  };
-
-  const renderSearchIcon = () => {
-    return (
-      <SearchIcons
+  const renderExtraIcon = () => (
+    <div className="flex items-center gap-2">
+      <ChatIcons
         lineCount={lineCount}
         isChatMode={isChatMode}
-        sourceData={sourceData}
-        assistant={assistantRef.current}
-        setSourceData={setSourceData}
+        curChatEnd={curChatEnd}
+        inputValue={inputValue}
+        onSend={onSend}
+        disabledChange={disabledChange}
       />
-    );
-  };
 
-  const renderExtraIcon = () => {
-    return (
-      <div className="flex items-center gap-2">
-        <ChatIcons
-          lineCount={lineCount}
-          isChatMode={isChatMode}
-          curChatEnd={curChatEnd}
-          inputValue={inputValue}
-          onSend={onSend}
-          disabledChange={disabledChange}
-        />
+      {showTooltip && !isChatMode && sourceData && (
+        <div
+          className={`absolute ${
+            lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-25px)]"
+          } left-2`}
+        >
+          <VisibleKey shortcut="←" />
+        </div>
+      )}
 
-        {showTooltip && !isChatMode && sourceData && (
-          <div
-            className={`absolute ${
-              lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-25px)]"
-            } left-2`}
-          >
-            <VisibleKey shortcut="←" />
-          </div>
+      {/* {showTooltip && (
+      <div
+        className={clsx(
+          `absolute ${
+            lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-25px)]"
+          } left-2`,
+          {
+            "left-8": !isChatMode && sourceData,
+          }
         )}
-
-        {/* {showTooltip && (
-          <div
-            className={clsx(
-              `absolute ${
-                lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-25px)]"
-              } left-2`,
-              {
-                "left-8": !isChatMode && sourceData,
-              }
-            )}
-          >
-            <VisibleKey shortcut={returnToInput} />
-          </div>
-        )} */}
-
-        {!isChatMode && !goAskAi && assistant && (
-          <div className="flex items-center gap-2 text-sm text-[#AEAEAE] dark:text-[#545454] whitespace-nowrap">
-            <span>
-              {t("search.askCocoAi.title", {
-                replace: [assistant.name],
-              })}
-            </span>
-            <div className="flex items-center justify-center w-8 h-[20px] text-xs rounded-md border border-black/10 dark:border-[#545454]">
-              Tab
-            </div>
-          </div>
-        )}
-
-        {/* <AudioRecording
-          key={isChatMode ? "chat" : "search"}
-          onChange={(text) => {
-            changeInput(inputValue + text);
-          }}
-        /> */}
-
-        {showTooltip && isChatMode && (
-          <div
-            className={`absolute ${
-              lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-30px)]"
-            }  right-[12px]`}
-          >
-            <VisibleKey shortcut="↩︎" />
-          </div>
-        )}
-
-        {!connected && isChatMode ? (
-          <ConnectionError reconnect={reconnect} connected={connected} />
-        ) : null}
+      >
+        <VisibleKey shortcut={returnToInput} />
       </div>
-    );
-  };
+    )} */}
+
+      {!isChatMode && !goAskAi && assistant && (
+        <div className="flex items-center gap-2 text-sm text-[#AEAEAE] dark:text-[#545454] whitespace-nowrap">
+          <span>
+            {t("search.askCocoAi.title", {
+              replace: [assistant.name],
+            })}
+          </span>
+          <div className="flex items-center justify-center w-8 h-[20px] text-xs rounded-md border border-black/10 dark:border-[#545454]">
+            Tab
+          </div>
+        </div>
+      )}
+
+      {/* <AudioRecording
+      key={isChatMode ? "chat" : "search"}
+      onChange={(text) => {
+        changeInput(inputValue + text);
+      }}
+    /> */}
+
+      {showTooltip && isChatMode && (
+        <div
+          className={`absolute ${
+            lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-30px)]"
+          }  right-[12px]`}
+        >
+          <VisibleKey shortcut="↩︎" />
+        </div>
+      )}
+
+      {!connected && isChatMode ? (
+        <ConnectionError reconnect={reconnect} connected={connected} />
+      ) : null}
+    </div>
+  );
 
   const renderTextarea = () => {
     return (
@@ -575,7 +284,7 @@ export default function ChatInput({
           chatPlaceholder={
             isChatMode
               ? assistantConfig.placeholder || chatPlaceholder
-              : assistantRef.current?.chat_settings?.placeholder ||
+              : (assistantRef.current as any)?.chat_settings?.placeholder ||
                 searchPlaceholder ||
                 t("search.input.searchPlaceholder")
           }
@@ -612,107 +321,23 @@ export default function ChatInput({
         )}
       </div>
 
-      <div
-        data-tauri-drag-region
-        className="flex justify-between items-center pt-2"
-      >
-        {isChatMode ? (
-          <div className="flex gap-2 text-[12px] leading-3 text-[#333] dark:text-[#d8d8d8]">
-            {/* {sessionId && (
-              <InputExtra
-                checkScreenPermission={checkScreenPermission}
-                requestScreenPermission={requestScreenPermission}
-                getScreenMonitors={getScreenMonitors}
-                getScreenWindows={getScreenWindows}
-                captureMonitorScreenshot={captureMonitorScreenshot}
-                captureWindowScreenshot={captureWindowScreenshot}
-                openFileDialog={openFileDialog}
-                getFileMetadata={getFileMetadata}
-                getFileIcon={getFileIcon}
-              />
-            )} */}
-
-            {source?.type === "deep_think" && source?.config?.visible && (
-              <button
-                className={clsx(
-                  "flex items-center gap-1 py-[3px] pl-1 pr-1.5 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
-                  {
-                    "!bg-[rgba(0,114,255,0.3)]": isDeepThinkActive,
-                  }
-                )}
-                onClick={setIsDeepThinkActive}
-              >
-                <VisibleKey
-                  shortcut={deepThinking}
-                  onKeyPress={setIsDeepThinkActive}
-                >
-                  <Brain
-                    className={`size-3 ${
-                      isDeepThinkActive
-                        ? "text-[#0072FF] dark:text-[#0072FF]"
-                        : "text-[#333] dark:text-white"
-                    }`}
-                  />
-                </VisibleKey>
-                {isDeepThinkActive && (
-                  <span
-                    className={`${
-                      isDeepThinkActive ? "text-[#0072FF]" : "dark:text-white"
-                    }`}
-                  >
-                    {t("search.input.deepThink")}
-                  </span>
-                )}
-              </button>
-            )}
-
-            {source?.datasource?.enabled && source?.datasource?.visible && (
-              <SearchPopover
-                isSearchActive={isSearchActive}
-                setIsSearchActive={setIsSearchActive}
-                getDataSourcesByServer={getDataSourcesByServer}
-              />
-            )}
-
-            {source?.mcp_servers?.enabled && source?.mcp_servers?.visible && (
-              <MCPPopover
-                isMCPActive={isMCPActive}
-                setIsMCPActive={setIsMCPActive}
-                getMCPByServer={getMCPByServer}
-              />
-            )}
-
-            {!(source?.datasource?.enabled && source?.datasource?.visible) &&
-            (source?.type !== "deep_think" || !source?.config?.visible) &&
-            !(source?.mcp_servers?.enabled && source?.mcp_servers?.visible) ? (
-              <div className="px-[9px]">
-                <Copyright />
-              </div>
-            ) : null}
-          </div>
-        ) : (
-          <div data-tauri-drag-region className="w-28 flex gap-2 relative">
-            {/* <AiSummaryIcon color={"#881c94"} /> */}
-          </div>
-        )}
-
-        {isChatPage || hasModules?.length !== 2 ? null : (
-          <div className="relative w-16 flex justify-end items-center">
-            {showTooltip && (
-              <div className="absolute right-[52px] -top-2 z-10">
-                <VisibleKey shortcut={modeSwitch} />
-              </div>
-            )}
-
-            <ChatSwitch
-              isChatMode={isChatMode}
-              onChange={(value: boolean) => {
-                changeMode && changeMode(value);
-              }}
-            />
-          </div>
-        )}
-      </div>
+      <InputControls
+        isChatMode={isChatMode}
+        assistantConfig={assistantConfig}
+        isChatPage={isChatPage}
+        hasModules={hasModules}
+        searchPlaceholder={searchPlaceholder}
+        chatPlaceholder={chatPlaceholder}
+        isSearchActive={isSearchActive}
+        setIsSearchActive={setIsSearchActive}
+        isDeepThinkActive={isDeepThinkActive}
+        setIsDeepThinkActive={setIsDeepThinkActive}
+        isMCPActive={isMCPActive}
+        setIsMCPActive={setIsMCPActive}
+        showTooltip={showTooltip}
+        changeMode={changeMode}
+        isTauri={isTauri}
+      />
     </div>
   );
 }
