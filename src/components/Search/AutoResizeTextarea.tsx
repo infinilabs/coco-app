@@ -12,7 +12,6 @@ interface AutoResizeTextareaProps {
   input: string;
   setInput: (value: string) => void;
   handleKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
-  connected: boolean;
   chatPlaceholder?: string;
   lineCount?: number;
   onLineCountChange?: (lineCount: number) => void;
@@ -28,7 +27,6 @@ const AutoResizeTextarea = forwardRef<
       input,
       setInput,
       handleKeyDown,
-      connected,
       chatPlaceholder,
       lineCount = 1,
       onLineCountChange,
@@ -85,7 +83,7 @@ const AutoResizeTextarea = forwardRef<
         spellCheck="false"
         className="text-base flex-1 outline-none w-full min-w-[200px] text-[#333] dark:text-[#d8d8d8] placeholder-text-xs placeholder-[#999] dark:placeholder-gray-500 bg-transparent custom-scrollbar"
         placeholder={
-          connected ? chatPlaceholder || t("search.textarea.placeholder") : ""
+          chatPlaceholder || t("search.textarea.placeholder")
         }
         aria-label={t("search.textarea.ariaLabel")}
         value={input}

@@ -1,6 +1,7 @@
 import { useSearchStore } from "@/stores/searchStore";
 import { ArrowBigLeft, Search, X } from "lucide-react";
-import FontIcon from "../Common/Icons/FontIcon";
+
+import FontIcon from "@/components/Common/Icons/FontIcon";
 
 interface SearchIconsProps {
   lineCount: number;

@@ -6,6 +6,7 @@ import {
   useUnmount,
 } from "ahooks";
 import { useEffect, useRef, useState } from "react";
+import { noop } from "lodash-es";
 
 import { ChatMessage } from "../ChatMessage";
 import { ASK_AI_CLIENT_ID, COPY_BUTTON_ID } from "@/constants";
@@ -14,7 +15,6 @@ import platformAdapter from "@/utils/platformAdapter";
 import useMessageChunkData from "@/hooks/useMessageChunkData";
 import { useAppStore } from "@/stores/appStore";
 import { isMac } from "@/utils/platform";
-import { noop } from "lodash-es";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 
 interface State {
