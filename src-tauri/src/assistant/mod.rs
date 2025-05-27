@@ -1,12 +1,15 @@
-use crate::common;
 use crate::common::assistant::ChatRequestMessage;
 use crate::common::http::GetResponse;
+use crate::common::register::SearchSourceRegistry;
 use crate::server::http_client::HttpClient;
+use crate::{common, server::servers::COCO_SERVERS};
+use futures::stream::FuturesUnordered;
+use futures::StreamExt;
 use futures_util::TryStreamExt;
 use http::Method;
 use serde_json::Value;
 use std::collections::HashMap;
-use tauri::{AppHandle, Emitter, Runtime};
+use tauri::{AppHandle, Emitter, Manager, Runtime};
 use tokio::io::AsyncBufReadExt;
 
 #[tauri::command]
@@ -262,9 +265,13 @@ pub async fn assistant_search<R: Runtime>(
         .map_err(|err| err.to_string())
 }
 
+/// Gets the information of the assistant specified by `assistant_id` by querying **all**
+/// Coco servers.
+///
+/// Returns as soon as the assistant is found on any Coco server.
 #[tauri::command]
 pub async fn assistant_get_multi<R: Runtime>(
-    _app_handle: AppHandle<R>,
+    app_handle: AppHandle<R>,
     assistant_id: String,
 ) -> Result<Value, String> {
     let search_sources = app_handle.state::<SearchSourceRegistry>();
@@ -273,31 +280,71 @@ pub async fn assistant_get_multi<R: Runtime>(
 
     let mut futures = FuturesUnordered::new();
 
-    // for query_source in &sources_list {
-    //   let server_id = query_source.id.clone();
-    //   let assistant_id_clone = assistant_id.clone();
+    for query_source in &sources_list {
+        let query_source_type = query_source.get_type();
+        if query_source_type.r#type != COCO_SERVERS {
+            // Assistants only exists on Coco servers.
+            continue;
+        }
 
-    //   futures.push(tokio::spawn(async move {
-    //       let response = HttpClient::get(
-    //         &server_id,
-    //         &format!("/assistant/{}", assistant_id_clone),
-    //         None, // headers
-    //       )
-    //       .await
-    //       .and_then(|response| {
-    //         response
-    //             .json::<Value>()
-    //             .await
-    //             .map_err(|err| err.to_string())
-    //         })
+        let coco_server_id = query_source_type.id.clone();
 
-    //   }))
-    // }
+        let path = format!("/assistant/{}", assistant_id);
 
-    // response
-    //     .json::<Value>()
-    //     .await
-    //     .map_err(|err| err.to_string())
+        let fut = async move {
+            let res_response = HttpClient::get(
+                &coco_server_id,
+                &path,
+                None, // headers
+            )
+            .await;
+            match res_response {
+                Ok(response) => response
+                    .json::<serde_json::Value>()
+                    .await
+                    .map_err(|e| e.to_string()),
+                Err(e) => Err(e),
+            }
+        };
+
+        futures.push(fut);
+    }
+
+    while let Some(res_response_json) = futures.next().await {
+        let response_json = match res_response_json {
+            Ok(json) => json,
+            Err(e) => return Err(e),
+        };
+
+        // Example response JSON
+        //
+        // When assistant is not found:
+        // ```json
+        // {
+        //   "_id": "ID",
+        //   "result": "not_found"
+        // }
+        // ```
+        //
+        // When assistant is found:
+        // ```json
+        // {
+        //   "_id": "ID",
+        //   "_source": {...}
+        //   "found": true
+        // }
+        // ```
+        if let Some(found) = response_json.get("found") {
+            if found == true {
+                return Ok(response_json);
+            }
+        }
+    }
+
+    Err(format!(
+        "could not find Assistant [{}] on all the Coco servers",
+        assistant_id
+    ))
 }
 
 #[tauri::command]
