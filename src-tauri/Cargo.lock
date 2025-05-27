@@ -847,6 +847,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "strsim 0.10.0",
  "tauri",
  "tauri-build",
  "tauri-nspanel",
