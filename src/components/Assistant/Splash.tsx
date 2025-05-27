@@ -10,7 +10,6 @@ import logoImg from "@/assets/icon.svg";
 import { AssistantFetcher } from "./AssistantFetcher";
 import type { StartPage } from "@/types/chat";
 
-
 export interface Response {
   app_settings?: {
     chat?: {
@@ -27,7 +26,6 @@ interface SplashProps {
 const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
   const isTauri = useAppStore((state) => state.isTauri);
   const currentService = useConnectStore((state) => state.currentService);
-  const [settings, setSettings] = useState<StartPage>();
   const visibleStartPage = useConnectStore((state) => state.visibleStartPage);
   const setVisibleStartPage = useConnectStore((state) => {
     return state.setVisibleStartPage;
@@ -39,16 +37,15 @@ const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
     return state.setCurrentAssistant;
   });
 
+  const [settings, setSettings] = useState<StartPage>();
+
   const { fetchAssistant } = AssistantFetcher({
     assistantIDs,
   });
 
-  const fetchData = async (display_assistants: string[] = []) => {
+  const fetchData = async () => {
     const data = await fetchAssistant({ current: 1, pageSize: 1000 });
-    const list = (data.list || []).filter((item: any) => {
-      return display_assistants?.includes(item?._source?.id);
-    });
-    setAssistantList(list);
+    setAssistantList(data.list || []);
   };
 
   const getSettings = async () => {
@@ -64,16 +61,15 @@ const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
       );
       response = response?.app_settings?.chat?.start_page;
     } else {
-      response = startPage
+      response = startPage;
     }
     setVisibleStartPage(Boolean(response?.enabled));
     setSettings(response);
-    //
-    fetchData(response?.display_assistants);
   };
 
   useEffect(() => {
     getSettings();
+    fetchData();
   }, [currentService?.id]);
 
   const settingsAssistantList = useMemo(() => {
@@ -94,7 +90,7 @@ const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
 
   return (
     visibleStartPage && (
-      <div className="absolute inset-0 flex flex-col items-center px-6 pt-6 text-[#333] dark:text-white select-none overflow-y-auto custom-scrollbar">
+      <div className="absolute top-12 inset-0 flex flex-col items-center px-6 pt-6 text-[#333] dark:text-white select-none overflow-y-auto custom-scrollbar">
         <CircleX
           className="absolute top-3 right-3 size-4 text-[#999] cursor-pointer"
           onClick={() => {
