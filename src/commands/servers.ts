@@ -281,8 +281,14 @@ export const assistant_search = (payload: {
   return invokeWithErrorHandler<boolean>("assistant_search", payload);
 };
 
-export const assistant_get_multi = (payload: {
+export const assistant_get = (payload: {
   serverId: string;
+  assistantId: string;
+}): Promise<boolean> => {
+  return invokeWithErrorHandler<boolean>("assistant_get", payload);
+};
+
+export const assistant_get_multi = (payload: {
   assistantId: string;
 }): Promise<boolean> => {
   return invokeWithErrorHandler<boolean>("assistant_get_multi", payload);

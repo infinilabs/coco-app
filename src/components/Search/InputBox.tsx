@@ -408,14 +408,13 @@ export default function ChatInput({
   }, [quickAiAccessAssistant, selectedAssistant]);
   console.log("assistant", assistant);
 
-  const assistant_get_multi = useCallback(async () => {
+  const assistant_get = useCallback(async () => {
     if (isTauri) {
-      const res = await platformAdapter.commands("assistant_get_multi", {
-        serverId: currentService?.id,
+      const res = await platformAdapter.commands("assistant_get", {
+        serverId: assistant?.querySource?.id,
         assistantId: assistant?.id,
       });
       assistantRef.current = res;
-      console.log("assistantRef.current", assistantRef.current);
     } else {
       const [error, res]: any = await Get(`/assistant/${assistant?.id}`, {
         id: assistant?.id,
@@ -424,8 +423,10 @@ export default function ChatInput({
         console.error("assistant", error);
         return;
       }
+      assistantRef.current = res;
     }
-  }, [assistant?.id, currentService?.id]);
+    console.log("assistantRef.current", assistantRef.current);
+  }, [assistant]);
 
   const handleAskAi = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     assistantRef.current = cloneDeep(assistant);
@@ -438,7 +439,7 @@ export default function ChatInput({
 
     if (!selectedAssistant && isEmpty(value)) return;
 
-    assistant_get_multi();
+    assistant_get();
     changeInput("");
     setGoAskAi(true);
     setAskAiMessage(!goAskAi && selectedAssistant ? "" : value);
@@ -570,12 +571,13 @@ export default function ChatInput({
           ref={textareaRef}
           input={inputValue}
           setInput={handleInputChange}
-          connected={connected}
           handleKeyDown={handleKeyDownAutoResizeTextarea}
           chatPlaceholder={
             isChatMode
               ? assistantConfig.placeholder || chatPlaceholder
-              : searchPlaceholder || t("search.input.searchPlaceholder")
+              : assistantRef.current?.chat_settings?.placeholder ||
+                searchPlaceholder ||
+                t("search.input.searchPlaceholder")
           }
           lineCount={lineCount}
           onLineCountChange={setLineCount}
