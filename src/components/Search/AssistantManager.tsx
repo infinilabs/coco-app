@@ -1,4 +1,4 @@
-import { useCallback, useRef, useMemo } from "react";
+import { useCallback, useRef, useMemo, useState } from "react";
 import { cloneDeep, isEmpty } from "lodash-es";
 
 import { useSearchStore } from "@/stores/searchStore";
@@ -24,30 +24,27 @@ export function useAssistantManager({
 
   const assistant = useMemo(() => {
     const newAssistant = selectedAssistant ?? quickAiAccessAssistant;
-    assistantRef.current = cloneDeep(newAssistant);
     return newAssistant;
   }, [quickAiAccessAssistant, selectedAssistant]);
 
+  const [assistantDetail, setAssistantDetail] = useState<any>({});
+
   const assistant_get = useCallback(async () => {
-    try {
-      if (isTauri) {
-        const res = await platformAdapter.commands("assistant_get", {
-          serverId: assistant?.querySource?.id,
-          assistantId: assistant?.id,
-        });
-        assistantRef.current = res;
-      } else {
-        const [error, res]: any = await Get(`/assistant/${assistant?.id}`, {
-          id: assistant?.id,
-        });
-        if (error) {
-          console.error("assistant", error);
-          return;
-        }
-        assistantRef.current = res;
+    if (isTauri) {
+      const res = await platformAdapter.commands("assistant_get", {
+        serverId: assistant?.querySource?.id,
+        assistantId: assistant?.id,
+      });
+      setAssistantDetail(res)
+    } else {
+      const [error, res]: any = await Get(`/assistant/${assistant?.id}`, {
+        id: assistant?.id,
+      });
+      if (error) {
+        console.error("assistant", error);
+        return;
       }
-    } catch (error) {
-      console.error("Error fetching assistant:", error);
+      setAssistantDetail(res)
     }
   }, [assistant]);
 
@@ -93,5 +90,5 @@ export function useAssistantManager({
     }
   };
 
-  return { assistant, assistantRef, handleKeyDownAutoResizeTextarea };
+  return { assistant, assistantRef, assistantDetail, handleKeyDownAutoResizeTextarea };
 }

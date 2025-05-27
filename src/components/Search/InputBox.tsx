@@ -160,16 +160,20 @@ export default function ChatInput({
     };
   }, [isChatMode]);
 
-  const { assistant, assistantRef, handleKeyDownAutoResizeTextarea } =
-    useAssistantManager({
-      isTauri,
-      isChatMode,
-      handleSubmit,
-      goAskAi,
-      setGoAskAi,
-      setAskAiMessage,
-      changeInput,
-    });
+  const {
+    assistant,
+    assistantRef,
+    assistantDetail,
+    handleKeyDownAutoResizeTextarea,
+  } = useAssistantManager({
+    isTauri,
+    isChatMode,
+    handleSubmit,
+    goAskAi,
+    setGoAskAi,
+    setAskAiMessage,
+    changeInput,
+  });
 
   const [lineCount, setLineCount] = useState(1);
 
@@ -269,31 +273,29 @@ export default function ChatInput({
     </div>
   );
 
-  const renderTextarea = () => {
-    return (
-      <VisibleKey
-        shortcut={returnToInput}
-        rootClassName="flex-1 flex items-center justify-center"
-        shortcutClassName="!left-0 !translate-x-0"
-      >
-        <AutoResizeTextarea
-          ref={textareaRef}
-          input={inputValue}
-          setInput={handleInputChange}
-          handleKeyDown={handleKeyDownAutoResizeTextarea}
-          chatPlaceholder={
-            isChatMode
-              ? assistantConfig.placeholder || chatPlaceholder
-              : (assistantRef.current as any)?.chat_settings?.placeholder ||
-                searchPlaceholder ||
-                t("search.input.searchPlaceholder")
-          }
-          lineCount={lineCount}
-          onLineCountChange={setLineCount}
-        />
-      </VisibleKey>
-    );
-  };
+  const renderTextarea = () => (
+    <VisibleKey
+      shortcut={returnToInput}
+      rootClassName="flex-1 flex items-center justify-center"
+      shortcutClassName="!left-0 !translate-x-0"
+    >
+      <AutoResizeTextarea
+        ref={textareaRef}
+        input={inputValue}
+        setInput={handleInputChange}
+        handleKeyDown={handleKeyDownAutoResizeTextarea}
+        chatPlaceholder={
+          isChatMode
+            ? assistantConfig.placeholder || chatPlaceholder
+            : assistantDetail?._source?.chat_settings?.placeholder ||
+              searchPlaceholder ||
+              t("search.input.searchPlaceholder")
+        }
+        lineCount={lineCount}
+        onLineCountChange={setLineCount}
+      />
+    </VisibleKey>
+  );
 
   return (
     <div className={`w-full relative`}>
