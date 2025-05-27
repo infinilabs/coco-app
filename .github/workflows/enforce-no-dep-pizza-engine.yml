@@ -1,0 +1,18 @@
+name: Enforce no dependency pizza-engine
+
+on:
+  pull_request:
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 
+        working-directory: ./src-tauri
+        run: |
+          # if cargo remove pizza-engine succeeds, then it is in our dependency list, fail the CI pipeline.
+          if cargo remove pizza-engine; then exit 1; fi
