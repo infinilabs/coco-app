@@ -3,6 +3,7 @@ use crate::common::register::SearchSourceRegistry;
 use crate::common::search::{
     FailedRequest, MultiSourceQueryResponse, QueryHits, QuerySource, SearchQuery,
 };
+use crate::local;
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
 use std::cmp::Reverse;
@@ -155,22 +156,50 @@ pub async fn query_coco_fusion<R: Runtime>(
 
     log::debug!("final hits: {:?}", final_hits.len());
 
+    let mut unique_sources = HashSet::new();
+    for hit in &final_hits {
+        if let Some(source) = &hit.source {
+            if source.id != local::calculator::DATA_SOURCE_ID {
+                unique_sources.insert(&source.id);
+            }
+        }
+    }
+
+    log::debug!(
+            "Multiple sources found: {:?}, no rerank needed",
+            unique_sources
+        );
+
+    if unique_sources.len() < 1 {
+        need_rerank = false; // If we have hits from multiple sources, we don't need to rerank
+    }
+
     if need_rerank && final_hits.len() > 1 {
-        // Compute similarity scores directly with index references
-        let mut scored_hits: Vec<(usize, f64)> = final_hits
+
+        // Precollect (index, title)
+        let titles_to_score: Vec<(usize, &str)> = final_hits
             .iter()
             .enumerate()
-            .map(|(idx, hit)| {
-                let title = hit.document.title.as_deref().unwrap_or("");
-                let score = boosted_char_jaccard(query_keyword.as_str(), title);
-                (idx, score)
+            .filter_map(|(idx, hit)| {
+                let source = hit.source.as_ref()?;
+                let title = hit.document.title.as_deref()?;
+
+                if source.id != local::calculator::DATA_SOURCE_ID {
+                    Some((idx, title))
+                } else {
+                    None
+                }
             })
             .collect();
 
+        // Score them
+        let scored_hits = boosted_levenshtein_rerank(query_keyword.as_str(), titles_to_score);
+
         // Sort descending by score
+        let mut scored_hits = scored_hits;
         scored_hits.sort_by_key(|&(_, score)| Reverse((score * 1000.0) as u64));
 
-        // Apply scores to the original final_hits
+        // Apply new scores to final_hits
         for (idx, score) in scored_hits.into_iter().take(size as usize) {
             final_hits[idx].score = score;
         }
@@ -214,6 +243,15 @@ pub async fn query_coco_fusion<R: Runtime>(
         //remote: ai agents, quick links, other tasks, managed by server
     }
 
+    // for hit in &final_hits {
+    //     log::debug!(
+    //         "Final hit: {}, {:?}, {}",
+    //         hit.document.id,
+    //         hit.document.title,
+    //         hit.score
+    //     );
+    // }
+
     Ok(MultiSourceQueryResponse {
         failed: failed_requests,
         hits: final_hits,
@@ -221,28 +259,60 @@ pub async fn query_coco_fusion<R: Runtime>(
     })
 }
 
-fn boosted_char_jaccard(query: &str, title: &str) -> f64 {
+fn boosted_char_jaccard_rerank(query: &str, titles: Vec<(usize, &str)>) -> Vec<(usize, f64)> {
     use std::collections::HashSet;
 
-    // Case-sensitive match boosts more
-    let mut score = 0.0;
-
-    if title.contains(query) {
-        score += 0.4; // Strong boost for exact match
-    } else if title.to_lowercase().contains(&query.to_lowercase()) {
-        score += 0.2; // Weaker boost for case-insensitive match
-    }
-
-    // Build char sets (excluding whitespace, case-sensitive)
+    // Pre-tokenize the query once
+    let query_lower = query.to_lowercase();
     let query_chars: HashSet<char> = query.chars().filter(|c| !c.is_whitespace()).collect();
-    let title_chars: HashSet<char> = title.chars().filter(|c| !c.is_whitespace()).collect();
 
-    let intersection = query_chars.intersection(&title_chars).count();
-    let union = query_chars.union(&title_chars).count();
+    titles
+        .into_iter()
+        .map(|(idx, title)| {
+            let mut score = 0.0;
 
-    if union > 0 {
-        score += intersection as f32 / union as f32;
-    }
+            if title.contains(query) {
+                score += 0.4;
+            } else if title.to_lowercase().contains(&query_lower) {
+                score += 0.2;
+            }
 
-    score.min(1.0) as f64
+            let title_chars: HashSet<char> = title.chars().filter(|c| !c.is_whitespace()).collect();
+            let intersection = query_chars.intersection(&title_chars).count();
+            let union = query_chars.union(&title_chars).count();
+
+            if union > 0 {
+                score += intersection as f32 / union as f32;
+            }
+
+            (idx, score.min(1.0) as f64)
+        })
+        .collect()
+}
+
+fn boosted_levenshtein_rerank(query: &str, titles: Vec<(usize, &str)>) -> Vec<(usize, f64)> {
+    use strsim::levenshtein;
+
+    let query_lower = query.to_lowercase();
+
+    titles
+        .into_iter()
+        .map(|(idx, title)| {
+            let mut score = 0.0;
+
+            if title.contains(query) {
+                score += 0.4;
+            } else if title.to_lowercase().contains(&query_lower) {
+                score += 0.2;
+            }
+
+            let dist = levenshtein(&query_lower, &title.to_lowercase());
+            let max_len = query_lower.len().max(title.len());
+            if max_len > 0 {
+                score += (1.0 - (dist as f64 / max_len as f64)) as f32;
+            }
+
+            (idx, score.min(1.0) as f64)
+        })
+        .collect()
 }

@@ -181,8 +181,8 @@ pub async fn send_message<R: Runtime>(
         query_params,
         Some(body),
     )
-    .await
-    .map_err(|e| format!("Error cancel session: {}", e))?;
+        .await
+        .map_err(|e| format!("Error cancel session: {}", e))?;
 
     common::http::get_response_body_text(response).await
 }
@@ -224,8 +224,8 @@ pub async fn update_session_chat(
         None,
         Some(reqwest::Body::from(serde_json::to_string(&body).unwrap())),
     )
-    .await
-    .map_err(|e| format!("Error updating session: {}", e))?;
+        .await
+        .map_err(|e| format!("Error updating session: {}", e))?;
 
     Ok(response.status().is_success())
 }
@@ -253,14 +253,23 @@ pub async fn assistant_search<R: Runtime>(
         None,
         Some(reqwest::Body::from(body.to_string())),
     )
-    .await
-    .map_err(|e| format!("Error searching assistants: {}", e))?;
+        .await
+        .map_err(|e| format!("Error searching assistants: {}", e))?;
 
     response
         .json::<Value>()
         .await
         .map_err(|err| err.to_string())
 }
+
+use futures_util::StreamExt;
+use std::sync::Arc;
+use std::time::{Duration, Instant};
+use tokio::{
+    io::BufReader,
+    sync::Mutex,
+    time,
+};
 
 #[tauri::command]
 pub async fn ask_ai<R: Runtime>(
@@ -271,20 +280,19 @@ pub async fn ask_ai<R: Runtime>(
     client_id: String,
 ) -> Result<(), String> {
     let body = serde_json::json!({ "message": message });
-
     let path = format!("/assistant/{}/_ask", assistant_id);
 
     println!("Sending request to {}", &path);
 
     let response = HttpClient::send_request(
-        server_id.as_str(),
+        &server_id,
         Method::POST,
-        path.as_str(),
+        &path,
         None,
         None,
         Some(reqwest::Body::from(body.to_string())),
     )
-    .await?;
+        .await?;
 
     if !response.status().is_success() {
         return Err(format!("Request Failed: {}", response.status()));
@@ -294,9 +302,34 @@ pub async fn ask_ai<R: Runtime>(
     let reader = tokio_util::io::StreamReader::new(
         stream.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)),
     );
-    let mut lines = tokio::io::BufReader::new(reader).lines();
+    let mut lines = BufReader::new(reader).lines();
+
+    // Shared last activity timestamp
+    let last_activity = Arc::new(Mutex::new(Instant::now()));
+    let activity_check = Arc::clone(&last_activity);
+
+    // Spawn timeout watcher
+    let cancel_handle = app_handle.clone();
+    let cancel_client_id = client_id.clone();
+    tokio::spawn(async move {
+        loop {
+            time::sleep(Duration::from_secs(5)).await;
+
+            let last = *activity_check.lock().await;
+            if last.elapsed() > Duration::from_secs(30) {
+                println!("Timeout: no message received for 30 seconds, stopping stream.");
+                let _ = cancel_handle.emit(&cancel_client_id, "TIMEOUT");
+                break;
+            }
+        }
+    });
 
     while let Ok(Some(line)) = lines.next_line().await {
+        {
+            let mut last = last_activity.lock().await;
+            *last = Instant::now();
+        }
+
         dbg!("Received line: {}", &line);
 
         let _ = app_handle.emit(&client_id, line).map_err(|err| {
