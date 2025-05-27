@@ -243,51 +243,11 @@ pub async fn query_coco_fusion<R: Runtime>(
         //remote: ai agents, quick links, other tasks, managed by server
     }
 
-    // for hit in &final_hits {
-    //     log::debug!(
-    //         "Final hit: {}, {:?}, {}",
-    //         hit.document.id,
-    //         hit.document.title,
-    //         hit.score
-    //     );
-    // }
-
     Ok(MultiSourceQueryResponse {
         failed: failed_requests,
         hits: final_hits,
         total_hits,
     })
-}
-
-fn boosted_char_jaccard_rerank(query: &str, titles: Vec<(usize, &str)>) -> Vec<(usize, f64)> {
-    use std::collections::HashSet;
-
-    // Pre-tokenize the query once
-    let query_lower = query.to_lowercase();
-    let query_chars: HashSet<char> = query.chars().filter(|c| !c.is_whitespace()).collect();
-
-    titles
-        .into_iter()
-        .map(|(idx, title)| {
-            let mut score = 0.0;
-
-            if title.contains(query) {
-                score += 0.4;
-            } else if title.to_lowercase().contains(&query_lower) {
-                score += 0.2;
-            }
-
-            let title_chars: HashSet<char> = title.chars().filter(|c| !c.is_whitespace()).collect();
-            let intersection = query_chars.intersection(&title_chars).count();
-            let union = query_chars.union(&title_chars).count();
-
-            if union > 0 {
-                score += intersection as f32 / union as f32;
-            }
-
-            (idx, score.min(1.0) as f64)
-        })
-        .collect()
 }
 
 fn boosted_levenshtein_rerank(query: &str, titles: Vec<(usize, &str)>) -> Vec<(usize, f64)> {

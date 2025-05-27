@@ -262,7 +262,6 @@ pub async fn assistant_search<R: Runtime>(
         .map_err(|err| err.to_string())
 }
 
-use futures_util::StreamExt;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::{
