@@ -287,9 +287,9 @@ export default function ChatInput({
         chatPlaceholder={
           isChatMode
             ? assistantConfig.placeholder || chatPlaceholder
-            : assistantDetail?._source?.chat_settings?.placeholder ||
-              searchPlaceholder ||
-              t("search.input.searchPlaceholder")
+            : goAskAi
+            ? assistantDetail?._source?.chat_settings?.placeholder
+            : searchPlaceholder || t("search.input.searchPlaceholder")
         }
         lineCount={lineCount}
         onLineCountChange={setLineCount}
