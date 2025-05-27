@@ -281,11 +281,11 @@ export const assistant_search = (payload: {
   return invokeWithErrorHandler<boolean>("assistant_search", payload);
 };
 
-export const assistant_get = (payload: {
+export const assistant_get_multi = (payload: {
   serverId: string;
   assistantId: string;
 }): Promise<boolean> => {
-  return invokeWithErrorHandler<boolean>("assistant_get", payload);
+  return invokeWithErrorHandler<boolean>("assistant_get_multi", payload);
 };
 
 export const upload_attachment = async (payload: UploadAttachmentPayload) => {

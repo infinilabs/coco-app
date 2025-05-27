@@ -408,18 +408,24 @@ export default function ChatInput({
   }, [quickAiAccessAssistant, selectedAssistant]);
   console.log("assistant", assistant);
 
-  const assistant_get = useCallback(async () => {
-    if (isTauri) { 
-
+  const assistant_get_multi = useCallback(async () => {
+    if (isTauri) {
+      const res = await platformAdapter.commands("assistant_get_multi", {
+        serverId: currentService?.id,
+        assistantId: assistant?.id,
+      });
+      assistantRef.current = res;
+      console.log("assistantRef.current", assistantRef.current);
     } else {
-      const [error, res]: any = await Get(`/assistant/`, {
+      const [error, res]: any = await Get(`/assistant/${assistant?.id}`, {
         id: assistant?.id,
       });
+      if (error) {
+        console.error("assistant", error);
+        return;
+      }
     }
-    const res =  await platformAdapter.commands("assistant_get", currentService, assistant?.id);
-    assistantRef.current = res;
-    console.log("assistantRef.current", assistantRef.current);
-  }, [assistant]);
+  }, [assistant?.id, currentService?.id]);
 
   const handleAskAi = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     assistantRef.current = cloneDeep(assistant);
@@ -432,7 +438,7 @@ export default function ChatInput({
 
     if (!selectedAssistant && isEmpty(value)) return;
 
-    assistant_get()
+    assistant_get_multi();
     changeInput("");
     setGoAskAi(true);
     setAskAiMessage(!goAskAi && selectedAssistant ? "" : value);
@@ -568,7 +574,7 @@ export default function ChatInput({
           handleKeyDown={handleKeyDownAutoResizeTextarea}
           chatPlaceholder={
             isChatMode
-              ? (assistantConfig.placeholder || chatPlaceholder)
+              ? assistantConfig.placeholder || chatPlaceholder
               : searchPlaceholder || t("search.input.searchPlaceholder")
           }
           lineCount={lineCount}

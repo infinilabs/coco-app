@@ -263,23 +263,41 @@ pub async fn assistant_search<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn assistant_get<R: Runtime>(
+pub async fn assistant_get_multi<R: Runtime>(
     _app_handle: AppHandle<R>,
-    server_id: String,
     assistant_id: String,
 ) -> Result<Value, String> {
-    let response = HttpClient::get(
-        &server_id,
-        &format!("/assistant/{}", assistant_id),
-        None, // headers
-    )
-    .await
-    .map_err(|e| format!("Error getting assistant: {}", e))?;
+    let search_sources = app_handle.state::<SearchSourceRegistry>();
+    let sources_future = search_sources.get_sources();
+    let sources_list = sources_future.await;
 
-    response
-        .json::<Value>()
-        .await
-        .map_err(|err| err.to_string())
+    let mut futures = FuturesUnordered::new();
+
+    // for query_source in &sources_list {
+    //   let server_id = query_source.id.clone();
+    //   let assistant_id_clone = assistant_id.clone();
+
+    //   futures.push(tokio::spawn(async move {
+    //       let response = HttpClient::get(
+    //         &server_id,
+    //         &format!("/assistant/{}", assistant_id_clone),
+    //         None, // headers
+    //       )
+    //       .await
+    //       .and_then(|response| {
+    //         response
+    //             .json::<Value>()
+    //             .await
+    //             .map_err(|err| err.to_string())
+    //         })
+
+    //   }))
+    // }
+
+    // response
+    //     .json::<Value>()
+    //     .await
+    //     .map_err(|err| err.to_string())
 }
 
 #[tauri::command]
