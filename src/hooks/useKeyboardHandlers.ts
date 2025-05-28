@@ -3,14 +3,22 @@ import { useCallback, useEffect } from 'react';
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import { useSearchStore } from "@/stores/searchStore";
 
+interface KeyboardHandlersProps {
+  isChatMode: boolean;
+  handleSubmit: () => void;
+  setSourceData: (data: any) => void;
+  disabledChange?: () => void;
+  curChatEnd?: boolean;
+}
+
 export function useKeyboardHandlers({
   isChatMode,
   handleSubmit,
   setSourceData,
   disabledChange,
   curChatEnd,
-}: any) {
-  const {visibleContextMenu} = useSearchStore();
+}: KeyboardHandlersProps) {
+  const { visibleContextMenu } = useSearchStore();
 
   const pressedKeys = new Set<string>();
 

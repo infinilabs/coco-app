@@ -5,22 +5,30 @@ import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
+import type { Assistant } from "@/types/chat";
+import { useAppStore } from "@/stores/appStore";
+
+interface AssistantManagerProps {
+  isChatMode: boolean;
+  handleSubmit: () => void;
+  changeInput: (value: string) => void;
+}
 
 export function useAssistantManager({
-  isTauri,
   isChatMode,
   handleSubmit,
-  goAskAi,
-  setGoAskAi,
-  setAskAiMessage,
   changeInput,
-}: any) {
-  const selectedAssistant = useSearchStore((state) => state.selectedAssistant);
+}: AssistantManagerProps) {
+  const isTauri = useAppStore((state) => state.isTauri);
+
+  const { goAskAi, setGoAskAi, setAskAiMessage, selectedAssistant } =
+    useSearchStore();
+
   const quickAiAccessAssistant = useExtensionsStore(
     (state) => state.quickAiAccessAssistant
   );
 
-  const assistantRef = useRef<unknown>(null);
+  const assistantRef = useRef<Assistant | null>(null);
 
   const assistant = useMemo(() => {
     const newAssistant = selectedAssistant ?? quickAiAccessAssistant;
@@ -35,7 +43,7 @@ export function useAssistantManager({
         serverId: assistant?.querySource?.id,
         assistantId: assistant?.id,
       });
-      setAssistantDetail(res)
+      setAssistantDetail(res);
     } else {
       const [error, res]: any = await Get(`/assistant/${assistant?.id}`, {
         id: assistant?.id,
@@ -44,7 +52,7 @@ export function useAssistantManager({
         console.error("assistant", error);
         return;
       }
-      setAssistantDetail(res)
+      setAssistantDetail(res);
     }
   }, [assistant]);
 
@@ -90,5 +98,10 @@ export function useAssistantManager({
     }
   };
 
-  return { assistant, assistantRef, assistantDetail, handleKeyDownAutoResizeTextarea };
+  return {
+    assistant,
+    assistantRef,
+    assistantDetail,
+    handleKeyDownAutoResizeTextarea,
+  };
 }

@@ -51,3 +51,26 @@ export interface StartPage {
   introduction?: string;
   display_assistants?: string[];
 }
+
+export interface Assistant {
+  id: string;
+  name: string;
+  querySource?: {
+    id: string;
+  };
+  _source?: {
+    chat_settings?: {
+      placeholder?: string;
+    };
+    datasource?: {
+      enabled?: boolean;
+      visible?: boolean;
+      ids?: string[];
+    };
+    mcp_servers?: {
+      enabled?: boolean;
+      visible?: boolean;
+      ids?: string[];
+    };
+  };
+}

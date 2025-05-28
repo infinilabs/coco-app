@@ -237,7 +237,7 @@ function SearchChat({
   const opacity = useAppearanceStore((state) => state.opacity);
 
   useEffect(() => {
-    if (platformAdapter.isTauri()) {
+    if (isTauri) {
       changeMode(defaultStartupWindow === "chatMode");
     } else {
       if (hasModules?.length === 1 && hasModules?.includes("chat")) {
@@ -297,7 +297,6 @@ function SearchChat({
         } border-[#E6E6E6] dark:border-[#272626]`}
       >
         <InputBox
-          isTauri={isTauri}
           isChatMode={isChatMode}
           inputValue={input}
           onSend={handleSendMessage}

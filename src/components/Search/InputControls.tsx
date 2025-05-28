@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { Brain } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
@@ -13,13 +13,29 @@ import { Post } from "@/api/axiosRequest";
 import { useConnectStore } from "@/stores/connectStore";
 import VisibleKey from "@/components/Common/VisibleKey";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
+import { useAppStore } from "@/stores/appStore";
 // import InputExtra from "./InputExtra";
 // import AiSummaryIcon from "@/components/Common/Icons/AiSummaryIcon";
 
+
+interface InputControlsProps {
+  isChatMode: boolean;
+  isDeepThinkActive: boolean;
+  setIsDeepThinkActive: () => void;
+  isSearchActive: boolean;
+  setIsSearchActive: () => void;
+  isMCPActive: boolean;
+  setIsMCPActive: () => void;
+  isChatPage?: boolean;
+  hasModules?: string[];
+  searchPlaceholder?: string;
+  chatPlaceholder?: string;
+  showTooltip?: boolean;
+  changeMode?: (isChatMode: boolean) => void;
+}
+
 const InputControls = ({
   isChatMode,
-  assistantConfig,
-  isTauri,
   isDeepThinkActive,
   setIsDeepThinkActive,
   isSearchActive,
@@ -30,13 +46,27 @@ const InputControls = ({
   hasModules,
   showTooltip,
   changeMode,
-}: any) => {
+}: InputControlsProps) => {
   const { t } = useTranslation();
+
+  const isTauri = useAppStore((state) => state.isTauri);
 
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
   const { modeSwitch, deepThinking } = useShortcutsStore();
 
   const source = currentAssistant?._source;
+
+  const assistantConfig = useMemo(() => {
+    return {
+      datasourceEnabled: source?.datasource?.enabled,
+      datasourceVisible: source?.datasource?.visible,
+      datasourceIds: source?.datasource?.ids,
+      mcpEnabled: source?.mcp_servers?.enabled,
+      mcpVisible: source?.mcp_servers?.visible,
+      mcpIds: source?.mcp_servers?.ids,
+      placeholder: source?.chat_settings?.placeholder,
+    };
+  }, [currentAssistant]);
 
   const getDataSourcesByServer = useCallback(
     async (
