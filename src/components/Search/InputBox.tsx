@@ -158,8 +158,8 @@ export default function ChatInput({
   }, [isChatMode]);
 
   const {
-    assistant,
-    assistantRef,
+    askAI,
+    askAIRef,
     assistantDetail,
     handleKeyDownAutoResizeTextarea,
   } = useAssistantManager({
@@ -189,7 +189,7 @@ export default function ChatInput({
       lineCount={lineCount}
       isChatMode={isChatMode}
       sourceData={sourceData}
-      assistant={assistantRef.current}
+      assistant={askAIRef.current}
       setSourceData={setSourceData}
     />
   );
@@ -230,11 +230,11 @@ export default function ChatInput({
       </div>
     )} */}
 
-      {!isChatMode && !goAskAi && assistant && (
+      {!isChatMode && !goAskAi && askAI && (
         <div className="flex items-center gap-2 text-sm text-[#AEAEAE] dark:text-[#545454] whitespace-nowrap">
           <span>
             {t("search.askCocoAi.title", {
-              replace: [assistant.name],
+              replace: [askAI.name],
             })}
           </span>
           <div className="flex items-center justify-center w-8 h-[20px] text-xs rounded-md border border-black/10 dark:border-[#545454]">

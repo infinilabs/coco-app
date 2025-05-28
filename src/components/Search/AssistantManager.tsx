@@ -28,9 +28,9 @@ export function useAssistantManager({
     (state) => state.quickAiAccessAssistant
   );
 
-  const assistantRef = useRef<Assistant | null>(null);
+  const askAIRef = useRef<Assistant | null>(null);
 
-  const assistant = useMemo(() => {
+  const askAI = useMemo(() => {
     const newAssistant = selectedAssistant ?? quickAiAccessAssistant;
     return newAssistant;
   }, [quickAiAccessAssistant, selectedAssistant]);
@@ -40,13 +40,13 @@ export function useAssistantManager({
   const assistant_get = useCallback(async () => {
     if (isTauri) {
       const res = await platformAdapter.commands("assistant_get", {
-        serverId: assistant?.querySource?.id,
-        assistantId: assistant?.id,
+        serverId: askAI?.querySource?.id,
+        assistantId: askAI?.id,
       });
       setAssistantDetail(res);
     } else {
-      const [error, res]: any = await Get(`/assistant/${assistant?.id}`, {
-        id: assistant?.id,
+      const [error, res]: any = await Get(`/assistant/${askAI?.id}`, {
+        id: askAI?.id,
       });
       if (error) {
         console.error("assistant", error);
@@ -54,12 +54,12 @@ export function useAssistantManager({
       }
       setAssistantDetail(res);
     }
-  }, [assistant]);
+  }, [askAI]);
 
   const handleAskAi = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    assistantRef.current = cloneDeep(assistant);
+    askAIRef.current = cloneDeep(askAI);
 
-    if (!assistantRef.current) return;
+    if (!askAIRef.current) return;
 
     event.preventDefault();
 
@@ -99,8 +99,8 @@ export function useAssistantManager({
   };
 
   return {
-    assistant,
-    assistantRef,
+    askAI,
+    askAIRef,
     assistantDetail,
     handleKeyDownAutoResizeTextarea,
   };
