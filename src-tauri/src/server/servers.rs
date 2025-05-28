@@ -315,7 +315,16 @@ pub async fn refresh_coco_server_info<R: Runtime>(
     // Send request to fetch updated server info
     let response = HttpClient::get(&id, "/provider/_info", None)
         .await
-        .map_err(|e| format!("Failed to contact the server: {}", e))?;
+        .map_err(|e| {
+            format!("Failed to contact the server: {}", e)
+        });
+
+    if response.is_err() {
+        let _ = mark_server_as_offline(app_handle, &id).await;
+        return Err(response.err().unwrap());
+    }
+
+    let response = response?;
 
     if !response.status().is_success() {
         let _ = mark_server_as_offline(app_handle, &id).await;
