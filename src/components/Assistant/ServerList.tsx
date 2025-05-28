@@ -52,7 +52,7 @@ export function ServerList({ reconnect, clearChat }: ServerListProps) {
         .commands("list_coco_servers")
         .then((res: any) => {
           const enabledServers = (res as IServer[]).filter(
-            (server) => server.enabled !== false
+            (server) => server.enabled && server.available
           );
           //console.log("list_coco_servers", enabledServers);
           setServerList(enabledServers);
