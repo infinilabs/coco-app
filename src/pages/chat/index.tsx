@@ -28,10 +28,16 @@ import {
 } from "@/commands";
 import HistoryList from "@/components/Common/HistoryList";
 import { useSyncStore } from "@/hooks/useSyncStore";
+import { useAppStore } from "@/stores/appStore";
 
 interface ChatProps {}
 
 export default function Chat({}: ChatProps) {
+  const setIsTauri = useAppStore((state) => state.setIsTauri);
+  useEffect(() => {
+    setIsTauri(true);
+  }, []);
+
   const currentService = useConnectStore((state) => state.currentService);
   const setVisibleStartPage = useConnectStore((state) => {
     return state.setVisibleStartPage;
@@ -301,7 +307,6 @@ export default function Chat({}: ChatProps) {
           {/* Input area */}
           <div className={`border-t p-2 border-gray-200 dark:border-gray-800`}>
             <InputBox
-              isTauri={true}
               isChatMode={true}
               inputValue={input}
               onSend={handleSendMessage}

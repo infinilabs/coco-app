@@ -5,24 +5,32 @@ import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
+import type { Assistant } from "@/types/chat";
+import { useAppStore } from "@/stores/appStore";
+
+interface AssistantManagerProps {
+  isChatMode: boolean;
+  handleSubmit: () => void;
+  changeInput: (value: string) => void;
+}
 
 export function useAssistantManager({
-  isTauri,
   isChatMode,
   handleSubmit,
-  goAskAi,
-  setGoAskAi,
-  setAskAiMessage,
   changeInput,
-}: any) {
-  const selectedAssistant = useSearchStore((state) => state.selectedAssistant);
+}: AssistantManagerProps) {
+  const isTauri = useAppStore((state) => state.isTauri);
+
+  const { goAskAi, setGoAskAi, setAskAiMessage, selectedAssistant } =
+    useSearchStore();
+
   const quickAiAccessAssistant = useExtensionsStore(
     (state) => state.quickAiAccessAssistant
   );
 
-  const assistantRef = useRef<unknown>(null);
+  const askAIRef = useRef<Assistant | null>(null);
 
-  const assistant = useMemo(() => {
+  const askAI = useMemo(() => {
     const newAssistant = selectedAssistant ?? quickAiAccessAssistant;
     return newAssistant;
   }, [quickAiAccessAssistant, selectedAssistant]);
@@ -32,26 +40,26 @@ export function useAssistantManager({
   const assistant_get = useCallback(async () => {
     if (isTauri) {
       const res = await platformAdapter.commands("assistant_get", {
-        serverId: assistant?.querySource?.id,
-        assistantId: assistant?.id,
+        serverId: askAI?.querySource?.id,
+        assistantId: askAI?.id,
       });
-      setAssistantDetail(res)
+      setAssistantDetail(res);
     } else {
-      const [error, res]: any = await Get(`/assistant/${assistant?.id}`, {
-        id: assistant?.id,
+      const [error, res]: any = await Get(`/assistant/${askAI?.id}`, {
+        id: askAI?.id,
       });
       if (error) {
         console.error("assistant", error);
         return;
       }
-      setAssistantDetail(res)
+      setAssistantDetail(res);
     }
-  }, [assistant]);
+  }, [askAI]);
 
   const handleAskAi = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    assistantRef.current = cloneDeep(assistant);
+    askAIRef.current = cloneDeep(askAI);
 
-    if (!assistantRef.current) return;
+    if (!askAIRef.current) return;
 
     event.preventDefault();
 
@@ -90,5 +98,10 @@ export function useAssistantManager({
     }
   };
 
-  return { assistant, assistantRef, assistantDetail, handleKeyDownAutoResizeTextarea };
+  return {
+    askAI,
+    askAIRef,
+    assistantDetail,
+    handleKeyDownAutoResizeTextarea,
+  };
 }
