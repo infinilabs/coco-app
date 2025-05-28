@@ -17,7 +17,6 @@ import { useAppStore } from "@/stores/appStore";
 // import InputExtra from "./InputExtra";
 // import AiSummaryIcon from "@/components/Common/Icons/AiSummaryIcon";
 
-
 interface InputControlsProps {
   isChatMode: boolean;
   isDeepThinkActive: boolean;
@@ -295,7 +294,12 @@ const InputControls = ({
         <div className="relative w-16 flex justify-end items-center">
           {showTooltip && (
             <div className="absolute right-[52px] -top-2 z-10">
-              <VisibleKey shortcut={modeSwitch} />
+              <VisibleKey
+                shortcut={modeSwitch}
+                onKeyPress={() => {
+                  changeMode && changeMode(!isChatMode);
+                }}
+              />
             </div>
           )}
 
