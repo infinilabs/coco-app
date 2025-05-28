@@ -78,6 +78,7 @@ Information about release notes of Coco Server is provided here.
 - chore: assistant keyboard events and mouse events #559
 - chore: web component start page config #560
 - chore: assistant chat placeholder & refactor input box components #566
+- chore: mark unavailable server to offline on refresh info #569
 
 ## 0.4.0 (2025-04-27)
 
