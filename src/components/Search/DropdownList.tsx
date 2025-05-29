@@ -6,36 +6,26 @@ import {
   MouseEvent,
   useMemo,
 } from "react";
-import { ArrowBigRight } from "lucide-react";
-import { isNil } from "lodash-es";
 import { useDebounceFn, useUnmount } from "ahooks";
 import { useTranslation } from "react-i18next";
-import clsx from "clsx";
 
 import { useSearchStore } from "@/stores/searchStore";
-import ThemedIcon from "@/components/Common/Icons/ThemedIcon";
-import IconWrapper from "@/components/Common/Icons/IconWrapper";
-import CommonIcon from "@/components/Common/Icons/CommonIcon";
-import SearchListItem from "./SearchListItem";
-import { metaOrCtrlKey, isMetaOrCtrlKey } from "@/utils/keyboardUtils";
-import { copyToClipboard, OpenURLWithBrowser } from "@/utils/index";
-import VisibleKey from "@/components/Common/VisibleKey";
-import Calculator from "./Calculator";
-import { useShortcutsStore } from "@/stores/shortcutsStore";
+import { OpenURLWithBrowser } from "@/utils/index";
 import ErrorSearch from "@/components/Common/ErrorNotification/ErrorSearch";
-// import AiSummary from "./AiSummary";
-import source_default_img from "@/assets/images/source_default.png";
-import source_default_dark_img from "@/assets/images/source_default_dark.png";
-import { useThemeStore } from "@/stores/themeStore";
+import type { QueryHits, SearchDocument, FailedRequest } from "@/types/search";
+import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
+import { SearchSource } from "./SearchSource";
+import DropdownListItem from "./DropdownListItem";
 
-type ISearchData = Record<string, any[]>;
+type ISearchData = Record<string, QueryHits[]>;
 
 interface DropdownListProps {
-  suggests: any[];
+  suggests: QueryHits[];
   searchData: ISearchData;
-  isError: any[];
+  isError: FailedRequest[];
   isSearchComplete: boolean;
   isChatMode: boolean;
+  globalItemIndexMap: Record<number, SearchDocument>;
 }
 
 function DropdownList({
@@ -43,178 +33,33 @@ function DropdownList({
   searchData,
   isError,
   isChatMode,
+  globalItemIndexMap
 }: DropdownListProps) {
   const { t } = useTranslation();
-
-  let globalIndex = 0;
-  const globalItemIndexMap: any[] = [];
-
-  const setSourceData = useSearchStore((state) => state.setSourceData);
-  const isDark = useThemeStore((state) => state.isDark);
-
-  const [selectedItem, setSelectedItem] = useState<number | null>(null);
-  const [selectedName, setSelectedName] = useState<string>("");
-  const [showIndex, setShowIndex] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const selectedSearchContent = useSearchStore((state) => {
-    return state.selectedSearchContent;
-  });
-  const setSelectedSearchContent = useSearchStore((state) => {
-    return state.setSelectedSearchContent;
-  });
-  const setSelectedAssistant = useSearchStore((state) => {
-    return state.setSelectedAssistant;
-  });
 
-  const hideArrowRight = (item: any) => {
-    const categories = ["Calculator"];
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [selectedName, setSelectedName] = useState<string>("");
+  const [showIndex, setShowIndex] = useState<boolean>(false);
 
-    return categories.includes(item.category);
-  };
 
-  useUnmount(() => {
-    setSelectedItem(null);
-    setSelectedSearchContent(void 0);
-  });
+  const {
+    setSourceData,
+    setSelectedSearchContent,
+    setSelectedAssistant,
+    setVisibleContextMenu,
+  } = useSearchStore();
 
-  useEffect(() => {
-    if (isNil(selectedItem)) {
-      setSelectedSearchContent(void 0);
-
-      return;
-    }
-
-    setSelectedSearchContent(globalItemIndexMap[selectedItem]);
-  }, [selectedItem]);
-
-  useEffect(() => {
-    if (!selectedSearchContent) return;
-
-    if (selectedSearchContent.source.id === "assistant") {
-      setSelectedAssistant({
-        ...selectedSearchContent,
-        name: selectedSearchContent.title,
-      });
-    } else {
-      setSelectedAssistant(void 0);
-    }
-  }, [selectedSearchContent]);
-
-  useEffect(() => {
-    if (isChatMode) {
-      setSelectedItem(null);
-    }
-  }, [isChatMode]);
-
-  const { run } = useDebounceFn(() => setSelectedItem(0), { wait: 200 });
-
-  useEffect(() => {
-    setSelectedItem(null);
-
-    run();
-  }, [searchData]);
-
-  const openPopover = useShortcutsStore((state) => state.openPopover);
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (!suggests.length || openPopover) return;
-
-      if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setSelectedItem((prev) => {
-          const res =
-            prev === null || prev === 0 ? suggests.length - 1 : prev - 1;
-
-          return res;
-        });
-      } else if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setSelectedItem((prev) =>
-          prev === null || prev === suggests.length - 1 ? 0 : prev + 1
-        );
-      } else if (e.key === metaOrCtrlKey()) {
-        e.preventDefault();
-        if (selectedItem !== null) {
-          const item = globalItemIndexMap[selectedItem];
-          setSelectedName(item?.source?.name);
-        }
-        setShowIndex(true);
-      }
-
-      if (e.key === "ArrowRight" && selectedItem !== null) {
-        e.preventDefault();
-
-        const item = globalItemIndexMap[selectedItem];
-
-        if (hideArrowRight(item)) return;
-
-        goToTwoPage(item);
-      }
-
-      if (e.key === "Enter" && !e.shiftKey && selectedItem !== null) {
-        // console.log("Enter key pressed", selectedItem);
-        const item = globalItemIndexMap[selectedItem];
-        if (item?.url) {
-          OpenURLWithBrowser(item?.url);
-        } else {
-          copyToClipboard(item?.payload?.result?.value);
-        }
-      }
-
-      if (e.key >= "0" && e.key <= "9" && showIndex) {
-        let index = parseInt(e.key, 10);
-
-        index = index === 0 ? 9 : index - 1;
-
-        const item = globalItemIndexMap[index];
-
-        if (item?.url) {
-          OpenURLWithBrowser(item?.url);
-        }
-      }
-    },
-    [suggests, selectedItem, showIndex, globalItemIndexMap, openPopover]
+  const showSource = useMemo(
+    () => Object.keys(searchData).length < 5,
+    [searchData]
   );
 
-  const handleKeyUp = useCallback((e: KeyboardEvent) => {
-    // console.log("handleKeyUp", e.key);
-    if (!suggests.length) return;
-
-    if (!isMetaOrCtrlKey(e)) {
-      setShowIndex(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isChatMode) return;
-
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-    };
-  }, [handleKeyDown, handleKeyUp]);
-
-  useEffect(() => {
-    if (selectedItem !== null && itemRefs.current[selectedItem]) {
-      itemRefs.current[selectedItem]?.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
-    }
-  }, [selectedItem]);
-
-  function goToTwoPage(item: any) {
+  const handleItemAction = useCallback((item: SearchDocument) => {
+    if (!item || item.category === "Calculator") return;
     setSourceData(item);
-  }
-
-  const setVisibleContextMenu = useSearchStore(
-    (state) => state.setVisibleContextMenu
-  );
+  }, []);
 
   const handleContextMenu = (event: MouseEvent) => {
     event.preventDefault();
@@ -224,20 +69,84 @@ function DropdownList({
 
   const memoizedCallbacks = useMemo(() => {
     return {
-      onMouseEnter: (index: number) => () => setSelectedItem(index),
-      onItemClick: (item: any) => () => {
+      onMouseEnter: (index: number, item: SearchDocument) => () => {
+        console.log("onMouseEnter", index);
+        setSelectedIndex(index);
+        setSelectedSearchContent(item);
+      },
+      onItemClick: (item: SearchDocument) => () => {
         if (item?.url) {
           OpenURLWithBrowser(item.url);
         }
       },
-      goToTwoPage: (item: any) => () => setSourceData(item),
+      goToTwoPage: (item: SearchDocument) => () => setSourceData(item),
     };
   }, []);
 
-  const showHeader = useMemo(
-    () => Object.entries(searchData).length < 5,
-    [searchData]
+  useUnmount(() => {
+    setSelectedIndex(null);
+    setSelectedSearchContent(undefined);
+  });
+
+  useEffect(() => {
+    if (selectedIndex === null) {
+      setSelectedSearchContent(undefined);
+      return;
+    }
+
+    const item = globalItemIndexMap[selectedIndex]
+    setSelectedSearchContent(item);
+    if (item?.source?.id === "assistant") {
+      setSelectedAssistant({
+        ...item,
+        name: item.title,
+      });
+    } else {
+      setSelectedAssistant(undefined);
+    }
+  }, [selectedIndex]);
+
+  // Scroll selected item into view
+  useEffect(() => {
+    if (selectedIndex !== null && itemRefs.current[selectedIndex]) {
+      itemRefs.current[selectedIndex]?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  }, [selectedIndex]);
+
+  useEffect(() => {
+    if (isChatMode) {
+      setSelectedIndex(null);
+    }
+  }, [isChatMode]);
+
+  const { run: initializeSelection } = useDebounceFn(
+    () => {
+      setSelectedIndex(0);
+      setSelectedSearchContent(suggests[0]?.document || null);
+    },
+    { wait: 200 }
   );
+
+  useEffect(() => {
+    setSelectedIndex(null);
+    initializeSelection();
+  }, [searchData]);
+
+  // Keyboard navigation
+  useKeyboardNavigation({
+    suggests,
+    selectedIndex,
+    setSelectedIndex,
+    showIndex,
+    setShowIndex,
+    setSelectedName,
+    globalItemIndexMap,
+    handleItemAction,
+    isChatMode,
+  });
 
   return (
     <div
@@ -250,94 +159,36 @@ function DropdownList({
     >
       <ErrorSearch isError={isError} />
 
-      {Object.entries(searchData).map(([sourceName, items]) => {
-        return (
-          <div key={sourceName}>
-            {showHeader && (
-              <div className="p-2 text-xs text-[#999] dark:text-[#666] flex items-center gap-2.5 relative">
-                <CommonIcon
-                  item={items[0]?.document}
-                  renderOrder={["connector_icon", "default_icon"]}
-                  itemIcon={items[0]?.document?.source?.icon}
-                  defaultIcon={
-                    isDark ? source_default_dark_img : source_default_img
-                  }
-                  className="w-4 h-4"
-                />
-                {sourceName} - {items[0]?.source.name}
-                <div className="flex-1 border-b border-b-[#e6e6e6] dark:border-b-[#272626]"></div>
-                {!hideArrowRight({ category: sourceName }) && (
-                  <>
-                    <IconWrapper
-                      className="w-4 h-4 cursor-pointer"
-                      onClick={(e: React.MouseEvent) => {
-                        e.stopPropagation();
-                        goToTwoPage(items[0]?.document);
-                      }}
-                    >
-                      <ThemedIcon
-                        component={ArrowBigRight}
-                        className="w-4 h-4"
-                      />
-                    </IconWrapper>
-                    {showIndex && sourceName === selectedName && (
-                      <div className="absolute top-1 right-4">
-                        <VisibleKey shortcut="→" />
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
+      {Object.entries(searchData).map(([sourceName, items]) => (
+        <div key={sourceName}>
+          {showSource && (
+            <SearchSource
+              sourceName={sourceName}
+              items={items}
+              selectedName={selectedName}
+              showIndex={showIndex}
+              onGoToTwoPage={() => handleItemAction(items[0]?.document)}
+            />
+          )}
 
-            {items.map((hit: any) => {
-              const isSelected = selectedItem === globalIndex;
-              const currentIndex = globalIndex;
-              const item = hit.document;
-              globalItemIndexMap.push(item);
-              globalIndex++;
+          {items.map((hit) => {
+            const currentIndex = hit.document.index || 0;
 
-              return (
-                <div key={item.id} onContextMenu={handleContextMenu}>
-                  {hideArrowRight(item) ? (
-                    <div
-                      ref={(el) => (itemRefs.current[currentIndex] = el)}
-                      onMouseEnter={memoizedCallbacks.onMouseEnter(
-                        currentIndex
-                      )}
-                      role="option"
-                      aria-selected={isSelected}
-                      id={`search-item-${currentIndex}`}
-                      className={clsx("p-2 transition rounded-lg", {
-                        "bg-[#EDEDED] dark:bg-[#202126]": isSelected,
-                      })}
-                    >
-                      <Calculator item={item} isSelected={isSelected} />
-                    </div>
-                  ) : (
-                    <SearchListItem
-                      item={item}
-                      isSelected={isSelected}
-                      currentIndex={currentIndex}
-                      showIndex={showIndex}
-                      onMouseEnter={memoizedCallbacks.onMouseEnter(
-                        currentIndex
-                      )}
-                      onItemClick={() => {
-                        if (item?.url) {
-                          OpenURLWithBrowser(item?.url);
-                        }
-                      }}
-                      goToTwoPage={() => goToTwoPage(item)}
-                      itemRef={(el) => (itemRefs.current[currentIndex] = el)}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        );
-      })}
+            return (
+              <DropdownListItem
+                key={hit.document.id}
+                item={hit.document}
+                selectedIndex={selectedIndex}
+                currentIndex={currentIndex}
+                showIndex={showIndex}
+                memoizedCallbacks={memoizedCallbacks}
+                itemRefs={itemRefs}
+                onContextMenu={handleContextMenu}
+              />
+            );
+          })}
+        </div>
+      ))}
     </div>
   );
 }

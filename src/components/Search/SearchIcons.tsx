@@ -6,20 +6,15 @@ import FontIcon from "@/components/Common/Icons/FontIcon";
 interface SearchIconsProps {
   lineCount: number;
   isChatMode: boolean;
-  sourceData: any;
   assistant?: any;
-  setSourceData: (data: any | undefined) => void;
 }
 
 export default function SearchIcons({
   lineCount,
   isChatMode,
-  sourceData,
   assistant,
-  setSourceData,
 }: SearchIconsProps) {
-  const goAskAi = useSearchStore((state) => state.goAskAi);
-  const setGoAskAi = useSearchStore((state) => state.setGoAskAi);
+  const { sourceData, setSourceData, goAskAi, setGoAskAi } = useSearchStore();
 
   if (isChatMode) {
     return null;

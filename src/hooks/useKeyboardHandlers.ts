@@ -1,12 +1,11 @@
 import { useCallback, useEffect } from 'react';
 
-import { metaOrCtrlKey } from "@/utils/keyboardUtils";
+import { isMetaOrCtrlKey } from "@/utils/keyboardUtils";
 import { useSearchStore } from "@/stores/searchStore";
 
 interface KeyboardHandlersProps {
   isChatMode: boolean;
   handleSubmit: () => void;
-  setSourceData: (data: any) => void;
   disabledChange?: () => void;
   curChatEnd?: boolean;
 }
@@ -14,47 +13,41 @@ interface KeyboardHandlersProps {
 export function useKeyboardHandlers({
   isChatMode,
   handleSubmit,
-  setSourceData,
   disabledChange,
   curChatEnd,
 }: KeyboardHandlersProps) {
-  const { visibleContextMenu } = useSearchStore();
-
-  const pressedKeys = new Set<string>();
+  const { setSourceData } = useSearchStore();
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      pressedKeys.add(e.key);
 
-      if (pressedKeys.has(metaOrCtrlKey())) {
-        switch (e.code) {
-          case "ArrowLeft":
-            setSourceData(undefined);
-            break;
-          case "Enter":
-            isChatMode && (curChatEnd ? handleSubmit() : disabledChange?.());
-            break;
-          default:
-            break;
-        }
+      // Handle ArrowLeft with meta key
+      if (e.code === "ArrowLeft" && isMetaOrCtrlKey(e)) {
+        e.preventDefault();
+        setSourceData(undefined);
+        return;
+      }
+
+      // Handle Enter without meta key requirement
+      if (e.code === "Enter" && isChatMode) {
+        e.preventDefault();
+        curChatEnd ? handleSubmit() : disabledChange?.();
       }
     },
-    [isChatMode, handleSubmit, setSourceData, disabledChange, curChatEnd, visibleContextMenu]
+    [isChatMode, handleSubmit, setSourceData, disabledChange, curChatEnd]
   );
-
-  const handleKeyUp = useCallback((e: KeyboardEvent) => {
-    pressedKeys.delete(e.key);
-  }, []);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [handleKeyDown, handleKeyUp]);
+  }, [handleKeyDown]);
 
-  return { pressedKeys };
+  useEffect(() => {
+    return () => {
+      setSourceData(undefined);
+    };
+  }, []);
 }
