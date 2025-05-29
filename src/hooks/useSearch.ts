@@ -47,7 +47,7 @@ export function useSearch() {
     }, {});
 
     // Update indices and map
-    console.log("_search response", data, searchData);
+    //console.log("_search response", data, searchData);
     const globalItemIndexMap: Record<number, SearchDocument> = {};
     let globalIndex = 0;
     for (const sourceName in searchData) {

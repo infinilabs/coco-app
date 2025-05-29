@@ -37,11 +37,11 @@ export function useKeyboardNavigation({
 
       if (e.key === "ArrowUp") {
         e.preventDefault();
-        console.log("ArrowUp pressed", selectedIndex, suggests.length);
+        //console.log("ArrowUp pressed", selectedIndex, suggests.length);
         setSelectedIndex((prev) => (prev === null || prev === 0) ? suggests.length - 1 : prev - 1);
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
-        console.log("ArrowDown pressed", selectedIndex, suggests.length);
+        //console.log("ArrowDown pressed", selectedIndex, suggests.length);
         setSelectedIndex((prev) => (prev === null || prev === suggests.length - 1) ? 0 : prev + 1);
       } else if (e.key === metaOrCtrlKey()) {
         e.preventDefault();
