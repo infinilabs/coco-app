@@ -16,8 +16,7 @@ const SearchResultsPanel = memo<{
   const { sourceData, goAskAi } = useSearchStore();
 
   const searchState = useSearch();
-  const { performSearch } = searchState;
-  const { suggests, searchData, isError, isSearchComplete } = searchState;
+  const { suggests, searchData, isError, isSearchComplete, globalItemIndexMap, performSearch } = searchState;
 
   useEffect(() => {
     if (!isChatMode && input) {
@@ -36,6 +35,7 @@ const SearchResultsPanel = memo<{
     <DropdownList
       suggests={suggests}
       searchData={searchData}
+      globalItemIndexMap={globalItemIndexMap}
       isError={isError}
       isSearchComplete={isSearchComplete}
       isChatMode={isChatMode}

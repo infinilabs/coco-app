@@ -3,17 +3,17 @@ import { useCallback, useEffect } from 'react';
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { isMetaOrCtrlKey, metaOrCtrlKey } from '@/utils/keyboardUtils';
 import { copyToClipboard, OpenURLWithBrowser } from "@/utils/index";
-import type { QueryHits, Document } from "@/types/search";
+import type { QueryHits, SearchDocument } from "@/types/search";
 
 interface UseKeyboardNavigationProps {
   suggests: QueryHits[];
-  selectedIndex: number;
-  setSelectedIndex: React.Dispatch<React.SetStateAction<number>>;
+  selectedIndex: number | null;
+  setSelectedIndex: React.Dispatch<React.SetStateAction<number | null>>;
   showIndex: boolean;
   setShowIndex: (show: boolean) => void;
   setSelectedName: (name: string) => void;
-  globalItemIndexMap: Document[];
-  handleItemAction: (item: Document) => void;
+  globalItemIndexMap: Record<number, SearchDocument>;
+  handleItemAction: (item: SearchDocument) => void;
   isChatMode: boolean;
 }
 
@@ -37,13 +37,15 @@ export function useKeyboardNavigation({
 
       if (e.key === "ArrowUp") {
         e.preventDefault();
-        setSelectedIndex((prev) => (prev === -1 || prev === 0) ? suggests.length - 1 : prev - 1);
+        console.log("ArrowUp pressed", selectedIndex, suggests.length);
+        setSelectedIndex((prev) => (prev === null || prev === 0) ? suggests.length - 1 : prev - 1);
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
-        setSelectedIndex((prev) => (prev === -1 || prev === suggests.length - 1) ? 0 : prev + 1);
+        console.log("ArrowDown pressed", selectedIndex, suggests.length);
+        setSelectedIndex((prev) => (prev === null || prev === suggests.length - 1) ? 0 : prev + 1);
       } else if (e.key === metaOrCtrlKey()) {
         e.preventDefault();
-        if (selectedIndex !== -1) {
+        if (selectedIndex !== null) {
           const item = globalItemIndexMap[selectedIndex];
           setSelectedName(item?.source?.name || "");
         }
@@ -52,7 +54,7 @@ export function useKeyboardNavigation({
 
       if (
         e.key === "ArrowRight" &&
-        selectedIndex !== -1 &&
+        selectedIndex !== null &&
         isMetaOrCtrlKey(e)
       ) {
         e.preventDefault();
@@ -65,7 +67,7 @@ export function useKeyboardNavigation({
       if (
         e.key === "Enter" &&
         !e.shiftKey &&
-        selectedIndex !== -1 &&
+        selectedIndex !== null &&
         isMetaOrCtrlKey(e)
       ) {
         const item = globalItemIndexMap[selectedIndex];

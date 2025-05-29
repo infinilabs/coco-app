@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { debounce } from 'lodash-es';
 
-import type { QueryHits, MultiSourceQueryResponse, FailedRequest } from '@/types/search';
+import type { QueryHits, MultiSourceQueryResponse, FailedRequest, SearchDocument } from '@/types/search';
 import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
 import { useConnectStore } from "@/stores/connectStore";
@@ -12,6 +12,7 @@ interface SearchState {
   suggests: QueryHits[];
   searchData: SearchDataBySource;
   isSearchComplete: boolean;
+  globalItemIndexMap: Record<number, SearchDocument>;
 }
 
 interface SearchDataBySource {
@@ -27,7 +28,8 @@ export function useSearch() {
     isError: [],
     suggests: [],
     searchData: {},
-    isSearchComplete: false
+    isSearchComplete: false,
+    globalItemIndexMap: {}
   });
 
   const handleSearchResponse = (response: MultiSourceQueryResponse) => {
@@ -39,17 +41,31 @@ export function useSearch() {
         if (!acc[name]) {
           acc[name] = [];
         }
-        item.document.querySource = item?.source;
         acc[name].push(item);
       }
       return acc;
     }, {});
 
+    // Update indices and map
+    console.log("_search response", data, searchData);
+    const globalItemIndexMap: Record<number, SearchDocument> = {};
+    let globalIndex = 0;
+    for (const sourceName in searchData) {
+      searchData[sourceName].map((item: QueryHits) => {
+        item.document.querySource = item?.source;
+        const index = globalIndex++;
+        item.document.index = index
+        globalItemIndexMap[index] = item.document;
+        return item;
+      })
+    }
+
     setSearchState({
       isError: response.failed || [],
       suggests: data,
       searchData,
-      isSearchComplete: true
+      isSearchComplete: true,
+      globalItemIndexMap,
     });
   };
 

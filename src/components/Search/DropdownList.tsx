@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next";
 import { useSearchStore } from "@/stores/searchStore";
 import { OpenURLWithBrowser } from "@/utils/index";
 import ErrorSearch from "@/components/Common/ErrorNotification/ErrorSearch";
-import type { QueryHits, Document, FailedRequest } from "@/types/search";
+import type { QueryHits, SearchDocument, FailedRequest } from "@/types/search";
 import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
 import { SearchSource } from "./SearchSource";
 import DropdownListItem from "./DropdownListItem";
@@ -25,6 +25,7 @@ interface DropdownListProps {
   isError: FailedRequest[];
   isSearchComplete: boolean;
   isChatMode: boolean;
+  globalItemIndexMap: Record<number, SearchDocument>;
 }
 
 function DropdownList({
@@ -32,14 +33,16 @@ function DropdownList({
   searchData,
   isError,
   isChatMode,
+  globalItemIndexMap
 }: DropdownListProps) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [selectedName, setSelectedName] = useState<string>("");
   const [showIndex, setShowIndex] = useState<boolean>(false);
+
 
   const {
     setSourceData,
@@ -48,23 +51,12 @@ function DropdownList({
     setVisibleContextMenu,
   } = useSearchStore();
 
-  const { globalItemIndexMap, globalIndex } = useMemo(() => {
-    const map = Object.values(searchData)
-      .flat()
-      .map((hit) => hit.document);
-
-    return {
-      globalItemIndexMap: map,
-      globalIndex: map.length,
-    };
-  }, [searchData]);
-
   const showSource = useMemo(
     () => Object.keys(searchData).length < 5,
     [searchData]
   );
 
-  const handleItemAction = useCallback((item: Document) => {
+  const handleItemAction = useCallback((item: SearchDocument) => {
     if (!item || item.category === "Calculator") return;
     setSourceData(item);
   }, []);
@@ -77,42 +69,43 @@ function DropdownList({
 
   const memoizedCallbacks = useMemo(() => {
     return {
-      onMouseEnter: (index: number) => () => setSelectedIndex(index),
-      onItemClick: (item: Document) => () => {
+      onMouseEnter: (index: number, item: SearchDocument) => () => {
+        console.log("onMouseEnter", index);
+        setSelectedIndex(index);
+        setSelectedSearchContent(item);
+        if (item?.source?.id === "assistant") {
+          setSelectedAssistant({
+            ...item,
+            name: item.title,
+          });
+        } else {
+          setSelectedAssistant(undefined);
+        }
+      },
+      onItemClick: (item: SearchDocument) => () => {
         if (item?.url) {
           OpenURLWithBrowser(item.url);
         }
       },
-      goToTwoPage: (item: Document) => () => setSourceData(item),
+      goToTwoPage: (item: SearchDocument) => () => setSourceData(item),
     };
   }, []);
 
   useUnmount(() => {
-    setSelectedIndex(-1);
+    setSelectedIndex(null);
     setSelectedSearchContent(undefined);
   });
 
   useEffect(() => {
-    if (selectedIndex === -1) {
+    if (selectedIndex === null) {
       setSelectedSearchContent(undefined);
       return;
     }
-    const selectedItem = globalItemIndexMap[selectedIndex];
-    setSelectedSearchContent(selectedItem);
-
-    if (selectedItem?.source?.id === "assistant") {
-      setSelectedAssistant({
-        ...selectedItem,
-        name: selectedItem.title,
-      });
-    } else {
-      setSelectedAssistant(undefined);
-    }
-  }, [selectedIndex, globalItemIndexMap]);
+  }, [selectedIndex]);
 
   // Scroll selected item into view
   useEffect(() => {
-    if (selectedIndex !== -1 && itemRefs.current[selectedIndex]) {
+    if (selectedIndex !== null && itemRefs.current[selectedIndex]) {
       itemRefs.current[selectedIndex]?.scrollIntoView({
         behavior: "smooth",
         block: "nearest",
@@ -122,17 +115,20 @@ function DropdownList({
 
   useEffect(() => {
     if (isChatMode) {
-      setSelectedIndex(-1);
+      setSelectedIndex(null);
     }
   }, [isChatMode]);
 
   const { run: initializeSelection } = useDebounceFn(
-    () => setSelectedIndex(0),
+    () => {
+      setSelectedIndex(0);
+      setSelectedSearchContent(suggests[0]?.document || null);
+    },
     { wait: 200 }
   );
 
   useEffect(() => {
-    setSelectedIndex(-1);
+    setSelectedIndex(null);
     initializeSelection();
   }, [searchData]);
 
@@ -172,18 +168,22 @@ function DropdownList({
             />
           )}
 
-          {items.map((hit) => (
-            <DropdownListItem
-              key={hit.document.id}
-              item={hit.document}
-              isSelected={selectedIndex === globalIndex}
-              currentIndex={globalIndex}
-              showIndex={showIndex}
-              memoizedCallbacks={memoizedCallbacks}
-              itemRefs={itemRefs}
-              onContextMenu={handleContextMenu}
-            />
-          ))}
+          {items.map((hit) => {
+            const currentIndex = hit.document.index || 0;
+
+            return (
+              <DropdownListItem
+                key={hit.document.id}
+                item={hit.document}
+                selectedIndex={selectedIndex}
+                currentIndex={currentIndex}
+                showIndex={showIndex}
+                memoizedCallbacks={memoizedCallbacks}
+                itemRefs={itemRefs}
+                onContextMenu={handleContextMenu}
+              />
+            );
+          })}
         </div>
       ))}
     </div>

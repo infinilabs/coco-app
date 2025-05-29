@@ -1,7 +1,7 @@
 export interface QueryHits {
   source?: QuerySource;
   score?: number;
-  document: Document;
+  document: SearchDocument;
 }
 
 export interface QuerySource {
@@ -10,7 +10,7 @@ export interface QuerySource {
   name: string; // coco server's name, local computer name, etc.
 }
 
-export interface Document {
+export interface SearchDocument {
   id: string;
   created?: string;
   updated?: string;
@@ -35,6 +35,8 @@ export interface Document {
   owner?: UserInfo;
   last_updated_by?: EditorInfo;
   querySource?: QuerySource;
+  index?: number; // Index in the current search result
+  globalIndex?: number;
 }
 
 export interface RichLabel {
