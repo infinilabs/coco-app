@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { ArrowDown01, CornerDownLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
@@ -17,29 +16,31 @@ import { formatKey } from "@/utils/keyboardUtils";
 import source_default_img from "@/assets/images/source_default.png";
 import source_default_dark_img from "@/assets/images/source_default_dark.png";
 import { useThemeStore } from "@/stores/themeStore";
-import platformAdapter from "@/utils/platformAdapter";
 
 interface FooterProps {
-  setIsPinnedWeb?: (value: boolean) => void;
+  isTauri: boolean;
+  openSetting: () => void;
+  setWindowAlwaysOnTop: (isPinned: boolean) => Promise<void>;
 }
 
-export default function Footer({ setIsPinnedWeb }: FooterProps) {
+export default function Footer({
+  isTauri,
+  openSetting,
+  setWindowAlwaysOnTop,
+}: FooterProps) {
   const { t } = useTranslation();
-
-  const { sourceData, goAskAi } = useSearchStore();
-
+  const sourceData = useSearchStore((state) => state.sourceData);
   const isDark = useThemeStore((state) => state.isDark);
 
-  const { isTauri, isPinned, setIsPinned } = useAppStore();
-
-  const { setVisible, updateInfo } = useUpdateStore();
-
-  const { fixedWindow, modifierKey } = useShortcutsStore();
-
-  const setWindowAlwaysOnTop = useCallback(async (isPinned: boolean) => {
-    setIsPinnedWeb?.(isPinned);
-    return platformAdapter.setAlwaysOnTop(isPinned);
-  }, []);
+  const isPinned = useAppStore((state) => state.isPinned);
+  const setIsPinned = useAppStore((state) => state.setIsPinned);
+  const setVisible = useUpdateStore((state) => state.setVisible);
+  const updateInfo = useUpdateStore((state) => state.updateInfo);
+  const fixedWindow = useShortcutsStore((state) => {
+    return state.fixedWindow;
+  });
+  const modifierKey = useShortcutsStore((state) => state.modifierKey);
+  const goAskAi = useSearchStore((state) => state.goAskAi);
 
   const togglePin = async () => {
     try {
@@ -51,10 +52,6 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
       setIsPinned(isPinned);
     }
   };
-
-  const openSetting = useCallback(() => {
-    return platformAdapter.emitEvent("open_settings", "");
-  }, []);
 
   return (
     <div

@@ -6,10 +6,9 @@ import CommonIcon from "@/components/Common/Icons/CommonIcon";
 import ListRight from "./ListRight";
 import { useAppStore } from "@/stores/appStore";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import type { SearchDocument } from "@/types/search";
 
 interface SearchListItemProps {
-  item: SearchDocument;
+  item: any;
   isSelected: boolean;
   currentIndex: number;
   onMouseEnter: () => void;

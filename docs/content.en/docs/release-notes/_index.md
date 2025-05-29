@@ -81,7 +81,6 @@ Information about release notes of Coco Server is provided here.
 - refactor: input box related components #568
 - chore: mark unavailable server to offline on refresh info #569
 - chore: only show available servers in chat #570
-- refactor: search result related components #571
 
 ## 0.4.0 (2025-04-27)
 

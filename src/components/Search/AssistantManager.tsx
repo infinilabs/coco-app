@@ -69,8 +69,8 @@ export function useAssistantManager({
 
     assistant_get();
     changeInput("");
-    setAskAiMessage(!goAskAi && selectedAssistant ? "" : value);
     setGoAskAi(true);
+    setAskAiMessage(!goAskAi && selectedAssistant ? "" : value);
   };
 
   const handleKeyDownAutoResizeTextarea = (
