@@ -13,7 +13,6 @@ interface UseKeyboardNavigationProps {
   setShowIndex: (show: boolean) => void;
   setSelectedName: (name: string) => void;
   globalItemIndexMap: Document[];
-  openPopover: boolean;
   handleItemAction: (item: Document) => void;
   isChatMode: boolean;
 }

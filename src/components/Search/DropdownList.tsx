@@ -145,7 +145,6 @@ function DropdownList({
     setShowIndex,
     setSelectedName,
     globalItemIndexMap,
-    openPopover: false,
     handleItemAction,
     isChatMode,
   });
