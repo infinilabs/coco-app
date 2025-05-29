@@ -80,7 +80,7 @@ export default function ChatInput({
   const showTooltip = useAppStore((state) => state.showTooltip);
   const setBlurred = useAppStore((state) => state.setBlurred);
 
-  const { sourceData, setSourceData, goAskAi } = useSearchStore();
+  const { sourceData, goAskAi } = useSearchStore();
 
   const { modifierKey, returnToInput, setModifierKeyPressed } =
     useShortcutsStore();
@@ -88,8 +88,6 @@ export default function ChatInput({
   useEffect(() => {
     return () => {
       changeInput("");
-      setSourceData(undefined);
-      pressedKeys.clear();
     };
   }, []);
 
@@ -123,10 +121,9 @@ export default function ChatInput({
     }
   }, [inputValue, disabled, onSend]);
 
-  const { pressedKeys } = useKeyboardHandlers({
+  useKeyboardHandlers({
     isChatMode,
     handleSubmit,
-    setSourceData,
     disabledChange,
     curChatEnd,
   });
@@ -188,9 +185,7 @@ export default function ChatInput({
     <SearchIcons
       lineCount={lineCount}
       isChatMode={isChatMode}
-      sourceData={sourceData}
       assistant={askAIRef.current}
-      setSourceData={setSourceData}
     />
   );
 
