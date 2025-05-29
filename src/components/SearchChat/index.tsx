@@ -181,15 +181,6 @@ function SearchChat({
     return platformAdapter.convertFileSrc(path);
   }, []);
 
-  const openSetting = useCallback(() => {
-    return platformAdapter.emitEvent("open_settings", "");
-  }, []);
-
-  const setWindowAlwaysOnTop = useCallback(async (isPinned: boolean) => {
-    setIsPinned && setIsPinned(isPinned);
-    return platformAdapter.setAlwaysOnTop(isPinned);
-  }, []);
-
   const setupWindowFocusListener = useCallback(async (callback: () => void) => {
     return platformAdapter.listenEvent("tauri://focus", callback);
   }, []);
@@ -336,13 +327,11 @@ function SearchChat({
           <Suspense fallback={<LoadingFallback />}>
             <Search
               key="Search"
-              isTauri={isTauri}
               input={input}
               isChatMode={isChatMode}
               changeInput={setInput}
               hideCoco={hideCoco}
-              openSetting={openSetting}
-              setWindowAlwaysOnTop={setWindowAlwaysOnTop}
+              setIsPinned={setIsPinned}
             />
           </Suspense>
         </div>
