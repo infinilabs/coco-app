@@ -73,14 +73,6 @@ function DropdownList({
         console.log("onMouseEnter", index);
         setSelectedIndex(index);
         setSelectedSearchContent(item);
-        if (item?.source?.id === "assistant") {
-          setSelectedAssistant({
-            ...item,
-            name: item.title,
-          });
-        } else {
-          setSelectedAssistant(undefined);
-        }
       },
       onItemClick: (item: SearchDocument) => () => {
         if (item?.url) {
@@ -100,6 +92,17 @@ function DropdownList({
     if (selectedIndex === null) {
       setSelectedSearchContent(undefined);
       return;
+    }
+
+    const item = globalItemIndexMap[selectedIndex]
+    setSelectedSearchContent(item);
+    if (item?.source?.id === "assistant") {
+      setSelectedAssistant({
+        ...item,
+        name: item.title,
+      });
+    } else {
+      setSelectedAssistant(undefined);
     }
   }, [selectedIndex]);
 
