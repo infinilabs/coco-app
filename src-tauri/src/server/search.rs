@@ -45,7 +45,7 @@ impl DocumentsSizedCollector {
         }
     }
 
-    fn documents(self) -> impl ExactSizeIterator<Item = Document> {
+    fn documents(self) -> impl ExactSizeIterator<Item=Document> {
         self.docs.into_iter().map(|(_, doc, _)| doc)
     }
 
@@ -114,25 +114,31 @@ impl SearchSource for CocoSearchSource {
 
         // Check if the response body is empty
         if !response_body.is_empty() {
+            // log::info!("Search response body: {}", &response_body);
+
             // Parse the search response from the body text
             let parsed: SearchResponse<Document> = serde_json::from_str(&response_body)
                 .map_err(|e| SearchError::ParseError(format!("{}", e)))?;
 
+
             // Process the parsed response
             total_hits = parsed.hits.total.value as usize;
-            for hit in parsed.hits.hits {
-                let mut document = hit._source;
-                // Default _score to 0.0 if None
-                let score = hit._score.unwrap_or(0.0);
 
-                let on_opened = document
-                    .url
-                    .as_ref()
-                    .map(|url| OnOpened::Document { url: url.clone() });
-                // Set the `on_opened` field as it won't be returned from Coco server
-                document.on_opened = on_opened;
+            if let Some(items) = parsed.hits.hits {
+                for hit in items {
+                    let mut document = hit._source;
+                    // Default _score to 0.0 if None
+                    let score = hit._score.unwrap_or(0.0);
 
-                hits.push((document, score));
+                    let on_opened = document
+                        .url
+                        .as_ref()
+                        .map(|url| OnOpened::Document { url: url.clone() });
+                    // Set the `on_opened` field as it won't be returned from Coco server
+                    document.on_opened = on_opened;
+
+                    hits.push((document, score));
+                }
             }
         }
 

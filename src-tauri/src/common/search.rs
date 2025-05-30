@@ -25,7 +25,7 @@ pub struct Shards {
 pub struct Hits<T> {
     pub total: Total,
     pub max_score: Option<f32>,
-    pub hits: Vec<SearchHit<T>>,
+    pub hits: Option<Vec<SearchHit<T>>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -58,13 +58,18 @@ where
     Ok(search_response)
 }
 
+use serde::de::DeserializeOwned;
+
 pub async fn parse_search_hits<T>(response: Response) -> Result<Vec<SearchHit<T>>, Box<dyn Error>>
 where
-    T: for<'de> Deserialize<'de> + std::fmt::Debug,
+    T: DeserializeOwned + std::fmt::Debug,
 {
     let response = parse_search_response(response).await?;
 
-    Ok(response.hits.hits)
+    match response.hits.hits {
+        Some(hits) => Ok(hits),
+        None => Ok(Vec::new()),
+    }
 }
 
 pub async fn parse_search_results<T>(response: Response) -> Result<Vec<T>, Box<dyn Error>>
