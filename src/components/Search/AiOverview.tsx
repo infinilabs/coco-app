@@ -64,7 +64,7 @@ const AiOverview: FC<AiSummaryProps> = (props) => {
             isTyping={isTyping}
             loadingStep={loadingStep}
             rootClassName="!py-0"
-            actionClassName="absolute bottom-3 left-3"
+            actionClassName="absolute bottom-3 left-3 !m-0"
             actionIconSize={12}
           />
         </div>
