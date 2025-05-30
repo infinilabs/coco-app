@@ -191,8 +191,6 @@ const AskAi = () => {
 
     const { serverId, assistantId } = state;
 
-    console.log("state", state);
-
     if ((isMac && metaKey) || (!isMac && ctrlKey)) {
       await platformAdapter.commands("open_session_chat", {
         serverId,
