@@ -13,6 +13,18 @@ console.log("isMac", isMac);
 console.log("isWin", isWin);
 console.log("isLinux", isLinux);
 
+export function platform() {
+  if (isWin) {
+    return "windows";
+  } else if (isMac) {
+    return "macos";
+  } else if (isLinux) {
+    return "linux";
+  }
+
+  return void 0;
+}
+
 export function family() {
   if (isWeb) {
     const ua = navigator.userAgent.toLowerCase();

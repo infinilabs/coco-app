@@ -25,7 +25,9 @@ export const SearchSource: React.FC<SearchSourceProps> = ({
   onGoToTwoPage,
 }) => {
   const isDark = useThemeStore((state) => state.isDark);
-  const hideArrow = items[0]?.document.category === "Calculator";
+  const hideArrow =
+    items[0]?.document.category === "Calculator" ||
+    items[0]?.document.category === "AI Overview";
 
   return (
     <div className="p-2 text-xs text-[#999] dark:text-[#666] flex items-center gap-2.5 relative">
@@ -36,7 +38,7 @@ export const SearchSource: React.FC<SearchSourceProps> = ({
         defaultIcon={isDark ? source_default_dark_img : source_default_img}
         className="w-4 h-4"
       />
-      {sourceName} - {items[0]?.source?.name}
+      {sourceName} {items[0]?.source?.name && `- ${items[0].source.name}`}
       <div className="flex-1 border-b border-b-[#e6e6e6] dark:border-b-[#272626]"></div>
       {!hideArrow && (
         <>

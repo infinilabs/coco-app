@@ -1,210 +1,107 @@
-import {
-  createContext,
-  Dispatch,
-  ReactElement,
-  ReactNode,
-  SetStateAction,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { Bot, Calculator, Folder } from "lucide-react";
-import { noop } from "lodash-es";
-import { useMount } from "ahooks";
+import { createContext, useEffect } from "react";
+import { useMount, useReactive } from "ahooks";
 import { useTranslation } from "react-i18next";
+import type { LiteralUnion } from "type-fest";
 
-import ApplicationsDetail from "./components/Details/Applications";
-import Application from "./components/Details/Application";
 import platformAdapter from "@/utils/platformAdapter";
 import Content from "./components/Content";
 import Details from "./components/Details";
-import QuickAiAccess from "./components/Details/QuickAiAccess";
+import { cloneDeep, sortBy } from "lodash-es";
+import { useExtensionsStore } from "@/stores/extensionsStore";
 
-export interface IApplication {
-  path: string;
-  name: string;
-  iconPath: string;
-  alias: string;
-  hotkey: string;
-  isDisabled: boolean;
+export type ExtensionId = LiteralUnion<
+  "Applications" | "Calculator" | "QuickAIAccess" | "AIOverview",
+  string
+>;
+
+type ExtensionType =
+  | "group"
+  | "extension"
+  | "application"
+  | "script"
+  | "quick_link"
+  | "setting"
+  | "calculator"
+  | "command"
+  | "ai_extension";
+
+export type ExtensionPlatform = "windows" | "macos" | "linux";
+
+interface ExtensionAction {
+  exec: string;
+  args: string[];
 }
 
-export interface Plugin {
-  id: string;
-  icon: ReactElement;
-  name: ReactNode;
-  type?: "Group" | "Extension" | "Application";
+interface ExtensionQuickLink {
+  link: string;
+}
+
+export interface Extension {
+  id: ExtensionId;
+  type: ExtensionType;
+  icon: string;
+  title: string;
+  description: string;
   alias?: string;
   hotkey?: string;
-  enabled?: boolean;
-  detail?: ReactNode;
-  children?: Plugin[];
-  manualLoad?: boolean;
-  loadChildren?: () => Promise<void>;
-  onAliasChange?: (alias: string) => void;
-  onHotkeyChange?: (hotkey: string) => void;
-  onEnabledChange?: (enabled: boolean) => void;
+  enabled: boolean;
+  platforms?: ExtensionPlatform[];
+  action: ExtensionAction;
+  quick_link: ExtensionQuickLink;
+  commands?: Extension[];
+  scripts?: Extension[];
+  quick_links?: Extension[];
+  settings: Record<string, unknown>;
 }
 
-export interface ExtensionsContextType {
-  plugins: Plugin[];
-  setPlugins: Dispatch<SetStateAction<Plugin[]>>;
-  activeId?: string;
-  setActiveId: (id: string) => void;
+interface State {
+  extensions: Extension[];
+  activeExtension?: Extension;
 }
 
-export const ExtensionsContext = createContext<ExtensionsContextType>({
-  plugins: [],
-  setPlugins: noop,
-  setActiveId: noop,
+const INITIAL_STATE: State = {
+  extensions: [],
+};
+
+export const ExtensionsContext = createContext<{ rootState: State }>({
+  rootState: INITIAL_STATE,
 });
 
-const Extensions = () => {
+export const Extensions = () => {
   const { t } = useTranslation();
-  const [apps, setApps] = useState<IApplication[]>([]);
-  const [disabled, setDisabled] = useState<string[]>([]);
-  const [activeId, setActiveId] = useState<string>();
-
-  useMount(async () => {
-    const disabled = await platformAdapter.invokeBackend<string[]>(
-      "get_disabled_local_query_sources"
-    );
-
-    setDisabled(disabled);
+  const state = useReactive<State>(cloneDeep(INITIAL_STATE));
+  const setDisabledExtensions = useExtensionsStore((state) => {
+    return state.setDisabledExtensions;
   });
 
-  const loadApps = async () => {
-    const apps = await platformAdapter.invokeBackend<IApplication[]>(
-      "get_app_list"
+  useMount(async () => {
+    const result = await platformAdapter.invokeBackend<[boolean, Extension[]]>(
+      "list_extensions"
     );
 
-    const sortedApps = apps.sort((a, b) => {
-      return a.name.localeCompare(b.name, undefined, {
-        sensitivity: "base",
-      });
-    });
+    const extensions = result[1];
 
-    setApps(sortedApps);
-  };
+    const disabledExtensions = extensions.filter((item) => !item.enabled);
 
-  const presetPlugins = useMemo<Plugin[]>(() => {
-    const plugins: Plugin[] = [
-      {
-        id: "Applications",
-        icon: <Folder />,
-        name: t("settings.extensions.application.title"),
-        type: "Group",
-        detail: <ApplicationsDetail />,
-        children: [],
-        manualLoad: true,
-        loadChildren: loadApps,
-      },
-      {
-        id: "Calculator",
-        icon: <Calculator />,
-        name: t("settings.extensions.calculator.title"),
-      },
-      {
-        id: "QuickAiAccess",
-        icon: <Bot />,
-        name: "Quick AI Access",
-        detail: <QuickAiAccess />,
-      },
-    ];
+    setDisabledExtensions(disabledExtensions.map((item) => item.id));
 
-    if (apps.length > 0) {
-      for (const app of apps) {
-        const { path, iconPath, isDisabled } = app;
-
-        plugins[0].children?.push({
-          ...app,
-          id: path,
-          type: "Application",
-          icon: (
-            <img
-              src={platformAdapter.convertFileSrc(iconPath)}
-              className="size-5"
-            />
-          ),
-          enabled: !isDisabled,
-          detail: <Application />,
-          onAliasChange(alias) {
-            platformAdapter.invokeBackend("set_app_alias", {
-              appPath: path,
-              alias,
-            });
-
-            const nextApps = apps.map((item) => {
-              if (item.path !== path) return item;
-
-              return { ...item, alias };
-            });
-
-            setApps(nextApps);
-          },
-          onHotkeyChange(hotkey) {
-            const command = `${hotkey ? "register" : "unregister"}_app_hotkey`;
-
-            platformAdapter.invokeBackend(command, {
-              appPath: path,
-              hotkey,
-            });
-
-            const nextApps = apps.map((item) => {
-              if (item.path !== path) return item;
-
-              return { ...item, hotkey };
-            });
-
-            setApps(nextApps);
-          },
-          onEnabledChange(enabled) {
-            const command = `${enabled ? "enable" : "disable"}_app_search`;
-
-            platformAdapter.invokeBackend(command, {
-              appPath: path,
-            });
-
-            const nextApps = apps.map((item) => {
-              if (item.path !== path) return item;
-
-              return { ...item, isDisabled: !enabled };
-            });
-
-            setApps(nextApps);
-          },
-        });
-      }
-    }
-
-    return plugins;
-  }, [apps]);
-
-  const [plugins, setPlugins] = useState<Plugin[]>(presetPlugins);
+    state.extensions = sortBy(extensions, ["title"]);
+  });
 
   useEffect(() => {
-    setPlugins(presetPlugins);
-  }, [presetPlugins]);
-
-  useEffect(() => {
-    setPlugins((prevPlugins) => {
-      return prevPlugins.map((item) => {
-        if (disabled.includes(item.id)) {
-          return { ...item, enabled: false };
-        }
-
-        return item;
-      });
+    const unsubscribe = useExtensionsStore.subscribe((state) => {
+      platformAdapter.emitEvent("change-extensions-store", state);
     });
-  }, [disabled]);
+
+    return () => {
+      unsubscribe();
+    };
+  });
 
   return (
     <ExtensionsContext.Provider
       value={{
-        plugins,
-        setPlugins,
-        activeId,
-        setActiveId,
+        rootState: state,
       }}
     >
       <div className="flex h-[calc(100vh-128px)] -mx-6 gap-4">
@@ -217,7 +114,7 @@ const Extensions = () => {
             <div className="flex">
               <div className="flex-1">{t("settings.extensions.list.name")}</div>
 
-              <div className="w-3/5 flex">
+              <div className="w-4/6 flex">
                 <div className="flex-1">
                   {t("settings.extensions.list.type")}
                 </div>
@@ -227,7 +124,7 @@ const Extensions = () => {
                 <div className="flex-1">
                   {t("settings.extensions.list.hotkey")}
                 </div>
-                <div className="flex-1 text-right">
+                <div className="w-16 text-right whitespace-nowrap">
                   {t("settings.extensions.list.enabled")}
                 </div>
               </div>

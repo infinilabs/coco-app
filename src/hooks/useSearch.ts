@@ -1,11 +1,18 @@
-import { useState, useCallback, useMemo } from 'react';
-import { debounce } from 'lodash-es';
+import { useState, useCallback, useMemo, useRef } from "react";
+import { debounce } from "lodash-es";
 
-import type { QueryHits, MultiSourceQueryResponse, FailedRequest, SearchDocument } from '@/types/search';
+import type {
+  QueryHits,
+  MultiSourceQueryResponse,
+  FailedRequest,
+  SearchDocument,
+} from "@/types/search";
 import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
 import { useConnectStore } from "@/stores/connectStore";
 import { useAppStore } from "@/stores/appStore";
+import { useSearchStore } from "@/stores/searchStore";
+import { useExtensionsStore } from "@/stores/extensionsStore";
 
 interface SearchState {
   isError: FailedRequest[];
@@ -21,6 +28,25 @@ interface SearchDataBySource {
 
 export function useSearch() {
   const isTauri = useAppStore((state) => state.isTauri);
+  const enabledAiOverview = useSearchStore((state) => {
+    return state.enabledAiOverview;
+  });
+  const aiOverviewServer = useExtensionsStore((state) => {
+    return state.aiOverviewServer;
+  });
+  const aiOverviewAssistant = useExtensionsStore((state) => {
+    return state.aiOverviewAssistant;
+  });
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const disabledExtensions = useExtensionsStore((state) => {
+    return state.disabledExtensions;
+  });
+  const aiOverviewCharLen = useExtensionsStore((state) => {
+    return state.aiOverviewCharLen;
+  });
+  const aiOverviewDelay = useExtensionsStore((state) => {
+    return state.aiOverviewDelay;
+  });
 
   const { querySourceTimeout } = useConnectStore();
 
@@ -29,22 +55,28 @@ export function useSearch() {
     suggests: [],
     searchData: {},
     isSearchComplete: false,
-    globalItemIndexMap: {}
+    globalItemIndexMap: {},
   });
 
-  const handleSearchResponse = (response: MultiSourceQueryResponse) => {
+  const handleSearchResponse = (
+    response: MultiSourceQueryResponse,
+    searchInput: string
+  ) => {
     const data = response?.hits || [];
 
-    const searchData = data.reduce((acc: SearchDataBySource, item: QueryHits) => {
-      const name = item?.document?.source?.name;
-      if (name) {
-        if (!acc[name]) {
-          acc[name] = [];
+    const searchData = data.reduce(
+      (acc: SearchDataBySource, item: QueryHits) => {
+        const name = item?.document?.source?.name;
+        if (name) {
+          if (!acc[name]) {
+            acc[name] = [];
+          }
+          acc[name].push(item);
         }
-        acc[name].push(item);
-      }
-      return acc;
-    }, {});
+        return acc;
+      },
+      {}
+    );
 
     // Update indices and map
     //console.log("_search response", data, searchData);
@@ -54,10 +86,65 @@ export function useSearch() {
       searchData[sourceName].map((item: QueryHits) => {
         item.document.querySource = item?.source;
         const index = globalIndex++;
-        item.document.index = index
+        item.document.index = index;
         globalItemIndexMap[index] = item.document;
         return item;
-      })
+      });
+    }
+
+    const filteredData = data.filter((item: any) => {
+      return (
+        item?.document?.type !== "AI Assistant" &&
+        item?.document?.category !== "Calculator" &&
+        item?.document?.category !== "Application"
+      );
+    });
+
+    console.log("aiOverviewCharLen", aiOverviewCharLen);
+    console.log("aiOverviewDelay", aiOverviewDelay);
+
+    if (
+      searchInput.length >= aiOverviewCharLen &&
+      isTauri &&
+      enabledAiOverview &&
+      aiOverviewServer &&
+      aiOverviewAssistant &&
+      filteredData.length > 5 &&
+      !disabledExtensions.includes("AIOverview")
+    ) {
+      timerRef.current = setTimeout(() => {
+        const id = "AI Overview";
+
+        const payload = {
+          source: {
+            id,
+            type: id,
+          },
+          document: {
+            index: 1000000,
+            id,
+            category: id,
+            payload: {
+              message: JSON.stringify({
+                query: searchInput,
+                result: filteredData,
+              }),
+            },
+            source: {
+              icon: "font_a-AIOverview",
+            },
+          },
+        };
+
+        setSearchState((prev) => ({
+          ...prev,
+          suggests: prev.suggests.concat(payload as any),
+          searchData: {
+            [id]: [payload as any],
+            ...prev.searchData,
+          },
+        }));
+      }, aiOverviewDelay * 1000);
     }
 
     setSearchState({
@@ -69,47 +156,65 @@ export function useSearch() {
     });
   };
 
-  const performSearch = useCallback(async (searchInput: string) => {
-    if (!searchInput) {
-      setSearchState(prev => ({ ...prev, suggests: [] }));
-      return;
-    }
-
-    let response: MultiSourceQueryResponse;
-    if (isTauri) {
-      response = await platformAdapter.commands("query_coco_fusion", {
-        from: 0,
-        size: 10,
-        queryStrings: { query: searchInput },
-        queryTimeout: querySourceTimeout,
-      });
-    } else {
-      const [error, res]: any = await Get(`/query/_search?query=${searchInput}`);
-      if (error) {
-        console.error("_search", error);
-        response = { failed: [], hits: [], total_hits: 0 };
-      } else {
-        const hits =
-          res?.hits?.hits?.map((hit: any) => ({
-            document: {
-              ...hit._source,
-            },
-            score: hit._score || 0,
-            source: hit._source.source || null,
-          })) || [];
-        const total = res?.hits?.total?.value || 0;
-        response = {
-          failed: [],
-          hits: hits,
-          total_hits: total,
-        };
+  const performSearch = useCallback(
+    async (searchInput: string) => {
+      if (!searchInput) {
+        setSearchState((prev) => ({ ...prev, suggests: [] }));
+        return;
       }
-    }
 
-    console.log("_suggest", searchInput, response);
+      let response: MultiSourceQueryResponse;
+      if (isTauri) {
+        response = await platformAdapter.commands("query_coco_fusion", {
+          from: 0,
+          size: 10,
+          queryStrings: { query: searchInput },
+          queryTimeout: querySourceTimeout,
+        });
+      } else {
+        const [error, res]: any = await Get(
+          `/query/_search?query=${searchInput}`
+        );
+        if (error) {
+          console.error("_search", error);
+          response = { failed: [], hits: [], total_hits: 0 };
+        } else {
+          const hits =
+            res?.hits?.hits?.map((hit: any) => ({
+              document: {
+                ...hit._source,
+              },
+              score: hit._score || 0,
+              source: hit._source.source || null,
+            })) || [];
+          const total = res?.hits?.total?.value || 0;
+          response = {
+            failed: [],
+            hits: hits,
+            total_hits: total,
+          };
+        }
+      }
 
-    handleSearchResponse(response);
-  }, [querySourceTimeout, isTauri]);
+      console.log("_suggest", searchInput, response);
+
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+
+      handleSearchResponse(response, searchInput);
+    },
+    [
+      querySourceTimeout,
+      isTauri,
+      enabledAiOverview,
+      aiOverviewServer,
+      aiOverviewAssistant,
+      disabledExtensions,
+      aiOverviewCharLen,
+      aiOverviewDelay,
+    ]
+  );
 
   const debouncedSearch = useMemo(
     () => debounce(performSearch, 300),
@@ -118,6 +223,6 @@ export function useSearch() {
 
   return {
     ...searchState,
-    performSearch: debouncedSearch
+    performSearch: debouncedSearch,
   };
 }

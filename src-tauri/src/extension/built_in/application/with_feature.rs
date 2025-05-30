@@ -1,13 +1,14 @@
-use super::super::SearchSourceState;
-use super::super::Task;
-use super::super::RUNTIME_TX;
-use super::AppEntry;
+use super::super::pizza_engine_runtime::SearchSourceState;
+use super::super::pizza_engine_runtime::Task;
+use super::super::pizza_engine_runtime::RUNTIME_TX;
+use super::super::Extension;
 use super::AppMetadata;
-use crate::common::document::{DataSourceReference, Document};
+use crate::common::document::{DataSourceReference, Document, OnOpened};
 use crate::common::error::SearchError;
 use crate::common::search::{QueryResponse, QuerySource, SearchQuery};
 use crate::common::traits::SearchSource;
-use crate::local::LOCAL_QUERY_SOURCE_TYPE;
+use crate::extension::ExtensionType;
+use crate::extension::LOCAL_QUERY_SOURCE_TYPE;
 use crate::util::open;
 use crate::GLOBAL_TAURI_APP_HANDLE;
 use applications::{App, AppTrait};
@@ -326,7 +327,7 @@ impl<R: Runtime> Task for SearchApplicationsTask<R> {
 
     async fn exec(&mut self, state: &mut Option<Box<dyn SearchSourceState>>) {
         let callback = self.callback.take().unwrap();
-        let disabled_app_list = get_disabled_app_list(self.tauri_app_handle.clone());
+        let disabled_app_list = get_disabled_app_list(&self.tauri_app_handle);
 
         // TODO: search via alias, implement this when Pizza engine supports update
         let dsl = format!(
@@ -551,19 +552,24 @@ fn pizza_engine_hits_to_coco_hits(
             FieldValue::Text(string) => string,
             _ => unreachable!("field icon is of type Text"),
         };
+        let on_opened = OnOpened::Application {
+            app_path: app_path.clone(),
+        };
+        let url = on_opened.url();
 
         let coco_document = Document {
             source: Some(DataSourceReference {
                 r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
                 name: Some(QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME.into()),
                 id: Some(QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME.into()),
-                icon: None,
+                icon: Some(String::from("font_Application")),
             }),
             id: app_path.clone(),
             category: Some("Application".to_string()),
             title: Some(app_name.clone()),
-            url: Some(app_path),
             icon: Some(app_icon_path),
+            on_opened: Some(on_opened),
+            url: Some(url),
 
             ..Default::default()
         };
@@ -574,12 +580,7 @@ fn pizza_engine_hits_to_coco_hits(
     coco_hits
 }
 
-#[tauri::command]
-pub async fn set_app_alias<R: Runtime>(
-    tauri_app_handle: AppHandle<R>,
-    app_path: String,
-    alias: String,
-) {
+pub fn set_app_alias<R: Runtime>(tauri_app_handle: &AppHandle<R>, app_path: &str, alias: &str) {
     let store = tauri_app_handle
         .store(TAURI_STORE_APP_ALIAS)
         .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_ALIAS));
@@ -649,42 +650,42 @@ fn register_app_hotkey_upon_start<R: Runtime>(
     Ok(())
 }
 
-#[tauri::command]
-pub async fn register_app_hotkey<R: Runtime>(
-    tauri_app_handle: AppHandle<R>,
-    app_path: String,
-    hotkey: String,
+pub fn register_app_hotkey<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
+    app_path: &str,
+    hotkey: &str,
 ) -> Result<(), String> {
+    // Ignore the error as it may not be registered
+    unregister_app_hotkey(tauri_app_handle, app_path)?;
+
     let app_hotkey_store = tauri_app_handle
         .store(TAURI_STORE_APP_HOTKEY)
         .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_HOTKEY));
 
-    app_hotkey_store.set(app_path.clone(), hotkey.as_str());
+    app_hotkey_store.set(app_path, hotkey);
 
     tauri_app_handle
         .global_shortcut()
-        .on_shortcut(hotkey.as_str(), app_hotkey_handler(app_path))
+        .on_shortcut(hotkey, app_hotkey_handler(app_path.into()))
         .map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
-#[tauri::command]
-pub async fn unregister_app_hotkey<R: Runtime>(
-    tauri_app_handle: AppHandle<R>,
-    app_path: String,
+pub fn unregister_app_hotkey<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
+    app_path: &str,
 ) -> Result<(), String> {
     let app_hotkey_store = tauri_app_handle
         .store(TAURI_STORE_APP_HOTKEY)
         .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_HOTKEY));
 
-    let Some(hotkey) = app_hotkey_store.get(app_path.as_str()) else {
-        let error_msg = format!(
+    let Some(hotkey) = app_hotkey_store.get(app_path) else {
+        warn!(
             "unregister an Application hotkey that does not exist app: [{}]",
             app_path,
         );
-        warn!("{}", error_msg);
-        return Err(error_msg);
+        return Ok(());
     };
 
     let hotkey = match hotkey {
@@ -692,9 +693,16 @@ pub async fn unregister_app_hotkey<R: Runtime>(
         _ => unreachable!("hotkey should be stored in a string"),
     };
 
-    let deleted = app_hotkey_store.delete(app_path.as_str());
+    let deleted = app_hotkey_store.delete(app_path);
     if !deleted {
         return Err("failed to delete application hotkey from store".into());
+    }
+
+    if !tauri_app_handle
+        .global_shortcut()
+        .is_registered(hotkey.as_str())
+    {
+        panic!("inconsistent state, tauri store a hotkey is stored in the tauri store but it is not registered");
     }
 
     tauri_app_handle
@@ -705,7 +713,7 @@ pub async fn unregister_app_hotkey<R: Runtime>(
     Ok(())
 }
 
-fn get_disabled_app_list<R: Runtime>(tauri_app_handle: AppHandle<R>) -> Vec<String> {
+fn get_disabled_app_list<R: Runtime>(tauri_app_handle: &AppHandle<R>) -> Vec<String> {
     let store = tauri_app_handle
         .store(TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH)
         .unwrap_or_else(|_| {
@@ -732,10 +740,19 @@ fn get_disabled_app_list<R: Runtime>(tauri_app_handle: AppHandle<R>) -> Vec<Stri
     disabled_app_list
 }
 
-#[tauri::command]
-pub async fn disable_app_search<R: Runtime>(
-    tauri_app_handle: AppHandle<R>,
-    app_path: String,
+pub fn is_app_search_enabled(app_path: &str) -> bool {
+    let tauri_app_handle = GLOBAL_TAURI_APP_HANDLE
+        .get()
+        .expect("global tauri app handle not set");
+
+    let disabled_app_list = get_disabled_app_list(tauri_app_handle);
+
+    disabled_app_list.iter().all(|path| path != app_path)
+}
+
+pub fn disable_app_search<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
+    app_path: &str,
 ) -> Result<(), String> {
     let store = tauri_app_handle
         .store(TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH)
@@ -748,24 +765,26 @@ pub async fn disable_app_search<R: Runtime>(
 
     let mut disabled_app_list = get_disabled_app_list(tauri_app_handle);
 
-    if disabled_app_list.contains(&app_path) {
+    if disabled_app_list
+        .iter()
+        .any(|disabled_app| disabled_app == app_path)
+    {
         return Err(format!(
             "trying to disable an app that is disabled [{}]",
             app_path
         ));
     }
 
-    disabled_app_list.push(app_path);
+    disabled_app_list.push(app_path.into());
 
     store.set(TAURI_STORE_KEY_DISABLED_APP_LIST, disabled_app_list);
 
     Ok(())
 }
 
-#[tauri::command]
-pub async fn enable_app_search<R: Runtime>(
-    tauri_app_handle: AppHandle<R>,
-    app_path: String,
+pub fn enable_app_search<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
+    app_path: &str,
 ) -> Result<(), String> {
     let store = tauri_app_handle
         .store(TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH)
@@ -879,7 +898,7 @@ pub async fn get_app_search_path<R: Runtime>(tauri_app_handle: AppHandle<R>) -> 
 #[tauri::command]
 pub async fn get_app_list<R: Runtime>(
     tauri_app_handle: AppHandle<R>,
-) -> Result<Vec<AppEntry>, String> {
+) -> Result<Vec<Extension>, String> {
     let search_paths = get_app_search_path(tauri_app_handle.clone()).await;
     let apps = list_app_in(search_paths)?;
 
@@ -910,14 +929,12 @@ pub async fn get_app_list<R: Runtime>(
             let store = tauri_app_handle
                 .store(TAURI_STORE_APP_HOTKEY)
                 .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_HOTKEY));
-            let opt_string = store.get(&path).map(|json| match json {
+            store.get(&path).map(|json| match json {
                 Json::String(s) => s,
                 _ => unreachable!("app hotkey should be stored in a string"),
-            });
-
-            opt_string.unwrap_or(String::new())
+            })
         };
-        let is_disabled = {
+        let enabled = {
             let store = tauri_app_handle
                 .store(TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH)
                 .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_HOTKEY));
@@ -942,16 +959,26 @@ pub async fn get_app_list<R: Runtime>(
                 _ => unreachable!("disabled app list should be stored in an array"),
             };
 
-            disabled_app_list.contains(&path)
+            !disabled_app_list.contains(&path)
         };
 
-        let app_entry = AppEntry {
-            path,
-            name,
-            icon_path,
-            alias,
+        let app_entry = Extension {
+            id: path,
+            title: name,
+            platforms: None,
+            // Leave it empty as it won't be used
+            description: String::new(),
+            icon: icon_path,
+            r#type: ExtensionType::Application,
+            action: None,
+            quick_link: None,
+            commands: None,
+            scripts: None,
+            quick_links: None,
+            alias: Some(alias),
             hotkey,
-            is_disabled,
+            enabled,
+            settings: None,
         };
 
         app_entries.push(app_entry);

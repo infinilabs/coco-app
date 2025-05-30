@@ -23,8 +23,8 @@ export default function SearchIcons({
   const renderContent = () => {
     if (goAskAi && assistant) {
       return (
-        <div className="flex h-8 -my-1">
-          <div className="flex items-center gap-2 pl-2 text-sm bg-white dark:bg-black">
+        <div className="flex h-8 -my-1 -mx-1">
+          <div className="flex items-center gap-2 pl-2 text-sm bg-white dark:bg-black rounded-l-sm">
             <div className="flex items-center gap-1 text-[#333] dark:text-[#D8D8D8]">
               {assistant.icon?.startsWith("font_") ? (
                 <FontIcon name={assistant.icon} className="size-5" />

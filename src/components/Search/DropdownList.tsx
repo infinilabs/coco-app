@@ -10,12 +10,12 @@ import { useDebounceFn, useUnmount } from "ahooks";
 import { useTranslation } from "react-i18next";
 
 import { useSearchStore } from "@/stores/searchStore";
-import { OpenURLWithBrowser } from "@/utils/index";
 import ErrorSearch from "@/components/Common/ErrorNotification/ErrorSearch";
 import type { QueryHits, SearchDocument, FailedRequest } from "@/types/search";
 import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
 import { SearchSource } from "./SearchSource";
 import DropdownListItem from "./DropdownListItem";
+import platformAdapter from "@/utils/platformAdapter";
 
 type ISearchData = Record<string, QueryHits[]>;
 
@@ -33,7 +33,7 @@ function DropdownList({
   searchData,
   isError,
   isChatMode,
-  globalItemIndexMap
+  globalItemIndexMap,
 }: DropdownListProps) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -42,7 +42,6 @@ function DropdownList({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [selectedName, setSelectedName] = useState<string>("");
   const [showIndex, setShowIndex] = useState<boolean>(false);
-
 
   const {
     setSourceData,
@@ -57,7 +56,14 @@ function DropdownList({
   );
 
   const handleItemAction = useCallback((item: SearchDocument) => {
-    if (!item || item.category === "Calculator") return;
+    if (
+      !item ||
+      item.category === "Calculator" ||
+      item.category === "AI Overview"
+    ) {
+      return;
+    }
+
     setSourceData(item);
   }, []);
 
@@ -69,17 +75,19 @@ function DropdownList({
 
   const memoizedCallbacks = useMemo(() => {
     return {
-      onMouseEnter: (index: number, item: SearchDocument) => () => {
-        console.log("onMouseEnter", index);
+      onMouseEnter: (index: number, item: SearchDocument) => {
+        setVisibleContextMenu(false);
         setSelectedIndex(index);
         setSelectedSearchContent(item);
       },
-      onItemClick: (item: SearchDocument) => () => {
-        if (item?.url) {
-          OpenURLWithBrowser(item.url);
+      onItemClick: (item: SearchDocument) => {
+        if (item?.on_opened) {
+          platformAdapter.invokeBackend("open", { onOpened: item.on_opened });
         }
       },
-      goToTwoPage: (item: SearchDocument) => () => setSourceData(item),
+      goToTwoPage: (item: SearchDocument) => {
+        setSourceData(item);
+      },
     };
   }, []);
 
@@ -94,7 +102,7 @@ function DropdownList({
       return;
     }
 
-    const item = globalItemIndexMap[selectedIndex]
+    const item = globalItemIndexMap[selectedIndex];
     setSelectedSearchContent(item);
     if (item?.source?.id === "assistant") {
       setSelectedAssistant({
@@ -161,7 +169,7 @@ function DropdownList({
 
       {Object.entries(searchData).map(([sourceName, items]) => (
         <div key={sourceName}>
-          {showSource && (
+          {showSource && items[0].document.category !== "AI Overview" && (
             <SearchSource
               sourceName={sourceName}
               items={items}

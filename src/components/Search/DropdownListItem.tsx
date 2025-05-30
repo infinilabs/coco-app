@@ -4,6 +4,7 @@ import clsx from "clsx";
 import Calculator from "./Calculator";
 import SearchListItem from "./SearchListItem";
 import type { SearchDocument } from "@/types/search";
+import AiOverview from "./AiOverview";
 
 interface DropdownListItemProps {
   item: SearchDocument;
@@ -11,7 +12,7 @@ interface DropdownListItemProps {
   currentIndex: number;
   showIndex: boolean;
   memoizedCallbacks: {
-    onMouseEnter: (index: number, item: SearchDocument) => () => void;
+    onMouseEnter: (index: number, item: SearchDocument) => void;
     onItemClick: (item: SearchDocument) => void;
     goToTwoPage: (item: SearchDocument) => void;
   };
@@ -30,14 +31,17 @@ const DropdownListItem = memo(
     onContextMenu,
   }: DropdownListItemProps) => {
     const isCalculator = item.category === "Calculator";
+    const isAiOverview = item.category === "AI Overview";
     const isSelected = selectedIndex === currentIndex;
 
     return (
       <div onContextMenu={onContextMenu}>
-        {isCalculator ? (
+        {isCalculator || isAiOverview ? (
           <div
             ref={(el) => (itemRefs.current[currentIndex] = el)}
-            onMouseEnter={memoizedCallbacks.onMouseEnter(currentIndex, item)}
+            onMouseEnter={() => {
+              memoizedCallbacks.onMouseEnter(currentIndex, item);
+            }}
             role="option"
             aria-selected={isSelected}
             id={`search-item-${currentIndex}`}
@@ -45,7 +49,9 @@ const DropdownListItem = memo(
               "bg-[#EDEDED] dark:bg-[#202126]": isSelected,
             })}
           >
-            <Calculator item={item} isSelected={isSelected} />
+            {isCalculator && <Calculator item={item} isSelected={isSelected} />}
+
+            {isAiOverview && <AiOverview message={item?.payload?.message} />}
           </div>
         ) : (
           <SearchListItem
@@ -53,9 +59,15 @@ const DropdownListItem = memo(
             isSelected={isSelected}
             currentIndex={currentIndex}
             showIndex={showIndex}
-            onMouseEnter={memoizedCallbacks.onMouseEnter(currentIndex, item)}
-            onItemClick={() => memoizedCallbacks.onItemClick(item)}
-            goToTwoPage={() => memoizedCallbacks.goToTwoPage(item)}
+            onMouseEnter={() => {
+              memoizedCallbacks.onMouseEnter(currentIndex, item);
+            }}
+            onItemClick={() => {
+              memoizedCallbacks.onItemClick(item);
+            }}
+            goToTwoPage={() => {
+              memoizedCallbacks.goToTwoPage(item);
+            }}
             itemRef={(el) => (itemRefs.current[currentIndex] = el)}
           />
         )}

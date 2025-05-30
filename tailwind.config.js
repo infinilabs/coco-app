@@ -56,7 +56,7 @@ export default {
         2000: "2000",
       },
       screens: {
-        'mobile': {'max': '679px'},
+        mobile: { max: "679px" },
       },
     },
   },

@@ -1,84 +1,124 @@
-import {
-  cloneElement,
-  FC,
-  Fragment,
-  MouseEvent,
-  useContext,
-  useState,
-} from "react";
-import { ExtensionsContext, Plugin } from "../..";
-import { useMount } from "ahooks";
+import { FC, MouseEvent, useContext } from "react";
+import { Extension, ExtensionId, ExtensionsContext } from "../..";
+import { useReactive } from "ahooks";
 import { ChevronRight, LoaderCircle } from "lucide-react";
 import clsx from "clsx";
-import { isArray, isFunction } from "lodash-es";
-import SettingsToggle from "@/components/Settings/SettingsToggle";
+import { isArray, startCase, sortBy } from "lodash-es";
 import platformAdapter from "@/utils/platformAdapter";
-import Shortcut from "../Shortcut";
+import FontIcon from "@/components/Common/Icons/FontIcon";
 import SettingsInput from "@/components/Settings/SettingsInput";
 import { useTranslation } from "react-i18next";
+import Shortcut from "../Shortcut";
+import SettingsToggle from "@/components/Settings/SettingsToggle";
+import { platform } from "@/utils/platform";
+import { useExtensionsStore } from "@/stores/extensionsStore";
 
 const Content = () => {
-  const { plugins } = useContext(ExtensionsContext);
+  const { rootState } = useContext(ExtensionsContext);
 
-  return plugins.map((item) => {
-    return <Item key={item.id} {...item} level={1} />;
+  return rootState.extensions.map((item) => {
+    const { id } = item;
+
+    return <Item key={id} {...item} level={1} extensionId={id} />;
   });
 };
 
-const Item: FC<Plugin & { level: number }> = (props) => {
-  const {
-    id,
-    icon,
-    name,
-    children,
-    type = "Extension",
-    manualLoad,
-    level = 1,
-  } = props;
-  const { activeId, setActiveId, setPlugins } = useContext(ExtensionsContext);
-  const [loading, setLoading] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+interface ItemProps extends Extension {
+  level: number;
+  extensionId: ExtensionId;
+}
+
+interface ItemState {
+  loading: boolean;
+  expanded: boolean;
+  subExtensions?: Extension[];
+}
+
+const subExtensionCommand: Partial<Record<ExtensionId, string>> = {
+  Applications: "get_app_list",
+};
+
+const Item: FC<ItemProps> = (props) => {
+  const { id, icon, title, type, level, extensionId, platforms } = props;
+  const { rootState } = useContext(ExtensionsContext);
+  const state = useReactive<ItemState>({
+    loading: false,
+    expanded: false,
+  });
   const { t } = useTranslation();
-  const hasChildren = isArray(children);
+  const disabledExtensions = useExtensionsStore((state) => {
+    return state.disabledExtensions;
+  });
+  const setDisabledExtensions = useExtensionsStore((state) => {
+    return state.setDisabledExtensions;
+  });
 
-  const handleLoadChildren = async () => {
-    setLoading(true);
+  const hasSubExtensions = () => {
+    const { commands, scripts, quick_links } = props;
 
-    await props.loadChildren?.();
+    if (subExtensionCommand[id]) {
+      return true;
+    }
 
-    setLoading(false);
+    if (isArray(commands) || isArray(scripts) || isArray(quick_links)) {
+      return true;
+    }
+
+    return false;
   };
 
-  useMount(async () => {
-    if (!manualLoad) {
-      handleLoadChildren();
+  const getSubExtensions = async () => {
+    state.loading = true;
+
+    const { commands, scripts, quick_links } = props;
+
+    let subExtensions: Extension[] = [];
+
+    const command = subExtensionCommand[id];
+
+    if (command) {
+      subExtensions = await platformAdapter.invokeBackend<Extension[]>(command);
+    } else {
+      subExtensions = [commands, scripts, quick_links].filter(isArray).flat();
     }
-  });
+
+    state.loading = false;
+
+    return sortBy(subExtensions, ["title"]);
+  };
 
   const handleExpand = async (event: MouseEvent) => {
     event?.stopPropagation();
 
-    if (expanded) {
-      setExpanded(false);
+    if (state.expanded) {
+      state.expanded = false;
     } else {
-      if (manualLoad) {
-        await handleLoadChildren();
-      }
+      state.subExtensions = await getSubExtensions();
 
-      setExpanded(true);
+      state.expanded = true;
     }
   };
 
+  const editable = () => {
+    return (
+      type !== "group" &&
+      type !== "calculator" &&
+      type !== "extension" &&
+      type !== "ai_extension"
+    );
+  };
+
   const renderAlias = () => {
-    const { alias, onAliasChange } = props;
+    const { alias } = props;
 
     const handleChange = (value: string) => {
-      if (isFunction(onAliasChange)) {
-        return onAliasChange(value);
-      }
+      platformAdapter.invokeBackend("set_extension_alias", {
+        extensionId,
+        alias: value,
+      });
     };
 
-    if (isFunction(onAliasChange)) {
+    if (editable()) {
       return (
         <div
           className="-translate-x-2"
@@ -102,15 +142,22 @@ const Item: FC<Plugin & { level: number }> = (props) => {
   };
 
   const renderHotkey = () => {
-    const { hotkey, onHotkeyChange } = props;
+    const { hotkey } = props;
 
     const handleChange = (value: string) => {
-      if (isFunction(onHotkeyChange)) {
-        return onHotkeyChange(value);
+      if (value) {
+        platformAdapter.invokeBackend("register_extension_hotkey", {
+          extensionId,
+          hotkey: value,
+        });
+      } else {
+        platformAdapter.invokeBackend("unregister_extension_hotkey", {
+          extensionId,
+        });
       }
     };
 
-    if (isFunction(onHotkeyChange)) {
+    if (editable()) {
       return (
         <div
           className="-translate-x-2"
@@ -131,39 +178,36 @@ const Item: FC<Plugin & { level: number }> = (props) => {
   };
 
   const renderSwitch = () => {
-    const { enabled = true, onEnabledChange } = props;
+    const { enabled } = props;
 
     const handleChange = (value: boolean) => {
-      if (isFunction(onEnabledChange)) {
-        return onEnabledChange(value);
-      }
+      if (value) {
+        setDisabledExtensions(
+          disabledExtensions.filter((item) => item !== extensionId)
+        );
 
-      const command = `${value ? "enable" : "disable"}_local_query_source`;
-
-      platformAdapter.invokeBackend(command, {
-        querySourceId: id,
-      });
-
-      setPlugins((prevPlugins) => {
-        return prevPlugins.map((item) => {
-          if (item.id === id) {
-            return { ...item, enabled: value };
-          }
-
-          return item;
+        platformAdapter.invokeBackend("enable_extension", {
+          extensionId,
         });
-      });
+      } else {
+        setDisabledExtensions([...disabledExtensions, extensionId]);
+
+        platformAdapter.invokeBackend("disable_extension", {
+          extensionId,
+        });
+      }
     };
 
     return (
       <div
+        className="flex items-center justify-end"
         onClick={(event) => {
           event.stopPropagation();
         }}
       >
         <SettingsToggle
           label={id}
-          checked={Boolean(enabled)}
+          defaultChecked={enabled}
           className="scale-75"
           onChange={handleChange}
         />
@@ -171,71 +215,98 @@ const Item: FC<Plugin & { level: number }> = (props) => {
     );
   };
 
-  return (
-    <Fragment key={id}>
-      <div
-        className={clsx("-mx-2 px-2 text-sm rounded-md", {
-          "bg-[#f0f6fe] dark:bg-gray-700": id === activeId,
-        })}
-      >
+  const renderType = () => {
+    if (type === "ai_extension") {
+      return "AI Extension";
+    }
+
+    return startCase(type);
+  };
+
+  const renderContent = () => {
+    if (isArray(platforms)) {
+      const currentPlatform = platform();
+
+      if (currentPlatform && !platforms.includes(currentPlatform)) {
+        return;
+      }
+    }
+
+    return (
+      <>
         <div
-          className="flex items-center justify-between gap-2 h-8"
-          onClick={() => {
-            setActiveId(id);
-          }}
+          className={clsx("-mx-2 px-2 text-sm rounded-md", {
+            "bg-[#f0f6fe] dark:bg-gray-700":
+              id === rootState.activeExtension?.id,
+          })}
         >
           <div
-            className="flex-1 flex items-center gap-1 overflow-hidden"
-            style={{ paddingLeft: (level - 1) * 20 }}
+            className="flex items-center justify-between gap-2 h-8"
+            onClick={() => {
+              rootState.activeExtension = props;
+            }}
           >
-            <div className="min-w-4 h-4">
-              {hasChildren && (
-                <>
-                  {loading ? (
-                    <LoaderCircle className="size-4 animate-spin" />
-                  ) : (
-                    <ChevronRight
-                      onClick={handleExpand}
-                      className={clsx("size-4 transition cursor-pointer", {
-                        "rotate-90": expanded,
-                      })}
-                    />
-                  )}
-                </>
-              )}
+            <div
+              className="flex-1 flex items-center gap-1 overflow-hidden"
+              style={{ paddingLeft: (level - 1) * 20 }}
+            >
+              <div className="min-w-4 h-4">
+                {hasSubExtensions() && (
+                  <>
+                    {state.loading ? (
+                      <LoaderCircle className="size-4 animate-spin" />
+                    ) : (
+                      <ChevronRight
+                        onClick={handleExpand}
+                        className={clsx("size-4 transition cursor-pointer", {
+                          "rotate-90": state.expanded,
+                        })}
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+
+              <div className="size-4">
+                {icon.startsWith("font_") ? (
+                  <FontIcon name={icon} className="size-full" />
+                ) : (
+                  <img
+                    src={platformAdapter.convertFileSrc(icon)}
+                    className="size-full"
+                  />
+                )}
+              </div>
+
+              <div className="truncate">{title}</div>
             </div>
 
-            {cloneElement(icon, {
-              className: clsx("size-4", icon.props.className),
-            })}
-
-            <div className="truncate">{name}</div>
-          </div>
-
-          <div className="w-3/5 flex items-center text-[#999]">
-            <div className="flex-1">{type}</div>
-            <div className="flex-1">{renderAlias()}</div>
-            <div className="flex-1">{renderHotkey()}</div>
-            <div className="flex-1 flex items-center justify-end">
-              {renderSwitch()}
+            <div className="w-4/6 flex items-center text-[#999]">
+              <div className="flex-1">{renderType()}</div>
+              <div className="flex-1">{renderAlias()}</div>
+              <div className="flex-1">{renderHotkey()}</div>
+              <div className="w-16">{renderSwitch()}</div>
             </div>
           </div>
         </div>
-      </div>
 
-      {hasChildren && (
-        <div
-          className={clsx({
-            hidden: !expanded,
-          })}
-        >
-          {children.map((item) => {
-            return <Item key={item.id} {...item} level={level + 1} />;
+        <div className={clsx({ hidden: !state.expanded })}>
+          {state.subExtensions?.map((item) => {
+            return (
+              <Item
+                key={item.id}
+                {...item}
+                level={level + 1}
+                extensionId={`${id}.${item.id}`}
+              />
+            );
           })}
         </div>
-      )}
-    </Fragment>
-  );
+      </>
+    );
+  };
+
+  return renderContent();
 };
 
 export default Content;

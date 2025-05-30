@@ -1,40 +1,65 @@
-import { useContext, useMemo } from "react";
-import { ExtensionsContext, Plugin } from "../..";
+import { useContext } from "react";
+
+import { ExtensionsContext } from "../..";
+import Applications from "./Applications";
+import Application from "./Application";
+import { useExtensionsStore } from "@/stores/extensionsStore";
+import SharedAi from "./SharedAi";
+import AiOverview from "./AiOverview";
 
 const Details = () => {
-  const { plugins, activeId } = useContext(ExtensionsContext);
+  const { rootState } = useContext(ExtensionsContext);
+  const quickAiAccessServer = useExtensionsStore((state) => {
+    return state.quickAiAccessServer;
+  });
+  const setQuickAiAccessServer = useExtensionsStore((state) => {
+    return state.setQuickAiAccessServer;
+  });
+  const quickAiAccessAssistant = useExtensionsStore((state) => {
+    return state.quickAiAccessAssistant;
+  });
+  const setQuickAiAccessAssistant = useExtensionsStore((state) => {
+    return state.setQuickAiAccessAssistant;
+  });
 
-  const findPlugin = (plugins: Plugin[], id: string) => {
-    for (const plugin of plugins) {
-      const { children = [] } = plugin;
+  const renderContent = () => {
+    if (!rootState.activeExtension) return;
 
-      if (plugin.id === id) {
-        return plugin;
-      }
+    const { id, type } = rootState.activeExtension;
 
-      if (children.length > 0) {
-        const matched = findPlugin(children, id) as Plugin;
+    if (id === "Applications") {
+      return <Applications />;
+    }
 
-        if (!matched) continue;
+    if (type === "application") {
+      return <Application />;
+    }
 
-        return matched;
-      }
+    if (id === "QuickAIAccess") {
+      return (
+        <SharedAi
+          key="QuickAIAccess"
+          id="QuickAIAccess"
+          server={quickAiAccessServer}
+          setServer={setQuickAiAccessServer}
+          assistant={quickAiAccessAssistant}
+          setAssistant={setQuickAiAccessAssistant}
+        />
+      );
+    }
+
+    if (id === "AIOverview") {
+      return <AiOverview />;
     }
   };
-
-  const currentPlugin = useMemo(() => {
-    if (!activeId) return;
-
-    return findPlugin(plugins, activeId);
-  }, [activeId, plugins]);
 
   return (
     <div className="flex-1 h-full overflow-auto">
       <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        {currentPlugin?.name}
+        {rootState.activeExtension?.title}
       </h2>
 
-      <div className="pr-4">{currentPlugin?.detail}</div>
+      <div className="pr-4 pb-4">{renderContent()}</div>
     </div>
   );
 };

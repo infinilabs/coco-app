@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 import { useAsyncEffect } from "ahooks";
 import platformAdapter from "@/utils/platformAdapter";
-import { ExtensionsContext, Plugin, type ExtensionsContextType } from "../../../index";
+import { ExtensionsContext } from "../../../index";
 
 interface Metadata {
   name: string;
@@ -17,46 +17,25 @@ interface Metadata {
 
 const App = () => {
   const { t } = useTranslation();
-  const { activeId, plugins } = useContext(ExtensionsContext) as ExtensionsContextType;
+  const { rootState } = useContext(ExtensionsContext);
 
   const [appMetadata, setAppMetadata] = useState<Metadata>();
 
-  const findPlugin = (plugins: Plugin[], id: string) => {
-    for (const plugin of plugins) {
-      const { children = [] } = plugin;
-
-      if (plugin.id === id) {
-        return plugin;
-      }
-
-      if (children.length > 0) {
-        const matched = findPlugin(children, id) as Plugin;
-
-        if (!matched) continue;
-
-        return matched;
-      }
-    }
-  };
-
-  const currentPlugin = useMemo(() => {
-    if (!activeId) return;
-    return findPlugin(plugins, activeId);
-  }, [activeId, plugins]);
-
   useAsyncEffect(async () => {
-    if (!activeId || !currentPlugin) return;
+    if (!rootState.activeExtension) return;
+
+    const { id, title } = rootState.activeExtension;
 
     const appMetadata = await platformAdapter.invokeBackend<Metadata>(
       "get_app_metadata",
       {
-        appName: currentPlugin.name,
-        appPath: activeId
+        appPath: id,
+        appName: title,
       }
     );
 
     setAppMetadata(appMetadata);
-  }, [activeId, currentPlugin]);
+  }, [rootState.activeExtension?.id]);
 
   const metadata = useMemo(() => {
     if (!appMetadata) return [];

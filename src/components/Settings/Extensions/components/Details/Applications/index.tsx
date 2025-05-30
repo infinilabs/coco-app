@@ -99,7 +99,7 @@ const Applications = () => {
               <div className="flex items-center gap-1 flex-1 overflow-hidden">
                 <Folder className="size-4" />
 
-                <span className="truncate">{item}</span>
+                <span className="flex-1 truncate">{item}</span>
               </div>
 
               <div className="flex items-center gap-1">

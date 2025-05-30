@@ -16,6 +16,7 @@ import ChatIcons from "./ChatIcons";
 import { useKeyboardHandlers } from "@/hooks/useKeyboardHandlers";
 import { useAssistantManager } from "./AssistantManager";
 import InputControls from "./InputControls";
+import { useExtensionsStore } from "@/stores/extensionsStore";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -79,6 +80,7 @@ export default function ChatInput({
 
   const showTooltip = useAppStore((state) => state.showTooltip);
   const setBlurred = useAppStore((state) => state.setBlurred);
+  const isTauri = useAppStore((state) => state.isTauri);
 
   const { sourceData, goAskAi } = useSearchStore();
 
@@ -154,16 +156,12 @@ export default function ChatInput({
     };
   }, [isChatMode]);
 
-  const {
-    askAI,
-    askAIRef,
-    assistantDetail,
-    handleKeyDownAutoResizeTextarea,
-  } = useAssistantManager({
-    isChatMode,
-    handleSubmit,
-    changeInput,
-  });
+  const { askAI, askAIRef, assistantDetail, handleKeyDownAutoResizeTextarea } =
+    useAssistantManager({
+      isChatMode,
+      handleSubmit,
+      changeInput,
+    });
 
   const [lineCount, setLineCount] = useState(1);
 
@@ -180,6 +178,10 @@ export default function ChatInput({
       placeholder: source?.chat_settings?.placeholder,
     };
   }, [currentAssistant]);
+
+  const disabledExtensions = useExtensionsStore((state) => {
+    return state.disabledExtensions;
+  });
 
   const renderSearchIcon = () => (
     <SearchIcons
@@ -225,18 +227,22 @@ export default function ChatInput({
       </div>
     )} */}
 
-      {!isChatMode && !goAskAi && askAI && (
-        <div className="flex items-center gap-2 text-sm text-[#AEAEAE] dark:text-[#545454] whitespace-nowrap">
-          <span>
-            {t("search.askCocoAi.title", {
-              replace: [askAI.name],
-            })}
-          </span>
-          <div className="flex items-center justify-center w-8 h-[20px] text-xs rounded-md border border-black/10 dark:border-[#545454]">
-            Tab
+      {!isChatMode &&
+        isTauri &&
+        !goAskAi &&
+        askAI &&
+        !disabledExtensions.includes("QuickAIAccess") && (
+          <div className="flex items-center gap-2 text-sm text-[#AEAEAE] dark:text-[#545454] whitespace-nowrap">
+            <span>
+              {t("search.askCocoAi.title", {
+                replace: [askAI.name],
+              })}
+            </span>
+            <div className="flex items-center justify-center w-8 h-[20px] text-xs rounded-md border border-black/10 dark:border-[#545454]">
+              Tab
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* <AudioRecording
       key={isChatMode ? "chat" : "search"}

@@ -1,0 +1,8 @@
+{
+  "id": "QuickAIAccess",
+  "title": "Quick AI Access",
+  "description": "...",
+  "icon": "font_a-QuickAIAccess",
+  "type": "ai_extension",
+  "enabled": true
+}

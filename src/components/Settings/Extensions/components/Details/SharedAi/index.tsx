@@ -2,26 +2,24 @@ import { AssistantFetcher } from "@/components/Assistant/AssistantFetcher";
 import FontIcon from "@/components/Common/Icons/FontIcon";
 import SettingsSelectPro from "@/components/Settings/SettingsSelectPro";
 import { useAppStore } from "@/stores/appStore";
-import { useExtensionsStore } from "@/stores/extensionsStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { useAsyncEffect, useMount } from "ahooks";
-import { useEffect, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
+import { ExtensionId } from "../../..";
 
-const QuickAiAccess = () => {
-  const quickAiAccessServer = useExtensionsStore((state) => {
-    return state.quickAiAccessServer;
-  });
-  const setQuickAiAccessServer = useExtensionsStore((state) => {
-    return state.setQuickAiAccessServer;
-  });
-  const quickAiAccessAssistant = useExtensionsStore((state) => {
-    return state.quickAiAccessAssistant;
-  });
-  const setQuickAiAccessAssistant = useExtensionsStore((state) => {
-    return state.setQuickAiAccessAssistant;
-  });
-  const [serverList, setServerList] = useState<any[]>([]);
-  const [assistantList, setAssistantList] = useState<any[]>([]);
+interface SharedAiProps {
+  id: ExtensionId;
+  server?: any;
+  setServer: (server: any) => void;
+  assistant?: any;
+  setAssistant: (assistant: any) => void;
+}
+
+const SharedAi: FC<SharedAiProps> = (props) => {
+  const { id, server, setServer, assistant, setAssistant } = props;
+
+  const [serverList, setServerList] = useState<any[]>([server]);
+  const [assistantList, setAssistantList] = useState<any[]>([assistant]);
   const addError = useAppStore((state) => state.addError);
   const { fetchAssistant } = AssistantFetcher({});
 
@@ -33,9 +31,9 @@ const QuickAiAccess = () => {
 
       setServerList(data);
 
-      if (quickAiAccessServer) return;
+      if (server) return;
 
-      setQuickAiAccessServer(data[0]);
+      setServer(data[0]);
     } catch (error) {
       addError(String(error));
     }
@@ -43,77 +41,74 @@ const QuickAiAccess = () => {
 
   useAsyncEffect(async () => {
     try {
-      if (!quickAiAccessServer) return;
+      if (!server) return;
 
       const data = await fetchAssistant({
         current: 1,
         pageSize: 1000,
-        serverId: quickAiAccessServer.id,
+        serverId: server.id,
       });
 
       const list = data.list.map((item: any) => item._source);
 
       setAssistantList(list);
 
-      if (quickAiAccessAssistant) {
+      if (assistant) {
         const matched = list.find((item: any) => {
-          return item.id === quickAiAccessAssistant.id;
+          return item.id === assistant.id;
         });
 
         if (matched) {
-          return setQuickAiAccessAssistant(matched);
+          return setAssistant(matched);
         }
       }
 
-      setQuickAiAccessAssistant(list[0]);
+      setAssistant(list[0]);
     } catch (error) {
       addError(String(error));
     }
-  }, [quickAiAccessServer]);
-
-  useEffect(() => {
-    const unsubscribe = useExtensionsStore.subscribe((state) => {
-      platformAdapter.emitEvent("change-extensions-store", state);
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  });
+  }, [server]);
 
   const selectList = useMemo(() => {
     return [
       {
         label: "Coco Server",
-        value: quickAiAccessServer?.id,
-        icon: quickAiAccessServer?.provider?.icon,
+        value: server?.id,
+        icon: server?.provider?.icon,
         data: serverList,
         onChange: (value: string) => {
           const matched = serverList.find((item) => item.id === value);
 
-          setQuickAiAccessServer(matched);
+          setServer(matched);
         },
       },
       {
         label: "AI Assistant",
-        value: quickAiAccessAssistant?.id,
-        icon: quickAiAccessAssistant?.icon,
+        value: assistant?.id,
+        icon: assistant?.icon,
         data: assistantList,
         onChange: (value: string) => {
           const matched = assistantList.find((item) => item.id === value);
 
-          setQuickAiAccessAssistant(matched);
+          setAssistant(matched);
         },
       },
     ];
-  }, [serverList, assistantList, quickAiAccessServer, quickAiAccessAssistant]);
+  }, [serverList, assistantList, server, assistant]);
+
+  const renderDescription = () => {
+    if (id === "QuickAIAccess") {
+      return "Quick AI access allows you to start a conversation immediately from the search box using the tab key.";
+    }
+
+    if (id === "AIOverview") {
+      return "AI Summarize generates concise summaries based on your search results, helping you quickly grasp key information without reading every document.";
+    }
+  };
 
   return (
     <div className="text-sm">
-      <div className="text-[#999]">
-        Quick AI access allows you to start a conversation immediately from the
-        search box using the tab key.
-      </div>
+      <div className="text-[#999]">{renderDescription()}</div>
 
       <div className="mt-6 text-[#333] dark:text-white/90">LinkedAssistant</div>
 
@@ -147,4 +142,4 @@ const QuickAiAccess = () => {
   );
 };
 
-export default QuickAiAccess;
+export default SharedAi;

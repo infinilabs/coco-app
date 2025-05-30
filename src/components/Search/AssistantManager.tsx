@@ -38,16 +38,16 @@ export function useAssistantManager({
   const [assistantDetail, setAssistantDetail] = useState<any>({});
 
   const assistant_get = useCallback(async () => {
+    if (!askAI?.id) return;
     if (isTauri) {
+      if (!askAI?.querySource?.id) return;
       const res = await platformAdapter.commands("assistant_get", {
         serverId: askAI?.querySource?.id,
         assistantId: askAI?.id,
       });
       setAssistantDetail(res);
     } else {
-      const [error, res]: any = await Get(`/assistant/${askAI?.id}`, {
-        id: askAI?.id,
-      });
+      const [error, res]: any = await Get(`/assistant/${askAI?.id}`);
       if (error) {
         console.error("assistant", error);
         return;
@@ -57,6 +57,8 @@ export function useAssistantManager({
   }, [askAI]);
 
   const handleAskAi = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (!isTauri) return;
+    
     askAIRef.current = cloneDeep(askAI);
 
     if (!askAIRef.current) return;
@@ -67,7 +69,6 @@ export function useAssistantManager({
 
     if (!selectedAssistant && isEmpty(value)) return;
 
-    assistant_get();
     changeInput("");
     setAskAiMessage(!goAskAi && selectedAssistant ? "" : value);
     setGoAskAi(true);
@@ -84,7 +85,9 @@ export function useAssistantManager({
       return setGoAskAi(false);
     }
 
-    if (key === "Tab" && !isChatMode) {
+    if (key === "Tab" && !isChatMode && isTauri) {
+      assistant_get();
+
       return handleAskAi(e);
     }
 

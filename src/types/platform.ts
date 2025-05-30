@@ -1,4 +1,3 @@
-import { ASK_AI_CLIENT_ID } from "@/constants";
 import { IAppearanceStore } from "@/stores/appearanceStore";
 import { IConnectStore } from "@/stores/connectStore";
 import { IExtensionsStore } from "@/stores/extensionsStore";
@@ -38,9 +37,10 @@ export interface EventPayloads {
   "change-shortcuts-store": IShortcutsStore;
   "change-connect-store": IConnectStore;
   "change-appearance-store": IAppearanceStore;
-  [ASK_AI_CLIENT_ID]: any;
   "toggle-to-chat-mode": void;
   "change-extensions-store": IExtensionsStore;
+  "quick-ai-access-client-id": any;
+  "ai-overview-client-id": any;
 }
 
 // Window operation interface

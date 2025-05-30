@@ -2,17 +2,18 @@ import { useClickAway, useCreation, useReactive } from "ahooks";
 import clsx from "clsx";
 import { isNil, lowerCase, noop } from "lodash-es";
 import { Copy, Link, SquareArrowOutUpRight } from "lucide-react";
-import { cloneElement, useEffect, useRef, useState } from "react";
+import { cloneElement, FC, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useOSKeyPress } from "@/hooks/useOSKeyPress";
 import { useSearchStore } from "@/stores/searchStore";
-import { copyToClipboard, OpenURLWithBrowser } from "@/utils";
+import { copyToClipboard } from "@/utils";
 import { isMac } from "@/utils/platform";
 import { CONTEXT_MENU_PANEL_ID } from "@/constants";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { Input } from "@headlessui/react";
 import VisibleKey from "../Common/VisibleKey";
+import platformAdapter from "@/utils/platformAdapter";
 
 interface State {
   activeMenuIndex: number;
@@ -22,7 +23,7 @@ interface ContextMenuProps {
   hideCoco?: () => void;
 }
 
-const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
+const ContextMenu: FC<ContextMenuProps> = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { t, i18n } = useTranslation();
   const state = useReactive<State>({
@@ -52,8 +53,14 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
   const menus = useCreation(() => {
     if (isNil(selectedSearchContent)) return [];
 
-    const { url, category, payload } = selectedSearchContent;
+    const { url, category, payload, on_opened } = selectedSearchContent;
     const { query, result } = payload ?? {};
+
+    if (category === "AI Overview") {
+      setSearchMenus([]);
+
+      return [];
+    }
 
     const menus = [
       {
@@ -63,9 +70,9 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
         shortcut: "enter",
         hide: category === "Calculator",
         clickEvent: () => {
-          OpenURLWithBrowser(url);
-
-          hideCoco && hideCoco();
+          if (on_opened) {
+            platformAdapter.invokeBackend("open", { onOpened: on_opened });
+          }
         },
       },
       {
@@ -182,104 +189,106 @@ const ContextMenu = ({ hideCoco }: ContextMenuProps) => {
   };
 
   return (
-    <>
-      {visibleContextMenu && (
-        <div
-          className="fixed inset-0"
-          onContextMenu={(event) => {
-            event?.preventDefault();
+    searchMenus.length > 0 && (
+      <>
+        {visibleContextMenu && (
+          <div
+            className="fixed inset-0"
+            onContextMenu={(event) => {
+              event?.preventDefault();
 
-            setVisibleContextMenu(false);
-          }}
-        />
-      )}
-
-      <div
-        ref={containerRef}
-        id={visibleContextMenu ? CONTEXT_MENU_PANEL_ID : ""}
-        className={clsx(
-          "absolute bottom-[50px] right-[18px] w-[300px] flex flex-col gap-2 scale-0 transition origin-bottom-right text-sm p-3 pb-0 bg-white dark:bg-black rounded-lg shadow-xs border border-[#EDEDED] dark:border-[#272828] shadow-lg dark:shadow-white/15",
-          {
-            "!scale-100": visibleContextMenu,
-          }
+              setVisibleContextMenu(false);
+            }}
+          />
         )}
-      >
-        <div className="text-[#999] dark:text-[#666] truncate">{title}</div>
 
-        <ul className="flex flex-col -mx-2 p-0">
-          {searchMenus.map((item, index) => {
-            const { name, icon, keys, clickEvent } = item;
-
-            return (
-              <li
-                key={name}
-                className={clsx(
-                  "flex justify-between items-center gap-2 px-2 py-2 rounded-lg cursor-pointer",
-                  {
-                    "bg-[#EDEDED] dark:bg-[#202126]":
-                      index === state.activeMenuIndex,
-                  }
-                )}
-                onMouseEnter={() => {
-                  state.activeMenuIndex = index;
-                }}
-                onClick={() => handleClick(clickEvent)}
-              >
-                <div className="flex items-center gap-2 text-black/80 dark:text-white/80">
-                  {cloneElement(icon, { className: "size-4" })}
-
-                  <span>{name}</span>
-                </div>
-
-                <div className="flex gap-[4px] text-black/60 dark:text-white/60">
-                  {keys.map((key) => (
-                    <kbd
-                      key={key}
-                      className={clsx(
-                        "flex justify-center items-center font-sans h-[20px] min-w-[20px] text-[10px] rounded-md border border-[#EDEDED] dark:border-white/10 bg-white dark:bg-[#202126]",
-                        {
-                          "px-1": key.length > 1,
-                        }
-                      )}
-                    >
-                      {key}
-                    </kbd>
-                  ))}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-
-        <div className="-mx-3 p-2 border-t border-[#E6E6E6] dark:border-[#262626]">
-          {visibleContextMenu && (
-            <VisibleKey
-              shortcut="F"
-              shortcutClassName="left-3"
-              onKeyPress={() => {
-                searchInputRef.current?.focus();
-              }}
-            >
-              <Input
-                ref={searchInputRef}
-                autoFocus
-                placeholder={t("search.contextMenu.search")}
-                className="w-full bg-transparent"
-                onChange={(event) => {
-                  const value = event.target.value;
-
-                  const searchMenus = menus.filter((item) => {
-                    return lowerCase(item.name).includes(lowerCase(value));
-                  });
-
-                  setSearchMenus(searchMenus);
-                }}
-              />
-            </VisibleKey>
+        <div
+          ref={containerRef}
+          id={visibleContextMenu ? CONTEXT_MENU_PANEL_ID : ""}
+          className={clsx(
+            "absolute bottom-[50px] right-[18px] w-[300px] flex flex-col gap-2 scale-0 transition origin-bottom-right text-sm p-3 pb-0 bg-white dark:bg-black rounded-lg shadow-xs border border-[#EDEDED] dark:border-[#272828] shadow-lg dark:shadow-white/15",
+            {
+              "!scale-100": visibleContextMenu,
+            }
           )}
+        >
+          <div className="text-[#999] dark:text-[#666] truncate">{title}</div>
+
+          <ul className="flex flex-col -mx-2 p-0">
+            {searchMenus.map((item, index) => {
+              const { name, icon, keys, clickEvent } = item;
+
+              return (
+                <li
+                  key={name}
+                  className={clsx(
+                    "flex justify-between items-center gap-2 px-2 py-2 rounded-lg cursor-pointer",
+                    {
+                      "bg-[#EDEDED] dark:bg-[#202126]":
+                        index === state.activeMenuIndex,
+                    }
+                  )}
+                  onMouseEnter={() => {
+                    state.activeMenuIndex = index;
+                  }}
+                  onClick={() => handleClick(clickEvent)}
+                >
+                  <div className="flex items-center gap-2 text-black/80 dark:text-white/80">
+                    {cloneElement(icon, { className: "size-4" })}
+
+                    <span>{name}</span>
+                  </div>
+
+                  <div className="flex gap-[4px] text-black/60 dark:text-white/60">
+                    {keys.map((key) => (
+                      <kbd
+                        key={key}
+                        className={clsx(
+                          "flex justify-center items-center font-sans h-[20px] min-w-[20px] text-[10px] rounded-md border border-[#EDEDED] dark:border-white/10 bg-white dark:bg-[#202126]",
+                          {
+                            "px-1": key.length > 1,
+                          }
+                        )}
+                      >
+                        {key}
+                      </kbd>
+                    ))}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="-mx-3 p-2 border-t border-[#E6E6E6] dark:border-[#262626]">
+            {visibleContextMenu && (
+              <VisibleKey
+                shortcut="F"
+                shortcutClassName="left-3"
+                onKeyPress={() => {
+                  searchInputRef.current?.focus();
+                }}
+              >
+                <Input
+                  ref={searchInputRef}
+                  autoFocus
+                  placeholder={t("search.contextMenu.search")}
+                  className="w-full bg-transparent"
+                  onChange={(event) => {
+                    const value = event.target.value;
+
+                    const searchMenus = menus.filter((item) => {
+                      return lowerCase(item.name).includes(lowerCase(value));
+                    });
+
+                    setSearchMenus(searchMenus);
+                  }}
+                />
+              </VisibleKey>
+            )}
+          </div>
         </div>
-      </div>
-    </>
+      </>
+    )
   );
 };
 

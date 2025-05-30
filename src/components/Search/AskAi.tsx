@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import { noop } from "lodash-es";
 
 import { ChatMessage } from "../ChatMessage";
-import { ASK_AI_CLIENT_ID, COPY_BUTTON_ID } from "@/constants";
+import { COPY_BUTTON_ID } from "@/constants";
 import { useSearchStore } from "@/stores/searchStore";
 import platformAdapter from "@/utils/platformAdapter";
 import useMessageChunkData from "@/hooks/useMessageChunkData";
@@ -75,6 +75,9 @@ const AskAi = () => {
     return state.setAskAiServerId;
   });
   const state = useReactive<State>({});
+  const setAskAiAssistantId = useSearchStore((state) => {
+    return state.setAskAiAssistantId;
+  });
 
   useEffect(() => {
     if (state.serverId) return;
@@ -97,11 +100,9 @@ const AskAi = () => {
   useMount(async () => {
     try {
       unlisten.current = await platformAdapter.listenEvent(
-        ASK_AI_CLIENT_ID,
+        "quick-ai-access-client-id",
         ({ payload }) => {
           console.log("ask_ai", JSON.parse(payload));
-
-          setIsTyping(true);
 
           const chunkData = JSON.parse(payload);
 
@@ -114,6 +115,13 @@ const AskAi = () => {
           if (sessionIdRef.current !== chunkData.session_id) {
             return;
           }
+
+          // If the chunk data does not contain a message_chunk, we ignore it
+          if (!chunkData.message_chunk) {
+            return;
+          }
+
+          setIsTyping(true);
 
           setLoadingStep(() => ({
             query_intent: false,
@@ -164,15 +172,12 @@ const AskAi = () => {
 
     const { serverId, assistantId } = state;
 
-    console.log("serverId", serverId);
-    console.log("assistantId", assistantId);
-
     try {
       await platformAdapter.invokeBackend("ask_ai", {
         message: askAiMessage,
         serverId,
         assistantId,
-        clientId: ASK_AI_CLIENT_ID,
+        clientId: "quick-ai-access-client-id",
       });
     } catch (error) {
       addError(String(error));
@@ -184,7 +189,7 @@ const AskAi = () => {
 
     if (isTyping) return;
 
-    const { serverId } = state;
+    const { serverId, assistantId } = state;
 
     if ((isMac && metaKey) || (!isMac && ctrlKey)) {
       await platformAdapter.commands("open_session_chat", {
@@ -195,7 +200,8 @@ const AskAi = () => {
       platformAdapter.emitEvent("toggle-to-chat-mode");
 
       setAskAiServerId(serverId);
-      return setAskAiSessionId(sessionIdRef.current);
+      setAskAiSessionId(sessionIdRef.current);
+      return setAskAiAssistantId(assistantId);
     }
 
     const copyButton = document.getElementById(COPY_BUTTON_ID);

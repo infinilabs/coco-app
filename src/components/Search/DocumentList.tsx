@@ -7,7 +7,6 @@ import { SearchHeader } from "./SearchHeader";
 import noDataImg from "@/assets/coconut-tree.png";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import SearchListItem from "./SearchListItem";
-import { OpenURLWithBrowser } from "@/utils/index";
 import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
 import { useAppStore } from "@/stores/appStore";
@@ -170,7 +169,9 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       const handleEnter = () => {
         if (selectedItem === null) return;
         const item = data.list[selectedItem]?.document;
-        item?.url && OpenURLWithBrowser(item.url);
+        if (item?.on_opened) {
+          platformAdapter.invokeBackend("open", { onOpened: item.on_opened });
+        }
       };
 
       switch (e.key) {
@@ -233,9 +234,13 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                 isSelected={selectedItem === index}
                 currentIndex={index}
                 onMouseEnter={() => onMouseEnter(index, hit.document)}
-                onItemClick={() =>
-                  hit.document?.url && OpenURLWithBrowser(hit.document.url)
-                }
+                onItemClick={() => {
+                  if (hit.document?.on_opened) {
+                    platformAdapter.invokeBackend("open", {
+                      onOpened: hit.document.on_opened,
+                    });
+                  }
+                }}
                 showListRight={viewMode === "list"}
               />
             ))}

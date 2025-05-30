@@ -1,11 +1,11 @@
+use super::super::Extension;
+use super::AppMetadata;
 use crate::common::error::SearchError;
 use crate::common::search::{QueryResponse, QuerySource, SearchQuery};
 use crate::common::traits::SearchSource;
-use crate::local::LOCAL_QUERY_SOURCE_TYPE;
+use crate::extension::LOCAL_QUERY_SOURCE_TYPE;
 use async_trait::async_trait;
 use tauri::{AppHandle, Runtime};
-use super::AppEntry;
-use super::AppMetadata;
 
 pub(crate) const QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME: &str = "Applications";
 
@@ -39,44 +39,43 @@ impl SearchSource for ApplicationSearchSource {
     }
 }
 
-#[tauri::command]
-pub async fn set_app_alias(_app_path: String, _alias: String) -> Result<(), String> {
+pub fn set_app_alias<R: Runtime>(_tauri_app_handle: &AppHandle<R>, _app_path: &str, _alias: &str) {
     unreachable!("app list should be empty, there is no way this can be invoked")
 }
 
-#[tauri::command]
-pub async fn register_app_hotkey<R: Runtime>(
-    _tauri_app_handle: AppHandle<R>,
-    _app_path: String,
-    _hotkey: String,
+pub fn register_app_hotkey<R: Runtime>(
+    _tauri_app_handle: &AppHandle<R>,
+    _app_path: &str,
+    _hotkey: &str,
 ) -> Result<(), String> {
     unreachable!("app list should be empty, there is no way this can be invoked")
 }
 
-#[tauri::command]
-pub async fn unregister_app_hotkey<R: Runtime>(
-    _tauri_app_handle: AppHandle<R>,
-    _app_path: String,
+pub fn unregister_app_hotkey<R: Runtime>(
+    _tauri_app_handle: &AppHandle<R>,
+    _app_path: &str,
 ) -> Result<(), String> {
     unreachable!("app list should be empty, there is no way this can be invoked")
 }
 
-#[tauri::command]
-pub async fn disable_app_search<R: Runtime>(
-    _tauri_app_handle: AppHandle<R>,
-    _app_path: String,
+pub fn disable_app_search<R: Runtime>(
+    _tauri_app_handle: &AppHandle<R>,
+    _app_path: &str,
 ) -> Result<(), String> {
     // no-op
     Ok(())
 }
 
-#[tauri::command]
-pub async fn enable_app_search<R: Runtime>(
-    _tauri_app_handle: AppHandle<R>,
-    _app_path: String,
+pub fn enable_app_search<R: Runtime>(
+    _tauri_app_handle: &AppHandle<R>,
+    _app_path: &str,
 ) -> Result<(), String> {
     // no-op
     Ok(())
+}
+
+pub fn is_app_search_enabled(_app_path: &str) -> bool {
+    false
 }
 
 #[tauri::command]
@@ -103,11 +102,10 @@ pub async fn get_app_search_path<R: Runtime>(_tauri_app_handle: AppHandle<R>) ->
     Vec::new()
 }
 
-
 #[tauri::command]
 pub async fn get_app_list<R: Runtime>(
     _tauri_app_handle: AppHandle<R>,
-) -> Result<Vec<AppEntry>, String> {
+) -> Result<Vec<Extension>, String> {
     // Return an empty list
     Ok(Vec::new())
 }
