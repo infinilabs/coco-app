@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 
 import { useOSKeyPress } from "@/hooks/useOSKeyPress";
 import { useSearchStore } from "@/stores/searchStore";
-import { copyToClipboard } from "@/utils";
+import { copyToClipboard, OpenURLWithBrowser } from "@/utils";
 import { isMac } from "@/utils/platform";
 import { CONTEXT_MENU_PANEL_ID } from "@/constants";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
@@ -71,7 +71,13 @@ const ContextMenu: FC<ContextMenuProps> = () => {
         hide: category === "Calculator",
         clickEvent: () => {
           if (on_opened) {
-            platformAdapter.invokeBackend("open", { onOpened: on_opened });
+            return platformAdapter.invokeBackend("open", {
+              onOpened: on_opened,
+            });
+          }
+
+          if (url) {
+            OpenURLWithBrowser(url);
           }
         },
       },

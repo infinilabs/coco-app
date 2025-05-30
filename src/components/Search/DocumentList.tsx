@@ -171,7 +171,13 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         if (selectedItem === null) return;
         const item = data.list[selectedItem]?.document;
         if (item?.on_opened) {
-          platformAdapter.invokeBackend("open", { onOpened: item.on_opened });
+          return platformAdapter.invokeBackend("open", {
+            onOpened: item.on_opened,
+          });
+        }
+
+        if (item?.url) {
+          OpenURLWithBrowser(item.url);
         }
       };
 
