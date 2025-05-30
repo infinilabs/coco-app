@@ -41,6 +41,12 @@ export function useSearch() {
   const disabledExtensions = useExtensionsStore((state) => {
     return state.disabledExtensions;
   });
+  const aiOverviewCharLen = useExtensionsStore((state) => {
+    return state.aiOverviewCharLen;
+  });
+  const aiOverviewDelay = useExtensionsStore((state) => {
+    return state.aiOverviewDelay;
+  });
 
   const { querySourceTimeout } = useConnectStore();
 
@@ -94,8 +100,11 @@ export function useSearch() {
       );
     });
 
+    console.log("aiOverviewCharLen", aiOverviewCharLen);
+    console.log("aiOverviewDelay", aiOverviewDelay);
+
     if (
-      searchInput.length > 10 &&
+      searchInput.length >= aiOverviewCharLen &&
       isTauri &&
       enabledAiOverview &&
       aiOverviewServer &&
@@ -135,7 +144,7 @@ export function useSearch() {
             ...prev.searchData,
           },
         }));
-      }, 2000);
+      }, aiOverviewDelay * 1000);
     }
 
     setSearchState({
@@ -202,6 +211,8 @@ export function useSearch() {
       aiOverviewServer,
       aiOverviewAssistant,
       disabledExtensions,
+      aiOverviewCharLen,
+      aiOverviewDelay,
     ]
   );
 

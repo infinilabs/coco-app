@@ -124,7 +124,7 @@ export const Extensions = () => {
                 <div className="flex-1">
                   {t("settings.extensions.list.hotkey")}
                 </div>
-                <div className="w-16 text-right">
+                <div className="w-16 text-right whitespace-nowrap">
                   {t("settings.extensions.list.enabled")}
                 </div>
               </div>

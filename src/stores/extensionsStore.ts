@@ -13,6 +13,10 @@ export type IExtensionsStore = {
   setAiOverviewAssistant: (aiOverviewAssistant?: any) => void;
   disabledExtensions: ExtensionId[];
   setDisabledExtensions: (disabledExtensions?: string[]) => void;
+  aiOverviewCharLen: number;
+  setAiOverviewCharLen: (aiOverviewCharLen: number) => void;
+  aiOverviewDelay: number;
+  setAiOverviewDelay: (aiOverviewDelay: number) => void;
 };
 
 export const useExtensionsStore = create<IExtensionsStore>()(
@@ -35,6 +39,14 @@ export const useExtensionsStore = create<IExtensionsStore>()(
         setDisabledExtensions(disabledExtensions) {
           return set({ disabledExtensions });
         },
+        aiOverviewCharLen: 10,
+        setAiOverviewCharLen(aiOverviewCharLen) {
+          return set({ aiOverviewCharLen });
+        },
+        aiOverviewDelay: 2,
+        setAiOverviewDelay(aiOverviewDelay) {
+          return set({ aiOverviewDelay });
+        },
       }),
       {
         name: "extensions-store",
@@ -43,6 +55,8 @@ export const useExtensionsStore = create<IExtensionsStore>()(
           quickAiAccessAssistant: state.quickAiAccessAssistant,
           aiOverviewServer: state.aiOverviewServer,
           aiOverviewAssistant: state.aiOverviewAssistant,
+          aiOverviewCharLen: state.aiOverviewCharLen,
+          aiOverviewDelay: state.aiOverviewDelay,
         }),
       }
     )

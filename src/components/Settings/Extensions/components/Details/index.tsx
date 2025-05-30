@@ -5,6 +5,7 @@ import Applications from "./Applications";
 import Application from "./Application";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import SharedAi from "./SharedAi";
+import AiOverview from "./AiOverview";
 
 const Details = () => {
   const { rootState } = useContext(ExtensionsContext);
@@ -19,18 +20,6 @@ const Details = () => {
   });
   const setQuickAiAccessAssistant = useExtensionsStore((state) => {
     return state.setQuickAiAccessAssistant;
-  });
-  const aiOverviewServer = useExtensionsStore((state) => {
-    return state.aiOverviewServer;
-  });
-  const setAiOverviewServer = useExtensionsStore((state) => {
-    return state.setAiOverviewServer;
-  });
-  const aiOverviewAssistant = useExtensionsStore((state) => {
-    return state.aiOverviewAssistant;
-  });
-  const setAiOverviewAssistant = useExtensionsStore((state) => {
-    return state.setAiOverviewAssistant;
   });
 
   const renderContent = () => {
@@ -60,16 +49,7 @@ const Details = () => {
     }
 
     if (id === "AIOverview") {
-      return (
-        <SharedAi
-          key="AIOverview"
-          id="AIOverview"
-          server={aiOverviewServer}
-          setServer={setAiOverviewServer}
-          assistant={aiOverviewAssistant}
-          setAssistant={setAiOverviewAssistant}
-        />
-      );
+      return <AiOverview />;
     }
   };
 
@@ -79,7 +59,7 @@ const Details = () => {
         {rootState.activeExtension?.title}
       </h2>
 
-      <div className="pr-4">{renderContent()}</div>
+      <div className="pr-4 pb-4">{renderContent()}</div>
     </div>
   );
 };
