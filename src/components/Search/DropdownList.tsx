@@ -169,7 +169,7 @@ function DropdownList({
 
       {Object.entries(searchData).map(([sourceName, items]) => (
         <div key={sourceName}>
-          {showSource && (
+          {showSource && items[0].document.category !== "AI Overview" && (
             <SearchSource
               sourceName={sourceName}
               items={items}
