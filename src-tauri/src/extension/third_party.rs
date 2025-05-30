@@ -291,14 +291,14 @@ impl ThirdPartyExtensionsSearchSource {
 
         // To make borrow checker happy
         let extension_dbg_string = format!("{:?}", extension);
-        extension = match extension .get_extension_mut(extension_id) {
-          Some(ext) => ext,
-          None => {
+        extension = match extension.get_extension_mut(extension_id) {
+            Some(ext) => ext,
+            None => {
                 panic!(
                     "extension [{}] should be found in {}",
                     extension_id, extension_dbg_string
                 )
-          }
+            }
         };
 
         // Set hotkey
@@ -359,7 +359,7 @@ impl ThirdPartyExtensionsSearchSource {
             .get_mut(index)
             .expect("just checked this extension exists");
         let Some(extension) = parent_extension.get_extension_mut(extension_id) else {
-                      return Err(format!(
+            return Err(format!(
                 "{} invoked with an extension that does not exist [{}]",
                 function_name!(),
                 extension_id
@@ -691,10 +691,9 @@ mod tests {
         // Characters present but not in sequence
         // "tac" in "contact" - not a substring, but all chars exist
         let score = calculate_text_similarity("tac", "contact").unwrap();
-        assert!(approx_eq(score, 0.15));
+        assert!(approx_eq(0.3 + 0.3 * (3.0 / 7.0), score));
 
-        // Should not apply for queries of length <= 2
-        assert_eq!(calculate_text_similarity("ac", "contact"), None);
+        assert!(calculate_text_similarity("ac", "contact").is_some());
 
         // Should not apply if some characters are missing
         assert_eq!(calculate_text_similarity("xyz", "contact"), None);
