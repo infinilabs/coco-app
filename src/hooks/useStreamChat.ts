@@ -11,6 +11,7 @@ interface Options {
   clientId: keyof EventPayloads;
   server?: any;
   assistant?: any;
+  setVisible: (visible: boolean) => void;
 }
 
 interface State {
@@ -19,7 +20,7 @@ interface State {
 }
 
 export const useStreamChat = (options: Options) => {
-  const { message, clientId, server, assistant } = options;
+  const { message, clientId, server, assistant, setVisible } = options;
 
   const unlistenRef = useRef<() => void>(noop);
   const addError = useAppStore((state) => state.addError);
@@ -49,7 +50,6 @@ export const useStreamChat = (options: Options) => {
         ({ payload }) => {
           console.log(clientId, JSON.parse(payload));
 
-
           const chunkData = JSON.parse(payload);
 
           if (chunkData?._id) {
@@ -63,12 +63,9 @@ export const useStreamChat = (options: Options) => {
           }
 
           // If the chunk data does not contain a message_chunk, we ignore it
-          console.log(11111111, chunkData.message_chunk);
-          if (!chunkData.message_chunk) {
-            return;
+          if (chunkData.message_chunk) {
+            setVisible(true);
           }
-
-          console.log(2222222, chunkData.message_chunk);
 
           state.isTyping = true;
 

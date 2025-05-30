@@ -19,16 +19,25 @@ const AiOverview: FC<AiSummaryProps> = (props) => {
   });
 
   const [expand, setExpand] = useState(true);
+  const [visible, setVisible] = useState(false);
 
   const { isTyping, chunkData, loadingStep } = useStreamChat({
     message,
     clientId: "ai-overview-client-id",
     server: aiOverviewServer,
     assistant: aiOverviewAssistant,
+    setVisible,
   });
 
   return (
-    <div className="flex flex-col gap-2 relative max-h-[210px] px-4 py-3 rounded-[4px] text-[#333] dark:text-[#D8D8D8] bg-white dark:bg-[#141414] shadow-[0_4px_8px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_rgba(255,255,255,0.2)]">
+    <div
+      className={clsx(
+        "flex flex-col gap-2 relative max-h-[210px] px-4 py-3 rounded-[4px] text-[#333] dark:text-[#D8D8D8] bg-white dark:bg-[#141414] shadow-[0_4px_8px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_rgba(255,255,255,0.2)]",
+        {
+          "hidden -m-2": !visible,
+        }
+      )}
+    >
       <div
         className="absolute top-2 right-2 flex items-center justify-center size-[20px] border rounded-md cursor-pointer dark:border-[#282828]"
         onClick={() => {
