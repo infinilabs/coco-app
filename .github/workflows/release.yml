@@ -91,8 +91,37 @@ jobs:
       - name: Install app dependencies and build web
         run: pnpm install --frozen-lockfile
 
-      - name: Build the app
+      - name: Pizza engine features setup
+        if: matrix.platform != 'i686-pc-windows-msvc'
+        run: |
+          make add-dep-pizza-engine
+
+      - name: Build the app with ${{ matrix.platform }}
         uses: tauri-apps/tauri-action@v0
+        if: matrix.platform != 'i686-pc-windows-msvc'
+        env:
+          CI: false
+          PLATFORM: ${{ matrix.platform }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ""
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: Coco ${{ needs.create-release.outputs.APP_VERSION }}
+          releaseBody: ""
+          releaseDraft: true
+          prerelease: false
+          args: --target ${{ matrix.target }} --features use_pizza_engine
+
+      - name: Build the app with ${{ matrix.platform }} (windows i686 only)
+        uses: tauri-apps/tauri-action@v0
+        if: matrix.platform == 'i686-pc-windows-msvc'
         env:
           CI: false
           PLATFORM: ${{ matrix.platform }}
