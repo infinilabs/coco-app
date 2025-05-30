@@ -241,7 +241,7 @@
     -ms-user-select: none;
     user-select: none;
   }
-  
+
   .user-select-text {
     -webkit-touch-callout: text;
     -webkit-user-select: text;
@@ -249,5 +249,15 @@
     -moz-user-select: text;
     -ms-user-select: text;
     user-select: text;
+  }
+
+  .hide-scrollbar {
+    overflow: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
   }
 }

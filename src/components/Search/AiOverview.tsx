@@ -44,7 +44,7 @@ const AiOverview: FC<AiSummaryProps> = (props) => {
       </div>
 
       <div
-        className={clsx("flex-1 overflow-auto text-sm", {
+        className={clsx("flex-1 overflow-auto text-sm hide-scrollbar", {
           hidden: !expand,
         })}
       >
@@ -63,7 +63,7 @@ const AiOverview: FC<AiSummaryProps> = (props) => {
             {...chunkData}
             isTyping={isTyping}
             loadingStep={loadingStep}
-            rootClassName="py-0"
+            rootClassName="!py-0"
             actionClassName="absolute bottom-3 left-3"
             actionIconSize={12}
           />
