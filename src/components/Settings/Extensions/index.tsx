@@ -70,9 +70,6 @@ export const ExtensionsContext = createContext<{ rootState: State }>({
 export const Extensions = () => {
   const { t } = useTranslation();
   const state = useReactive<State>(cloneDeep(INITIAL_STATE));
-  const setDisabledExtensions = useExtensionsStore((state) => {
-    return state.setDisabledExtensions;
-  });
 
   useMount(async () => {
     const result = await platformAdapter.invokeBackend<[boolean, Extension[]]>(
@@ -80,10 +77,6 @@ export const Extensions = () => {
     );
 
     const extensions = result[1];
-
-    const disabledExtensions = extensions.filter((item) => !item.enabled);
-
-    setDisabledExtensions(disabledExtensions.map((item) => item.id));
 
     state.extensions = sortBy(extensions, ["title"]);
   });
