@@ -75,6 +75,9 @@ const AskAi = () => {
     return state.setAskAiServerId;
   });
   const state = useReactive<State>({});
+  const setAskAiAssistantId = useSearchStore((state) => {
+    return state.setAskAiAssistantId;
+  });
 
   useEffect(() => {
     if (state.serverId) return;
@@ -100,8 +103,6 @@ const AskAi = () => {
         "quick-ai-access-client-id",
         ({ payload }) => {
           console.log("ask_ai", JSON.parse(payload));
-
-          
 
           const chunkData = JSON.parse(payload);
 
@@ -188,7 +189,9 @@ const AskAi = () => {
 
     if (isTyping) return;
 
-    const { serverId } = state;
+    const { serverId, assistantId } = state;
+
+    console.log("state", state);
 
     if ((isMac && metaKey) || (!isMac && ctrlKey)) {
       await platformAdapter.commands("open_session_chat", {
@@ -199,7 +202,8 @@ const AskAi = () => {
       platformAdapter.emitEvent("toggle-to-chat-mode");
 
       setAskAiServerId(serverId);
-      return setAskAiSessionId(sessionIdRef.current);
+      setAskAiSessionId(sessionIdRef.current);
+      return setAskAiAssistantId(assistantId);
     }
 
     const copyButton = document.getElementById(COPY_BUTTON_ID);

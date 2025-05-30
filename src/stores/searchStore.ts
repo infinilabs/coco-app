@@ -26,6 +26,8 @@ export type ISearchStore = {
   setAskAiServerId: (askAiServerId?: string) => void;
   enabledAiOverview: boolean;
   setEnabledAiOverview: (enabledAiOverview: boolean) => void;
+  askAiAssistantId?: string;
+  setAskAiAssistantId: (askAiAssistantId?: string) => void;
 };
 
 export const useSearchStore = create<ISearchStore>()(
@@ -64,6 +66,9 @@ export const useSearchStore = create<ISearchStore>()(
       enabledAiOverview: false,
       setEnabledAiOverview: (enabledAiOverview) => {
         return set({ enabledAiOverview });
+      },
+      setAskAiAssistantId: (askAiAssistantId) => {
+        return set({ askAiAssistantId });
       },
     }),
     {

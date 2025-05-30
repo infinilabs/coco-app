@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { ChevronDownIcon, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { isNil } from "lodash-es";
@@ -16,6 +16,7 @@ import PopoverInput from "@/components/Common/PopoverInput";
 import { AssistantFetcher } from "./AssistantFetcher";
 import AssistantItem from "./AssistantItem";
 import Pagination from "@/components/Common/Pagination";
+import { useSearchStore } from "@/stores/searchStore";
 
 interface AssistantListProps {
   assistantIDs?: string[];
@@ -37,6 +38,11 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [keyword, setKeyword] = useState("");
   const debounceKeyword = useDebounce(keyword, { wait: 500 });
+  const askAiAssistantId = useSearchStore((state) => state.askAiAssistantId);
+  const setAskAiAssistantId = useSearchStore((state) => {
+    return state.setAskAiAssistantId;
+  });
+  const assistantList = useConnectStore((state) => state.assistantList);
 
   const { fetchAssistant } = AssistantFetcher({
     debounceKeyword,
@@ -61,6 +67,19 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
 
   const [highlightIndex, setHighlightIndex] = useState<number>(-1);
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
+
+  useEffect(() => {
+    if (!askAiAssistantId || assistantList.length === 0) return;
+
+    const matched = assistantList.find((item) => {
+      return item._id === askAiAssistantId;
+    });
+
+    if (!matched) return;
+
+    setCurrentAssistant(matched);
+    setAskAiAssistantId(void 0);
+  }, [assistantList, askAiAssistantId]);
 
   useKeyPress(
     ["uparrow", "downarrow", "enter"],
