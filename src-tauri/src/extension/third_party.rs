@@ -489,6 +489,11 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
             });
         };
 
+        let opt_data_source = query
+            .query_strings
+            .get("datasource")
+            .map(|owned_str| owned_str.as_str());
+
         let mut hits = Vec::new();
         let extensions_read_lock = self.inner.extensions.read().await;
         let query_lower = query_string.to_lowercase();
@@ -497,7 +502,8 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
             if extension.r#type.contains_sub_items() {
                 if let Some(ref commands) = extension.commands {
                     for command in commands.iter().filter(|cmd| cmd.enabled) {
-                        if let Some(hit) = extension_to_hit(command, &query_lower) {
+                        if let Some(hit) = extension_to_hit(command, &query_lower, opt_data_source)
+                        {
                             hits.push(hit);
                         }
                     }
@@ -505,7 +511,7 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
 
                 if let Some(ref scripts) = extension.scripts {
                     for script in scripts.iter().filter(|script| script.enabled) {
-                        if let Some(hit) = extension_to_hit(script, &query_lower) {
+                        if let Some(hit) = extension_to_hit(script, &query_lower, opt_data_source) {
                             hits.push(hit);
                         }
                     }
@@ -513,13 +519,15 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
 
                 if let Some(ref quick_links) = extension.quick_links {
                     for quick_link in quick_links.iter().filter(|link| link.enabled) {
-                        if let Some(hit) = extension_to_hit(quick_link, &query_lower) {
+                        if let Some(hit) =
+                            extension_to_hit(quick_link, &query_lower, opt_data_source)
+                        {
                             hits.push(hit);
                         }
                     }
                 }
             } else {
-                if let Some(hit) = extension_to_hit(extension, &query_lower) {
+                if let Some(hit) = extension_to_hit(extension, &query_lower, opt_data_source) {
                     hits.push(hit);
                 }
             }
@@ -535,9 +543,23 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
     }
 }
 
-fn extension_to_hit(extension: &Extension, query_lower: &str) -> Option<(Document, f64)> {
+fn extension_to_hit(
+    extension: &Extension,
+    query_lower: &str,
+    opt_data_source: Option<&str>,
+) -> Option<(Document, f64)> {
     if !extension.searchable() {
         return None;
+    }
+
+    let extension_type_string = extension.r#type.to_string();
+
+    if let Some(data_source) = opt_data_source {
+        let document_data_source_id = extension_type_string.as_str();
+
+        if document_data_source_id != data_source {
+            return None;
+        }
     }
 
     let mut total_score = 0.0;
@@ -574,12 +596,12 @@ fn extension_to_hit(extension: &Extension, query_lower: &str) -> Option<(Documen
             icon: Some(extension.icon.clone()),
             on_opened: Some(on_opened),
             url: Some(url),
-            category: Some(extension.r#type.to_string()),
+            category: Some(extension_type_string.clone()),
             source: Some(DataSourceReference {
-                id: Some(format!("{:?}", extension.r#type)),
-                name: Some(format!("{:?}", extension.r#type)),
+                id: Some(extension_type_string.clone()),
+                name: Some(extension_type_string.clone()),
                 icon: None,
-                r#type: Some(format!("{:?}", extension.r#type)),
+                r#type: Some(extension_type_string),
             }),
 
             ..Default::default()

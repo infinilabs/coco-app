@@ -48,6 +48,7 @@ Information about release notes of Coco Server is provided here.
 - fix: suggestion list position #553
 - fix: independent chat window has no data #554
 - fix: resolved navigation error on continue chat action #558
+- fix: make extension search source respect parameter datasource #576
 
 ### ✈️ Improvements
 
