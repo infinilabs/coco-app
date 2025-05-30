@@ -621,9 +621,7 @@ fn calculate_text_similarity(query: &str, text: &str) -> Option<f64> {
     }
 
     // Case 3: Fallback for "all query characters exist in text" (order-independent)
-    // Applied only if other scores are low and query is not too short, to avoid noise.
-    if score < 0.2 && query_len > 2.0 {
-        // query_len > 2 to avoid for 1 or 2 char queries.
+    if score < 0.2 {
         if query.chars().all(|c_q| text.contains(c_q)) {
             score = score.max(0.15); // Fixed low score for this weaker match type
         }
