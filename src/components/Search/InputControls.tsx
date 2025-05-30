@@ -216,6 +216,12 @@ const InputControls = ({
   const disabledExtensions = useExtensionsStore((state) => {
     return state.disabledExtensions;
   });
+  const aiOverviewServer = useExtensionsStore((state) => {
+    return state.aiOverviewServer;
+  });
+  const aiOverviewAssistant = useExtensionsStore((state) => {
+    return state.aiOverviewAssistant;
+  });
 
   return (
     <div
@@ -298,29 +304,34 @@ const InputControls = ({
         </div>
       ) : (
         <div data-tauri-drag-region className="w-28 flex gap-2 relative">
-          {!disabledExtensions.includes("AIOverview") && isTauri && (
-            <div
-              className={clsx(
-                "inline-flex items-center gap-1 px-2 py-1 rounded-full hover:!text-[#881c94] cursor-pointer transition",
-                [
-                  enabledAiOverview
-                    ? "text-[#881c94]"
-                    : "text-[#333] dark:text-[#d8d8d8]",
-                ],
-                {
-                  "bg-[#881C94]/20 dark:bg-[#202126]": enabledAiOverview,
-                }
-              )}
-              onClick={() => {
-                setEnabledAiOverview(!enabledAiOverview);
-              }}
-            >
-              <Sparkles className="size-4" />
-              <span className={clsx("text-xs", { hidden: !enabledAiOverview })}>
-                AI Overview
-              </span>
-            </div>
-          )}
+          {!disabledExtensions.includes("AIOverview") &&
+            isTauri &&
+            aiOverviewServer &&
+            aiOverviewAssistant && (
+              <div
+                className={clsx(
+                  "inline-flex items-center gap-1 px-2 py-1 rounded-full hover:!text-[#881c94] cursor-pointer transition",
+                  [
+                    enabledAiOverview
+                      ? "text-[#881c94]"
+                      : "text-[#333] dark:text-[#d8d8d8]",
+                  ],
+                  {
+                    "bg-[#881C94]/20 dark:bg-[#202126]": enabledAiOverview,
+                  }
+                )}
+                onClick={() => {
+                  setEnabledAiOverview(!enabledAiOverview);
+                }}
+              >
+                <Sparkles className="size-4" />
+                <span
+                  className={clsx("text-xs", { hidden: !enabledAiOverview })}
+                >
+                  AI Overview
+                </span>
+              </div>
+            )}
         </div>
       )}
 
