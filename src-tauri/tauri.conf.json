@@ -42,6 +42,8 @@
         "url": "/ui/settings",
         "width": 1000,
         "height": 700,
+        "minHeight": 700,
+        "minWidth": 1000,
         "center": true,
         "transparent": true,
         "maximizable": false,
