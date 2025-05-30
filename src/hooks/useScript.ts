@@ -28,17 +28,14 @@ export default useScript;
 export const useIconfontScript = () => {
   const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
 
-  const [useLocalFallback, setUseLocalFallback] = useState(false);
+  const [_useLocalFallback, setUseLocalFallback] = useState(false);
 
   let baseURL = appStore.state?.endpoint_http;
   if (!baseURL || baseURL === "undefined") {
     baseURL = "";
   }
 
-  if (useLocalFallback || baseURL === "") {
-    useScript("/assets/fonts/icons/iconfont.js");
-    return;
-  }
+  useScript("/assets/fonts/icons/iconfont.js");
 
   useScript(`${baseURL}/assets/fonts/icons/iconfont.js`, () => {
     console.log(
