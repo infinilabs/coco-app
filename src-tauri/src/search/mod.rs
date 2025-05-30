@@ -1,16 +1,55 @@
 use crate::common::error::SearchError;
 use crate::common::register::SearchSourceRegistry;
 use crate::common::search::{
-    FailedRequest, MultiSourceQueryResponse, QueryHits, QuerySource, SearchQuery,
+    FailedRequest, MultiSourceQueryResponse, QueryHits, QueryResponse, QuerySource, SearchQuery,
 };
+use crate::common::traits::SearchSource;
+use function_name::named;
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
 use std::cmp::Reverse;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::future::Future;
+use std::sync::Arc;
 use tauri::{AppHandle, Manager, Runtime};
+use tokio::time::error::Elapsed;
 use tokio::time::{timeout, Duration};
 
+/// Helper function to return the Future used for querying querysources.
+///
+/// It is a workaround for the limitations:
+///
+/// 1. 2 async blocks have different types in Rust's type system even though
+///    they are literally same
+/// 2. `futures::stream::FuturesUnordered` needs the `Futures` pushed to it to
+///    have only 1 type
+///
+/// Putting the async block in a function to unify the types.
+fn same_type_futures(
+    query_source: QuerySource,
+    query_source_trait_object: Arc<dyn SearchSource>,
+    timeout_duration: Duration,
+    search_query: SearchQuery,
+) -> impl Future<
+    Output = (
+        QuerySource,
+        Result<Result<QueryResponse, SearchError>, Elapsed>,
+    ),
+> + 'static {
+    async move {
+        (
+            // Store `query_source` as part of future for debugging purposes.
+            query_source,
+            timeout(timeout_duration, async {
+                query_source_trait_object.search(search_query).await
+            })
+            .await,
+        )
+    }
+}
+
+#[named]
 #[tauri::command]
 pub async fn query_coco_fusion<R: Runtime>(
     app_handle: AppHandle<R>,
@@ -24,45 +63,60 @@ pub async fn query_coco_fusion<R: Runtime>(
         .unwrap_or(&"".to_string())
         .clone();
 
-    let query_source_to_search = query_strings.get("querysource");
+    let opt_query_source_id = query_strings.get("querysource");
 
     let search_sources = app_handle.state::<SearchSourceRegistry>();
 
     let sources_future = search_sources.get_sources();
     let mut futures = FuturesUnordered::new();
 
-    let sources_list = sources_future.await;
+    let mut sources_list = sources_future.await;
+    let sources_list_len = sources_list.len();
 
     // Time limit for each query
     let timeout_duration = Duration::from_millis(query_timeout);
 
     log::debug!(
-        "query_coco_fusion: {:?}, timeout: {:?}",
+        "{}(): {:?}, timeout: {:?}",
+        function_name!(),
         query_strings,
         timeout_duration
     );
 
-    // Push all queries into futures
-    for query_source in &sources_list {
-        let query_source_type = query_source.get_type().clone();
+    let search_query = SearchQuery::new(from, size, query_strings.clone());
 
-        if let Some(query_source_to_search) = query_source_to_search {
-            // We should not search this data source
-            if &query_source_type.id != query_source_to_search {
-                continue;
-            }
+    if let Some(query_source_id) = opt_query_source_id {
+        // If this query source ID is specified, we only query this query source.
+        log::debug!(
+            "parameter [querysource={}] specified, will only query this querysource",
+            query_source_id
+        );
+
+        let query_source_trait_object_index = sources_list
+            .iter()
+            .position(|query_source| &query_source.get_type().id == query_source_id).unwrap_or_else(|| {
+              panic!("frontend code invoked {}() with parameter [querysource={}], but we do not have this query source, the states are inconsistent! Available query sources {:?}", function_name!(), query_source_id, sources_list.iter().map(|qs|qs.get_type().id).collect::<Vec<_>>());
+            });
+        let query_source_trait_object = sources_list.remove(query_source_trait_object_index);
+        let query_source = query_source_trait_object.get_type();
+
+        futures.push(same_type_futures(
+            query_source,
+            query_source_trait_object,
+            timeout_duration,
+            search_query,
+        ));
+    } else {
+        for query_source_trait_object in sources_list {
+            let query_source = query_source_trait_object.get_type().clone();
+            log::debug!("will query querysource [{}]", query_source.id);
+            futures.push(same_type_futures(
+                query_source,
+                query_source_trait_object,
+                timeout_duration,
+                search_query.clone(),
+            ));
         }
-
-        let query = SearchQuery::new(from, size, query_strings.clone());
-        let query_source_clone = query_source.clone(); // Clone Arc to avoid ownership issues
-
-        futures.push(tokio::spawn(async move {
-            // Timeout each query execution
-            timeout(timeout_duration, async {
-                query_source_clone.search(query).await
-            })
-            .await
-        }));
     }
 
     let mut total_hits = 0;
@@ -71,53 +125,61 @@ pub async fn query_coco_fusion<R: Runtime>(
     let mut all_hits: Vec<(String, QueryHits, f64)> = Vec::new();
     let mut hits_per_source: HashMap<String, Vec<(QueryHits, f64)>> = HashMap::new();
 
-    if sources_list.len() > 1 {
+    if sources_list_len > 1 {
         need_rerank = true; // If we have more than one source, we need to rerank the hits
     }
 
-    while let Some(result) = futures.next().await {
-        match result {
-            Ok(Ok(Ok(response))) => {
-                total_hits += response.total_hits;
-                let source_id = response.source.id.clone();
-
-                for (doc, score) in response.hits {
-                    log::debug!("doc: {}, {:?}, {}", doc.id, doc.title, score);
-
-                    let query_hit = QueryHits {
-                        source: Some(response.source.clone()),
-                        score,
-                        document: doc,
-                    };
-
-                    all_hits.push((source_id.clone(), query_hit.clone(), score));
-
-                    hits_per_source
-                        .entry(source_id.clone())
-                        .or_insert_with(Vec::new)
-                        .push((query_hit, score));
-                }
-            }
-            Ok(Ok(Err(err))) => {
-                log::error!("{}", err);
+    while let Some((query_source, timeout_result)) = futures.next().await {
+        match timeout_result {
+            // Ignore the `_timeout` variable as it won't provide any useful debugging information.
+            Err(_timeout) => {
+                log::warn!(
+                    "searching query source [{}] timed out, skip this request",
+                    query_source.id
+                );
                 failed_requests.push(FailedRequest {
-                    source: QuerySource {
-                        r#type: "N/A".into(),
-                        name: "N/A".into(),
-                        id: "N/A".into(),
-                    },
+                    source: query_source,
                     status: 0,
-                    error: Some(err.to_string()),
+                    error: Some("querying timed out".into()),
                     reason: None,
                 });
             }
-            Ok(Err(err)) => {
-                log::error!("{}", err);
-            }
-            // Timeout reached, skip this request
-            _ => {
-                log::debug!("timeout reached, skip this request");
-            }
+            Ok(query_result) => match query_result {
+                Ok(response) => {
+                    total_hits += response.total_hits;
+                    let source_id = response.source.id.clone();
+
+                    for (doc, score) in response.hits {
+                        log::debug!("doc: {}, {:?}, {}", doc.id, doc.title, score);
+
+                        let query_hit = QueryHits {
+                            source: Some(response.source.clone()),
+                            score,
+                            document: doc,
+                        };
+
+                        all_hits.push((source_id.clone(), query_hit.clone(), score));
+
+                        hits_per_source
+                            .entry(source_id.clone())
+                            .or_insert_with(Vec::new)
+                            .push((query_hit, score));
+                    }
+                }
+                Err(search_error) => {
+                    log::error!(
+                        "searching query source [{}] failed, error [{}]",
+                        query_source.id,
+                        search_error
+                    );
+                    failed_requests.push(FailedRequest {
+                        source: query_source,
+                        status: 0,
+                        error: Some(search_error.to_string()),
+                        reason: None,
+                    });
+                }
+            },
         }
     }
 
