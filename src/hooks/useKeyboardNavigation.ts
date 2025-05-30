@@ -1,8 +1,8 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from "react";
 
 import { useShortcutsStore } from "@/stores/shortcutsStore";
-import { isMetaOrCtrlKey, metaOrCtrlKey } from '@/utils/keyboardUtils';
-import { copyToClipboard } from "@/utils/index";
+import { isMetaOrCtrlKey, metaOrCtrlKey } from "@/utils/keyboardUtils";
+import { copyToClipboard, OpenURLWithBrowser } from "@/utils/index";
 import type { QueryHits, SearchDocument } from "@/types/search";
 import platformAdapter from "@/utils/platformAdapter";
 
@@ -17,7 +17,6 @@ interface UseKeyboardNavigationProps {
   handleItemAction: (item: SearchDocument) => void;
   isChatMode: boolean;
 }
-
 
 export function useKeyboardNavigation({
   suggests,
@@ -39,11 +38,15 @@ export function useKeyboardNavigation({
       if (e.key === "ArrowUp") {
         e.preventDefault();
         //console.log("ArrowUp pressed", selectedIndex, suggests.length);
-        setSelectedIndex((prev) => (prev === null || prev === 0) ? suggests.length - 1 : prev - 1);
+        setSelectedIndex((prev) =>
+          prev === null || prev === 0 ? suggests.length - 1 : prev - 1
+        );
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
         //console.log("ArrowDown pressed", selectedIndex, suggests.length);
-        setSelectedIndex((prev) => (prev === null || prev === suggests.length - 1) ? 0 : prev + 1);
+        setSelectedIndex((prev) =>
+          prev === null || prev === suggests.length - 1 ? 0 : prev + 1
+        );
       } else if (e.key === metaOrCtrlKey()) {
         e.preventDefault();
         if (selectedIndex !== null) {
@@ -65,17 +68,19 @@ export function useKeyboardNavigation({
         handleItemAction(item);
       }
 
-      if (
-        e.key === "Enter" &&
-        !e.shiftKey &&
-        selectedIndex !== null
-      ) {
+      if (e.key === "Enter" && !e.shiftKey && selectedIndex !== null) {
         const item = globalItemIndexMap[selectedIndex];
         if (item?.on_opened) {
-          platformAdapter.invokeBackend("open", { onOpened: item.on_opened });
-        } else {
-          copyToClipboard(item?.payload?.result?.value);
+          return platformAdapter.invokeBackend("open", {
+            onOpened: item.on_opened,
+          });
         }
+
+        if (item?.url) {
+          return OpenURLWithBrowser(item.url);
+        }
+
+        copyToClipboard(item?.payload?.result?.value);
       }
 
       if (e.key >= "0" && e.key <= "9" && showIndex && isMetaOrCtrlKey(e)) {
