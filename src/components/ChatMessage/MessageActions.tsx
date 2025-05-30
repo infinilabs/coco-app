@@ -1,5 +1,6 @@
 import { COPY_BUTTON_ID } from "@/constants";
 import { useSearchStore } from "@/stores/searchStore";
+import clsx from "clsx";
 import {
   Check,
   Copy,
@@ -14,6 +15,8 @@ interface MessageActionsProps {
   id: string;
   content: string;
   question?: string;
+  actionClassName?: string;
+  actionIconSize?: number;
   onResend?: () => void;
 }
 
@@ -23,6 +26,8 @@ export const MessageActions = ({
   id,
   content,
   question,
+  actionClassName,
+  actionIconSize,
   onResend,
 }: MessageActionsProps) => {
   const [copied, setCopied] = useState(false);
@@ -89,7 +94,7 @@ export const MessageActions = ({
   const goAskAi = useSearchStore((state) => state.goAskAi);
 
   return (
-    <div className="flex items-center gap-1 mt-2">
+    <div className={clsx("flex items-center gap-1 mt-2", actionClassName)}>
       {!isRefreshOnly && (
         <button
           id={goAskAi ? COPY_BUTTON_ID : ""}
@@ -97,9 +102,21 @@ export const MessageActions = ({
           className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
         >
           {copied ? (
-            <Check className="w-4 h-4 text-[#38C200] dark:text-[#38C200]" />
+            <Check
+              className="w-4 h-4 text-[#38C200] dark:text-[#38C200]"
+              style={{
+                width: actionIconSize,
+                height: actionIconSize,
+              }}
+            />
           ) : (
-            <Copy className="w-4 h-4 text-[#666666] dark:text-[#A3A3A3]" />
+            <Copy
+              className="w-4 h-4 text-[#666666] dark:text-[#A3A3A3]"
+              style={{
+                width: actionIconSize,
+                height: actionIconSize,
+              }}
+            />
           )}
         </button>
       )}
@@ -116,6 +133,10 @@ export const MessageActions = ({
                 ? "text-[#1990FF] dark:text-[#1990FF]"
                 : "text-[#666666] dark:text-[#A3A3A3]"
             }`}
+            style={{
+              width: actionIconSize,
+              height: actionIconSize,
+            }}
           />
         </button>
       )}
@@ -132,6 +153,10 @@ export const MessageActions = ({
                 ? "text-[#1990FF] dark:text-[#1990FF]"
                 : "text-[#666666] dark:text-[#A3A3A3]"
             }`}
+            style={{
+              width: actionIconSize,
+              height: actionIconSize,
+            }}
           />
         </button>
       )}
@@ -146,6 +171,10 @@ export const MessageActions = ({
                 ? "text-[#1990FF] dark:text-[#1990FF]"
                 : "text-[#666666] dark:text-[#A3A3A3]"
             }`}
+            style={{
+              width: actionIconSize,
+              height: actionIconSize,
+            }}
           />
         </button>
       )}
@@ -162,6 +191,10 @@ export const MessageActions = ({
                 ? "text-[#1990FF] dark:text-[#1990FF]"
                 : "text-[#666666] dark:text-[#A3A3A3]"
             }`}
+            style={{
+              width: actionIconSize,
+              height: actionIconSize,
+            }}
           />
         </button>
       )}

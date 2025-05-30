@@ -30,6 +30,9 @@ interface ChatMessageProps {
   onResend?: (value: string) => void;
   loadingStep?: Record<string, boolean>;
   hide_assistant?: boolean;
+  rootClassName?: string;
+  actionClassName?: string;
+  actionIconSize?: number;
 }
 
 export const ChatMessage = memo(function ChatMessage({
@@ -45,6 +48,9 @@ export const ChatMessage = memo(function ChatMessage({
   onResend,
   loadingStep,
   hide_assistant = false,
+  rootClassName,
+  actionClassName,
+  actionIconSize,
 }: ChatMessageProps) {
   const { t } = useTranslation();
 
@@ -144,6 +150,8 @@ export const ChatMessage = memo(function ChatMessage({
             id={message._id}
             content={messageContent || response?.message_chunk || ""}
             question={question}
+            actionClassName={actionClassName}
+            actionIconSize={actionIconSize}
             onResend={() => {
               onResend && onResend(question);
             }}
@@ -166,7 +174,8 @@ export const ChatMessage = memo(function ChatMessage({
         [isAssistant ? "justify-start" : "justify-end"],
         {
           hidden: visibleStartPage,
-        }
+        },
+        rootClassName
       )}
     >
       <div

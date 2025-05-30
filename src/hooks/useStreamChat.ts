@@ -23,7 +23,9 @@ export const useStreamChat = (options: Options) => {
 
   const unlistenRef = useRef<() => void>(noop);
   const addError = useAppStore((state) => state.addError);
-  const state = useReactive<State>({});
+  const state = useReactive<State>({
+    isTyping: true,
+  });
   const [loadingStep, setLoadingStep] = useState<Record<string, boolean>>({
     query_intent: false,
     tools: false,

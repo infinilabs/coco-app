@@ -1,10 +1,9 @@
-import { ChevronUp, Copy, Sparkles, Volume2 } from "lucide-react";
+import { ChevronUp, Sparkles } from "lucide-react";
 import { FC, useState } from "react";
 import clsx from "clsx";
 import { useStreamChat } from "@/hooks/useStreamChat";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { ChatMessage } from "../ChatMessage";
-import { COPY_BUTTON_ID } from "@/constants";
 
 interface AiSummaryProps {
   message: string;
@@ -49,7 +48,7 @@ const AiOverview: FC<AiSummaryProps> = (props) => {
           hidden: !expand,
         })}
       >
-        <div className="-my-8 -ml-11 user-select-text">
+        <div className="-ml-11 -mr-4 user-select-text">
           <ChatMessage
             key="current"
             hide_assistant
@@ -64,26 +63,18 @@ const AiOverview: FC<AiSummaryProps> = (props) => {
             {...chunkData}
             isTyping={isTyping}
             loadingStep={loadingStep}
+            rootClassName="py-0"
+            actionClassName="absolute bottom-3 left-3"
+            actionIconSize={12}
           />
         </div>
       </div>
 
       <div
-        className={clsx("flex gap-3", {
+        className={clsx("min-h-[20px]", {
           hidden: !expand || isTyping,
         })}
-      >
-        <Copy
-          className="size-3 cursor-pointer"
-          onClick={() => {
-            const copyButton = document.getElementById(COPY_BUTTON_ID);
-
-            copyButton?.click();
-          }}
-        />
-
-        <Volume2 className="size-3 cursor-pointer" />
-      </div>
+      />
     </div>
   );
 };
