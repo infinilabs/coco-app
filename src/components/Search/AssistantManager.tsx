@@ -38,16 +38,16 @@ export function useAssistantManager({
   const [assistantDetail, setAssistantDetail] = useState<any>({});
 
   const assistant_get = useCallback(async () => {
+    if (!askAI?.id) return;
     if (isTauri) {
+      if (!askAI?.querySource?.id) return;
       const res = await platformAdapter.commands("assistant_get", {
         serverId: askAI?.querySource?.id,
         assistantId: askAI?.id,
       });
       setAssistantDetail(res);
     } else {
-      const [error, res]: any = await Get(`/assistant/${askAI?.id}`, {
-        id: askAI?.id,
-      });
+      const [error, res]: any = await Get(`/assistant/${askAI?.id}`);
       if (error) {
         console.error("assistant", error);
         return;
