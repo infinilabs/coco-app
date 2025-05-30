@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAsyncEffect, useEventListener, useMount } from "ahooks";
-import { isString } from "lodash-es";
+import { isArray, isString } from "lodash-es";
 import { error } from "@tauri-apps/plugin-log";
 
 import { useAppStore } from "@/stores/appStore";
@@ -129,6 +129,8 @@ export default function Layout() {
     const result = await platformAdapter.invokeBackend<[boolean, Extension[]]>(
       "list_extensions"
     );
+
+    if (!isArray(result)) return;
 
     const disabledExtensions = result[1].filter((item) => !item.enabled);
 
