@@ -3,7 +3,6 @@ use crate::common::register::SearchSourceRegistry;
 use crate::common::search::{
     FailedRequest, MultiSourceQueryResponse, QueryHits, QuerySource, SearchQuery,
 };
-use crate::local;
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
 use std::cmp::Reverse;
@@ -20,7 +19,10 @@ pub async fn query_coco_fusion<R: Runtime>(
     query_strings: HashMap<String, String>,
     query_timeout: u64,
 ) -> Result<MultiSourceQueryResponse, SearchError> {
-    let query_keyword = query_strings.get("query").unwrap_or(&"".to_string()).clone();
+    let query_keyword = query_strings
+        .get("query")
+        .unwrap_or(&"".to_string())
+        .clone();
 
     let query_source_to_search = query_strings.get("querysource");
 
@@ -28,7 +30,6 @@ pub async fn query_coco_fusion<R: Runtime>(
 
     let sources_future = search_sources.get_sources();
     let mut futures = FuturesUnordered::new();
-    let mut sources = HashMap::new();
 
     let sources_list = sources_future.await;
 
@@ -52,8 +53,6 @@ pub async fn query_coco_fusion<R: Runtime>(
             }
         }
 
-        sources.insert(query_source_type.id.clone(), query_source_type);
-
         let query = SearchQuery::new(from, size, query_strings.clone());
         let query_source_clone = query_source.clone(); // Clone Arc to avoid ownership issues
 
@@ -62,7 +61,7 @@ pub async fn query_coco_fusion<R: Runtime>(
             timeout(timeout_duration, async {
                 query_source_clone.search(query).await
             })
-                .await
+            .await
         }));
     }
 
@@ -159,23 +158,22 @@ pub async fn query_coco_fusion<R: Runtime>(
     let mut unique_sources = HashSet::new();
     for hit in &final_hits {
         if let Some(source) = &hit.source {
-            if source.id != local::calculator::DATA_SOURCE_ID {
+            if source.id != crate::extension::built_in::calculator::DATA_SOURCE_ID {
                 unique_sources.insert(&source.id);
             }
         }
     }
 
     log::debug!(
-            "Multiple sources found: {:?}, no rerank needed",
-            unique_sources
-        );
+        "Multiple sources found: {:?}, no rerank needed",
+        unique_sources
+    );
 
     if unique_sources.len() < 1 {
         need_rerank = false; // If we have hits from multiple sources, we don't need to rerank
     }
 
     if need_rerank && final_hits.len() > 1 {
-
         // Precollect (index, title)
         let titles_to_score: Vec<(usize, &str)> = final_hits
             .iter()
@@ -184,7 +182,7 @@ pub async fn query_coco_fusion<R: Runtime>(
                 let source = hit.source.as_ref()?;
                 let title = hit.document.title.as_deref()?;
 
-                if source.id != local::calculator::DATA_SOURCE_ID {
+                if source.id != crate::extension::built_in::calculator::DATA_SOURCE_ID {
                     Some((idx, title))
                 } else {
                     None
@@ -203,7 +201,8 @@ pub async fn query_coco_fusion<R: Runtime>(
         for (idx, score) in scored_hits.into_iter().take(size as usize) {
             final_hits[idx].score = score;
         }
-    } else if final_hits.len() < size as usize {     // If we still need more hits, take the highest-scoring remaining ones
+    } else if final_hits.len() < size as usize {
+        // If we still need more hits, take the highest-scoring remaining ones
 
         let remaining_needed = size as usize - final_hits.len();
 

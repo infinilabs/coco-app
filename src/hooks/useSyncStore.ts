@@ -93,6 +93,15 @@ export const useSyncStore = () => {
   const setQuickAiAccessAssistant = useExtensionsStore((state) => {
     return state.setQuickAiAccessAssistant;
   });
+  const setAiOverviewServer = useExtensionsStore((state) => {
+    return state.setAiOverviewServer;
+  });
+  const setAiOverviewAssistant = useExtensionsStore((state) => {
+    return state.setAiOverviewAssistant;
+  });
+  const setDisabledExtensions = useExtensionsStore((state) => {
+    return state.setDisabledExtensions;
+  });
 
   useEffect(() => {
     if (!resetFixedWindow) {
@@ -174,10 +183,19 @@ export const useSyncStore = () => {
       }),
 
       platformAdapter.listenEvent("change-extensions-store", ({ payload }) => {
-        const { quickAiAccessServer, quickAiAccessAssistant } = payload;
+        const {
+          quickAiAccessServer,
+          quickAiAccessAssistant,
+          aiOverviewServer,
+          aiOverviewAssistant,
+          disabledExtensions,
+        } = payload;
 
         setQuickAiAccessServer(quickAiAccessServer);
         setQuickAiAccessAssistant(quickAiAccessAssistant);
+        setAiOverviewServer(aiOverviewServer);
+        setAiOverviewAssistant(aiOverviewAssistant);
+        setDisabledExtensions(disabledExtensions);
       }),
     ]);
 

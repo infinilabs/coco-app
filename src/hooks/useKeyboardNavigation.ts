@@ -2,8 +2,9 @@ import { useCallback, useEffect } from 'react';
 
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { isMetaOrCtrlKey, metaOrCtrlKey } from '@/utils/keyboardUtils';
-import { copyToClipboard, OpenURLWithBrowser } from "@/utils/index";
+import { copyToClipboard } from "@/utils/index";
 import type { QueryHits, SearchDocument } from "@/types/search";
+import platformAdapter from "@/utils/platformAdapter";
 
 interface UseKeyboardNavigationProps {
   suggests: QueryHits[];
@@ -67,12 +68,11 @@ export function useKeyboardNavigation({
       if (
         e.key === "Enter" &&
         !e.shiftKey &&
-        selectedIndex !== null &&
-        isMetaOrCtrlKey(e)
+        selectedIndex !== null
       ) {
         const item = globalItemIndexMap[selectedIndex];
-        if (item?.url) {
-          OpenURLWithBrowser(item?.url);
+        if (item?.on_opened) {
+          platformAdapter.invokeBackend("open", { onOpened: item.on_opened });
         } else {
           copyToClipboard(item?.payload?.result?.value);
         }
@@ -85,8 +85,8 @@ export function useKeyboardNavigation({
 
         const item = globalItemIndexMap[index];
 
-        if (item?.url) {
-          OpenURLWithBrowser(item?.url);
+        if (item?.on_opened) {
+          platformAdapter.invokeBackend("open", { onOpened: item.on_opened });
         }
       }
     },

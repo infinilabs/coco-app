@@ -14,6 +14,8 @@ import { AppTheme } from "@/types/index";
 import ErrorNotification from "@/components/Common/ErrorNotification";
 import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 import { useIconfontScript } from "@/hooks/useScript";
+import { Extension } from "@/components/Settings/Extensions";
+import { useExtensionsStore } from "@/stores/extensionsStore";
 
 export default function Layout() {
   const location = useLocation();
@@ -118,6 +120,20 @@ export default function Layout() {
   });
 
   useIconfontScript();
+
+  const setDisabledExtensions = useExtensionsStore((state) => {
+    return state.setDisabledExtensions;
+  });
+
+  useMount(async () => {
+    const result = await platformAdapter.invokeBackend<[boolean, Extension[]]>(
+      "list_extensions"
+    );
+
+    const disabledExtensions = result[1].filter((item) => !item.enabled);
+
+    setDisabledExtensions(disabledExtensions.map((item) => item.id));
+  });
 
   return (
     <>

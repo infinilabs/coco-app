@@ -113,3 +113,7 @@ export const closeHistoryPanel = () => {
     button.click();
   }
 };
+
+// export const sortByFirstLetter = <T>(list: T[], key: keyof T) => {
+//   return list.sort((a, b) => {});
+// };

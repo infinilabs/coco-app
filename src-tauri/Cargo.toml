@@ -93,6 +93,11 @@ chinese-number = "0.7"
 num2words = "1"
 tauri-plugin-log = "2"
 chrono = "0.4.41"
+serde_plain = "1.0.2"
+derive_more = { version = "2.0.1", features = ["display"] }
+anyhow = "1.0.98"
+function_name = "0.3.0"
+tauri-plugin-opener = "2"
 
 [target."cfg(target_os = \"macos\")".dependencies]
 tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }

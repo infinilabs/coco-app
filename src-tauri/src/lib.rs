@@ -1,7 +1,7 @@
 mod assistant;
 mod autostart;
 mod common;
-mod local;
+mod extension;
 mod search;
 mod server;
 mod settings;
@@ -89,6 +89,7 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_windows_version::init())
+        .plugin(tauri_plugin_opener::init())
         .plugin(set_up_tauri_logger());
 
     // Conditional compilation for macOS
@@ -142,25 +143,24 @@ pub fn run() {
             server::attachment::get_attachment,
             server::attachment::delete_attachment,
             server::transcription::transcription,
-            util::open,
             server::system_settings::get_system_settings,
             simulate_mouse_click,
-            local::get_disabled_local_query_sources,
-            local::enable_local_query_source,
-            local::disable_local_query_source,
-            local::application::get_app_list,
-            local::application::get_app_search_path,
-            local::application::get_app_metadata,
-            local::application::set_app_alias,
-            local::application::register_app_hotkey,
-            local::application::unregister_app_hotkey,
-            local::application::disable_app_search,
-            local::application::enable_app_search,
-            local::application::add_app_search_path,
-            local::application::remove_app_search_path,
+            extension::built_in::application::get_app_list,
+            extension::built_in::application::get_app_search_path,
+            extension::built_in::application::get_app_metadata,
+            extension::built_in::application::add_app_search_path,
+            extension::built_in::application::remove_app_search_path,
+            extension::list_extensions,
+            extension::enable_extension,
+            extension::disable_extension,
+            extension::set_extension_alias,
+            extension::register_extension_hotkey,
+            extension::unregister_extension_hotkey,
+            extension::is_extension_enabled,
             settings::set_allow_self_signature,
             settings::get_allow_self_signature,
-            assistant::ask_ai
+            assistant::ask_ai,
+            crate::common::document::open,
         ])
         .setup(|app| {
             let app_handle = app.handle().clone();
@@ -262,7 +262,7 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
             .await;
     }
 
-    local::start_pizza_engine_runtime();
+    extension::built_in::pizza_engine_runtime::start_pizza_engine_runtime();
 }
 
 #[tauri::command]
@@ -418,7 +418,11 @@ fn open_settings(app: &tauri::AppHandle) {
 
 #[tauri::command]
 async fn get_app_search_source<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), String> {
-    local::init_local_search_source(&app_handle).await?;
+    let (_found_invalid_extensions, extensions) = extension::list_extensions()
+        .await
+        .map_err(|e| e.to_string())?;
+    extension::init_extensions(extensions).await?;
+
     let _ = server::connector::refresh_all_connectors(&app_handle).await;
     let _ = server::datasource::refresh_all_datasources(&app_handle).await;
 

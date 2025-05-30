@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import { noop } from "lodash-es";
 
 import { ChatMessage } from "../ChatMessage";
-import { ASK_AI_CLIENT_ID, COPY_BUTTON_ID } from "@/constants";
+import { COPY_BUTTON_ID } from "@/constants";
 import { useSearchStore } from "@/stores/searchStore";
 import platformAdapter from "@/utils/platformAdapter";
 import useMessageChunkData from "@/hooks/useMessageChunkData";
@@ -97,7 +97,7 @@ const AskAi = () => {
   useMount(async () => {
     try {
       unlisten.current = await platformAdapter.listenEvent(
-        ASK_AI_CLIENT_ID,
+        "quick-ai-access-client-id",
         ({ payload }) => {
           console.log("ask_ai", JSON.parse(payload));
 
@@ -164,15 +164,12 @@ const AskAi = () => {
 
     const { serverId, assistantId } = state;
 
-    console.log("serverId", serverId);
-    console.log("assistantId", assistantId);
-
     try {
       await platformAdapter.invokeBackend("ask_ai", {
         message: askAiMessage,
         serverId,
         assistantId,
-        clientId: ASK_AI_CLIENT_ID,
+        clientId: "quick-ai-access-client-id",
       });
     } catch (error) {
       addError(String(error));

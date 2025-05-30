@@ -6,7 +6,7 @@ export interface QueryHits {
 
 export interface QuerySource {
   type: string; // coco-server/local/ etc.
-  id: string;   // coco server's id
+  id: string; // coco server's id
   name: string; // coco server's name, local computer name, etc.
 }
 
@@ -37,6 +37,7 @@ export interface SearchDocument {
   querySource?: QuerySource;
   index?: number; // Index in the current search result
   globalIndex?: number;
+  on_opened?: any;
 }
 
 export interface RichLabel {

@@ -1,4 +1,4 @@
-use super::LOCAL_QUERY_SOURCE_TYPE;
+use super::super::LOCAL_QUERY_SOURCE_TYPE;
 use crate::common::{
     document::{DataSourceReference, Document},
     error::SearchError,
@@ -116,7 +116,7 @@ impl SearchSource for CalculatorSource {
             });
         };
 
-        // Trim the leading and tailing whitespace so that our later if condition 
+        // Trim the leading and tailing whitespace so that our later if condition
         // will only be evaluated against non-whitespace characters.
         let query_string = query_string.trim();
 
@@ -146,7 +146,7 @@ impl SearchSource for CalculatorSource {
                         r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
                         name: Some(DATA_SOURCE_ID.into()),
                         id: Some(DATA_SOURCE_ID.into()),
-                        icon: None,
+                        icon: Some(String::from("font_Calculator")),
                     }),
                     ..Default::default()
                 };

@@ -35,6 +35,9 @@ importers:
       '@tauri-apps/plugin-log':
         specifier: ~2.4.0
         version: 2.4.0
+      '@tauri-apps/plugin-opener':
+        specifier: ^2.2.7
+        version: 2.2.7
       '@tauri-apps/plugin-os':
         specifier: ^2.2.1
         version: 2.2.1
@@ -140,6 +143,9 @@ importers:
       tauri-plugin-windows-version-api:
         specifier: ^2.0.0
         version: 2.0.0
+      type-fest:
+        specifier: ^4.41.0
+        version: 4.41.0
       use-debounce:
         specifier: ^10.0.4
         version: 10.0.4(react@18.3.1)
@@ -1255,6 +1261,9 @@ packages:
 
   '@tauri-apps/plugin-log@2.4.0':
     resolution: {integrity: sha512-j7yrDtLNmayCBOO2esl3aZv9jSXy2an8MDLry3Ys9ZXerwUg35n1Y2uD8HoCR+8Ng/EUgx215+qOUfJasjYrHw==}
+
+  '@tauri-apps/plugin-opener@2.2.7':
+    resolution: {integrity: sha512-uduEyvOdjpPOEeDRrhwlCspG/f9EQalHumWBtLBnp3fRp++fKGLqDOyUhSIn7PzX45b/rKep//ZQSAQoIxobLA==}
 
   '@tauri-apps/plugin-os@2.2.1':
     resolution: {integrity: sha512-cNYpNri2CCc6BaNeB6G/mOtLvg8dFyFQyCUdf2y0K8PIAKGEWdEcu8DECkydU2B+oj4OJihDPD2de5K6cbVl9A==}
@@ -4634,6 +4643,10 @@ snapshots:
       '@tauri-apps/api': 2.5.0
 
   '@tauri-apps/plugin-log@2.4.0':
+    dependencies:
+      '@tauri-apps/api': 2.5.0
+
+  '@tauri-apps/plugin-opener@2.2.7':
     dependencies:
       '@tauri-apps/api': 2.5.0
 

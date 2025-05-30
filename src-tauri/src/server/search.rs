@@ -1,4 +1,4 @@
-use crate::common::document::Document;
+use crate::common::document::{Document, OnOpened};
 use crate::common::error::SearchError;
 use crate::common::http::get_response_body_text;
 use crate::common::search::{QueryHits, QueryResponse, QuerySource, SearchQuery, SearchResponse};
@@ -45,7 +45,7 @@ impl DocumentsSizedCollector {
         }
     }
 
-    fn documents(self) -> impl ExactSizeIterator<Item=Document> {
+    fn documents(self) -> impl ExactSizeIterator<Item = Document> {
         self.docs.into_iter().map(|(_, doc, _)| doc)
     }
 
@@ -103,11 +103,7 @@ impl SearchSource for CocoSearchSource {
             query_args.insert(key, JsonValue::String(value));
         }
 
-        let response = HttpClient::get(
-            &self.server.id,
-            &url,
-            Some(query_args),
-        )
+        let response = HttpClient::get(&self.server.id, &url, Some(query_args))
             .await
             .map_err(|e| SearchError::HttpError(format!("{}", e)))?;
 
@@ -115,7 +111,6 @@ impl SearchSource for CocoSearchSource {
         let response_body = get_response_body_text(response)
             .await
             .map_err(|e| SearchError::ParseError(e))?;
-
 
         // Check if the response body is empty
         if !response_body.is_empty() {
@@ -125,14 +120,21 @@ impl SearchSource for CocoSearchSource {
 
             // Process the parsed response
             total_hits = parsed.hits.total.value as usize;
-            hits = parsed
-                .hits
-                .hits
-                .into_iter()
-                .map(|hit| (hit._source, hit._score.unwrap_or(0.0))) // Default _score to 0.0 if None
-                .collect();
-        }
+            for hit in parsed.hits.hits {
+                let mut document = hit._source;
+                // Default _score to 0.0 if None
+                let score = hit._score.unwrap_or(0.0);
 
+                let on_opened = document
+                    .url
+                    .as_ref()
+                    .map(|url| OnOpened::Document { url: url.clone() });
+                // Set the `on_opened` field as it won't be returned from Coco server
+                document.on_opened = on_opened;
+
+                hits.push((document, score));
+            }
+        }
 
         // Return the final result
         Ok(QueryResponse {

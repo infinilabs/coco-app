@@ -67,7 +67,6 @@ export function useAssistantManager({
 
     if (!selectedAssistant && isEmpty(value)) return;
 
-    assistant_get();
     changeInput("");
     setAskAiMessage(!goAskAi && selectedAssistant ? "" : value);
     setGoAskAi(true);
@@ -85,6 +84,8 @@ export function useAssistantManager({
     }
 
     if (key === "Tab" && !isChatMode) {
+      assistant_get();
+
       return handleAskAi(e);
     }
 

@@ -1,6 +1,6 @@
-// import { Select, SelectProps } from "@headlessui/react";
 import { Select, SelectProps } from "@headlessui/react";
 import clsx from "clsx";
+import { isArray } from "lodash-es";
 import { ChevronDownIcon } from "lucide-react";
 import { FC } from "react";
 
@@ -24,11 +24,11 @@ const SettingsSelectPro: FC<SettingsSelectProProps> = (props) => {
   } = props;
 
   const renderOptions = () => {
-    if (data) {
+    if (isArray(data)) {
       return data.map((item) => {
         return (
-          <option key={item[valueField]} value={item[valueField]}>
-            {item[labelField]}
+          <option key={item?.[valueField]} value={item?.[valueField]}>
+            {item?.[labelField]}
           </option>
         );
       });

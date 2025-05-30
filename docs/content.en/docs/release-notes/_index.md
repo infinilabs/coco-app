@@ -111,6 +111,8 @@ Information about release notes of Coco Server is provided here.
 - feat: data sources support displaying customized icons #432
 - feat: add shortcut key conflict hint and reset function #442
 - feat: updated to include error message #465
+- feat: support third party extensions #572
+- feat: support ai overview #572
 
 ### Bug fix
 

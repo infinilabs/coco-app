@@ -67,7 +67,6 @@ fn get_linux_desktop_environment() -> Option<LinuxDesktopEnvironment> {
 //
 // tauri_plugin_shell::open() is deprecated, but we still use it.
 #[allow(deprecated)]
-#[tauri::command]
 pub async fn open<R: Runtime>(app_handle: AppHandle<R>, path: String) -> Result<(), String> {
     if cfg!(target_os = "linux") {
         let borrowed_path = Path::new(&path);

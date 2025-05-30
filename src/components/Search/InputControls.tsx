@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { Brain } from "lucide-react";
+import { Brain, Sparkles } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
@@ -14,6 +14,8 @@ import { useConnectStore } from "@/stores/connectStore";
 import VisibleKey from "@/components/Common/VisibleKey";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useAppStore } from "@/stores/appStore";
+import { useSearchStore } from "@/stores/searchStore";
+import { useExtensionsStore } from "@/stores/extensionsStore";
 // import InputExtra from "./InputExtra";
 // import AiSummaryIcon from "@/components/Common/Icons/AiSummaryIcon";
 
@@ -205,6 +207,16 @@ const InputControls = ({
     [assistantConfig]
   );
 
+  const enabledAiOverview = useSearchStore((state) => {
+    return state.enabledAiOverview;
+  });
+  const setEnabledAiOverview = useSearchStore((state) => {
+    return state.setEnabledAiOverview;
+  });
+  const disabledExtensions = useExtensionsStore((state) => {
+    return state.disabledExtensions;
+  });
+
   return (
     <div
       data-tauri-drag-region
@@ -286,7 +298,29 @@ const InputControls = ({
         </div>
       ) : (
         <div data-tauri-drag-region className="w-28 flex gap-2 relative">
-          {/* <AiSummaryIcon color={"#881c94"} /> */}
+          {!disabledExtensions.includes("AIOverview") && (
+            <div
+              className={clsx(
+                "inline-flex items-center gap-1 px-2 py-1 rounded-full hover:!text-[#881c94] cursor-pointer transition",
+                [
+                  enabledAiOverview
+                    ? "text-[#881c94]"
+                    : "text-[#333] dark:text-[#d8d8d8]",
+                ],
+                {
+                  "bg-[#881C94]/20 dark:bg-[#202126]": enabledAiOverview,
+                }
+              )}
+              onClick={() => {
+                setEnabledAiOverview(!enabledAiOverview);
+              }}
+            >
+              <Sparkles className="size-4" />
+              <span className={clsx("text-xs", { hidden: !enabledAiOverview })}>
+                AI Overview
+              </span>
+            </div>
+          )}
         </div>
       )}
 
