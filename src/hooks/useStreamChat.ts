@@ -49,7 +49,6 @@ export const useStreamChat = (options: Options) => {
         ({ payload }) => {
           console.log(clientId, JSON.parse(payload));
 
-          state.isTyping = true;
 
           const chunkData = JSON.parse(payload);
 
@@ -62,6 +61,16 @@ export const useStreamChat = (options: Options) => {
           if (state.sessionId !== chunkData.session_id) {
             return;
           }
+
+          // If the chunk data does not contain a message_chunk, we ignore it
+          console.log(11111111, chunkData.message_chunk);
+          if (!chunkData.message_chunk) {
+            return;
+          }
+
+          console.log(2222222, chunkData.message_chunk);
+
+          state.isTyping = true;
 
           setLoadingStep(() => ({
             query_intent: false,

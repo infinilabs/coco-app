@@ -80,6 +80,7 @@ export default function ChatInput({
 
   const showTooltip = useAppStore((state) => state.showTooltip);
   const setBlurred = useAppStore((state) => state.setBlurred);
+  const isTauri = useAppStore((state) => state.isTauri);
 
   const { sourceData, goAskAi } = useSearchStore();
 
@@ -227,6 +228,7 @@ export default function ChatInput({
     )} */}
 
       {!isChatMode &&
+        isTauri &&
         !goAskAi &&
         askAI &&
         !disabledExtensions.includes("QuickAIAccess") && (

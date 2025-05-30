@@ -57,6 +57,8 @@ export function useAssistantManager({
   }, [askAI]);
 
   const handleAskAi = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (!isTauri) return;
+    
     askAIRef.current = cloneDeep(askAI);
 
     if (!askAIRef.current) return;
@@ -83,7 +85,7 @@ export function useAssistantManager({
       return setGoAskAi(false);
     }
 
-    if (key === "Tab" && !isChatMode) {
+    if (key === "Tab" && !isChatMode && isTauri) {
       assistant_get();
 
       return handleAskAi(e);

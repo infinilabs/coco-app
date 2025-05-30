@@ -207,16 +207,9 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     async openExternal(url) {
-      const { openUrl, openPath } = await import("@tauri-apps/plugin-opener");
-      const { metadata } = await import("tauri-plugin-fs-pro-api");
+      const { open } = await import("@tauri-apps/plugin-shell");
 
-      const { isAbsolute } = await metadata(url, { omitSize: true });
-
-      if (isAbsolute) {
-        return openPath(url);
-      }
-
-      return openUrl(url);
+      open(url);
     },
 
     isWindows10,

@@ -298,7 +298,7 @@ const InputControls = ({
         </div>
       ) : (
         <div data-tauri-drag-region className="w-28 flex gap-2 relative">
-          {!disabledExtensions.includes("AIOverview") && (
+          {!disabledExtensions.includes("AIOverview") && isTauri && (
             <div
               className={clsx(
                 "inline-flex items-center gap-1 px-2 py-1 rounded-full hover:!text-[#881c94] cursor-pointer transition",

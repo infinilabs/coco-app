@@ -101,7 +101,7 @@ const AskAi = () => {
         ({ payload }) => {
           console.log("ask_ai", JSON.parse(payload));
 
-          setIsTyping(true);
+          
 
           const chunkData = JSON.parse(payload);
 
@@ -114,6 +114,13 @@ const AskAi = () => {
           if (sessionIdRef.current !== chunkData.session_id) {
             return;
           }
+
+          // If the chunk data does not contain a message_chunk, we ignore it
+          if (!chunkData.message_chunk) {
+            return;
+          }
+
+          setIsTyping(true);
 
           setLoadingStep(() => ({
             query_intent: false,

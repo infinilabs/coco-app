@@ -71,11 +71,6 @@
     "process:default",
     "updater:default",
     "windows-version:default",
-    "log:default",
-    "opener:default",
-    {
-      "identifier": "opener:allow-open-path",
-      "allow": [{ "path": "**/*" }]
-    }
+    "log:default"
   ]
 }

@@ -96,6 +96,7 @@ export function useSearch() {
 
     if (
       searchInput.length > 10 &&
+      isTauri &&
       enabledAiOverview &&
       aiOverviewServer &&
       aiOverviewAssistant &&
