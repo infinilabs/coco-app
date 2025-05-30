@@ -143,7 +143,7 @@ fn get_default_server() -> Server {
         profile: None,
         auth_provider: AuthProvider {
             sso: Sso {
-                url: "https://coco.infini.cloud/sso/login/".to_string(),
+                url: "https://coco.infini.cloud/sso/login/cloud?provider=coco-cloud&product=coco".to_string(),
             },
         },
         priority: 0,
