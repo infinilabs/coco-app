@@ -91,7 +91,7 @@ export function useAssistantManager({
       return handleAskAi(e);
     }
 
-    if (key === "Enter" && !shiftKey) {
+    if (key === "Enter" && !shiftKey && !isChatMode && isTauri) {
       if (goAskAi) {
         return handleAskAi(e);
       }
