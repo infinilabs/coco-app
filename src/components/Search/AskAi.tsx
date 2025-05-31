@@ -182,7 +182,7 @@ const AskAi = () => {
     } catch (error) {
       addError(String(error));
     }
-  }, [askAiMessage, state.serverId, state.assistantId]);
+  }, [askAiMessage]);
 
   useKeyPress("enter", async (event) => {
     const { metaKey, ctrlKey } = event;
