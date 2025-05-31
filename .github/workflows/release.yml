@@ -91,6 +91,18 @@ jobs:
       - name: Install app dependencies and build web
         run: pnpm install --frozen-lockfile
 
+      - name: Set up SSH agent for private repository clone
+        if: matrix.platform != 'i686-pc-windows-msvc'
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add Git server to known hosts
+        if: matrix.platform != 'i686-pc-windows-msvc'
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
       - name: Pizza engine features setup
         if: matrix.platform != 'i686-pc-windows-msvc'
         run: |
