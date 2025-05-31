@@ -187,6 +187,7 @@ pub async fn send_message<R: Runtime>(
         .await
         .map_err(|e| format!("Error cancel session: {}", e))?;
 
+
     common::http::get_response_body_text(response).await
 }
 
@@ -407,6 +408,11 @@ pub async fn ask_ai<R: Runtime>(
         Some(reqwest::Body::from(body.to_string())),
     )
         .await?;
+
+    if response.status() == 429 {
+        log::warn!("Rate limit exceeded for assistant: {}", &assistant_id);
+        return Ok(());
+    }
 
     if !response.status().is_success() {
         return Err(format!("Request Failed: {}", response.status()));
