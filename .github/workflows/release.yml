@@ -103,10 +103,12 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan github.com >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
+
       - name: Pizza engine features setup
         if: matrix.target != 'i686-pc-windows-msvc'
         run: |
           make add-dep-pizza-engine
+          rustup target add ${{ matrix.target}} --toolchain nightly-2025-02-28 
 
       - name: Build the app with ${{ matrix.platform }}
         uses: tauri-apps/tauri-action@v0
