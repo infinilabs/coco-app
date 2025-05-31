@@ -92,25 +92,25 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Set up SSH agent for private repository clone
-        if: matrix.platform != 'i686-pc-windows-msvc'
+        if: matrix.target != 'i686-pc-windows-msvc'
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Add Git server to known hosts
-        if: matrix.platform != 'i686-pc-windows-msvc'
+        if: matrix.platform != 'windows-latest'
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan github.com >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
       - name: Pizza engine features setup
-        if: matrix.platform != 'i686-pc-windows-msvc'
+        if: matrix.target != 'i686-pc-windows-msvc'
         run: |
           make add-dep-pizza-engine
 
       - name: Build the app with ${{ matrix.platform }}
         uses: tauri-apps/tauri-action@v0
-        if: matrix.platform != 'i686-pc-windows-msvc'
+        if: matrix.target != 'i686-pc-windows-msvc'
         env:
           CI: false
           PLATFORM: ${{ matrix.platform }}
@@ -133,7 +133,7 @@ jobs:
 
       - name: Build the app with ${{ matrix.platform }} (windows i686 only)
         uses: tauri-apps/tauri-action@v0
-        if: matrix.platform == 'i686-pc-windows-msvc'
+        if: matrix.target == 'i686-pc-windows-msvc'
         env:
           CI: false
           PLATFORM: ${{ matrix.platform }}
