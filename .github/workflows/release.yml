@@ -91,49 +91,8 @@ jobs:
       - name: Install app dependencies and build web
         run: pnpm install --frozen-lockfile
 
-      - name: Set up SSH agent for private repository clone
-        if: matrix.target != 'i686-pc-windows-msvc'
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Add Git server to known hosts
-        if: matrix.platform != 'windows-latest'
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
-      - name: Pizza engine features setup
-        if: matrix.target != 'i686-pc-windows-msvc'
-        run: |
-          make add-dep-pizza-engine
-
-      - name: Build the app with ${{ matrix.platform }}
-        uses: tauri-apps/tauri-action@v0
-        if: matrix.target != 'i686-pc-windows-msvc'
-        env:
-          CI: false
-          PLATFORM: ${{ matrix.platform }}
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ""
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        with:
-          tagName: ${{ github.ref_name }}
-          releaseName: Coco ${{ needs.create-release.outputs.APP_VERSION }}
-          releaseBody: ""
-          releaseDraft: true
-          prerelease: false
-          args: --target ${{ matrix.target }} --features use_pizza_engine
-
       - name: Build the app with ${{ matrix.platform }} (windows i686 only)
         uses: tauri-apps/tauri-action@v0
-        if: matrix.target == 'i686-pc-windows-msvc'
         env:
           CI: false
           PLATFORM: ${{ matrix.platform }}
