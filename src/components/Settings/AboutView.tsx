@@ -44,7 +44,7 @@ export default function AboutView() {
       </div>
       <div className="mt-8 text-sm text-gray-500 dark:text-gray-400">
         {t("settings.about.version", {
-          version: process.env.VERSION || "v1.0.0",
+          version: "v0.5.2",
         })}
       </div>
       <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
