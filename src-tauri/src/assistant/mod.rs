@@ -184,8 +184,8 @@ pub async fn send_message<R: Runtime>(
         query_params,
         Some(body),
     )
-    .await
-    .map_err(|e| format!("Error cancel session: {}", e))?;
+        .await
+        .map_err(|e| format!("Error cancel session: {}", e))?;
 
     common::http::get_response_body_text(response).await
 }
@@ -227,8 +227,8 @@ pub async fn update_session_chat(
         None,
         Some(reqwest::Body::from(serde_json::to_string(&body).unwrap())),
     )
-    .await
-    .map_err(|e| format!("Error updating session: {}", e))?;
+        .await
+        .map_err(|e| format!("Error updating session: {}", e))?;
 
     Ok(response.status().is_success())
 }
@@ -256,8 +256,8 @@ pub async fn assistant_search<R: Runtime>(
         None,
         Some(reqwest::Body::from(body.to_string())),
     )
-    .await
-    .map_err(|e| format!("Error searching assistants: {}", e))?;
+        .await
+        .map_err(|e| format!("Error searching assistants: {}", e))?;
 
     response
         .json::<Value>()
@@ -276,8 +276,8 @@ pub async fn assistant_get<R: Runtime>(
         &format!("/assistant/{}", assistant_id),
         None, // headers
     )
-    .await
-    .map_err(|e| format!("Error getting assistant: {}", e))?;
+        .await
+        .map_err(|e| format!("Error getting assistant: {}", e))?;
 
     response
         .json::<Value>()
@@ -317,7 +317,7 @@ pub async fn assistant_get_multi<R: Runtime>(
                 &path,
                 None, // headers
             )
-            .await;
+                .await;
             match res_response {
                 Ok(response) => response
                     .json::<serde_json::Value>()
@@ -367,6 +367,21 @@ pub async fn assistant_get_multi<R: Runtime>(
     ))
 }
 
+use regex::Regex;
+/// Remove all `"icon": "..."` fields from a JSON string
+pub fn remove_icon_fields(json: &str) -> String {
+    // Regex to match `"icon": "..."` fields, including base64 or escaped strings
+    let re = Regex::new(r#""icon"\s*:\s*"[^"]*"(,?)"#).unwrap();
+    // Replace with empty string, or just remove trailing comma if needed
+    re.replace_all(json, |caps: &regex::Captures| {
+        if &caps[1] == "," {
+            "".to_string() // keep comma removal logic safe
+        } else {
+            "".to_string()
+        }
+    }).to_string()
+}
+
 #[tauri::command]
 pub async fn ask_ai<R: Runtime>(
     app_handle: AppHandle<R>,
@@ -375,7 +390,9 @@ pub async fn ask_ai<R: Runtime>(
     assistant_id: String,
     client_id: String,
 ) -> Result<(), String> {
-    let body = serde_json::json!({ "message": message });
+    let cleaned = remove_icon_fields(message.as_str());
+
+    let body = serde_json::json!({ "message": cleaned });
 
     let path = format!("/assistant/{}/_ask", assistant_id);
 
@@ -389,7 +406,7 @@ pub async fn ask_ai<R: Runtime>(
         None,
         Some(reqwest::Body::from(body.to_string())),
     )
-    .await?;
+        .await?;
 
     if !response.status().is_success() {
         return Err(format!("Request Failed: {}", response.status()));
