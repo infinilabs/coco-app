@@ -105,10 +105,14 @@ jobs:
           chmod 600 ~/.ssh/known_hosts
 
       - name: Pizza engine features setup
-        if: matrix.target != 'i686-pc-windows-msvc'
         run: |
-          make add-dep-pizza-engine
-          rustup target add ${{ matrix.target}} --toolchain nightly-2025-02-28 
+          if [[ ${{ matrix.target }} == "i686-pc-windows-msvc" ]]; then
+             rustup target add i686-pc-windows-msvc --toolchain stable
+          else
+            make add-dep-pizza-engine-linux
+            rustup target add ${{ matrix.target}} --toolchain nightly-2025-02-28
+          fi
+          
 
       - name: Build the app with ${{ matrix.platform }}
         uses: tauri-apps/tauri-action@v0
