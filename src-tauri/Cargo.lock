@@ -847,6 +847,7 @@ dependencies = [
  "ordered-float",
  "pizza-common",
  "plist",
+ "regex",
  "reqwest",
  "serde",
  "serde_json",
