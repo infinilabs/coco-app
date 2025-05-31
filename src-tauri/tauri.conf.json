@@ -94,7 +94,7 @@
       "icons/StoreLogo.png"
     ],
     "macOS": {
-      "minimumSystemVersion": "10.0",
+      "minimumSystemVersion": "10.12",
       "hardenedRuntime": true,
       "dmg": {
         "appPosition": {

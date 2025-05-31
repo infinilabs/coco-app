@@ -32,7 +32,7 @@ fn same_type_futures(
     timeout_duration: Duration,
     search_query: SearchQuery,
 ) -> impl Future<
-    Output = (
+    Output=(
         QuerySource,
         Result<Result<QueryResponse, SearchError>, Elapsed>,
     ),
@@ -44,7 +44,7 @@ fn same_type_futures(
             timeout(timeout_duration, async {
                 query_source_trait_object.search(search_query).await
             })
-            .await,
+                .await,
         )
     }
 }
@@ -95,8 +95,8 @@ pub async fn query_coco_fusion<R: Runtime>(
         let query_source_trait_object_index = sources_list
             .iter()
             .position(|query_source| &query_source.get_type().id == query_source_id).unwrap_or_else(|| {
-              panic!("frontend code invoked {}() with parameter [querysource={}], but we do not have this query source, the states are inconsistent! Available query sources {:?}", function_name!(), query_source_id, sources_list.iter().map(|qs|qs.get_type().id).collect::<Vec<_>>());
-            });
+            panic!("frontend code invoked {}() with parameter [querysource={}], but we do not have this query source, the states are inconsistent! Available query sources {:?}", function_name!(), query_source_id, sources_list.iter().map(|qs| qs.get_type().id).collect::<Vec<_>>());
+        });
         let query_source_trait_object = sources_list.remove(query_source_trait_object_index);
         let query_source = query_source_trait_object.get_type();
 
@@ -137,12 +137,12 @@ pub async fn query_coco_fusion<R: Runtime>(
                     "searching query source [{}] timed out, skip this request",
                     query_source.id
                 );
-                failed_requests.push(FailedRequest {
-                    source: query_source,
-                    status: 0,
-                    error: Some("querying timed out".into()),
-                    reason: None,
-                });
+                // failed_requests.push(FailedRequest {
+                //     source: query_source,
+                //     status: 0,
+                //     error: Some("querying timed out".into()),
+                //     reason: None,
+                // });
             }
             Ok(query_result) => match query_result {
                 Ok(response) => {
