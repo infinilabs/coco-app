@@ -100,9 +100,6 @@ export function useSearch() {
       );
     });
 
-    console.log("aiOverviewCharLen", aiOverviewCharLen);
-    console.log("aiOverviewDelay", aiOverviewDelay);
-
     if (
       searchInput.length >= aiOverviewCharLen &&
       isTauri &&
