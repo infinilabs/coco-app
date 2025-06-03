@@ -78,6 +78,7 @@ export const AssistantFetcher = ({
 
         response = await platformAdapter.commands("assistant_search", body);
       } else {
+        body.serverId = undefined;
         const [error, res] = await Post(`/assistant/_search`, body);
 
         if (error) {
