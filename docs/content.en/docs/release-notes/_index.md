@@ -7,11 +7,17 @@ title: "Release Notes"
 
 Information about release notes of Coco Server is provided here.
 
-## Latest (In development)  
-### ❌ Breaking changes  
-### 🚀 Features  
-### 🐛 Bug fix  
-### ✈️ Improvements  
+## Latest (In development)
+
+### ❌ Breaking changes
+
+### 🚀 Features
+
+- feat: ai overview support is enabled with shortcut #597
+
+### 🐛 Bug fix
+
+### ✈️ Improvements
 
 ## 0.5.1 (2025-05-31)
 

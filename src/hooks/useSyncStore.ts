@@ -108,6 +108,7 @@ export const useSyncStore = () => {
   const setAiOverviewDelay = useExtensionsStore((state) => {
     return state.setAiOverviewDelay;
   });
+  const setAiOverview = useShortcutsStore((state) => state.setAiOverview);
 
   useEffect(() => {
     if (!resetFixedWindow) {
@@ -137,7 +138,9 @@ export const useSyncStore = () => {
           fixedWindow,
           serviceList,
           external,
+          aiOverview,
         } = payload;
+
         setModifierKey(modifierKey);
         setModeSwitch(modeSwitch);
         setReturnToInput(returnToInput);
@@ -154,6 +157,7 @@ export const useSyncStore = () => {
         setFixedWindow(fixedWindow);
         setServiceList(serviceList);
         setExternal(external);
+        setAiOverview(aiOverview);
       }),
 
       platformAdapter.listenEvent("change-startup-store", ({ payload }) => {

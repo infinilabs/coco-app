@@ -43,6 +43,8 @@ export type IShortcutsStore = {
   setExternal: (external: string) => void;
   resetFixedWindow: boolean;
   setResetFixedWindow: (resetFixedWindow: boolean) => void;
+  aiOverview: string;
+  setAiOverview: (aiOverview: string) => void;
 };
 
 export const INITIAL_MODE_SWITCH = "T";
@@ -60,6 +62,7 @@ export const INITIAL_NEW_SESSION = "N";
 export const INITIAL_FIXED_WINDOW = "P";
 export const INITIAL_SERVICE_LIST = "S";
 export const INITIAL_EXTERNAL = "E";
+export const INITIAL_AI_OVERVIEW = "O";
 
 export const useShortcutsStore = create<IShortcutsStore>()(
   persist(
@@ -114,6 +117,8 @@ export const useShortcutsStore = create<IShortcutsStore>()(
       setResetFixedWindow: (resetFixedWindow) => {
         return set({ resetFixedWindow });
       },
+      aiOverview: INITIAL_AI_OVERVIEW,
+      setAiOverview: (aiOverview) => set({ aiOverview }),
     }),
     {
       name: "shortcuts-store",

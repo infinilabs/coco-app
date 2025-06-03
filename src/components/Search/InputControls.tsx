@@ -224,6 +224,7 @@ const InputControls = ({
   const aiOverviewAssistant = useExtensionsStore((state) => {
     return state.aiOverviewAssistant;
   });
+  const aiOverviewShortcut = useShortcutsStore((state) => state.aiOverview);
 
   return (
     <div
@@ -326,7 +327,15 @@ const InputControls = ({
                   setEnabledAiOverview(!enabledAiOverview);
                 }}
               >
-                <Sparkles className="size-4" />
+                <VisibleKey
+                  shortcut={aiOverviewShortcut}
+                  onKeyPress={() => {
+                    setEnabledAiOverview(!enabledAiOverview);
+                  }}
+                >
+                  <Sparkles className="size-4" />
+                </VisibleKey>
+
                 <span
                   className={clsx("text-xs", { hidden: !enabledAiOverview })}
                 >

@@ -22,6 +22,7 @@ import {
   INITIAL_SERVICE_LIST,
   INITIAL_EXTERNAL,
   useShortcutsStore,
+  INITIAL_AI_OVERVIEW,
 } from "@/stores/shortcutsStore";
 import { ModifierKey } from "@/types/index";
 import platformAdapter from "@/utils/platformAdapter";
@@ -87,6 +88,8 @@ const Shortcuts = () => {
   const external = useShortcutsStore((state) => state.external);
   const setExternal = useShortcutsStore((state) => state.setExternal);
   const addError = useAppStore((state) => state.addError);
+  const aiOverview = useShortcutsStore((state) => state.aiOverview);
+  const setAiOverview = useShortcutsStore((state) => state.setAiOverview);
 
   useEffect(() => {
     const unlisten = useShortcutsStore.subscribe((state) => {
@@ -231,6 +234,15 @@ const Shortcuts = () => {
       setValue: setExternal,
       reset: () => {
         setExternal(INITIAL_EXTERNAL);
+      },
+    },
+    {
+      title: "settings.advanced.shortcuts.aiOverview.title",
+      description: "settings.advanced.shortcuts.aiOverview.description",
+      value: aiOverview,
+      setValue: setAiOverview,
+      reset: () => {
+        setAiOverview(INITIAL_AI_OVERVIEW);
       },
     },
   ];

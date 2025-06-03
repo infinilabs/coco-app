@@ -150,6 +150,10 @@
         "hits": {
           "isSystem": "该快捷键已被系统保留，请选择其他按键。",
           "isUse": "该快捷键已被占用，请选择其他按键。"
+        },
+        "aiOverview": {
+          "title": "AI 总结",
+          "description": "在搜索模式下启用 AI 总结的快捷按键。"
         }
       },
       "connect": {
