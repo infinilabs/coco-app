@@ -119,6 +119,7 @@ const InputControls = ({
           options: body,
         });
       } else {
+        body.id = undefined;
         const [error, res]: any = await Post("/datasource/_search", body);
         if (error) {
           console.error("_search", error);
@@ -185,6 +186,7 @@ const InputControls = ({
           body
         );
       } else {
+        body.id = undefined;
         const [error, res]: any = await Post("/mcp_server/_search", body);
         if (error) {
           console.error("_search", error);
