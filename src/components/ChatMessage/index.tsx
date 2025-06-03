@@ -65,16 +65,15 @@ export const ChatMessage = memo(function ChatMessage({
   useEffect(() => {
     if (assistant_item) {
       setAssistant(assistant_item);
-    } else {
-      let target = currentAssistant;
-      if (isAssistant && assistant_id && Array.isArray(assistantList)) {
-        const found = assistantList.find((item) => item._id === assistant_id);
-        if (found) {
-          target = found;
-        }
-      }
-      setAssistant(target);
+      return;
     }
+    
+    if (isAssistant && assistant_id && Array.isArray(assistantList)) {
+      setAssistant(assistantList.find(item => item._id === assistant_id) ?? {});
+      return;
+    }
+    
+    setAssistant(currentAssistant);
   }, [
     isAssistant,
     assistant_item,
