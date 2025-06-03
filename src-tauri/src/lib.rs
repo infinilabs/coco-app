@@ -585,6 +585,12 @@ fn set_up_tauri_logger() -> TauriPlugin<tauri::Wry> {
         builder
     }
 
+    // When running the built binary, set `COCO_LOG` to `coco_lib=trace` to capture all logs
+    // that come from Coco in the log file, which helps with debugging.
+    if !tauri::is_dev() {
+        std::env::set_var("COCO_LOG", "coco_lib=trace");
+    }
+
     let mut builder = tauri_plugin_log::Builder::new();
     builder = builder.format(|out, message, record| {
         let now = chrono::Local::now().format("%m-%d %H:%M:%S");
