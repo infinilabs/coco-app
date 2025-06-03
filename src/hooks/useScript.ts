@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 const useScript = (src: string, onError?: () => void) => {
   useEffect(() => {
     if (document.querySelector(`script[src="${src}"]`)) {
-      return; // Prevent duplicate script loading
+      return;
     }
 
     const script = document.createElement("script");
@@ -12,7 +12,8 @@ const useScript = (src: string, onError?: () => void) => {
 
     script.onerror = () => {
       console.error(`Failed to load script: ${src}`);
-      if (onError) onError();
+
+      onError?.();
     };
 
     document.body.appendChild(script);
@@ -26,23 +27,8 @@ const useScript = (src: string, onError?: () => void) => {
 export default useScript;
 
 export const useIconfontScript = () => {
-  const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
-
-  const [_useLocalFallback, setUseLocalFallback] = useState(false);
-
-  let baseURL = appStore.state?.endpoint_http;
-  if (!baseURL || baseURL === "undefined") {
-    baseURL = "";
-  }
-
-  useScript("/assets/fonts/icons/iconfont.js");
-
-  useScript(`${baseURL}/assets/fonts/icons/iconfont.js`, () => {
-    console.log(
-      "Remote iconfont loading failed, falling back to local resource"
-    );
-    setUseLocalFallback(true);
-  });
-
-  useScript("/assets/fonts/icons/extension.js");
+  // Coco Server Icons
+  useScript("https://at.alicdn.com/t/c/font_4878526_cykw3et0ezd.js");
+  // Coco App Icons
+  useScript("https://at.alicdn.com/t/c/font_4934333_gc55rwkkq65.js");
 };
