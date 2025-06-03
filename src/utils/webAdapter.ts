@@ -48,7 +48,7 @@ export const createWebAdapter = (): WebPlatformAdapter => {
 
     async listenEvent(event, _callback) {
       console.log("Web mode simulated event listen", event);
-      return () => {};
+      return () => { };
     },
 
     async setAlwaysOnTop(isPinned) {
@@ -110,7 +110,7 @@ export const createWebAdapter = (): WebPlatformAdapter => {
 
     async listenThemeChanged() {
       console.log("Web mode simulated theme change listener");
-      return () => {};
+      return () => { };
     },
 
     async getWebviewWindow() {
@@ -157,7 +157,7 @@ export const createWebAdapter = (): WebPlatformAdapter => {
 
     async listenWindowEvent(event, _callback) {
       console.log("Web mode simulated listen window event:", event);
-      return () => {};
+      return () => { };
     },
 
     isTauri() {
@@ -178,7 +178,7 @@ export const createWebAdapter = (): WebPlatformAdapter => {
 
     async metadata(path, options = {}) {
       console.log("metadata is not supported in web environment", path, options);
-      return Promise.resolve({});
+      return Promise.resolve({ isAbsolute: false });
     },
   };
 };
