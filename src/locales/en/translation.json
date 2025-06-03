@@ -150,6 +150,10 @@
         "hits": {
           "isSystem": "This shortcut is reserved by the system, please choose another key.",
           "isUse": "This shortcut is already in use, please choose another key."
+        },
+        "aiOverview": {
+          "title": "AI Overview",
+          "description": "Shortcut button to enable AI Overview in chat mode."
         }
       },
       "connect": {
