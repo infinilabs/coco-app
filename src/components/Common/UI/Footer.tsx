@@ -94,7 +94,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
               ) : (
                 sourceData?.source?.name ||
                 t("search.footer.version", {
-                  version: "v0.5.2",
+                  version: process.env.VERSION || "v1.0.0",
                 })
               )}
             </div>

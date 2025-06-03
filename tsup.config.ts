@@ -2,6 +2,10 @@ import { defineConfig } from 'tsup';
 import { writeFileSync, readFileSync } from 'fs';
 import { join, resolve } from 'path';
 
+const projectPackageJson = JSON.parse(
+  readFileSync(join(__dirname, 'package.json'), 'utf-8')
+);
+
 export default defineConfig({
   entry: ['src/pages/web/index.tsx'],
   format: ['esm'],
@@ -43,6 +47,7 @@ export default defineConfig({
       'process.env.NODE_ENV': '"production"',
       'process.env.DEBUG': 'false',
       'process.env.IS_DEV': 'false',
+      'process.env.VERSION': `"${projectPackageJson.version}"`,
     };
     options.pure = ['console.log'];
     options.target = 'es2020';
