@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { isEmpty } from "lodash-es";
+import { isNil, isEmpty } from "lodash-es";
 import { useAsyncEffect } from "ahooks";
 import { Box } from "lucide-react";
 
@@ -27,9 +27,6 @@ function CommonIcon({
   const connectorSource = useFindConnectorIcon(item);
 
   const [isAbsolute, setIsAbsolute] = useState<boolean>();
-  const [defaultIconState, setDefaultIconState] = useState<
-    React.FC | string | undefined
-  >(defaultIcon);
 
   useAsyncEffect(async () => {
     if (isEmpty(item)) return;
@@ -39,7 +36,6 @@ function CommonIcon({
         omitSize: true,
       });
       setIsAbsolute(Boolean(isAbsolute));
-      setDefaultIconState(defaultIcon || Box);
     } catch (error) {
       setIsAbsolute(false);
     }
@@ -47,6 +43,8 @@ function CommonIcon({
 
   // Handle regular icon types
   const renderIconByType = (renderType: string) => {
+    if (isNil(isAbsolute)) return null;
+    
     switch (renderType) {
       case "special_icon": {
         if (item.id === "Calculator") {
@@ -95,7 +93,7 @@ function CommonIcon({
       case "default_icon":
         return (
           <UniversalIcon
-            defaultIcon={defaultIconState}
+            defaultIcon={defaultIcon || Box}
             className={className}
             onClick={onClick}
           />
