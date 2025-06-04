@@ -1,6 +1,7 @@
 import { User, LogOut } from "lucide-react";
 
 import { UserProfile as UserInfo } from "@/types/server";
+import { useState } from "react";
 
 interface UserProfileProps {
   server: string; //server's id
@@ -14,12 +15,21 @@ export function UserProfile({ server, userInfo, onLogout }: UserProfileProps) {
     console.log("Logout", server);
   };
 
+  const [imageLoadError, setImageLoadError] = useState(false);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
         <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-          {userInfo?.avatar ? (
-            <img src={userInfo?.avatar} alt="" className="w-6 h-6" />
+          {userInfo?.avatar && !imageLoadError ? (
+            <img
+              src={userInfo?.avatar}
+              alt=""
+              className="w-6 h-6"
+              onError={() => {
+                setImageLoadError(true);
+              }}
+            />
           ) : (
             <User className="w-6 h-6 text-gray-500 dark:text-gray-400" />
           )}

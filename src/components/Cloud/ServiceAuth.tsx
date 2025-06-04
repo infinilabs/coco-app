@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useState } from "react";
+import { FC, memo, useCallback, useEffect, useState } from "react";
 import { Copy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { v4 as uuidv4 } from "uuid";
@@ -30,7 +30,9 @@ const ServiceAuth = memo(
     const addError = useAppStore((state) => state.addError);
 
     const currentService = useConnectStore((state) => state.currentService);
-    const setCurrentService = useConnectStore((state) => state.setCurrentService);
+    const setCurrentService = useConnectStore(
+      (state) => state.setCurrentService
+    );
     const serverList = useConnectStore((state) => state.serverList);
     const setServerList = useConnectStore((state) => state.setServerList);
 
@@ -63,7 +65,7 @@ const ServiceAuth = memo(
             emit("login_or_logout", false);
             // update server profile
             setCurrentService({ ...currentService, profile: null });
-            const updatedServerList = serverList.map(server => 
+            const updatedServerList = serverList.map((server) =>
               server.id === id ? { ...server, profile: null } : server
             );
             console.log("updatedServerList", updatedServerList);
@@ -130,7 +132,6 @@ const ServiceAuth = memo(
 
     // Fetch the initial deep link intent
     useEffect(() => {
-      setLoading(false);
       // Function to handle pasted URL
       const handlePaste = (event: any) => {
         const pastedText = event.clipboardData.getData("text").trim();
@@ -171,6 +172,10 @@ const ServiceAuth = memo(
         document.removeEventListener("paste", handlePaste);
       };
     }, [ssoRequestID]);
+
+    useEffect(() => {
+      setLoading(false);
+    }, [currentService]);
 
     if (!currentService?.auth_provider?.sso?.url) {
       return null;
@@ -222,8 +227,14 @@ const ServiceAuth = memo(
 
 export default ServiceAuth;
 
-const LoginButton = memo(({ LoginClick }: { LoginClick: () => void }) => {
+interface LoginButtonProps {
+  LoginClick: () => void;
+}
+
+const LoginButton: FC<LoginButtonProps> = memo((props) => {
+  const { LoginClick } = props;
   const { t } = useTranslation();
+
   return (
     <button
       className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors mb-3"
@@ -235,27 +246,32 @@ const LoginButton = memo(({ LoginClick }: { LoginClick: () => void }) => {
   );
 });
 
-const LoadingState = memo(
-  ({ onCancel, onCopy }: { onCancel: () => void; onCopy: () => void }) => {
-    const { t } = useTranslation();
-    return (
-      <div className="flex items-center space-x-2">
-        <button
-          className="px-6 py-2 text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors mb-3"
-          onClick={onCancel}
-        >
-          {t("cloud.cancel")}
-        </button>
-        <button
-          onClick={onCopy}
-          className="text-xl text-blue-500 hover:text-blue-600"
-        >
-          <Copy className="inline mr-2" />{" "}
-        </button>
-        <div className="text-justify italic text-xs">
-          {t("cloud.manualCopyLink")}
-        </div>
+interface LoadingStateProps {
+  onCancel: () => void;
+  onCopy: () => void;
+}
+
+const LoadingState: FC<LoadingStateProps> = memo((props) => {
+  const { onCancel, onCopy } = props;
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex items-center space-x-2">
+      <button
+        className="px-6 py-2 text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors mb-3"
+        onClick={onCancel}
+      >
+        {t("cloud.cancel")}
+      </button>
+      <button
+        onClick={onCopy}
+        className="text-xl text-blue-500 hover:text-blue-600"
+      >
+        <Copy className="inline mr-2" />{" "}
+      </button>
+      <div className="text-justify italic text-xs">
+        {t("cloud.manualCopyLink")}
       </div>
-    );
-  }
-);
+    </div>
+  );
+});
