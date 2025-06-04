@@ -492,47 +492,62 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
         let opt_data_source = query
             .query_strings
             .get("datasource")
-            .map(|owned_str| owned_str.as_str());
+            .map(|owned_str| owned_str.to_string());
 
-        let mut hits = Vec::new();
-        let extensions_read_lock = self.inner.extensions.read().await;
         let query_lower = query_string.to_lowercase();
+        let inner_clone = Arc::clone(&self.inner);
 
-        for extension in extensions_read_lock.iter().filter(|ext| ext.enabled) {
-            if extension.r#type.contains_sub_items() {
-                if let Some(ref commands) = extension.commands {
-                    for command in commands.iter().filter(|cmd| cmd.enabled) {
-                        if let Some(hit) = extension_to_hit(command, &query_lower, opt_data_source)
-                        {
-                            hits.push(hit);
+        let closure = move || {
+            let mut hits = Vec::new();
+            let extensions_read_lock = futures::executor::block_on(async { inner_clone.extensions.read().await });
+
+            for extension in extensions_read_lock.iter().filter(|ext| ext.enabled) {
+                if extension.r#type.contains_sub_items() {
+                    if let Some(ref commands) = extension.commands {
+                        for command in commands.iter().filter(|cmd| cmd.enabled) {
+                            if let Some(hit) =
+                                extension_to_hit(command, &query_lower, opt_data_source.as_deref())
+                            {
+                                hits.push(hit);
+                            }
                         }
                     }
-                }
 
-                if let Some(ref scripts) = extension.scripts {
-                    for script in scripts.iter().filter(|script| script.enabled) {
-                        if let Some(hit) = extension_to_hit(script, &query_lower, opt_data_source) {
-                            hits.push(hit);
+                    if let Some(ref scripts) = extension.scripts {
+                        for script in scripts.iter().filter(|script| script.enabled) {
+                            if let Some(hit) =
+                                extension_to_hit(script, &query_lower, opt_data_source.as_deref())
+                            {
+                                hits.push(hit);
+                            }
                         }
                     }
-                }
 
-                if let Some(ref quick_links) = extension.quick_links {
-                    for quick_link in quick_links.iter().filter(|link| link.enabled) {
-                        if let Some(hit) =
-                            extension_to_hit(quick_link, &query_lower, opt_data_source)
-                        {
-                            hits.push(hit);
+                    if let Some(ref quick_links) = extension.quick_links {
+                        for quick_link in quick_links.iter().filter(|link| link.enabled) {
+                            if let Some(hit) =
+                                extension_to_hit(quick_link, &query_lower, opt_data_source.as_deref())
+                            {
+                                hits.push(hit);
+                            }
                         }
                     }
-                }
-            } else {
-                if let Some(hit) = extension_to_hit(extension, &query_lower, opt_data_source) {
-                    hits.push(hit);
+                } else {
+                    if let Some(hit) = extension_to_hit(extension, &query_lower, opt_data_source.as_deref()) {
+                        hits.push(hit);
+                    }
                 }
             }
-        }
 
+            hits
+        };
+
+        let join_result = tokio::task::spawn_blocking(closure).await;
+
+        let hits = match join_result {
+            Ok(hits) => hits,
+            Err(e) => std::panic::resume_unwind(e.into_panic()),
+        };
         let total_hits = hits.len();
 
         Ok(QueryResponse {

@@ -23,7 +23,7 @@ impl CalculatorSource {
     }
 }
 
-fn parse_query(query: String) -> Value {
+fn parse_query(query: &str) -> Value {
     let mut query_json = serde_json::Map::new();
 
     let operators = ["+", "-", "*", "/", "%"];
@@ -48,7 +48,7 @@ fn parse_query(query: String) -> Value {
         query_json.insert("type".to_string(), Value::String("expression".to_string()));
     }
 
-    query_json.insert("value".to_string(), Value::String(query));
+    query_json.insert("value".to_string(), Value::String(query.to_string()));
 
     Value::Object(query_json)
 }
@@ -128,42 +128,56 @@ impl SearchSource for CalculatorSource {
             });
         }
 
-        match meval::eval_str(query_string) {
-            Ok(num) => {
-                let mut payload: HashMap<String, Value> = HashMap::new();
+        let query_string_clone = query_string.to_string();
+        let query_source = self.get_type();
+        let base_score = self.base_score;
+        let closure = move || -> QueryResponse {
+            let res_num = meval::eval_str(&query_string_clone);
 
-                let payload_query = parse_query(query_string.into());
-                let payload_result = parse_result(num);
+            match res_num {
+                Ok(num) => {
+                    let mut payload: HashMap<String, Value> = HashMap::new();
 
-                payload.insert("query".to_string(), payload_query);
-                payload.insert("result".to_string(), payload_result);
+                    let payload_query = parse_query(&query_string_clone);
+                    let payload_result = parse_result(num);
 
-                let doc = Document {
-                    id: DATA_SOURCE_ID.to_string(),
-                    category: Some(DATA_SOURCE_ID.to_string()),
-                    payload: Some(payload),
-                    source: Some(DataSourceReference {
-                        r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
-                        name: Some(DATA_SOURCE_ID.into()),
-                        id: Some(DATA_SOURCE_ID.into()),
-                        icon: Some(String::from("font_Calculator")),
-                    }),
-                    ..Default::default()
-                };
+                    payload.insert("query".to_string(), payload_query);
+                    payload.insert("result".to_string(), payload_result);
 
-                return Ok(QueryResponse {
-                    source: self.get_type(),
-                    hits: vec![(doc, self.base_score)],
-                    total_hits: 1,
-                });
-            }
-            Err(_) => {
-                return Ok(QueryResponse {
-                    source: self.get_type(),
-                    hits: Vec::new(),
-                    total_hits: 0,
-                });
+                    let doc = Document {
+                        id: DATA_SOURCE_ID.to_string(),
+                        category: Some(DATA_SOURCE_ID.to_string()),
+                        payload: Some(payload),
+                        source: Some(DataSourceReference {
+                            r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
+                            name: Some(DATA_SOURCE_ID.into()),
+                            id: Some(DATA_SOURCE_ID.into()),
+                            icon: Some(String::from("font_Calculator")),
+                        }),
+                        ..Default::default()
+                    };
+
+                    QueryResponse {
+                        source: query_source,
+                        hits: vec![(doc, base_score)],
+                        total_hits: 1,
+                    }
+                }
+                Err(_) => {
+                    QueryResponse {
+                        source: query_source,
+                        hits: Vec::new(),
+                        total_hits: 0,
+                    }
+                }
             }
         };
+
+        let spawn_result = tokio::task::spawn_blocking(closure).await;
+
+        match spawn_result {
+            Ok(response) => Ok(response),
+            Err(e) => std::panic::resume_unwind(e.into_panic()),
+        }
     }
 }

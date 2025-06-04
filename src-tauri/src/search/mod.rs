@@ -32,7 +32,7 @@ fn same_type_futures(
     timeout_duration: Duration,
     search_query: SearchQuery,
 ) -> impl Future<
-    Output=(
+    Output = (
         QuerySource,
         Result<Result<QueryResponse, SearchError>, Elapsed>,
     ),
@@ -44,7 +44,7 @@ fn same_type_futures(
             timeout(timeout_duration, async {
                 query_source_trait_object.search(search_query).await
             })
-                .await,
+            .await,
         )
     }
 }
