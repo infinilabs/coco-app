@@ -1,7 +1,6 @@
 import { User, LogOut } from "lucide-react";
 
 import { UserProfile as UserInfo } from "@/types/server";
-import logoImg from "@/assets/icon.svg";
 import { useState } from "react";
 
 interface UserProfileProps {
