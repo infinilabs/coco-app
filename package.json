@@ -79,7 +79,6 @@
     "@types/react-dom": "^18.3.7",
     "@types/react-katex": "^3.0.4",
     "@types/react-window": "^1.8.8",
-    "@vitejs/plugin-legacy": "^6.1.1",
     "@vitejs/plugin-react": "^4.4.1",
     "autoprefixer": "^10.4.21",
     "cross-env": "^7.0.3",
