@@ -146,12 +146,6 @@ importers:
       type-fest:
         specifier: ^4.41.0
         version: 4.41.0
-      unist-util-visit:
-        specifier: ^5.0.0
-        version: 5.0.0
-      unist-util-visit-parents:
-        specifier: ^6.0.1
-        version: 6.0.1
       use-debounce:
         specifier: ^10.0.4
         version: 10.0.4(react@18.3.1)

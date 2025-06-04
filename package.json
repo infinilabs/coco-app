@@ -64,8 +64,6 @@
     "tauri-plugin-screenshots-api": "^2.2.0",
     "tauri-plugin-windows-version-api": "^2.0.0",
     "type-fest": "^4.41.0",
-    "unist-util-visit": "^5.0.0",
-    "unist-util-visit-parents": "^6.0.1",
     "use-debounce": "^10.0.4",
     "uuid": "^11.1.0",
     "wavesurfer.js": "^7.9.5",
