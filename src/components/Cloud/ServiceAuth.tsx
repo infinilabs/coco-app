@@ -194,7 +194,6 @@ const ServiceAuth = memo(
           />
         ) : (
           <div>
-            {JSON.stringify(loading)}
             {/* Login Button (conditionally rendered when not loading) */}
             {!loading && <LoginButton LoginClick={LoginClick} />}
 
