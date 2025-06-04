@@ -2,6 +2,7 @@ import { User, LogOut } from "lucide-react";
 
 import { UserProfile as UserInfo } from "@/types/server";
 import logoImg from "@/assets/icon.svg";
+import { useState } from "react";
 
 interface UserProfileProps {
   server: string; //server's id
@@ -15,18 +16,19 @@ export function UserProfile({ server, userInfo, onLogout }: UserProfileProps) {
     console.log("Logout", server);
   };
 
+  const [imageLoadError, setImageLoadError] = useState(false);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
         <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-          {userInfo?.avatar ? (
+          {userInfo?.avatar && !imageLoadError ? (
             <img
               src={userInfo?.avatar}
               alt=""
               className="w-6 h-6"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = logoImg;
+              onError={() => {
+                setImageLoadError(true);
               }}
             />
           ) : (
