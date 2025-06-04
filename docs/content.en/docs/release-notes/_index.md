@@ -18,6 +18,7 @@ Information about release notes of Coco Server is provided here.
 ### 🐛 Bug fix
 
 - fix: fixed issue with incorrect login status #600
+- fix: new chat assistant id not found #603
 
 ### ✈️ Improvements
 
