@@ -23,7 +23,7 @@ Information about release notes of Coco Server is provided here.
 
 ### ✈️ Improvements
 
-- chore: the last assistant in history is set as current #606
+- chore: initialize current assistant from history #606
 
 ## 0.5.1 (2025-05-31)
 
