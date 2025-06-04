@@ -174,6 +174,7 @@ export function useChatActions(
       curIdRef.current = response?.payload?.id;
 
       newChat._source = {
+        ...response?.payload,
         message: value,
       };
       const updatedChat: Chat = {
