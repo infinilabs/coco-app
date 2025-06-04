@@ -17,6 +17,8 @@ Information about release notes of Coco Server is provided here.
 
 ### 🐛 Bug fix
 
+- fix: fixed issue with incorrect login status #600
+
 ### ✈️ Improvements
 
 ## 0.5.1 (2025-05-31)
