@@ -28,14 +28,10 @@ export function useChatActions(
 
   const isTauri = useAppStore((state) => state.isTauri);
   const addError = useAppStore((state) => state.addError);
-  const currentAssistant = useConnectStore((state) => state.currentAssistant);
+  const { currentAssistant, setCurrentAssistant, assistantList, setVisibleStartPage, currentService } = useConnectStore();
   const { connected } = useChatStore();
   const sourceDataIds = useSearchStore((state) => state.sourceDataIds);
   const MCPIds = useSearchStore((state) => state.MCPIds);
-  const setVisibleStartPage = useConnectStore((state) => {
-    return state.setVisibleStartPage;
-  });
-  const currentService = useConnectStore((state) => state.currentService);
 
   const [keyword, setKeyword] = useState("");
 
@@ -111,6 +107,13 @@ export function useChatActions(
       }
 
       const hits = response?.hits?.hits || [];
+      // set current assistant
+      const lastAssistantId = hits[hits.length - 1]?._source?.assistant_id;
+      const matchedAssistant = assistantList?.find((assistant) => assistant._id === lastAssistantId);
+      if (matchedAssistant) {
+        setCurrentAssistant(matchedAssistant);
+      }
+      //
       const updatedChat: Chat = {
         ...chat,
         messages: hits,
@@ -120,7 +123,7 @@ export function useChatActions(
       callback && callback(updatedChat);
       setVisibleStartPage(false);
     },
-    [currentService?.id, isTauri]
+    [currentService?.id, isTauri, assistantList]
   );
 
   const createNewChat = useCallback(
