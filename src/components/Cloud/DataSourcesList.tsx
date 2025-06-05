@@ -4,10 +4,7 @@ import { RefreshCcw } from "lucide-react";
 
 import { DataSourceItem } from "./DataSourceItem";
 import { useConnectStore } from "@/stores/connectStore";
-import {
-  get_connectors_by_server,
-  datasource_search,
-} from "@/commands";
+import { get_connectors_by_server, datasource_search } from "@/commands";
 
 export function DataSourcesList({ server }: { server: string }) {
   const { t } = useTranslation();
@@ -17,8 +14,9 @@ export function DataSourcesList({ server }: { server: string }) {
   const setDatasourceData = useConnectStore((state) => state.setDatasourceData);
   const setConnectorData = useConnectStore((state) => state.setConnectorData);
 
-  function initServerAppData({ server }: { server: string }) {
-    //fetch datasource data
+  function initServerAppData() {
+    setRefreshLoading(true);
+    // fetch connectors data
     get_connectors_by_server(server)
       .then((res: any) => {
         // console.log("get_connectors_by_server", res);
@@ -26,31 +24,20 @@ export function DataSourcesList({ server }: { server: string }) {
       })
       .finally(() => {});
 
-    //fetch datasource data
+    // fetch datasource data
     datasource_search(server)
       .then((res: any) => {
         // console.log("datasource_search", res);
         setDatasourceData(res, server);
       })
-      .finally(() => {});
-  }
-
-  async function getDatasourceData() {
-    setRefreshLoading(true);
-    try {
-      initServerAppData({ server });
-    } finally {
-      setRefreshLoading(false);
-    }
+      .finally(() => {
+        setRefreshLoading(false);
+      });
   }
 
   useEffect(() => {
-    getDatasourceData();
-  }, []);
-
-  // const handleToggle = (id: string, enabled: boolean) => {
-  //   console.log("handleToggle", id, enabled);
-  // };
+    initServerAppData();
+  }, [server]);
 
   return (
     <div className="space-y-4">
@@ -58,10 +45,12 @@ export function DataSourcesList({ server }: { server: string }) {
         {t("cloud.dataSource.title")}
         <button
           className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-[6px] bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
-          onClick={() => getDatasourceData()}
+          onClick={() => initServerAppData()}
         >
           <RefreshCcw
-            className={`w-3.5 h-3.5 ${refreshLoading ? "animate-spin" : ""}`}
+            className={`w-3.5 h-3.5 transition-transform duration-1000 ${
+              refreshLoading ? "animate-spin" : ""
+            }`}
           />
         </button>
       </h2>
