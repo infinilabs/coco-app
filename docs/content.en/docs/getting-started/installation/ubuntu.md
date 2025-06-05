@@ -14,7 +14,9 @@ asciinema: true
 [if_x11]: https://unix.stackexchange.com/q/202891/498440
 
 
-## Goto [https://coco.rs/](https://coco.rs/)
+## Go to the download page
+
+Download page: [link](https://coco.rs/#install)
 
 ## Download the package
 
