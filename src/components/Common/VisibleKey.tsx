@@ -5,6 +5,7 @@ import { last } from "lodash-es";
 
 import { POPOVER_PANEL_SELECTOR } from "@/constants";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
+import { useAppStore } from "@/stores/appStore";
 
 interface VisibleKeyProps extends HTMLAttributes<HTMLDivElement> {
   shortcut: string;
@@ -22,6 +23,8 @@ const VisibleKey: FC<VisibleKeyProps> = (props) => {
     onKeyPress,
     ...rest
   } = props;
+
+  const showTooltip = useAppStore((state) => state.showTooltip);
 
   const modifierKey = useShortcutsStore((state) => {
     return state.modifierKey;
@@ -86,7 +89,7 @@ const VisibleKey: FC<VisibleKeyProps> = (props) => {
     >
       {children}
 
-      {visibleShortcut ? (
+      {showTooltip && visibleShortcut ? (
         <div
           className={clsx(
             "size-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
