@@ -103,8 +103,6 @@ export function useSearch() {
       );
     });
 
-    console.log("aiOverviewMinQuantity", aiOverviewMinQuantity);
-
     if (
       searchInput.length >= aiOverviewCharLen &&
       isTauri &&
