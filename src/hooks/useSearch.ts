@@ -97,9 +97,8 @@ export function useSearch() {
 
     const filteredData = data.filter((item: any) => {
       return (
-        item?.document?.type !== "AI Assistant" &&
-        item?.document?.category !== "Calculator" &&
-        item?.document?.category !== "Application"
+        item?.source?.type === "coco-servers" &&
+        item?.document?.type !== "AI Assistant"
       );
     });
 
