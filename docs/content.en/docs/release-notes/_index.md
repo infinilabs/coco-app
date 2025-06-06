@@ -20,6 +20,7 @@ Information about release notes of Coco Server is provided here.
 - fix: fixed issue with incorrect login status #600
 - fix: new chat assistant id not found #603
 - fix: resolve regex error on older macOS versions #605
+- fix: fix chat log update and sorting issues #612
 
 ### ✈️ Improvements
 
