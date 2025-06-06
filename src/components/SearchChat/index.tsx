@@ -91,6 +91,7 @@ function SearchChat({
   );
 
   const setTheme = useThemeStore((state) => state.setTheme);
+  const setIsDark = useThemeStore((state) => state.setIsDark);
 
   const isChatModeRef = useRef(false);
   useEffect(() => {
@@ -129,6 +130,7 @@ function SearchChat({
   useEffect(() => {
     if (!theme) return;
 
+    setIsDark(theme === "dark");
     setTheme(theme);
   }, [theme]);
 
