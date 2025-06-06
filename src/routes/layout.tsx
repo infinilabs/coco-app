@@ -82,6 +82,7 @@ export default function Layout() {
 
   const { i18n } = useTranslation();
   const language = useAppStore((state) => state.language);
+  const setLanguage = useAppStore((state) => state.setLanguage);
 
   useEffect(() => {
     if (language) {
@@ -93,6 +94,7 @@ export default function Layout() {
         "language-changed",
         (event) => {
           i18n.changeLanguage(event.payload.language);
+          setLanguage(event.payload.language);
         }
       );
       return unlisten;
