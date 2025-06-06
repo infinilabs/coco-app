@@ -44,6 +44,7 @@ export default function SearchPopover({
   const sourceDataIds = useSearchStore((state) => state.sourceDataIds);
   const setSourceDataIds = useSearchStore((state) => state.setSourceDataIds);
 
+  const currentAssistant = useConnectStore((state) => state.currentAssistant);
   const currentService = useConnectStore((state) => state.currentService);
 
   const [keyword, setKeyword] = useState("");
@@ -101,7 +102,7 @@ export default function SearchPopover({
 
   useEffect(() => {
     connected && getDataSourceList();
-  }, [connected, currentService?.id, debouncedKeyword]);
+  }, [connected, currentService?.id, debouncedKeyword, currentAssistant]);
 
   useEffect(() => {
     setTotalPage(Math.max(Math.ceil(dataSourceList.length / 10), 1));
