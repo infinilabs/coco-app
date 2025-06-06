@@ -84,6 +84,8 @@ export function useKeyboardNavigation({
       }
 
       if (e.key >= "0" && e.key <= "9" && showIndex && isMetaOrCtrlKey(e)) {
+        e.preventDefault();
+
         let index = parseInt(e.key, 10);
 
         index = index === 0 ? 9 : index - 1;
@@ -91,7 +93,13 @@ export function useKeyboardNavigation({
         const item = globalItemIndexMap[index];
 
         if (item?.on_opened) {
-          platformAdapter.invokeBackend("open", { onOpened: item.on_opened });
+          return platformAdapter.invokeBackend("open", {
+            onOpened: item.on_opened,
+          });
+        }
+
+        if (item?.url) {
+          OpenURLWithBrowser(item.url);
         }
       }
     },
