@@ -27,6 +27,12 @@ const AiOverview = () => {
   const setAiOverviewDelay = useExtensionsStore((state) => {
     return state.setAiOverviewDelay;
   });
+  const aiOverviewMinQuantity = useExtensionsStore((state) => {
+    return state.aiOverviewMinQuantity;
+  });
+  const setAiOverviewMinQuantity = useExtensionsStore((state) => {
+    return state.setAiOverviewMinQuantity;
+  });
 
   const inputList = [
     {
@@ -38,6 +44,11 @@ const AiOverview = () => {
       label: "Delay After Typing Stops(seconds)",
       value: aiOverviewDelay,
       onChange: setAiOverviewDelay,
+    },
+    {
+      label: "Minimum Number of Search Results",
+      value: aiOverviewMinQuantity,
+      onChange: setAiOverviewMinQuantity,
     },
   ];
 
