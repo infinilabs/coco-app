@@ -17,6 +17,7 @@ Information about release notes of Coco Server is provided here.
 - feat: add key monitoring during reset #615
 - feat: calculator extension add description #623
 - feat: support right-click actions after text selection #624
+- feat: add ai overview minimum number of search results configuration #625
 
 ### 🐛 Bug fix
 
