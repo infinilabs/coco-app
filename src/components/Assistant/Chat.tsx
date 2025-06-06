@@ -318,6 +318,7 @@ const ChatAI = memo(
         (chatId: string, title: string) => {
           setChats((prev) => {
             const chatIndex = prev.findIndex((chat) => chat._id === chatId);
+
             if (chatIndex === -1) return prev;
 
             const modifiedChat = {
@@ -326,8 +327,8 @@ const ChatAI = memo(
             };
 
             const result = [...prev];
-            result.splice(chatIndex, 1);
-            return [modifiedChat, ...result];
+            result.splice(chatIndex, 1, modifiedChat);
+            return result;
           });
 
           if (activeChat?._id === chatId) {
@@ -372,29 +373,28 @@ const ChatAI = memo(
               assistantIDs={assistantIDs}
             />
 
-            {isCurrentLogin ? (<>
-              <ChatContent
-                activeChat={activeChat}
-                curChatEnd={curChatEnd}
-                query_intent={query_intent}
-                tools={tools}
-                fetch_source={fetch_source}
-                pick_source={pick_source}
-                deep_read={deep_read}
-                think={think}
-                response={response}
-                loadingStep={loadingStep}
-                timedoutShow={timedoutShow}
-                Question={Question}
-                handleSendMessage={(value) =>
-                  handleSendMessage(value, activeChat)
-                }
-                getFileUrl={getFileUrl}
-              />
-              <Splash assistantIDs={assistantIDs} startPage={startPage}/>
-            </>
-              
-
+            {isCurrentLogin ? (
+              <>
+                <ChatContent
+                  activeChat={activeChat}
+                  curChatEnd={curChatEnd}
+                  query_intent={query_intent}
+                  tools={tools}
+                  fetch_source={fetch_source}
+                  pick_source={pick_source}
+                  deep_read={deep_read}
+                  think={think}
+                  response={response}
+                  loadingStep={loadingStep}
+                  timedoutShow={timedoutShow}
+                  Question={Question}
+                  handleSendMessage={(value) =>
+                    handleSendMessage(value, activeChat)
+                  }
+                  getFileUrl={getFileUrl}
+                />
+                <Splash assistantIDs={assistantIDs} startPage={startPage} />
+              </>
             ) : (
               <ConnectPrompt />
             )}

@@ -236,10 +236,7 @@ export default function Chat({}: ChatProps) {
         return updatedChats;
       }
 
-      return [
-        modifiedChat,
-        ...updatedChats.filter((item) => item._id !== chatId),
-      ];
+      return updatedChats;
     });
 
     if (activeChat?._id === chatId) {
