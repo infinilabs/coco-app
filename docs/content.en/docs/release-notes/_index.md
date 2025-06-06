@@ -24,6 +24,7 @@ Information about release notes of Coco Server is provided here.
 - fix: fix chat log update and sorting issues #612
 - fix: resolved an issue where number keys were not working on the web #616
 - fix: do not panic when the datasource specified does not exist #618
+- fix: fixed modifier keys not working with continue chat #619
 
 ### ✈️ Improvements
 
