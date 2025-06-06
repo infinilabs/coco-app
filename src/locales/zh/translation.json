@@ -253,7 +253,7 @@
         "details": {
           "aiOverviewTrigger": {
             "title": "AI Overview 触发条件",
-            "description": "仅当满足以下所有条件时，AI Overview 才会被触发。",
+            "description": "仅当满足以下所有条件时，AI Overview 才会被触发。（搜索结果来源为 Coco Server 的结果统计）",
             "label": {
               "minCharLen": "最小输入长度（字符）",
               "minDelay": "输入停止延迟（秒）",

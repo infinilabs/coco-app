@@ -39,6 +39,13 @@ const AiOverview = () => {
   const inputList = [
     {
       label: t(
+        "settings.extensions.aiOverview.details.aiOverviewTrigger.label.minQuantity"
+      ),
+      value: aiOverviewMinQuantity,
+      onChange: setAiOverviewMinQuantity,
+    },
+    {
+      label: t(
         "settings.extensions.aiOverview.details.aiOverviewTrigger.label.minCharLen"
       ),
       value: aiOverviewCharLen,
@@ -50,13 +57,6 @@ const AiOverview = () => {
       ),
       value: aiOverviewDelay,
       onChange: setAiOverviewDelay,
-    },
-    {
-      label: t(
-        "settings.extensions.aiOverview.details.aiOverviewTrigger.label.minQuantity"
-      ),
-      value: aiOverviewMinQuantity,
-      onChange: setAiOverviewMinQuantity,
     },
   ];
 

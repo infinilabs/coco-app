@@ -253,7 +253,7 @@
         "details": {
           "aiOverviewTrigger": {
             "title": "AI Overview Trigger",
-            "description": "AI Overview will be triggered only when all of the following conditions are met.",
+            "description": "AI Overview will be triggered only when all of the following conditions are met.(search results are sourced from Coco Server's result statistics)",
             "label": {
               "minCharLen": "Minimum Input Length(characters)",
               "minDelay": "Delay After Typing Stops(seconds)",
