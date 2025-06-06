@@ -22,6 +22,7 @@ Information about release notes of Coco Server is provided here.
 - fix: new chat assistant id not found #603
 - fix: resolve regex error on older macOS versions #605
 - fix: fix chat log update and sorting issues #612
+- fix: resolved an issue where number keys were not working on the web #616
 
 ### ✈️ Improvements
 
