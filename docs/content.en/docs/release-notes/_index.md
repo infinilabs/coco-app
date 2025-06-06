@@ -18,6 +18,7 @@ Information about release notes of Coco Server is provided here.
 - feat: calculator extension add description #623
 - feat: support right-click actions after text selection #624
 - feat: add ai overview minimum number of search results configuration #625
+- feat: add internationalized translations of AI-related extensions #632
 
 ### 🐛 Bug fix
 
