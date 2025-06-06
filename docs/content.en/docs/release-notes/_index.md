@@ -26,6 +26,7 @@ Information about release notes of Coco Server is provided here.
 - fix: do not panic when the datasource specified does not exist #618
 - fix: fixed modifier keys not working with continue chat #619
 - fix: invalid DSL error if input contains multiple lines #620
+- fix: fix ai overview hidden height before message #622
 
 ### ✈️ Improvements
 

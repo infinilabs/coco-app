@@ -47,6 +47,7 @@ const DropdownListItem = memo(
             id={`search-item-${currentIndex}`}
             className={clsx("p-2 transition rounded-lg", {
               "bg-[#EDEDED] dark:bg-[#202126]": isSelected,
+              "!p-0": isAiOverview,
             })}
           >
             {isCalculator && <Calculator item={item} isSelected={isSelected} />}
