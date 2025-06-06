@@ -84,6 +84,8 @@ export function useChatActions(
     [currentService?.id, isTauri]
   );
 
+  // 1. handleSendMessage callback
+  // 2. onSelectChat no callback
   const chatHistory = useCallback(
     async (chat: Chat, callback?: (chat: Chat) => void) => {
       if (!chat?._id) return;
@@ -110,7 +112,7 @@ export function useChatActions(
       // set current assistant
       const lastAssistantId = hits[hits.length - 1]?._source?.assistant_id;
       const matchedAssistant = assistantList?.find((assistant) => assistant._id === lastAssistantId);
-      if (matchedAssistant) {
+      if (matchedAssistant && !callback) {
         setCurrentAssistant(matchedAssistant);
       }
       //

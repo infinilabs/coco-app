@@ -38,10 +38,12 @@ export default function Chat({}: ChatProps) {
     setIsTauri(true);
   }, []);
 
-  const currentService = useConnectStore((state) => state.currentService);
-  const setVisibleStartPage = useConnectStore((state) => {
-    return state.setVisibleStartPage;
-  });
+  const {
+    setCurrentAssistant,
+    assistantList,
+    setVisibleStartPage,
+    currentService,
+  } = useConnectStore();
 
   const chatAIRef = useRef<ChatAIRef>(null);
 
@@ -63,7 +65,7 @@ export default function Chat({}: ChatProps) {
 
   useEffect(() => {
     getChatHistory();
-  }, [keyword]);
+  }, [keyword, currentService?.id]);
 
   const getChatHistory = async () => {
     try {
@@ -77,11 +79,6 @@ export default function Chat({}: ChatProps) {
       console.log("_history", response);
       const hits = response?.hits?.hits || [];
       setChats(hits);
-      if (hits[0]) {
-        onSelectChat(hits[0]);
-      } else {
-        chatAIRef.current?.init("");
-      }
     } catch (error) {
       console.error("chat_history:", error);
     }
@@ -117,6 +114,15 @@ export default function Chat({}: ChatProps) {
       response = response ? JSON.parse(response) : null;
       console.log("id_history", response);
       const hits = response?.hits?.hits || [];
+      // set current assistant
+      const lastAssistantId = hits[hits.length - 1]?._source?.assistant_id;
+      const matchedAssistant = assistantList?.find(
+        (assistant) => assistant._id === lastAssistantId
+      );
+      if (matchedAssistant) {
+        setCurrentAssistant(matchedAssistant);
+      }
+      //
       const updatedChat: typeChat = {
         ...chat,
         messages: hits,
