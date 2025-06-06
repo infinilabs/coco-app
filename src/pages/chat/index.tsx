@@ -271,7 +271,7 @@ export default function Chat({}: ChatProps) {
             } transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block bg-gray-100 dark:bg-gray-800`}
           >
             <HistoryList
-              list={chats}
+              chats={chats}
               active={activeChat}
               onSearch={handleSearch}
               onRefresh={getChatHistory}
