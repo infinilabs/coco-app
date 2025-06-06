@@ -44,6 +44,7 @@ export default function MCPPopover({
   const MCPIds = useSearchStore((state) => state.MCPIds);
   const setMCPIds = useSearchStore((state) => state.setMCPIds);
 
+  const currentAssistant = useConnectStore((state) => state.currentAssistant);
   const currentService = useConnectStore((state) => state.currentService);
 
   const [keyword, setKeyword] = useState("");
@@ -98,7 +99,7 @@ export default function MCPPopover({
 
   useEffect(() => {
     connected && getDataSourceList();
-  }, [connected, currentService?.id, debouncedKeyword]);
+  }, [connected, currentService?.id, debouncedKeyword, currentAssistant]);
 
   useEffect(() => {
     setTotalPage(Math.max(Math.ceil(dataList.length / 10), 1));

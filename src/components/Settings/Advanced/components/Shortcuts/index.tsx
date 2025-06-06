@@ -106,7 +106,7 @@ const Shortcuts = () => {
       value: modeSwitch,
       setValue: setModeSwitch,
       reset: () => {
-        setModeSwitch(INITIAL_MODE_SWITCH);
+        handleChange(INITIAL_MODE_SWITCH, setModeSwitch);
       },
     },
     {
@@ -115,7 +115,7 @@ const Shortcuts = () => {
       value: returnToInput,
       setValue: setReturnToInput,
       reset: () => {
-        setReturnToInput(INITIAL_RETURN_TO_INPUT);
+        handleChange(INITIAL_RETURN_TO_INPUT, setReturnToInput);
       },
     },
     {
@@ -124,7 +124,7 @@ const Shortcuts = () => {
       value: voiceInput,
       setValue: setVoiceInput,
       reset: () => {
-        setVoiceInput(INITIAL_VOICE_INPUT);
+        handleChange(INITIAL_VOICE_INPUT, setVoiceInput);
       },
     },
     {
@@ -133,7 +133,7 @@ const Shortcuts = () => {
       value: addFile,
       setValue: setAddFile,
       reset: () => {
-        setAddFile(INITIAL_ADD_FILE);
+        handleChange(INITIAL_ADD_FILE, setAddFile);
       },
     },
     {
@@ -142,7 +142,7 @@ const Shortcuts = () => {
       value: deepThinking,
       setValue: setDeepThinking,
       reset: () => {
-        setDeepThinking(INITIAL_DEEP_THINKING);
+        handleChange(INITIAL_DEEP_THINKING, setDeepThinking);
       },
     },
     {
@@ -151,7 +151,7 @@ const Shortcuts = () => {
       value: internetSearch,
       setValue: setInternetSearch,
       reset: () => {
-        setInternetSearch(INITIAL_INTERNET_SEARCH);
+        handleChange(INITIAL_INTERNET_SEARCH, setInternetSearch);
       },
     },
     {
@@ -161,7 +161,7 @@ const Shortcuts = () => {
       value: internetSearchScope,
       setValue: setInternetSearchScope,
       reset: () => {
-        setInternetSearchScope(INITIAL_INTERNET_SEARCH_SCOPE);
+        handleChange(INITIAL_INTERNET_SEARCH_SCOPE, setInternetSearchScope);
       },
     },
     {
@@ -170,7 +170,7 @@ const Shortcuts = () => {
       value: mcpSearch,
       setValue: setMcpSearch,
       reset: () => {
-        setMcpSearch(INITIAL_MCP_SEARCH);
+        handleChange(INITIAL_MCP_SEARCH, setMcpSearch);
       },
     },
     {
@@ -179,7 +179,7 @@ const Shortcuts = () => {
       value: mcpSearchScope,
       setValue: setMcpSearchScope,
       reset: () => {
-        setMcpSearchScope(INITIAL_MCP_SEARCH_SCOPE);
+        handleChange(INITIAL_MCP_SEARCH_SCOPE, setMcpSearchScope);
       },
     },
     {
@@ -188,7 +188,7 @@ const Shortcuts = () => {
       value: historicalRecords,
       setValue: setHistoricalRecords,
       reset: () => {
-        setHistoricalRecords(INITIAL_HISTORICAL_RECORDS);
+        handleChange(INITIAL_HISTORICAL_RECORDS, setHistoricalRecords);
       },
     },
     {
@@ -197,7 +197,7 @@ const Shortcuts = () => {
       value: aiAssistant,
       setValue: setAiAssistant,
       reset: () => {
-        setAiAssistant(INITIAL_AI_ASSISTANT);
+        handleChange(INITIAL_AI_ASSISTANT, setAiAssistant);
       },
     },
     {
@@ -206,7 +206,7 @@ const Shortcuts = () => {
       value: newSession,
       setValue: setNewSession,
       reset: () => {
-        setNewSession(INITIAL_NEW_SESSION);
+        handleChange(INITIAL_NEW_SESSION, setNewSession);
       },
     },
     {
@@ -215,7 +215,7 @@ const Shortcuts = () => {
       value: fixedWindow,
       setValue: setFixedWindow,
       reset: () => {
-        setFixedWindow(INITIAL_FIXED_WINDOW);
+        handleChange(INITIAL_FIXED_WINDOW, setFixedWindow);
       },
     },
     {
@@ -224,7 +224,7 @@ const Shortcuts = () => {
       value: serviceList,
       setValue: setServiceList,
       reset: () => {
-        setServiceList(INITIAL_SERVICE_LIST);
+        handleChange(INITIAL_SERVICE_LIST, setServiceList);
       },
     },
     {
@@ -233,7 +233,7 @@ const Shortcuts = () => {
       value: external,
       setValue: setExternal,
       reset: () => {
-        setExternal(INITIAL_EXTERNAL);
+        handleChange(INITIAL_EXTERNAL, setExternal);
       },
     },
     {
@@ -242,7 +242,7 @@ const Shortcuts = () => {
       value: aiOverview,
       setValue: setAiOverview,
       reset: () => {
-        setAiOverview(INITIAL_AI_OVERVIEW);
+        handleChange(INITIAL_AI_OVERVIEW, setAiOverview);
       },
     },
   ];

@@ -209,7 +209,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
       <div className="flex-1 px-2 overflow-auto custom-scrollbar">
         {list.length > 0 ? (
           <>
-            <div className="mt-6">
+            <div className="py-4">
               {Object.entries(sortedList).map(([label, list]) => {
                 return (
                   <div key={label}>
@@ -415,14 +415,16 @@ const HistoryList: FC<HistoryListProps> = (props) => {
         )}
       </div>
 
-      <div className="flex justify-end p-2 border-t dark:border-[#343D4D]">
-        <VisibleKey shortcut="Esc" shortcutClassName="w-7">
-          <PanelLeftClose
-            className="size-4 text-black/80 dark:text-white/80 cursor-pointer"
-            onClick={closeHistoryPanel}
-          />
-        </VisibleKey>
-      </div>
+      {id && (
+        <div className="flex justify-end p-2 border-t dark:border-[#343D4D]">
+          <VisibleKey shortcut="Esc" shortcutClassName="w-7">
+            <PanelLeftClose
+              className="size-4 text-black/80 dark:text-white/80 cursor-pointer"
+              onClick={closeHistoryPanel}
+            />
+          </VisibleKey>
+        </div>
+      )}
     </div>
   );
 };
