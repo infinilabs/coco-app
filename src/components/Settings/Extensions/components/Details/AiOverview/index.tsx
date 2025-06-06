@@ -69,7 +69,7 @@ const AiOverview = () => {
         </div>
 
         <div className="pt-2 pb-4 text-[#999]">
-          AI Overview will be triggered when both conditions are met.
+          AI Overview will be triggered when all the conditions are met.
         </div>
 
         <div className="flex flex-col gap-2">
