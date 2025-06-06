@@ -1,6 +1,7 @@
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import SharedAi from "../SharedAi";
 import SettingsInput from "@/components/Settings/SettingsInput";
+import { useTranslation } from "react-i18next";
 
 const AiOverview = () => {
   const aiOverviewServer = useExtensionsStore((state) => {
@@ -33,20 +34,27 @@ const AiOverview = () => {
   const setAiOverviewMinQuantity = useExtensionsStore((state) => {
     return state.setAiOverviewMinQuantity;
   });
+  const { t } = useTranslation();
 
   const inputList = [
     {
-      label: "Minimum Input Length(characters)",
+      label: t(
+        "settings.extensions.aiOverview.details.aiOverviewTrigger.label.minCharLen"
+      ),
       value: aiOverviewCharLen,
       onChange: setAiOverviewCharLen,
     },
     {
-      label: "Delay After Typing Stops(seconds)",
+      label: t(
+        "settings.extensions.aiOverview.details.aiOverviewTrigger.label.minDelay"
+      ),
       value: aiOverviewDelay,
       onChange: setAiOverviewDelay,
     },
     {
-      label: "Minimum Number of Search Results",
+      label: t(
+        "settings.extensions.aiOverview.details.aiOverviewTrigger.label.minQuantity"
+      ),
       value: aiOverviewMinQuantity,
       onChange: setAiOverviewMinQuantity,
     },
@@ -65,11 +73,13 @@ const AiOverview = () => {
 
       <>
         <div className="mt-6 text-[#333] dark:text-white/90">
-          AI Overview Trigger
+          {t("settings.extensions.aiOverview.details.aiOverviewTrigger.title")}
         </div>
 
         <div className="pt-2 pb-4 text-[#999]">
-          AI Overview will be triggered when both conditions are met.
+          {t(
+            "settings.extensions.aiOverview.details.aiOverviewTrigger.description"
+          )}
         </div>
 
         <div className="flex flex-col gap-2">
