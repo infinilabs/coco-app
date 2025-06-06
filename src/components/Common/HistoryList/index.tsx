@@ -67,7 +67,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
     const now = dayjs();
 
     return groupBy(list, (chat) => {
-      const date = dayjs(chat._source?.updated);
+      const date = dayjs(chat._source?.created);
 
       if (date.isSame(now, "day")) {
         return "history_list.date.today";
@@ -368,7 +368,11 @@ const HistoryList: FC<HistoryListProps> = (props) => {
                     </DialogTitle>
                     <Description className="text-sm">
                       {t("history_list.delete_modal.description", {
-                        replace: [active?._source?.title || active?._source?.message || active?._id],
+                        replace: [
+                          active?._source?.title ||
+                            active?._source?.message ||
+                            active?._id,
+                        ],
                       })}
                     </Description>
                   </div>
