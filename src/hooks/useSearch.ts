@@ -47,6 +47,9 @@ export function useSearch() {
   const aiOverviewDelay = useExtensionsStore((state) => {
     return state.aiOverviewDelay;
   });
+  const aiOverviewMinQuantity = useExtensionsStore((state) => {
+    return state.aiOverviewMinQuantity;
+  });
 
   const { querySourceTimeout } = useConnectStore();
 
@@ -100,13 +103,15 @@ export function useSearch() {
       );
     });
 
+    console.log("aiOverviewMinQuantity", aiOverviewMinQuantity);
+
     if (
       searchInput.length >= aiOverviewCharLen &&
       isTauri &&
       enabledAiOverview &&
       aiOverviewServer &&
       aiOverviewAssistant &&
-      filteredData.length > 5 &&
+      filteredData.length >= aiOverviewMinQuantity &&
       !disabledExtensions.includes("AIOverview")
     ) {
       timerRef.current = setTimeout(() => {
@@ -210,6 +215,7 @@ export function useSearch() {
       disabledExtensions,
       aiOverviewCharLen,
       aiOverviewDelay,
+      aiOverviewMinQuantity,
     ]
   );
 

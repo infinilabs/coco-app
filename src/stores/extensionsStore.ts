@@ -17,6 +17,8 @@ export type IExtensionsStore = {
   setAiOverviewCharLen: (aiOverviewCharLen: number) => void;
   aiOverviewDelay: number;
   setAiOverviewDelay: (aiOverviewDelay: number) => void;
+  aiOverviewMinQuantity: number;
+  setAiOverviewMinQuantity: (aiOverviewMinQuantity: number) => void;
 };
 
 export const useExtensionsStore = create<IExtensionsStore>()(
@@ -47,6 +49,10 @@ export const useExtensionsStore = create<IExtensionsStore>()(
         setAiOverviewDelay(aiOverviewDelay) {
           return set({ aiOverviewDelay });
         },
+        aiOverviewMinQuantity: 5,
+        setAiOverviewMinQuantity(aiOverviewMinQuantity) {
+          return set({ aiOverviewMinQuantity });
+        },
       }),
       {
         name: "extensions-store",
@@ -57,6 +63,7 @@ export const useExtensionsStore = create<IExtensionsStore>()(
           aiOverviewAssistant: state.aiOverviewAssistant,
           aiOverviewCharLen: state.aiOverviewCharLen,
           aiOverviewDelay: state.aiOverviewDelay,
+          aiOverviewMinQuantity: state.aiOverviewMinQuantity,
         }),
       }
     )

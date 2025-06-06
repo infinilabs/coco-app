@@ -109,6 +109,9 @@ export const useSyncStore = () => {
     return state.setAiOverviewDelay;
   });
   const setAiOverview = useShortcutsStore((state) => state.setAiOverview);
+  const setAiOverviewMinQuantity = useExtensionsStore((state) => {
+    return state.setAiOverviewMinQuantity;
+  });
 
   useEffect(() => {
     if (!resetFixedWindow) {
@@ -201,6 +204,7 @@ export const useSyncStore = () => {
           disabledExtensions,
           aiOverviewCharLen,
           aiOverviewDelay,
+          aiOverviewMinQuantity,
         } = payload;
 
         setQuickAiAccessServer(quickAiAccessServer);
@@ -210,6 +214,7 @@ export const useSyncStore = () => {
         setDisabledExtensions(disabledExtensions);
         setAiOverviewCharLen(aiOverviewCharLen);
         setAiOverviewDelay(aiOverviewDelay);
+        setAiOverviewMinQuantity(aiOverviewMinQuantity);
       }),
     ]);
 
