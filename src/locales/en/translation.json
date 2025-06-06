@@ -231,7 +231,8 @@
         }
       },
       "calculator": {
-        "title": "Calculator"
+        "title": "Calculator",
+        "description": "A calculator you can quickly invoke in the search bar, supporting basic math operations."
       }
     }
   },

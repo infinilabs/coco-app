@@ -74,7 +74,7 @@ const Applications = () => {
   };
 
   return (
-    <div className="text-sm">
+    <>
       <div className="text-[#999]">
         <p className="font-bold mb-2">
           {t("settings.extensions.application.details.searchScope")}
@@ -119,7 +119,7 @@ const Applications = () => {
           );
         })}
       </ul>
-    </div>
+    </>
   );
 };
 

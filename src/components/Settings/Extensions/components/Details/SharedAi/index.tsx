@@ -107,7 +107,7 @@ const SharedAi: FC<SharedAiProps> = (props) => {
   };
 
   return (
-    <div className="text-sm">
+    <>
       <div className="text-[#999]">{renderDescription()}</div>
 
       <div className="mt-6 text-[#333] dark:text-white/90">LinkedAssistant</div>
@@ -138,7 +138,7 @@ const SharedAi: FC<SharedAiProps> = (props) => {
           </div>
         );
       })}
-    </div>
+    </>
   );
 };
 
