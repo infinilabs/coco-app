@@ -6,6 +6,7 @@ import Application from "./Application";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import SharedAi from "./SharedAi";
 import AiOverview from "./AiOverview";
+import Calculator from "./Calculator";
 
 const Details = () => {
   const { rootState } = useContext(ExtensionsContext);
@@ -51,6 +52,10 @@ const Details = () => {
     if (id === "AIOverview") {
       return <AiOverview />;
     }
+
+    if (id === "Calculator") {
+      return <Calculator />;
+    }
   };
 
   return (
@@ -59,7 +64,7 @@ const Details = () => {
         {rootState.activeExtension?.title}
       </h2>
 
-      <div className="pr-4 pb-4">{renderContent()}</div>
+      <div className="pr-4 pb-4 text-sm">{renderContent()}</div>
     </div>
   );
 };

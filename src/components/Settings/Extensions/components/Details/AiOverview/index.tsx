@@ -52,7 +52,7 @@ const AiOverview = () => {
         setAssistant={setAiOverviewAssistant}
       />
 
-      <div className="text-sm">
+      <>
         <div className="mt-6 text-[#333] dark:text-white/90">
           AI Overview Trigger
         </div>
@@ -83,7 +83,7 @@ const AiOverview = () => {
             );
           })}
         </div>
-      </div>
+      </>
     </>
   );
 };
