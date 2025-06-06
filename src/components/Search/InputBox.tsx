@@ -78,7 +78,6 @@ export default function ChatInput({
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
   // const sessionId = useConnectStore((state) => state.currentSessionId);
 
-  const showTooltip = useAppStore((state) => state.showTooltip);
   const setBlurred = useAppStore((state) => state.setBlurred);
   const isTauri = useAppStore((state) => state.isTauri);
 
@@ -202,7 +201,7 @@ export default function ChatInput({
         disabledChange={disabledChange}
       />
 
-      {showTooltip && !isChatMode && sourceData && (
+      {!isChatMode && sourceData && (
         <div
           className={`absolute ${
             lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-25px)]"
@@ -212,7 +211,7 @@ export default function ChatInput({
         </div>
       )}
 
-      {/* {showTooltip && (
+      {/* 
       <div
         className={clsx(
           `absolute ${
@@ -225,7 +224,7 @@ export default function ChatInput({
       >
         <VisibleKey shortcut={returnToInput} />
       </div>
-    )} */}
+     */}
 
       {!isChatMode &&
         isTauri &&
@@ -251,7 +250,7 @@ export default function ChatInput({
       }}
     /> */}
 
-      {showTooltip && isChatMode && (
+      {isChatMode && (
         <div
           className={`absolute ${
             lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-30px)]"
@@ -329,7 +328,6 @@ export default function ChatInput({
         setIsDeepThinkActive={setIsDeepThinkActive}
         isMCPActive={isMCPActive}
         setIsMCPActive={setIsMCPActive}
-        showTooltip={showTooltip}
         changeMode={changeMode}
       />
     </div>

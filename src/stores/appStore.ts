@@ -5,6 +5,7 @@ import { AppEndpoint } from "@/types/index";
 import platformAdapter from "@/utils/platformAdapter";
 
 const ENDPOINT_CHANGE_EVENT = "endpoint-changed";
+const TOOLTIP_CHANGE_EVENT = "showTooltip-changed";
 
 interface ErrorMessage {
   id: string;
@@ -52,7 +53,13 @@ export const useAppStore = create<IAppStore>()(
   persist(
     (set) => ({
       showTooltip: true,
-      setShowTooltip: (showTooltip: boolean) => set({ showTooltip }),
+      setShowTooltip: async (showTooltip: boolean) => {
+        set({ showTooltip })
+
+        await platformAdapter.emitEvent(TOOLTIP_CHANGE_EVENT, {
+          showTooltip,
+        });
+      },
       errors: [],
       addError: (
         message: string,
@@ -106,6 +113,15 @@ export const useAppStore = create<IAppStore>()(
       isPinned: false,
       setIsPinned: (isPinned: boolean) => set({ isPinned }),
       initializeListeners: () => {
+        platformAdapter.listenEvent(
+          TOOLTIP_CHANGE_EVENT,
+          (event: any) => {
+            const { showTooltip } =
+              event.payload;
+            set({ showTooltip });
+          }
+        );
+
         return platformAdapter.listenEvent(
           ENDPOINT_CHANGE_EVENT,
           (event: any) => {

@@ -16,6 +16,9 @@ export interface EventPayloads {
     endpoint_http: string;
     endpoint_websocket: string;
   };
+  "showTooltip-changed": {
+    showTooltip: boolean;
+  };
   "auth-changed": {
     auth: Record<string, unknown>;
   };
@@ -107,5 +110,5 @@ export interface SystemOperations {
 // Base platform adapter interface
 export interface BasePlatformAdapter
   extends WindowOperations,
-    ThemeAndEvents,
-    SystemOperations {}
+  ThemeAndEvents,
+  SystemOperations { }

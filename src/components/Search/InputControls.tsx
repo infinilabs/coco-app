@@ -31,7 +31,6 @@ interface InputControlsProps {
   hasModules?: string[];
   searchPlaceholder?: string;
   chatPlaceholder?: string;
-  showTooltip?: boolean;
   changeMode?: (isChatMode: boolean) => void;
 }
 
@@ -45,7 +44,6 @@ const InputControls = ({
   setIsMCPActive,
   isChatPage,
   hasModules,
-  showTooltip,
   changeMode,
 }: InputControlsProps) => {
   const { t } = useTranslation();
@@ -348,16 +346,14 @@ const InputControls = ({
 
       {isChatPage || hasModules?.length !== 2 ? null : (
         <div className="relative w-16 flex justify-end items-center">
-          {showTooltip && (
-            <div className="absolute right-[52px] -top-2 z-10">
-              <VisibleKey
-                shortcut={modeSwitch}
-                onKeyPress={() => {
-                  changeMode && changeMode(!isChatMode);
-                }}
-              />
-            </div>
-          )}
+          <div className="absolute right-[52px] -top-2 z-10">
+            <VisibleKey
+              shortcut={modeSwitch}
+              onKeyPress={() => {
+                changeMode && changeMode(!isChatMode);
+              }}
+            />
+          </div>
 
           <ChatSwitch
             isChatMode={isChatMode}
