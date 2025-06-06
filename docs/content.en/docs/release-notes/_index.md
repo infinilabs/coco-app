@@ -15,6 +15,7 @@ Information about release notes of Coco Server is provided here.
 
 - feat: ai overview support is enabled with shortcut #597
 - feat: add key monitoring during reset #615
+- feat: calculator extension add description #623
 
 ### 🐛 Bug fix
 
