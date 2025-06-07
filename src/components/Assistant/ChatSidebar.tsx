@@ -39,8 +39,8 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     >
       {isSidebarOpen && (
         <HistoryList
-          id={HISTORY_PANEL_ID}
-          list={chats}
+          historyPanelId={HISTORY_PANEL_ID}
+          chats={chats}
           active={activeChat}
           onSearch={onSearch}
           onRefresh={fetchChatHistory}
