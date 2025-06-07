@@ -233,6 +233,34 @@
       "calculator": {
         "title": "Calculator",
         "description": "A calculator you can quickly invoke in the search bar, supporting basic math operations."
+      },
+      "shardAi": {
+        "details": {
+          "linkedAssistant": {
+            "title": "Linked Assistant",
+            "label": {
+              "cocoServer": "Coco Server",
+              "aiAssistant": "AI Assistant"
+            }
+          }
+        }
+      },
+      "quickAiAccess": {
+        "description": "Quick AI access allows you to start a conversation immediately from the search box using the Tab key."
+      },
+      "aiOverview": {
+        "description": "AI Overview generates concise summaries based on your search results, helping you quickly grasp key information without reading every document.",
+        "details": {
+          "aiOverviewTrigger": {
+            "title": "AI Overview Trigger",
+            "description": "AI Overview will be triggered only when all of the following conditions are met.(search results are sourced from Coco Server's result statistics)",
+            "label": {
+              "minCharLen": "Minimum Input Length(characters)",
+              "minDelay": "Delay After Typing Stops(seconds)",
+              "minQuantity": "Minimum Number of Search Results"
+            }
+          }
+        }
       }
     }
   },

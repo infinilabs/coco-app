@@ -233,6 +233,34 @@
       "calculator": {
         "title": "计算器",
         "description": "在搜索框中快速调用的计算工具，支持基本数学运算。"
+      },
+      "shardAi": {
+        "details": {
+          "linkedAssistant": {
+            "title": "关联助手",
+            "label": {
+              "cocoServer": "Coco Server",
+              "aiAssistant": "AI 助手"
+            }
+          }
+        }
+      },
+      "quickAiAccess": {
+        "description": "通过 Tab 键，你可以立即从搜索框中启动与 AI 的对话。"
+      },
+      "aiOverview": {
+        "description": "AI Overview 根据你的搜索结果生成简洁的摘要，帮助你快速掌握关键信息，无需逐一阅读每份文档。",
+        "details": {
+          "aiOverviewTrigger": {
+            "title": "AI Overview 触发条件",
+            "description": "仅当满足以下所有条件时，AI Overview 才会被触发。（搜索结果来源为 Coco Server 的结果统计）",
+            "label": {
+              "minCharLen": "最小输入长度（字符）",
+              "minDelay": "输入停止延迟（秒）",
+              "minQuantity": "最小搜索结果数"
+            }
+          }
+        }
       }
     }
   },

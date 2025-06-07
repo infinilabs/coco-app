@@ -6,6 +6,7 @@ import platformAdapter from "@/utils/platformAdapter";
 import { useAsyncEffect, useMount } from "ahooks";
 import { FC, useMemo, useState } from "react";
 import { ExtensionId } from "../../..";
+import { useTranslation } from "react-i18next";
 
 interface SharedAiProps {
   id: ExtensionId;
@@ -22,6 +23,7 @@ const SharedAi: FC<SharedAiProps> = (props) => {
   const [assistantList, setAssistantList] = useState<any[]>([assistant]);
   const addError = useAppStore((state) => state.addError);
   const { fetchAssistant } = AssistantFetcher({});
+  const { t } = useTranslation();
 
   useMount(async () => {
     try {
@@ -72,7 +74,9 @@ const SharedAi: FC<SharedAiProps> = (props) => {
   const selectList = useMemo(() => {
     return [
       {
-        label: "Coco Server",
+        label: t(
+          "settings.extensions.shardAi.details.linkedAssistant.label.cocoServer"
+        ),
         value: server?.id,
         icon: server?.provider?.icon,
         data: serverList,
@@ -83,7 +87,9 @@ const SharedAi: FC<SharedAiProps> = (props) => {
         },
       },
       {
-        label: "AI Assistant",
+        label: t(
+          "settings.extensions.shardAi.details.linkedAssistant.label.aiAssistant"
+        ),
         value: assistant?.id,
         icon: assistant?.icon,
         data: assistantList,
@@ -98,11 +104,11 @@ const SharedAi: FC<SharedAiProps> = (props) => {
 
   const renderDescription = () => {
     if (id === "QuickAIAccess") {
-      return "Quick AI access allows you to start a conversation immediately from the search box using the tab key.";
+      return t("settings.extensions.quickAiAccess.description");
     }
 
     if (id === "AIOverview") {
-      return "AI Summarize generates concise summaries based on your search results, helping you quickly grasp key information without reading every document.";
+      return t("settings.extensions.aiOverview.description");
     }
   };
 
@@ -110,7 +116,9 @@ const SharedAi: FC<SharedAiProps> = (props) => {
     <>
       <div className="text-[#999]">{renderDescription()}</div>
 
-      <div className="mt-6 text-[#333] dark:text-white/90">LinkedAssistant</div>
+      <div className="mt-6 text-[#333] dark:text-white/90">
+        {t("settings.extensions.shardAi.details.linkedAssistant.title")}
+      </div>
 
       {selectList.map((item) => {
         const { label, value, icon, data, onChange } = item;
