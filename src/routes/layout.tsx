@@ -45,6 +45,7 @@ export default function Layout() {
     const unlistenTheme = await platformAdapter.listenThemeChanged(
       (theme: AppTheme) => {
         setTheme(theme);
+        setIsDark(theme === "dark");
       }
     );
 
