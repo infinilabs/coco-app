@@ -4,7 +4,7 @@ use tauri::{Manager, Runtime};
 use tauri_plugin_autostart::ManagerExt;
 
 /// If the state reported from the OS and the state stored by us differ, our state is
-/// prioritized. Update the OS state to make them consistent.
+/// prioritized and seen as the correct one. Update the OS state to make them consistent.
 pub fn ensure_autostart_state_consistent(app: &mut tauri::App) -> Result<(), String> {
     let autostart_manager = app.autolaunch();
 
@@ -30,8 +30,11 @@ pub fn ensure_autostart_state_consistent(app: &mut tauri::App) -> Result<(), Str
                 log::info!("inconsistent autostart states fixed");
             }
             Err(e) => {
-              log::error!("failed to fix inconsistent autostart state due to error [{}]", e);
-              return Err(e.to_string());
+                log::error!(
+                    "failed to fix inconsistent autostart state due to error [{}]",
+                    e
+                );
+                return Err(e.to_string());
             }
         }
     }
