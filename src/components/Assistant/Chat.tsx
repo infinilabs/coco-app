@@ -392,8 +392,9 @@ const ChatAI = memo(
                     handleSendMessage(value, activeChat)
                   }
                   getFileUrl={getFileUrl}
+                  showGreetings={!askAiSessionId}
                 />
-                <Splash assistantIDs={assistantIDs} startPage={startPage} />
+                <Splash assistantIDs={assistantIDs} startPage={startPage} showSplash={!askAiSessionId} />
               </>
             ) : (
               <ConnectPrompt />

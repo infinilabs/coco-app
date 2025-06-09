@@ -140,6 +140,7 @@ pub async fn new_chat<R: Runtime>(
     let mut headers = HashMap::new();
     headers.insert("WEBSOCKET-SESSION-ID".to_string(), websocket_id.into());
 
+    println!("Send message with params: {:?}", &query_params);
     let response =
         HttpClient::advanced_post(&server_id, "/chat/_new", Some(headers), query_params, body)
             .await
@@ -168,6 +169,7 @@ pub async fn send_message<R: Runtime>(
     message: String,
     query_params: Option<HashMap<String, Value>>, //search,deep_thinking
 ) -> Result<String, String> {
+    println!("1111: {:?}", &query_params);
     let path = format!("/chat/{}/_send", session_id);
     let msg = ChatRequestMessage {
         message: Some(message),
@@ -184,9 +186,8 @@ pub async fn send_message<R: Runtime>(
         query_params,
         Some(body),
     )
-        .await
-        .map_err(|e| format!("Error cancel session: {}", e))?;
-
+    .await
+    .map_err(|e| format!("Error cancel session: {}", e))?;
 
     common::http::get_response_body_text(response).await
 }
@@ -228,8 +229,8 @@ pub async fn update_session_chat(
         None,
         Some(reqwest::Body::from(serde_json::to_string(&body).unwrap())),
     )
-        .await
-        .map_err(|e| format!("Error updating session: {}", e))?;
+    .await
+    .map_err(|e| format!("Error updating session: {}", e))?;
 
     Ok(response.status().is_success())
 }
@@ -257,8 +258,8 @@ pub async fn assistant_search<R: Runtime>(
         None,
         Some(reqwest::Body::from(body.to_string())),
     )
-        .await
-        .map_err(|e| format!("Error searching assistants: {}", e))?;
+    .await
+    .map_err(|e| format!("Error searching assistants: {}", e))?;
 
     response
         .json::<Value>()
@@ -277,8 +278,8 @@ pub async fn assistant_get<R: Runtime>(
         &format!("/assistant/{}", assistant_id),
         None, // headers
     )
-        .await
-        .map_err(|e| format!("Error getting assistant: {}", e))?;
+    .await
+    .map_err(|e| format!("Error getting assistant: {}", e))?;
 
     response
         .json::<Value>()
@@ -318,7 +319,7 @@ pub async fn assistant_get_multi<R: Runtime>(
                 &path,
                 None, // headers
             )
-                .await;
+            .await;
             match res_response {
                 Ok(response) => response
                     .json::<serde_json::Value>()
@@ -380,7 +381,8 @@ pub fn remove_icon_fields(json: &str) -> String {
         } else {
             "".to_string()
         }
-    }).to_string()
+    })
+    .to_string()
 }
 
 #[tauri::command]
@@ -407,7 +409,7 @@ pub async fn ask_ai<R: Runtime>(
         None,
         Some(reqwest::Body::from(body.to_string())),
     )
-        .await?;
+    .await?;
 
     if response.status() == 429 {
         log::warn!("Rate limit exceeded for assistant: {}", &assistant_id);

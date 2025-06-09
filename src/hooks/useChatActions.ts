@@ -142,7 +142,7 @@ export function useChatActions(
         return;
       }
 
-      //console.log("sourceDataIds", sourceDataIds, MCPIds, websocketSessionId, id);
+      console.log("sourceDataIds", sourceDataIds, MCPIds, websocketSessionId, id);
       const queryParams = {
         search: isSearchActive,
         deep_thinking: isDeepThinkActive,
@@ -228,6 +228,7 @@ export function useChatActions(
         mcp_servers: MCPIds?.join(",") || "",
         assistant_id: currentAssistant?._id || '',
       }
+      console.log("sourceDataIds", sourceDataIds, MCPIds);
       let response: any;
       if (isTauri) {
         if (!currentService?.id) return;

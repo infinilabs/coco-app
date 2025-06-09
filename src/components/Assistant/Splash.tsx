@@ -21,9 +21,10 @@ export interface Response {
 interface SplashProps {
   assistantIDs?: string[];
   startPage?: StartPage;
+  showSplash?: boolean;
 }
 
-const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
+const Splash = ({ assistantIDs = [], startPage, showSplash }: SplashProps) => {
   const isTauri = useAppStore((state) => state.isTauri);
   const currentService = useConnectStore((state) => state.currentService);
   const visibleStartPage = useConnectStore((state) => state.visibleStartPage);
@@ -63,7 +64,9 @@ const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
     } else {
       response = startPage;
     }
-    setVisibleStartPage(Boolean(response?.enabled));
+    setVisibleStartPage(
+      showSplash !== undefined ? showSplash : Boolean(response?.enabled)
+    );
     setSettings(response);
   };
 

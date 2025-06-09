@@ -202,6 +202,7 @@ const AskAi = () => {
       setAskAiServerId(serverId);
       setAskAiSessionId(sessionIdRef.current);
       setAskAiAssistantId(assistantId);
+      
     },
     {
       exactMatch: true,
