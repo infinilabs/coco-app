@@ -35,7 +35,6 @@ const HistoryListContent: FC<HistoryListContentProps> = ({
   const [highlightId, setHighlightId] = useState<string>("");
 
   const sortedList = useMemo(() => {
-    console.log(333333, chats);
     if (isNil(chats)) return {};
 
     const now = dayjs();
@@ -65,7 +64,6 @@ const HistoryListContent: FC<HistoryListContentProps> = ({
 
   // Flatten sorted list for navigation while keeping original structure for display
   const flattenedChats = useMemo(() => {
-    console.log(4444444, sortedList);
     return Object.values(sortedList).flat();
   }, [sortedList]);
 
