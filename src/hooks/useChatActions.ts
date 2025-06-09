@@ -22,13 +22,19 @@ export function useChatActions(
   isMCPActive?: boolean,
   changeInput?: (val: string) => void,
   websocketSessionId?: string,
-  showChatHistory?: boolean,
+  showChatHistory?: boolean
 ) {
-  const isCurrentLogin = useAuthStore(state => state.isCurrentLogin);
+  const isCurrentLogin = useAuthStore((state) => state.isCurrentLogin);
 
   const isTauri = useAppStore((state) => state.isTauri);
   const addError = useAppStore((state) => state.addError);
-  const { currentAssistant, setCurrentAssistant, assistantList, setVisibleStartPage, currentService } = useConnectStore();
+  const {
+    currentAssistant,
+    setCurrentAssistant,
+    assistantList,
+    setVisibleStartPage,
+    currentService,
+  } = useConnectStore();
   const { connected } = useChatStore();
   const sourceDataIds = useSearchStore((state) => state.sourceDataIds);
   const MCPIds = useSearchStore((state) => state.MCPIds);
@@ -48,14 +54,10 @@ export function useChatActions(
         });
         response = response ? JSON.parse(response) : null;
       } else {
-        const [_error, res] = await Post(
-          `/chat/${activeChat?._id}/_close`,
-          {}
-        );
+        const [_error, res] = await Post(`/chat/${activeChat?._id}/_close`, {});
         response = res;
       }
       console.log("_close", response);
-
     },
     [currentService?.id, isTauri]
   );
@@ -111,7 +113,9 @@ export function useChatActions(
       const hits = response?.hits?.hits || [];
       // set current assistant
       const lastAssistantId = hits[hits.length - 1]?._source?.assistant_id;
-      const matchedAssistant = assistantList?.find((assistant) => assistant._id === lastAssistantId);
+      const matchedAssistant = assistantList?.find(
+        (assistant) => assistant._id === lastAssistantId
+      );
       if (matchedAssistant && !callback) {
         setCurrentAssistant(matchedAssistant);
       }
@@ -149,7 +153,7 @@ export function useChatActions(
         mcp: isMCPActive,
         datasource: sourceDataIds?.join(",") || "",
         mcp_servers: MCPIds?.join(",") || "",
-        assistant_id: currentAssistant?._id || '',
+        assistant_id: currentAssistant?._id || "",
       };
       let response: any;
       if (isTauri) {
@@ -226,8 +230,8 @@ export function useChatActions(
         mcp: isMCPActive,
         datasource: sourceDataIds?.join(",") || "",
         mcp_servers: MCPIds?.join(",") || "",
-        assistant_id: currentAssistant?._id || '',
-      }
+        assistant_id: currentAssistant?._id || "",
+      };
       let response: any;
       if (isTauri) {
         if (!currentService?.id) return;
@@ -290,10 +294,7 @@ export function useChatActions(
 
       await chatHistory(activeChat, (chat) => sendMessage(content, chat, id));
     },
-    [
-      chatHistory,
-      sendMessage,
-    ]
+    [chatHistory, sendMessage]
   );
 
   const openSessionChat = useCallback(
@@ -316,7 +317,6 @@ export function useChatActions(
 
       console.log("_open", response);
       return response;
-
     },
     [currentService?.id, isTauri]
   );
@@ -324,9 +324,10 @@ export function useChatActions(
   const getChatHistory = useCallback(async () => {
     let response: any;
     if (isTauri) {
-      if (!currentService?.id || !isCurrentLogin) {
+      console.log("currentService.enabled", currentService.enabled);
+      if (!currentService?.id || !isCurrentLogin || !currentService?.enabled) {
         setChats([]);
-        return
+        return;
       }
 
       response = await platformAdapter.commands("chat_history", {
@@ -348,52 +349,65 @@ export function useChatActions(
     console.log("_history", response);
     const hits = response?.hits?.hits || [];
     setChats(hits);
-  }, [currentService?.id, keyword, isTauri]);
+  }, [currentService?.id, keyword, isTauri, currentService?.enabled]);
 
   useEffect(() => {
     showChatHistory && connected && getChatHistory();
   }, [showChatHistory, connected, getChatHistory, currentService?.id]);
 
-  const createChatWindow = useCallback(async (createWin: any) => {
-    if (isTauri) {
-      createWin &&
-        createWin({
-          label: "chat",
-          title: "Coco Chat",
-          dragDropEnabled: true,
-          center: true,
-          width: 1000,
-          height: 800,
-          minWidth: 1000,
-          minHeight: 800,
-          alwaysOnTop: false,
-          skipTaskbar: false,
-          decorations: true,
-          closable: true,
-          url: "/ui/chat",
-        });
-    }
-  }, [isTauri]);
+  const createChatWindow = useCallback(
+    async (createWin: any) => {
+      if (isTauri) {
+        createWin &&
+          createWin({
+            label: "chat",
+            title: "Coco Chat",
+            dragDropEnabled: true,
+            center: true,
+            width: 1000,
+            height: 800,
+            minWidth: 1000,
+            minHeight: 800,
+            alwaysOnTop: false,
+            skipTaskbar: false,
+            decorations: true,
+            closable: true,
+            url: "/ui/chat",
+          });
+      }
+    },
+    [isTauri]
+  );
 
   const handleSearch = (keyword: string) => {
     setKeyword(keyword);
   };
 
-  const handleRename = useCallback(async (chatId: string, title: string) => {
-    if (!currentService?.id) return;
+  const handleRename = useCallback(
+    async (chatId: string, title: string) => {
+      if (!currentService?.id) return;
 
-    await platformAdapter.commands("update_session_chat", {
-      serverId: currentService?.id,
-      sessionId: chatId,
-      title,
-    });
-  }, [currentService?.id]);
+      await platformAdapter.commands("update_session_chat", {
+        serverId: currentService?.id,
+        sessionId: chatId,
+        title,
+      });
+    },
+    [currentService?.id]
+  );
 
-  const handleDelete = useCallback(async (chatId: string) => {
-    if (!currentService?.id) return;
+  const handleDelete = useCallback(
+    async (chatId: string) => {
+      if (!currentService?.id) return;
 
-    await platformAdapter.commands("delete_session_chat", currentService?.id, chatId);
-  }, [currentService?.id]);
+      await platformAdapter.commands(
+        "delete_session_chat",
+        currentService?.id,
+        chatId
+      );
+    },
+    [currentService?.id]
+  );
 
   return {
     chatClose,

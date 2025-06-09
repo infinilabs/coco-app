@@ -3,7 +3,7 @@ import { persist, subscribeWithSelector } from "zustand/middleware";
 import { produce } from "immer";
 
 import platformAdapter from "@/utils/platformAdapter";
-import { Server } from "@/types/server"
+import { Server } from "@/types/server";
 
 const CONNECTOR_CHANGE_EVENT = "connector_data_change";
 const DATASOURCE_CHANGE_EVENT = "datasourceData_change";
@@ -64,19 +64,20 @@ export const useConnectStore = create<IConnectStore>()(
             eula: "http://infinilabs.com/eula.txt",
             privacy_policy: "http://infinilabs.com/privacy_policy.txt",
             banner: "https://coco.infini.cloud/banner.jpg",
-            description: "Coco AI Server - Search, Connect, Collaborate, AI-powered enterprise search, all in one space."
+            description:
+              "Coco AI Server - Search, Connect, Collaborate, AI-powered enterprise search, all in one space.",
           },
           version: {
-            number: "1.0.0_SNAPSHOT"
+            number: "1.0.0_SNAPSHOT",
           },
           public: false,
           available: true,
           auth_provider: {
             sso: {
-              url: "https://coco.infini.cloud/sso/login/"
-            }
+              url: "https://coco.infini.cloud/sso/login/",
+            },
           },
-          priority: 0
+          priority: 0,
         },
         setCurrentService: (server: any) => {
           console.log("set default server:", server);
