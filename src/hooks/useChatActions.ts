@@ -324,10 +324,8 @@ export function useChatActions(
   const getChatHistory = useCallback(async () => {
     let response: any;
     if (isTauri) {
-      console.log("currentService.enabled", currentService.enabled);
       if (!currentService?.id || !isCurrentLogin || !currentService?.enabled) {
-        setChats([]);
-        return;
+        return setChats([]);
       }
 
       response = await platformAdapter.commands("chat_history", {
