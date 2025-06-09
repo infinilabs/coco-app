@@ -19,8 +19,6 @@ use std::sync::Mutex;
 use std::sync::OnceLock;
 use tauri::async_runtime::block_on;
 use tauri::plugin::TauriPlugin;
-#[cfg(target_os = "macos")]
-use tauri::ActivationPolicy;
 use tauri::{
     AppHandle, Emitter, Manager, PhysicalPosition, Runtime, WebviewWindow, Window, WindowEvent,
 };
@@ -163,6 +161,13 @@ pub fn run() {
             crate::common::document::open,
         ])
         .setup(|app| {
+            #[cfg(target_os = "macos")]
+            {
+                log::trace!("hiding Dock icon on macOS");
+                app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+                log::trace!("Dock icon should be hidden now");
+            }
+
             let app_handle = app.handle().clone();
             GLOBAL_TAURI_APP_HANDLE
                 .set(app_handle.clone())
@@ -181,13 +186,6 @@ pub fn run() {
             shortcut::enable_shortcut(app);
 
             ensure_autostart_state_consistent(app)?;
-
-            #[cfg(target_os = "macos")]
-            {
-                log::trace!("hiding Dock icon on macOS");
-                app.set_dock_visibility(false);
-                log::trace!("Dock icon should be hidden now");
-            }
 
             // app.listen("theme-changed", move |event| {
             //     if let Ok(payload) = serde_json::from_str::<ThemeChangedPayload>(event.payload()) {
