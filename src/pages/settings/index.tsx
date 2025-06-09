@@ -12,6 +12,8 @@ import Footer from "@/components/Common/UI/SettingsFooter";
 import { useTray } from "@/hooks/useTray";
 import Advanced from "@/components/Settings/Advanced";
 import Extensions from "@/components/Settings/Extensions";
+import { useConnectStore } from "@/stores/connectStore";
+import platformAdapter from "@/utils/platformAdapter";
 
 const tabIndexMap: { [key: string]: number } = {
   general: 0,
@@ -45,8 +47,13 @@ function SettingsPage() {
       }
     });
 
+    const unsubscribeConnect = useConnectStore.subscribe((state) => {
+      platformAdapter.emitEvent("change-connect-store", state);
+    });
+
     return () => {
       unlisten.then((fn) => fn());
+      unsubscribeConnect();
     };
   }, []);
 

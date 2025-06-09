@@ -112,6 +112,7 @@ export const useSyncStore = () => {
   const setAiOverviewMinQuantity = useExtensionsStore((state) => {
     return state.setAiOverviewMinQuantity;
   });
+  const setCurrentService = useConnectStore((state) => state.setCurrentService);
 
   useEffect(() => {
     if (!resetFixedWindow) {
@@ -175,8 +176,12 @@ export const useSyncStore = () => {
       }),
 
       platformAdapter.listenEvent("change-connect-store", ({ payload }) => {
-        const { connectionTimeout, querySourceTimeout, allowSelfSignature } =
-          payload;
+        const {
+          connectionTimeout,
+          querySourceTimeout,
+          allowSelfSignature,
+          currentService,
+        } = payload;
         if (isNumber(connectionTimeout)) {
           setConnectionTimeout(connectionTimeout);
         }
@@ -184,6 +189,7 @@ export const useSyncStore = () => {
           setQueryTimeout(querySourceTimeout);
         }
         setAllowSelfSignature(allowSelfSignature);
+        setCurrentService(currentService);
       }),
 
       platformAdapter.listenEvent("change-appearance-store", ({ payload }) => {

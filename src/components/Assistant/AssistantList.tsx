@@ -51,9 +51,13 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
 
   const { pagination, runAsync } = usePagination(fetchAssistant, {
     defaultPageSize: 5,
-    refreshDeps: [currentService?.id, debounceKeyword],
+    refreshDeps: [currentService?.id, debounceKeyword, currentService?.enabled],
     onSuccess(data) {
       setAssistants(data.list);
+
+      if (data.list.length === 0) {
+        setCurrentAssistant(void 0);
+      }
     },
   });
 

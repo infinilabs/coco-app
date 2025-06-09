@@ -77,6 +77,10 @@ export function ServerList({ reconnect, clearChat }: ServerListProps) {
   );
 
   useEffect(() => {
+    fetchServers(true);
+  }, [currentService?.enabled]);
+
+  useEffect(() => {
     if (!askAiServerId || serverList.length === 0) return;
 
     const matched = serverList.find((server) => {

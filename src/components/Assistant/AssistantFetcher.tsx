@@ -31,6 +31,13 @@ export const AssistantFetcher = ({
     serverId?: string;
   }) => {
     try {
+      if (!currentService?.enabled) {
+        return {
+          total: 0,
+          list: [],
+        };
+      }
+
       const { pageSize, current, serverId = currentService?.id } = params;
 
       const from = (current - 1) * pageSize;
