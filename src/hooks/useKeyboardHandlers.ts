@@ -29,7 +29,7 @@ export function useKeyboardHandlers({
       }
 
       // Handle Enter without meta key requirement
-      if (e.code === "Enter" && isChatMode) {
+      if (e.code === "Enter" && !e.shiftKey && isChatMode) {
         e.preventDefault();
         curChatEnd ? handleSubmit() : disabledChange?.();
       }
