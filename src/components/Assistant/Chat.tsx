@@ -81,6 +81,9 @@ const ChatAI = memo(
         useChatStore();
 
       const isCurrentLogin = useAuthStore((state) => state.isCurrentLogin);
+      const setIsCurrentLogin = useAuthStore((state) => {
+        return state.setIsCurrentLogin;
+      });
 
       const visibleStartPage = useConnectStore((state) => {
         return state.visibleStartPage;
@@ -109,6 +112,12 @@ const ChatAI = memo(
       useEffect(() => {
         activeChatProp && setActiveChat(activeChatProp);
       }, [activeChatProp]);
+
+      useEffect(() => {
+        if (currentService?.enabled) return;
+
+        setIsCurrentLogin(false);
+      }, [currentService?.enabled]);
 
       useEffect(() => {
         if (!currentService?.enabled) {
