@@ -1,7 +1,12 @@
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useAsyncEffect, useEventListener, useMount } from "ahooks";
+import {
+  useAsyncEffect,
+  useEventListener,
+  useMount,
+  useTextSelection,
+} from "ahooks";
 import { isArray, isString } from "lodash-es";
 import { error } from "@tauri-apps/plugin-log";
 
@@ -40,6 +45,7 @@ export default function Layout() {
     const unlistenTheme = await platformAdapter.listenThemeChanged(
       (theme: AppTheme) => {
         setTheme(theme);
+        setIsDark(theme === "dark");
       }
     );
 
@@ -83,6 +89,7 @@ export default function Layout() {
   const { i18n } = useTranslation();
   const language = useAppStore((state) => state.language);
   const setLanguage = useAppStore((state) => state.setLanguage);
+  const { text: selectionText } = useTextSelection();
 
   useEffect(() => {
     if (language) {
@@ -108,7 +115,7 @@ export default function Layout() {
 
   // Disable right-click for production environment
   useEventListener("contextmenu", (event) => {
-    if (import.meta.env.DEV) return;
+    if (import.meta.env.DEV || selectionText) return;
 
     event.preventDefault();
   });

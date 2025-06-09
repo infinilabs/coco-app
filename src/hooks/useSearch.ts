@@ -47,6 +47,9 @@ export function useSearch() {
   const aiOverviewDelay = useExtensionsStore((state) => {
     return state.aiOverviewDelay;
   });
+  const aiOverviewMinQuantity = useExtensionsStore((state) => {
+    return state.aiOverviewMinQuantity;
+  });
 
   const { querySourceTimeout } = useConnectStore();
 
@@ -94,9 +97,8 @@ export function useSearch() {
 
     const filteredData = data.filter((item: any) => {
       return (
-        item?.document?.type !== "AI Assistant" &&
-        item?.document?.category !== "Calculator" &&
-        item?.document?.category !== "Application"
+        item?.source?.type === "coco-servers" &&
+        item?.document?.type !== "AI Assistant"
       );
     });
 
@@ -106,7 +108,7 @@ export function useSearch() {
       enabledAiOverview &&
       aiOverviewServer &&
       aiOverviewAssistant &&
-      filteredData.length > 5 &&
+      filteredData.length >= aiOverviewMinQuantity &&
       !disabledExtensions.includes("AIOverview")
     ) {
       timerRef.current = setTimeout(() => {
@@ -210,6 +212,7 @@ export function useSearch() {
       disabledExtensions,
       aiOverviewCharLen,
       aiOverviewDelay,
+      aiOverviewMinQuantity,
     ]
   );
 

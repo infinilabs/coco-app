@@ -47,7 +47,6 @@ const TAURI_STORE_APP_ALIAS: &str = "app_alias";
 const TAURI_STORE_KEY_SEARCH_PATH: &str = "search_path";
 const TAURI_STORE_KEY_DISABLED_APP_LIST: &str = "disabled_app_list";
 
-
 /// We use this as:
 ///
 /// 1. querysource ID
@@ -194,9 +193,9 @@ macro_rules! task_exec_try {
     };
 }
 
-// Fields `engine` and `writer` become unused without app list synchronizer, allow 
+// Fields `engine` and `writer` become unused without app list synchronizer, allow
 // this rather than removing these fields as we will bring the synchronizer back.
-#[allow(dead_code)] 
+#[allow(dead_code)]
 struct ApplicationSearchSourceState {
     engine: Engine<DiskStore>,
     writer: Writer<DiskStore>,
@@ -330,8 +329,19 @@ impl<R: Runtime> Task for SearchApplicationsTask<R> {
         let disabled_app_list = get_disabled_app_list(&self.tauri_app_handle);
 
         // TODO: search via alias, implement this when Pizza engine supports update
+        //
+        // NOTE: we use the Debug impl rather than Display for `self.query_string` as String's Debug
+        // impl won't interrupt escape characters. So for input like:
+        //
+        // ```text
+        // Google
+        // Chrome
+        // ```
+        //
+        // It will be passed to Pizza like "Google\nChrome". Using Display impl would result
+        // in an invalid query DSL and serde will complain.
         let dsl = format!(
-            "{{ \"query\": {{ \"bool\": {{ \"should\": [ {{ \"match\": {{ \"{FIELD_APP_NAME}\": \"{}\" }} }}, {{ \"prefix\": {{ \"{FIELD_APP_NAME}\": \"{}\" }} }} ] }} }} }}", self.query_string, self.query_string);
+            "{{ \"query\": {{ \"bool\": {{ \"should\": [ {{ \"match\": {{ \"{FIELD_APP_NAME}\": {:?} }} }}, {{ \"prefix\": {{ \"{FIELD_APP_NAME}\": {:?} }} }} ] }} }} }}", self.query_string, self.query_string);
 
         let state = state
             .as_mut()
@@ -375,9 +385,9 @@ impl<R: Runtime> Task for SearchApplicationsTask<R> {
 ///
 /// We use this task to index them.
 //
-// This become unused without app list synchronizer, allow this rather than 
+// This become unused without app list synchronizer, allow this rather than
 // removing the task as we will bring the synchronizer back.
-#[allow(dead_code)] 
+#[allow(dead_code)]
 struct IndexNewApplicationsTask {
     applications: Vec<PizzaEngineDraftDoc>,
     callback: Option<tokio::sync::oneshot::Sender<Result<(), String>>>,

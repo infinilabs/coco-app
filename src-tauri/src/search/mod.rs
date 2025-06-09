@@ -92,11 +92,30 @@ pub async fn query_coco_fusion<R: Runtime>(
             query_source_id
         );
 
-        let query_source_trait_object_index = sources_list
+        let opt_query_source_trait_object_index = sources_list
             .iter()
-            .position(|query_source| &query_source.get_type().id == query_source_id).unwrap_or_else(|| {
-            panic!("frontend code invoked {}() with parameter [querysource={}], but we do not have this query source, the states are inconsistent! Available query sources {:?}", function_name!(), query_source_id, sources_list.iter().map(|qs| qs.get_type().id).collect::<Vec<_>>());
-        });
+            .position(|query_source| &query_source.get_type().id == query_source_id);
+
+        let Some(query_source_trait_object_index) = opt_query_source_trait_object_index else {
+            // It is possible (an edge case) that the frontend invokes `query_coco_fusion()` with a
+            // datasource that does not exist in the source list:
+            //
+            // 1. Search applications
+            // 2. Navigate to the application sub page
+            // 3. Disable the application extension in settings
+            // 4. hide the search window
+            // 5. Re-open the search window and search for something
+            //
+            // The application search source is not in the source list because the extension
+            // has been disabled, but the last search is indeed invoked with parameter
+            // `datasource=application`.
+            return Ok(MultiSourceQueryResponse {
+                failed: Vec::new(),
+                hits: Vec::new(),
+                total_hits: 0,
+            });
+        };
+
         let query_source_trait_object = sources_list.remove(query_source_trait_object_index);
         let query_source = query_source_trait_object.get_type();
 

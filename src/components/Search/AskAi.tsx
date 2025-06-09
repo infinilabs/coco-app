@@ -14,8 +14,8 @@ import { useSearchStore } from "@/stores/searchStore";
 import platformAdapter from "@/utils/platformAdapter";
 import useMessageChunkData from "@/hooks/useMessageChunkData";
 import { useAppStore } from "@/stores/appStore";
-import { isMac } from "@/utils/platform";
 import { useExtensionsStore } from "@/stores/extensionsStore";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 interface State {
   serverId?: string;
@@ -78,6 +78,7 @@ const AskAi = () => {
   const setAskAiAssistantId = useSearchStore((state) => {
     return state.setAskAiAssistantId;
   });
+  const modifierKey = useShortcutsStore((state) => state.modifierKey);
 
   useEffect(() => {
     if (state.serverId) return;
@@ -184,14 +185,13 @@ const AskAi = () => {
     }
   }, [askAiMessage]);
 
-  useKeyPress("enter", async (event) => {
-    const { metaKey, ctrlKey } = event;
+  useKeyPress(
+    `${modifierKey}.enter`,
+    async () => {
+      if (isTyping) return;
 
-    if (isTyping) return;
+      const { serverId, assistantId } = state;
 
-    const { serverId, assistantId } = state;
-
-    if ((isMac && metaKey) || (!isMac && ctrlKey)) {
       await platformAdapter.commands("open_session_chat", {
         serverId,
         sessionId: sessionIdRef.current,
@@ -201,13 +201,24 @@ const AskAi = () => {
 
       setAskAiServerId(serverId);
       setAskAiSessionId(sessionIdRef.current);
-      return setAskAiAssistantId(assistantId);
+      setAskAiAssistantId(assistantId);
+    },
+    {
+      exactMatch: true,
     }
+  );
 
-    const copyButton = document.getElementById(COPY_BUTTON_ID);
+  useKeyPress(
+    "enter",
+    () => {
+      const copyButton = document.getElementById(COPY_BUTTON_ID);
 
-    copyButton?.click();
-  });
+      copyButton?.click();
+    },
+    {
+      exactMatch: true,
+    }
+  );
 
   return (
     askAiMessage && (

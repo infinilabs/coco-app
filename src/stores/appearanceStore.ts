@@ -14,7 +14,7 @@ export const useAppearanceStore = create<IAppearanceStore>()(
       (set) => ({
         opacity: 30,
         setOpacity: (opacity) => {
-          return set({ opacity: opacity || 30 });
+          return set({ opacity: opacity });
         },
         snapshotUpdate: false,
         setSnapshotUpdate: (snapshotUpdate) => {

@@ -91,6 +91,7 @@ function SearchChat({
   );
 
   const setTheme = useThemeStore((state) => state.setTheme);
+  const setIsDark = useThemeStore((state) => state.setIsDark);
 
   const isChatModeRef = useRef(false);
   useEffect(() => {
@@ -129,6 +130,7 @@ function SearchChat({
   useEffect(() => {
     if (!theme) return;
 
+    setIsDark(theme === "dark");
     setTheme(theme);
   }, [theme]);
 
@@ -231,10 +233,10 @@ function SearchChat({
     if (isTauri) {
       changeMode(defaultStartupWindow === "chatMode");
     } else {
-      if (hasModules?.length === 1 && hasModules?.includes("chat")) {
-        changeMode(true);
-      } else {
+      if (hasModules?.length > 1) {
         changeMode(defaultModule === "chat");
+      } else {
+        changeMode(hasModules?.includes("chat") ?? false);
       }
     }
   }, []);

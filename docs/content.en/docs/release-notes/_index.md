@@ -15,6 +15,10 @@ Information about release notes of Coco Server is provided here.
 
 - feat: ai overview support is enabled with shortcut #597
 - feat: add key monitoring during reset #615
+- feat: calculator extension add description #623
+- feat: support right-click actions after text selection #624
+- feat: add ai overview minimum number of search results configuration #625
+- feat: add internationalized translations of AI-related extensions #632
 
 ### 🐛 Bug fix
 
@@ -23,6 +27,10 @@ Information about release notes of Coco Server is provided here.
 - fix: resolve regex error on older macOS versions #605
 - fix: fix chat log update and sorting issues #612
 - fix: resolved an issue where number keys were not working on the web #616
+- fix: do not panic when the datasource specified does not exist #618
+- fix: fixed modifier keys not working with continue chat #619
+- fix: invalid DSL error if input contains multiple lines #620
+- fix: fix ai overview hidden height before message #622
 
 ### ✈️ Improvements
 
