@@ -1,4 +1,4 @@
-import { FC, useRef, useCallback } from "react";
+import { FC, useRef, useCallback, useState } from "react";
 import { Input, Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { Ellipsis } from "lucide-react";
 import clsx from "clsx";
@@ -11,11 +11,9 @@ import VisibleKey from "../VisibleKey";
 interface HistoryListItemProps {
   item: Chat;
   isActive: boolean;
-  isEdit: boolean;
   onSelect: (chat: Chat) => void;
   onRename: (chatId: string, title: string) => void;
   onMouseEnter: () => void;
-  setIsEdit: (value: boolean) => void;
   setIsOpen: (value: boolean) => void;
   highlightId: string;
 }
@@ -23,11 +21,9 @@ interface HistoryListItemProps {
 const HistoryListItem: FC<HistoryListItemProps> = ({
   item,
   isActive,
-  isEdit,
   onSelect,
   onRename,
   onMouseEnter,
-  setIsEdit,
   highlightId,
   setIsOpen,
 }) => {
@@ -35,6 +31,8 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
   const moreButtonRef = useRef<HTMLButtonElement>(null);
   const { _id, _source } = item;
   const title = _source?.title ?? _id;
+
+  const [isEdit, setIsEdit] = useState(false);
 
   const onContextMenu = useCallback(
     (e: React.MouseEvent) => {
@@ -47,34 +45,33 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
   );
 
   const handleRename = useCallback(() => {
-      if (highlightId) {
-        console.log(111111111, highlightId);
-        setIsEdit(true);
-      }
-    }, [highlightId]);
-  
-    const menuItems = [
-      // {
-      //   label: "history_list.menu.share",
-      //   icon: Share2,
-      //   onClick: () => {},
-      // },
-      {
-        label: "history_list.menu.rename",
-        icon: Pencil,
-        shortcut: "R",
-        onClick: handleRename,
+    if (highlightId) {
+      setIsEdit(true);
+    }
+  }, [highlightId]);
+
+  const menuItems = [
+    // {
+    //   label: "history_list.menu.share",
+    //   icon: Share2,
+    //   onClick: () => {},
+    // },
+    {
+      label: "history_list.menu.rename",
+      icon: Pencil,
+      shortcut: "R",
+      onClick: handleRename,
+    },
+    {
+      label: "history_list.menu.delete",
+      icon: Trash2,
+      shortcut: "D",
+      iconColor: "#FF2018",
+      onClick: () => {
+        setIsOpen(true);
       },
-      {
-        label: "history_list.menu.delete",
-        icon: Trash2,
-        shortcut: "D",
-        iconColor: "#FF2018",
-        onClick: () => {
-          setIsOpen(true);
-        },
-      },
-    ];
+    },
+  ];
 
   return (
     <li
@@ -88,7 +85,6 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
       )}
       onClick={() => {
         if (!isActive) {
-          console.log("223222");
           setIsEdit(false);
         }
 
@@ -104,8 +100,6 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
       />
 
       <div className="flex-1 flex items-center justify-between gap-2 px-2 overflow-hidden">
-        {JSON.stringify(isEdit)}
-        {JSON.stringify(isActive)}
         {isEdit && isActive ? (
           <Input
             autoFocus

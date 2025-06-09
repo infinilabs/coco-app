@@ -33,7 +33,6 @@ const HistoryList: FC<HistoryListProps> = (props) => {
     onRemove,
   } = props;
   const { t } = useTranslation();
-  const [isEdit, setIsEdit] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [isRefresh, setIsRefresh] = useState(false);
 
@@ -98,10 +97,8 @@ const HistoryList: FC<HistoryListProps> = (props) => {
         <HistoryListContent
           chats={chats}
           active={active}
-          isEdit={isEdit}
           onSelect={onSelect}
           onRename={onRename}
-          setIsEdit={setIsEdit}
           onRemove={onRemove}
         />
       </div>
