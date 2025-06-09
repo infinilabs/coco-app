@@ -14,6 +14,7 @@ import { OpenURLWithBrowser } from "@/utils";
 import { useConnectStore } from "@/stores/connectStore";
 import { useAppStore } from "@/stores/appStore";
 import { logout_coco_server, handle_sso_callback } from "@/commands";
+import { copyToClipboard } from "@/utils";
 
 interface ServiceAuthProps {
   setRefreshLoading: (loading: boolean) => void;
@@ -202,7 +203,7 @@ const ServiceAuth = memo(
               <LoadingState
                 onCancel={() => setLoading(false)}
                 onCopy={() => {
-                  navigator.clipboard.writeText(
+                  copyToClipboard(
                     `${currentService?.auth_provider?.sso?.url}/?provider=${currentService?.id}&product=coco&request_id=${ssoRequestID}`
                   );
                 }}
