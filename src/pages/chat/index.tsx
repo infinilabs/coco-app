@@ -69,6 +69,10 @@ export default function Chat({}: ChatProps) {
 
   const getChatHistory = async () => {
     try {
+      if (!currentService.enabled) {
+        return setChats([]);
+      }
+
       let response: any = await chat_history({
         serverId: currentService?.id,
         from: 0,
@@ -83,6 +87,14 @@ export default function Chat({}: ChatProps) {
       console.error("chat_history:", error);
     }
   };
+
+  useEffect(() => {
+    if (!currentService?.enabled) {
+      setActiveChat(void 0);
+    }
+
+    getChatHistory();
+  }, [currentService?.enabled]);
 
   const deleteChat = (chatId: string) => {
     handleDelete(chatId);
@@ -277,7 +289,7 @@ export default function Chat({}: ChatProps) {
             } transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block bg-gray-100 dark:bg-gray-800`}
           >
             <HistoryList
-              list={chats}
+              chats={chats}
               active={activeChat}
               onSearch={handleSearch}
               onRefresh={getChatHistory}

@@ -72,6 +72,12 @@ const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
     fetchData();
   }, [currentService?.id]);
 
+  useEffect(() => {
+    if (currentService?.enabled) return;
+
+    setVisibleStartPage(false);
+  }, [currentService?.enabled]);
+
   const settingsAssistantList = useMemo(() => {
     return assistantList.filter((item) => {
       return settings?.display_assistants?.includes(item?._source?.id);

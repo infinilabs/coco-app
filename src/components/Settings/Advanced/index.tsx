@@ -71,13 +71,8 @@ const Advanced = () => {
       platformAdapter.emitEvent("change-startup-store", state);
     });
 
-    const unsubscribeConnect = useConnectStore.subscribe((state) => {
-      platformAdapter.emitEvent("change-connect-store", state);
-    });
-
     return () => {
       unsubscribeStartup();
-      unsubscribeConnect();
     };
   }, []);
 

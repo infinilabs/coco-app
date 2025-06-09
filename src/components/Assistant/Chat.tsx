@@ -102,10 +102,21 @@ const ChatAI = memo(
       const askAiServerId = useSearchStore((state) => {
         return state.askAiServerId;
       });
+      const currentService = useConnectStore((state) => {
+        return state.currentService;
+      });
 
       useEffect(() => {
         activeChatProp && setActiveChat(activeChatProp);
       }, [activeChatProp]);
+
+      useEffect(() => {
+        if (!currentService?.enabled) {
+          setActiveChat(void 0);
+        }
+
+        getChatHistory();
+      }, [currentService?.enabled]);
 
       useEffect(() => {
         if (askAiServerId || !askAiSessionId || chats.length === 0) return;
