@@ -69,12 +69,7 @@ const HistoryListContent: FC<HistoryListContentProps> = ({
 
   useKeyPress(
     ["uparrow", "downarrow", "enter"],
-    (event, key) => {
-      // Stop event propagation and prevent default
-      event?.preventDefault();
-      event?.stopPropagation();
-      event?.stopImmediatePropagation();
-
+    (_, key) => {
       const currentIndex = flattenedChats.findIndex(
         (chat) => chat._id === highlightId
       );
