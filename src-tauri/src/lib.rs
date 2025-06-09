@@ -13,14 +13,12 @@ use crate::common::register::SearchSourceRegistry;
 // use crate::common::traits::SearchSource;
 use crate::common::{MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL};
 use crate::server::servers::{load_or_insert_default_server, load_servers_token};
-use autostart::{change_autostart, enable_autostart};
+use autostart::{change_autostart, ensure_autostart_state_consistent};
 use lazy_static::lazy_static;
 use std::sync::Mutex;
 use std::sync::OnceLock;
 use tauri::async_runtime::block_on;
 use tauri::plugin::TauriPlugin;
-#[cfg(target_os = "macos")]
-use tauri::ActivationPolicy;
 use tauri::{
     AppHandle, Emitter, Manager, PhysicalPosition, Runtime, WebviewWindow, Window, WindowEvent,
 };
@@ -64,6 +62,8 @@ pub fn run() {
     let ctx = tauri::generate_context!();
 
     let mut app_builder = tauri::Builder::default();
+    // Set up logger first
+    app_builder = app_builder.plugin(set_up_tauri_logger());
 
     #[cfg(desktop)]
     {
@@ -77,7 +77,7 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_autostart::init(
-            MacosLauncher::AppleScript,
+            MacosLauncher::LaunchAgent,
             None,
         ))
         .plugin(tauri_plugin_deep_link::init())
@@ -88,8 +88,7 @@ pub fn run() {
         .plugin(tauri_plugin_screenshots::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
-        .plugin(tauri_plugin_windows_version::init())
-        .plugin(set_up_tauri_logger());
+        .plugin(tauri_plugin_windows_version::init());
 
     // Conditional compilation for macOS
     #[cfg(target_os = "macos")]
@@ -162,10 +161,18 @@ pub fn run() {
             crate::common::document::open,
         ])
         .setup(|app| {
+            #[cfg(target_os = "macos")]
+            {
+                log::trace!("hiding Dock icon on macOS");
+                app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+                log::trace!("Dock icon should be hidden now");
+            }
+
             let app_handle = app.handle().clone();
             GLOBAL_TAURI_APP_HANDLE
                 .set(app_handle.clone())
                 .expect("variable already initialized");
+            log::trace!("global Tauri app handle set");
 
             let registry = SearchSourceRegistry::default();
 
@@ -178,10 +185,7 @@ pub fn run() {
 
             shortcut::enable_shortcut(app);
 
-            enable_autostart(app);
-
-            #[cfg(target_os = "macos")]
-            app.set_activation_policy(ActivationPolicy::Accessory);
+            ensure_autostart_state_consistent(app)?;
 
             // app.listen("theme-changed", move |event| {
             //     if let Ok(payload) = serde_json::from_str::<ThemeChangedPayload>(event.payload()) {
@@ -261,7 +265,7 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
             .await;
     }
 
-    extension::built_in::pizza_engine_runtime::start_pizza_engine_runtime();
+    extension::built_in::pizza_engine_runtime::start_pizza_engine_runtime().await;
 }
 
 #[tauri::command]

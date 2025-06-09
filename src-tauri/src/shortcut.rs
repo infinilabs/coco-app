@@ -17,6 +17,7 @@ const DEFAULT_SHORTCUT: &str = "ctrl+shift+space";
 
 /// Set up the shortcut upon app start.
 pub fn enable_shortcut(app: &App) {
+    log::trace!("setting up Coco hotkey");
     let store = app
         .store(COCO_TAURI_STORE)
         .expect("creating a store should not fail");
@@ -43,6 +44,7 @@ pub fn enable_shortcut(app: &App) {
             .expect("default shortcut should never be invalid");
         _register_shortcut_upon_start(app, default_shortcut);
     }
+    log::trace!("Coco hotkey has been set");
 }
 
 /// Get the stored shortcut as a string, same as [`_get_shortcut()`], except that

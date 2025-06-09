@@ -27,25 +27,50 @@ pub(crate) trait Task: Send + Sync {
 pub(crate) static RUNTIME_TX: OnceLock<tokio::sync::mpsc::UnboundedSender<Box<dyn Task>>> =
     OnceLock::new();
 
-pub(crate) fn start_pizza_engine_runtime() {
-    std::thread::spawn(|| {
-        let rt = tokio::runtime::Runtime::new().unwrap();
+/// This function blocks until the runtime thread is ready for accepting tasks.
+pub(crate) async fn start_pizza_engine_runtime() {
+    const THREAD_NAME: &str = "Pizza engine runtime thread";
 
-        let main = async {
-            let mut states: HashMap<String, Option<Box<dyn SearchSourceState>>> = HashMap::new();
+    log::trace!("starting Pizza engine runtime");
+    let (engine_start_signal_tx, engine_start_signal_rx) = tokio::sync::oneshot::channel();
 
-            let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
-            RUNTIME_TX.set(tx).unwrap();
+    std::thread::Builder::new()
+        .name(THREAD_NAME.into())
+        .spawn(move || {
+            let rt = tokio::runtime::Runtime::new().unwrap();
 
-            while let Some(mut task) = rx.recv().await {
-                let opt_search_source_state = match states.entry(task.search_source_id().into()) {
-                    Entry::Occupied(o) => o.into_mut(),
-                    Entry::Vacant(v) => v.insert(None),
-                };
-                task.exec(opt_search_source_state).await;
-            }
-        };
+            let main = async {
+                let mut states: HashMap<String, Option<Box<dyn SearchSourceState>>> =
+                    HashMap::new();
 
-        rt.block_on(main);
-    });
+                let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
+                RUNTIME_TX.set(tx).unwrap();
+
+                engine_start_signal_tx
+                    .send(())
+                    .expect("engine_start_signal_rx dropped");
+
+                while let Some(mut task) = rx.recv().await {
+                    let opt_search_source_state = match states.entry(task.search_source_id().into())
+                    {
+                        Entry::Occupied(o) => o.into_mut(),
+                        Entry::Vacant(v) => v.insert(None),
+                    };
+                    task.exec(opt_search_source_state).await;
+                }
+            };
+
+            rt.block_on(main);
+        })
+        .unwrap_or_else(|e| {
+            panic!(
+                "failed to start thread [{}] due to error [{}]",
+                THREAD_NAME, e
+            );
+        });
+
+    engine_start_signal_rx
+        .await
+        .expect("engine_start_signal_tx dropped, the runtime thread could be dead");
+    log::trace!("Pizza engine runtime started");
 }

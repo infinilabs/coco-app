@@ -36,6 +36,7 @@ Information about release notes of Coco Server is provided here.
 
 - chore: initialize current assistant from history #606
 - chore: add onContextMenu event #629
+- chore: more logs for the setup process #634
 
 ## 0.5.1 (2025-05-31)
 
