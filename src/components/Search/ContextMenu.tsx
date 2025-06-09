@@ -4,6 +4,7 @@ import { isNil, lowerCase, noop } from "lodash-es";
 import { Copy, Link, SquareArrowOutUpRight } from "lucide-react";
 import { cloneElement, FC, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Input } from "@headlessui/react";
 
 import { useOSKeyPress } from "@/hooks/useOSKeyPress";
 import { useSearchStore } from "@/stores/searchStore";
@@ -11,7 +12,6 @@ import { copyToClipboard, OpenURLWithBrowser } from "@/utils";
 import { isMac } from "@/utils/platform";
 import { CONTEXT_MENU_PANEL_ID } from "@/constants";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
-import { Input } from "@headlessui/react";
 import VisibleKey from "../Common/VisibleKey";
 import platformAdapter from "@/utils/platformAdapter";
 
