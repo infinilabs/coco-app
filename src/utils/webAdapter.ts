@@ -48,7 +48,7 @@ export const createWebAdapter = (): WebPlatformAdapter => {
 
     async listenEvent(event, _callback) {
       console.log("Web mode simulated event listen", event);
-      return () => { };
+      return () => {};
     },
 
     async setAlwaysOnTop(isPinned) {
@@ -110,7 +110,7 @@ export const createWebAdapter = (): WebPlatformAdapter => {
 
     async listenThemeChanged() {
       console.log("Web mode simulated theme change listener");
-      return () => { };
+      return () => {};
     },
 
     async getWebviewWindow() {
@@ -157,14 +157,14 @@ export const createWebAdapter = (): WebPlatformAdapter => {
 
     async listenWindowEvent(event, _callback) {
       console.log("Web mode simulated listen window event:", event);
-      return () => { };
+      return () => {};
     },
 
     isTauri() {
       return false;
     },
 
-    async openExternal(url) {
+    async openUrl(url) {
       console.log(`Web mode opening URL: ${url}`);
       window.open(url, "_blank");
     },
@@ -177,8 +177,16 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     },
 
     async metadata(path, options = {}) {
-      console.log("metadata is not supported in web environment", path, options);
+      console.log(
+        "metadata is not supported in web environment",
+        path,
+        options
+      );
       return Promise.resolve({ isAbsolute: false });
+    },
+
+    async revealItemInDir(path) {
+      console.log("revealItemInDir is not supported in web environment", path);
     },
   };
 };

@@ -88,7 +88,8 @@ pub fn run() {
         .plugin(tauri_plugin_screenshots::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
-        .plugin(tauri_plugin_windows_version::init());
+        .plugin(tauri_plugin_windows_version::init())
+        .plugin(tauri_plugin_opener::init());
 
     // Conditional compilation for macOS
     #[cfg(target_os = "macos")]

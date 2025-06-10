@@ -206,10 +206,10 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       return true;
     },
 
-    async openExternal(url) {
-      const { open } = await import("@tauri-apps/plugin-shell");
+    async openUrl(url) {
+      const { openUrl } = await import("@tauri-apps/plugin-opener");
 
-      open(url);
+      openUrl(url);
     },
 
     isWindows10,
@@ -223,5 +223,11 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     metadata,
+
+    async revealItemInDir(path) {
+      const { revealItemInDir } = await import("@tauri-apps/plugin-opener");
+
+      revealItemInDir(path);
+    },
   };
 };
