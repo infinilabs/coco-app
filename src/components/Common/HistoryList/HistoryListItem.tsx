@@ -10,7 +10,7 @@ import VisibleKey from "../VisibleKey";
 
 interface HistoryListItemProps {
   item: Chat;
-  isActive: boolean;
+  active?: Chat;
   onSelect: (chat: Chat) => void;
   onRename: (chatId: string, title: string) => void;
   onMouseEnter: () => void;
@@ -20,7 +20,7 @@ interface HistoryListItemProps {
 
 const HistoryListItem: FC<HistoryListItemProps> = ({
   item,
-  isActive,
+  active,
   onSelect,
   onRename,
   onMouseEnter,
@@ -31,6 +31,7 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
   const moreButtonRef = useRef<HTMLButtonElement>(null);
   const { _id, _source } = item;
   const title = _source?.title ?? _id;
+  const isActive = item._id === active?._id || item._id === highlightId
 
   const [isEdit, setIsEdit] = useState(false);
 
@@ -95,7 +96,7 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
     >
       <div
         className={clsx("w-1 h-6 rounded-sm bg-[#0072FF]", {
-          "opacity-0": !isActive,
+          "opacity-0": item._id !== active?._id,
         })}
       />
 
