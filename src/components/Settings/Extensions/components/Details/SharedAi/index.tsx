@@ -7,6 +7,7 @@ import { useAsyncEffect, useMount } from "ahooks";
 import { FC, useMemo, useState } from "react";
 import { ExtensionId } from "../../..";
 import { useTranslation } from "react-i18next";
+import { isArray } from "lodash-es";
 
 interface SharedAiProps {
   id: ExtensionId;
@@ -31,11 +32,25 @@ const SharedAi: FC<SharedAiProps> = (props) => {
         "list_coco_servers"
       );
 
-      setServerList(data);
+      if (isArray(data)) {
+        const enabledServers = data.filter((server) => {
+          return server.enabled && server.available;
+        });
 
-      if (server) return;
+        setServerList(enabledServers);
 
-      setServer(data[0]);
+        if (server) {
+          const matchServer = enabledServers.find((item) => {
+            return item.id === server.id;
+          });
+
+          if (matchServer) {
+            return setServer(matchServer);
+          }
+        }
+
+        setServer(enabledServers[0]);
+      }
     } catch (error) {
       addError(String(error));
     }
