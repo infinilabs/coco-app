@@ -36,7 +36,6 @@ interface SearchChatProps {
   searchPlaceholder?: string;
   chatPlaceholder?: string;
 
-  hideCoco?: () => void;
   setIsPinned?: (value: boolean) => void;
   onModeChange?: (isChatMode: boolean) => void;
   isMobile?: boolean;
@@ -49,7 +48,6 @@ function SearchChat({
   hasModules = ["search", "chat"],
   defaultModule = "search",
   theme,
-  hideCoco,
   searchPlaceholder,
   chatPlaceholder,
   showChatHistory = true,
@@ -317,7 +315,6 @@ function SearchChat({
           hasModules={hasModules}
           searchPlaceholder={searchPlaceholder}
           chatPlaceholder={chatPlaceholder}
-          hideCoco={hideCoco}
         />
       </div>
 
@@ -332,7 +329,6 @@ function SearchChat({
               input={input}
               isChatMode={isChatMode}
               changeInput={setInput}
-              hideCoco={hideCoco}
               setIsPinned={setIsPinned}
             />
           </Suspense>

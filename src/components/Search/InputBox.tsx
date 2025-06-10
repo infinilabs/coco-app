@@ -46,7 +46,6 @@ interface ChatInputProps {
   }) => Promise<string | string[] | null>;
   getFileMetadata: (path: string) => Promise<any>;
   getFileIcon: (path: string, size: number) => Promise<string>;
-  hideCoco?: () => void;
   hasModules?: string[];
   searchPlaceholder?: string;
   chatPlaceholder?: string;

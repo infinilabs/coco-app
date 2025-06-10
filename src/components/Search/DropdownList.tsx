@@ -6,7 +6,7 @@ import {
   MouseEvent,
   useMemo,
 } from "react";
-import { useDebounceFn, useUnmount } from "ahooks";
+import { useDebounceFn } from "ahooks";
 import { useTranslation } from "react-i18next";
 
 import { useSearchStore } from "@/stores/searchStore";
@@ -98,11 +98,6 @@ function DropdownList({
     };
   }, []);
 
-  useUnmount(() => {
-    setSelectedIndex(null);
-    setSelectedSearchContent(undefined);
-  });
-
   useEffect(() => {
     if (selectedIndex === null) {
       setSelectedSearchContent(undefined);
@@ -149,6 +144,13 @@ function DropdownList({
     setSelectedIndex(null);
     initializeSelection();
   }, [searchData]);
+
+  useEffect(() => {
+    return () => {
+      setSelectedIndex(null);
+      setSelectedSearchContent(undefined);
+    };
+  }, []);
 
   // Keyboard navigation
   useKeyboardNavigation({

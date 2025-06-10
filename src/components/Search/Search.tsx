@@ -54,11 +54,10 @@ interface SearchProps {
   changeInput: (val: string) => void;
   isChatMode: boolean;
   input: string;
-  hideCoco?: () => void;
   setIsPinned?: (value: boolean) => void;
 }
 
-function Search({ isChatMode, input, hideCoco, setIsPinned }: SearchProps) {
+function Search({ isChatMode, input, setIsPinned }: SearchProps) {
   const mainWindowRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -67,7 +66,7 @@ function Search({ isChatMode, input, hideCoco, setIsPinned }: SearchProps) {
 
       <Footer setIsPinnedWeb={setIsPinned} />
 
-      <ContextMenu hideCoco={hideCoco} />
+      <ContextMenu />
     </div>
   );
 }

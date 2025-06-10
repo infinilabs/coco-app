@@ -34,6 +34,7 @@ Information about release notes of Coco Server is provided here.
 - fix: tab key hides window in chat mode #641
 - fix: arrow keys still navigated search when menu opened with Cmd+K #642
 - fix: input lost when reopening dialog after search #644
+- fix: web page unmount event #645
 
 ### ✈️ Improvements
 

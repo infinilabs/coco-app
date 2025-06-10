@@ -21,7 +21,6 @@ interface WebAppProps {
   hasModules?: string[];
   defaultModule?: "search" | "chat";
   assistantIDs?: string[];
-  hideCoco?: () => void;
   theme?: "auto" | "light" | "dark";
   searchPlaceholder?: string;
   chatPlaceholder?: string;
@@ -29,6 +28,7 @@ interface WebAppProps {
   startPage?: StartPage;
   setIsPinned?: (value: boolean) => void;
   onCancel?: () => void;
+  isOpen?: boolean;
 }
 
 function WebApp({
@@ -43,7 +43,6 @@ function WebApp({
   // token = "cvqt6r02sdb2v3bkgip0x3ixv01f3r2lhnxoz1efbn160wm9og58wtv8t6wrv1ebvnvypuc23dx9pb33aemh",  // http://localhost:9000
   // token = "cv5djeb9om602jdvtnmg6kc1muyn2vcadr6te48j9t9pvt59ewrnwj7fwvxrw3va84j2a0lb5y8194fbr3jd",  // http://43.153.113.88:9000
   serverUrl = "",
-  hideCoco = () => {},
   hasModules = ["search", "chat"],
   defaultModule = "search",
   assistantIDs = [],
@@ -110,7 +109,6 @@ function WebApp({
       )}
       <SearchChat
         isTauri={false}
-        hideCoco={hideCoco}
         hasModules={hasModules}
         defaultModule={defaultModule}
         theme={theme}
