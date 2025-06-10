@@ -24,7 +24,7 @@ export const UserMessage = ({ messageContent }: UserMessageProps) => {
         <CopyButton textToCopy={messageContent} />
       </div>
       <div
-        className="px-3 py-2 bg-white dark:bg-[#202126] rounded-xl border border-black/12 dark:border-black/15 font-normal text-sm text-[#333333] dark:text-[#D8D8D8] cursor-pointer user-select-text"
+        className="px-3 py-2 bg-white dark:bg-[#202126] rounded-xl border border-black/12 dark:border-black/15 font-normal text-sm text-[#333333] dark:text-[#D8D8D8] cursor-pointer user-select-text whitespace-pre-wrap"
         onDoubleClick={(e) => {
           const selection = window.getSelection();
           const range = document.createRange();
