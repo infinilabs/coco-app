@@ -1,9 +1,0 @@
-{
-  "id": "Calculator",
-  "title": "Calculator",
-  "platforms": ["macos", "linux", "windows"],
-  "description": "...",
-  "icon": "font_Calculator",
-  "type": "calculator",
-  "enabled": true
-}
