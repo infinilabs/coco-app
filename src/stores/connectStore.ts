@@ -50,35 +50,7 @@ export const useConnectStore = create<IConnectStore>()(
             })
           );
         },
-        // ... existing code ...
-        currentService: {
-          id: "default_coco_server",
-          builtin: true,
-          enabled: true,
-          name: "Coco Cloud",
-          endpoint: "https://coco.infini.cloud",
-          provider: {
-            name: "INFINI Labs",
-            icon: "https://coco.infini.cloud/icon.png",
-            website: "http://infinilabs.com",
-            eula: "http://infinilabs.com/eula.txt",
-            privacy_policy: "http://infinilabs.com/privacy_policy.txt",
-            banner: "https://coco.infini.cloud/banner.jpg",
-            description:
-              "Coco AI Server - Search, Connect, Collaborate, AI-powered enterprise search, all in one space.",
-          },
-          version: {
-            number: "1.0.0_SNAPSHOT",
-          },
-          public: false,
-          available: true,
-          auth_provider: {
-            sso: {
-              url: "https://coco.infini.cloud/sso/login/",
-            },
-          },
-          priority: 0,
-        },
+        currentService: {} as Server,
         setCurrentService: (server: any) => {
           console.log("set default server:", server);
           set(
