@@ -87,10 +87,7 @@ const HistoryListContent: FC<HistoryListContentProps> = ({
         setHighlightId(flattenedChats[nextIndex]._id);
         break;
       case "enter":
-        if (
-          document.activeElement instanceof HTMLTextAreaElement ||
-          document.activeElement instanceof HTMLInputElement
-        ) {
+        if (document.activeElement instanceof HTMLTextAreaElement) {
           return;
         }
         if (currentIndex >= 0) {
