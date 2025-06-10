@@ -251,6 +251,7 @@ export default function SearchPopover({
 
                     <PopoverInput
                       autoFocus
+                      value={keyword}
                       ref={searchInputRef}
                       className="size-full px-2 rounded-lg border dark:border-white/10 bg-transparent"
                       onChange={(e) => {
