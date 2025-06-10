@@ -14,6 +14,8 @@ interface HistoryListItemProps {
   onSelect: (chat: Chat) => void;
   onRename: (chatId: string, title: string) => void;
   onMouseEnter: () => void;
+  onMouseLeave: () => void;
+  onBlur: () => void;
   setIsOpen: (value: boolean) => void;
   highlightId: string;
 }
@@ -24,6 +26,8 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
   onSelect,
   onRename,
   onMouseEnter,
+  onMouseLeave,
+  onBlur,
   highlightId,
   setIsOpen,
 }) => {
@@ -92,7 +96,10 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
         onSelect(item);
       }}
       onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onBlur={onBlur}
       onContextMenu={onContextMenu}
+
     >
       <div
         className={clsx("w-1 h-6 rounded-sm bg-[#0072FF]", {
