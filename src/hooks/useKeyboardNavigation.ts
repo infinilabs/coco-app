@@ -5,6 +5,7 @@ import { isMetaOrCtrlKey, metaOrCtrlKey } from "@/utils/keyboardUtils";
 import { copyToClipboard, OpenURLWithBrowser } from "@/utils/index";
 import type { QueryHits, SearchDocument } from "@/types/search";
 import platformAdapter from "@/utils/platformAdapter";
+import { useSearchStore } from "@/stores/searchStore";
 
 interface UseKeyboardNavigationProps {
   suggests: QueryHits[];
@@ -30,10 +31,13 @@ export function useKeyboardNavigation({
   isChatMode,
 }: UseKeyboardNavigationProps) {
   const openPopover = useShortcutsStore((state) => state.openPopover);
+  const visibleContextMenu = useSearchStore((state) => {
+    return state.visibleContextMenu;
+  });
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (isChatMode || !suggests.length || openPopover) return;
+      if (isChatMode || !suggests.length || openPopover || visibleContextMenu) return;
 
       if (e.key === "ArrowUp") {
         e.preventDefault();
