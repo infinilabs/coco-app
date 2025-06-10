@@ -33,7 +33,7 @@ export function useKeyboardNavigation({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (!suggests.length || openPopover) return;
+      if (isChatMode || !suggests.length || openPopover) return;
 
       if (e.key === "ArrowUp") {
         e.preventDefault();
@@ -108,7 +108,7 @@ export function useKeyboardNavigation({
 
   const handleKeyUp = useCallback(
     (e: KeyboardEvent) => {
-      if (!suggests.length) return;
+      if (isChatMode || !suggests.length) return;
 
       if (!isMetaOrCtrlKey(e)) {
         setShowIndex(false);
@@ -118,8 +118,6 @@ export function useKeyboardNavigation({
   );
 
   useEffect(() => {
-    if (isChatMode) return;
-
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
 

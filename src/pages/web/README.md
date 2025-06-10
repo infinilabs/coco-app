@@ -1,118 +1,143 @@
 # SearchChat Web Component API
 
-## Props
+A customizable search and chat interface component for web applications.
 
-### `serverUrl`
-- **Type**: `string`
-- **Optional**: Yes
-- **Default**: `""`
-- **Description**: Set the server address
+## Installation
 
-### `headers`
-- **Type**: `Record<string, unknown>`
-- **Optional**: Yes
-- **Default**: `{}`
-- **Description**: Request header configuration for API calls, such as X-API-TOKEN and APP-INTEGRATION-ID
+```bash
+npm install @infini/coco-app
+```
 
-### `width`
-- **Type**: `number`
-- **Optional**: Yes
-- **Default**: `680`
-- **Description**: Width of the component container in pixels
+## Basic Usage
 
-### `height`
-- **Type**: `number`
-- **Optional**: Yes
-- **Default**: `590`
-- **Description**: Height of the component container in pixels. On mobile devices, it automatically adapts to the viewport height
-
-### `hasModules`
-- **Type**: `string[]`
-- **Optional**: Yes
-- **Default**: `['search', 'chat']`
-- **Description**: List of enabled feature modules, currently supports 'search' and 'chat' modules
-
-### `defaultModule`
-- **Type**: `'search' | 'chat'`
-- **Optional**: Yes
-- **Default**: `'search'`
-- **Description**: The default module to display
-
-### `assistantIDs`
-- **Type**: `string[]`
-- **Optional**: Yes
-- **Default**: `[]`
-- **Description**: List of available assistant IDs
-
-### `hideCoco`
-- **Type**: `() => void`
-- **Optional**: Yes
-- **Default**: `() => {}`
-- **Description**: Callback function to hide the search window
-
-### `theme`
-- **Type**: `"auto" | "light" | "dark"`
-- **Optional**: Yes
-- **Default**: `"dark"`
-- **Description**: Theme setting, supports auto (follows system), light, and dark modes
-
-### `searchPlaceholder`
-- **Type**: `string`
-- **Optional**: Yes
-- **Default**: `""`
-- **Description**: Placeholder text for the search input
-
-### `chatPlaceholder`
-- **Type**: `string`
-- **Optional**: Yes
-- **Default**: `""`
-- **Description**: Placeholder text for the chat input
-
-### `showChatHistory`
-- **Type**: `boolean`
-- **Optional**: Yes
-- **Default**: `false`
-- **Description**: Whether to display chat history
-
-### `setIsPinned`
-- **Type**: `(value: boolean) => void`
-- **Optional**: Yes
-- **Default**: `undefined`
-- **Description**: Callback function to set window pin status
-
-### `onCancel`
-- **Type**: `() => void`
-- **Optional**: Yes
-- **Default**: `undefined`
-- **Description**: Callback function for clicking the close button on mobile devices
-
-## Usage Example
-
-```tsx
-import SearchChat from 'search-chat';
+```jsx
+import SearchChat from '@infini/coco-app';
 
 function App() {
   return (
-    <SearchChat
-      serverUrl=""
+    <SearchChat 
+      serverUrl="https://your-server.com"
       headers={{
-        "X-API-TOKEN": "your-api-token",
-        "APP-INTEGRATION-ID": "your-integration-id"
+        "X-API-TOKEN": "your-token",
+        "APP-INTEGRATION-ID": "your-app-id"
       }}
-      width={680}
-      height={590}
-      hasModules={['search', 'chat']}
-      defaultModule="search"
-      assistantIDs={[]}
-      hideCoco={() => console.log('hide')}
-      theme="dark"
-      searchPlaceholder=""
-      chatPlaceholder=""
-      showChatHistory={false}
-      setIsPinned={(isPinned) => console.log('isPinned:', isPinned)}
-      onCancel={() => console.log('cancel')}
     />
   );
 }
 ```
-        
+
+## Props
+
+### `width`
+- **Type**: `number`
+- **Default**: `680`
+- **Description**: Maximum width of the component in pixels
+
+### `height`
+- **Type**: `number`
+- **Default**: `590`
+- **Description**: Height of the component in pixels
+
+### `headers`
+- **Type**: `Record<string, unknown>`
+- **Default**: 
+```typescript
+{
+  "X-API-TOKEN": "default-token",
+  "APP-INTEGRATION-ID": "default-id"
+}
+```
+- **Description**: HTTP headers for API requests
+
+### `serverUrl`
+- **Type**: `string`
+- **Default**: `""`
+- **Description**: Base URL for the server API
+
+### `hasModules`
+- **Type**: `string[]`
+- **Default**: `["search", "chat"]`
+- **Description**: Available modules to show
+
+### `defaultModule`
+- **Type**: `"search" | "chat"`
+- **Default**: `"search"`
+- **Description**: Initial active module
+
+### `assistantIDs`
+- **Type**: `string[]`
+- **Default**: `[]`
+- **Description**: List of assistant IDs to use
+
+### `theme`
+- **Type**: `"auto" | "light" | "dark"`
+- **Default**: `"dark"`
+- **Description**: UI theme setting
+
+### `searchPlaceholder`
+- **Type**: `string`
+- **Default**: `""`
+- **Description**: Placeholder text for search input
+
+### `chatPlaceholder`
+- **Type**: `string`
+- **Default**: `""`
+- **Description**: Placeholder text for chat input
+
+### `showChatHistory`
+- **Type**: `boolean`
+- **Default**: `false`
+- **Description**: Whether to display chat history panel
+
+### `startPage`
+- **Type**: `StartPage`
+- **Optional**: Yes
+- **Description**: Initial page configuration
+
+### `setIsPinned`
+- **Type**: `(value: boolean) => void`
+- **Optional**: Yes
+- **Description**: Callback when pin status changes
+
+### `onCancel`
+- **Type**: `() => void`
+- **Optional**: Yes
+- **Description**: Callback when close button is clicked (mobile only)
+
+### `isOpen`
+- **Type**: `boolean`
+- **Optional**: Yes
+- **Description**: Control component visibility
+
+## Events
+
+The component emits the following events:
+
+- `onModeChange`: Triggered when switching between search and chat modes
+- `onCancel`: Triggered when the close button is clicked (mobile only)
+
+## Mobile Support
+
+The component is responsive and includes mobile-specific features:
+- Automatic height adjustment
+- Close button in top-right corner
+- Touch-friendly interface
+
+## Example
+
+```jsx
+<SearchChat
+  width={800}
+  height={600}
+  serverUrl="https://api.example.com"
+  headers={{
+    "X-API-TOKEN": "your-token",
+    "APP-INTEGRATION-ID": "your-app-id"
+  }}
+  theme="dark"
+  showChatHistory={true}
+  hasModules={["search", "chat"]}
+  defaultModule="chat"
+  setIsPinned={(isPinned) => console.log('Pinned:', isPinned)}
+/>
+```

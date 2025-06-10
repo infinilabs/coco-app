@@ -15,10 +15,6 @@ function MainApp() {
     setIsTauri(true);
   }, []);
 
-  const hideCoco = useCallback(() => {
-    return platformAdapter.hideWindow();
-  }, []);
-
   useSyncStore();
 
   const snapshotUpdate = useAppearanceStore((state) => state.snapshotUpdate);
@@ -41,11 +37,7 @@ function MainApp() {
 
   return (
     <>
-      <SearchChat
-        isTauri={true}
-        hideCoco={hideCoco}
-        hasModules={["search", "chat"]}
-      />
+      <SearchChat isTauri={true} hasModules={["search", "chat"]} />
       <UpdateApp checkUpdate={checkUpdate} relaunchApp={relaunchApp} />
     </>
   );

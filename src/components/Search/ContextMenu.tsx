@@ -19,9 +19,7 @@ interface State {
   activeMenuIndex: number;
 }
 
-interface ContextMenuProps {
-  hideCoco?: () => void;
-}
+interface ContextMenuProps {}
 
 const ContextMenu: FC<ContextMenuProps> = () => {
   const containerRef = useRef<HTMLDivElement>(null);
