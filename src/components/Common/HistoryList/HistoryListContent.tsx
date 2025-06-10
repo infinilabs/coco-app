@@ -219,9 +219,7 @@ const HistoryListContent: FC<HistoryListContentProps> = ({
                 <HistoryListItem
                   key={item._id}
                   item={item}
-                  isActive={
-                    item._id === active?._id || item._id === highlightId
-                  }
+                  active={active}
                   onSelect={onSelect}
                   onRename={onRename}
                   onMouseEnter={() => setHighlightId(item._id)}
