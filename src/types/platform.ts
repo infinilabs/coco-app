@@ -102,13 +102,14 @@ export interface SystemOperations {
   checkUpdate: () => Promise<any>;
   relaunchApp: () => Promise<void>;
   isTauri: () => boolean;
-  openExternal: (url: string) => Promise<void>;
+  openUrl: (url: string) => Promise<void>;
   commands: <T>(commandName: string, ...args: any[]) => Promise<T>;
   isWindows10: () => Promise<boolean>;
+  revealItemInDir: (path: string) => Promise<void>;
 }
 
 // Base platform adapter interface
 export interface BasePlatformAdapter
   extends WindowOperations,
-  ThemeAndEvents,
-  SystemOperations { }
+    ThemeAndEvents,
+    SystemOperations {}

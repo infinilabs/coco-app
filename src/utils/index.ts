@@ -72,7 +72,7 @@ export const OpenURLWithBrowser = async (url?: string) => {
   if (!url) return;
   if (IsTauri()) {
     try {
-      await platformAdapter.openExternal(url);
+      await platformAdapter.openUrl(url);
       await platformAdapter.commands("hide_coco");
       console.log("URL opened in default browser");
     } catch (error) {

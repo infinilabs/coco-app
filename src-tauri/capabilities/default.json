@@ -71,6 +71,7 @@
     "process:default",
     "updater:default",
     "windows-version:default",
-    "log:default"
+    "log:default",
+    "opener:default"
   ]
 }

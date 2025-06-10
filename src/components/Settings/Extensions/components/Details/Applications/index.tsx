@@ -106,7 +106,7 @@ const Applications = () => {
                 <SquareArrowOutUpRight
                   className="size-4 cursor-pointer"
                   onClick={() => {
-                    platformAdapter.openExternal(item);
+                    platformAdapter.revealItemInDir(item);
                   }}
                 />
 
