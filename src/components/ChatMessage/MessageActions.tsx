@@ -1,5 +1,4 @@
-import { COPY_BUTTON_ID } from "@/constants";
-import { useSearchStore } from "@/stores/searchStore";
+import { useState } from "react";
 import clsx from "clsx";
 import {
   Check,
@@ -9,7 +8,10 @@ import {
   Volume2,
   RotateCcw,
 } from "lucide-react";
-import { useState } from "react";
+
+import { COPY_BUTTON_ID } from "@/constants";
+import { useSearchStore } from "@/stores/searchStore";
+import { copyToClipboard } from "@/utils";
 
 interface MessageActionsProps {
   id: string;
@@ -40,7 +42,7 @@ export const MessageActions = ({
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(content);
+      await copyToClipboard(content);
       setCopied(true);
       const timerID = setTimeout(() => {
         setCopied(false);

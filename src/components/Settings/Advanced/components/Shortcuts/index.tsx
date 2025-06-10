@@ -8,8 +8,8 @@ import { isMac } from "@/utils/platform";
 import {
   INITIAL_MODE_SWITCH,
   INITIAL_RETURN_TO_INPUT,
-  INITIAL_VOICE_INPUT,
-  INITIAL_ADD_FILE,
+  // INITIAL_VOICE_INPUT,
+  // INITIAL_ADD_FILE,
   INITIAL_DEEP_THINKING,
   INITIAL_INTERNET_SEARCH,
   INITIAL_INTERNET_SEARCH_SCOPE,
@@ -41,10 +41,10 @@ const Shortcuts = () => {
   const setModeSwitch = useShortcutsStore((state) => state.setModeSwitch);
   const returnToInput = useShortcutsStore((state) => state.returnToInput);
   const setReturnToInput = useShortcutsStore((state) => state.setReturnToInput);
-  const voiceInput = useShortcutsStore((state) => state.voiceInput);
-  const setVoiceInput = useShortcutsStore((state) => state.setVoiceInput);
-  const addFile = useShortcutsStore((state) => state.addFile);
-  const setAddFile = useShortcutsStore((state) => state.setAddFile);
+  // const voiceInput = useShortcutsStore((state) => state.voiceInput);
+  // const setVoiceInput = useShortcutsStore((state) => state.setVoiceInput);
+  // const addFile = useShortcutsStore((state) => state.addFile);
+  // const setAddFile = useShortcutsStore((state) => state.setAddFile);
   const deepThinking = useShortcutsStore((state) => state.deepThinking);
   const setDeepThinking = useShortcutsStore((state) => state.setDeepThinking);
   const internetSearch = useShortcutsStore((state) => state.internetSearch);
@@ -118,24 +118,24 @@ const Shortcuts = () => {
         handleChange(INITIAL_RETURN_TO_INPUT, setReturnToInput);
       },
     },
-    {
-      title: "settings.advanced.shortcuts.voiceInput.title",
-      description: "settings.advanced.shortcuts.voiceInput.description",
-      value: voiceInput,
-      setValue: setVoiceInput,
-      reset: () => {
-        handleChange(INITIAL_VOICE_INPUT, setVoiceInput);
-      },
-    },
-    {
-      title: "settings.advanced.shortcuts.addFile.title",
-      description: "settings.advanced.shortcuts.addFile.description",
-      value: addFile,
-      setValue: setAddFile,
-      reset: () => {
-        handleChange(INITIAL_ADD_FILE, setAddFile);
-      },
-    },
+    // {
+    //   title: "settings.advanced.shortcuts.voiceInput.title",
+    //   description: "settings.advanced.shortcuts.voiceInput.description",
+    //   value: voiceInput,
+    //   setValue: setVoiceInput,
+    //   reset: () => {
+    //     handleChange(INITIAL_VOICE_INPUT, setVoiceInput);
+    //   },
+    // },
+    // {
+    //   title: "settings.advanced.shortcuts.addFile.title",
+    //   description: "settings.advanced.shortcuts.addFile.description",
+    //   value: addFile,
+    //   setValue: setAddFile,
+    //   reset: () => {
+    //     handleChange(INITIAL_ADD_FILE, setAddFile);
+    //   },
+    // },
     {
       title: "settings.advanced.shortcuts.deepThinking.title",
       description: "settings.advanced.shortcuts.deepThinking.description",
