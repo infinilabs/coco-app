@@ -28,6 +28,8 @@ import { ModifierKey } from "@/types/index";
 import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore } from "@/stores/appStore";
 import SettingsInput from "@/components/Settings/SettingsInput";
+import { Button } from "@headlessui/react";
+import clsx from "clsx";
 
 export const modifierKeys: ModifierKey[] = isMac
   ? ["meta", "ctrl"]
@@ -103,20 +105,16 @@ const Shortcuts = () => {
     {
       title: "settings.advanced.shortcuts.modeSwitch.title",
       description: "settings.advanced.shortcuts.modeSwitch.description",
+      initialValue: INITIAL_MODE_SWITCH,
       value: modeSwitch,
       setValue: setModeSwitch,
-      reset: () => {
-        handleChange(INITIAL_MODE_SWITCH, setModeSwitch);
-      },
     },
     {
       title: "settings.advanced.shortcuts.returnToInput.title",
       description: "settings.advanced.shortcuts.returnToInput.description",
+      initialValue: INITIAL_RETURN_TO_INPUT,
       value: returnToInput,
       setValue: setReturnToInput,
-      reset: () => {
-        handleChange(INITIAL_RETURN_TO_INPUT, setReturnToInput);
-      },
     },
     // {
     //   title: "settings.advanced.shortcuts.voiceInput.title",
@@ -139,111 +137,87 @@ const Shortcuts = () => {
     {
       title: "settings.advanced.shortcuts.deepThinking.title",
       description: "settings.advanced.shortcuts.deepThinking.description",
+      initialValue: INITIAL_DEEP_THINKING,
       value: deepThinking,
       setValue: setDeepThinking,
-      reset: () => {
-        handleChange(INITIAL_DEEP_THINKING, setDeepThinking);
-      },
     },
     {
       title: "settings.advanced.shortcuts.internetSearch.title",
       description: "settings.advanced.shortcuts.internetSearch.description",
+      initialValue: INITIAL_INTERNET_SEARCH,
       value: internetSearch,
       setValue: setInternetSearch,
-      reset: () => {
-        handleChange(INITIAL_INTERNET_SEARCH, setInternetSearch);
-      },
     },
     {
       title: "settings.advanced.shortcuts.internetSearchScope.title",
       description:
         "settings.advanced.shortcuts.internetSearchScope.description",
+      initialValue: INITIAL_INTERNET_SEARCH_SCOPE,
       value: internetSearchScope,
       setValue: setInternetSearchScope,
-      reset: () => {
-        handleChange(INITIAL_INTERNET_SEARCH_SCOPE, setInternetSearchScope);
-      },
     },
     {
       title: "settings.advanced.shortcuts.mcpSearch.title",
       description: "settings.advanced.shortcuts.mcpSearch.description",
+      initialValue: INITIAL_MCP_SEARCH,
       value: mcpSearch,
       setValue: setMcpSearch,
-      reset: () => {
-        handleChange(INITIAL_MCP_SEARCH, setMcpSearch);
-      },
     },
     {
       title: "settings.advanced.shortcuts.mcpSearchScope.title",
       description: "settings.advanced.shortcuts.mcpSearchScope.description",
+      initialValue: INITIAL_MCP_SEARCH_SCOPE,
       value: mcpSearchScope,
       setValue: setMcpSearchScope,
-      reset: () => {
-        handleChange(INITIAL_MCP_SEARCH_SCOPE, setMcpSearchScope);
-      },
     },
     {
       title: "settings.advanced.shortcuts.historicalRecords.title",
       description: "settings.advanced.shortcuts.historicalRecords.description",
+      initialValue: INITIAL_HISTORICAL_RECORDS,
       value: historicalRecords,
       setValue: setHistoricalRecords,
-      reset: () => {
-        handleChange(INITIAL_HISTORICAL_RECORDS, setHistoricalRecords);
-      },
     },
     {
       title: "settings.advanced.shortcuts.aiAssistant.title",
       description: "settings.advanced.shortcuts.aiAssistant.description",
+      initialValue: INITIAL_AI_ASSISTANT,
       value: aiAssistant,
       setValue: setAiAssistant,
-      reset: () => {
-        handleChange(INITIAL_AI_ASSISTANT, setAiAssistant);
-      },
     },
     {
       title: "settings.advanced.shortcuts.newSession.title",
       description: "settings.advanced.shortcuts.newSession.description",
+      initialValue: INITIAL_NEW_SESSION,
       value: newSession,
       setValue: setNewSession,
-      reset: () => {
-        handleChange(INITIAL_NEW_SESSION, setNewSession);
-      },
     },
     {
       title: "settings.advanced.shortcuts.fixedWindow.title",
       description: "settings.advanced.shortcuts.fixedWindow.description",
+      initialValue: INITIAL_FIXED_WINDOW,
       value: fixedWindow,
       setValue: setFixedWindow,
-      reset: () => {
-        handleChange(INITIAL_FIXED_WINDOW, setFixedWindow);
-      },
     },
     {
       title: "settings.advanced.shortcuts.serviceList.title",
       description: "settings.advanced.shortcuts.serviceList.description",
+      initialValue: INITIAL_SERVICE_LIST,
       value: serviceList,
       setValue: setServiceList,
-      reset: () => {
-        handleChange(INITIAL_SERVICE_LIST, setServiceList);
-      },
     },
     {
       title: "settings.advanced.shortcuts.external.title",
       description: "settings.advanced.shortcuts.external.description",
+      initialValue: INITIAL_EXTERNAL,
       value: external,
       setValue: setExternal,
-      reset: () => {
-        handleChange(INITIAL_EXTERNAL, setExternal);
-      },
     },
     {
       title: "settings.advanced.shortcuts.aiOverview.title",
       description: "settings.advanced.shortcuts.aiOverview.description",
+      initialValue: INITIAL_AI_OVERVIEW,
       value: aiOverview,
       setValue: setAiOverview,
-      reset: () => {
-        handleChange(INITIAL_AI_OVERVIEW, setAiOverview);
-      },
     },
   ];
 
@@ -302,7 +276,9 @@ const Shortcuts = () => {
         </SettingsItem>
 
         {list.map((item) => {
-          const { title, description, value, setValue, reset } = item;
+          const { title, description, initialValue, value, setValue } = item;
+
+          const disabled = value === initialValue;
 
           return (
             <SettingsItem
@@ -322,12 +298,25 @@ const Shortcuts = () => {
                   }}
                 />
 
-                <button
-                  className="flex items-center justify-center size-8 rounded-md border border-black/5 dark:border-white/10 hover:border-[#0072FF] transition"
-                  onClick={reset}
+                <Button
+                  disabled={disabled}
+                  className={clsx(
+                    "flex items-center justify-center size-8 rounded-md border border-black/5 dark:border-white/10 transition",
+                    {
+                      "hover:border-[#0072FF]": !disabled,
+                      "opacity-70 cursor-not-allowed": disabled,
+                    }
+                  )}
+                  onClick={() => {
+                    handleChange(initialValue, setValue);
+                  }}
                 >
-                  <RotateCcw className="size-4 text-[#0072FF]" />
-                </button>
+                  <RotateCcw
+                    className={clsx("size-4 text-[#999]", {
+                      "!text-[#0072FF]": !disabled,
+                    })}
+                  />
+                </Button>
               </div>
             </SettingsItem>
           );
