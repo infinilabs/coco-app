@@ -101,6 +101,7 @@ export function useAssistantManager({
       }
 
       e.preventDefault();
+      e.stopPropagation();
       handleSubmit();
     }
   };

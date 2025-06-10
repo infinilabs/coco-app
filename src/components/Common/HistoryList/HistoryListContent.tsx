@@ -82,9 +82,11 @@ const HistoryListContent: FC<HistoryListContentProps> = ({
       switch (key) {
         case "uparrow":
           nextIndex = currentIndex <= 0 ? length - 1 : currentIndex - 1;
+          setHighlightId(flattenedChats[nextIndex]._id);
           break;
         case "downarrow":
           nextIndex = currentIndex >= length - 1 ? 0 : currentIndex + 1;
+          setHighlightId(flattenedChats[nextIndex]._id);
           break;
         case "enter":
           if (currentIndex >= 0) {
@@ -92,17 +94,11 @@ const HistoryListContent: FC<HistoryListContentProps> = ({
           }
           break;
       }
-
-      // Set initial highlight if none exists
-      if (currentIndex === -1) {
-        nextIndex = key === "uparrow" ? length - 1 : 0;
-      }
-
-      setHighlightId(flattenedChats[nextIndex]._id);
     },
     {
       // Add options to ensure events are handled early
       useCapture: true,
+      target: listRef,
     }
   );
 
@@ -223,6 +219,8 @@ const HistoryListContent: FC<HistoryListContentProps> = ({
                   onSelect={onSelect}
                   onRename={onRename}
                   onMouseEnter={() => setHighlightId(item._id)}
+                  onMouseLeave={() => setHighlightId("")}
+                  onBlur={() => setHighlightId("")}
                   highlightId={highlightId}
                   setIsOpen={setIsOpen}
                 />
