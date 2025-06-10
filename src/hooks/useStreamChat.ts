@@ -63,7 +63,7 @@ export const useStreamChat = (options: Options) => {
           }
 
           // If the chunk data does not contain a message_chunk, we ignore it
-          if (chunkData.message_chunk) {
+          if (chunkData.message_chunk.trim()) {
             setVisible(true);
           }
 
