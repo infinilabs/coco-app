@@ -67,40 +67,35 @@ const HistoryListContent: FC<HistoryListContentProps> = ({
     return Object.values(sortedList).flat();
   }, [sortedList]);
 
-  useKeyPress(
-    ["uparrow", "downarrow", "enter"],
-    (_, key) => {
-      const currentIndex = flattenedChats.findIndex(
-        (chat) => chat._id === highlightId
-      );
-      const length = flattenedChats.length;
+  useKeyPress(["uparrow", "downarrow", "enter"], (_, key) => {
+    const currentIndex = flattenedChats.findIndex(
+      (chat) => chat._id === highlightId
+    );
+    const length = flattenedChats.length;
 
-      if (length === 0) return;
+    if (length === 0) return;
 
-      let nextIndex = currentIndex;
+    let nextIndex = currentIndex;
 
-      switch (key) {
-        case "uparrow":
-          nextIndex = currentIndex <= 0 ? length - 1 : currentIndex - 1;
-          setHighlightId(flattenedChats[nextIndex]._id);
-          break;
-        case "downarrow":
-          nextIndex = currentIndex >= length - 1 ? 0 : currentIndex + 1;
-          setHighlightId(flattenedChats[nextIndex]._id);
-          break;
-        case "enter":
-          if (currentIndex >= 0) {
-            onSelect(flattenedChats[currentIndex]);
-          }
-          break;
-      }
-    },
-    {
-      // Add options to ensure events are handled early
-      useCapture: true,
-      target: listRef,
+    switch (key) {
+      case "uparrow":
+        nextIndex = currentIndex <= 0 ? length - 1 : currentIndex - 1;
+        setHighlightId(flattenedChats[nextIndex]._id);
+        break;
+      case "downarrow":
+        nextIndex = currentIndex >= length - 1 ? 0 : currentIndex + 1;
+        setHighlightId(flattenedChats[nextIndex]._id);
+        break;
+      case "enter":
+        if (document.activeElement instanceof HTMLTextAreaElement) {
+          return;
+        }
+        if (currentIndex >= 0) {
+          onSelect(flattenedChats[currentIndex]);
+        }
+        break;
     }
-  );
+  });
 
   const handleRemove = () => {
     if (!highlightId) return;

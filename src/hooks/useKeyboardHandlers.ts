@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from "react";
 
 import { isMetaOrCtrlKey } from "@/utils/keyboardUtils";
 import { useSearchStore } from "@/stores/searchStore";
@@ -20,7 +20,6 @@ export function useKeyboardHandlers({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-
       // Handle ArrowLeft with meta key
       if (e.code === "ArrowLeft" && isMetaOrCtrlKey(e)) {
         e.preventDefault();
