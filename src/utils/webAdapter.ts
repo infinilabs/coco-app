@@ -191,6 +191,10 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     },
 
     async openSearchItem(data) {
+      if (data.type === "AI Assistant") {
+        return;
+      }
+
       if (data?.url) {
         return OpenURLWithBrowser(data.url);
       }
