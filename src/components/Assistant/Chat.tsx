@@ -126,7 +126,7 @@ const ChatAI = memo(
         if (showChatHistory && connected) {
           getChatHistory();
         }
-      }, [currentService?.enabled]);
+      }, [currentService?.enabled, showChatHistory, connected]);
 
       useEffect(() => {
         if (askAiServerId || !askAiSessionId || chats.length === 0) return;
