@@ -347,10 +347,12 @@ export function useChatActions(
     console.log("_history", response);
     const hits = response?.hits?.hits || [];
     setChats(hits);
-  }, [currentService?.id, keyword, isTauri, currentService?.enabled]);
+  }, [currentService?.id, keyword, isTauri, currentService?.enabled, isCurrentLogin]);
 
   useEffect(() => {
-    showChatHistory && connected && getChatHistory();
+    if (showChatHistory && connected) {
+      getChatHistory()
+    }
   }, [showChatHistory, connected, getChatHistory, currentService?.id]);
 
   const createChatWindow = useCallback(

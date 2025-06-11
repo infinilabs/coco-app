@@ -80,6 +80,8 @@ const ChatAI = memo(
       const { curChatEnd, setCurChatEnd, connected, setConnected } =
         useChatStore();
 
+      const isTauri = useAppStore((state) => state.isTauri);
+
       const isCurrentLogin = useAuthStore((state) => state.isCurrentLogin);
       const setIsCurrentLogin = useAuthStore((state) => {
         return state.setIsCurrentLogin;
@@ -114,18 +116,17 @@ const ChatAI = memo(
       }, [activeChatProp]);
 
       useEffect(() => {
-        if (currentService?.enabled) return;
+        if (!isTauri) return;
 
-        setIsCurrentLogin(false);
-      }, [currentService?.enabled]);
-
-      useEffect(() => {
         if (!currentService?.enabled) {
           setActiveChat(void 0);
+          setIsCurrentLogin(false);
         }
 
-        getChatHistory();
-      }, [currentService?.enabled]);
+        if (showChatHistory && connected) {
+          getChatHistory();
+        }
+      }, [currentService?.enabled, showChatHistory, connected]);
 
       useEffect(() => {
         if (askAiServerId || !askAiSessionId || chats.length === 0) return;
