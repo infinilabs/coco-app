@@ -9,8 +9,6 @@ import {
   RotateCcw,
 } from "lucide-react";
 
-import { COPY_BUTTON_ID } from "@/constants";
-import { useSearchStore } from "@/stores/searchStore";
 import { copyToClipboard } from "@/utils";
 
 interface MessageActionsProps {
@@ -19,6 +17,7 @@ interface MessageActionsProps {
   question?: string;
   actionClassName?: string;
   actionIconSize?: number;
+  copyButtonId?: string;
   onResend?: () => void;
 }
 
@@ -30,6 +29,7 @@ export const MessageActions = ({
   question,
   actionClassName,
   actionIconSize,
+  copyButtonId,
   onResend,
 }: MessageActionsProps) => {
   const [copied, setCopied] = useState(false);
@@ -93,13 +93,12 @@ export const MessageActions = ({
       }, 1000);
     }
   };
-  const goAskAi = useSearchStore((state) => state.goAskAi);
 
   return (
     <div className={clsx("flex items-center gap-1 mt-2", actionClassName)}>
       {!isRefreshOnly && (
         <button
-          id={goAskAi ? COPY_BUTTON_ID : ""}
+          id={copyButtonId}
           onClick={handleCopy}
           className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
         >

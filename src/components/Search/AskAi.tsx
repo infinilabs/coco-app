@@ -9,17 +9,18 @@ import { useEffect, useRef, useState } from "react";
 import { noop } from "lodash-es";
 
 import { ChatMessage } from "../ChatMessage";
-import { COPY_BUTTON_ID } from "@/constants";
 import { useSearchStore } from "@/stores/searchStore";
 import platformAdapter from "@/utils/platformAdapter";
 import useMessageChunkData from "@/hooks/useMessageChunkData";
 import { useAppStore } from "@/stores/appStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
+import { nanoid } from "nanoid";
 
 interface State {
   serverId?: string;
   assistantId?: string;
+  copyButtonId?: string;
 }
 
 const AskAi = () => {
@@ -173,6 +174,8 @@ const AskAi = () => {
 
     const { serverId, assistantId } = state;
 
+    state.copyButtonId = nanoid();
+
     try {
       await platformAdapter.invokeBackend("ask_ai", {
         message: askAiMessage,
@@ -211,9 +214,11 @@ const AskAi = () => {
   useKeyPress(
     "enter",
     () => {
-      const copyButton = document.getElementById(COPY_BUTTON_ID);
+      if (isTyping || !state.copyButtonId) return;
 
-      copyButton?.click();
+      const copyButton = document.getElementById(state.copyButtonId);
+
+      copyButton?.click?.();
     },
     {
       exactMatch: true,
@@ -249,6 +254,7 @@ const AskAi = () => {
               think={think}
               response={response}
               loadingStep={loadingStep}
+              copyButtonId={state.copyButtonId}
             />
           </div>
         </div>
