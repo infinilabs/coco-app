@@ -159,6 +159,7 @@ export default function ChatInput({
   const { askAI, askAIRef, assistantDetail, handleKeyDownAutoResizeTextarea } =
     useAssistantManager({
       isChatMode,
+      inputValue,
       handleSubmit,
       changeInput,
     });
