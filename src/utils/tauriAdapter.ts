@@ -233,11 +233,11 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     async openSearchItem(data) {
-      const isPinned = useAppStore.getState().isPinned;
-
       const { invoke } = await import("@tauri-apps/api/core");
 
       const hideCoco = () => {
+        const isPinned = useAppStore.getState().isPinned;
+
         if (isPinned) return;
 
         return invoke("hide_coco");
