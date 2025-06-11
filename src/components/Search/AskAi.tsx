@@ -214,7 +214,7 @@ const AskAi = () => {
   useKeyPress(
     "enter",
     () => {
-      if (!state.copyButtonId) return;
+      if (isTyping || !state.copyButtonId) return;
 
       const copyButton = document.getElementById(state.copyButtonId);
 
