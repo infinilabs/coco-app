@@ -20,6 +20,7 @@ import { nanoid } from "nanoid";
 interface State {
   serverId?: string;
   assistantId?: string;
+  copyButtonId?: string;
 }
 
 const AskAi = () => {
@@ -79,7 +80,6 @@ const AskAi = () => {
     return state.setAskAiAssistantId;
   });
   const modifierKey = useShortcutsStore((state) => state.modifierKey);
-  const [copyButtonId, setCopyButtonId] = useState("");
 
   useEffect(() => {
     if (state.serverId) return;
@@ -173,7 +173,8 @@ const AskAi = () => {
     clearAllChunkData();
 
     const { serverId, assistantId } = state;
-    setCopyButtonId(nanoid());
+
+    state.copyButtonId = nanoid();
 
     try {
       await platformAdapter.invokeBackend("ask_ai", {
@@ -213,7 +214,9 @@ const AskAi = () => {
   useKeyPress(
     "enter",
     () => {
-      const copyButton = document.getElementById(copyButtonId);
+      if (!state.copyButtonId) return;
+
+      const copyButton = document.getElementById(state.copyButtonId);
 
       copyButton?.click?.();
     },
@@ -251,7 +254,7 @@ const AskAi = () => {
               think={think}
               response={response}
               loadingStep={loadingStep}
-              copyButtonId={copyButtonId}
+              copyButtonId={state.copyButtonId}
             />
           </div>
         </div>
