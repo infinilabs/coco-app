@@ -33,6 +33,7 @@ interface ChatMessageProps {
   rootClassName?: string;
   actionClassName?: string;
   actionIconSize?: number;
+  copyButtonId?: string;
 }
 
 export const ChatMessage = memo(function ChatMessage({
@@ -51,6 +52,7 @@ export const ChatMessage = memo(function ChatMessage({
   rootClassName,
   actionClassName,
   actionIconSize,
+  copyButtonId,
 }: ChatMessageProps) {
   const { t } = useTranslation();
 
@@ -67,12 +69,14 @@ export const ChatMessage = memo(function ChatMessage({
       setAssistant(assistant_item);
       return;
     }
-    
+
     if (isAssistant && assistant_id && Array.isArray(assistantList)) {
-      setAssistant(assistantList.find(item => item._id === assistant_id) ?? {});
+      setAssistant(
+        assistantList.find((item) => item._id === assistant_id) ?? {}
+      );
       return;
     }
-    
+
     setAssistant(currentAssistant);
   }, [
     isAssistant,
@@ -151,6 +155,7 @@ export const ChatMessage = memo(function ChatMessage({
             question={question}
             actionClassName={actionClassName}
             actionIconSize={actionIconSize}
+            copyButtonId={copyButtonId}
             onResend={() => {
               onResend && onResend(question);
             }}
