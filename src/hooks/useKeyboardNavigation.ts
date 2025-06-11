@@ -121,14 +121,7 @@ export function useKeyboardNavigation({
         }
       }
     },
-    [
-      suggests,
-      selectedIndex,
-      showIndex,
-      globalItemIndexMap,
-      openPopover,
-      modifierKey,
-    ]
+    [suggests, selectedIndex, showIndex, globalItemIndexMap, openPopover]
   );
 
   const handleKeyUp = useCallback(
