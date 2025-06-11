@@ -363,6 +363,8 @@
       "timedout": "请求超时，请稍后再试。",
       "noServers": "暂无可用服务器",
       "addServer": "添加服务器",
+      "servers": "服务器",
+      "aiAssistant": "AI 助手",
       "error": "请求错误，请稍后再试。",
       "logo_alt": "登录图标",
       "welcome": "欢迎使用 Coco AI",
