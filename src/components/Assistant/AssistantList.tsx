@@ -17,6 +17,7 @@ import { AssistantFetcher } from "./AssistantFetcher";
 import AssistantItem from "./AssistantItem";
 import Pagination from "@/components/Common/Pagination";
 import { useSearchStore } from "@/stores/searchStore";
+import { useChatStore } from "@/stores/chatStore";
 
 interface AssistantListProps {
   assistantIDs?: string[];
@@ -43,15 +44,34 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
     return state.setAskAiAssistantId;
   });
   const assistantList = useConnectStore((state) => state.assistantList);
+  const connected = useChatStore((state) => {
+    return state.connected;
+  });
 
   const { fetchAssistant } = AssistantFetcher({
     debounceKeyword,
     assistantIDs,
   });
 
-  const { pagination, runAsync } = usePagination(fetchAssistant, {
+  const getAssistants = (params: { current: number; pageSize: number }) => {
+    if (!connected) {
+      return Promise.resolve({
+        total: 0,
+        list: [],
+      });
+    }
+
+    return fetchAssistant(params);
+  };
+
+  const { pagination, runAsync } = usePagination(getAssistants, {
     defaultPageSize: 5,
-    refreshDeps: [currentService?.id, debounceKeyword, currentService?.enabled],
+    refreshDeps: [
+      currentService?.id,
+      debounceKeyword,
+      currentService?.enabled,
+      connected,
+    ],
     onSuccess(data) {
       setAssistants(data.list);
 
