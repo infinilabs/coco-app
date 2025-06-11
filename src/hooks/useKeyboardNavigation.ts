@@ -1,7 +1,6 @@
 import { useCallback, useEffect } from "react";
 
 import { useShortcutsStore } from "@/stores/shortcutsStore";
-import { isMetaOrCtrlKey, metaOrCtrlKey } from "@/utils/keyboardUtils";
 import { copyToClipboard, OpenURLWithBrowser } from "@/utils/index";
 import type { QueryHits, SearchDocument } from "@/types/search";
 import platformAdapter from "@/utils/platformAdapter";
@@ -34,10 +33,25 @@ export function useKeyboardNavigation({
   const visibleContextMenu = useSearchStore((state) => {
     return state.visibleContextMenu;
   });
+  const modifierKey = useShortcutsStore((state) => {
+    return state.modifierKey;
+  });
+
+  const getModifierKeyPressed = (event: KeyboardEvent) => {
+    const metaKeyPressed = event.metaKey && modifierKey === "meta";
+    const ctrlKeyPressed = event.ctrlKey && modifierKey === "ctrl";
+    const altKeyPressed = event.altKey && modifierKey === "alt";
+
+    return metaKeyPressed || ctrlKeyPressed || altKeyPressed;
+  };
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (isChatMode || !suggests.length || openPopover || visibleContextMenu) return;
+      if (isChatMode || !suggests.length || openPopover || visibleContextMenu) {
+        return;
+      }
+
+      const modifierKeyPressed = getModifierKeyPressed(e);
 
       if (e.key === "ArrowUp") {
         e.preventDefault();
@@ -51,7 +65,7 @@ export function useKeyboardNavigation({
         setSelectedIndex((prev) =>
           prev === null || prev === suggests.length - 1 ? 0 : prev + 1
         );
-      } else if (e.key === metaOrCtrlKey()) {
+      } else if (modifierKeyPressed) {
         e.preventDefault();
         if (selectedIndex !== null) {
           const item = globalItemIndexMap[selectedIndex];
@@ -61,9 +75,9 @@ export function useKeyboardNavigation({
       }
 
       if (
+        modifierKeyPressed &&
         e.key === "ArrowRight" &&
-        selectedIndex !== null &&
-        isMetaOrCtrlKey(e)
+        selectedIndex !== null
       ) {
         e.preventDefault();
 
@@ -87,7 +101,7 @@ export function useKeyboardNavigation({
         copyToClipboard(item?.payload?.result?.value);
       }
 
-      if (e.key >= "0" && e.key <= "9" && showIndex && isMetaOrCtrlKey(e)) {
+      if (e.key >= "0" && e.key <= "9" && showIndex && modifierKeyPressed) {
         e.preventDefault();
 
         let index = parseInt(e.key, 10);
@@ -107,14 +121,23 @@ export function useKeyboardNavigation({
         }
       }
     },
-    [suggests, selectedIndex, showIndex, globalItemIndexMap, openPopover]
+    [
+      suggests,
+      selectedIndex,
+      showIndex,
+      globalItemIndexMap,
+      openPopover,
+      modifierKey,
+    ]
   );
 
   const handleKeyUp = useCallback(
     (e: KeyboardEvent) => {
       if (isChatMode || !suggests.length) return;
 
-      if (!isMetaOrCtrlKey(e)) {
+      const modifierKeyPressed = getModifierKeyPressed(e);
+
+      if (modifierKeyPressed) {
         setShowIndex(false);
       }
     },
