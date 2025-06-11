@@ -6,14 +6,12 @@ import { useSearchStore } from "@/stores/searchStore";
 interface KeyboardHandlersProps {
   isChatMode: boolean;
   handleSubmit: () => void;
-  disabledChange?: () => void;
   curChatEnd?: boolean;
 }
 
 export function useKeyboardHandlers({
   isChatMode,
   handleSubmit,
-  disabledChange,
   curChatEnd,
 }: KeyboardHandlersProps) {
   const { setSourceData } = useSearchStore();
@@ -30,10 +28,10 @@ export function useKeyboardHandlers({
       // Handle Enter without meta key requirement
       if (e.code === "Enter" && !e.shiftKey && isChatMode) {
         e.preventDefault();
-        curChatEnd ? handleSubmit() : disabledChange?.();
+        curChatEnd && handleSubmit();
       }
     },
-    [isChatMode, handleSubmit, setSourceData, disabledChange, curChatEnd]
+    [isChatMode, handleSubmit, setSourceData, curChatEnd]
   );
 
   useEffect(() => {

@@ -124,7 +124,6 @@ export default function ChatInput({
   useKeyboardHandlers({
     isChatMode,
     handleSubmit,
-    disabledChange,
     curChatEnd,
   });
 
@@ -249,7 +248,7 @@ export default function ChatInput({
       }}
     /> */}
 
-      {isChatMode && (
+      {isChatMode && curChatEnd && (
         <div
           className={`absolute ${
             lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-30px)]"
