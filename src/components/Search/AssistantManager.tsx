@@ -7,15 +7,18 @@ import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
 import type { Assistant } from "@/types/chat";
 import { useAppStore } from "@/stores/appStore";
+import { useKeyPress } from "ahooks";
 
 interface AssistantManagerProps {
   isChatMode: boolean;
+  inputValue: string;
   handleSubmit: () => void;
   changeInput: (value: string) => void;
 }
 
 export function useAssistantManager({
   isChatMode,
+  inputValue,
   handleSubmit,
   changeInput,
 }: AssistantManagerProps) {
@@ -56,16 +59,14 @@ export function useAssistantManager({
     }
   }, [askAI]);
 
-  const handleAskAi = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleAskAi = () => {
     if (!isTauri) return;
 
     askAIRef.current = cloneDeep(askAI);
 
     if (!askAIRef.current) return;
 
-    event.preventDefault();
-
-    const { value } = event.currentTarget;
+    const value = inputValue.trim();
 
     if (!selectedAssistant && isEmpty(value)) return;
 
@@ -85,25 +86,34 @@ export function useAssistantManager({
       return setGoAskAi(false);
     }
 
-    if (key === "Tab" && isTauri) {
-      if (isChatMode) {
-        return e.preventDefault();
-      }
-
-      assistant_get();
-
-      return handleAskAi(e);
+    if (key === "Tab" && isTauri && isChatMode) {
+      return e.preventDefault();
     }
 
     if (key === "Enter" && !shiftKey && !isChatMode && isTauri) {
+      e.preventDefault();
+
       if (goAskAi) {
-        return handleAskAi(e);
+        return handleAskAi();
       }
 
-      e.preventDefault();
       handleSubmit();
     }
   };
+
+  useKeyPress(
+    "tab",
+    () => {
+      if (!isTauri || isChatMode) return;
+
+      assistant_get();
+
+      handleAskAi();
+    },
+    {
+      exactMatch: true,
+    }
+  );
 
   return {
     askAI,

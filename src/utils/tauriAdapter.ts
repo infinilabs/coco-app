@@ -235,6 +235,19 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     async openSearchItem(data) {
       const { invoke } = await import("@tauri-apps/api/core");
 
+      if (data.type === "AI Assistant") {
+        const event = new KeyboardEvent("keydown", {
+          key: "Tab",
+          code: "Tab",
+          keyCode: 9,
+          which: 9,
+          bubbles: true,
+          cancelable: true,
+        });
+
+        return window.dispatchEvent(event);
+      }
+
       const hideCoco = () => {
         const isPinned = useAppStore.getState().isPinned;
 
