@@ -14,9 +14,7 @@ interface HistoryListItemProps {
   onSelect: (chat: Chat) => void;
   onRename: (chatId: string, title: string) => void;
   onMouseEnter: () => void;
-  onMouseLeave: () => void;
-  onBlur: () => void;
-  setIsOpen: (value: boolean) => void;
+  handleDelete: () => void;
   highlightId: string;
 }
 
@@ -26,16 +24,14 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
   onSelect,
   onRename,
   onMouseEnter,
-  onMouseLeave,
-  onBlur,
   highlightId,
-  setIsOpen,
+  handleDelete,
 }) => {
   const { t } = useTranslation();
   const moreButtonRef = useRef<HTMLButtonElement>(null);
   const { _id, _source } = item;
   const title = _source?.title ?? _id;
-  const isActive = item._id === active?._id || item._id === highlightId
+  const isActive = item._id === active?._id || item._id === highlightId;
 
   const [isEdit, setIsEdit] = useState(false);
 
@@ -72,9 +68,7 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
       icon: Trash2,
       shortcut: "D",
       iconColor: "#FF2018",
-      onClick: () => {
-        setIsOpen(true);
-      },
+      onClick: handleDelete,
     },
   ];
 
@@ -96,10 +90,7 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
         onSelect(item);
       }}
       onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onBlur={onBlur}
       onContextMenu={onContextMenu}
-
     >
       <div
         className={clsx("w-1 h-6 rounded-sm bg-[#0072FF]", {
