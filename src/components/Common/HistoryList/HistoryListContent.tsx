@@ -33,6 +33,7 @@ const HistoryListContent: FC<HistoryListContentProps> = ({
 
   const [isOpen, setIsOpen] = useState(false);
   const [highlightId, setHighlightId] = useState<string>("");
+  const [highlightItem, setHighlightItem] = useState<Chat>({} as Chat);
 
   const sortedList = useMemo(() => {
     if (isNil(chats)) return {};
@@ -191,6 +192,15 @@ const HistoryListContent: FC<HistoryListContentProps> = ({
     };
   }, [highlightId, keyboardScroll, debouncedMouseScroll]);
 
+  const handleDelete = useCallback(() => {
+    if (!highlightId) return;
+    const currentIndex = flattenedChats.findIndex(
+      (chat) => chat._id === highlightId
+    );
+    setHighlightItem(flattenedChats[currentIndex]);
+    setIsOpen(true);
+  }, [highlightId]);
+
   if (chats.length === 0) {
     return (
       <div className="flex items-center justify-center flex-1 pt-8">
@@ -214,10 +224,8 @@ const HistoryListContent: FC<HistoryListContentProps> = ({
                   onSelect={onSelect}
                   onRename={onRename}
                   onMouseEnter={() => setHighlightId(item._id)}
-                  onMouseLeave={() => setHighlightId("")}
-                  onBlur={() => setHighlightId("")}
                   highlightId={highlightId}
-                  setIsOpen={setIsOpen}
+                  handleDelete={handleDelete}
                 />
               ))}
             </ul>
@@ -227,7 +235,7 @@ const HistoryListContent: FC<HistoryListContentProps> = ({
 
       <DeleteDialog
         isOpen={isOpen}
-        active={active}
+        active={active || highlightItem}
         setIsOpen={setIsOpen}
         handleRemove={handleRemove}
       />
