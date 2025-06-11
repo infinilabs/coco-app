@@ -347,7 +347,7 @@ export function useChatActions(
     console.log("_history", response);
     const hits = response?.hits?.hits || [];
     setChats(hits);
-  }, [currentService?.id, keyword, isTauri, currentService?.enabled]);
+  }, [currentService?.id, keyword, isTauri, currentService?.enabled, isCurrentLogin]);
 
   useEffect(() => {
     if (showChatHistory && connected) {
