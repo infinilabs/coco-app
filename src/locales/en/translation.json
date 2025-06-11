@@ -343,7 +343,7 @@
       "search": "Search Operation"
     },
     "askCocoAi": {
-      "title": "Ask {{0}}",
+      "title": "{{0}} {{1}}",
       "placeholder": "Ask More",
       "continueInChat": "Continue in chat",
       "copy": "Copy"

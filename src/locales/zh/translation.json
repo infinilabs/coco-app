@@ -343,7 +343,7 @@
       "search": "搜索操作"
     },
     "askCocoAi": {
-      "title": "问{{0}}",
+      "title": "{{0}}{{1}}",
       "placeholder": "问更多",
       "continueInChat": "继续聊天",
       "copy": "复制"
