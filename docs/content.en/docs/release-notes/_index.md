@@ -36,6 +36,7 @@ Information about release notes of Coco Server is provided here.
 - fix: input lost when reopening dialog after search #644
 - fix: web page unmount event #645
 - fix: fix the problem of local path not opening #650
+- fix: number keys not following settings #661
 
 ### ✈️ Improvements
 
