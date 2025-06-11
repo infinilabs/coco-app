@@ -363,6 +363,8 @@
       "timedout": "Request timed out. Please try again later.",
       "noServers": "No servers found",
       "addServer": "Add Server",
+      "servers": "Servers",
+      "aiAssistant": "AI Assistant",
       "error": "Request error. Please try again later.",
       "logo_alt": "Login Logo",
       "welcome": "Welcome to Coco AI",
