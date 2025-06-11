@@ -8,7 +8,7 @@ import { Input } from "@headlessui/react";
 
 import { useOSKeyPress } from "@/hooks/useOSKeyPress";
 import { useSearchStore } from "@/stores/searchStore";
-import { copyToClipboard, OpenURLWithBrowser } from "@/utils";
+import { copyToClipboard } from "@/utils";
 import { isMac } from "@/utils/platform";
 import { CONTEXT_MENU_PANEL_ID } from "@/constants";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
@@ -51,7 +51,7 @@ const ContextMenu: FC<ContextMenuProps> = () => {
   const menus = useCreation(() => {
     if (isNil(selectedSearchContent)) return [];
 
-    const { url, category, payload, on_opened } = selectedSearchContent;
+    const { url, category, payload } = selectedSearchContent;
     const { query, result } = payload ?? {};
 
     if (category === "AI Overview") {
@@ -68,15 +68,7 @@ const ContextMenu: FC<ContextMenuProps> = () => {
         shortcut: "enter",
         hide: category === "Calculator",
         clickEvent: () => {
-          if (on_opened) {
-            return platformAdapter.invokeBackend("open", {
-              onOpened: on_opened,
-            });
-          }
-
-          if (url) {
-            OpenURLWithBrowser(url);
-          }
+          platformAdapter.openSearchItem(selectedSearchContent as any);
         },
       },
       {

@@ -1,7 +1,6 @@
 import { useCallback, useEffect } from "react";
 
 import { useShortcutsStore } from "@/stores/shortcutsStore";
-import { copyToClipboard, OpenURLWithBrowser } from "@/utils/index";
 import type { QueryHits, SearchDocument } from "@/types/search";
 import platformAdapter from "@/utils/platformAdapter";
 import { useSearchStore } from "@/stores/searchStore";
@@ -88,17 +87,8 @@ export function useKeyboardNavigation({
 
       if (e.key === "Enter" && !e.shiftKey && selectedIndex !== null) {
         const item = globalItemIndexMap[selectedIndex];
-        if (item?.on_opened) {
-          return platformAdapter.invokeBackend("open", {
-            onOpened: item.on_opened,
-          });
-        }
 
-        if (item?.url) {
-          return OpenURLWithBrowser(item.url);
-        }
-
-        copyToClipboard(item?.payload?.result?.value);
+        return platformAdapter.openSearchItem(item);
       }
 
       if (e.key >= "0" && e.key <= "9" && showIndex && modifierKeyPressed) {
@@ -110,15 +100,7 @@ export function useKeyboardNavigation({
 
         const item = globalItemIndexMap[index];
 
-        if (item?.on_opened) {
-          return platformAdapter.invokeBackend("open", {
-            onOpened: item.on_opened,
-          });
-        }
-
-        if (item?.url) {
-          OpenURLWithBrowser(item.url);
-        }
+        platformAdapter.openSearchItem(item);
       }
     },
     [suggests, selectedIndex, showIndex, globalItemIndexMap, openPopover]

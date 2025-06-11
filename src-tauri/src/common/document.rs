@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::hide_coco;
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RichLabel {
     pub label: Option<String>,
@@ -93,7 +91,6 @@ pub(crate) async fn open(on_opened: OnOpened) -> Result<(), String> {
         }
     }
 
-    hide_coco(global_tauri_app_handle.clone()).await;
     Ok(())
 }
 

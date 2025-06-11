@@ -16,7 +16,6 @@ import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
 import { SearchSource } from "./SearchSource";
 import DropdownListItem from "./DropdownListItem";
 import platformAdapter from "@/utils/platformAdapter";
-import { OpenURLWithBrowser } from "@/utils";
 
 type ISearchData = Record<string, QueryHits[]>;
 
@@ -82,15 +81,7 @@ function DropdownList({
         setSelectedSearchContent(item);
       },
       onItemClick: (item: SearchDocument) => {
-        if (item?.on_opened) {
-          return platformAdapter.invokeBackend("open", {
-            onOpened: item.on_opened,
-          });
-        }
-
-        if (item?.url) {
-          OpenURLWithBrowser(item.url);
-        }
+        platformAdapter.openSearchItem(item);
       },
       goToTwoPage: (item: SearchDocument) => {
         setSourceData(item);
