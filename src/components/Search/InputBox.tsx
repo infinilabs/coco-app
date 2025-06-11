@@ -84,6 +84,9 @@ export default function ChatInput({
 
   const { modifierKey, returnToInput, setModifierKeyPressed } =
     useShortcutsStore();
+  const language = useAppStore((state) => {
+    return state.language;
+  });
 
   useEffect(() => {
     return () => {
@@ -180,6 +183,18 @@ export default function ChatInput({
     return state.disabledExtensions;
   });
 
+  const akiAiTooltipPrefix = useMemo(() => {
+    if (language === "zh") {
+      if (/^[a-zA-Z]/.test(askAI?.name)) {
+        return "问 ";
+      }
+
+      return "问";
+    }
+
+    return "Ask";
+  }, [language, askAI]);
+
   const renderSearchIcon = () => (
     <SearchIcons
       lineCount={lineCount}
@@ -232,7 +247,7 @@ export default function ChatInput({
           <div className="flex items-center gap-2 text-sm text-[#AEAEAE] dark:text-[#545454] whitespace-nowrap">
             <span>
               {t("search.askCocoAi.title", {
-                replace: [askAI.name],
+                replace: [akiAiTooltipPrefix, askAI.name],
               })}
             </span>
             <div className="flex items-center justify-center w-8 h-[20px] text-xs rounded-md border border-black/10 dark:border-[#545454]">
