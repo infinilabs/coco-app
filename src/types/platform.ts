@@ -4,6 +4,7 @@ import { IExtensionsStore } from "@/stores/extensionsStore";
 import { IShortcutsStore } from "@/stores/shortcutsStore";
 import { IStartupStore } from "@/stores/startupStore";
 import { AppTheme } from "@/types/index";
+import { SearchDocument } from "./search";
 
 export interface EventPayloads {
   "language-changed": {
@@ -102,10 +103,11 @@ export interface SystemOperations {
   checkUpdate: () => Promise<any>;
   relaunchApp: () => Promise<void>;
   isTauri: () => boolean;
-  openUrl: (url: string) => Promise<void>;
+  openUrl: (url: string) => Promise<unknown>;
   commands: <T>(commandName: string, ...args: any[]) => Promise<T>;
   isWindows10: () => Promise<boolean>;
-  revealItemInDir: (path: string) => Promise<void>;
+  revealItemInDir: (path: string) => Promise<unknown>;
+  openSearchItem: (data: SearchDocument) => Promise<unknown>;
 }
 
 // Base platform adapter interface

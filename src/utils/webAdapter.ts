@@ -1,4 +1,5 @@
 import type { BasePlatformAdapter } from "@/types/platform";
+import { copyToClipboard, OpenURLWithBrowser } from ".";
 
 export interface WebPlatformAdapter extends BasePlatformAdapter {
   // Add web-specific methods here
@@ -187,6 +188,16 @@ export const createWebAdapter = (): WebPlatformAdapter => {
 
     async revealItemInDir(path) {
       console.log("revealItemInDir is not supported in web environment", path);
+    },
+
+    async openSearchItem(data) {
+      if (data?.url) {
+        return OpenURLWithBrowser(data.url);
+      }
+
+      if (data?.payload?.result?.value) {
+        return copyToClipboard(data.payload.result.value);
+      }
     },
   };
 };

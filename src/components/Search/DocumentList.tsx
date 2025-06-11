@@ -11,7 +11,6 @@ import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
 import { useAppStore } from "@/stores/appStore";
 import { useConnectStore } from "@/stores/connectStore";
-import { OpenURLWithBrowser } from "@/utils";
 
 interface DocumentListProps {
   onSelectDocument: (id: string) => void;
@@ -170,15 +169,8 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       const handleEnter = () => {
         if (selectedItem === null) return;
         const item = data.list[selectedItem]?.document;
-        if (item?.on_opened) {
-          return platformAdapter.invokeBackend("open", {
-            onOpened: item.on_opened,
-          });
-        }
 
-        if (item?.url) {
-          OpenURLWithBrowser(item.url);
-        }
+        platformAdapter.openSearchItem(item);
       };
 
       switch (e.key) {
@@ -242,15 +234,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                 currentIndex={index}
                 onMouseEnter={() => onMouseEnter(index, hit.document)}
                 onItemClick={() => {
-                  if (hit.document?.on_opened) {
-                    return platformAdapter.invokeBackend("open", {
-                      onOpened: hit.document.on_opened,
-                    });
-                  }
-
-                  if (hit.document?.url) {
-                    OpenURLWithBrowser(hit.document.url);
-                  }
+                  platformAdapter.openSearchItem(hit.document);
                 }}
                 showListRight={viewMode === "list"}
               />

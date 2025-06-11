@@ -12,6 +12,8 @@ import {
 import type { BasePlatformAdapter } from "@/types/platform";
 import type { AppTheme } from "@/types/index";
 import { useAppearanceStore } from "@/stores/appearanceStore";
+import { copyToClipboard, OpenURLWithBrowser } from ".";
+import { useAppStore } from "@/stores/appStore";
 
 export interface TauriPlatformAdapter extends BasePlatformAdapter {
   openFileDialog: (
@@ -228,6 +230,36 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       const { revealItemInDir } = await import("@tauri-apps/plugin-opener");
 
       revealItemInDir(path);
+    },
+
+    async openSearchItem(data) {
+      const isPinned = useAppStore.getState().isPinned;
+
+      const { invoke } = await import("@tauri-apps/api/core");
+
+      const hideCoco = () => {
+        if (isPinned) return;
+
+        return invoke("hide_coco");
+      };
+
+      if (data?.on_opened) {
+        await invoke("open", {
+          onOpened: data.on_opened,
+        });
+
+        return hideCoco();
+      }
+
+      if (data?.url) {
+        OpenURLWithBrowser(data.url);
+
+        return hideCoco();
+      }
+
+      if (data?.payload?.result?.value) {
+        return copyToClipboard(data.payload.result.value);
+      }
     },
   };
 };
