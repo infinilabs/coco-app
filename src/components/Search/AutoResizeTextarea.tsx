@@ -5,6 +5,7 @@ import {
   forwardRef,
   KeyboardEvent,
   useEffect,
+  useCallback,
 } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -130,6 +131,18 @@ const AutoResizeTextarea = forwardRef<
       handleKeyDown?.(event);
     };
 
+    const handleChange = useCallback(
+      (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        // Filter out control characters
+        const filteredValue = e.target.value.replace(
+          /[\x00-\x1F\x7F-\x9F]/g,
+          ""
+        );
+        setInput(filteredValue);
+      },
+      [setInput]
+    );
+
     return (
       <textarea
         ref={textareaRef}
@@ -141,7 +154,7 @@ const AutoResizeTextarea = forwardRef<
         placeholder={chatPlaceholder || t("search.textarea.placeholder")}
         aria-label={t("search.textarea.ariaLabel")}
         value={input}
-        onChange={(e) => setInput(e.target.value)}
+        onChange={handleChange}
         onKeyDown={handleKeyPress}
         onCompositionStart={setTrue}
         onCompositionEnd={() => {
