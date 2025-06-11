@@ -235,8 +235,6 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     async openSearchItem(data) {
       const { invoke } = await import("@tauri-apps/api/core");
 
-      console.log("data", data);
-
       if (data.type === "AI Assistant") {
         const event = new KeyboardEvent("keydown", {
           key: "Tab",
