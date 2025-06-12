@@ -8,9 +8,6 @@ import { SearchDocument } from "./search";
 import { IAppStore } from "@/stores/appStore";
 
 export interface EventPayloads {
-  "language-changed": {
-    language: string;
-  };
   "theme-changed": string;
   "tauri://focus": void;
   "endpoint-changed": {

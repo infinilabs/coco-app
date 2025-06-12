@@ -83,9 +83,9 @@ function SearchChat({
 
   useWindowEvents();
 
-  const initializeListeners_auth = useAuthStore(
-    (state) => state.initializeListeners
-  );
+  const initializeListeners_auth = useAuthStore((state) => {
+    return state.initializeListeners;
+  });
 
   const setTheme = useThemeStore((state) => state.setTheme);
   const setIsDark = useThemeStore((state) => state.setIsDark);

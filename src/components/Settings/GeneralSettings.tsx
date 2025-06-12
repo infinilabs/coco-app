@@ -12,9 +12,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { isTauri } from "@tauri-apps/api/core";
-import {
-  isEnabled,
-} from "@tauri-apps/plugin-autostart";
+import { isEnabled } from "@tauri-apps/plugin-autostart";
 import { emit } from "@tauri-apps/api/event";
 import { useCreation } from "ahooks";
 
@@ -26,7 +24,12 @@ import { useShortcutEditor } from "@/hooks/useShortcutEditor";
 import { useAppStore } from "@/stores/appStore";
 import { AppTheme } from "@/types/index";
 import { useThemeStore } from "@/stores/themeStore";
-import { change_autostart, get_current_shortcut, change_shortcut, unregister_shortcut } from "@/commands"
+import {
+  change_autostart,
+  get_current_shortcut,
+  change_shortcut,
+  unregister_shortcut,
+} from "@/commands";
 
 export function ThemeOption({
   icon: Icon,
@@ -132,9 +135,6 @@ export default function GeneralSettings() {
   useEffect(() => {
     fetchAutoStartStatus();
     getCurrentShortcut();
-    if (language) {
-      i18n.changeLanguage(language);
-    }
   }, []);
 
   const changeShortcut = (key: Shortcut) => {
@@ -179,17 +179,6 @@ export default function GeneralSettings() {
   // }, [endpoint]);
 
   const currentLanguage = language || i18n.language;
-
-  const changeLanguage = async (lang: string) => {
-    i18n.changeLanguage(lang);
-    setLanguage(lang);
-    //
-    try {
-      await emit("language-changed", { language: lang });
-    } catch (error) {
-      console.error("Failed to emit language change event:", error);
-    }
-  };
 
   return (
     <div className="space-y-8">
@@ -262,7 +251,7 @@ export default function GeneralSettings() {
             <div className="flex items-center gap-2">
               <select
                 value={currentLanguage}
-                onChange={(e) => changeLanguage(e.target.value)}
+                onChange={(e) => setLanguage(e.target.value)}
                 className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="en">{t("settings.language.english")}</option>

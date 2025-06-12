@@ -116,6 +116,7 @@ export const useSyncStore = () => {
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
   const setShowTooltip = useAppStore((state) => state.setShowTooltip);
   const setEndpoint = useAppStore((state) => state.setEndpoint);
+  const setLanguage = useAppStore((state) => state.setLanguage);
 
   useEffect(() => {
     if (!resetFixedWindow) {
@@ -227,10 +228,11 @@ export const useSyncStore = () => {
       }),
 
       platformAdapter.listenEvent("change-app-store", ({ payload }) => {
-        const { showTooltip, endpoint } = payload;
+        const { showTooltip, endpoint, language } = payload;
 
         setShowTooltip(showTooltip);
         setEndpoint(endpoint);
+        setLanguage(language);
       }),
     ]);
 
