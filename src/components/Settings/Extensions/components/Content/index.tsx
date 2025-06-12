@@ -19,13 +19,13 @@ const Content = () => {
   return rootState.extensions.map((item) => {
     const { id } = item;
 
-    return <Item key={id} {...item} level={1} extensionId={id} />;
+    return <Item key={id} {...item} level={1} />;
   });
 };
 
 interface ItemProps extends Extension {
   level: number;
-  extensionId: ExtensionId;
+  parentId?: ExtensionId;
 }
 
 interface ItemState {
@@ -39,7 +39,7 @@ const subExtensionCommand: Partial<Record<ExtensionId, string>> = {
 };
 
 const Item: FC<ItemProps> = (props) => {
-  const { id, icon, title, type, level, extensionId, platforms } = props;
+  const { id, icon, title, type, level, parentId, platforms, author } = props;
   const { rootState } = useContext(ExtensionsContext);
   const state = useReactive<ItemState>({
     loading: false,
@@ -53,14 +53,20 @@ const Item: FC<ItemProps> = (props) => {
     return state.setDisabledExtensions;
   });
 
+  const bundleId = {
+    author,
+    extension_id: parentId ?? id,
+    sub_extension_id: parentId ? id : void 0,
+  };
+
   const hasSubExtensions = () => {
-    const { commands, scripts, quick_links } = props;
+    const { commands, scripts, quicklinks } = props;
 
     if (subExtensionCommand[id]) {
       return true;
     }
 
-    if (isArray(commands) || isArray(scripts) || isArray(quick_links)) {
+    if (isArray(commands) || isArray(scripts) || isArray(quicklinks)) {
       return true;
     }
 
@@ -70,7 +76,7 @@ const Item: FC<ItemProps> = (props) => {
   const getSubExtensions = async () => {
     state.loading = true;
 
-    const { commands, scripts, quick_links } = props;
+    const { commands, scripts, quicklinks } = props;
 
     let subExtensions: Extension[] = [];
 
@@ -79,7 +85,7 @@ const Item: FC<ItemProps> = (props) => {
     if (command) {
       subExtensions = await platformAdapter.invokeBackend<Extension[]>(command);
     } else {
-      subExtensions = [commands, scripts, quick_links].filter(isArray).flat();
+      subExtensions = [commands, scripts, quicklinks].filter(isArray).flat();
     }
 
     state.loading = false;
@@ -113,7 +119,7 @@ const Item: FC<ItemProps> = (props) => {
 
     const handleChange = (value: string) => {
       platformAdapter.invokeBackend("set_extension_alias", {
-        extensionId,
+        bundleId,
         alias: value,
       });
     };
@@ -147,12 +153,12 @@ const Item: FC<ItemProps> = (props) => {
     const handleChange = (value: string) => {
       if (value) {
         platformAdapter.invokeBackend("register_extension_hotkey", {
-          extensionId,
+          bundleId,
           hotkey: value,
         });
       } else {
         platformAdapter.invokeBackend("unregister_extension_hotkey", {
-          extensionId,
+          bundleId,
         });
       }
     };
@@ -181,19 +187,19 @@ const Item: FC<ItemProps> = (props) => {
     const { enabled } = props;
 
     const handleChange = (value: boolean) => {
+      console.log("bundleId", bundleId);
+
       if (value) {
-        setDisabledExtensions(
-          disabledExtensions.filter((item) => item !== extensionId)
-        );
+        setDisabledExtensions(disabledExtensions.filter((item) => item !== id));
 
         platformAdapter.invokeBackend("enable_extension", {
-          extensionId,
+          bundleId,
         });
       } else {
-        setDisabledExtensions([...disabledExtensions, extensionId]);
+        setDisabledExtensions([...disabledExtensions, id]);
 
         platformAdapter.invokeBackend("disable_extension", {
-          extensionId,
+          bundleId,
         });
       }
     };
@@ -293,12 +299,7 @@ const Item: FC<ItemProps> = (props) => {
         <div className={clsx({ hidden: !state.expanded })}>
           {state.subExtensions?.map((item) => {
             return (
-              <Item
-                key={item.id}
-                {...item}
-                level={level + 1}
-                extensionId={`${id}.${item.id}`}
-              />
+              <Item key={item.id} {...item} level={level + 1} parentId={id} />
             );
           })}
         </div>
