@@ -14,6 +14,7 @@ import Advanced from "@/components/Settings/Advanced";
 import Extensions from "@/components/Settings/Extensions";
 import { useConnectStore } from "@/stores/connectStore";
 import platformAdapter from "@/utils/platformAdapter";
+import { useAppStore } from "@/stores/appStore";
 
 const tabIndexMap: { [key: string]: number } = {
   general: 0,
@@ -51,9 +52,14 @@ function SettingsPage() {
       platformAdapter.emitEvent("change-connect-store", state);
     });
 
+    const unsubscribeAppStore = useAppStore.subscribe((state) => {
+      platformAdapter.emitEvent("change-app-store", state);
+    });
+
     return () => {
       unlisten.then((fn) => fn());
       unsubscribeConnect();
+      unsubscribeAppStore();
     };
   }, []);
 

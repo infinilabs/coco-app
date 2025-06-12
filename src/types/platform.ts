@@ -5,6 +5,7 @@ import { IShortcutsStore } from "@/stores/shortcutsStore";
 import { IStartupStore } from "@/stores/startupStore";
 import { AppTheme } from "@/types/index";
 import { SearchDocument } from "./search";
+import { IAppStore } from "@/stores/appStore";
 
 export interface EventPayloads {
   "language-changed": {
@@ -45,6 +46,7 @@ export interface EventPayloads {
   "change-extensions-store": IExtensionsStore;
   "quick-ai-access-client-id": any;
   "ai-overview-client-id": any;
+  "change-app-store": IAppStore;
 }
 
 // Window operation interface
@@ -73,7 +75,10 @@ export interface WindowOperations {
 
 // Theme and event related interface
 export interface ThemeAndEvents {
-  emitEvent: (event: string, payload?: any) => Promise<void>;
+  emitEvent: <K extends keyof EventPayloads>(
+    event: K,
+    payload?: any
+  ) => Promise<void>;
   listenEvent: <K extends keyof EventPayloads>(
     event: K,
     callback: (event: { payload: EventPayloads[K] }) => void
