@@ -26,6 +26,7 @@ const Content = () => {
 interface ItemProps extends Extension {
   level: number;
   parentId?: ExtensionId;
+  parentAuthor?: string;
 }
 
 interface ItemState {
@@ -39,7 +40,17 @@ const subExtensionCommand: Partial<Record<ExtensionId, string>> = {
 };
 
 const Item: FC<ItemProps> = (props) => {
-  const { id, icon, title, type, level, parentId, platforms, author } = props;
+  const {
+    id,
+    icon,
+    title,
+    type,
+    level,
+    platforms,
+    author,
+    parentId,
+    parentAuthor,
+  } = props;
   const { rootState } = useContext(ExtensionsContext);
   const state = useReactive<ItemState>({
     loading: false,
@@ -54,7 +65,7 @@ const Item: FC<ItemProps> = (props) => {
   });
 
   const bundleId = {
-    author,
+    author: author ?? parentAuthor,
     extension_id: level === 1 ? id : parentId,
     sub_extension_id: level === 1 ? void 0 : id,
   };
@@ -297,7 +308,13 @@ const Item: FC<ItemProps> = (props) => {
         <div className={clsx({ hidden: !state.expanded })}>
           {state.subExtensions?.map((item) => {
             return (
-              <Item key={item.id} {...item} level={level + 1} parentId={id} />
+              <Item
+                key={item.id}
+                {...item}
+                level={level + 1}
+                parentId={id}
+                parentAuthor={author}
+              />
             );
           })}
         </div>
