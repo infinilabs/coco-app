@@ -55,8 +55,8 @@ const Item: FC<ItemProps> = (props) => {
 
   const bundleId = {
     author,
-    extension_id: parentId ?? id,
-    sub_extension_id: parentId ? id : void 0,
+    extension_id: level === 1 ? id : parentId,
+    sub_extension_id: level === 1 ? void 0 : id,
   };
 
   const hasSubExtensions = () => {
