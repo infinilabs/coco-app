@@ -19,6 +19,7 @@ import Pagination from "@/components/Common/Pagination";
 import { specialCharacterFiltering } from "@/utils"
 
 interface MCPPopoverProps {
+  mcp_servers: any;
   isMCPActive: boolean;
   setIsMCPActive: () => void;
   getMCPByServer: (
@@ -32,6 +33,7 @@ interface MCPPopoverProps {
 }
 
 export default function MCPPopover({
+  mcp_servers,
   isMCPActive,
   setIsMCPActive,
   getMCPByServer,
@@ -163,6 +165,10 @@ export default function MCPPopover({
     setPage(page + 1);
   };
 
+  if (!(mcp_servers?.enabled && mcp_servers?.visible)) {
+    return null
+  }
+
   return (
     <div
       className={clsx(
@@ -176,8 +182,8 @@ export default function MCPPopover({
       <VisibleKey shortcut={mcpSearch} onKeyPress={setIsMCPActive}>
         <Hammer
           className={`size-3 ${isMCPActive
-              ? "text-[#0072FF] dark:text-[#0072FF]"
-              : "text-[#333] dark:text-white"
+            ? "text-[#0072FF] dark:text-[#0072FF]"
+            : "text-[#333] dark:text-white"
             }`}
         />
       </VisibleKey>

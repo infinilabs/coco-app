@@ -6,6 +6,7 @@ import {
   Suspense,
   memo,
   useState,
+  useMemo,
 } from "react";
 import clsx from "clsx";
 import { useMount } from "ahooks";
@@ -61,12 +62,12 @@ function SearchChat({
 
   const source = currentAssistant?._source;
 
-  const customInitialState = {
+  const customInitialState = useMemo(() => ({
     ...initialAppState,
     isDeepThinkActive: source?.type === "deep_think",
     isSearchActive: source?.datasource?.enabled_by_default === true,
     isMCPActive: source?.mcp_servers?.enabled_by_default === true,
-  };
+  }), [source]);
 
   const [state, dispatch] = useReducer(appReducer, customInitialState);
   const {
@@ -78,6 +79,12 @@ function SearchChat({
     isMCPActive,
     isTyping,
   } = state;
+  useEffect(() => {
+    dispatch({ type: "SET_SEARCH_ACTIVE", payload: customInitialState.isSearchActive });
+    dispatch({ type: "SET_DEEP_THINK_ACTIVE", payload: customInitialState.isDeepThinkActive });
+    dispatch({ type: "SET_MCP_ACTIVE", payload: customInitialState.isMCPActive });
+  }, [customInitialState]);
+
   const [isWin10, setIsWin10] = useState(false);
   const blurred = useAppStore((state) => state.blurred);
 
@@ -101,7 +108,7 @@ function SearchChat({
     setIsWin10(isWin10);
 
     const unlisten = platformAdapter.listenEvent("show-coco", () => {
-      console.log("show-coco");
+      //console.log("show-coco");
 
       platformAdapter.invokeBackend("simulate_mouse_click", {
         isChatMode: isChatModeRef.current,
@@ -281,9 +288,8 @@ function SearchChat({
 
       <div
         data-tauri-drag-region={isTauri}
-        className={`p-2 w-full flex justify-center transition-all duration-500 min-h-[82px] ${
-          isTransitioned ? "border-t" : "border-b"
-        } border-[#E6E6E6] dark:border-[#272626]`}
+        className={`p-2 w-full flex justify-center transition-all duration-500 min-h-[82px] ${isTransitioned ? "border-t" : "border-b"
+          } border-[#E6E6E6] dark:border-[#272626]`}
       >
         <InputBox
           isChatMode={isChatMode}

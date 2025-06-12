@@ -178,7 +178,7 @@ export function useChatActions(
         response = res;
       }
 
-      console.log("_new", response);
+      console.log("_new", response, queryParams);
       const newChat: Chat = response;
       curIdRef.current = response?.payload?.id;
 
@@ -257,7 +257,7 @@ export function useChatActions(
         response = res;
       }
 
-      console.log("_send", response);
+      console.log("_send", response, queryParams);
       curIdRef.current = response[0]?._id;
 
       const updatedChat: Chat = {
