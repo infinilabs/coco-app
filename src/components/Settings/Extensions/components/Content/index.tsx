@@ -187,8 +187,6 @@ const Item: FC<ItemProps> = (props) => {
     const { enabled } = props;
 
     const handleChange = (value: boolean) => {
-      console.log("bundleId", bundleId);
-
       if (value) {
         setDisabledExtensions(disabledExtensions.filter((item) => item !== id));
 
