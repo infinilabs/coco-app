@@ -94,7 +94,6 @@ export const ChatMessage = memo(function ChatMessage({
     isTyping === false && (messageContent || response?.message_chunk);
 
   const [suggestion, setSuggestion] = useState<string[]>([]);
-  const visibleStartPage = useConnectStore((state) => state.visibleStartPage);
 
   const getSuggestion = (suggestion: string[]) => {
     setSuggestion(suggestion);
@@ -176,9 +175,6 @@ export const ChatMessage = memo(function ChatMessage({
       className={clsx(
         "py-8 flex",
         [isAssistant ? "justify-start" : "justify-end"],
-        {
-          hidden: visibleStartPage,
-        },
         rootClassName
       )}
     >

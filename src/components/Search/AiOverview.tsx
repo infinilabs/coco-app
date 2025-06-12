@@ -1,4 +1,4 @@
-import { ChevronUp, Sparkles } from "lucide-react";
+import { Sparkles, X } from "lucide-react";
 import { FC, useState } from "react";
 import clsx from "clsx";
 import { useStreamChat } from "@/hooks/useStreamChat";
@@ -18,7 +18,6 @@ const AiOverview: FC<AiSummaryProps> = (props) => {
     return state.aiOverviewAssistant;
   });
 
-  const [expand, setExpand] = useState(true);
   const [visible, setVisible] = useState(false);
 
   const { isTyping, chunkData, loadingStep } = useStreamChat({
@@ -42,10 +41,10 @@ const AiOverview: FC<AiSummaryProps> = (props) => {
         <div
           className="absolute top-2 right-2 flex items-center justify-center size-[20px] border rounded-md cursor-pointer dark:border-[#282828]"
           onClick={() => {
-            setExpand(!expand);
+            setVisible(false);
           }}
         >
-          <ChevronUp className="size-4" />
+          <X className="size-4" />
         </div>
 
         <div className="flex item-center gap-1">
@@ -53,11 +52,7 @@ const AiOverview: FC<AiSummaryProps> = (props) => {
           <span className="text-xs font-semibold">AI Overview</span>
         </div>
 
-        <div
-          className={clsx("flex-1 overflow-auto text-sm hide-scrollbar", {
-            hidden: !expand,
-          })}
-        >
+        <div className="flex-1 overflow-auto text-sm hide-scrollbar">
           <div className="-ml-11 -mr-4 user-select-text">
             <ChatMessage
               key="current"
@@ -82,7 +77,7 @@ const AiOverview: FC<AiSummaryProps> = (props) => {
 
         <div
           className={clsx("min-h-[20px]", {
-            hidden: !expand || isTyping,
+            hidden: isTyping,
           })}
         />
       </div>
