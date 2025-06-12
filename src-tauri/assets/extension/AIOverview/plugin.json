@@ -1,8 +1,0 @@
-{
-  "id": "AIOverview",
-  "title": "AI Overview",
-  "description": "...",
-  "icon": "font_a-AIOverview",
-  "type": "ai_extension",
-  "enabled": true
-}
