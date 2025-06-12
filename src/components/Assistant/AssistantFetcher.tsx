@@ -31,7 +31,7 @@ export const AssistantFetcher = ({
     serverId?: string;
   }) => {
     try {
-      if (!currentService?.enabled) {
+      if (isTauri && !currentService?.enabled) {
         return {
           total: 0,
           list: [],
