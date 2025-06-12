@@ -85,7 +85,7 @@ const VisibleKey: FC<VisibleKeyProps> = (props) => {
     <div
       {...rest}
       ref={childrenRef}
-      className={clsx(rootClassName, "relative inline-block")}
+      className={clsx(rootClassName, "relative inline-block leading-[100%]")}
     >
       {children}
 

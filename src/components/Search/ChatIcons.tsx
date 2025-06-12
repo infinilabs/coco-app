@@ -28,7 +28,7 @@ const ChatIcons: React.FC<ChatIconsProps> = ({
         <button
           className={`ml-1 p-1 ${
             inputValue ? "bg-[#0072FF]" : "bg-[#E4E5F0] dark:bg-[rgb(84,84,84)]"
-          } rounded-full transition-colors`}
+          } rounded-full transition-colors h-6`}
           type="submit"
           onClick={() => onSend(inputValue.trim())}
         >
