@@ -51,7 +51,6 @@ const ContextMenu: FC<ContextMenuProps> = () => {
   const menus = useCreation(() => {
     if (isNil(selectedSearchContent)) return [];
 
-    console.log("selectedSearchContent", selectedSearchContent);
     const { url, category, type, payload } = selectedSearchContent;
     const { query, result } = payload ?? {};
 
