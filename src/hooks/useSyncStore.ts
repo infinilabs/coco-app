@@ -1,4 +1,5 @@
 import { useAppearanceStore } from "@/stores/appearanceStore";
+import { useAppStore } from "@/stores/appStore";
 import { useConnectStore } from "@/stores/connectStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
@@ -113,6 +114,9 @@ export const useSyncStore = () => {
     return state.setAiOverviewMinQuantity;
   });
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
+  const setShowTooltip = useAppStore((state) => state.setShowTooltip);
+  const setEndpoint = useAppStore((state) => state.setEndpoint);
+  const setLanguage = useAppStore((state) => state.setLanguage);
 
   useEffect(() => {
     if (!resetFixedWindow) {
@@ -221,6 +225,14 @@ export const useSyncStore = () => {
         setAiOverviewCharLen(aiOverviewCharLen);
         setAiOverviewDelay(aiOverviewDelay);
         setAiOverviewMinQuantity(aiOverviewMinQuantity);
+      }),
+
+      platformAdapter.listenEvent("change-app-store", ({ payload }) => {
+        const { showTooltip, endpoint, language } = payload;
+
+        setShowTooltip(showTooltip);
+        setEndpoint(endpoint);
+        setLanguage(language);
       }),
     ]);
 

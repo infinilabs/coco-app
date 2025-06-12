@@ -83,10 +83,9 @@ function SearchChat({
 
   useWindowEvents();
 
-  const initializeListeners = useAppStore((state) => state.initializeListeners);
-  const initializeListeners_auth = useAuthStore(
-    (state) => state.initializeListeners
-  );
+  const initializeListeners_auth = useAuthStore((state) => {
+    return state.initializeListeners;
+  });
 
   const setTheme = useThemeStore((state) => state.setTheme);
   const setIsDark = useThemeStore((state) => state.setIsDark);
@@ -117,7 +116,6 @@ function SearchChat({
 
   useEffect(() => {
     const init = async () => {
-      await initializeListeners();
       await initializeListeners_auth();
       await platformAdapter.invokeBackend("get_app_search_source");
     };

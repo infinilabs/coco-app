@@ -88,30 +88,11 @@ export default function Layout() {
 
   const { i18n } = useTranslation();
   const language = useAppStore((state) => state.language);
-  const setLanguage = useAppStore((state) => state.setLanguage);
   const { text: selectionText } = useTextSelection();
 
   useEffect(() => {
-    if (language) {
-      i18n.changeLanguage(language);
-    }
-
-    const setupLanguageListener = async () => {
-      const unlisten = await platformAdapter.listenEvent(
-        "language-changed",
-        (event) => {
-          i18n.changeLanguage(event.payload.language);
-          setLanguage(event.payload.language);
-        }
-      );
-      return unlisten;
-    };
-
-    const unlistenPromise = setupLanguageListener();
-    return () => {
-      unlistenPromise.then((unlisten) => unlisten());
-    };
-  }, []);
+    i18n.changeLanguage(language);
+  }, [language]);
 
   // Disable right-click for production environment
   useEventListener("contextmenu", (event) => {
