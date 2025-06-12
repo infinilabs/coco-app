@@ -63,8 +63,8 @@ export function useWindowSize() {
 export const IsTauri = () => {
   return Boolean(
     typeof window !== "undefined" &&
-      window !== undefined &&
-      (window as any).__TAURI_INTERNALS__ !== undefined
+    window !== undefined &&
+    (window as any).__TAURI_INTERNALS__ !== undefined
   );
 };
 
@@ -114,6 +114,11 @@ export const closeHistoryPanel = () => {
   }
 };
 
-// export const sortByFirstLetter = <T>(list: T[], key: keyof T) => {
-//   return list.sort((a, b) => {});
-// };
+export const specialCharacterFiltering = (value?: string) => {
+  if (!value) return ""
+  // Filter out control characters
+  return value.replace(
+    /[\x00-\x1F\x7F-\x9F]/g,
+    ""
+  );
+}
