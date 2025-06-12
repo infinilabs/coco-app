@@ -5,8 +5,9 @@ import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { Pencil, Trash2 } from "lucide-react";
 
-import { Chat } from "@/types/chat";
+import type { Chat } from "@/types/chat";
 import VisibleKey from "../VisibleKey";
+import { specialCharacterFiltering } from "@/utils/index"
 
 interface HistoryListItemProps {
   item: Chat;
@@ -107,12 +108,16 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
             onKeyDown={(event) => {
               if (event.key !== "Enter") return;
 
-              onRename(item._id, event.currentTarget.value);
+              const value = specialCharacterFiltering(event.currentTarget.value)
+
+              onRename(item._id, value);
 
               setIsEdit(false);
             }}
             onBlur={(event) => {
-              onRename(item._id, event.target.value);
+              const value = specialCharacterFiltering(event.target.value)
+
+              onRename(item._id, value);
 
               setIsEdit(false);
             }}

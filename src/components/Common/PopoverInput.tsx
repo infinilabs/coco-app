@@ -1,7 +1,8 @@
-import { POPOVER_PANEL_SELECTOR } from "@/constants";
 import { Input, InputProps } from "@headlessui/react";
 import { useKeyPress } from "ahooks";
 import { forwardRef, useImperativeHandle, useRef } from "react";
+
+import { POPOVER_PANEL_SELECTOR } from "@/constants";
 
 const PopoverInput = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
   const inputRef = useRef<HTMLInputElement>(null);

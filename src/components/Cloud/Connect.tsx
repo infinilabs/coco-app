@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { specialCharacterFiltering } from "@/utils/index"
+
 interface ConnectServiceProps {
   setIsConnect: (isConnect: boolean) => void;
   onAddServer: (endpoint: string) => void;
@@ -25,6 +27,11 @@ export function Connect({ setIsConnect, onAddServer }: ConnectServiceProps) {
     await onAddServer(endpoint);
     setIsConnect(true);
   };
+
+  const onChangeEndpoint = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = specialCharacterFiltering(e.target.value)
+    setEndpointLink(value)
+  }
 
   return (
     <div className="max-w-4xl">
@@ -60,7 +67,7 @@ export function Connect({ setIsConnect, onAddServer }: ConnectServiceProps) {
               id="endpoint"
               value={endpointLink}
               placeholder={t("cloud.connect.serverPlaceholder")}
-              onChange={(e) => setEndpointLink(e.target.value)}
+              onChange={onChangeEndpoint}
               className="text-[#101010] dark:text-white flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800"
             />
             <button

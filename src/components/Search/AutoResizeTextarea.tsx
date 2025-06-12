@@ -9,6 +9,8 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 
+import { specialCharacterFiltering } from "@/utils/index"
+
 const LINE_HEIGHT = 24; // 1.5rem
 const MAX_FIRST_LINE_WIDTH = 470; // Width in pixels for first line
 const MAX_HEIGHT = 240; // 15rem
@@ -133,12 +135,8 @@ const AutoResizeTextarea = forwardRef<
 
     const handleChange = useCallback(
       (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        // Filter out control characters
-        const filteredValue = e.target.value.replace(
-          /[\x00-\x1F\x7F-\x9F]/g,
-          ""
-        );
-        setInput(filteredValue);
+        const value = specialCharacterFiltering(e.target.value)
+        setInput(value);
       },
       [setInput]
     );

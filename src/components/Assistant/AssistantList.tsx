@@ -18,6 +18,7 @@ import AssistantItem from "./AssistantItem";
 import Pagination from "@/components/Common/Pagination";
 import { useSearchStore } from "@/stores/searchStore";
 import { useChatStore } from "@/stores/chatStore";
+import { specialCharacterFiltering } from "@/utils"
 
 interface AssistantListProps {
   assistantIDs?: string[];
@@ -239,7 +240,8 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
               placeholder={t("assistant.popover.search")}
               className="w-full h-8 px-2 bg-transparent border rounded-md dark:border-white/10"
               onChange={(event) => {
-                setKeyword(event.target.value.trim());
+                const value = specialCharacterFiltering(event.target.value.trim())
+                setKeyword(value);
               }}
             />
           </VisibleKey>

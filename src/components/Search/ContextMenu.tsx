@@ -8,7 +8,7 @@ import { Input } from "@headlessui/react";
 
 import { useOSKeyPress } from "@/hooks/useOSKeyPress";
 import { useSearchStore } from "@/stores/searchStore";
-import { copyToClipboard } from "@/utils";
+import { copyToClipboard, specialCharacterFiltering } from "@/utils";
 import { isMac } from "@/utils/platform";
 import { CONTEXT_MENU_PANEL_ID } from "@/constants";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
@@ -270,7 +270,7 @@ const ContextMenu: FC<ContextMenuProps> = () => {
                   placeholder={t("search.contextMenu.search")}
                   className="w-full bg-transparent"
                   onChange={(event) => {
-                    const value = event.target.value;
+                    const value = specialCharacterFiltering(event.target.value);
 
                     const searchMenus = menus.filter((item) => {
                       return lowerCase(item.name).includes(lowerCase(value));
