@@ -76,14 +76,6 @@ const InputControls = ({
         query?: string;
       }
     ): Promise<DataSource[]> => {
-      if (
-        !(
-          assistantConfig.datasourceEnabled && assistantConfig.datasourceVisible
-        )
-      ) {
-        return [];
-      }
-
       const body: Record<string, any> = {
         id: serverId,
         from: options?.from || 0,
@@ -149,9 +141,6 @@ const InputControls = ({
         query?: string;
       }
     ): Promise<DataSource[]> => {
-      if (!(assistantConfig.mcpEnabled && assistantConfig.mcpVisible)) {
-        return [];
-      }
       const body: Record<string, any> = {
         id: serverId,
         from: options?.from || 0,
@@ -260,18 +249,16 @@ const InputControls = ({
                 onKeyPress={setIsDeepThinkActive}
               >
                 <Brain
-                  className={`size-3 ${
-                    isDeepThinkActive
-                      ? "text-[#0072FF] dark:text-[#0072FF]"
-                      : "text-[#333] dark:text-white"
-                  }`}
+                  className={`size-3 ${isDeepThinkActive
+                    ? "text-[#0072FF] dark:text-[#0072FF]"
+                    : "text-[#333] dark:text-white"
+                    }`}
                 />
               </VisibleKey>
               {isDeepThinkActive && (
                 <span
-                  className={`${
-                    isDeepThinkActive ? "text-[#0072FF]" : "dark:text-white"
-                  }`}
+                  className={`${isDeepThinkActive ? "text-[#0072FF]" : "dark:text-white"
+                    }`}
                 >
                   {t("search.input.deepThink")}
                 </span>
@@ -279,25 +266,23 @@ const InputControls = ({
             </button>
           )}
 
-          {source?.datasource?.enabled && source?.datasource?.visible && (
-            <SearchPopover
-              isSearchActive={isSearchActive}
-              setIsSearchActive={setIsSearchActive}
-              getDataSourcesByServer={getDataSourcesByServer}
-            />
-          )}
+          <SearchPopover
+            datasource={source?.datasource}
+            isSearchActive={isSearchActive}
+            setIsSearchActive={setIsSearchActive}
+            getDataSourcesByServer={getDataSourcesByServer}
+          />
 
-          {source?.mcp_servers?.enabled && source?.mcp_servers?.visible && (
-            <MCPPopover
-              isMCPActive={isMCPActive}
-              setIsMCPActive={setIsMCPActive}
-              getMCPByServer={getMCPByServer}
-            />
-          )}
+          <MCPPopover
+            mcp_servers={source?.mcp_servers}
+            isMCPActive={isMCPActive}
+            setIsMCPActive={setIsMCPActive}
+            getMCPByServer={getMCPByServer}
+          />
 
           {!(source?.datasource?.enabled && source?.datasource?.visible) &&
-          (source?.type !== "deep_think" || !source?.config?.visible) &&
-          !(source?.mcp_servers?.enabled && source?.mcp_servers?.visible) ? (
+            (source?.type !== "deep_think" || !source?.config?.visible) &&
+            !(source?.mcp_servers?.enabled && source?.mcp_servers?.visible) ? (
             <div className="px-[9px]">
               <Copyright />
             </div>

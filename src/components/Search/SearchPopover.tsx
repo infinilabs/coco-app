@@ -19,6 +19,7 @@ import Pagination from "@/components/Common/Pagination";
 import { specialCharacterFiltering } from "@/utils"
 
 interface SearchPopoverProps {
+  datasource: any;
   isSearchActive: boolean;
   setIsSearchActive: () => void;
   getDataSourcesByServer: (
@@ -32,6 +33,7 @@ interface SearchPopoverProps {
 }
 
 export default function SearchPopover({
+  datasource,
   isSearchActive,
   setIsSearchActive,
   getDataSourcesByServer,
@@ -165,6 +167,10 @@ export default function SearchPopover({
 
     setPage(page + 1);
   };
+
+  if (!(datasource?.enabled && datasource?.visible)) {
+    return null
+  }
 
   return (
     <div
