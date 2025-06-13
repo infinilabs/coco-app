@@ -13,6 +13,16 @@ Information about release notes of Coco Server is provided here.
 
 ### 🚀 Features
 
+### 🐛 Bug fix
+
+### ✈️ Improvements
+
+## 0.5.2 (2025-06-13)
+
+### ❌ Breaking changes
+
+### 🚀 Features
+
 - feat: ai overview support is enabled with shortcut #597
 - feat: add key monitoring during reset #615
 - feat: calculator extension add description #623
