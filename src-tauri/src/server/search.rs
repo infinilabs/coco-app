@@ -9,7 +9,6 @@ use async_trait::async_trait;
 // use futures::stream::StreamExt;
 use ordered_float::OrderedFloat;
 use std::collections::HashMap;
-use tauri_plugin_store::JsonValue;
 // use std::hash::Hash;
 
 #[allow(dead_code)]
@@ -96,14 +95,18 @@ impl SearchSource for CocoSearchSource {
         let mut total_hits = 0;
         let mut hits: Vec<(Document, f64)> = Vec::new();
 
-        let mut query_args: HashMap<String, JsonValue> = HashMap::new();
-        query_args.insert("from".into(), JsonValue::Number(query.from.into()));
-        query_args.insert("size".into(), JsonValue::Number(query.size.into()));
+        let mut query_params = Vec::new();
+
+        // Add from/size as number values
+        query_params.push(format!("from={}", query.from));
+        query_params.push(format!("size={}", query.size));
+
+        // Add query strings
         for (key, value) in query.query_strings {
-            query_args.insert(key, JsonValue::String(value));
+            query_params.push(format!("{}={}", key, value));
         }
 
-        let response = HttpClient::get(&self.server.id, &url, Some(query_args))
+        let response = HttpClient::get(&self.server.id, &url, Some(query_params))
             .await
             .map_err(|e| SearchError::HttpError(format!("{}", e)))?;
 

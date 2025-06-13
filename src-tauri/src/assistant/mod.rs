@@ -1,5 +1,5 @@
 use crate::common::assistant::ChatRequestMessage;
-use crate::common::http::GetResponse;
+use crate::common::http::{convert_query_params_to_strings, GetResponse};
 use crate::common::register::SearchSourceRegistry;
 use crate::server::http_client::HttpClient;
 use crate::{common, server::servers::COCO_SERVERS};
@@ -20,17 +20,15 @@ pub async fn chat_history<R: Runtime>(
     size: u32,
     query: Option<String>,
 ) -> Result<String, String> {
-    let mut query_params: HashMap<String, Value> = HashMap::new();
-    if from > 0 {
-        query_params.insert("from".to_string(), from.into());
-    }
-    if size > 0 {
-        query_params.insert("size".to_string(), size.into());
-    }
+    let mut query_params = Vec::new();
+
+    // Add from/size as number values
+    query_params.push(format!("from={}", from));
+    query_params.push(format!("size={}", size));
 
     if let Some(query) = query {
         if !query.is_empty() {
-            query_params.insert("query".to_string(), query.into());
+            query_params.push(format!("query={}", query.to_string()));
         }
     }
 
@@ -52,13 +50,11 @@ pub async fn session_chat_history<R: Runtime>(
     from: u32,
     size: u32,
 ) -> Result<String, String> {
-    let mut query_params: HashMap<String, Value> = HashMap::new();
-    if from > 0 {
-        query_params.insert("from".to_string(), from.into());
-    }
-    if size > 0 {
-        query_params.insert("size".to_string(), size.into());
-    }
+    let mut query_params = Vec::new();
+
+    // Add from/size as number values
+    query_params.push(format!("from={}", from));
+    query_params.push(format!("size={}", size));
 
     let path = format!("/chat/{}/_history", session_id);
 
@@ -75,10 +71,9 @@ pub async fn open_session_chat<R: Runtime>(
     server_id: String,
     session_id: String,
 ) -> Result<String, String> {
-    let query_params = HashMap::new();
     let path = format!("/chat/{}/_open", session_id);
 
-    let response = HttpClient::post(&server_id, path.as_str(), Some(query_params), None)
+    let response = HttpClient::post(&server_id, path.as_str(), None, None)
         .await
         .map_err(|e| format!("Error open session: {}", e))?;
 
@@ -91,10 +86,9 @@ pub async fn close_session_chat<R: Runtime>(
     server_id: String,
     session_id: String,
 ) -> Result<String, String> {
-    let query_params = HashMap::new();
     let path = format!("/chat/{}/_close", session_id);
 
-    let response = HttpClient::post(&server_id, path.as_str(), Some(query_params), None)
+    let response = HttpClient::post(&server_id, path.as_str(), None, None)
         .await
         .map_err(|e| format!("Error close session: {}", e))?;
 
@@ -106,10 +100,9 @@ pub async fn cancel_session_chat<R: Runtime>(
     server_id: String,
     session_id: String,
 ) -> Result<String, String> {
-    let query_params = HashMap::new();
     let path = format!("/chat/{}/_cancel", session_id);
 
-    let response = HttpClient::post(&server_id, path.as_str(), Some(query_params), None)
+    let response = HttpClient::post(&server_id, path.as_str(), None, None)
         .await
         .map_err(|e| format!("Error cancel session: {}", e))?;
 
@@ -141,7 +134,7 @@ pub async fn new_chat<R: Runtime>(
     headers.insert("WEBSOCKET-SESSION-ID".to_string(), websocket_id.into());
 
     let response =
-        HttpClient::advanced_post(&server_id, "/chat/_new", Some(headers), query_params, body)
+        HttpClient::advanced_post(&server_id, "/chat/_new", Some(headers), convert_query_params_to_strings(query_params), body)
             .await
             .map_err(|e| format!("Error sending message: {}", e))?;
 
@@ -181,7 +174,7 @@ pub async fn send_message<R: Runtime>(
         &server_id,
         path.as_str(),
         Some(headers),
-        query_params,
+        convert_query_params_to_strings(query_params),
         Some(body),
     )
         .await
