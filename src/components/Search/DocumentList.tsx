@@ -140,11 +140,15 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     setIsKeyboardMode(false);
   }, [isChatMode, input]);
 
+  const { visibleContextMenu } = useSearchStore();
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!data?.list?.length) return;
 
       const handleArrowKeys = () => {
+        if (visibleContextMenu) return;
+
         e.preventDefault();
         setIsKeyboardMode(true);
 
