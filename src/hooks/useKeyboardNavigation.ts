@@ -87,7 +87,6 @@ export function useKeyboardNavigation({
           return Math.min(...indexes);
         });
       } else if (modifierKeyPressed) {
-        e.preventDefault();
         if (selectedIndex !== null) {
           const item = globalItemIndexMap[selectedIndex];
           setSelectedName(item?.source?.name || "");
