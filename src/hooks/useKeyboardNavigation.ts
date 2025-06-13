@@ -52,20 +52,41 @@ export function useKeyboardNavigation({
 
       const modifierKeyPressed = getModifierKeyPressed(e);
 
+      const indexes = suggests.map((item) => item.document.index!);
+
       if (e.key === "ArrowUp") {
         e.preventDefault();
-        //console.log("ArrowUp pressed", selectedIndex, suggests.length);
-        setSelectedIndex((prev) =>
-          prev === null || prev === 0 ? suggests.length - 1 : prev - 1
-        );
+        // console.log("ArrowUp pressed", selectedIndex, suggests.length);
+        setSelectedIndex((prev) => {
+          if (prev == null) {
+            return Math.min(...indexes);
+          }
+
+          const nextIndex = prev - 1;
+
+          if (indexes.includes(nextIndex)) {
+            return nextIndex;
+          }
+
+          return Math.max(...indexes);
+        });
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
         //console.log("ArrowDown pressed", selectedIndex, suggests.length);
-        setSelectedIndex((prev) =>
-          prev === null || prev === suggests.length - 1 ? 0 : prev + 1
-        );
+        setSelectedIndex((prev) => {
+          if (prev == null) {
+            return Math.min(...indexes);
+          }
+
+          const nextIndex = prev + 1;
+
+          if (indexes.includes(nextIndex)) {
+            return nextIndex;
+          }
+
+          return Math.min(...indexes);
+        });
       } else if (modifierKeyPressed) {
-        e.preventDefault();
         if (selectedIndex !== null) {
           const item = globalItemIndexMap[selectedIndex];
           setSelectedName(item?.source?.name || "");
