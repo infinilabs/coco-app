@@ -236,6 +236,12 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       const { invoke } = await import("@tauri-apps/api/core");
 
       if (data.type === "AI Assistant") {
+        const textarea = document.querySelector("#search-textarea");
+
+        if (!(textarea instanceof HTMLTextAreaElement)) return;
+
+        textarea.focus();
+
         const event = new KeyboardEvent("keydown", {
           key: "Tab",
           code: "Tab",
@@ -245,7 +251,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
           cancelable: true,
         });
 
-        return window.dispatchEvent(event);
+        return textarea.dispatchEvent(event);
       }
 
       const hideCoco = () => {

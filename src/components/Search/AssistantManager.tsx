@@ -7,7 +7,6 @@ import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
 import type { Assistant } from "@/types/chat";
 import { useAppStore } from "@/stores/appStore";
-import { useKeyPress } from "ahooks";
 
 interface AssistantManagerProps {
   isChatMode: boolean;
@@ -86,8 +85,16 @@ export function useAssistantManager({
       return setGoAskAi(false);
     }
 
-    if (key === "Tab" && isTauri && isChatMode) {
-      return e.preventDefault();
+    if (key === "Tab" && isTauri) {
+      e.preventDefault();
+
+      if (isChatMode) {
+        return;
+      }
+
+      assistant_get();
+
+      return handleAskAi();
     }
 
     if (key === "Enter" && !shiftKey && !isChatMode && isTauri) {
@@ -100,22 +107,6 @@ export function useAssistantManager({
       handleSubmit();
     }
   };
-
-  useKeyPress(
-    "tab",
-    (event) => {
-      if (!isTauri || isChatMode) return;
-
-      event.preventDefault();
-
-      assistant_get();
-
-      handleAskAi();
-    },
-    {
-      exactMatch: true,
-    }
-  );
 
   return {
     askAI,

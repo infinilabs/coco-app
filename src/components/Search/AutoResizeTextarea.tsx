@@ -9,13 +9,14 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 
-import { specialCharacterFiltering } from "@/utils/index"
+import { specialCharacterFiltering } from "@/utils/index";
 
 const LINE_HEIGHT = 24; // 1.5rem
 const MAX_FIRST_LINE_WIDTH = 470; // Width in pixels for first line
 const MAX_HEIGHT = 240; // 15rem
 
 interface AutoResizeTextareaProps {
+  isChatMode: boolean;
   input: string;
   setInput: (value: string) => void;
   handleKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
@@ -31,6 +32,7 @@ const AutoResizeTextarea = forwardRef<
 >(
   (
     {
+      isChatMode,
       input,
       setInput,
       handleKeyDown,
@@ -135,7 +137,7 @@ const AutoResizeTextarea = forwardRef<
 
     const handleChange = useCallback(
       (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        const value = specialCharacterFiltering(e.target.value)
+        const value = specialCharacterFiltering(e.target.value);
         setInput(value);
       },
       [setInput]
@@ -144,6 +146,7 @@ const AutoResizeTextarea = forwardRef<
     return (
       <textarea
         ref={textareaRef}
+        id={isChatMode ? "chat-textarea" : "search-textarea"}
         autoFocus
         autoComplete="off"
         autoCapitalize="none"

@@ -288,6 +288,7 @@ export default function ChatInput({
     >
       <AutoResizeTextarea
         ref={textareaRef}
+        isChatMode={isChatMode}
         input={inputValue}
         setInput={handleInputChange}
         handleKeyDown={handleKeyDownAutoResizeTextarea}
