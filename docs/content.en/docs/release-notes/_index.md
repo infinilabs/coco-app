@@ -7,7 +7,13 @@ title: "Release Notes"
 
 Information about release notes of Coco Server is provided here.
 
-## Latest (In development)
+## Latest (In development)  
+### ❌ Breaking changes  
+### 🚀 Features  
+### 🐛 Bug fix  
+### ✈️ Improvements  
+
+## 0.5.3 (2025-06-13)
 
 ### ❌ Breaking changes
 
