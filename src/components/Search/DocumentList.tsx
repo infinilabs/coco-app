@@ -229,7 +229,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
               <SearchListItem
                 key={hit.document.id + index}
                 itemRef={(el) => (itemRefs.current[index] = el)}
-                item={hit.document}
+                item={{ ...hit.document, querySource: hit.source }}
                 isSelected={selectedItem === index}
                 currentIndex={index}
                 onMouseEnter={() => onMouseEnter(index, hit.document)}
