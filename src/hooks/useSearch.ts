@@ -120,7 +120,7 @@ export function useSearch() {
             type: id,
           },
           document: {
-            index: 1000000,
+            index: -1,
             id,
             category: id,
             payload: {
