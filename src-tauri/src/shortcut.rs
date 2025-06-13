@@ -99,7 +99,7 @@ fn _register_shortcut<R: Runtime>(app: &AppHandle<R>, shortcut: Shortcut) {
         .on_shortcut(shortcut, move |app, scut, event| {
             if scut == &shortcut {
                 dbg!("shortcut pressed");
-                let main_window = app.get_window(MAIN_WINDOW_LABEL).unwrap();
+                let main_window = app.get_webview_window(MAIN_WINDOW_LABEL).unwrap();
                 if let ShortcutState::Pressed = event.state() {
                     let app_handle = app.clone();
                     if main_window.is_visible().unwrap() {
@@ -128,7 +128,7 @@ fn _register_shortcut_upon_start(app: &App, shortcut: Shortcut) {
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(move |app, scut, event| {
                     if scut == &shortcut {
-                        let window = app.get_window(MAIN_WINDOW_LABEL).unwrap();
+                        let window = app.get_webview_window(MAIN_WINDOW_LABEL).unwrap();
                         if let ShortcutState::Pressed = event.state() {
                             let app_handle = app.clone();
 

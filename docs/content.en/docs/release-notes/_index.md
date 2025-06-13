@@ -39,6 +39,7 @@ Information about release notes of Coco Server is provided here.
 - fix: fix the problem of local path not opening #650
 - fix: number keys not following settings #661
 - fix: fix problem with up and down key indexing #676
+- fix: arrow inserting escape sequences #683
 
 ### ✈️ Improvements
 
