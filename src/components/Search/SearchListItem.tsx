@@ -1,4 +1,4 @@
-import React from "react";
+import React, { MouseEvent } from "react";
 import clsx from "clsx";
 import { File } from "lucide-react";
 
@@ -7,6 +7,7 @@ import ListRight from "./ListRight";
 import { useAppStore } from "@/stores/appStore";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import type { SearchDocument } from "@/types/search";
+import { useSearchStore } from "@/stores/searchStore";
 
 interface SearchListItemProps {
   item: SearchDocument;
@@ -36,10 +37,23 @@ const SearchListItem: React.FC<SearchListItemProps> = React.memo(
 
     const isMobile = useIsMobile();
 
+    const { setSelectedSearchContent, setVisibleContextMenu } =
+      useSearchStore();
+
+    const handleContextMenu = (event: MouseEvent) => {
+      event.preventDefault();
+
+      setVisibleContextMenu(true);
+    };
+
     return (
       <div
         ref={itemRef}
-        onMouseEnter={onMouseEnter}
+        onMouseEnter={() => {
+          setSelectedSearchContent(item);
+
+          onMouseEnter();
+        }}
         onClick={onItemClick}
         className={clsx(
           "w-full px-2 py-2.5 text-sm flex mb-0 flex-row items-center mobile:mb-2 mobile:flex-col mobile:items-start justify-between rounded-lg transition-colors cursor-pointer text-[#333] dark:text-[#d8d8d8]",
@@ -51,6 +65,7 @@ const SearchListItem: React.FC<SearchListItemProps> = React.memo(
         role="option"
         aria-selected={isSelected}
         id={`search-item-${currentIndex}`}
+        onContextMenu={handleContextMenu}
       >
         <div
           className={`${
@@ -60,7 +75,12 @@ const SearchListItem: React.FC<SearchListItemProps> = React.memo(
           } min-w-0 flex gap-2 items-center justify-start `}
         >
           <CommonIcon
-            renderOrder={["special_icon", "item_icon", "connector_icon", "default_icon"]}
+            renderOrder={[
+              "special_icon",
+              "item_icon",
+              "connector_icon",
+              "default_icon",
+            ]}
             item={item}
             itemIcon={item?.icon}
             defaultIcon={File}
