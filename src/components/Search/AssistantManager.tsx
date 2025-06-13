@@ -65,12 +65,16 @@ export function useAssistantManager({
 
     if (!askAIRef.current) return;
 
-    const value = inputValue.trim();
+    let value = inputValue.trim();
 
-    if (!selectedAssistant && isEmpty(value)) return;
+    if (isEmpty(value)) return;
+
+    if (!goAskAi && selectedAssistant) {
+      value = "";
+    }
 
     changeInput("");
-    setAskAiMessage(!goAskAi && selectedAssistant ? "" : value);
+    setAskAiMessage(value);
     setGoAskAi(true);
   };
 
