@@ -223,7 +223,7 @@ export function new_chat({
   queryParams,
 }: {
   serverId: string;
-  websocketId?: string;
+  websocketId: string;
   message: string;
   queryParams?: Record<string, any>;
 }): Promise<GetResponse> {
@@ -243,7 +243,7 @@ export function send_message({
   queryParams,
 }: {
   serverId: string;
-  websocketId?: string;
+  websocketId: string;
   sessionId: string;
   message: string;
   queryParams?: Record<string, any>;
@@ -268,15 +268,16 @@ export const update_session_chat = (payload: {
   serverId: string;
   sessionId: string;
   title?: string;
-  context?: {
-    attachments?: string[];
-  };
+  context?: Record<string, any>;
 }): Promise<boolean> => {
   return invokeWithErrorHandler<boolean>("update_session_chat", payload);
 };
 
 export const assistant_search = (payload: {
   serverId: string;
+  from: number,
+  size: number,
+  query?: Record<string, any>;
 }): Promise<boolean> => {
   return invokeWithErrorHandler<boolean>("assistant_search", payload);
 };
