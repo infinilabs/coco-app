@@ -4,17 +4,9 @@ use crate::server::connector::get_connector_by_id;
 use crate::server::http_client::HttpClient;
 use crate::server::servers::get_all_servers;
 use lazy_static::lazy_static;
-use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use tauri::{AppHandle, Runtime};
-
-#[derive(serde::Deserialize, Debug)]
-pub struct GetDatasourcesByServerOptions {
-    pub from: Option<u32>,
-    pub size: Option<u32>,
-    pub query: Option<serde_json::Value>,
-}
 
 lazy_static! {
     static ref DATASOURCE_CACHE: Arc<RwLock<HashMap<String, HashMap<String, DataSource>>>> =
@@ -33,7 +25,7 @@ pub fn save_datasource_to_cache(server_id: &str, datasources: Vec<DataSource>) {
 #[allow(dead_code)]
 pub fn get_datasources_from_cache(server_id: &str) -> Option<HashMap<String, DataSource>> {
     let cache = DATASOURCE_CACHE.read().unwrap(); // Acquire read lock
-                                                  // dbg!("cache: {:?}", &cache);
+    // dbg!("cache: {:?}", &cache);
     let server_cache = cache.get(server_id)?; // Get the server's cache
     Some(server_cache.clone())
 }
@@ -97,29 +89,18 @@ pub async fn refresh_all_datasources<R: Runtime>(_app_handle: &AppHandle<R>) -> 
 #[tauri::command]
 pub async fn datasource_search(
     id: &str,
-    options: Option<GetDatasourcesByServerOptions>,
+    query_params: Option<Vec<String>>, //["query=abc", "filter=er", "filter=efg", "from=0", "size=5"],
 ) -> Result<Vec<DataSource>, String> {
-    let from = options.as_ref().and_then(|opt| opt.from).unwrap_or(0);
-    let size = options.as_ref().and_then(|opt| opt.size).unwrap_or(10000);
-
-    let mut body = serde_json::json!({
-        "from": from,
-        "size": size,
-    });
-
-    if let Some(q) = options.and_then(|get_data_source_options| get_data_source_options.query ) {
-        body["query"] = q;
-    }
 
     // Perform the async HTTP request outside the cache lock
     let resp = HttpClient::post(
         id,
         "/datasource/_search",
+        query_params,
         None,
-        Some(reqwest::Body::from(body.to_string())),
     )
-    .await
-    .map_err(|e| format!("Error fetching datasource: {}", e))?;
+        .await
+        .map_err(|e| format!("Error fetching datasource: {}", e))?;
 
     // Parse the search results from the response
     let datasources: Vec<DataSource> = parse_search_results(resp).await.map_err(|e| {
@@ -136,28 +117,18 @@ pub async fn datasource_search(
 #[tauri::command]
 pub async fn mcp_server_search(
     id: &str,
-    from: u32,
-    size: u32,
-    query: Option<HashMap<String, Value>>,
+    query_params: Option<Vec<String>>,
 ) -> Result<Vec<DataSource>, String> {
-    let mut body = serde_json::json!({
-      "from": from,
-      "size": size,
-    });
-
-    if let Some(q) = query {
-        body["query"] = serde_json::to_value(q).map_err(|e| e.to_string())?;
-    }
 
     // Perform the async HTTP request outside the cache lock
     let resp = HttpClient::post(
         id,
         "/mcp_server/_search",
+        query_params,
         None,
-        Some(reqwest::Body::from(body.to_string())),
     )
-    .await
-    .map_err(|e| format!("Error fetching datasource: {}", e))?;
+        .await
+        .map_err(|e| format!("Error fetching datasource: {}", e))?;
 
     // Parse the search results from the response
     let mcp_server: Vec<DataSource> = parse_search_results(resp).await.map_err(|e| {

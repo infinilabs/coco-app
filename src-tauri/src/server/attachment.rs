@@ -111,15 +111,15 @@ pub async fn get_attachment(
     server_id: String,
     session_id: String,
 ) -> Result<GetAttachmentResponse, String> {
-    let mut query_params = HashMap::new();
-    query_params.insert("session".to_string(), serde_json::Value::String(session_id));
+    let mut query_params = Vec::new();
+    query_params.push(format!("session={}", session_id));
 
     let response = HttpClient::get(&server_id, "/attachment/_search", Some(query_params))
         .await
         .map_err(|e| format!("Request error: {}", e))?;
 
     let body = get_response_body_text(response).await?;
-    
+
     serde_json::from_str::<GetAttachmentResponse>(&body)
         .map_err(|e| format!("Failed to parse attachment response: {}", e))
 }
