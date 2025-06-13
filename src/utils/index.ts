@@ -117,8 +117,9 @@ export const closeHistoryPanel = () => {
 export const specialCharacterFiltering = (value?: string) => {
   if (!value) return ""
   // Filter out control characters
-  return value.replace(
-    /[\x00-\x09\x0B\x0C\x0E-\x1F\x7F-\x9F]/g,
-    ""
-  );
+  // return value.replace(
+  //   /[\x00-\x09\x0B\x0C\x0E-\x1F\x7F-\x9F]/g,
+  //   ""
+  // );
+  return value
 }
