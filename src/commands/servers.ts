@@ -29,6 +29,7 @@ const WHITELIST_SERVERS = [
   "refresh_coco_server_info",
   "handle_sso_callback",
   "query_coco_fusion",
+  "open_session_chat", // TODO: quick ai access is a configured service, even if the current service is not logged in, it should not affect the configured service.
 ];
 
 async function invokeWithErrorHandler<T>(
@@ -50,7 +51,7 @@ async function invokeWithErrorHandler<T>(
       const failedResult = result as any;
       if (failedResult.failed?.length > 0 && failedResult?.hits?.length == 0) {
         failedResult.failed.forEach((error: any) => {
-          addError(error.error, 'error');
+          addError(error.error, "error");
           // console.error(error.error);
         });
       }
