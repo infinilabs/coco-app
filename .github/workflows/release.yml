@@ -66,6 +66,7 @@ jobs:
           version: latest
 
       - name: Install rust target
+        if: matrix.target == 'i686-pc-windows-msvc'
         run: rustup target add ${{ matrix.target }}
 
       - name: Install dependencies (ubuntu only)
@@ -105,15 +106,12 @@ jobs:
           chmod 600 ~/.ssh/known_hosts
 
       - name: Pizza engine features setup
+        working-directory: src-tauri
+        if: matrix.target != 'i686-pc-windows-msvc'
         run: |
-          if [[ ${{ matrix.target }} == "i686-pc-windows-msvc" ]]; then
-             rustup target add i686-pc-windows-msvc --toolchain stable
-          else
-            ( cd src-tauri && cargo add --git ssh://git@github.com/infinilabs/pizza.git pizza-engine --features query_string_parser,persistence )
-            rustup target add ${{ matrix.target}} --toolchain nightly-2025-02-28
-          fi
-          
-
+          rustup target add ${{ matrix.target }}
+          (cd .. && make add-dep-pizza-engine)
+                    
       - name: Build the app with ${{ matrix.platform }}
         uses: tauri-apps/tauri-action@v0
         if: matrix.target != 'i686-pc-windows-msvc'
