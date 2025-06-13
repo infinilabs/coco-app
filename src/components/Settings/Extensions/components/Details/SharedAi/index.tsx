@@ -33,9 +33,9 @@ const SharedAi: FC<SharedAiProps> = (props) => {
       );
 
       if (isArray(data)) {
-        const enabledServers = data.filter((server) => {
-          return server.enabled && server.available;
-        });
+        const enabledServers = data.filter(
+        (s) => s.enabled && s.available && (s.public || s.profile)
+      );
 
         setServerList(enabledServers);
 
