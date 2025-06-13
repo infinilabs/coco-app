@@ -7,7 +7,6 @@ import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
 import type { Assistant } from "@/types/chat";
 import { useAppStore } from "@/stores/appStore";
-import { useKeyPress } from "ahooks";
 
 interface AssistantManagerProps {
   isChatMode: boolean;
@@ -66,12 +65,16 @@ export function useAssistantManager({
 
     if (!askAIRef.current) return;
 
-    const value = inputValue.trim();
+    let value = inputValue.trim();
 
-    if (!selectedAssistant && isEmpty(value)) return;
+    if (isEmpty(value)) return;
+
+    if (!goAskAi && selectedAssistant) {
+      value = "";
+    }
 
     changeInput("");
-    setAskAiMessage(!goAskAi && selectedAssistant ? "" : value);
+    setAskAiMessage(value);
     setGoAskAi(true);
   };
 
@@ -86,8 +89,16 @@ export function useAssistantManager({
       return setGoAskAi(false);
     }
 
-    if (key === "Tab" && isTauri && isChatMode) {
-      return e.preventDefault();
+    if (key === "Tab" && isTauri) {
+      e.preventDefault();
+
+      if (isChatMode) {
+        return;
+      }
+
+      assistant_get();
+
+      return handleAskAi();
     }
 
     if (key === "Enter" && !shiftKey && !isChatMode && isTauri) {
@@ -100,20 +111,6 @@ export function useAssistantManager({
       handleSubmit();
     }
   };
-
-  useKeyPress(
-    "tab",
-    () => {
-      if (!isTauri || isChatMode) return;
-
-      assistant_get();
-
-      handleAskAi();
-    },
-    {
-      exactMatch: true,
-    }
-  );
 
   return {
     askAI,
