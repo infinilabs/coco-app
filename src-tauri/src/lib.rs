@@ -20,7 +20,7 @@ use std::sync::OnceLock;
 use tauri::async_runtime::block_on;
 use tauri::plugin::TauriPlugin;
 use tauri::{
-    AppHandle, Emitter, Manager, PhysicalPosition, Runtime, WebviewWindow, Window, WindowEvent,
+    AppHandle, Emitter, Manager, PhysicalPosition, Runtime, WebviewWindow, WindowEvent,
 };
 use tauri_plugin_autostart::MacosLauncher;
 
@@ -271,7 +271,7 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
 
 #[tauri::command]
 async fn show_coco<R: Runtime>(app_handle: AppHandle<R>) {
-    if let Some(window) = app_handle.get_window(MAIN_WINDOW_LABEL) {
+    if let Some(window) = app_handle.get_webview_window(MAIN_WINDOW_LABEL) {
         move_window_to_active_monitor(&window);
 
         let _ = window.show();
@@ -284,7 +284,7 @@ async fn show_coco<R: Runtime>(app_handle: AppHandle<R>) {
 
 #[tauri::command]
 async fn hide_coco<R: Runtime>(app: AppHandle<R>) {
-    if let Some(window) = app.get_window(MAIN_WINDOW_LABEL) {
+    if let Some(window) = app.get_webview_window(MAIN_WINDOW_LABEL) {
         if let Err(err) = window.hide() {
             log::error!("Failed to hide the window: {}", err);
         } else {
@@ -295,7 +295,7 @@ async fn hide_coco<R: Runtime>(app: AppHandle<R>) {
     }
 }
 
-fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
+fn move_window_to_active_monitor<R: Runtime>(window: &WebviewWindow<R>) {
     //dbg!("Moving window to active monitor");
     // Try to get the available monitors, handle failure gracefully
     let available_monitors = match window.available_monitors() {
@@ -388,38 +388,6 @@ fn move_window_to_active_monitor<R: Runtime>(window: &Window<R>) {
     }
 }
 
-#[allow(dead_code)]
-fn open_settings(app: &tauri::AppHandle) {
-    use tauri::webview::WebviewBuilder;
-    log::debug!("settings menu item was clicked");
-    let window = app.get_webview_window("settings");
-    if let Some(window) = window {
-        let _ = window.show();
-        let _ = window.unminimize();
-        let _ = window.set_focus();
-    } else {
-        let window = tauri::window::WindowBuilder::new(app, "settings")
-            .title("Settings Window")
-            .fullscreen(false)
-            .resizable(false)
-            .minimizable(false)
-            .maximizable(false)
-            .inner_size(800.0, 600.0)
-            .build()
-            .unwrap();
-
-        let webview_builder =
-            WebviewBuilder::new("settings", tauri::WebviewUrl::App("/ui/settings".into()));
-        let _webview = window
-            .add_child(
-                webview_builder,
-                tauri::LogicalPosition::new(0, 0),
-                window.inner_size().unwrap(),
-            )
-            .unwrap();
-    }
-}
-
 #[tauri::command]
 async fn get_app_search_source<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), String> {
     let (_found_invalid_extensions, extensions) = extension::list_extensions()
@@ -435,7 +403,14 @@ async fn get_app_search_source<R: Runtime>(app_handle: AppHandle<R>) -> Result<(
 
 #[tauri::command]
 async fn show_settings(app_handle: AppHandle) {
-    open_settings(&app_handle);
+    log::debug!("settings menu item was clicked");
+    let window = app_handle
+        .get_webview_window(SETTINGS_WINDOW_LABEL)
+        .expect("we have a settings window");
+
+    window.show().unwrap();
+    window.unminimize().unwrap();
+    window.set_focus().unwrap();
 }
 
 #[tauri::command]
