@@ -109,7 +109,7 @@ jobs:
           if [[ ${{ matrix.target }} == "i686-pc-windows-msvc" ]]; then
              rustup target add i686-pc-windows-msvc --toolchain stable
           else
-            make add-dep-pizza-engine-linux
+            ( cd src-tauri && cargo add --git ssh://git@github.com/infinilabs/pizza.git pizza-engine --features query_string_parser,persistence )
             rustup target add ${{ matrix.target}} --toolchain nightly-2025-02-28
           fi
           
