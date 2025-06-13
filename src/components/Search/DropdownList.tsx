@@ -43,12 +43,8 @@ function DropdownList({
   const [selectedName, setSelectedName] = useState<string>("");
   const [showIndex, setShowIndex] = useState<boolean>(false);
 
-  const {
-    setSourceData,
-    setSelectedSearchContent,
-    setSelectedAssistant,
-    setVisibleContextMenu,
-  } = useSearchStore();
+  const { setSourceData, setSelectedSearchContent, setVisibleContextMenu } =
+    useSearchStore();
 
   const showSource = useMemo(
     () => Object.keys(searchData).length < 5,
@@ -97,14 +93,6 @@ function DropdownList({
 
     const item = globalItemIndexMap[selectedIndex];
     setSelectedSearchContent(item);
-    if (item?.source?.id === "assistant") {
-      setSelectedAssistant({
-        ...item,
-        name: item.title,
-      });
-    } else {
-      setSelectedAssistant(undefined);
-    }
   }, [selectedIndex]);
 
   // Scroll selected item into view

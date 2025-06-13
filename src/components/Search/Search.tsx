@@ -33,6 +33,19 @@ const SearchResultsPanel = memo<{
     }
   }, [input, isChatMode, performSearch, sourceData]);
 
+  const { setSelectedAssistant, selectedSearchContent } = useSearchStore();
+
+  useEffect(() => {
+    if (selectedSearchContent?.type === "AI Assistant") {
+      setSelectedAssistant({
+        ...selectedSearchContent,
+        name: selectedSearchContent.title,
+      });
+    } else {
+      setSelectedAssistant(void 0);
+    }
+  }, [selectedSearchContent]);
+
   if (goAskAi) return <AskAi />;
   if (suggests.length === 0) return <NoResults />;
 
