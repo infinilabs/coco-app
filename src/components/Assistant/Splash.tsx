@@ -75,7 +75,7 @@ const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
   useEffect(() => {
     if (currentService?.enabled) return;
 
-    setVisibleStartPage(false);
+    isTauri && setVisibleStartPage(false);
   }, [currentService?.enabled]);
 
   const settingsAssistantList = useMemo(() => {
