@@ -103,8 +103,10 @@ export function useAssistantManager({
 
   useKeyPress(
     "tab",
-    () => {
+    (event) => {
       if (!isTauri || isChatMode) return;
+
+      event.preventDefault();
 
       assistant_get();
 
