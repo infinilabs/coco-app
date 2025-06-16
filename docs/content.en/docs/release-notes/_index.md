@@ -16,8 +16,9 @@ Information about release notes of Coco Server is provided here.
 ### 🐛 Bug fix
 
 ### ✈️ Improvements
-
 - refactor: use author/ext_id as extension unique identifier #643
+- refactor: refactoring search api #679
+
 
 ## 0.5.2 (2025-06-13)
 
