@@ -18,51 +18,9 @@ Information about release notes of Coco Server is provided here.
 ### ✈️ Improvements
 - refactor: use author/ext_id as extension unique identifier #643
 - refactor: refactoring search api #679
+- chore: continue to chat page display #690
 
-
-## 0.5.2 (2025-06-13)
-
-### ❌ Breaking changes
-
-### 🚀 Features
-
-- feat: ai overview support is enabled with shortcut #597
-- feat: add key monitoring during reset #615
-- feat: calculator extension add description #623
-- feat: support right-click actions after text selection #624
-- feat: add ai overview minimum number of search results configuration #625
-- feat: add internationalized translations of AI-related extensions #632
-- feat: context menu support for secondary pages #680
-
-### 🐛 Bug fix
-
-- fix: fixed issue with incorrect login status #600
-- fix: new chat assistant id not found #603
-- fix: resolve regex error on older macOS versions #605
-- fix: fix chat log update and sorting issues #612
-- fix: resolved an issue where number keys were not working on the web #616
-- fix: do not panic when the datasource specified does not exist #618
-- fix: fixed modifier keys not working with continue chat #619
-- fix: invalid DSL error if input contains multiple lines #620
-- fix: fix ai overview hidden height before message #622
-- fix: tab key hides window in chat mode #641
-- fix: arrow keys still navigated search when menu opened with Cmd+K #642
-- fix: input lost when reopening dialog after search #644
-- fix: web page unmount event #645
-- fix: fix the problem of local path not opening #650
-- fix: number keys not following settings #661
-- fix: fix problem with up and down key indexing #676
-- fix: arrow inserting escape sequences #683
-
-### ✈️ Improvements
-
-- chore: initialize current assistant from history #606
-- chore: add onContextMenu event #629
-- chore: more logs for the setup process #634
-- chore: copy supports http protocol #639
-- chore: add special character filtering #668
-
-## 0.5.1 (2025-05-31)
+## 0.5.0 (2025-06-13)
 
 ### ❌ Breaking changes
 
@@ -83,6 +41,13 @@ Information about release notes of Coco Server is provided here.
 - feat: dynamic log level via env var COCO_LOG #535
 - feat: add quick AI access to search mode #556
 - feat: rerank search results #561
+- feat: ai overview support is enabled with shortcut #597
+- feat: add key monitoring during reset #615
+- feat: calculator extension add description #623
+- feat: support right-click actions after text selection #624
+- feat: add ai overview minimum number of search results configuration #625
+- feat: add internationalized translations of AI-related extensions #632
+- feat: context menu support for secondary pages #680
 
 ### 🐛 Bug fix
 
@@ -104,6 +69,23 @@ Information about release notes of Coco Server is provided here.
 - fix: independent chat window has no data #554
 - fix: resolved navigation error on continue chat action #558
 - fix: make extension search source respect parameter datasource #576
+- fix: fixed issue with incorrect login status #600
+- fix: new chat assistant id not found #603
+- fix: resolve regex error on older macOS versions #605
+- fix: fix chat log update and sorting issues #612
+- fix: resolved an issue where number keys were not working on the web #616
+- fix: do not panic when the datasource specified does not exist #618
+- fix: fixed modifier keys not working with continue chat #619
+- fix: invalid DSL error if input contains multiple lines #620
+- fix: fix ai overview hidden height before message #622
+- fix: tab key hides window in chat mode #641
+- fix: arrow keys still navigated search when menu opened with Cmd+K #642
+- fix: input lost when reopening dialog after search #644
+- fix: web page unmount event #645
+- fix: fix the problem of local path not opening #650
+- fix: number keys not following settings #661
+- fix: fix problem with up and down key indexing #676
+- fix: arrow inserting escape sequences #683
 
 ### ✈️ Improvements
 
@@ -138,6 +120,12 @@ Information about release notes of Coco Server is provided here.
 - chore: mark unavailable server to offline on refresh info #569
 - chore: only show available servers in chat #570
 - refactor: search result related components #571
+- chore: initialize current assistant from history #606
+- chore: add onContextMenu event #629
+- chore: more logs for the setup process #634
+- chore: copy supports http protocol #639
+- refactor: use author/ext_id as extension unique identifier #643
+- chore: add special character filtering #668
 
 ## 0.4.0 (2025-04-27)
 
