@@ -237,8 +237,6 @@ pub async fn assistant_search<R: Runtime>(
     server_id: String,
     query_params: Option<Vec<String>>,
 ) -> Result<Value, String> {
-    println!("query_params: {:?}", query_params);
-
     let response = HttpClient::post(&server_id, "/assistant/_search", query_params, None)
         .await
         .map_err(|e| format!("Error searching assistants: {}", e))?;

@@ -76,22 +76,22 @@ const InputControls = ({
       searchQuery.from ??= 0;
       searchQuery.size ??= 1000;
 
-      const query = parseSearchQuery({
-        ...searchQuery,
-        filters: ["enabled:true"],
-      });
-
       const body: Record<string, any> = {
         id: serverId,
-        query,
+        queryParams: parseSearchQuery({
+          ...searchQuery,
+          filters: {
+            enabled: true,
+          },
+        }),
       };
 
       let response: any;
       if (isTauri) {
-        response = await platformAdapter.invokeBackend("datasource_search", {
-          id: serverId,
-          options: body,
-        });
+        response = await platformAdapter.invokeBackend(
+          "datasource_search",
+          body
+        );
       } else {
         body.id = undefined;
         const [error, res]: any = await Post("/datasource/_search", body);
@@ -124,14 +124,14 @@ const InputControls = ({
       searchQuery.from ??= 0;
       searchQuery.size ??= 1000;
 
-      const query = parseSearchQuery({
-        ...searchQuery,
-        filters: ["enabled:true"],
-      });
-
       const body: Record<string, any> = {
         id: serverId,
-        query,
+        queryParams: parseSearchQuery({
+          ...searchQuery,
+          filters: {
+            enabled: true,
+          },
+        }),
       };
 
       let response: any;
