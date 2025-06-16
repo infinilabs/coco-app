@@ -124,7 +124,10 @@ export function get_connectors_by_server(id: string): Promise<Connector[]> {
   return invokeWithErrorHandler(`get_connectors_by_server`, { id });
 }
 
-export function datasource_search({ id, queryParams }: {
+export function datasource_search({
+  id,
+  queryParams,
+}: {
   id: string;
   //["query=abc", "filter=er", "filter=efg", "from=0", "size=5"]
   queryParams?: string[];
@@ -132,7 +135,10 @@ export function datasource_search({ id, queryParams }: {
   return invokeWithErrorHandler(`datasource_search`, { id, queryParams });
 }
 
-export function mcp_server_search({ id, queryParams }: {
+export function mcp_server_search({
+  id,
+  queryParams,
+}: {
   id: string;
   //["query=abc", "filter=er", "filter=efg", "from=0", "size=5"]
   queryParams?: string[];
@@ -284,8 +290,8 @@ export const update_session_chat = (payload: {
 
 export const assistant_search = (payload: {
   serverId: string;
-  from: number,
-  size: number,
+  from: number;
+  size: number;
   query?: Record<string, any>;
 }): Promise<boolean> => {
   return invokeWithErrorHandler<boolean>("assistant_search", payload);
