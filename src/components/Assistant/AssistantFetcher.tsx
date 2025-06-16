@@ -4,8 +4,7 @@ import { Post } from "@/api/axiosRequest";
 import platformAdapter from "@/utils/platformAdapter";
 import { useConnectStore } from "@/stores/connectStore";
 import { useAppStore } from "@/stores/appStore";
-import { parseSearchQuery } from "@/utils";
-import { isArray } from "lodash-es";
+import { parseSearchQuery, SearchQuery } from "@/utils";
 
 interface AssistantFetcherProps {
   debounceKeyword?: string;
@@ -42,18 +41,15 @@ export const AssistantFetcher = ({
 
       const { pageSize, current, serverId = currentService?.id } = params;
 
-      const searchQuery = {
+      const searchQuery: SearchQuery = {
         from: (current - 1) * pageSize,
         size: pageSize,
         query: debounceKeyword,
-        filters: ["enabled:true"],
+        filters: {
+          enabled: true,
+          id: assistantIDs,
+        },
       };
-
-      console.log("assistantIDs", assistantIDs);
-
-      if (isArray(assistantIDs) && assistantIDs.length > 0) {
-        searchQuery.filters.push(`id=${assistantIDs.map((id) => id)}`);
-      }
 
       const queryParams = parseSearchQuery(searchQuery);
 

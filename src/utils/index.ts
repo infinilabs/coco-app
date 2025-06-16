@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { isArray, isNil } from "lodash-es";
+import { isArray, isNil, isObject, isString } from "lodash-es";
 
 import platformAdapter from "./platformAdapter";
 import { useAppStore } from "@/stores/appStore";
@@ -126,19 +126,39 @@ export interface SearchQuery {
   from?: number;
   size?: number;
   fuzziness?: 1 | 2 | 3 | 4 | 5;
-  filters?: string[];
+  filters?: Record<string, any>;
 }
+
+const isTrulyEmpty = (value: unknown) => {
+  const isNilValue = isNil(value);
+
+  const isEmptyString = isString(value) && value.trim() === "";
+
+  const isEmptyArray = isArray(value) && value.length === 0;
+
+  const isEmptyObject = isObject(value) && Object.keys(value).length === 0;
+
+  return isNilValue || isEmptyString || isEmptyArray || isEmptyObject;
+};
 
 export const parseSearchQuery = (searchQuery: SearchQuery) => {
   const { filters, ...rest } = searchQuery;
 
   const result = Object.entries(rest)
-    .filter(([_, value]) => !isNil(value))
-    .map(([key, value]) => `${key}=${value}`);
+    .filter(([_, value]) => !isTrulyEmpty(value))
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`);
 
-  if (isArray(filters)) {
-    for (const filter of filters) {
-      result.push(`filters=${filter}`);
+  if (isObject(filters)) {
+    for (const [key, value] of Object.entries(filters)) {
+      if (isTrulyEmpty(value)) continue;
+
+      if (isArray(value)) {
+        for (const item of value) {
+          result.push(`filter=${key}:${encodeURIComponent(item)}`);
+        }
+      } else {
+        result.push(`filter=${key}:${value}`);
+      }
     }
   }
 
