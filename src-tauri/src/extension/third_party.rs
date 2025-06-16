@@ -596,19 +596,19 @@ impl ThirdPartyExtensionsSearchSource {
         for extension in extensions_read_lock.iter() {
             if extension.r#type.contains_sub_items() {
                 if let Some(commands) = &extension.commands {
-                    for command in commands.iter().filter(|cmd| cmd.enabled) {
+                    for command in commands.iter() {
                         set_up_hotkey(tauri_app_handle, command)?;
                     }
                 }
 
                 if let Some(scripts) = &extension.scripts {
-                    for script in scripts.iter().filter(|script| script.enabled) {
+                    for script in scripts.iter() {
                         set_up_hotkey(tauri_app_handle, script)?;
                     }
                 }
 
                 if let Some(quick_links) = &extension.quicklinks {
-                    for quick_link in quick_links.iter().filter(|link| link.enabled) {
+                    for quick_link in quick_links.iter() {
                         set_up_hotkey(tauri_app_handle, quick_link)?;
                     }
                 }
