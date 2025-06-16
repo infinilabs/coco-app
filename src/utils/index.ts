@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { isArray, isNil } from "lodash-es";
 
 import platformAdapter from "./platformAdapter";
 import { useAppStore } from "@/stores/appStore";
@@ -63,8 +64,8 @@ export function useWindowSize() {
 export const IsTauri = () => {
   return Boolean(
     typeof window !== "undefined" &&
-    window !== undefined &&
-    (window as any).__TAURI_INTERNALS__ !== undefined
+      window !== undefined &&
+      (window as any).__TAURI_INTERNALS__ !== undefined
   );
 };
 
@@ -115,10 +116,31 @@ export const closeHistoryPanel = () => {
 };
 
 export const specialCharacterFiltering = (value?: string) => {
-  if (!value) return ""
+  if (!value) return "";
   // Filter out control characters
-  return value.replace(
-    /[\x00-\x09\x0B\x0C\x0E-\x1F\x7F-\x9F]/g,
-    ""
-  );
+  return value.replace(/[\x00-\x09\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, "");
+};
+
+export interface SearchQuery {
+  query?: string;
+  from?: number;
+  size?: number;
+  fuzziness?: 1 | 2 | 3 | 4 | 5;
+  filters?: string[];
 }
+
+export const parseSearchQuery = (searchQuery: SearchQuery) => {
+  const { filters, ...rest } = searchQuery;
+
+  const result = Object.entries(rest)
+    .filter(([_, value]) => !isNil(value))
+    .map(([key, value]) => `${key}=${value}`);
+
+  if (isArray(filters)) {
+    for (const filter of filters) {
+      result.push(`filters=${filter}`);
+    }
+  }
+
+  return result;
+};

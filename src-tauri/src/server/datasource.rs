@@ -25,7 +25,7 @@ pub fn save_datasource_to_cache(server_id: &str, datasources: Vec<DataSource>) {
 #[allow(dead_code)]
 pub fn get_datasources_from_cache(server_id: &str) -> Option<HashMap<String, DataSource>> {
     let cache = DATASOURCE_CACHE.read().unwrap(); // Acquire read lock
-    // dbg!("cache: {:?}", &cache);
+                                                  // dbg!("cache: {:?}", &cache);
     let server_cache = cache.get(server_id)?; // Get the server's cache
     Some(server_cache.clone())
 }
@@ -91,14 +91,8 @@ pub async fn datasource_search(
     id: &str,
     query_params: Option<Vec<String>>, //["query=abc", "filter=er", "filter=efg", "from=0", "size=5"],
 ) -> Result<Vec<DataSource>, String> {
-
     // Perform the async HTTP request outside the cache lock
-    let resp = HttpClient::post(
-        id,
-        "/datasource/_search",
-        query_params,
-        None,
-    )
+    let resp = HttpClient::post(id, "/datasource/_search", query_params, None)
         .await
         .map_err(|e| format!("Error fetching datasource: {}", e))?;
 
@@ -119,14 +113,8 @@ pub async fn mcp_server_search(
     id: &str,
     query_params: Option<Vec<String>>,
 ) -> Result<Vec<DataSource>, String> {
-
     // Perform the async HTTP request outside the cache lock
-    let resp = HttpClient::post(
-        id,
-        "/mcp_server/_search",
-        query_params,
-        None,
-    )
+    let resp = HttpClient::post(id, "/mcp_server/_search", query_params, None)
         .await
         .map_err(|e| format!("Error fetching datasource: {}", e))?;
 

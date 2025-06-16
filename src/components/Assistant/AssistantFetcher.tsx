@@ -4,6 +4,8 @@ import { Post } from "@/api/axiosRequest";
 import platformAdapter from "@/utils/platformAdapter";
 import { useConnectStore } from "@/stores/connectStore";
 import { useAppStore } from "@/stores/appStore";
+import { parseSearchQuery } from "@/utils";
+import { isArray } from "lodash-es";
 
 interface AssistantFetcherProps {
   debounceKeyword?: string;
@@ -40,43 +42,27 @@ export const AssistantFetcher = ({
 
       const { pageSize, current, serverId = currentService?.id } = params;
 
-      const from = (current - 1) * pageSize;
-      const size = pageSize;
+      const searchQuery = {
+        from: (current - 1) * pageSize,
+        size: pageSize,
+        query: debounceKeyword,
+        filters: ["enabled:true"],
+      };
 
-      let response: any;
+      console.log("assistantIDs", assistantIDs);
+
+      if (isArray(assistantIDs) && assistantIDs.length > 0) {
+        searchQuery.filters.push(`id=${assistantIDs.map((id) => id)}`);
+      }
+
+      const queryParams = parseSearchQuery(searchQuery);
 
       const body: Record<string, any> = {
         serverId,
-        from,
-        size,
+        queryParams,
       };
 
-      body.query = {
-        bool: {
-          must: [{ term: { enabled: true } }],
-        },
-      };
-
-      if (debounceKeyword) {
-        body.query.bool.must.push({
-          query_string: {
-            fields: ["combined_fulltext"],
-            query: debounceKeyword,
-            fuzziness: "AUTO",
-            fuzzy_prefix_length: 2,
-            fuzzy_max_expansions: 10,
-            fuzzy_transpositions: true,
-            allow_leading_wildcard: false,
-          },
-        });
-      }
-      if (assistantIDs.length > 0) {
-        body.query.bool.must.push({
-          terms: {
-            id: assistantIDs.map((id) => id),
-          },
-        });
-      }
+      let response: any;
 
       if (isTauri) {
         if (!currentService?.id) {
