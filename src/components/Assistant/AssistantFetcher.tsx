@@ -45,6 +45,7 @@ export const AssistantFetcher = ({
         from: (current - 1) * pageSize,
         size: pageSize,
         query: debounceKeyword,
+        fuzziness: 5,
         filters: {
           enabled: true,
           id: assistantIDs,

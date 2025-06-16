@@ -80,6 +80,7 @@ const InputControls = ({
         id: serverId,
         queryParams: parseSearchQuery({
           ...searchQuery,
+          fuzziness: 5,
           filters: {
             enabled: true,
           },
@@ -128,6 +129,7 @@ const InputControls = ({
         id: serverId,
         queryParams: parseSearchQuery({
           ...searchQuery,
+          fuzziness: 5,
           filters: {
             enabled: true,
           },
