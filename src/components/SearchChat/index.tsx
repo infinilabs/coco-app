@@ -264,27 +264,29 @@ function SearchChat({
       )}
       style={{ opacity: blurred ? (opacity ?? 30) / 100 : 1 }}
     >
-      {isTransitioned && (
-        <div
-          data-tauri-drag-region={isTauri}
-          className="flex-1 w-full overflow-hidden"
-        >
-          <Suspense fallback={<LoadingFallback />}>
-            <ChatAI
-              ref={chatAIRef}
-              key="ChatAI"
-              changeInput={setInput}
-              isSearchActive={isSearchActive}
-              isDeepThinkActive={isDeepThinkActive}
-              isMCPActive={isMCPActive}
-              getFileUrl={getFileUrl}
-              showChatHistory={showChatHistory}
-              assistantIDs={assistantIDs}
-              startPage={startPage}
-            />
-          </Suspense>
-        </div>
-      )}
+
+      <div
+        data-tauri-drag-region={isTauri}
+        className={clsx(
+          "flex-1 w-full overflow-auto",
+          { "hidden": !isTransitioned }
+        )}
+      >
+        <Suspense fallback={<LoadingFallback />}>
+          <ChatAI
+            ref={chatAIRef}
+            key="ChatAI"
+            changeInput={setInput}
+            isSearchActive={isSearchActive}
+            isDeepThinkActive={isDeepThinkActive}
+            isMCPActive={isMCPActive}
+            getFileUrl={getFileUrl}
+            showChatHistory={showChatHistory}
+            assistantIDs={assistantIDs}
+            startPage={startPage}
+          />
+        </Suspense>
+      </div>
 
       <div
         data-tauri-drag-region={isTauri}
@@ -322,22 +324,23 @@ function SearchChat({
         />
       </div>
 
-      {!isTransitioned && (
-        <div
-          data-tauri-drag-region={isTauri}
-          className="flex-1 w-full overflow-auto"
-        >
-          <Suspense fallback={<LoadingFallback />}>
-            <Search
-              key="Search"
-              input={input}
-              isChatMode={isChatMode}
-              changeInput={setInput}
-              setIsPinned={setIsPinned}
-            />
-          </Suspense>
-        </div>
-      )}
+      <div
+        data-tauri-drag-region={isTauri}
+        className={clsx(
+          "flex-1 w-full overflow-auto",
+          { "hidden": isTransitioned }
+        )}
+      >
+        <Suspense fallback={<LoadingFallback />}>
+          <Search
+            key="Search"
+            input={input}
+            isChatMode={isChatMode}
+            changeInput={setInput}
+            setIsPinned={setIsPinned}
+          />
+        </Suspense>
+      </div>
     </div>
   );
 }

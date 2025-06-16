@@ -1,6 +1,10 @@
 use super::alter_extension_json_file;
+use super::canonicalize_relative_icon_path;
 use super::Extension;
+use super::ExtensionType;
+use super::Platform;
 use super::LOCAL_QUERY_SOURCE_TYPE;
+use super::PLUGIN_JSON_FILE_NAME;
 use crate::common::document::open;
 use crate::common::document::DataSourceReference;
 use crate::common::document::Document;
@@ -9,10 +13,13 @@ use crate::common::search::QueryResponse;
 use crate::common::search::QuerySource;
 use crate::common::search::SearchQuery;
 use crate::common::traits::SearchSource;
-use crate::extension::split_extension_id;
+use crate::extension::ExtensionBundleIdBorrowed;
 use crate::GLOBAL_TAURI_APP_HANDLE;
 use async_trait::async_trait;
+use borrowme::ToOwned;
 use function_name::named;
+use std::ffi::OsStr;
+use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::LazyLock;
@@ -21,9 +28,10 @@ use tauri::async_runtime;
 use tauri::Manager;
 use tauri_plugin_global_shortcut::GlobalShortcutExt;
 use tauri_plugin_global_shortcut::ShortcutState;
+use tokio::fs::read_dir;
 use tokio::sync::RwLock;
 
-pub(crate) static THIRD_PARTY_EXTENSION_DIRECTORY: LazyLock<PathBuf> = LazyLock::new(|| {
+pub(crate) static THIRD_PARTY_EXTENSIONS_DIRECTORY: LazyLock<PathBuf> = LazyLock::new(|| {
     let mut app_data_dir = GLOBAL_TAURI_APP_HANDLE
         .get()
         .expect("global tauri app handle not set")
@@ -32,10 +40,369 @@ pub(crate) static THIRD_PARTY_EXTENSION_DIRECTORY: LazyLock<PathBuf> = LazyLock:
         .expect(
             "User home directory not found, which should be impossible on desktop environments",
         );
-    app_data_dir.push("extension");
+    app_data_dir.push("third_party_extensions");
 
     app_data_dir
 });
+
+/// Helper function to determine the current platform.
+fn current_platform() -> Platform {
+    let os_str = std::env::consts::OS;
+    serde_plain::from_str(os_str).unwrap_or_else(|_e| {
+      panic!("std::env::consts::OS is [{}], which is not a valid value for [enum Platform], valid values: ['macos', 'linux', 'windows']", os_str)
+    })
+}
+
+pub(crate) async fn list_third_party_extensions(
+    directory: &Path,
+) -> Result<(bool, Vec<Extension>), String> {
+    let mut found_invalid_extensions = false;
+
+    let mut extensions_dir_iter = read_dir(&directory).await.map_err(|e| e.to_string())?;
+    let current_platform = current_platform();
+
+    let mut extensions = Vec::new();
+
+    'author: loop {
+        let opt_author_dir = extensions_dir_iter
+            .next_entry()
+            .await
+            .map_err(|e| e.to_string())?;
+        let Some(author_dir) = opt_author_dir else {
+            break;
+        };
+        let author_dir_file_type = author_dir.file_type().await.map_err(|e| e.to_string())?;
+        if !author_dir_file_type.is_dir() {
+            found_invalid_extensions = true;
+            log::warn!(
+                "file [{}] under the third party extension directory should be a directory, but it is not",
+                author_dir.file_name().display()
+            );
+
+            // Skip this file
+            continue 'author;
+        }
+
+        let Ok(author) = author_dir.file_name().into_string() else {
+            found_invalid_extensions = true;
+
+            log::warn!(
+                "author [{}] ID is not UTF-8 encoded",
+                author_dir.file_name().display()
+            );
+
+            // Skip this file
+            continue 'author;
+        };
+
+        let mut author_dir_iter = read_dir(&author_dir.path())
+            .await
+            .map_err(|e| e.to_string())?;
+
+        'extension: loop {
+            let opt_extension_dir = author_dir_iter
+                .next_entry()
+                .await
+                .map_err(|e| e.to_string())?;
+            let Some(extension_dir) = opt_extension_dir else {
+                break 'extension;
+            };
+
+            let extension_dir_file_type =
+                extension_dir.file_type().await.map_err(|e| e.to_string())?;
+            if !extension_dir_file_type.is_dir() {
+                found_invalid_extensions = true;
+                log::warn!(
+                    "invalid extension [{}]: a valid extension should be a directory, but it is not",
+                    extension_dir.file_name().display()
+                );
+
+                // Skip invalid extension
+                continue 'extension;
+            }
+
+            let plugin_json_file_path = {
+                let mut path = extension_dir.path();
+                path.push(PLUGIN_JSON_FILE_NAME);
+
+                path
+            };
+
+            if !plugin_json_file_path.is_file() {
+                found_invalid_extensions = true;
+                log::warn!(
+                    "invalid extension: [{}]: extension file [{}] should be a JSON file, but it is not",
+                    extension_dir.file_name().display(),
+                    plugin_json_file_path.display()
+                );
+
+                // Skip invalid extension
+                continue 'extension;
+            }
+
+            let plugin_json_file_content = tokio::fs::read_to_string(&plugin_json_file_path)
+                .await
+                .map_err(|e| e.to_string())?;
+            let mut extension = match serde_json::from_str::<Extension>(&plugin_json_file_content) {
+                Ok(extension) => extension,
+                Err(e) => {
+                    found_invalid_extensions = true;
+                    log::warn!(
+                        "invalid extension: [{}]: extension file [{}] is invalid, error: '{}'",
+                        extension_dir.file_name().display(),
+                        plugin_json_file_path.display(),
+                        e
+                    );
+                    continue 'extension;
+                }
+            };
+
+            // Turn it into an absolute path if it is a valid relative path because frontend code need this.
+            canonicalize_relative_icon_path(&extension_dir.path(), &mut extension)?;
+
+            if !validate_extension(
+                &extension,
+                &extension_dir.file_name(),
+                &extensions,
+                current_platform,
+            ) {
+                found_invalid_extensions = true;
+                // Skip invalid extension
+                continue;
+            }
+
+            // Set extension's author info manually.
+            extension.author = Some(author.clone());
+
+            extensions.push(extension);
+        }
+    }
+
+    log::debug!(
+        "loaded extensions: {:?}",
+        extensions
+            .iter()
+            .map(|ext| ext.id.as_str())
+            .collect::<Vec<_>>()
+    );
+
+    Ok((found_invalid_extensions, extensions))
+}
+
+/// Helper function to validate `extension`, return `true` if it is valid.
+fn validate_extension(
+    extension: &Extension,
+    extension_dir_name: &OsStr,
+    listed_extensions: &[Extension],
+    current_platform: Platform,
+) -> bool {
+    if OsStr::new(&extension.id) != extension_dir_name {
+        log::warn!(
+            "invalid extension []: id [{}] and extension directory name [{}] do not match",
+            extension.id,
+            extension_dir_name.display()
+        );
+        return false;
+    }
+
+    // Extension ID should be unique
+    if listed_extensions.iter().any(|ext| ext.id == extension.id) {
+        log::warn!(
+            "invalid extension []: extension with id [{}] already exists",
+            extension.id,
+        );
+        return false;
+    }
+
+    if !validate_extension_or_sub_item(extension) {
+        return false;
+    }
+
+    // Extension is incompatible
+    if let Some(ref platforms) = extension.platforms {
+        if !platforms.contains(&current_platform) {
+            log::warn!("extension [{}] is not compatible with the current platform [{}], it is available to {:?}", extension.id, current_platform, platforms.iter().map(|os|os.to_string()).collect::<Vec<_>>());
+            return false;
+        }
+    }
+
+    if let Some(ref commands) = extension.commands {
+        if !validate_sub_items(&extension.id, commands) {
+            return false;
+        }
+    }
+
+    if let Some(ref scripts) = extension.scripts {
+        if !validate_sub_items(&extension.id, scripts) {
+            return false;
+        }
+    }
+
+    if let Some(ref quick_links) = extension.quicklinks {
+        if !validate_sub_items(&extension.id, quick_links) {
+            return false;
+        }
+    }
+
+    true
+}
+
+/// Checks that can be performed against an extension or a sub item.
+fn validate_extension_or_sub_item(extension: &Extension) -> bool {
+    // Only
+    //
+    // 1. letters
+    // 2. underscore
+    // 3. numbers
+    //
+    // are allowed in the ID.
+    if !extension
+        .id
+        .chars()
+        .all(|c| c.is_ascii_alphabetic() || c == '_')
+    {
+        log::warn!(
+            "invalid extension [{}], [id] should contain only letters, numbers, or underscores",
+            extension.id
+        );
+        return false;
+    }
+
+    // If field `action` is Some, then it should be a Command
+    if extension.action.is_some() && extension.r#type != ExtensionType::Command {
+        log::warn!(
+            "invalid extension [{}], [action] is set for a non-Command extension",
+            extension.id
+        );
+        return false;
+    }
+
+    if extension.r#type == ExtensionType::Command && extension.action.is_none() {
+        log::warn!(
+            "invalid extension [{}], [action] should be set for a Command extension",
+            extension.id
+        );
+        return false;
+    }
+
+    // If field `quick_link` is Some, then it should be a QuickLink
+    if extension.quicklink.is_some() && extension.r#type != ExtensionType::Quicklink {
+        log::warn!(
+            "invalid extension [{}], [quick_link] is set for a non-QuickLink extension",
+            extension.id
+        );
+        return false;
+    }
+
+    if extension.r#type == ExtensionType::Quicklink && extension.quicklink.is_none() {
+        log::warn!(
+            "invalid extension [{}], [quick_link] should be set for a QuickLink extension",
+            extension.id
+        );
+        return false;
+    }
+
+    // Group and Extension cannot have alias
+    if extension.alias.is_some() {
+        if extension.r#type == ExtensionType::Group || extension.r#type == ExtensionType::Extension
+        {
+            log::warn!(
+                "invalid extension [{}], extension of type [{:?}] cannot have alias",
+                extension.id,
+                extension.r#type
+            );
+            return false;
+        }
+    }
+
+    // Group and Extension cannot have hotkey
+    if extension.hotkey.is_some() {
+        if extension.r#type == ExtensionType::Group || extension.r#type == ExtensionType::Extension
+        {
+            log::warn!(
+                "invalid extension [{}], extension of type [{:?}] cannot have hotkey",
+                extension.id,
+                extension.r#type
+            );
+            return false;
+        }
+    }
+
+    if extension.commands.is_some() || extension.scripts.is_some() || extension.quicklinks.is_some()
+    {
+        if extension.r#type != ExtensionType::Group && extension.r#type != ExtensionType::Extension
+        {
+            log::warn!(
+                "invalid extension [{}], only extension of type [Group] and [Extension] can have sub-items",
+                extension.id,
+            );
+            return false;
+        }
+    }
+
+    // The author field should not be set
+    if extension.author.is_some() {
+        log::warn!(
+            "invalid extension [{}], unknown field [author]",
+            extension.id,
+        );
+        return false;
+    }
+
+    true
+}
+
+/// Helper function to check sub-items.
+fn validate_sub_items(extension_id: &str, sub_items: &[Extension]) -> bool {
+    for (sub_item_index, sub_item) in sub_items.iter().enumerate() {
+        // If field `action` is Some, then it should be a Command
+        if sub_item.action.is_some() && sub_item.r#type != ExtensionType::Command {
+            log::warn!(
+                "invalid extension sub-item [{}-{}]: [action] is set for a non-Command extension",
+                extension_id,
+                sub_item.id
+            );
+            return false;
+        }
+
+        if sub_item.r#type == ExtensionType::Group || sub_item.r#type == ExtensionType::Extension {
+            log::warn!(
+                "invalid extension sub-item [{}-{}]: sub-item should not be of type [Group] or [Extension]",
+                extension_id, sub_item.id
+            );
+            return false;
+        }
+
+        let sub_item_with_same_id_count = sub_items
+            .iter()
+            .enumerate()
+            .filter(|(_idx, ext)| ext.id == sub_item.id)
+            .filter(|(idx, _ext)| *idx != sub_item_index)
+            .count();
+        if sub_item_with_same_id_count != 0 {
+            log::warn!(
+                "invalid extension [{}]: found more than one sub-items with the same ID [{}]",
+                extension_id,
+                sub_item.id
+            );
+            return false;
+        }
+
+        if !validate_extension_or_sub_item(sub_item) {
+            return false;
+        }
+
+        if sub_item.platforms.is_some() {
+            log::warn!(
+                "invalid extension [{}]: key [platforms] should not be set in sub-items",
+                extension_id,
+            );
+            return false;
+        }
+    }
+
+    true
+}
 
 /// All the third-party extensions will be registered as one search source.
 ///
@@ -56,8 +423,12 @@ impl ThirdPartyExtensionsSearchSource {
     }
 
     #[named]
-    pub(super) async fn enable_extension(&self, extension_id: &str) -> Result<(), String> {
-        let (parent_extension_id, _opt_sub_extension_id) = split_extension_id(extension_id);
+    pub(super) async fn enable_extension(
+        &self,
+        bundle_id: &ExtensionBundleIdBorrowed<'_>,
+    ) -> Result<(), String> {
+        let (parent_extension_id, _opt_sub_extension_id) =
+            (bundle_id.extension_id, bundle_id.sub_extension_id);
 
         let mut extensions_write_lock = self.inner.extensions.write().await;
         let opt_index = extensions_write_lock
@@ -66,9 +437,9 @@ impl ThirdPartyExtensionsSearchSource {
 
         let Some(index) = opt_index else {
             return Err(format!(
-                "{} invoked with an extension that does not exist [{}]",
+                "{} invoked with an extension that does not exist [{:?}]",
                 function_name!(),
-                extension_id
+                bundle_id
             ));
         };
 
@@ -79,9 +450,9 @@ impl ThirdPartyExtensionsSearchSource {
         let update_extension = |ext: &mut Extension| -> Result<(), String> {
             if ext.enabled {
                 return Err(format!(
-                    "{} invoked with an extension that is already enabled [{}]",
+                    "{} invoked with an extension that is already enabled [{:?}]",
                     function_name!(),
-                    extension_id
+                    bundle_id
                 ));
             }
             ext.enabled = true;
@@ -89,10 +460,10 @@ impl ThirdPartyExtensionsSearchSource {
             Ok(())
         };
 
-        extension.modify(extension_id, update_extension)?;
+        extension.modify(bundle_id, update_extension)?;
         alter_extension_json_file(
-            &THIRD_PARTY_EXTENSION_DIRECTORY,
-            extension_id,
+            &THIRD_PARTY_EXTENSIONS_DIRECTORY,
+            bundle_id,
             update_extension,
         )?;
 
@@ -100,19 +471,20 @@ impl ThirdPartyExtensionsSearchSource {
     }
 
     #[named]
-    pub(super) async fn disable_extension(&self, extension_id: &str) -> Result<(), String> {
-        let (parent_extension_id, _opt_sub_extension_id) = split_extension_id(extension_id);
-
+    pub(super) async fn disable_extension(
+        &self,
+        bundle_id: &ExtensionBundleIdBorrowed<'_>,
+    ) -> Result<(), String> {
         let mut extensions_write_lock = self.inner.extensions.write().await;
         let opt_index = extensions_write_lock
             .iter()
-            .position(|ext| ext.id == parent_extension_id);
+            .position(|ext| ext.id == bundle_id.extension_id);
 
         let Some(index) = opt_index else {
             return Err(format!(
-                "{} invoked with an extension that does not exist [{}]",
+                "{} invoked with an extension that does not exist [{:?}]",
                 function_name!(),
-                extension_id
+                bundle_id
             ));
         };
 
@@ -123,9 +495,9 @@ impl ThirdPartyExtensionsSearchSource {
         let update_extension = |ext: &mut Extension| -> Result<(), String> {
             if !ext.enabled {
                 return Err(format!(
-                    "{} invoked with an extension that is already enabled [{}]",
+                    "{} invoked with an extension that is already enabled [{:?}]",
                     function_name!(),
-                    extension_id
+                    bundle_id
                 ));
             }
             ext.enabled = false;
@@ -133,10 +505,10 @@ impl ThirdPartyExtensionsSearchSource {
             Ok(())
         };
 
-        extension.modify(extension_id, update_extension)?;
+        extension.modify(bundle_id, update_extension)?;
         alter_extension_json_file(
-            &THIRD_PARTY_EXTENSION_DIRECTORY,
-            extension_id,
+            &THIRD_PARTY_EXTENSIONS_DIRECTORY,
+            bundle_id,
             update_extension,
         )?;
 
@@ -146,21 +518,19 @@ impl ThirdPartyExtensionsSearchSource {
     #[named]
     pub(super) async fn set_extension_alias(
         &self,
-        extension_id: &str,
+        bundle_id: &ExtensionBundleIdBorrowed<'_>,
         alias: &str,
     ) -> Result<(), String> {
-        let (parent_extension_id, _opt_sub_extension_id) = split_extension_id(extension_id);
-
         let mut extensions_write_lock = self.inner.extensions.write().await;
         let opt_index = extensions_write_lock
             .iter()
-            .position(|ext| ext.id == parent_extension_id);
+            .position(|ext| ext.id == bundle_id.extension_id);
 
         let Some(index) = opt_index else {
             log::warn!(
-                "{} invoked with an extension that does not exist [{}]",
+                "{} invoked with an extension that does not exist [{:?}]",
                 function_name!(),
-                extension_id
+                bundle_id
             );
             return Ok(());
         };
@@ -174,10 +544,10 @@ impl ThirdPartyExtensionsSearchSource {
             Ok(())
         };
 
-        extension.modify(extension_id, update_extension)?;
+        extension.modify(bundle_id, update_extension)?;
         alter_extension_json_file(
-            &THIRD_PARTY_EXTENSION_DIRECTORY,
-            extension_id,
+            &THIRD_PARTY_EXTENSIONS_DIRECTORY,
+            bundle_id,
             update_extension,
         )?;
 
@@ -226,19 +596,19 @@ impl ThirdPartyExtensionsSearchSource {
         for extension in extensions_read_lock.iter() {
             if extension.r#type.contains_sub_items() {
                 if let Some(commands) = &extension.commands {
-                    for command in commands.iter().filter(|cmd| cmd.enabled) {
+                    for command in commands.iter() {
                         set_up_hotkey(tauri_app_handle, command)?;
                     }
                 }
 
                 if let Some(scripts) = &extension.scripts {
-                    for script in scripts.iter().filter(|script| script.enabled) {
+                    for script in scripts.iter() {
                         set_up_hotkey(tauri_app_handle, script)?;
                     }
                 }
 
-                if let Some(quick_links) = &extension.quick_links {
-                    for quick_link in quick_links.iter().filter(|link| link.enabled) {
+                if let Some(quick_links) = &extension.quicklinks {
+                    for quick_link in quick_links.iter() {
                         set_up_hotkey(tauri_app_handle, quick_link)?;
                     }
                 }
@@ -253,22 +623,21 @@ impl ThirdPartyExtensionsSearchSource {
     #[named]
     pub(super) async fn register_extension_hotkey(
         &self,
-        extension_id: &str,
+        bundle_id: &ExtensionBundleIdBorrowed<'_>,
         hotkey: &str,
     ) -> Result<(), String> {
-        self.unregister_extension_hotkey(extension_id).await?;
+        self.unregister_extension_hotkey(bundle_id).await?;
 
-        let (parent_extension_id, _opt_sub_extension_id) = split_extension_id(extension_id);
         let mut extensions_write_lock = self.inner.extensions.write().await;
         let opt_index = extensions_write_lock
             .iter()
-            .position(|ext| ext.id == parent_extension_id);
+            .position(|ext| ext.id == bundle_id.extension_id);
 
         let Some(index) = opt_index else {
             return Err(format!(
-                "{} invoked with an extension that does not exist [{}]",
+                "{} invoked with an extension that does not exist [{:?}]",
                 function_name!(),
-                extension_id
+                bundle_id
             ));
         };
 
@@ -282,21 +651,21 @@ impl ThirdPartyExtensionsSearchSource {
         };
 
         // Update extension (memory and file)
-        extension.modify(extension_id, update_extension)?;
+        extension.modify(bundle_id, update_extension)?;
         alter_extension_json_file(
-            &THIRD_PARTY_EXTENSION_DIRECTORY,
-            extension_id,
+            &THIRD_PARTY_EXTENSIONS_DIRECTORY,
+            bundle_id,
             update_extension,
         )?;
 
         // To make borrow checker happy
         let extension_dbg_string = format!("{:?}", extension);
-        extension = match extension.get_extension_mut(extension_id) {
+        extension = match extension.get_extension_mut(bundle_id) {
             Some(ext) => ext,
             None => {
                 panic!(
-                    "extension [{}] should be found in {}",
-                    extension_id, extension_dbg_string
+                    "extension [{:?}] should be found in {}",
+                    bundle_id, extension_dbg_string
                 )
             }
         };
@@ -306,22 +675,22 @@ impl ThirdPartyExtensionsSearchSource {
             .get()
             .expect("global tauri app handle not set");
         let on_opened = extension.on_opened().unwrap_or_else(|| panic!(
-            "setting hotkey for an extension that cannot be opened, extension ID [{}], extension type [{:?}]", extension_id, extension.r#type,
+            "setting hotkey for an extension that cannot be opened, extension ID [{:?}], extension type [{:?}]", bundle_id, extension.r#type,
         ));
 
-        let extension_id_clone = extension_id.to_string();
+        let bundle_id_owned = bundle_id.to_owned();
         tauri_app_handle
             .global_shortcut()
             .on_shortcut(hotkey, move |_tauri_app_handle, _hotkey, event| {
                 let on_opened_clone = on_opened.clone();
-                let extension_id_clone = extension_id_clone.clone();
+                let bundle_id_clone = bundle_id_owned.clone();
                 if event.state() == ShortcutState::Pressed {
                     async_runtime::spawn(async move {
                         let result = open(on_opened_clone).await;
                         if let Err(msg) = result {
                             log::warn!(
-                                "failed to open extension [{}], error [{}]",
-                                extension_id_clone,
+                                "failed to open extension [{:?}], error [{}]",
+                                bundle_id_clone,
                                 msg
                             );
                         }
@@ -338,38 +707,36 @@ impl ThirdPartyExtensionsSearchSource {
     #[named]
     pub(super) async fn unregister_extension_hotkey(
         &self,
-        extension_id: &str,
+        bundle_id: &ExtensionBundleIdBorrowed<'_>,
     ) -> Result<(), String> {
-        let (parent_extension_id, _opt_sub_extension_id) = split_extension_id(extension_id);
-
         let mut extensions_write_lock = self.inner.extensions.write().await;
         let opt_index = extensions_write_lock
             .iter()
-            .position(|ext| ext.id == parent_extension_id);
+            .position(|ext| ext.id == bundle_id.extension_id);
 
         let Some(index) = opt_index else {
             return Err(format!(
-                "{} invoked with an extension that does not exist [{}]",
+                "{} invoked with an extension that does not exist [{:?}]",
                 function_name!(),
-                extension_id
+                bundle_id
             ));
         };
 
         let parent_extension = extensions_write_lock
             .get_mut(index)
             .expect("just checked this extension exists");
-        let Some(extension) = parent_extension.get_extension_mut(extension_id) else {
+        let Some(extension) = parent_extension.get_extension_mut(bundle_id) else {
             return Err(format!(
-                "{} invoked with an extension that does not exist [{}]",
+                "{} invoked with an extension that does not exist [{:?}]",
                 function_name!(),
-                extension_id
+                bundle_id
             ));
         };
 
         let Some(hotkey) = extension.hotkey.clone() else {
             log::warn!(
-                "extension [{}] has no hotkey set, but we are trying to unregister it",
-                extension_id
+                "extension [{:?}] has no hotkey set, but we are trying to unregister it",
+                bundle_id
             );
             return Ok(());
         };
@@ -379,10 +746,10 @@ impl ThirdPartyExtensionsSearchSource {
             Ok(())
         };
 
-        parent_extension.modify(extension_id, update_extension)?;
+        parent_extension.modify(bundle_id, update_extension)?;
         alter_extension_json_file(
-            &THIRD_PARTY_EXTENSION_DIRECTORY,
-            extension_id,
+            &THIRD_PARTY_EXTENSIONS_DIRECTORY,
+            bundle_id,
             update_extension,
         )?;
 
@@ -399,19 +766,22 @@ impl ThirdPartyExtensionsSearchSource {
     }
 
     #[named]
-    pub(super) async fn is_extension_enabled(&self, extension_id: &str) -> Result<bool, String> {
-        let (parent_extension_id, opt_sub_extension_id) = split_extension_id(extension_id);
-
+    pub(super) async fn is_extension_enabled(
+        &self,
+        bundle_id: &ExtensionBundleIdBorrowed<'_>,
+    ) -> Result<bool, String> {
+        let (extension_id, opt_sub_extension_id) =
+            (bundle_id.extension_id, bundle_id.sub_extension_id);
         let extensions_read_lock = self.inner.extensions.read().await;
         let opt_index = extensions_read_lock
             .iter()
-            .position(|ext| ext.id == parent_extension_id);
+            .position(|ext| ext.id == extension_id);
 
         let Some(index) = opt_index else {
             return Err(format!(
-                "{} invoked with an extension that does not exist [{}]",
+                "{} invoked with an extension that does not exist [{:?}]",
                 function_name!(),
-                extension_id
+                bundle_id
             ));
         };
 
@@ -450,7 +820,7 @@ impl ThirdPartyExtensionsSearchSource {
             Err(format!(
                 "{} invoked with a sub-extension that does not exist [{}/{}]",
                 function_name!(),
-                parent_extension_id,
+                extension_id,
                 sub_extension_id
             ))
         } else {
@@ -499,7 +869,8 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
 
         let closure = move || {
             let mut hits = Vec::new();
-            let extensions_read_lock = futures::executor::block_on(async { inner_clone.extensions.read().await });
+            let extensions_read_lock =
+                futures::executor::block_on(async { inner_clone.extensions.read().await });
 
             for extension in extensions_read_lock.iter().filter(|ext| ext.enabled) {
                 if extension.r#type.contains_sub_items() {
@@ -523,17 +894,21 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
                         }
                     }
 
-                    if let Some(ref quick_links) = extension.quick_links {
+                    if let Some(ref quick_links) = extension.quicklinks {
                         for quick_link in quick_links.iter().filter(|link| link.enabled) {
-                            if let Some(hit) =
-                                extension_to_hit(quick_link, &query_lower, opt_data_source.as_deref())
-                            {
+                            if let Some(hit) = extension_to_hit(
+                                quick_link,
+                                &query_lower,
+                                opt_data_source.as_deref(),
+                            ) {
                                 hits.push(hit);
                             }
                         }
                     }
                 } else {
-                    if let Some(hit) = extension_to_hit(extension, &query_lower, opt_data_source.as_deref()) {
+                    if let Some(hit) =
+                        extension_to_hit(extension, &query_lower, opt_data_source.as_deref())
+                    {
                         hits.push(hit);
                     }
                 }

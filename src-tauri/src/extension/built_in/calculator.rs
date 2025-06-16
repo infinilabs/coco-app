@@ -13,6 +13,19 @@ use std::collections::HashMap;
 
 pub(crate) const DATA_SOURCE_ID: &str = "Calculator";
 
+/// JSON file for this extension.
+pub(crate) const PLUGIN_JSON_FILE: &str = r#"
+{
+  "id": "Calculator",
+  "title": "Calculator",
+  "platforms": ["macos", "linux", "windows"],
+  "description": "...",
+  "icon": "font_Calculator",
+  "type": "calculator",
+  "enabled": true
+}
+"#;
+
 pub struct CalculatorSource {
     base_score: f64,
 }

@@ -519,6 +519,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "borrowme"
+version = "0.0.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cc75de882fa904cab1f2efe7184a871121d12eacebd181cbd2a15ff7af84c519"
+dependencies = [
+ "borrowme-macros",
+]
+
+[[package]]
+name = "borrowme-macros"
+version = "0.0.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b00f4d9b344db5782c18429dac7a9af047d522f1d9ba1617d715aaffbdc040d0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.101",
+]
+
+[[package]]
 name = "borsh"
 version = "1.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -821,12 +841,13 @@ dependencies = [
 
 [[package]]
 name = "coco"
-version = "0.5.2"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "applications",
  "async-trait",
  "base64 0.13.1",
+ "borrowme",
  "chinese-number",
  "chrono",
  "derive_more 2.0.1",

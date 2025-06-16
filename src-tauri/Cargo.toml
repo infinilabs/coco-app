@@ -1,6 +1,6 @@
 [package]
 name = "coco"
-version = "0.5.2"
+version = "0.5.0"
 description = "Search, connect, collaborate – all in one place."
 authors = ["INFINI Labs"]
 edition = "2021"
@@ -44,7 +44,7 @@ use_pizza_engine = []
 [dependencies]
 pizza-common = { git = "https://github.com/infinilabs/pizza-common", branch = "main" }
 
-tauri = { version = "2", features = ["protocol-asset", "macos-private-api", "tray-icon", "image-ico", "image-png", "unstable"] }
+tauri = { version = "2", features = ["protocol-asset", "macos-private-api", "tray-icon", "image-ico", "image-png"] }
 tauri-plugin-shell = "2"
 serde = { version = "1", features = ["derive"] }
 # Need `arbitrary_precision` feature to support storing u128
@@ -98,6 +98,7 @@ derive_more = { version = "2.0.1", features = ["display"] }
 anyhow = "1.0.98"
 function_name = "0.3.0"
 regex = "1.11.1"
+borrowme = "0.0.15"
 tauri-plugin-opener = "2"
 
 [target."cfg(target_os = \"macos\")".dependencies]

@@ -13,12 +13,25 @@ Information about release notes of Coco Server is provided here.
 
 ### 🚀 Features
 
+### 🐛 Bug fix
+
+### ✈️ Improvements
+
+- refactor: use author/ext_id as extension unique identifier #643
+
+## 0.5.2 (2025-06-13)
+
+### ❌ Breaking changes
+
+### 🚀 Features
+
 - feat: ai overview support is enabled with shortcut #597
 - feat: add key monitoring during reset #615
 - feat: calculator extension add description #623
 - feat: support right-click actions after text selection #624
 - feat: add ai overview minimum number of search results configuration #625
 - feat: add internationalized translations of AI-related extensions #632
+- feat: context menu support for secondary pages #680
 
 ### 🐛 Bug fix
 
@@ -38,6 +51,7 @@ Information about release notes of Coco Server is provided here.
 - fix: fix the problem of local path not opening #650
 - fix: number keys not following settings #661
 - fix: fix problem with up and down key indexing #676
+- fix: arrow inserting escape sequences #683
 
 ### ✈️ Improvements
 
