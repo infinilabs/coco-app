@@ -190,16 +190,11 @@ const AskAi = () => {
 
       const { serverId, assistantId } = state;
 
-      await platformAdapter.commands("open_session_chat", {
-        serverId,
-        sessionId: sessionIdRef.current,
-      });
-
-      platformAdapter.emitEvent("toggle-to-chat-mode");
-
       setAskAiServerId(serverId);
       setAskAiSessionId(sessionIdRef.current);
       setAskAiAssistantId(assistantId);
+
+      platformAdapter.emitEvent("toggle-to-chat-mode");
     },
     {
       exactMatch: true,
