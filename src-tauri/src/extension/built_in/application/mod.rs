@@ -33,3 +33,16 @@ pub struct AppMetadata {
     modified: u128,
     last_opened: u128,
 }
+
+/// JSON file for this extension.
+pub(crate) const PLUGIN_JSON_FILE: &str = r#"
+{
+  "id": "Applications",
+  "platforms": ["macos", "linux", "windows"],
+  "title": "Applications",
+  "description": "Application search",
+  "icon": "font_Application",
+  "type": "group",
+  "enabled": true
+}
+"#;

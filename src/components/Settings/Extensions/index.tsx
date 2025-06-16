@@ -47,11 +47,12 @@ export interface Extension {
   enabled: boolean;
   platforms?: ExtensionPlatform[];
   action: ExtensionAction;
-  quick_link: ExtensionQuickLink;
+  quicklink: ExtensionQuickLink;
   commands?: Extension[];
   scripts?: Extension[];
-  quick_links?: Extension[];
+  quicklinks?: Extension[];
   settings: Record<string, unknown>;
+  author?: string;
 }
 
 interface State {

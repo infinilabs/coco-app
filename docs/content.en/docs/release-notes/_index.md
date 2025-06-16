@@ -17,6 +17,8 @@ Information about release notes of Coco Server is provided here.
 
 ### ✈️ Improvements
 
+- refactor: use author/ext_id as extension unique identifier #643
+
 ## 0.5.2 (2025-06-13)
 
 ### ❌ Breaking changes
