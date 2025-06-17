@@ -7,6 +7,7 @@ import {
 } from "ahooks";
 import { useEffect, useRef, useState } from "react";
 import { noop } from "lodash-es";
+import { nanoid } from "nanoid";
 
 import { ChatMessage } from "../ChatMessage";
 import { useSearchStore } from "@/stores/searchStore";
@@ -15,7 +16,6 @@ import useMessageChunkData from "@/hooks/useMessageChunkData";
 import { useAppStore } from "@/stores/appStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
-import { nanoid } from "nanoid";
 
 interface State {
   serverId?: string;
@@ -24,12 +24,9 @@ interface State {
 }
 
 const AskAi = () => {
-  const askAiMessage = useSearchStore((state) => state.askAiMessage);
+  const { askAiMessage, setGoAskAi, setSelectedAssistant, setAskAiSessionId, selectedAssistant, setAskAiServerId, setAskAiAssistantId } = useSearchStore();
+
   const addError = useAppStore((state) => state.addError);
-  const setGoAskAi = useSearchStore((state) => state.setGoAskAi);
-  const setSelectedAssistant = useSearchStore((state) => {
-    return state.setSelectedAssistant;
-  });
 
   const {
     data: {
@@ -62,23 +59,11 @@ const AskAi = () => {
 
   const unlisten = useRef<() => void>(noop);
   const sessionIdRef = useRef<string>("");
-  const setAskAiSessionId = useSearchStore((state) => state.setAskAiSessionId);
-  const quickAiAccessServer = useExtensionsStore((state) => {
-    return state.quickAiAccessServer;
-  });
-  const quickAiAccessAssistant = useExtensionsStore((state) => {
-    return state.quickAiAccessAssistant;
-  });
-  const selectedAssistant = useSearchStore((state) => {
-    return state.selectedAssistant;
-  });
-  const setAskAiServerId = useSearchStore((state) => {
-    return state.setAskAiServerId;
-  });
+
+  const { quickAiAccessServer, quickAiAccessAssistant } = useExtensionsStore();
+
   const state = useReactive<State>({});
-  const setAskAiAssistantId = useSearchStore((state) => {
-    return state.setAskAiAssistantId;
-  });
+
   const modifierKey = useShortcutsStore((state) => state.modifierKey);
 
   useEffect(() => {

@@ -2,11 +2,11 @@ import { createContext, useEffect } from "react";
 import { useMount, useReactive } from "ahooks";
 import { useTranslation } from "react-i18next";
 import type { LiteralUnion } from "type-fest";
+import { cloneDeep, sortBy } from "lodash-es";
 
 import platformAdapter from "@/utils/platformAdapter";
 import Content from "./components/Content";
 import Details from "./components/Details";
-import { cloneDeep, sortBy } from "lodash-es";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 
 export type ExtensionId = LiteralUnion<
