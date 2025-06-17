@@ -1,5 +1,4 @@
 import { AssistantFetcher } from "@/components/Assistant/AssistantFetcher";
-import FontIcon from "@/components/Common/Icons/FontIcon";
 import SettingsSelectPro from "@/components/Settings/SettingsSelectPro";
 import { useAppStore } from "@/stores/appStore";
 import platformAdapter from "@/utils/platformAdapter";
@@ -25,6 +24,7 @@ const SharedAi: FC<SharedAiProps> = (props) => {
   const addError = useAppStore((state) => state.addError);
   const { fetchAssistant } = AssistantFetcher({});
   const { t } = useTranslation();
+  const [assistantSearchValue, setAssistantSearchValue] = useState("");
 
   useMount(async () => {
     try {
@@ -34,8 +34,8 @@ const SharedAi: FC<SharedAiProps> = (props) => {
 
       if (isArray(data)) {
         const enabledServers = data.filter(
-        (s) => s.enabled && s.available && (s.public || s.profile)
-      );
+          (s) => s.enabled && s.available && (s.public || s.profile)
+        );
 
         setServerList(enabledServers);
 
@@ -64,6 +64,7 @@ const SharedAi: FC<SharedAiProps> = (props) => {
         current: 1,
         pageSize: 1000,
         serverId: server.id,
+        query: assistantSearchValue,
       });
 
       const list = data.list.map((item: any) => item._source);
@@ -84,7 +85,7 @@ const SharedAi: FC<SharedAiProps> = (props) => {
     } catch (error) {
       addError(String(error));
     }
-  }, [server]);
+  }, [server, assistantSearchValue]);
 
   const selectList = useMemo(() => {
     return [
@@ -95,6 +96,7 @@ const SharedAi: FC<SharedAiProps> = (props) => {
         value: server?.id,
         icon: server?.provider?.icon,
         data: serverList,
+        searchable: false,
         onChange: (value: string) => {
           const matched = serverList.find((item) => item.id === value);
 
@@ -108,10 +110,14 @@ const SharedAi: FC<SharedAiProps> = (props) => {
         value: assistant?.id,
         icon: assistant?.icon,
         data: assistantList,
+        searchable: true,
         onChange: (value: string) => {
           const matched = assistantList.find((item) => item.id === value);
 
           setAssistant(matched);
+        },
+        onSearch: (value: string) => {
+          setAssistantSearchValue(value);
         },
       },
     ];
@@ -136,28 +142,19 @@ const SharedAi: FC<SharedAiProps> = (props) => {
       </div>
 
       {selectList.map((item) => {
-        const { label, value, icon, data, onChange } = item;
+        const { label, value, data, searchable, onChange, onSearch } = item;
 
         return (
           <div key={label} className="mt-4">
             <div className="mb-2 text-[#666] dark:text-white/70">{label}</div>
 
-            <div className="flex items-center gap-1 px-3 py-1 border dark:border-gray-700 rounded-md focus-within:!border-[#0087FF] hover:!border-[#0087FF] transition">
-              {icon?.startsWith("font_") ? (
-                <FontIcon name={icon} className="size-5" />
-              ) : (
-                <img src={icon} className="size-5" />
-              )}
-
-              <SettingsSelectPro
-                data={data}
-                value={value}
-                rootClassName="flex-1 border-0"
-                onChange={(event) => {
-                  onChange(event.currentTarget.value);
-                }}
-              />
-            </div>
+            <SettingsSelectPro
+              value={value}
+              options={data}
+              searchable={searchable}
+              onChange={onChange}
+              onSearch={onSearch}
+            />
           </div>
         );
       })}
