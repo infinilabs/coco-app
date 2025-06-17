@@ -16,7 +16,7 @@ import { useChatStore } from "@/stores/chatStore";
 import NoDataImage from "@/components/Common/NoDataImage";
 import PopoverInput from "@/components/Common/PopoverInput";
 import Pagination from "@/components/Common/Pagination";
-import { specialCharacterFiltering } from "@/utils"
+import { SearchQuery, specialCharacterFiltering } from "@/utils";
 
 interface MCPPopoverProps {
   mcp_servers: any;
@@ -24,11 +24,7 @@ interface MCPPopoverProps {
   setIsMCPActive: () => void;
   getMCPByServer: (
     serverId: string,
-    options?: {
-      from?: number;
-      size?: number;
-      query?: string;
-    }
+    searchQuery?: SearchQuery
   ) => Promise<DataSource[]>;
 }
 
@@ -69,12 +65,12 @@ export default function MCPPopover({
       }
       const data = res?.length
         ? [
-          {
-            id: "all",
-            name: "search.input.searchPopover.allScope",
-          },
-          ...res,
-        ]
+            {
+              id: "all",
+              name: "search.input.searchPopover.allScope",
+            },
+            ...res,
+          ]
         : [];
 
       setDataList(data);
@@ -166,7 +162,7 @@ export default function MCPPopover({
   };
 
   if (!(mcp_servers?.enabled && mcp_servers?.visible)) {
-    return null
+    return null;
   }
 
   return (
@@ -181,10 +177,11 @@ export default function MCPPopover({
     >
       <VisibleKey shortcut={mcpSearch} onKeyPress={setIsMCPActive}>
         <Hammer
-          className={`size-3 ${isMCPActive
-            ? "text-[#0072FF] dark:text-[#0072FF]"
-            : "text-[#333] dark:text-white"
-            }`}
+          className={`size-3 ${
+            isMCPActive
+              ? "text-[#0072FF] dark:text-[#0072FF]"
+              : "text-[#333] dark:text-white"
+          }`}
         />
       </VisibleKey>
 
@@ -231,8 +228,9 @@ export default function MCPPopover({
                     >
                       <VisibleKey shortcut="R" onKeyPress={handleRefresh}>
                         <RefreshCw
-                          className={`size-3 text-[#0287FF] transition-transform duration-1000 ${isRefreshDataSource ? "animate-spin" : ""
-                            }`}
+                          className={`size-3 text-[#0287FF] transition-transform duration-1000 ${
+                            isRefreshDataSource ? "animate-spin" : ""
+                          }`}
                         />
                       </VisibleKey>
                     </div>
@@ -255,7 +253,9 @@ export default function MCPPopover({
                       ref={searchInputRef}
                       className="size-full px-2 rounded-lg border dark:border-white/10 bg-transparent"
                       onChange={(e) => {
-                        const value = specialCharacterFiltering(e.target.value.trim())
+                        const value = specialCharacterFiltering(
+                          e.target.value.trim()
+                        );
                         setKeyword(value);
                       }}
                     />

@@ -25,7 +25,7 @@ export function DataSourcesList({ server }: { server: string }) {
       .finally(() => {});
 
     // fetch datasource data
-    datasource_search(server)
+    datasource_search({ id: server })
       .then((res: any) => {
         // console.log("datasource_search", res);
         setDatasourceData(res, server);

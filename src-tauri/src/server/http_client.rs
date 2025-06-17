@@ -4,7 +4,6 @@ use once_cell::sync::Lazy;
 use reqwest::{Client, Method, RequestBuilder};
 use std::collections::HashMap;
 use std::time::Duration;
-use tauri_plugin_store::JsonValue;
 use tokio::sync::Mutex;
 
 pub(crate) fn new_reqwest_http_client(accept_invalid_certs: bool) -> Client {
@@ -40,7 +39,7 @@ impl HttpClient {
     pub async fn send_raw_request(
         method: Method,
         url: &str,
-        query_params: Option<HashMap<String, JsonValue>>,
+        query_params: Option<Vec<String>>,
         headers: Option<HashMap<String, String>>,
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
@@ -74,7 +73,7 @@ impl HttpClient {
         method: Method,
         url: &str,
         headers: Option<HashMap<String, String>>,
-        query_params: Option<HashMap<String, JsonValue>>, // Add query parameters
+        query_params: Option<Vec<String>>, // Add query parameters
         body: Option<reqwest::Body>,
     ) -> RequestBuilder {
         let client = HTTP_CLIENT.lock().await; // Acquire the lock on HTTP_CLIENT
@@ -106,23 +105,10 @@ impl HttpClient {
             request_builder = request_builder.headers(req_headers);
         }
 
-        if let Some(query) = query_params {
-            // Convert only supported value types into strings
-            let query: HashMap<String, String> = query
-                .into_iter()
-                .filter_map(|(k, v)| {
-                    match v {
-                        JsonValue::String(s) => Some((k, s)),
-                        JsonValue::Number(n) => Some((k, n.to_string())),
-                        JsonValue::Bool(b) => Some((k, b.to_string())),
-                        _ => {
-                            dbg!(
-                                "Unsupported query parameter type. Only strings, numbers, and booleans are supported.",k,v,
-                            );
-                            None
-                        } // skip arrays, objects, nulls
-                    }
-                })
+        if let Some(params) = query_params {
+            let query: Vec<(&str, &str)> = params
+                .iter()
+                .filter_map(|s| s.split_once('='))
                 .collect();
             request_builder = request_builder.query(&query);
         }
@@ -135,12 +121,13 @@ impl HttpClient {
         request_builder
     }
 
+
     pub async fn send_request(
         server_id: &str,
         method: Method,
         path: &str,
         custom_headers: Option<HashMap<String, String>>,
-        query_params: Option<HashMap<String, JsonValue>>,
+        query_params: Option<Vec<String>>,
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
         // Fetch the server using the server_id
@@ -182,16 +169,17 @@ impl HttpClient {
     pub async fn get(
         server_id: &str,
         path: &str,
-        query_params: Option<HashMap<String, JsonValue>>, // Add query parameters
+        query_params: Option<Vec<String>>,
     ) -> Result<reqwest::Response, String> {
-        HttpClient::send_request(server_id, Method::GET, path, None, query_params, None).await
+        HttpClient::send_request(server_id, Method::GET, path, None, query_params,
+                                 None).await
     }
 
     // Convenience method for POST requests
     pub async fn post(
         server_id: &str,
         path: &str,
-        query_params: Option<HashMap<String, JsonValue>>, // Add query parameters
+        query_params: Option<Vec<String>>,
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
         HttpClient::send_request(server_id, Method::POST, path, None, query_params, body).await
@@ -201,7 +189,7 @@ impl HttpClient {
         server_id: &str,
         path: &str,
         custom_headers: Option<HashMap<String, String>>,
-        query_params: Option<HashMap<String, JsonValue>>, // Add query parameters
+        query_params: Option<Vec<String>>,
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
         HttpClient::send_request(
@@ -212,7 +200,7 @@ impl HttpClient {
             query_params,
             body,
         )
-        .await
+            .await
     }
 
     // Convenience method for PUT requests
@@ -221,7 +209,7 @@ impl HttpClient {
         server_id: &str,
         path: &str,
         custom_headers: Option<HashMap<String, String>>,
-        query_params: Option<HashMap<String, JsonValue>>, // Add query parameters
+        query_params: Option<Vec<String>>,
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
         HttpClient::send_request(
@@ -232,7 +220,7 @@ impl HttpClient {
             query_params,
             body,
         )
-        .await
+            .await
     }
 
     // Convenience method for DELETE requests
@@ -241,7 +229,7 @@ impl HttpClient {
         server_id: &str,
         path: &str,
         custom_headers: Option<HashMap<String, String>>,
-        query_params: Option<HashMap<String, JsonValue>>, // Add query parameters
+        query_params: Option<Vec<String>>,
     ) -> Result<reqwest::Response, String> {
         HttpClient::send_request(
             server_id,
@@ -251,6 +239,6 @@ impl HttpClient {
             query_params,
             None,
         )
-        .await
+            .await
     }
 }

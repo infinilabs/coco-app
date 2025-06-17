@@ -4,6 +4,7 @@ import { Post } from "@/api/axiosRequest";
 import platformAdapter from "@/utils/platformAdapter";
 import { useConnectStore } from "@/stores/connectStore";
 import { useAppStore } from "@/stores/appStore";
+import { parseSearchQuery, SearchQuery } from "@/utils";
 
 interface AssistantFetcherProps {
   debounceKeyword?: string;
@@ -40,43 +41,25 @@ export const AssistantFetcher = ({
 
       const { pageSize, current, serverId = currentService?.id } = params;
 
-      const from = (current - 1) * pageSize;
-      const size = pageSize;
-
-      let response: any;
-
-      const body: Record<string, any> = {
-        serverId,
-        from,
-        size,
-      };
-
-      body.query = {
-        bool: {
-          must: [{ term: { enabled: true } }],
+      const searchQuery: SearchQuery = {
+        from: (current - 1) * pageSize,
+        size: pageSize,
+        query: debounceKeyword,
+        fuzziness: 5,
+        filters: {
+          enabled: true,
+          id: assistantIDs,
         },
       };
 
-      if (debounceKeyword) {
-        body.query.bool.must.push({
-          query_string: {
-            fields: ["combined_fulltext"],
-            query: debounceKeyword,
-            fuzziness: "AUTO",
-            fuzzy_prefix_length: 2,
-            fuzzy_max_expansions: 10,
-            fuzzy_transpositions: true,
-            allow_leading_wildcard: false,
-          },
-        });
-      }
-      if (assistantIDs.length > 0) {
-        body.query.bool.must.push({
-          terms: {
-            id: assistantIDs.map((id) => id),
-          },
-        });
-      }
+      const queryParams = parseSearchQuery(searchQuery);
+
+      const body: Record<string, any> = {
+        serverId,
+        queryParams,
+      };
+
+      let response: any;
 
       if (isTauri) {
         if (!currentService?.id) {
