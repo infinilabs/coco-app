@@ -26,9 +26,7 @@ export function useAssistantManager({
   const { goAskAi, setGoAskAi, setAskAiMessage, selectedAssistant } =
     useSearchStore();
 
-  const quickAiAccessAssistant = useExtensionsStore(
-    (state) => state.quickAiAccessAssistant
-  );
+  const { quickAiAccessAssistant, disabledExtensions } = useExtensionsStore();
 
   const askAIRef = useRef<Assistant | null>(null);
 
@@ -41,6 +39,8 @@ export function useAssistantManager({
 
   const assistant_get = useCallback(async () => {
     if (!askAI?.id) return;
+    if (disabledExtensions.includes("QuickAIAccess")) return;
+
     if (isTauri) {
       if (!askAI?.querySource?.id) return;
       const res = await platformAdapter.commands("assistant_get", {
@@ -56,17 +56,17 @@ export function useAssistantManager({
       }
       setAssistantDetail(res);
     }
-  }, [askAI]);
+  }, [askAI?.id, askAI?.querySource?.id, disabledExtensions]);
 
-  const handleAskAi = () => {
+  const handleAskAi = useCallback(() => {
     if (!isTauri) return;
 
-    askAIRef.current = cloneDeep(askAI);
+    if (disabledExtensions.includes("QuickAIAccess")) return;
 
+    askAIRef.current = cloneDeep(askAI);
     if (!askAIRef.current) return;
 
     let value = inputValue.trim();
-
     if (isEmpty(value)) return;
 
     if (!goAskAi && selectedAssistant) {
@@ -76,41 +76,31 @@ export function useAssistantManager({
     changeInput("");
     setAskAiMessage(value);
     setGoAskAi(true);
-  };
+  }, [disabledExtensions, askAI, inputValue, goAskAi, selectedAssistant]);
 
-  const handleKeyDownAutoResizeTextarea = (
+  const handleKeyDownAutoResizeTextarea = useCallback((
     e: React.KeyboardEvent<HTMLTextAreaElement>
   ) => {
-    const { key, shiftKey } = e;
-
-    const { value } = e.currentTarget;
+    const { key, shiftKey, currentTarget } = e;
+    const { value } = currentTarget;
 
     if (key === "Backspace" && value === "") {
       return setGoAskAi(false);
     }
 
-    if (key === "Tab" && isTauri) {
+    if (key === "Tab" && !isChatMode && isTauri) {
       e.preventDefault();
 
-      if (isChatMode) {
-        return;
-      }
-
       assistant_get();
-
       return handleAskAi();
     }
 
     if (key === "Enter" && !shiftKey && !isChatMode && isTauri) {
       e.preventDefault();
 
-      if (goAskAi) {
-        return handleAskAi();
-      }
-
-      handleSubmit();
+      goAskAi ? handleAskAi() : handleSubmit();
     }
-  };
+  }, [isChatMode, goAskAi, assistant_get, handleAskAi, handleSubmit]);
 
   return {
     askAI,
