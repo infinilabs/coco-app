@@ -129,16 +129,12 @@ const ChatAI = memo(
       }, [currentService?.enabled, showChatHistory, connected]);
 
       useEffect(() => {
-        if (askAiServerId || !askAiSessionId || chats.length === 0) return;
+        if (askAiServerId || !askAiSessionId) return;
 
-        const matched = chats.find((item) => item._id === askAiSessionId);
+        onSelectChat({ _id: askAiSessionId });
 
-        if (matched) {
-          onSelectChat(matched);
-
-          setAskAiSessionId(void 0);
-        }
-      }, [chats, askAiSessionId, askAiServerId]);
+        setAskAiSessionId(void 0);
+      }, [askAiSessionId, askAiServerId]);
 
       const [Question, setQuestion] = useState<string>("");
 
