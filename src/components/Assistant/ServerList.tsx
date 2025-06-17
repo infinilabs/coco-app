@@ -153,7 +153,6 @@ export function ServerList({ reconnect, clearChat }: ServerListProps) {
   useKeyPress(["uparrow", "downarrow", "enter"], (event, key) => {
     const isClose = isNil(serverListButtonRef.current?.dataset["open"]);
     const length = serverList.length;
-    console.log(444444, isClose)
 
     if (isClose || length <= 1) return;
 
@@ -165,7 +164,6 @@ export function ServerList({ reconnect, clearChat }: ServerListProps) {
     });
 
     let nextIndex = currentIndex;
-    console.log(333333, key, currentIndex)
 
     if (key === "uparrow") {
       nextIndex = currentIndex > 0 ? currentIndex - 1 : length - 1;
@@ -174,9 +172,7 @@ export function ServerList({ reconnect, clearChat }: ServerListProps) {
       nextIndex = currentIndex < serverList.length - 1 ? currentIndex + 1 : 0;
       setHighlightId(serverList[nextIndex].id);
     } else if (key === "enter" && currentIndex >= 0) {
-      console.log(11111111, document.activeElement)
       if (document.activeElement instanceof HTMLTextAreaElement) return;
-      console.log(22222222, currentIndex)
       const selectedServer = serverList[currentIndex];
       if (selectedServer) {
         switchServer(selectedServer);
