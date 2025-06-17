@@ -38,12 +38,16 @@ export function ServerList({ reconnect, clearChat }: ServerListProps) {
 
   const [serverList, setServerList] = useState<IServer[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [highlightId, setHighlightId] = useState<string>("");
+
   const askAiServerId = useSearchStore((state) => {
     return state.askAiServerId;
   });
   const setAskAiServerId = useSearchStore((state) => {
     return state.setAskAiServerId;
   });
+
+  const popoverRef = useRef<HTMLDivElement>(null);
   const serverListButtonRef = useRef<HTMLButtonElement>(null);
 
   const fetchServers = useCallback(
@@ -146,29 +150,45 @@ export function ServerList({ reconnect, clearChat }: ServerListProps) {
     }
   };
 
-  useKeyPress(["uparrow", "downarrow"], (_, key) => {
+  useKeyPress(["uparrow", "downarrow", "enter"], (event, key) => {
     const isClose = isNil(serverListButtonRef.current?.dataset["open"]);
     const length = serverList.length;
 
     if (isClose || length <= 1) return;
 
+    event.stopPropagation();
+    event.preventDefault();
+
     const currentIndex = serverList.findIndex((server) => {
-      return server.id === currentService?.id;
+      return server.id === (highlightId === '' ? currentService?.id : highlightId);
     });
 
     let nextIndex = currentIndex;
 
     if (key === "uparrow") {
       nextIndex = currentIndex > 0 ? currentIndex - 1 : length - 1;
+      setHighlightId(serverList[nextIndex].id);
     } else if (key === "downarrow") {
       nextIndex = currentIndex < serverList.length - 1 ? currentIndex + 1 : 0;
+      setHighlightId(serverList[nextIndex].id);
+    } else if (key === "enter" && currentIndex >= 0) {
+      if (document.activeElement instanceof HTMLTextAreaElement) return;
+      const selectedServer = serverList[currentIndex];
+      if (selectedServer) {
+        switchServer(selectedServer);
+        serverListButtonRef.current?.click();
+      }
     }
-
-    switchServer(serverList[nextIndex]);
+  }, {
+    target: popoverRef,
   });
 
+  const handleMouseMove = useCallback(() => {
+    setHighlightId("");
+  }, []);
+
   return (
-    <Popover className="relative">
+    <Popover ref={popoverRef} className="relative">
       <PopoverButton ref={serverListButtonRef} className="flex items-center">
         <VisibleKey
           shortcut={serviceList}
@@ -180,7 +200,9 @@ export function ServerList({ reconnect, clearChat }: ServerListProps) {
         </VisibleKey>
       </PopoverButton>
 
-      <PopoverPanel className="absolute right-0 z-10 mt-2 min-w-[240px] bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+      <PopoverPanel
+        onMouseMove={handleMouseMove}
+        className="absolute right-0 z-10 mt-2 min-w-[240px] bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
         <div className="p-3">
           <div className="flex items-center justify-between mb-3 whitespace-nowrap">
             <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -202,9 +224,8 @@ export function ServerList({ reconnect, clearChat }: ServerListProps) {
               >
                 <VisibleKey shortcut="R" onKeyPress={handleRefresh}>
                   <RefreshCw
-                    className={`h-4 w-4 text-[#0287FF] transition-transform duration-1000 ${
-                      isRefreshing ? "animate-spin" : ""
-                    }`}
+                    className={`h-4 w-4 text-[#0287FF] transition-transform duration-1000 ${isRefreshing ? "animate-spin" : ""
+                      }`}
                   />
                 </VisibleKey>
               </button>
@@ -216,11 +237,11 @@ export function ServerList({ reconnect, clearChat }: ServerListProps) {
                 <div
                   key={server.id}
                   onClick={() => switchServer(server)}
-                  className={`w-full flex items-center justify-between gap-1 p-2 rounded-lg transition-colors whitespace-nowrap ${
-                    currentService?.id === server.id
+                  className={`w-full flex items-center justify-between gap-1 p-2 rounded-lg transition-colors whitespace-nowrap 
+                    ${currentService?.id === server.id || highlightId === server.id
                       ? "bg-gray-100 dark:bg-gray-800"
                       : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-2 overflow-hidden min-w-0">
                     <img
