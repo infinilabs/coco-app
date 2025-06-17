@@ -16,7 +16,8 @@ Information about release notes of Coco Server is provided here.
 ### 🐛 Bug fix
 
 ### ✈️ Improvements
-
+- refactor: use author/ext_id as extension unique identifier #643
+- refactor: refactoring search api #679
 - chore: continue to chat page display #690
 - chore: improve server list selection with enter key #692
 

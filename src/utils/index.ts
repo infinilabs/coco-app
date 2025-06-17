@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { isArray, isNil, isObject, isString } from "lodash-es";
 
 import platformAdapter from "./platformAdapter";
 import { useAppStore } from "@/stores/appStore";
@@ -63,8 +64,8 @@ export function useWindowSize() {
 export const IsTauri = () => {
   return Boolean(
     typeof window !== "undefined" &&
-    window !== undefined &&
-    (window as any).__TAURI_INTERNALS__ !== undefined
+      window !== undefined &&
+      (window as any).__TAURI_INTERNALS__ !== undefined
   );
 };
 
@@ -115,11 +116,51 @@ export const closeHistoryPanel = () => {
 };
 
 export const specialCharacterFiltering = (value?: string) => {
-  if (!value) return ""
+  if (!value) return "";
   // Filter out control characters
-  // return value.replace(
-  //   /[\x00-\x09\x0B\x0C\x0E-\x1F\x7F-\x9F]/g,
-  //   ""
-  // );
-  return value
+  return value.replace(/[\x00-\x09\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, "");
+};
+
+export interface SearchQuery {
+  query?: string;
+  from?: number;
+  size?: number;
+  fuzziness?: 1 | 2 | 3 | 4 | 5;
+  filters?: Record<string, any>;
 }
+
+const isTrulyEmpty = (value: unknown) => {
+  const isNilValue = isNil(value);
+
+  const isEmptyString = isString(value) && value.trim() === "";
+
+  const isEmptyArray = isArray(value) && value.length === 0;
+
+  const isEmptyObject = isObject(value) && Object.keys(value).length === 0;
+
+  return isNilValue || isEmptyString || isEmptyArray || isEmptyObject;
+};
+
+export const parseSearchQuery = (searchQuery: SearchQuery) => {
+  const { filters, ...rest } = searchQuery;
+
+  const result = Object.entries(rest)
+    .filter(([_, value]) => !isTrulyEmpty(value))
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`);
+
+  if (isObject(filters)) {
+    for (const [key, value] of Object.entries(filters)) {
+      if (isTrulyEmpty(value)) continue;
+
+      if (isArray(value)) {
+        for (const item of value) {
+          result.push(`filter=${key}:${encodeURIComponent(item)}`);
+        }
+      } else {
+        result.push(`filter=${key}:${value}`);
+      }
+    }
+  }
+
+  return result;
+};

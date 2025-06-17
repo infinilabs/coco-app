@@ -124,12 +124,26 @@ export function get_connectors_by_server(id: string): Promise<Connector[]> {
   return invokeWithErrorHandler(`get_connectors_by_server`, { id });
 }
 
-export function datasource_search(id: string): Promise<DataSource[]> {
-  return invokeWithErrorHandler(`datasource_search`, { id });
+export function datasource_search({
+  id,
+  queryParams,
+}: {
+  id: string;
+  //["query=abc", "filter=er", "filter=efg", "from=0", "size=5"]
+  queryParams?: string[];
+}): Promise<DataSource[]> {
+  return invokeWithErrorHandler(`datasource_search`, { id, queryParams });
 }
 
-export function mcp_server_search(id: string): Promise<DataSource[]> {
-  return invokeWithErrorHandler(`mcp_server_search`, { id });
+export function mcp_server_search({
+  id,
+  queryParams,
+}: {
+  id: string;
+  //["query=abc", "filter=er", "filter=efg", "from=0", "size=5"]
+  queryParams?: string[];
+}): Promise<DataSource[]> {
+  return invokeWithErrorHandler(`mcp_server_search`, { id, queryParams });
 }
 
 export function connect_to_server(id: string, clientId: string): Promise<void> {
@@ -224,7 +238,7 @@ export function new_chat({
   queryParams,
 }: {
   serverId: string;
-  websocketId?: string;
+  websocketId: string;
   message: string;
   queryParams?: Record<string, any>;
 }): Promise<GetResponse> {
@@ -244,7 +258,7 @@ export function send_message({
   queryParams,
 }: {
   serverId: string;
-  websocketId?: string;
+  websocketId: string;
   sessionId: string;
   message: string;
   queryParams?: Record<string, any>;
@@ -269,15 +283,16 @@ export const update_session_chat = (payload: {
   serverId: string;
   sessionId: string;
   title?: string;
-  context?: {
-    attachments?: string[];
-  };
+  context?: Record<string, any>;
 }): Promise<boolean> => {
   return invokeWithErrorHandler<boolean>("update_session_chat", payload);
 };
 
 export const assistant_search = (payload: {
   serverId: string;
+  from: number;
+  size: number;
+  query?: Record<string, any>;
 }): Promise<boolean> => {
   return invokeWithErrorHandler<boolean>("assistant_search", payload);
 };

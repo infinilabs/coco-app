@@ -2,6 +2,8 @@ use crate::common;
 use reqwest::Response;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::collections::HashMap;
+use tauri_plugin_store::JsonValue;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GetResponse {
@@ -53,4 +55,26 @@ pub async fn get_response_body_text(response: Response) -> Result<String, String
     } else {
         Ok(body)
     }
+}
+
+
+pub fn convert_query_params_to_strings(
+    query_params: Option<HashMap<String, JsonValue>>,
+) -> Option<Vec<String>> {
+    query_params.map(|map| {
+        map.into_iter()
+            .filter_map(|(k, v)| match v {
+                JsonValue::String(s) => Some(format!("{}={}", k, s)),
+                JsonValue::Number(n) => Some(format!("{}={}", k, n)),
+                JsonValue::Bool(b) => Some(format!("{}={}", k, b)),
+                _ => {
+                    eprintln!(
+                        "Skipping unsupported query value for key '{}': {:?}",
+                        k, v
+                    );
+                    None
+                }
+            })
+            .collect()
+    })
 }

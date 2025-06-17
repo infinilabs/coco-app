@@ -16,6 +16,7 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
+import { parseSearchQuery, SearchQuery } from "@/utils";
 // import InputExtra from "./InputExtra";
 // import AiSummaryIcon from "@/components/Common/Icons/AiSummaryIcon";
 
@@ -70,44 +71,28 @@ const InputControls = ({
   const getDataSourcesByServer = useCallback(
     async (
       serverId: string,
-      options?: {
-        from?: number;
-        size?: number;
-        query?: string;
-      }
+      searchQuery: SearchQuery = {}
     ): Promise<DataSource[]> => {
+      searchQuery.from ??= 0;
+      searchQuery.size ??= 1000;
+
       const body: Record<string, any> = {
         id: serverId,
-        from: options?.from || 0,
-        size: options?.size || 1000,
-      };
-
-      body.query = {
-        bool: {
-          must: [{ term: { enabled: true } }],
-        },
-      };
-
-      if (options?.query) {
-        body.query.bool.must.push({
-          query_string: {
-            fields: ["combined_fulltext"],
-            query: options?.query,
-            fuzziness: "AUTO",
-            fuzzy_prefix_length: 2,
-            fuzzy_max_expansions: 10,
-            fuzzy_transpositions: true,
-            allow_leading_wildcard: false,
+        queryParams: parseSearchQuery({
+          ...searchQuery,
+          fuzziness: 5,
+          filters: {
+            enabled: true,
           },
-        });
-      }
+        }),
+      };
 
       let response: any;
       if (isTauri) {
-        response = await platformAdapter.invokeBackend("datasource_search", {
-          id: serverId,
-          options: body,
-        });
+        response = await platformAdapter.invokeBackend(
+          "datasource_search",
+          body
+        );
       } else {
         body.id = undefined;
         const [error, res]: any = await Post("/datasource/_search", body);
@@ -135,36 +120,21 @@ const InputControls = ({
   const getMCPByServer = useCallback(
     async (
       serverId: string,
-      options?: {
-        from?: number;
-        size?: number;
-        query?: string;
-      }
+      searchQuery: SearchQuery = {}
     ): Promise<DataSource[]> => {
+      searchQuery.from ??= 0;
+      searchQuery.size ??= 1000;
+
       const body: Record<string, any> = {
         id: serverId,
-        from: options?.from || 0,
-        size: options?.size || 1000,
-      };
-      body.query = {
-        bool: {
-          must: [{ term: { enabled: true } }],
-        },
-      };
-
-      if (options?.query) {
-        body.query.bool.must.push({
-          query_string: {
-            fields: ["combined_fulltext"],
-            query: options?.query,
-            fuzziness: "AUTO",
-            fuzzy_prefix_length: 2,
-            fuzzy_max_expansions: 10,
-            fuzzy_transpositions: true,
-            allow_leading_wildcard: false,
+        queryParams: parseSearchQuery({
+          ...searchQuery,
+          fuzziness: 5,
+          filters: {
+            enabled: true,
           },
-        });
-      }
+        }),
+      };
 
       let response: any;
       if (isTauri) {
@@ -249,16 +219,18 @@ const InputControls = ({
                 onKeyPress={setIsDeepThinkActive}
               >
                 <Brain
-                  className={`size-3 ${isDeepThinkActive
-                    ? "text-[#0072FF] dark:text-[#0072FF]"
-                    : "text-[#333] dark:text-white"
-                    }`}
+                  className={`size-3 ${
+                    isDeepThinkActive
+                      ? "text-[#0072FF] dark:text-[#0072FF]"
+                      : "text-[#333] dark:text-white"
+                  }`}
                 />
               </VisibleKey>
               {isDeepThinkActive && (
                 <span
-                  className={`${isDeepThinkActive ? "text-[#0072FF]" : "dark:text-white"
-                    }`}
+                  className={`${
+                    isDeepThinkActive ? "text-[#0072FF]" : "dark:text-white"
+                  }`}
                 >
                   {t("search.input.deepThink")}
                 </span>
@@ -281,8 +253,8 @@ const InputControls = ({
           />
 
           {!(source?.datasource?.enabled && source?.datasource?.visible) &&
-            (source?.type !== "deep_think" || !source?.config?.visible) &&
-            !(source?.mcp_servers?.enabled && source?.mcp_servers?.visible) ? (
+          (source?.type !== "deep_think" || !source?.config?.visible) &&
+          !(source?.mcp_servers?.enabled && source?.mcp_servers?.visible) ? (
             <div className="px-[9px]">
               <Copyright />
             </div>

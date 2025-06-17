@@ -29,7 +29,7 @@ const PopoverInput = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
     }
   );
 
-  return <Input ref={inputRef} {...props} />;
+  return <Input autoCorrect="off" ref={inputRef} {...props} />;
 });
 
 export default PopoverInput;
