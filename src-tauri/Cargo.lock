@@ -845,6 +845,7 @@ version = "0.5.0"
 dependencies = [
  "anyhow",
  "applications",
+ "async-recursion",
  "async-trait",
  "base64 0.13.1",
  "borrowme",

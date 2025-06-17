@@ -7,16 +7,16 @@ pub mod file_system;
 pub mod pizza_engine_runtime;
 pub mod quick_ai_access;
 
-use anyhow::Context;
 use super::Extension;
+use crate::extension::built_in::application::{set_apps_hotkey, unset_apps_hotkey};
 use crate::extension::{
-    alter_extension_json_file, ExtensionBundleIdBorrowed,
-    PLUGIN_JSON_FILE_NAME,
+    alter_extension_json_file, ExtensionBundleIdBorrowed, PLUGIN_JSON_FILE_NAME,
 };
 use crate::{SearchSourceRegistry, GLOBAL_TAURI_APP_HANDLE};
+use anyhow::Context;
 use std::path::{Path, PathBuf};
 use std::sync::LazyLock;
-use tauri::Manager;
+use tauri::{AppHandle, Manager, Runtime};
 
 pub(crate) static BUILT_IN_EXTENSION_DIRECTORY: LazyLock<PathBuf> = LazyLock::new(|| {
     let mut resource_dir = GLOBAL_TAURI_APP_HANDLE
@@ -176,16 +176,18 @@ pub(crate) async fn list_built_in_extensions() -> Result<Vec<Extension>, String>
     Ok(built_in_extensions)
 }
 
-pub(super) async fn init_built_in_extension(
+pub(super) async fn init_built_in_extension<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
     extension: &Extension,
     search_source_registry: &SearchSourceRegistry,
-) {
+) -> Result<(), String> {
     log::trace!("initializing built-in extensions");
 
     if extension.id == application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME {
         search_source_registry
             .register_source(application::ApplicationSearchSource)
             .await;
+        set_apps_hotkey(&tauri_app_handle)?;
         log::debug!("built-in extension [{}] initialized", extension.id);
     }
 
@@ -196,6 +198,8 @@ pub(super) async fn init_built_in_extension(
             .await;
         log::debug!("built-in extension [{}] initialized", extension.id);
     }
+
+    Ok(())
 }
 
 pub(crate) fn is_extension_built_in(bundle_id: &ExtensionBundleIdBorrowed<'_>) -> bool {
@@ -221,6 +225,8 @@ pub(crate) async fn enable_built_in_extension(
         search_source_registry_tauri_state
             .register_source(application::ApplicationSearchSource)
             .await;
+        set_apps_hotkey(tauri_app_handle)?;
+
         alter_extension_json_file(
             &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
             bundle_id,
@@ -292,6 +298,8 @@ pub(crate) async fn disable_built_in_extension(
         search_source_registry_tauri_state
             .remove_source(bundle_id.extension_id)
             .await;
+        unset_apps_hotkey(tauri_app_handle)?;
+
         alter_extension_json_file(
             &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
             bundle_id,

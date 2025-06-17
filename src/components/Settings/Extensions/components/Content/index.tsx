@@ -1,4 +1,4 @@
-import { FC, MouseEvent, useContext } from "react";
+import { FC, MouseEvent, useContext, useMemo, useState } from "react";
 import { Extension, ExtensionId, ExtensionsContext } from "../..";
 import { useReactive } from "ahooks";
 import { ChevronRight, LoaderCircle } from "lucide-react";
@@ -27,6 +27,7 @@ interface ItemProps extends Extension {
   level: number;
   parentId?: ExtensionId;
   parentAuthor?: string;
+  parentDisabled?: boolean;
 }
 
 interface ItemState {
@@ -48,8 +49,10 @@ const Item: FC<ItemProps> = (props) => {
     level,
     platforms,
     author,
+    enabled,
     parentId,
     parentAuthor,
+    parentDisabled,
   } = props;
   const { rootState } = useContext(ExtensionsContext);
   const state = useReactive<ItemState>({
@@ -57,12 +60,8 @@ const Item: FC<ItemProps> = (props) => {
     expanded: false,
   });
   const { t } = useTranslation();
-  const disabledExtensions = useExtensionsStore((state) => {
-    return state.disabledExtensions;
-  });
-  const setDisabledExtensions = useExtensionsStore((state) => {
-    return state.setDisabledExtensions;
-  });
+  const { disabledExtensions, setDisabledExtensions } = useExtensionsStore();
+  const [selfDisabled, setSelfDisabled] = useState(!enabled);
 
   const bundleId = {
     author: author ?? parentAuthor,
@@ -116,14 +115,22 @@ const Item: FC<ItemProps> = (props) => {
     }
   };
 
-  const editable = () => {
+  const isDisabled = useMemo(() => {
+    if (level === 1) {
+      return selfDisabled;
+    }
+
+    return parentDisabled || selfDisabled;
+  }, [parentDisabled, selfDisabled]);
+
+  const editable = useMemo(() => {
     return (
       type !== "group" &&
       type !== "calculator" &&
       type !== "extension" &&
       type !== "ai_extension"
     );
-  };
+  }, [type]);
 
   const renderAlias = () => {
     const { alias } = props;
@@ -135,27 +142,33 @@ const Item: FC<ItemProps> = (props) => {
       });
     };
 
-    if (editable()) {
-      return (
-        <div
-          className="-translate-x-2"
-          onClick={(event) => {
-            event.stopPropagation();
-          }}
-        >
-          <SettingsInput
-            defaultValue={alias}
-            placeholder={t("settings.extensions.hits.addAlias")}
-            className="!w-[90%] !h-6 !border-transparent rounded-[4px]"
-            onChange={(value) => {
-              handleChange(String(value));
+    return (
+      <div
+        className={clsx({
+          "opacity-50 pointer-events-none": isDisabled,
+        })}
+      >
+        {editable ? (
+          <div
+            className="-translate-x-2"
+            onClick={(event) => {
+              event.stopPropagation();
             }}
-          />
-        </div>
-      );
-    }
-
-    return <>--</>;
+          >
+            <SettingsInput
+              defaultValue={alias}
+              placeholder={t("settings.extensions.hits.addAlias")}
+              className="!w-[90%] !h-6 !border-transparent rounded-[4px]"
+              onChange={(value) => {
+                handleChange(String(value));
+              }}
+            />
+          </div>
+        ) : (
+          <>--</>
+        )}
+      </div>
+    );
   };
 
   const renderHotkey = () => {
@@ -174,29 +187,33 @@ const Item: FC<ItemProps> = (props) => {
       }
     };
 
-    if (editable()) {
-      return (
-        <div
-          className="-translate-x-2"
-          onClick={(event) => {
-            event.stopPropagation();
-          }}
-        >
-          <Shortcut
-            value={hotkey}
-            placeholder={t("settings.extensions.hits.recordHotkey")}
-            onChange={handleChange}
-          />
-        </div>
-      );
-    }
-
-    return <>--</>;
+    return (
+      <div
+        className={clsx({
+          "opacity-50 pointer-events-none": isDisabled,
+        })}
+      >
+        {editable ? (
+          <div
+            className="-translate-x-2"
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            <Shortcut
+              value={hotkey}
+              placeholder={t("settings.extensions.hits.recordHotkey")}
+              onChange={handleChange}
+            />
+          </div>
+        ) : (
+          <>--</>
+        )}
+      </div>
+    );
   };
 
   const renderSwitch = () => {
-    const { enabled } = props;
-
     const handleChange = (value: boolean) => {
       if (value) {
         setDisabledExtensions(disabledExtensions.filter((item) => item !== id));
@@ -211,11 +228,25 @@ const Item: FC<ItemProps> = (props) => {
           bundleId,
         });
       }
+
+      setSelfDisabled(!value);
+
+      if (level === 1) {
+        const matched = rootState.extensions.find((item) => {
+          return item.id === id;
+        });
+
+        if (matched) {
+          matched.enabled = value;
+        }
+      }
     };
 
     return (
       <div
-        className="flex items-center justify-end"
+        className={clsx("flex items-center justify-end", {
+          "opacity-50 pointer-events-none": parentDisabled,
+        })}
         onClick={(event) => {
           event.stopPropagation();
         }}
@@ -231,11 +262,15 @@ const Item: FC<ItemProps> = (props) => {
   };
 
   const renderType = () => {
-    if (type === "ai_extension") {
-      return "AI Extension";
-    }
-
-    return startCase(type);
+    return (
+      <div
+        className={clsx({
+          "opacity-50 pointer-events-none": isDisabled,
+        })}
+      >
+        {type === "ai_extension" ? "AI Extension" : startCase(type)}
+      </div>
+    );
   };
 
   const renderContent = () => {
@@ -282,7 +317,11 @@ const Item: FC<ItemProps> = (props) => {
                 )}
               </div>
 
-              <div className="size-4">
+              <div
+                className={clsx("size-4", {
+                  "opacity-50 pointer-events-none": isDisabled,
+                })}
+              >
                 {icon.startsWith("font_") ? (
                   <FontIcon name={icon} className="size-full" />
                 ) : (
@@ -293,7 +332,13 @@ const Item: FC<ItemProps> = (props) => {
                 )}
               </div>
 
-              <div className="truncate">{title}</div>
+              <div
+                className={clsx("truncate", {
+                  "opacity-50 pointer-events-none": isDisabled,
+                })}
+              >
+                {title}
+              </div>
             </div>
 
             <div className="w-4/6 flex items-center text-[#999]">
@@ -314,6 +359,7 @@ const Item: FC<ItemProps> = (props) => {
                 level={level + 1}
                 parentId={id}
                 parentAuthor={author}
+                parentDisabled={!enabled}
               />
             );
           })}
