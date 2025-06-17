@@ -51,6 +51,7 @@ const AutoResizeTextarea = forwardRef<
       () => {
         const textarea = textareaRef.current;
         if (!textarea) return;
+        if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
         // Reset height to auto to get the correct scrollHeight
         textarea.style.height = "auto";

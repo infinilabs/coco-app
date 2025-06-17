@@ -113,6 +113,8 @@ const HistoryListContent: FC<HistoryListContentProps> = ({
   const scrollToElement = useCallback(
     (elementId: string, isKeyboardNav: boolean) => {
       if (!listRef.current) return;
+      if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
       const element = listRef.current.querySelector(`#${elementId}`);
       if (!element) return;
 
@@ -121,7 +123,7 @@ const HistoryListContent: FC<HistoryListContentProps> = ({
       const isVisible =
         rect.top >= 0 &&
         rect.bottom <=
-          (window.innerHeight || document.documentElement.clientHeight);
+        (window.innerHeight || document.documentElement.clientHeight);
 
       // Only scroll if element is not visible
       if (!isVisible) {
