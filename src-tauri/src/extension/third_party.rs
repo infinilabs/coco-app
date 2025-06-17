@@ -30,6 +30,7 @@ use tauri_plugin_global_shortcut::GlobalShortcutExt;
 use tauri_plugin_global_shortcut::ShortcutState;
 use tokio::fs::read_dir;
 use tokio::sync::RwLock;
+use tokio::sync::RwLockWriteGuard;
 
 pub(crate) static THIRD_PARTY_EXTENSIONS_DIRECTORY: LazyLock<PathBuf> = LazyLock::new(|| {
     let mut app_data_dir = GLOBAL_TAURI_APP_HANDLE
@@ -414,151 +415,39 @@ pub(super) struct ThirdPartyExtensionsSearchSource {
 }
 
 impl ThirdPartyExtensionsSearchSource {
-    pub(super) fn new(extensions: Vec<Extension>) -> Self {
-        Self {
-            inner: Arc::new(ThirdPartyExtensionsSearchSourceInner {
-                extensions: RwLock::new(extensions),
-            }),
-        }
-    }
-
-    #[named]
-    pub(super) async fn enable_extension(
-        &self,
+    /// Return a mutable reference to the extension specified by `bundle_id` if it exists.
+    fn get_extension_mut<'lock, 'extensions>(
+        extensions_write_lock: &'lock mut RwLockWriteGuard<'extensions, Vec<Extension>>,
         bundle_id: &ExtensionBundleIdBorrowed<'_>,
-    ) -> Result<(), String> {
-        let (parent_extension_id, _opt_sub_extension_id) =
-            (bundle_id.extension_id, bundle_id.sub_extension_id);
-
-        let mut extensions_write_lock = self.inner.extensions.write().await;
-        let opt_index = extensions_write_lock
-            .iter()
-            .position(|ext| ext.id == parent_extension_id);
-
-        let Some(index) = opt_index else {
-            return Err(format!(
-                "{} invoked with an extension that does not exist [{:?}]",
-                function_name!(),
-                bundle_id
-            ));
-        };
+    ) -> Option<&'lock mut Extension> {
+        let index = extensions_write_lock.iter().position(|ext| {
+            ext.id == bundle_id.extension_id && ext.author.as_deref() == bundle_id.author
+        })?;
 
         let extension = extensions_write_lock
             .get_mut(index)
             .expect("just checked this extension exists");
 
-        let update_extension = |ext: &mut Extension| -> Result<(), String> {
-            if ext.enabled {
-                return Err(format!(
-                    "{} invoked with an extension that is already enabled [{:?}]",
-                    function_name!(),
-                    bundle_id
-                ));
-            }
-            ext.enabled = true;
-
-            Ok(())
+        let Some(sub_extension_id) = bundle_id.sub_extension_id else {
+            return Some(extension);
         };
 
-        extension.modify(bundle_id, update_extension)?;
-        alter_extension_json_file(
-            &THIRD_PARTY_EXTENSIONS_DIRECTORY,
-            bundle_id,
-            update_extension,
-        )?;
-
-        Ok(())
+        extension.get_sub_extension_mut(sub_extension_id)
     }
 
-    #[named]
-    pub(super) async fn disable_extension(
-        &self,
-        bundle_id: &ExtensionBundleIdBorrowed<'_>,
-    ) -> Result<(), String> {
-        let mut extensions_write_lock = self.inner.extensions.write().await;
-        let opt_index = extensions_write_lock
-            .iter()
-            .position(|ext| ext.id == bundle_id.extension_id);
-
-        let Some(index) = opt_index else {
-            return Err(format!(
-                "{} invoked with an extension that does not exist [{:?}]",
-                function_name!(),
-                bundle_id
-            ));
-        };
-
-        let extension = extensions_write_lock
-            .get_mut(index)
-            .expect("just checked this extension exists");
-
-        let update_extension = |ext: &mut Extension| -> Result<(), String> {
-            if !ext.enabled {
-                return Err(format!(
-                    "{} invoked with an extension that is already enabled [{:?}]",
-                    function_name!(),
-                    bundle_id
-                ));
-            }
-            ext.enabled = false;
-
-            Ok(())
-        };
-
-        extension.modify(bundle_id, update_extension)?;
-        alter_extension_json_file(
-            &THIRD_PARTY_EXTENSIONS_DIRECTORY,
-            bundle_id,
-            update_extension,
-        )?;
-
-        Ok(())
-    }
-
-    #[named]
-    pub(super) async fn set_extension_alias(
-        &self,
-        bundle_id: &ExtensionBundleIdBorrowed<'_>,
-        alias: &str,
-    ) -> Result<(), String> {
-        let mut extensions_write_lock = self.inner.extensions.write().await;
-        let opt_index = extensions_write_lock
-            .iter()
-            .position(|ext| ext.id == bundle_id.extension_id);
-
-        let Some(index) = opt_index else {
-            log::warn!(
-                "{} invoked with an extension that does not exist [{:?}]",
-                function_name!(),
-                bundle_id
-            );
-            return Ok(());
-        };
-
-        let extension = extensions_write_lock
-            .get_mut(index)
-            .expect("just checked this extension exists");
-
-        let update_extension = |ext: &mut Extension| -> Result<(), String> {
-            ext.alias = Some(alias.to_string());
-            Ok(())
-        };
-
-        extension.modify(bundle_id, update_extension)?;
-        alter_extension_json_file(
-            &THIRD_PARTY_EXTENSIONS_DIRECTORY,
-            bundle_id,
-            update_extension,
-        )?;
-
-        Ok(())
-    }
-
-    pub(super) async fn restore_extensions_hotkey(&self) -> Result<(), String> {
-        fn set_up_hotkey<R: tauri::Runtime>(
-            tauri_app_handle: &tauri::AppHandle<R>,
-            extension: &Extension,
-        ) -> Result<(), String> {
+    /// Difference between this function and `enable_extension()`
+    ///
+    /// This function does the actual job, i.e., to enable/activate the extension.
+    /// `enable_extension()` needs to do 1 extra thing, update the enabled state.
+    ///
+    /// Note that when you enable a parent extension, its **enabled** children extensions
+    /// should also be enabled.
+    #[async_recursion::async_recursion]
+    async fn _enable_extension(extension: &Extension) -> Result<(), String> {
+        if extension.supports_alias_hotkey() {
+            let tauri_app_handle = GLOBAL_TAURI_APP_HANDLE
+                .get()
+                .expect("global tauri app handle not set");
             if let Some(ref hotkey) = extension.hotkey {
                 let on_opened = extension.on_opened().unwrap_or_else(|| panic!( "extension has hotkey, but on_open() returns None, extension ID [{}], extension type [{:?}]", extension.id, extension.r#type));
 
@@ -584,37 +473,199 @@ impl ThirdPartyExtensionsSearchSource {
                     })
                     .map_err(|e| e.to_string())?;
             }
-
-            Ok(())
         }
 
-        let extensions_read_lock = self.inner.extensions.read().await;
-        let tauri_app_handle = GLOBAL_TAURI_APP_HANDLE
-            .get()
-            .expect("global tauri app handle not set");
-
-        for extension in extensions_read_lock.iter() {
-            if extension.r#type.contains_sub_items() {
-                if let Some(commands) = &extension.commands {
-                    for command in commands.iter() {
-                        set_up_hotkey(tauri_app_handle, command)?;
-                    }
+        // We also need to enable its **enabled** children extensions.
+        if extension.r#type.contains_sub_items() {
+            if let Some(commands) = &extension.commands {
+                for command in commands.iter().filter(|ext| ext.enabled) {
+                    Self::_enable_extension(command).await?;
                 }
-
-                if let Some(scripts) = &extension.scripts {
-                    for script in scripts.iter() {
-                        set_up_hotkey(tauri_app_handle, script)?;
-                    }
-                }
-
-                if let Some(quick_links) = &extension.quicklinks {
-                    for quick_link in quick_links.iter() {
-                        set_up_hotkey(tauri_app_handle, quick_link)?;
-                    }
-                }
-            } else {
-                set_up_hotkey(tauri_app_handle, extension)?;
             }
+
+            if let Some(scripts) = &extension.scripts {
+                for script in scripts.iter().filter(|ext| ext.enabled) {
+                    Self::_enable_extension(script).await?;
+                }
+            }
+
+            if let Some(quicklinks) = &extension.quicklinks {
+                for quicklink in quicklinks.iter().filter(|ext| ext.enabled) {
+                    Self::_enable_extension(quicklink).await?;
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Difference between this function and `disable_extension()`
+    ///
+    /// See the doc of `_enable_extension()`.
+    ///
+    /// Note that when you disable a parent extension, its **enabled** children extensions
+    /// should also be disabled.
+    #[async_recursion::async_recursion]
+    async fn _disable_extension(extension: &Extension) -> Result<(), String> {
+        if let Some(ref hotkey) = extension.hotkey {
+            let tauri_app_handle = GLOBAL_TAURI_APP_HANDLE
+                .get()
+                .expect("global tauri app handle not set");
+
+            tauri_app_handle
+                .global_shortcut()
+                .unregister(hotkey.as_str())
+                .map_err(|e| e.to_string())?;
+        }
+
+        // We also need to disable its **enabled** children extensions.
+        if extension.r#type.contains_sub_items() {
+            if let Some(commands) = &extension.commands {
+                for command in commands.iter().filter(|ext| ext.enabled) {
+                    Self::_disable_extension(command).await?;
+                }
+            }
+
+            if let Some(scripts) = &extension.scripts {
+                for script in scripts.iter().filter(|ext| ext.enabled) {
+                    Self::_disable_extension(script).await?;
+                }
+            }
+
+            if let Some(quicklinks) = &extension.quicklinks {
+                for quicklink in quicklinks.iter().filter(|ext| ext.enabled) {
+                    Self::_disable_extension(quicklink).await?;
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    pub(super) fn new(extensions: Vec<Extension>) -> Self {
+        Self {
+            inner: Arc::new(ThirdPartyExtensionsSearchSourceInner {
+                extensions: RwLock::new(extensions),
+            }),
+        }
+    }
+
+    #[named]
+    pub(super) async fn enable_extension(
+        &self,
+        bundle_id: &ExtensionBundleIdBorrowed<'_>,
+    ) -> Result<(), String> {
+        let mut extensions_write_lock = self.inner.extensions.write().await;
+        let extension =
+            Self::get_extension_mut(&mut extensions_write_lock, bundle_id).ok_or_else(|| {
+                format!(
+                    "{} invoked with an extension that does not exist [{:?}]",
+                    function_name!(),
+                    bundle_id
+                )
+            })?;
+
+        let update_extension = |ext: &mut Extension| -> Result<(), String> {
+            if ext.enabled {
+                return Err(format!(
+                    "{} invoked with an extension that is already enabled [{:?}]",
+                    function_name!(),
+                    bundle_id
+                ));
+            }
+            ext.enabled = true;
+
+            Ok(())
+        };
+
+        update_extension(extension)?;
+        alter_extension_json_file(
+            &THIRD_PARTY_EXTENSIONS_DIRECTORY,
+            bundle_id,
+            update_extension,
+        )?;
+        Self::_enable_extension(extension).await?;
+
+        Ok(())
+    }
+
+    #[named]
+    pub(super) async fn disable_extension(
+        &self,
+        bundle_id: &ExtensionBundleIdBorrowed<'_>,
+    ) -> Result<(), String> {
+        let mut extensions_write_lock = self.inner.extensions.write().await;
+        let extension =
+            Self::get_extension_mut(&mut extensions_write_lock, bundle_id).ok_or_else(|| {
+                format!(
+                    "{} invoked with an extension that does not exist [{:?}]",
+                    function_name!(),
+                    bundle_id
+                )
+            })?;
+
+        let update_extension = |ext: &mut Extension| -> Result<(), String> {
+            if !ext.enabled {
+                return Err(format!(
+                    "{} invoked with an extension that is already enabled [{:?}]",
+                    function_name!(),
+                    bundle_id
+                ));
+            }
+            ext.enabled = false;
+
+            Ok(())
+        };
+
+        update_extension(extension)?;
+        alter_extension_json_file(
+            &THIRD_PARTY_EXTENSIONS_DIRECTORY,
+            bundle_id,
+            update_extension,
+        )?;
+        Self::_disable_extension(extension).await?;
+
+        Ok(())
+    }
+
+    #[named]
+    pub(super) async fn set_extension_alias(
+        &self,
+        bundle_id: &ExtensionBundleIdBorrowed<'_>,
+        alias: &str,
+    ) -> Result<(), String> {
+        let mut extensions_write_lock = self.inner.extensions.write().await;
+        let extension =
+            Self::get_extension_mut(&mut extensions_write_lock, bundle_id).ok_or_else(|| {
+                format!(
+                    "{} invoked with an extension that does not exist [{:?}]",
+                    function_name!(),
+                    bundle_id
+                )
+            })?;
+
+        let update_extension = |ext: &mut Extension| -> Result<(), String> {
+            ext.alias = Some(alias.to_string());
+            Ok(())
+        };
+
+        update_extension(extension)?;
+        alter_extension_json_file(
+            &THIRD_PARTY_EXTENSIONS_DIRECTORY,
+            bundle_id,
+            update_extension,
+        )?;
+
+        Ok(())
+    }
+
+    /// Initialize the third-party extensions, which literally means 
+    /// enabling/activating the enabled extensions.
+    pub(super) async fn init(&self) -> Result<(), String> {
+        let extensions_read_lock = self.inner.extensions.read().await;
+
+        for extension in extensions_read_lock.iter().filter(|ext| ext.enabled) {
+            Self::_enable_extension(extension).await?;
         }
 
         Ok(())
@@ -629,21 +680,14 @@ impl ThirdPartyExtensionsSearchSource {
         self.unregister_extension_hotkey(bundle_id).await?;
 
         let mut extensions_write_lock = self.inner.extensions.write().await;
-        let opt_index = extensions_write_lock
-            .iter()
-            .position(|ext| ext.id == bundle_id.extension_id);
-
-        let Some(index) = opt_index else {
-            return Err(format!(
-                "{} invoked with an extension that does not exist [{:?}]",
-                function_name!(),
-                bundle_id
-            ));
-        };
-
-        let mut extension = extensions_write_lock
-            .get_mut(index)
-            .expect("just checked this extension exists");
+        let extension =
+            Self::get_extension_mut(&mut extensions_write_lock, bundle_id).ok_or_else(|| {
+                format!(
+                    "{} invoked with an extension that does not exist [{:?}]",
+                    function_name!(),
+                    bundle_id
+                )
+            })?;
 
         let update_extension = |ext: &mut Extension| -> Result<(), String> {
             ext.hotkey = Some(hotkey.into());
@@ -651,24 +695,12 @@ impl ThirdPartyExtensionsSearchSource {
         };
 
         // Update extension (memory and file)
-        extension.modify(bundle_id, update_extension)?;
+        update_extension(extension)?;
         alter_extension_json_file(
             &THIRD_PARTY_EXTENSIONS_DIRECTORY,
             bundle_id,
             update_extension,
         )?;
-
-        // To make borrow checker happy
-        let extension_dbg_string = format!("{:?}", extension);
-        extension = match extension.get_extension_mut(bundle_id) {
-            Some(ext) => ext,
-            None => {
-                panic!(
-                    "extension [{:?}] should be found in {}",
-                    bundle_id, extension_dbg_string
-                )
-            }
-        };
 
         // Set hotkey
         let tauri_app_handle = GLOBAL_TAURI_APP_HANDLE
@@ -710,28 +742,14 @@ impl ThirdPartyExtensionsSearchSource {
         bundle_id: &ExtensionBundleIdBorrowed<'_>,
     ) -> Result<(), String> {
         let mut extensions_write_lock = self.inner.extensions.write().await;
-        let opt_index = extensions_write_lock
-            .iter()
-            .position(|ext| ext.id == bundle_id.extension_id);
-
-        let Some(index) = opt_index else {
-            return Err(format!(
-                "{} invoked with an extension that does not exist [{:?}]",
-                function_name!(),
-                bundle_id
-            ));
-        };
-
-        let parent_extension = extensions_write_lock
-            .get_mut(index)
-            .expect("just checked this extension exists");
-        let Some(extension) = parent_extension.get_extension_mut(bundle_id) else {
-            return Err(format!(
-                "{} invoked with an extension that does not exist [{:?}]",
-                function_name!(),
-                bundle_id
-            ));
-        };
+        let extension =
+            Self::get_extension_mut(&mut extensions_write_lock, bundle_id).ok_or_else(|| {
+                format!(
+                    "{} invoked with an extension that does not exist [{:?}]",
+                    function_name!(),
+                    bundle_id
+                )
+            })?;
 
         let Some(hotkey) = extension.hotkey.clone() else {
             log::warn!(
@@ -746,7 +764,7 @@ impl ThirdPartyExtensionsSearchSource {
             Ok(())
         };
 
-        parent_extension.modify(bundle_id, update_extension)?;
+        update_extension(extension)?;
         alter_extension_json_file(
             &THIRD_PARTY_EXTENSIONS_DIRECTORY,
             bundle_id,
@@ -770,62 +788,42 @@ impl ThirdPartyExtensionsSearchSource {
         &self,
         bundle_id: &ExtensionBundleIdBorrowed<'_>,
     ) -> Result<bool, String> {
-        let (extension_id, opt_sub_extension_id) =
-            (bundle_id.extension_id, bundle_id.sub_extension_id);
         let extensions_read_lock = self.inner.extensions.read().await;
-        let opt_index = extensions_read_lock
-            .iter()
-            .position(|ext| ext.id == extension_id);
 
-        let Some(index) = opt_index else {
-            return Err(format!(
-                "{} invoked with an extension that does not exist [{:?}]",
-                function_name!(),
-                bundle_id
-            ));
+        let root_extension = extensions_read_lock
+            .iter()
+            .find(|root_ext| {
+                root_ext.id == bundle_id.extension_id
+                    && root_ext.author.as_deref() == bundle_id.author
+            })
+            .ok_or_else(|| {
+                format!(
+                    "{} invoked with an extension that does not exist [{:?}]",
+                    function_name!(),
+                    bundle_id
+                )
+            })?;
+
+        let Some(sub_extension_id) = bundle_id.sub_extension_id else {
+            // bundle_id points to a root extension, so our job is done.
+            return Ok(root_extension.enabled);
         };
 
-        let extension = extensions_read_lock
-            .get(index)
-            .expect("just checked this extension exists");
+        let sub_extension = root_extension
+            .get_sub_extension(sub_extension_id)
+            .ok_or_else(|| {
+                format!(
+                    "{} invoked with an extension that does not exist [{:?}]",
+                    function_name!(),
+                    bundle_id
+                )
+            })?;
 
-        if let Some(sub_extension_id) = opt_sub_extension_id {
-            // For a sub-extension, it is enabled iff:
-            //
-            // 1. Its parent extension is enabled, and
-            // 2. It is enabled
-            if !extension.enabled {
-                return Ok(false);
-            }
-
-            if let Some(ref commands) = extension.commands {
-                if let Some(sub_ext) = commands.iter().find(|cmd| cmd.id == sub_extension_id) {
-                    return Ok(sub_ext.enabled);
-                }
-            }
-            if let Some(ref scripts) = extension.scripts {
-                if let Some(sub_ext) = scripts.iter().find(|script| script.id == sub_extension_id) {
-                    return Ok(sub_ext.enabled);
-                }
-            }
-            if let Some(ref commands) = extension.commands {
-                if let Some(sub_ext) = commands
-                    .iter()
-                    .find(|quick_link| quick_link.id == sub_extension_id)
-                {
-                    return Ok(sub_ext.enabled);
-                }
-            }
-
-            Err(format!(
-                "{} invoked with a sub-extension that does not exist [{}/{}]",
-                function_name!(),
-                extension_id,
-                sub_extension_id
-            ))
-        } else {
-            Ok(extension.enabled)
-        }
+        // For a sub-extension, it is enabled iff:
+        //
+        // 1. Its parent extension is enabled, and
+        // 2. It is enabled
+        Ok(root_extension.enabled && sub_extension.enabled)
     }
 }
 

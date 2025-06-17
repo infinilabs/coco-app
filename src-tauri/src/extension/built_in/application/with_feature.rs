@@ -428,7 +428,9 @@ impl Task for IndexNewApplicationsTask {
 pub struct ApplicationSearchSource;
 
 impl ApplicationSearchSource {
-    pub async fn init<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), String> {
+    pub async fn prepare_index_and_store<R: Runtime>(
+        app_handle: AppHandle<R>,
+    ) -> Result<(), String> {
         let (tx, rx) = tokio::sync::oneshot::channel();
         let index_applications_task = IndexAllApplicationsTask {
             tauri_app_handle: app_handle.clone(),
@@ -471,8 +473,6 @@ impl ApplicationSearchSource {
             disabled_app_list_and_search_path_store
                 .set(TAURI_STORE_KEY_SEARCH_PATH, default_search_path);
         }
-
-        register_app_hotkey_upon_start(app_handle.clone())?;
 
         Ok(())
     }
@@ -638,14 +638,43 @@ fn app_hotkey_handler<R: Runtime>(
     }
 }
 
-fn register_app_hotkey_upon_start<R: Runtime>(
-    tauri_app_handle: AppHandle<R>,
-) -> Result<(), String> {
+/// For all the applications, if it is enabled & has hotkey set, then set it up.
+pub(crate) fn set_apps_hotkey<R: Runtime>(tauri_app_handle: &AppHandle<R>) -> Result<(), String> {
     let app_hotkey_store = tauri_app_handle
         .store(TAURI_STORE_APP_HOTKEY)
         .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_HOTKEY));
 
+    let disabled_app_list = get_disabled_app_list(&tauri_app_handle);
+
     for (app_path, hotkey) in app_hotkey_store.entries() {
+        if disabled_app_list.contains(&app_path) {
+            continue;
+        }
+
+        let hotkey = match hotkey {
+            Json::String(str) => str,
+            _ => unreachable!("hotkey should be stored in a string"),
+        };
+
+        set_app_hotkey(&tauri_app_handle, &app_path, &hotkey)?;
+    }
+
+    Ok(())
+}
+
+/// For all the applications, if it is enabled & has hotkey set, then unset it.
+pub(crate) fn unset_apps_hotkey<R: Runtime>(tauri_app_handle: &AppHandle<R>) -> Result<(), String> {
+    let app_hotkey_store = tauri_app_handle
+        .store(TAURI_STORE_APP_HOTKEY)
+        .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_HOTKEY));
+
+    let disabled_app_list = get_disabled_app_list(&tauri_app_handle);
+
+    for (app_path, hotkey) in app_hotkey_store.entries() {
+        if disabled_app_list.contains(&app_path) {
+            continue;
+        }
+
         let hotkey = match hotkey {
             Json::String(str) => str,
             _ => unreachable!("hotkey should be stored in a string"),
@@ -653,11 +682,23 @@ fn register_app_hotkey_upon_start<R: Runtime>(
 
         tauri_app_handle
             .global_shortcut()
-            .on_shortcut(hotkey.as_str(), app_hotkey_handler(app_path))
+            .unregister(hotkey.as_str())
             .map_err(|e| e.to_string())?;
     }
 
     Ok(())
+}
+
+/// Set the hotkey but won't persist this settings change.
+pub(crate) fn set_app_hotkey<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
+    app_path: &str,
+    hotkey: &str,
+) -> Result<(), String> {
+    tauri_app_handle
+        .global_shortcut()
+        .on_shortcut(hotkey, app_hotkey_handler(app_path.into()))
+        .map_err(|e| e.to_string())
 }
 
 pub fn register_app_hotkey<R: Runtime>(
@@ -671,13 +712,9 @@ pub fn register_app_hotkey<R: Runtime>(
     let app_hotkey_store = tauri_app_handle
         .store(TAURI_STORE_APP_HOTKEY)
         .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_HOTKEY));
-
     app_hotkey_store.set(app_path, hotkey);
 
-    tauri_app_handle
-        .global_shortcut()
-        .on_shortcut(hotkey, app_hotkey_handler(app_path.into()))
-        .map_err(|e| e.to_string())?;
+    set_app_hotkey(tauri_app_handle, app_path, hotkey)?;
 
     Ok(())
 }
@@ -789,6 +826,21 @@ pub fn disable_app_search<R: Runtime>(
 
     store.set(TAURI_STORE_KEY_DISABLED_APP_LIST, disabled_app_list);
 
+    let app_hotkey_store = tauri_app_handle
+        .store(TAURI_STORE_APP_HOTKEY)
+        .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_HOTKEY));
+    let opt_hokey = app_hotkey_store.get(app_path).map(|json| match json {
+        Json::String(s) => s,
+        _ => panic!("hotkey should be stored in a string"),
+    });
+
+    if let Some(hotkey) = opt_hokey {
+        tauri_app_handle
+            .global_shortcut()
+            .unregister(hotkey.as_str())
+            .map_err(|e| e.to_string())?;
+    }
+
     Ok(())
 }
 
@@ -814,6 +866,18 @@ pub fn enable_app_search<R: Runtime>(
         Some(index) => {
             disabled_app_list.remove(index);
             store.set(TAURI_STORE_KEY_DISABLED_APP_LIST, disabled_app_list);
+
+            let app_hotkey_store = tauri_app_handle
+                .store(TAURI_STORE_APP_HOTKEY)
+                .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_HOTKEY));
+            let opt_hokey = app_hotkey_store.get(app_path).map(|json| match json {
+                Json::String(s) => s,
+                _ => panic!("hotkey should be stored in a string"),
+            });
+
+            if let Some(hotkey) = opt_hokey {
+                set_app_hotkey(tauri_app_handle, app_path, &hotkey)?;
+            }
 
             Ok(())
         }
