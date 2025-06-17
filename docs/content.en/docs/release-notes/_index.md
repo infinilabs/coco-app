@@ -18,6 +18,7 @@ Information about release notes of Coco Server is provided here.
 ### ✈️ Improvements
 
 - chore: continue to chat page display #690
+- chore: improve server list selection with enter key #692
 
 ## 0.5.0 (2025-06-13)
 
