@@ -9,7 +9,7 @@ import { isMac } from "@/utils/platform";
 import { useAppStore } from "@/stores/appStore";
 import { useUpdateStore } from "@/stores/updateStore";
 import platformAdapter from "@/utils/platformAdapter";
-import { show_coco, show_settings } from "@/commands";
+import { show_coco, show_settings, show_check } from "@/commands";
 
 const TRAY_ID = "COCO_TRAY";
 
@@ -72,6 +72,7 @@ export const useTray = () => {
             useUpdateStore.getState().setUpdateInfo(update);
             useUpdateStore.getState().setVisible(true);
           }
+          show_check();
         },
       }),
       PredefinedMenuItem.new({ item: "Separator" }),

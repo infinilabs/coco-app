@@ -464,7 +464,7 @@
     "force_description2": "请安装最新版本后继续使用。",
     "releaseNotes": "更新日志",
     "button": {
-      "download": "下载"
+      "install": "安装"
     },
     "skip_version": "跳过此版本"
   },

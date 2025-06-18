@@ -12,7 +12,12 @@ const WINDOW_BLUR_EVENT: &str = "tauri://blur";
 const WINDOW_MOVED_EVENT: &str = "tauri://move";
 const WINDOW_RESIZED_EVENT: &str = "tauri://resize";
 
-pub fn platform(_app: &mut App, main_window: WebviewWindow, _settings_window: WebviewWindow) {
+pub fn platform(
+    _app: &mut App,
+    main_window: WebviewWindow,
+    _settings_window: WebviewWindow,
+    _check_window: WebviewWindow,
+) {
     // Convert ns_window to ns_panel
     let panel = main_window.to_panel().unwrap();
 
