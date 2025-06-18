@@ -338,6 +338,9 @@ pub async fn refresh_coco_server_info<R: Runtime>(
     let mut updated_server: Server = serde_json::from_str(&body)
         .map_err(|e| format!("Failed to deserialize the response: {}", e))?;
 
+    // Mark server as online
+    let _ = mark_server_as_online(app_handle.clone(), &id).await;
+
     // Restore local state
     updated_server.id = id.clone();
     updated_server.builtin = is_builtin;
@@ -473,6 +476,21 @@ pub async fn try_register_server_to_search_source(
         let source = CocoSearchSource::new(server.clone());
         registry.register_source(source).await;
     }
+}
+
+#[tauri::command]
+pub async fn mark_server_as_online<R: Runtime>(
+    app_handle: AppHandle<R>, id: &str) -> Result<(), ()> {
+    // println!("server_is_offline: {}", id);
+    let server = get_server_by_id(id);
+    if let Some(mut server) = server {
+        server.available = true;
+        server.health = None;
+        save_server(&server);
+
+        try_register_server_to_search_source(app_handle.clone(), &server).await;
+    }
+    Ok(())
 }
 
 #[tauri::command]
