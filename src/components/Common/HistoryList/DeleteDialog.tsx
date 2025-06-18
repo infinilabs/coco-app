@@ -1,4 +1,5 @@
 import {
+  Button,
   Description,
   Dialog,
   DialogPanel,
@@ -8,6 +9,7 @@ import { useTranslation } from "react-i18next";
 
 import VisibleKey from "@/components/Common/VisibleKey";
 import { Chat } from "@/types/chat";
+import { KeyboardEvent } from "react";
 
 interface DeleteDialogProps {
   isOpen: boolean;
@@ -23,6 +25,15 @@ const DeleteDialog = ({
   handleRemove,
 }: DeleteDialogProps) => {
   const { t } = useTranslation();
+
+  const handleEnter = (event: KeyboardEvent, cb: () => void) => {
+    if (event.code !== "Enter") return;
+
+    event.stopPropagation();
+    event.preventDefault();
+
+    cb();
+  };
 
   return (
     <Dialog
@@ -56,12 +67,18 @@ const DeleteDialog = ({
               shortcutClassName="left-[unset] right-0"
               onKeyPress={() => setIsOpen(false)}
             >
-              <button
-                className="h-8 px-4 text-sm text-[#666666] bg-[#F8F9FA] dark:text-white dark:bg-[#202126] border border-[#E6E6E6] dark:border-white/10 rounded-lg"
+              <Button
+                autoFocus
+                className="h-8 px-4 text-sm text-[#666666] bg-[#F8F9FA] dark:text-white dark:bg-[#202126] border border-[#E6E6E6] dark:border-white/10 rounded-lg focus:border-black/30 dark:focus:border-white/50"
                 onClick={() => setIsOpen(false)}
+                onKeyDown={(event) => {
+                  handleEnter(event, () => {
+                    setIsOpen(false);
+                  });
+                }}
               >
                 {t("history_list.delete_modal.button.cancel")}
-              </button>
+              </Button>
             </VisibleKey>
 
             <VisibleKey
@@ -69,12 +86,15 @@ const DeleteDialog = ({
               shortcutClassName="left-[unset] right-0"
               onKeyPress={handleRemove}
             >
-              <button
-                className="h-8 px-4 text-sm text-white bg-[#EF4444] rounded-lg"
+              <Button
+                className="h-8 px-4 text-sm text-white bg-[#EF4444] rounded-lg border border-[#EF4444] focus:border-black/30 dark:focus:border-white/50"
                 onClick={handleRemove}
+                onKeyDown={(event) => {
+                  handleEnter(event, handleRemove);
+                }}
               >
                 {t("history_list.delete_modal.button.delete")}
-              </button>
+              </Button>
             </VisibleKey>
           </div>
         </DialogPanel>
