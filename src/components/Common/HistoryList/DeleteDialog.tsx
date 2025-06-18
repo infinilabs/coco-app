@@ -69,7 +69,7 @@ const DeleteDialog = ({
             >
               <Button
                 autoFocus
-                className="h-8 px-4 text-sm text-[#666666] bg-[#F8F9FA] dark:text-white dark:bg-[#202126] border border-[#E6E6E6] dark:border-white/10 rounded-lg focus:border-black/30 dark:focus:border-white/50"
+                className="h-8 px-4 text-sm text-[#666666] bg-[#F8F9FA] dark:text-white dark:bg-[#202126] border border-[#E6E6E6] dark:border-white/10 rounded-lg focus:border-black/30 dark:focus:border-white/50 transition"
                 onClick={() => setIsOpen(false)}
                 onKeyDown={(event) => {
                   handleEnter(event, () => {
@@ -87,7 +87,7 @@ const DeleteDialog = ({
               onKeyPress={handleRemove}
             >
               <Button
-                className="h-8 px-4 text-sm text-white bg-[#EF4444] rounded-lg border border-[#EF4444] focus:border-black/30 dark:focus:border-white/50"
+                className="h-8 px-4 text-sm text-white bg-[#EF4444] rounded-lg border border-[#EF4444] focus:border-black/30 dark:focus:border-white/50 transition"
                 onClick={handleRemove}
                 onKeyDown={(event) => {
                   handleEnter(event, handleRemove);
