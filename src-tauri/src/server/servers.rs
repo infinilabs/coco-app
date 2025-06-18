@@ -287,7 +287,9 @@ const COCO_SERVER_TOKENS: &str = "coco_server_tokens";
 pub async fn refresh_all_coco_server_info<R: Runtime>(app_handle: AppHandle<R>) {
     let servers = get_all_servers();
     for server in servers {
-        let _ = refresh_coco_server_info(app_handle.clone(), server.id.clone()).await;
+        if server.profile.is_some() {
+            let _ = refresh_coco_server_info(app_handle.clone(), server.id.clone()).await;
+        }
     }
 }
 
@@ -315,9 +317,7 @@ pub async fn refresh_coco_server_info<R: Runtime>(
     // Send request to fetch updated server info
     let response = HttpClient::get(&id, "/provider/_info", None)
         .await
-        .map_err(|e| {
-            format!("Failed to contact the server: {}", e)
-        });
+        .map_err(|e| format!("Failed to contact the server: {}", e));
 
     if response.is_err() {
         let _ = mark_server_as_offline(app_handle, &id).await;
@@ -477,7 +477,9 @@ pub async fn try_register_server_to_search_source(
 
 #[tauri::command]
 pub async fn mark_server_as_offline<R: Runtime>(
-    app_handle: AppHandle<R>, id: &str) -> Result<(), ()> {
+    app_handle: AppHandle<R>,
+    id: &str,
+) -> Result<(), ()> {
     // println!("server_is_offline: {}", id);
     let server = get_server_by_id(id);
     if let Some(mut server) = server {
