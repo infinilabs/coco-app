@@ -13,6 +13,8 @@ Information about release notes of Coco Server is provided here.
 
 ### 🚀 Features
 
+- feat: add Check for Updates #701
+
 ### 🐛 Bug fix
 
 - fix: quick ai state synchronous #693
