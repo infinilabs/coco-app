@@ -1,4 +1,5 @@
 pub(crate) mod built_in;
+pub(crate) mod store;
 mod third_party;
 
 use crate::common::document::OnOpened;
@@ -451,7 +452,7 @@ pub(crate) async fn is_extension_enabled(bundle_id: ExtensionBundleId) -> Result
     third_party::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE.get().expect("global third party search source not set, looks like init_extensions() has not been executed").is_extension_enabled(&bundle_id_borrowed).await
 }
 
-fn canonicalize_relative_icon_path(
+pub(crate) fn canonicalize_relative_icon_path(
     extension_dir: &Path,
     extension: &mut Extension,
 ) -> Result<(), String> {

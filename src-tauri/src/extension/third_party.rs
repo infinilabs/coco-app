@@ -659,7 +659,7 @@ impl ThirdPartyExtensionsSearchSource {
         Ok(())
     }
 
-    /// Initialize the third-party extensions, which literally means 
+    /// Initialize the third-party extensions, which literally means
     /// enabling/activating the enabled extensions.
     pub(super) async fn init(&self) -> Result<(), String> {
         let extensions_read_lock = self.inner.extensions.read().await;
@@ -824,6 +824,48 @@ impl ThirdPartyExtensionsSearchSource {
         // 1. Its parent extension is enabled, and
         // 2. It is enabled
         Ok(root_extension.enabled && sub_extension.enabled)
+    }
+
+    pub(crate) async fn extension_exists(&self, author: &str, extension_id: &str) -> bool {
+        let read_lock_guard = self.inner.extensions.read().await;
+        read_lock_guard
+            .iter()
+            .any(|ext| ext.author.as_deref() == Some(author) && ext.id == extension_id)
+    }
+
+    pub(crate) async fn add_extension(&self, extension: Extension) {
+        assert!(
+            extension.author.is_some(),
+            "loaded third party extension should have its author set"
+        );
+
+        let mut write_lock_guard = self.inner.extensions.write().await;
+        if write_lock_guard
+            .iter()
+            .any(|ext| ext.author == extension.author && ext.id == extension.id)
+        {
+            panic!(
+                "extension [{}/{}] already installed",
+                extension.author.as_ref().expect("just checked it is Some"),
+                extension.id
+            );
+        }
+        write_lock_guard.push(extension);
+    }
+
+    pub(crate) async fn remove_extension(&self, author: &str, extension_id: &str) {
+        let mut write_lock_guard = self.inner.extensions.write().await;
+        let Some(index) = write_lock_guard
+            .iter()
+            .position(|ext| ext.author.as_deref() == Some(author) && ext.id == extension_id)
+        else {
+            panic!(
+                "extension [{}/{}] not installed, but we are trying to remove it",
+                author, extension_id
+            );
+        };
+
+        write_lock_guard.remove(index);
     }
 }
 
