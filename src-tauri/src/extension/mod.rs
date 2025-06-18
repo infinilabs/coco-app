@@ -194,77 +194,34 @@ impl Extension {
         }
     }
 
-    /// Perform `how` against the extension specified by `extension_id`.
-    ///
-    /// Please note that `bundle` could point to a sub extension if `sub_extension_id` is Some.
-    pub(crate) fn modify(
-        &mut self,
-        bundle_id: &ExtensionBundleIdBorrowed<'_>,
-        how: impl FnOnce(&mut Self) -> Result<(), String>,
-    ) -> Result<(), String> {
-        let (parent_extension_id, opt_sub_extension_id) =
-            (bundle_id.extension_id, bundle_id.sub_extension_id);
-        assert_eq!(
-            parent_extension_id, self.id,
-            "modify() should be invoked against a parent extension"
-        );
-
-        let Some(sub_extension_id) = opt_sub_extension_id else {
-            how(self)?;
-            return Ok(());
-        };
-
-        // Search in commands
-        if let Some(ref mut commands) = self.commands {
-            if let Some(command) = commands.iter_mut().find(|cmd| cmd.id == sub_extension_id) {
-                how(command)?;
-                return Ok(());
-            }
-        }
-
-        // Search in scripts
-        if let Some(ref mut scripts) = self.scripts {
-            if let Some(script) = scripts.iter_mut().find(|scr| scr.id == sub_extension_id) {
-                how(script)?;
-                return Ok(());
-            }
-        }
-
-        // Search in quick_links
-        if let Some(ref mut quick_links) = self.quicklinks {
-            if let Some(link) = quick_links
-                .iter_mut()
-                .find(|lnk| lnk.id == sub_extension_id)
-            {
-                how(link)?;
-                return Ok(());
-            }
-        }
-
-        Err(format!(
-            "extension [{:?}] not found in {:?}",
-            bundle_id, self
-        ))
-    }
-
-    /// Get the extension specified by `extension_id`.
-    ///
-    /// Please note that `extension_id` could point to a sub extension.
-    pub(crate) fn get_extension_mut(
-        &mut self,
-        bundle_id: &ExtensionBundleIdBorrowed<'_>,
-    ) -> Option<&mut Self> {
-        let (parent_extension_id, opt_sub_extension_id) =
-            (bundle_id.extension_id, bundle_id.sub_extension_id);
-        if parent_extension_id != self.id {
+    pub(crate) fn get_sub_extension(&self, sub_extension_id: &str) -> Option<&Self> {
+        if !self.r#type.contains_sub_items() {
             return None;
         }
 
-        let Some(sub_extension_id) = opt_sub_extension_id else {
-            return Some(self);
-        };
+        if let Some(ref commands) = self.commands {
+            if let Some(sub_ext) = commands.iter().find(|cmd| cmd.id == sub_extension_id) {
+                return Some(sub_ext);
+            }
+        }
+        if let Some(ref scripts) = self.scripts {
+            if let Some(sub_ext) = scripts
+                .iter()
+                .find(|script| script.id == sub_extension_id)
+            {
+                return Some(sub_ext);
+            }
+        }
+        if let Some(ref quick_links) = self.quicklinks {
+            if let Some(sub_ext) = quick_links
+                .iter()
+                .find(|link| link.id == sub_extension_id)
+            {
+                return Some(sub_ext);
+            }
+        }
 
-        self.get_sub_extension_mut(sub_extension_id)
+        None
     }
 
     pub(crate) fn get_sub_extension_mut(&mut self, sub_extension_id: &str) -> Option<&mut Self> {
@@ -381,7 +338,10 @@ pub(crate) async fn init_extensions(mut extensions: Vec<Extension>) -> Result<()
         .expect("global tauri app handle not set");
     let search_source_registry_tauri_state = tauri_app_handle.state::<SearchSourceRegistry>();
 
-    built_in::application::ApplicationSearchSource::init(tauri_app_handle.clone()).await?;
+    built_in::application::ApplicationSearchSource::prepare_index_and_store(
+        tauri_app_handle.clone(),
+    )
+    .await?;
 
     // Init the built-in enabled extensions
     for built_in_extension in extensions
@@ -390,15 +350,17 @@ pub(crate) async fn init_extensions(mut extensions: Vec<Extension>) -> Result<()
         })
         .filter(|ext| ext.enabled)
     {
-        built_in::init_built_in_extension(&built_in_extension, &search_source_registry_tauri_state)
-            .await;
+        built_in::init_built_in_extension(
+            tauri_app_handle,
+            &built_in_extension,
+            &search_source_registry_tauri_state,
+        )
+        .await?;
     }
 
     // Now the third-party extensions
     let third_party_search_source = third_party::ThirdPartyExtensionsSearchSource::new(extensions);
-    third_party_search_source
-        .restore_extensions_hotkey()
-        .await?;
+    third_party_search_source.init().await?;
     let third_party_search_source_clone = third_party_search_source.clone();
     // Set the global search source so that we can access it in `#[tauri::command]`s
     // ignore the result because this function will be invoked twice, which
@@ -547,6 +509,59 @@ fn alter_extension_json_file(
     bundle_id: &ExtensionBundleIdBorrowed<'_>,
     how: impl Fn(&mut Extension) -> Result<(), String>,
 ) -> Result<(), String> {
+    /// Perform `how` against the extension specified by `extension_id`.
+    ///
+    /// Please note that `bundle` could point to a sub extension if `sub_extension_id` is Some.
+    pub(crate) fn modify(
+        root_extension: &mut Extension,
+        bundle_id: &ExtensionBundleIdBorrowed<'_>,
+        how: impl FnOnce(&mut Extension) -> Result<(), String>,
+    ) -> Result<(), String> {
+        let (parent_extension_id, opt_sub_extension_id) =
+            (bundle_id.extension_id, bundle_id.sub_extension_id);
+        assert_eq!(
+            parent_extension_id, root_extension.id,
+            "modify() should be invoked against a parent extension"
+        );
+
+        let Some(sub_extension_id) = opt_sub_extension_id else {
+            how(root_extension)?;
+            return Ok(());
+        };
+
+        // Search in commands
+        if let Some(ref mut commands) = root_extension.commands {
+            if let Some(command) = commands.iter_mut().find(|cmd| cmd.id == sub_extension_id) {
+                how(command)?;
+                return Ok(());
+            }
+        }
+
+        // Search in scripts
+        if let Some(ref mut scripts) = root_extension.scripts {
+            if let Some(script) = scripts.iter_mut().find(|scr| scr.id == sub_extension_id) {
+                how(script)?;
+                return Ok(());
+            }
+        }
+
+        // Search in quick_links
+        if let Some(ref mut quick_links) = root_extension.quicklinks {
+            if let Some(link) = quick_links
+                .iter_mut()
+                .find(|lnk| lnk.id == sub_extension_id)
+            {
+                how(link)?;
+                return Ok(());
+            }
+        }
+
+        Err(format!(
+            "extension [{:?}] not found in {:?}",
+            bundle_id, root_extension
+        ))
+    }
+
     log::debug!(
         "altering extension JSON file for extension [{:?}]",
         bundle_id
@@ -576,7 +591,7 @@ fn alter_extension_json_file(
     )
     .map_err(|e| e.to_string())?;
 
-    extension.modify(bundle_id, how)?;
+    modify(&mut extension, bundle_id, how)?;
 
     std::fs::write(
         &json_file_path,

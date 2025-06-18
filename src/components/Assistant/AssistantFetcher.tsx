@@ -30,6 +30,7 @@ export const AssistantFetcher = ({
     current: number;
     pageSize: number;
     serverId?: string;
+    query?: string;
   }) => {
     try {
       if (isTauri && !currentService?.enabled) {
@@ -39,12 +40,17 @@ export const AssistantFetcher = ({
         };
       }
 
-      const { pageSize, current, serverId = currentService?.id } = params;
+      const {
+        pageSize,
+        current,
+        serverId = currentService?.id,
+        query,
+      } = params;
 
       const searchQuery: SearchQuery = {
         from: (current - 1) * pageSize,
         size: pageSize,
-        query: debounceKeyword,
+        query: query ?? debounceKeyword,
         fuzziness: 5,
         filters: {
           enabled: true,

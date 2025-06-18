@@ -12,7 +12,7 @@ pub(crate) const QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME: &str = "Applicati
 pub struct ApplicationSearchSource;
 
 impl ApplicationSearchSource {
-    pub async fn init<R: Runtime>(_app_handle: AppHandle<R>) -> Result<(), String> {
+    pub async fn prepare_index_and_store<R: Runtime>(_app_handle: AppHandle<R>) -> Result<(), String> {
         Ok(())
     }
 }
@@ -116,4 +116,15 @@ pub async fn get_app_metadata<R: Runtime>(
     _app_path: String,
 ) -> Result<AppMetadata, String> {
     unreachable!("app list should be empty, there is no way this can be invoked")
+}
+
+
+pub(crate) fn set_apps_hotkey<R: Runtime>(_tauri_app_handle: &AppHandle<R>) -> Result<(), String> {
+    // no-op
+    Ok(())
+}
+
+pub(crate) fn unset_apps_hotkey<R: Runtime>(_tauri_app_handle: &AppHandle<R>) -> Result<(), String> {
+    // no-op
+    Ok(())
 }
