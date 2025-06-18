@@ -315,9 +315,7 @@ pub async fn refresh_coco_server_info<R: Runtime>(
     // Send request to fetch updated server info
     let response = HttpClient::get(&id, "/provider/_info", None)
         .await
-        .map_err(|e| {
-            format!("Failed to contact the server: {}", e)
-        });
+        .map_err(|e| format!("Failed to contact the server: {}", e));
 
     if response.is_err() {
         let _ = mark_server_as_offline(app_handle, &id).await;
@@ -495,7 +493,9 @@ pub async fn mark_server_as_online<R: Runtime>(
 
 #[tauri::command]
 pub async fn mark_server_as_offline<R: Runtime>(
-    app_handle: AppHandle<R>, id: &str) -> Result<(), ()> {
+    app_handle: AppHandle<R>,
+    id: &str,
+) -> Result<(), ()> {
     // println!("server_is_offline: {}", id);
     let server = get_server_by_id(id);
     if let Some(mut server) = server {
