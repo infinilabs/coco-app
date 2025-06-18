@@ -35,7 +35,7 @@ export default function Cloud() {
   }, []);
 
   useEffect(() => {
-    console.log("currentService", currentService);
+    // console.log("currentService", currentService);
     setRefreshLoading(false);
     setIsConnect(true);
   }, [JSON.stringify(currentService)]);
@@ -54,15 +54,17 @@ export default function Cloud() {
             return item;
           });
         }
-        //console.log("list_coco_servers", res);
+        // console.log("list_coco_servers", res);
         setServerList(res);
 
         if (resetSelection && res.length > 0) {
-          const currentServiceExists = res.some(
-            (server: any) => server.id === currentService?.id
-          );
+          const matched = res.find((server: any) => {
+            return server.id === currentService?.id;
+          });
 
-          if (!currentServiceExists) {
+          if (matched) {
+            setCurrentService(matched);
+          } else {
             setCurrentService(res[res.length - 1]);
           }
         }
@@ -140,7 +142,7 @@ export default function Cloud() {
               refreshClick={refreshClick}
             />
 
-            {currentService?.profile ? (
+            {currentService?.profile && currentService?.available ? (
               <DataSourcesList server={currentService?.id} />
             ) : null}
           </div>

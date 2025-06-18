@@ -19,6 +19,7 @@ Information about release notes of Coco Server is provided here.
 
 - fix: quick ai state synchronous #693
 - fix: toggle extension should register/unregister hotkey #691
+- fix: take coco server back on refresh #696
 
 ### ✈️ Improvements
 

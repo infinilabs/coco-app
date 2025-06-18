@@ -16,7 +16,7 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
-import { parseSearchQuery, SearchQuery } from "@/utils";
+import { parseSearchQuery, SearchQuery, unrequitable } from "@/utils";
 // import InputExtra from "./InputExtra";
 // import AiSummaryIcon from "@/components/Common/Icons/AiSummaryIcon";
 
@@ -89,6 +89,10 @@ const InputControls = ({
 
       let response: any;
       if (isTauri) {
+        if (unrequitable()) {
+          return [];
+        }
+
         response = await platformAdapter.invokeBackend(
           "datasource_search",
           body
@@ -138,6 +142,10 @@ const InputControls = ({
 
       let response: any;
       if (isTauri) {
+        if (unrequitable()) {
+          return [];
+        }
+
         response = await platformAdapter.invokeBackend(
           "mcp_server_search",
           body
