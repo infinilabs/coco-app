@@ -193,6 +193,7 @@ export const useSyncStore = () => {
           setQueryTimeout(querySourceTimeout);
         }
         setAllowSelfSignature(allowSelfSignature);
+
         setCurrentService(currentService);
       }),
 

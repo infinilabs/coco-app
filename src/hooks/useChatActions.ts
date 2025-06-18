@@ -8,6 +8,7 @@ import { useConnectStore } from "@/stores/connectStore";
 import { useChatStore } from "@/stores/chatStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useAuthStore } from "@/stores/authStore";
+import { unrequitable } from "@/utils";
 
 export function useChatActions(
   setActiveChat: (chat: Chat | undefined) => void,
@@ -324,7 +325,7 @@ export function useChatActions(
   const getChatHistory = useCallback(async () => {
     let response: any;
     if (isTauri) {
-      if (!currentService?.id || !isCurrentLogin || !currentService?.enabled) {
+      if (unrequitable()) {
         return setChats([]);
       }
 
@@ -347,11 +348,17 @@ export function useChatActions(
     console.log("_history", response);
     const hits = response?.hits?.hits || [];
     setChats(hits);
-  }, [currentService?.id, keyword, isTauri, currentService?.enabled, isCurrentLogin]);
+  }, [
+    currentService?.id,
+    keyword,
+    isTauri,
+    currentService?.enabled,
+    isCurrentLogin,
+  ]);
 
   useEffect(() => {
     if (showChatHistory && connected) {
-      getChatHistory()
+      getChatHistory();
     }
   }, [showChatHistory, connected, getChatHistory, currentService?.id]);
 

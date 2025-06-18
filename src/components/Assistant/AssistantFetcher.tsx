@@ -4,7 +4,7 @@ import { Post } from "@/api/axiosRequest";
 import platformAdapter from "@/utils/platformAdapter";
 import { useConnectStore } from "@/stores/connectStore";
 import { useAppStore } from "@/stores/appStore";
-import { parseSearchQuery, SearchQuery } from "@/utils";
+import { parseSearchQuery, SearchQuery, unrequitable } from "@/utils";
 
 interface AssistantFetcherProps {
   debounceKeyword?: string;
@@ -17,12 +17,8 @@ export const AssistantFetcher = ({
 }: AssistantFetcherProps) => {
   const isTauri = useAppStore((state) => state.isTauri);
 
-  const currentService = useConnectStore((state) => state.currentService);
-
-  const currentAssistant = useConnectStore((state) => state.currentAssistant);
-  const setCurrentAssistant = useConnectStore((state) => {
-    return state.setCurrentAssistant;
-  });
+  const { currentService, currentAssistant, setCurrentAssistant } =
+    useConnectStore();
 
   const lastServerId = useRef<string | null>(null);
 
@@ -33,7 +29,7 @@ export const AssistantFetcher = ({
     query?: string;
   }) => {
     try {
-      if (isTauri && !currentService?.enabled) {
+      if (unrequitable()) {
         return {
           total: 0,
           list: [],
