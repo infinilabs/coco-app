@@ -287,9 +287,7 @@ const COCO_SERVER_TOKENS: &str = "coco_server_tokens";
 pub async fn refresh_all_coco_server_info<R: Runtime>(app_handle: AppHandle<R>) {
     let servers = get_all_servers();
     for server in servers {
-        if server.profile.is_some() {
-            let _ = refresh_coco_server_info(app_handle.clone(), server.id.clone()).await;
-        }
+        let _ = refresh_coco_server_info(app_handle.clone(), server.id.clone()).await;
     }
 }
 
