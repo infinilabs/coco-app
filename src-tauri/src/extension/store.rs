@@ -16,10 +16,10 @@ static CLIENT: LazyLock<Client> = LazyLock::new(|| Client::new());
 #[tauri::command]
 pub(crate) async fn search_extension(
     query_params: Option<Vec<String>>,
-) -> Result<Vec<Extension>, String> {
+) -> Result<Vec<Json>, String> {
     let query_params = query_params.unwrap_or_default();
     let response = CLIENT
-        .post("extension/_search")
+        .get("http://infini.tpddns.cn:27200/extension/_search")
         .query(&query_params)
         .send()
         .await
@@ -62,20 +62,35 @@ pub(crate) async fn search_extension(
                 hit
             ),
         };
-
         let source = hit_obj
             .remove("_source")
             .expect("each hit should contain field [_source]");
 
-        // For error message, do this before `from_value()` as it will be moved there.
-        let source_str = source.to_string();
-        match serde_json::from_value::<Extension>(source) {
-            Ok(extension) => extensions.push(extension),
-            Err(e) => panic!(
-                "failed to parse extension from source: {}, invalid source: [{}]",
-                e, source_str
+        let mut source_obj = match source {
+            Json::Object(obj) => obj,
+            _ => panic!(
+                "field [_source] should be a JSON object, but it is not, value: [{}]",
+                source
             ),
-        }
+        };
+
+        let developer_id = source_obj
+            .get("developer")
+            .and_then(|dev| dev.get("id"))
+            .and_then(|id| id.as_str())
+            .expect("developer.id should exist")
+            .to_string();
+
+        let extension_id = source_obj
+            .get("id")
+            .and_then(|id| id.as_str())
+            .expect("extension id should exist")
+            .to_string();
+
+        let installed = is_extension_installed(developer_id, extension_id).await;
+        source_obj.insert("installed".to_string(), Json::Bool(installed));
+
+        extensions.push(Json::Object(source_obj));
     }
 
     Ok(extensions)
@@ -92,7 +107,10 @@ async fn is_extension_installed(developer: String, extension_id: String) -> bool
 #[tauri::command]
 pub(crate) async fn install_extension(id: String) -> Result<(), String> {
     let response = CLIENT
-        .get(format!("extension/{}/_download", id))
+        .get(format!(
+            "http://infini.tpddns.cn:27200/extension/{}/_download",
+            id
+        ))
         .send()
         .await
         .map_err(|e| format!("Failed to download extension: {}", e))?;
@@ -114,7 +132,9 @@ pub(crate) async fn install_extension(id: String) -> Result<(), String> {
         .map_err(|e| format!("Failed to parse plugin.json: {}", e))?;
     drop(plugin_json);
 
-    let developer = extension.developer.clone().unwrap_or_default();
+    let developer = extension.developer.clone().ok_or_else(|| {
+        "Extension missing required developer field in plugin.json".to_string()
+    })?;
     let extension_id = extension.id.clone();
 
     // Extract the zip file
