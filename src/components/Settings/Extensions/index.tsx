@@ -52,7 +52,7 @@ export interface Extension {
   scripts?: Extension[];
   quicklinks?: Extension[];
   settings: Record<string, unknown>;
-  author?: string;
+  developer?: string;
 }
 
 interface State {

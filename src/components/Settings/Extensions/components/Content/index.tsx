@@ -26,7 +26,7 @@ const Content = () => {
 interface ItemProps extends Extension {
   level: number;
   parentId?: ExtensionId;
-  parentAuthor?: string;
+  parentDeveloper?: string;
   parentDisabled?: boolean;
 }
 
@@ -48,10 +48,10 @@ const Item: FC<ItemProps> = (props) => {
     type,
     level,
     platforms,
-    author,
+    developer,
     enabled,
     parentId,
-    parentAuthor,
+    parentDeveloper,
     parentDisabled,
   } = props;
   const { rootState } = useContext(ExtensionsContext);
@@ -64,7 +64,7 @@ const Item: FC<ItemProps> = (props) => {
   const [selfDisabled, setSelfDisabled] = useState(!enabled);
 
   const bundleId = {
-    author: author ?? parentAuthor,
+    developer: developer ?? parentDeveloper,
     extension_id: level === 1 ? id : parentId,
     sub_extension_id: level === 1 ? void 0 : id,
   };
@@ -358,7 +358,7 @@ const Item: FC<ItemProps> = (props) => {
                 {...item}
                 level={level + 1}
                 parentId={id}
-                parentAuthor={author}
+                parentDeveloper={developer}
                 parentDisabled={!enabled}
               />
             );
