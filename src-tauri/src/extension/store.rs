@@ -65,31 +65,31 @@ pub(crate) async fn search_extension(
         let source = hit_obj
             .remove("_source")
             .expect("each hit should contain field [_source]");
-
+        
         let mut source_obj = match source {
             Json::Object(obj) => obj,
             _ => panic!(
-                "field [_source] should be a JSON object, but it is not, value: [{}]",
-                source
+          "field [_source] should be a JSON object, but it is not, value: [{}]",
+          source
             ),
         };
-
+        
         let developer_id = source_obj
             .get("developer")
             .and_then(|dev| dev.get("id"))
             .and_then(|id| id.as_str())
             .expect("developer.id should exist")
             .to_string();
-
-        let extension_id = source_obj
+          
+          let extension_id = source_obj
             .get("id")
             .and_then(|id| id.as_str())
             .expect("extension id should exist")
             .to_string();
-
+        
         let installed = is_extension_installed(developer_id, extension_id).await;
         source_obj.insert("installed".to_string(), Json::Bool(installed));
-
+        
         extensions.push(Json::Object(source_obj));
     }
 
@@ -107,10 +107,7 @@ async fn is_extension_installed(developer: String, extension_id: String) -> bool
 #[tauri::command]
 pub(crate) async fn install_extension(id: String) -> Result<(), String> {
     let response = CLIENT
-        .get(format!(
-            "http://infini.tpddns.cn:27200/extension/{}/_download",
-            id
-        ))
+        .get(format!("http://infini.tpddns.cn:27200/extension/{}/_download", id))
         .send()
         .await
         .map_err(|e| format!("Failed to download extension: {}", e))?;
@@ -132,15 +129,13 @@ pub(crate) async fn install_extension(id: String) -> Result<(), String> {
         .map_err(|e| format!("Failed to parse plugin.json: {}", e))?;
     drop(plugin_json);
 
-    let developer = extension.developer.clone().ok_or_else(|| {
-        "Extension missing required developer field in plugin.json".to_string()
-    })?;
+    let developer = extension.developer.clone().unwrap_or_default();
     let extension_id = extension.id.clone();
 
     // Extract the zip file
     let extension_directory = {
         let mut path = THIRD_PARTY_EXTENSIONS_DIRECTORY.to_path_buf();
-        path.push(developer.as_str());
+        path.push(developer);
         path.push(extension_id.as_str());
         path
     };
@@ -169,9 +164,6 @@ pub(crate) async fn install_extension(id: String) -> Result<(), String> {
 
     // Turn it into an absolute path if it is a valid relative path because frontend code need this.
     canonicalize_relative_icon_path(&extension_directory, &mut extension)?;
-
-    // Set extension's developer info manually.
-    extension.developer = Some(developer.clone());
 
     THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE
         .get()
