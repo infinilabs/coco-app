@@ -39,7 +39,7 @@ pub(crate) const PLUGIN_JSON_FILE: &str = r#"
 {
   "id": "Applications",
   "platforms": ["macos", "linux", "windows"],
-  "title": "Applications",
+  "name": "Applications",
   "description": "Application search",
   "icon": "font_Application",
   "type": "group",
