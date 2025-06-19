@@ -44,7 +44,7 @@ export interface Extension {
   id: ExtensionId;
   type: ExtensionType;
   icon: string;
-  title: string;
+  name: string;
   description: string;
   alias?: string;
   hotkey?: string;
@@ -98,7 +98,7 @@ export const Extensions = () => {
 
     const extensions = result[1];
 
-    state.extensions = sortBy(extensions, ["title"]);
+    state.extensions = sortBy(extensions, ["name"]);
   }, [state.searchValue, state.currentCategory]);
 
   useEffect(() => {

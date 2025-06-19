@@ -44,7 +44,7 @@ const Item: FC<ItemProps> = (props) => {
   const {
     id,
     icon,
-    title,
+    name,
     type,
     level,
     platforms,
@@ -100,7 +100,7 @@ const Item: FC<ItemProps> = (props) => {
 
     state.loading = false;
 
-    return sortBy(subExtensions, ["title"]);
+    return sortBy(subExtensions, ["name"]);
   };
 
   const handleExpand = async (event: MouseEvent) => {
@@ -337,7 +337,7 @@ const Item: FC<ItemProps> = (props) => {
                   "opacity-50 pointer-events-none": isDisabled,
                 })}
               >
-                {title}
+                {name}
               </div>
             </div>
 
