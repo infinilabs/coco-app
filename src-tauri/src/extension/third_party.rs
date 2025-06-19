@@ -1000,7 +1000,7 @@ fn extension_to_hit(
     // Score based on title match
     // Title is considered more important, so it gets a higher weight.
     if let Some(title_score) =
-        calculate_text_similarity(&query_lower, &extension.title.to_lowercase())
+        calculate_text_similarity(&query_lower, &extension.name.to_lowercase())
     {
         total_score += title_score * 1.0; // Weight for title
     }
@@ -1025,7 +1025,7 @@ fn extension_to_hit(
 
         let document = Document {
             id: extension.id.clone(),
-            title: Some(extension.title.clone()),
+            title: Some(extension.name.clone()),
             icon: Some(extension.icon.clone()),
             on_opened: Some(on_opened),
             url: Some(url),

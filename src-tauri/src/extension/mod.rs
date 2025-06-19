@@ -37,7 +37,7 @@ pub struct Extension {
     /// The ID doesn't uniquely identifies an extension; Its bundle ID (ID & developer) does.
     id: String,
     /// Extension name.
-    title: String,
+    name: String,
     /// ID of the developer.
     ///
     /// * For built-in extensions, this will always be None.
@@ -354,7 +354,7 @@ fn filter_out_extensions(
     // apply query filter
     if let Some(query) = query {
         let match_closure = |ext: &Extension| {
-            let lowercase_title = ext.title.to_lowercase();
+            let lowercase_title = ext.name.to_lowercase();
             let lowercase_alias = ext.alias.as_ref().map(|alias| alias.to_lowercase());
             let lowercase_query = query.to_lowercase();
 
