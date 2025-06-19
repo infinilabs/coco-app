@@ -146,7 +146,7 @@ export const Extensions = () => {
             </Button>
           </div>
 
-          <div className="flex justify-between gap-20 my-4">
+          <div className="flex justify-between gap-6 my-4">
             <div className="flex h-8 border">
               {state.categories.map((item) => {
                 return (
@@ -169,7 +169,7 @@ export const Extensions = () => {
             </div>
 
             <SettingsInput
-              className="w-[240px]"
+              className="flex-1"
               placeholder="搜索扩展"
               value={state.searchValue}
               onChange={(value) => {
