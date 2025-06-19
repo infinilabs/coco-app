@@ -13,7 +13,7 @@ Information about release notes of Coco Server is provided here.
 
 ### 🚀 Features
 
-- feat: add Check for Updates #701
+- feat: add check for updates #701
 
 ### 🐛 Bug fix
 
