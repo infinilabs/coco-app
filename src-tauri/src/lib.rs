@@ -432,16 +432,13 @@ async fn show_check(app_handle: AppHandle) {
 }
 
 #[tauri::command]
-async fn hide_check<R: Runtime>(app: AppHandle<R>) {
-    if let Some(window) = app.get_webview_window(CHECK_WINDOW_LABEL) {
-        if let Err(err) = window.hide() {
-            log::error!("Failed to hide the check window: {}", err);
-        } else {
-            log::debug!("Window check successfully hidden.");
-        }
-    } else {
-        log::error!("check window not found.");
-    }
+async fn hide_check(app_handle: AppHandle) {
+    log::debug!("check window was closed");
+    let window = &app_handle
+        .get_webview_window(CHECK_WINDOW_LABEL)
+        .expect("we have a check window");
+
+    window.hide().unwrap();
 }
 
 #[tauri::command]
