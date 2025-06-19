@@ -19,9 +19,7 @@ use std::sync::Mutex;
 use std::sync::OnceLock;
 use tauri::async_runtime::block_on;
 use tauri::plugin::TauriPlugin;
-use tauri::{
-    AppHandle, Emitter, Manager, PhysicalPosition, Runtime, WebviewWindow, WindowEvent,
-};
+use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, Runtime, WebviewWindow, WindowEvent};
 use tauri_plugin_autostart::MacosLauncher;
 
 /// Tauri store name
@@ -394,7 +392,8 @@ fn move_window_to_active_monitor<R: Runtime>(window: &WebviewWindow<R>) {
 
 #[tauri::command]
 async fn get_app_search_source<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), String> {
-    let (_found_invalid_extensions, extensions) = extension::list_extensions()
+    // We want all the extensions here, so no filter condition specified.
+    let (_found_invalid_extensions, extensions) = extension::list_extensions(None, None, false)
         .await
         .map_err(|e| e.to_string())?;
     extension::init_extensions(extensions).await?;

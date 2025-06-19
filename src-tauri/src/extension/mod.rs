@@ -206,18 +206,12 @@ impl Extension {
             }
         }
         if let Some(ref scripts) = self.scripts {
-            if let Some(sub_ext) = scripts
-                .iter()
-                .find(|script| script.id == sub_extension_id)
-            {
+            if let Some(sub_ext) = scripts.iter().find(|script| script.id == sub_extension_id) {
                 return Some(sub_ext);
             }
         }
         if let Some(ref quick_links) = self.quicklinks {
-            if let Some(sub_ext) = quick_links
-                .iter()
-                .find(|link| link.id == sub_extension_id)
-            {
+            if let Some(sub_ext) = quick_links.iter().find(|link| link.id == sub_extension_id) {
                 return Some(sub_ext);
             }
         }
@@ -302,12 +296,108 @@ impl ExtensionType {
     }
 }
 
+/// Helper function to filter out the extensions that do not satisfy the specifies conditions.
+/// 
+/// used in `list_extensions()`
+fn filter_out_extensions(
+    extensions: &mut Vec<Extension>,
+    query: Option<&str>,
+    extension_type: Option<ExtensionType>,
+    list_enabled: bool,
+) {
+    // apply `list_enabled`
+    if list_enabled {
+        extensions.retain(|ext| ext.enabled);
+        for extension in extensions.iter_mut() {
+            if extension.r#type.contains_sub_items() {
+                if let Some(ref mut commands) = extension.commands {
+                    commands.retain(|cmd| cmd.enabled);
+                }
+                if let Some(ref mut scripts) = extension.scripts {
+                    scripts.retain(|script| script.enabled);
+                }
+                if let Some(ref mut quicklinks) = extension.quicklinks {
+                    quicklinks.retain(|link| link.enabled);
+                }
+            }
+        }
+    }
+
+    // apply extension type filter
+    if let Some(extension_type) = extension_type {
+        assert!(
+            extension_type != ExtensionType::Group && extension_type != ExtensionType::Extension,
+            "filtering in folder extensions is pointless"
+        );
+
+        extensions.retain(|ext| {
+            let ty = ext.r#type;
+            ty == ExtensionType::Group || ty == ExtensionType::Extension || ty == extension_type
+        });
+
+        // Filter sub-extensions to only include the requested type
+        for extension in extensions.iter_mut() {
+            if extension.r#type.contains_sub_items() {
+                if let Some(ref mut commands) = extension.commands {
+                    commands.retain(|cmd| cmd.r#type == extension_type);
+                }
+                if let Some(ref mut scripts) = extension.scripts {
+                    scripts.retain(|script| script.r#type == extension_type);
+                }
+                if let Some(ref mut quicklinks) = extension.quicklinks {
+                    quicklinks.retain(|link| link.r#type == extension_type);
+                }
+            }
+        }
+    }
+
+    // apply query filter
+    if let Some(query) = query {
+        let match_closure = |ext: &Extension| {
+            let lowercase_title = ext.title.to_lowercase();
+            let lowercase_alias = ext.alias.as_ref().map(|alias| alias.to_lowercase());
+            let lowercase_query = query.to_lowercase();
+
+            lowercase_title.contains(&lowercase_query) || lowercase_alias.map_or(false, |alias| alias.contains(&lowercase_query))
+        };
+
+        extensions.retain(|ext| {
+          if ext.r#type.contains_sub_items() {
+            // Keep all group/extension types
+            true 
+          } else {
+             // Apply filter to non-group/extension types
+            match_closure(ext)
+          }
+        });
+
+        // Filter sub-extensions in groups and extensions
+        for extension in extensions.iter_mut() {
+          if extension.r#type.contains_sub_items() {
+            if let Some(ref mut commands) = extension.commands {
+              commands.retain(&match_closure);
+            }
+            if let Some(ref mut scripts) = extension.scripts {
+              scripts.retain(&match_closure);
+            }
+            if let Some(ref mut quicklinks) = extension.quicklinks {
+              quicklinks.retain(&match_closure);
+            }
+          }
+        }
+    }
+}
+
 /// Return value:
 ///
 /// * boolean: indicates if we found any invalid extensions
 /// * Vec<Extension>: loaded extensions
 #[tauri::command]
-pub(crate) async fn list_extensions() -> Result<(bool, Vec<Extension>), String> {
+pub(crate) async fn list_extensions(
+    query: Option<String>,
+    extension_type: Option<ExtensionType>,
+    list_enabled: bool,
+) -> Result<(bool, Vec<Extension>), String> {
     log::trace!("loading extensions");
 
     let third_party_dir = third_party::THIRD_PARTY_EXTENSIONS_DIRECTORY.as_path();
@@ -322,11 +412,18 @@ pub(crate) async fn list_extensions() -> Result<(bool, Vec<Extension>), String> 
     let built_in_extensions = built_in::list_built_in_extensions().await?;
 
     let found_invalid_extension = third_party_found_invalid_extension;
-    let extensions = {
+    let mut extensions = {
         third_party_extensions.extend(built_in_extensions);
 
         third_party_extensions
     };
+
+    filter_out_extensions(
+        &mut extensions,
+        query.as_deref(),
+        extension_type,
+        list_enabled,
+    );
 
     Ok((found_invalid_extension, extensions))
 }
