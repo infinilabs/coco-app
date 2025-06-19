@@ -323,7 +323,7 @@ fn filter_out_extensions(
         }
     }
 
-    // apply extension type filter
+    // apply extension type filter to non-group/extension extensions
     if let Some(extension_type) = extension_type {
         assert!(
             extension_type != ExtensionType::Group && extension_type != ExtensionType::Extension,
@@ -347,6 +347,19 @@ fn filter_out_extensions(
                 if let Some(ref mut quicklinks) = extension.quicklinks {
                     quicklinks.retain(|link| link.r#type == extension_type);
                 }
+            }
+        }
+
+        // Application is special, technically, it should never be filtered out by
+        // this condition. But if our users will be surprising if they choose a
+        // non-Application type and see it in the results. So we do this to remedy the
+        // issue
+        if let Some(idx) = extensions.iter().position(|ext| {
+            ext.developer.is_none()
+                && ext.id == built_in::application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME
+        }) {
+            if extension_type != ExtensionType::Application {
+                extensions.remove(idx);
             }
         }
     }
@@ -387,6 +400,35 @@ fn filter_out_extensions(
             }
         }
     }
+
+    // Remove parent extensions (Group/Extension types) that have no sub-items after filtering
+    extensions.retain(|ext| {
+        if !ext.r#type.contains_sub_items() {
+            return true;
+        }
+
+        // We don't do this filter to applications since it is always empty, load at runtime.
+        if ext.developer.is_none()
+            && ext.id == built_in::application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME
+        {
+            return true;
+        }
+
+        let has_commands = ext
+            .commands
+            .as_ref()
+            .map_or(false, |commands| !commands.is_empty());
+        let has_scripts = ext
+            .scripts
+            .as_ref()
+            .map_or(false, |scripts| !scripts.is_empty());
+        let has_quicklinks = ext
+            .quicklinks
+            .as_ref()
+            .map_or(false, |quicklinks| !quicklinks.is_empty());
+
+        has_commands || has_scripts || has_quicklinks
+    });
 }
 
 /// Return value:
