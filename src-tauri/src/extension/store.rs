@@ -19,7 +19,7 @@ pub(crate) async fn search_extension(
 ) -> Result<Vec<Json>, String> {
     let query_params = query_params.unwrap_or_default();
     let response = CLIENT
-        .get("http://infini.tpddns.cn:27200/extension/_search")
+        .get("http://infini.tpddns.cn:27200/store/extension/_search")
         .query(&query_params)
         .send()
         .await
@@ -65,31 +65,31 @@ pub(crate) async fn search_extension(
         let source = hit_obj
             .remove("_source")
             .expect("each hit should contain field [_source]");
-        
+
         let mut source_obj = match source {
             Json::Object(obj) => obj,
             _ => panic!(
-          "field [_source] should be a JSON object, but it is not, value: [{}]",
-          source
+                "field [_source] should be a JSON object, but it is not, value: [{}]",
+                source
             ),
         };
-        
+
         let developer_id = source_obj
             .get("developer")
             .and_then(|dev| dev.get("id"))
             .and_then(|id| id.as_str())
             .expect("developer.id should exist")
             .to_string();
-          
-          let extension_id = source_obj
+
+        let extension_id = source_obj
             .get("id")
             .and_then(|id| id.as_str())
             .expect("extension id should exist")
             .to_string();
-        
+
         let installed = is_extension_installed(developer_id, extension_id).await;
         source_obj.insert("installed".to_string(), Json::Bool(installed));
-        
+
         extensions.push(Json::Object(source_obj));
     }
 
@@ -107,7 +107,10 @@ async fn is_extension_installed(developer: String, extension_id: String) -> bool
 #[tauri::command]
 pub(crate) async fn install_extension(id: String) -> Result<(), String> {
     let response = CLIENT
-        .get(format!("http://infini.tpddns.cn:27200/extension/{}/_download", id))
+        .get(format!(
+            "http://infini.tpddns.cn:27200/store/extension/{}/_download",
+            id
+        ))
         .send()
         .await
         .map_err(|e| format!("Failed to download extension: {}", e))?;
