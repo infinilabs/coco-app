@@ -155,7 +155,6 @@ pub fn run() {
             extension::unregister_extension_hotkey,
             extension::is_extension_enabled,
             extension::store::search_extension,
-            extension::store::is_extension_installed,
             extension::store::install_extension,
             extension::store::uninstall_extension,
             settings::set_allow_self_signature,

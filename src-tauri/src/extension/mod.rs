@@ -34,17 +34,17 @@ enum Platform {
 pub struct Extension {
     /// Extension ID.
     ///
-    /// The ID doesn't uniquely identifies an extension; Its bundle ID (ID & author) does.
+    /// The ID doesn't uniquely identifies an extension; Its bundle ID (ID & developer) does.
     id: String,
     /// Extension name.
     title: String,
-    /// ID of the author.
+    /// ID of the developer.
     ///
     /// * For built-in extensions, this will always be None.
     /// * For third-party first-layer extensions, the on-disk plugin.json file
     ///   won't contain this field, but we will set this field for them after reading them into the memory.
     /// * For third-party sub extensions, this field will be None.
-    author: Option<String>,
+    developer: Option<String>,
     /// Platforms supported by this extension.
     ///
     /// If `None`, then this extension can be used on all the platforms.
@@ -102,7 +102,7 @@ pub struct Extension {
 /// Bundle ID uniquely identifies an extension.
 #[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
 pub(crate) struct ExtensionBundleId {
-    author: Option<String>,
+    developer: Option<String>,
     extension_id: String,
     sub_extension_id: Option<String>,
 }
@@ -112,7 +112,7 @@ impl Borrow for ExtensionBundleId {
 
     fn borrow(&self) -> Self::Target<'_> {
         ExtensionBundleIdBorrowed {
-            author: self.author.as_deref(),
+            developer: self.developer.as_deref(),
             extension_id: &self.extension_id,
             sub_extension_id: self.sub_extension_id.as_deref(),
         }
@@ -122,7 +122,7 @@ impl Borrow for ExtensionBundleId {
 /// Reference version of `ExtensionBundleId`.
 #[derive(Debug, Serialize, PartialEq)]
 pub(crate) struct ExtensionBundleIdBorrowed<'ext> {
-    author: Option<&'ext str>,
+    developer: Option<&'ext str>,
     extension_id: &'ext str,
     sub_extension_id: Option<&'ext str>,
 }
@@ -132,7 +132,7 @@ impl ToOwned for ExtensionBundleIdBorrowed<'_> {
 
     fn to_owned(&self) -> Self::Owned {
         ExtensionBundleId {
-            author: self.author.map(|s| s.to_string()),
+            developer: self.developer.map(|s| s.to_string()),
             extension_id: self.extension_id.to_string(),
             sub_extension_id: self.sub_extension_id.map(|s| s.to_string()),
         }
@@ -141,7 +141,7 @@ impl ToOwned for ExtensionBundleIdBorrowed<'_> {
 
 impl<'ext> PartialEq<ExtensionBundleIdBorrowed<'ext>> for ExtensionBundleId {
     fn eq(&self, other: &ExtensionBundleIdBorrowed<'ext>) -> bool {
-        self.author.as_deref() == other.author
+        self.developer.as_deref() == other.developer
             && self.extension_id == other.extension_id
             && self.sub_extension_id.as_deref() == other.sub_extension_id
     }
@@ -149,7 +149,7 @@ impl<'ext> PartialEq<ExtensionBundleIdBorrowed<'ext>> for ExtensionBundleId {
 
 impl<'ext> PartialEq<ExtensionBundleId> for ExtensionBundleIdBorrowed<'ext> {
     fn eq(&self, other: &ExtensionBundleId) -> bool {
-        self.author == other.author.as_deref()
+        self.developer == other.developer.as_deref()
             && self.extension_id == other.extension_id
             && self.sub_extension_id == other.sub_extension_id.as_deref()
     }
@@ -160,7 +160,7 @@ impl Extension {
     /// set to `None`, this may not be what you want.
     pub(crate) fn bundle_id_borrowed(&self) -> ExtensionBundleIdBorrowed<'_> {
         ExtensionBundleIdBorrowed {
-            author: self.author.as_deref(),
+            developer: self.developer.as_deref(),
             extension_id: &self.id,
             sub_extension_id: None,
         }
@@ -297,7 +297,7 @@ impl ExtensionType {
 }
 
 /// Helper function to filter out the extensions that do not satisfy the specifies conditions.
-/// 
+///
 /// used in `list_extensions()`
 fn filter_out_extensions(
     extensions: &mut Vec<Extension>,
@@ -358,32 +358,33 @@ fn filter_out_extensions(
             let lowercase_alias = ext.alias.as_ref().map(|alias| alias.to_lowercase());
             let lowercase_query = query.to_lowercase();
 
-            lowercase_title.contains(&lowercase_query) || lowercase_alias.map_or(false, |alias| alias.contains(&lowercase_query))
+            lowercase_title.contains(&lowercase_query)
+                || lowercase_alias.map_or(false, |alias| alias.contains(&lowercase_query))
         };
 
         extensions.retain(|ext| {
-          if ext.r#type.contains_sub_items() {
-            // Keep all group/extension types
-            true 
-          } else {
-             // Apply filter to non-group/extension types
-            match_closure(ext)
-          }
+            if ext.r#type.contains_sub_items() {
+                // Keep all group/extension types
+                true
+            } else {
+                // Apply filter to non-group/extension types
+                match_closure(ext)
+            }
         });
 
         // Filter sub-extensions in groups and extensions
         for extension in extensions.iter_mut() {
-          if extension.r#type.contains_sub_items() {
-            if let Some(ref mut commands) = extension.commands {
-              commands.retain(&match_closure);
+            if extension.r#type.contains_sub_items() {
+                if let Some(ref mut commands) = extension.commands {
+                    commands.retain(&match_closure);
+                }
+                if let Some(ref mut scripts) = extension.scripts {
+                    scripts.retain(&match_closure);
+                }
+                if let Some(ref mut quicklinks) = extension.quicklinks {
+                    quicklinks.retain(&match_closure);
+                }
             }
-            if let Some(ref mut scripts) = extension.scripts {
-              scripts.retain(&match_closure);
-            }
-            if let Some(ref mut quicklinks) = extension.quicklinks {
-              quicklinks.retain(&match_closure);
-            }
-          }
         }
     }
 }
@@ -668,8 +669,8 @@ fn alter_extension_json_file(
     let json_file_path = {
         let mut path = extension_directory.to_path_buf();
 
-        if let Some(author) = bundle_id.author {
-            path.push(author);
+        if let Some(developer) = bundle_id.developer {
+            path.push(developer);
         }
         path.push(bundle_id.extension_id);
         path.push(PLUGIN_JSON_FILE_NAME);

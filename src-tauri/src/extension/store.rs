@@ -15,21 +15,12 @@ static CLIENT: LazyLock<Client> = LazyLock::new(|| Client::new());
 
 #[tauri::command]
 pub(crate) async fn search_extension(
-    query: String,
-    from: Option<usize>,
-    size: Option<usize>,
-    _sort_by: (),
+    query_params: Option<Vec<String>>,
 ) -> Result<Vec<Extension>, String> {
-    let from = from.unwrap_or(0);
-    let size = size.unwrap_or(10);
-
+    let query_params = query_params.unwrap_or_default();
     let response = CLIENT
         .post("extension/_search")
-        .query(&[
-            ("query", query),
-            ("from", from.to_string()),
-            ("size", size.to_string()),
-        ])
+        .query(&query_params)
         .send()
         .await
         .map_err(|e| format!("Failed to send request: {}", e))?;
@@ -90,22 +81,18 @@ pub(crate) async fn search_extension(
     Ok(extensions)
 }
 
-#[tauri::command]
-pub(crate) async fn is_extension_installed(author: String, extension_id: String) -> bool {
+async fn is_extension_installed(developer: String, extension_id: String) -> bool {
     THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE
         .get()
         .unwrap()
-        .extension_exists(&author, &extension_id)
+        .extension_exists(&developer, &extension_id)
         .await
 }
 
 #[tauri::command]
-pub(crate) async fn install_extension(author: String, extension_id: String) -> Result<(), String> {
-    let id = format!("{}/{}", author, extension_id);
-
+pub(crate) async fn install_extension(id: String) -> Result<(), String> {
     let response = CLIENT
-        .get("extension/_download")
-        .query(&[("id", &id)])
+        .get(format!("extension/{}/_download", id))
         .send()
         .await
         .map_err(|e| format!("Failed to download extension: {}", e))?;
@@ -119,10 +106,21 @@ pub(crate) async fn install_extension(author: String, extension_id: String) -> R
     let mut archive =
         zip::ZipArchive::new(cursor).map_err(|e| format!("Failed to read zip archive: {}", e))?;
 
+    let mut plugin_json = archive.by_name("plugin.json").map_err(|e| e.to_string())?;
+    let mut plugin_json_content = String::new();
+    std::io::Read::read_to_string(&mut plugin_json, &mut plugin_json_content)
+        .map_err(|e| e.to_string())?;
+    let extension: Extension = serde_json::from_str(&plugin_json_content)
+        .map_err(|e| format!("Failed to parse plugin.json: {}", e))?;
+    drop(plugin_json);
+
+    let developer = extension.developer.clone().unwrap_or_default();
+    let extension_id = extension.id.clone();
+
     // Extract the zip file
     let extension_directory = {
         let mut path = THIRD_PARTY_EXTENSIONS_DIRECTORY.to_path_buf();
-        path.push(author.as_str());
+        path.push(developer.as_str());
         path.push(extension_id.as_str());
         path
     };
@@ -152,8 +150,8 @@ pub(crate) async fn install_extension(author: String, extension_id: String) -> R
     // Turn it into an absolute path if it is a valid relative path because frontend code need this.
     canonicalize_relative_icon_path(&extension_directory, &mut extension)?;
 
-    // Set extension's author info manually.
-    extension.author = Some(author.clone());
+    // Set extension's developer info manually.
+    extension.developer = Some(developer.clone());
 
     THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE
         .get()
@@ -166,11 +164,11 @@ pub(crate) async fn install_extension(author: String, extension_id: String) -> R
 
 #[tauri::command]
 pub(crate) async fn uninstall_extension(
-    author: String,
+    developer: String,
     extension_id: String,
 ) -> Result<(), String> {
     let extension_dir = {
-        let mut path = THIRD_PARTY_EXTENSIONS_DIRECTORY.join(author.as_str());
+        let mut path = THIRD_PARTY_EXTENSIONS_DIRECTORY.join(developer.as_str());
         path.push(extension_id.as_str());
 
         path
@@ -178,7 +176,7 @@ pub(crate) async fn uninstall_extension(
     if !extension_dir.try_exists().map_err(|e| e.to_string())? {
         panic!(
             "we are uninstalling extension [{}/{}], but there is no such extension files on disk",
-            author, extension_id
+            developer, extension_id
         )
     }
     tokio::fs::remove_dir_all(extension_dir.as_path())
@@ -188,7 +186,7 @@ pub(crate) async fn uninstall_extension(
     THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE
         .get()
         .unwrap()
-        .remove_extension(&author, &extension_id)
+        .remove_extension(&developer, &extension_id)
         .await;
 
     Ok(())
