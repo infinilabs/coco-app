@@ -13,6 +13,8 @@ Information about release notes of Coco Server is provided here.
 
 ### 🚀 Features
 
+- feat: support `Tab` and `Enter` for delete dialog buttons #700
+
 ### 🐛 Bug fix
 
 - fix: quick ai state synchronous #693
