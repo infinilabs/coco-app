@@ -1,13 +1,8 @@
 import { Menu, MenuButton } from "@headlessui/react";
-import { useTranslation } from "react-i18next";
 
 import logoImg from "@/assets/icon.svg";
-import platformAdapter from "@/utils/platformAdapter";
-import { useUpdateStore } from "@/stores/updateStore";
 
 const Footer = () => {
-  const { t } = useTranslation();
-
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
       <div className="max-w-6xl mx-auto px-4 h-8 flex items-center justify-between">
@@ -90,19 +85,10 @@ const Footer = () => {
           <span className="text-xs text-gray-500 dark:text-gray-400">
             Version {process.env.VERSION || "v1.0.0"}
           </span>
-          <div className="h-4 w-px bg-gray-200 dark:bg-gray-700" />
-          <button 
-            className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-            onClick={async () => {
-              const update = await platformAdapter.checkUpdate();
-              if (update) {
-                useUpdateStore.getState().setUpdateInfo(update);
-                useUpdateStore.getState().setVisible(true);
-              }
-            }}
-          >
-            {t("tray.checkUpdate")}
-          </button>
+          {/* <div className="h-4 w-px bg-gray-200 dark:bg-gray-700" />
+          <button className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+            Check for Updates
+          </button> */}
         </div>
       </div>
     </div>
