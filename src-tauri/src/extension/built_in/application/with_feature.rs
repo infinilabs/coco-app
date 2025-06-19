@@ -1040,7 +1040,7 @@ pub async fn get_app_list<R: Runtime>(
             id: path,
             title: name,
             platforms: None,
-            author: None,
+            developer: None,
             // Leave it empty as it won't be used
             description: String::new(),
             icon: icon_path,

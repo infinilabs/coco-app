@@ -117,7 +117,10 @@ export default function Layout() {
 
   useMount(async () => {
     const result = await platformAdapter.invokeBackend<[boolean, Extension[]]>(
-      "list_extensions"
+      "list_extensions",
+      {
+        listEnabled: false,
+      }
     );
 
     if (!isArray(result)) return;

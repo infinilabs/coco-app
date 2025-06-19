@@ -4,7 +4,7 @@ pub(super) const EXTENSION_ID: &str = "AIOverview";
 pub(crate) const PLUGIN_JSON_FILE: &str = r#"
 {
   "id": "AIOverview",
-  "title": "AI Overview",
+  "name": "AI Overview",
   "description": "...",
   "icon": "font_a-AIOverview",
   "type": "ai_extension",

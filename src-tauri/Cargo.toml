@@ -83,7 +83,6 @@ walkdir = "2"
 log = "0.4"
 strsim = "0.10"
 futures-util = "0.3.31"
-url = "2.5.2"
 http = "1.1.0"
 tungstenite = "0.24.0"
 tokio-util = "0.7.14"
@@ -101,6 +100,8 @@ regex = "1.11.1"
 borrowme = "0.0.15"
 tauri-plugin-opener = "2"
 async-recursion = "1.1.1"
+zip = "4.0.0"
+url = "2.5.2"
 
 [target."cfg(target_os = \"macos\")".dependencies]
 tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }
