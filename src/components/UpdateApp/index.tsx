@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useEffect } from "react";
 import { Button, Dialog, DialogPanel } from "@headlessui/react";
 import { useTranslation } from "react-i18next";
 import { noop } from "lodash-es";
@@ -6,12 +6,15 @@ import { LoaderCircle, X } from "lucide-react";
 import { useInterval, useReactive } from "ahooks";
 import clsx from "clsx";
 
-import lightIcon from "./imgs/light-icon.png";
-import darkIcon from "./imgs/dark-icon.png";
+import lightIcon from "@/assets/images/UpdateApp/light-icon.png";
+import darkIcon from "@/assets/images/UpdateApp/dark-icon.png";
 import { useThemeStore } from "@/stores/themeStore";
 import { useUpdateStore } from "@/stores/updateStore";
 import { OpenURLWithBrowser } from "@/utils/index";
 import { useAppStore } from "@/stores/appStore";
+import platformAdapter from "@/utils/platformAdapter";
+import { useAppearanceStore } from "@/stores/appearanceStore";
+import { hide_check } from "@/commands";
 
 interface State {
   loading?: boolean;
@@ -20,21 +23,31 @@ interface State {
 }
 
 interface UpdateAppProps {
-  checkUpdate: () => Promise<any>;
-  relaunchApp: () => Promise<void>;
+  isCheckPage?: boolean;
 }
 
-const UpdateApp = ({ checkUpdate, relaunchApp }: UpdateAppProps) => {
+const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
   const { t } = useTranslation();
   const isDark = useThemeStore((state) => state.isDark);
-  const visible = useUpdateStore((state) => state.visible);
-  const setVisible = useUpdateStore((state) => state.setVisible);
-  const skipVersion = useUpdateStore((state) => state.skipVersion);
-  const setSkipVersion = useUpdateStore((state) => state.setSkipVersion);
-  const isOptional = useUpdateStore((state) => state.isOptional);
-  const updateInfo = useUpdateStore((state) => state.updateInfo);
-  const setUpdateInfo = useUpdateStore((state) => state.setUpdateInfo);
+  const { visible, setVisible, skipVersion, setSkipVersion, isOptional, updateInfo, setUpdateInfo } = useUpdateStore();
   const addError = useAppStore((state) => state.addError);
+  const snapshotUpdate = useAppearanceStore((state) => state.snapshotUpdate);
+
+  const checkUpdate = useCallback(async () => {
+    return platformAdapter.checkUpdate();
+  }, []);
+
+  const relaunchApp = useCallback(async () => {
+    return platformAdapter.relaunchApp();
+  }, []);
+
+  useEffect(() => {
+    if (!snapshotUpdate) return;
+
+    checkUpdate().catch((error) => {
+      addError("Update failed:" + error, "error");
+    });
+  }, [snapshotUpdate]);
 
   const state = useReactive<State>({ download: 0 });
 
@@ -102,7 +115,7 @@ const UpdateApp = ({ checkUpdate, relaunchApp }: UpdateAppProps) => {
 
     setSkipVersion(updateInfo?.version);
 
-    setVisible(false);
+    isCheckPage ? hide_check() : setVisible(false);
   };
 
   return (
@@ -113,12 +126,20 @@ const UpdateApp = ({ checkUpdate, relaunchApp }: UpdateAppProps) => {
       onClose={noop}
     >
       <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-        <div className="flex min-h-full items-center justify-center p-4">
+        <div
+          className={clsx(
+            "flex min-h-full items-center justify-center",
+            {
+              "p-4": !isCheckPage,
+            }
+          )}>
           <DialogPanel
             transition
-            className="relative w-[340px] py-8 flex flex-col items-center bg-white shadow-md border border-[#EDEDED] rounded-lg dark:bg-[#333] dark:border-black/20"
+            className={clsx(
+              "relative w-[340px] py-8 flex flex-col items-center bg-white shadow-md border border-[#EDEDED] rounded-lg dark:bg-[#333] dark:border-black/20",
+            )}
           >
-            <X
+            {isCheckPage ? null : <X
               className={clsx(
                 "absolute size-5 text-[#999] top-3 right-3 dark:text-[#D8D8D8]",
                 cursorClassName,
@@ -127,7 +148,7 @@ const UpdateApp = ({ checkUpdate, relaunchApp }: UpdateAppProps) => {
                 }
               )}
               onClick={handleCancel}
-            />
+            />}
 
             <img src={isDark ? darkIcon : lightIcon} className="h-6" />
 
@@ -169,7 +190,7 @@ const UpdateApp = ({ checkUpdate, relaunchApp }: UpdateAppProps) => {
                   {percent}%
                 </div>
               ) : (
-                t("update.button.download")
+                t("update.button.install")
               )}
             </Button>
 

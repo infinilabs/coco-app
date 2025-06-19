@@ -27,3 +27,11 @@ export function show_coco(): Promise<void> {
 export function show_settings(): Promise<void> {
   return invoke('show_settings');
 }
+
+export function show_check(): Promise<void> {
+  return invoke('show_check');
+}
+
+export function hide_check(): Promise<void> {
+  return invoke('hide_check');
+}

@@ -6,6 +6,7 @@ import DesktopApp from "@/pages/main/index";
 import SettingsPage from "@/pages/settings/index";
 import ChatAI from "@/pages/chat/index";
 import WebPage from "@/pages/web/index";
+import CheckPage from "@/pages/check/index";
 
 const routerOptions = {
   basename: "/",
@@ -25,6 +26,7 @@ export const router = createBrowserRouter(
         { path: "/ui", element: <DesktopApp /> },
         { path: "/ui/settings", element: <SettingsPage /> },
         { path: "/ui/chat", element: <ChatAI /> },
+        { path: "/ui/check", element: <CheckPage /> },
         { path: "/web", element: <WebPage /> },
       ],
     },

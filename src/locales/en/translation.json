@@ -455,7 +455,8 @@
   "tray": {
     "showCoco": "Show Coco",
     "settings": "Settings...",
-    "quitCoco": "Quit Coco"
+    "quitCoco": "Quit Coco",
+    "checkUpdate": "Check for Updates"
   },
   "update": {
     "title": "New update available for Coco AI.",
@@ -464,7 +465,7 @@
     "force_description2": "Please install the latest version to continue.",
     "releaseNotes": "Release Notes",
     "button": {
-      "download": "Download"
+      "install": "Install"
     },
     "skip_version": "Skip this version"
   },

@@ -455,7 +455,8 @@
   "tray": {
     "showCoco": "显示 Coco",
     "settings": "偏好设置",
-    "quitCoco": "退出 Coco"
+    "quitCoco": "退出 Coco",
+    "checkUpdate": "检查更新"
   },
   "update": {
     "optional_description": "Coco AI 有新的可用更新。",
@@ -463,7 +464,7 @@
     "force_description2": "请安装最新版本后继续使用。",
     "releaseNotes": "更新日志",
     "button": {
-      "download": "下载"
+      "install": "安装"
     },
     "skip_version": "跳过此版本"
   },
