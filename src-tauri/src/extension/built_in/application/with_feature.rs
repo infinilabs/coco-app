@@ -1038,7 +1038,7 @@ pub async fn get_app_list<R: Runtime>(
 
         let app_entry = Extension {
             id: path,
-            title: name,
+            name,
             platforms: None,
             developer: None,
             // Leave it empty as it won't be used

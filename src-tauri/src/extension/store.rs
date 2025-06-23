@@ -19,19 +19,33 @@ pub(crate) async fn search_extension(
 ) -> Result<Vec<Json>, String> {
     println!("query_params: {:?}", query_params);
 
-    let query_params = query_params.unwrap_or_default();
+    let query_params: Vec<(&str, &str)> = match query_params {
+        Some(ref v) => {
+            let mut parsed = Vec::new();
+            for parameter in v.iter() {
+                let (key, value) = parameter
+                    .split_once('=')
+                    .expect("query parameter should contain a '='");
+                parsed.push((key, value));
+            }
+
+            parsed
+        }
+        None => Vec::new(),
+    };
+
     let response = CLIENT
         .get("http://infini.tpddns.cn:27200/store/extension/_search")
         .query(&query_params)
         .send()
         .await
-        .map_err(|e| format!("Failed to send request: {}", e))?;
+        .map_err(|e| format!("Failed to send request: {:?}", e))?;
 
     // The response of a ES style search request
     let mut response: JsonObject<String, Json> = response
         .json()
         .await
-        .map_err(|e| format!("Failed to parse response: {}", e))?;
+        .map_err(|e| format!("Failed to parse response: {:?}", e))?;
 
     let hits_json = response
         .remove("hits")
@@ -44,9 +58,10 @@ pub(crate) async fn search_extension(
         ),
     };
 
-    let hits_hits_json = hits
-        .remove("hits")
-        .expect("the JSON response should contain field [hits.hits]");
+    let Some(hits_hits_json) = hits.remove("hits") else {
+        return Ok(Vec::new());
+    };
+
     let hits_hits = match hits_hits_json {
         Json::Array(arr) => arr,
         _ => panic!(
