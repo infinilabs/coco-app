@@ -3,6 +3,7 @@ import { parseSearchQuery } from "@/utils";
 import platformAdapter from "@/utils/platformAdapter";
 import { useAsyncEffect, useDebounce } from "ahooks";
 import SearchEmpty from "../Common/SearchEmpty";
+import { platform } from "@/utils/platform";
 
 const ExtensionStore = () => {
   const { searchValue } = useSearchStore();
@@ -16,6 +17,9 @@ const ExtensionStore = () => {
     const result = await platformAdapter.invokeBackend("search_extension", {
       queryParams: parseSearchQuery({
         query: debouncedSearchValue,
+        filters: {
+          platform: platform(),
+        },
       }),
     });
 

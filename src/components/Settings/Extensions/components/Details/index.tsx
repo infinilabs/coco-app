@@ -61,7 +61,7 @@ const Details = () => {
   return (
     <div className="flex-1 h-full overflow-auto">
       <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        {rootState.activeExtension?.title}
+        {rootState.activeExtension?.name}
       </h2>
 
       <div className="pr-4 pb-4 text-sm">{renderContent()}</div>

@@ -24,13 +24,13 @@ const App = () => {
   useAsyncEffect(async () => {
     if (!rootState.activeExtension) return;
 
-    const { id, title } = rootState.activeExtension;
+    const { id, name } = rootState.activeExtension;
 
     const appMetadata = await platformAdapter.invokeBackend<Metadata>(
       "get_app_metadata",
       {
         appPath: id,
-        appName: title,
+        appName: name,
       }
     );
 

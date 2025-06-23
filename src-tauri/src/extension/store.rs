@@ -15,10 +15,10 @@ use crate::extension::PLUGIN_JSON_FILE_NAME;
 use crate::extension::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE;
 use async_trait::async_trait;
 use reqwest::Client;
+use reqwest::StatusCode;
 use serde_json::Map as JsonObject;
 use serde_json::Value as Json;
 use std::sync::LazyLock;
-use reqwest::StatusCode;
 
 const DATA_SOURCE_ID: &str = "extension_store";
 
@@ -53,6 +53,7 @@ impl SearchSource for ExtensionStore {
                 id: DATA_SOURCE_ID.to_string(),
                 category: Some(DATA_SOURCE_ID.to_string()),
                 title: Some("Extension Store".to_string()),
+                icon: Some("font_Store".to_string()),
                 source: Some(DataSourceReference {
                     r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
                     name: Some(DATA_SOURCE_ID.into()),
@@ -219,12 +220,23 @@ pub(crate) async fn install_extension(id: String) -> Result<(), String> {
     let mut extension: Json = serde_json::from_str(&plugin_json_content)
         .map_err(|e| format!("Failed to parse plugin.json: {}", e))?;
 
-    let mut_ref_to_developer_object: &mut Json = extension.as_object_mut().expect("plugin.json should be an object").get_mut("developer").expect("plugin.json should contain field [developer]");
-    let developer_id = mut_ref_to_developer_object.get("id").expect("plugin.json should contain [developer.id]").as_str().expect("plugin.json field [developer.id] should be a string");
+    let mut_ref_to_developer_object: &mut Json = extension
+        .as_object_mut()
+        .expect("plugin.json should be an object")
+        .get_mut("developer")
+        .expect("plugin.json should contain field [developer]");
+    let developer_id = mut_ref_to_developer_object
+        .get("id")
+        .expect("plugin.json should contain [developer.id]")
+        .as_str()
+        .expect("plugin.json field [developer.id] should be a string");
     *mut_ref_to_developer_object = Json::String(developer_id.into());
 
     let extension: Extension = serde_json::from_value(extension).unwrap_or_else(|e| {
-      panic!("cannot parse plugin.json as struct Extension, error [{}]", e);
+        panic!(
+            "cannot parse plugin.json as struct Extension, error [{}]",
+            e
+        );
     });
 
     drop(plugin_json);
