@@ -97,7 +97,7 @@ export default function ChatInput({
   const textareaRef = useRef<{ reset: () => void; focus: () => void }>(null);
 
   const { curChatEnd, connected } = useChatStore();
-  const { setSearchValue } = useSearchStore();
+  const { setSearchValue, visibleExtensionStore } = useSearchStore();
 
   useEffect(() => {
     const handleFocus = () => {
@@ -246,7 +246,8 @@ export default function ChatInput({
         isTauri &&
         !goAskAi &&
         askAI &&
-        !disabledExtensions.includes("QuickAIAccess") && (
+        !disabledExtensions.includes("QuickAIAccess") &&
+        !visibleExtensionStore && (
           <div className="flex items-center gap-2 text-sm text-[#AEAEAE] dark:text-[#545454] whitespace-nowrap">
             <span>
               {t("search.askCocoAi.title", {

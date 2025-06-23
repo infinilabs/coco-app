@@ -29,6 +29,7 @@ export function useAssistantManager({
     setAskAiMessage,
     selectedAssistant,
     selectedSearchContent,
+    visibleExtensionStore,
     setVisibleExtensionStore,
     setSearchValue,
   } = useSearchStore();
@@ -96,6 +97,8 @@ export function useAssistantManager({
 
       if (key === "Tab" && !isChatMode && isTauri) {
         e.preventDefault();
+
+        if (visibleExtensionStore) return;
 
         if (selectedSearchContent?.id === "extension_store") {
           changeInput("");
