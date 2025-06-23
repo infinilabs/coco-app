@@ -51,7 +51,7 @@ const ContextMenu: FC<ContextMenuProps> = () => {
   const menus = useCreation(() => {
     if (isNil(selectedSearchContent)) return [];
 
-    const { url, category, type, payload } = selectedSearchContent;
+    const { id, url, category, type, payload } = selectedSearchContent;
     const { query, result } = payload ?? {};
 
     if (category === "AI Overview") {
@@ -76,7 +76,10 @@ const ContextMenu: FC<ContextMenuProps> = () => {
         icon: <Link />,
         keys: isMac ? ["⌘", "L"] : ["Ctrl", "L"],
         shortcut: isMac ? "meta.l" : "ctrl.l",
-        hide: category === "Calculator" || type === "AI Assistant",
+        hide:
+          category === "Calculator" ||
+          type === "AI Assistant" ||
+          id === "extension_store",
         clickEvent() {
           copyToClipboard(url);
         },
