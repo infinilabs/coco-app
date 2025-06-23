@@ -26,7 +26,7 @@ interface FooterProps {
 export default function Footer({ setIsPinnedWeb }: FooterProps) {
   const { t } = useTranslation();
 
-  const { sourceData, goAskAi } = useSearchStore();
+  const { sourceData, goAskAi, visibleExtensionStore } = useSearchStore();
 
   const isDark = useThemeStore((state) => state.isDark);
 
@@ -121,6 +121,8 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
           <span className="mr-1.5">
             {goAskAi
               ? t("search.askCocoAi.continueInChat")
+              : visibleExtensionStore
+              ? t("search.footer.install")
               : t("search.footer.select")}
             :
           </span>
@@ -131,7 +133,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
           </kbd>
           +
           <kbd className="coco-modal-footer-commands-key pr-1">
-            {goAskAi ? (
+            {goAskAi || visibleExtensionStore ? (
               <CornerDownLeft className="w-3 h-3" />
             ) : (
               <ArrowDown01 className="w-3 h-3" />
@@ -140,7 +142,11 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
         </div>
         <div className="flex items-center text-[#666] dark:text-[#666] text-xs">
           <span className="mr-1.5">
-            {goAskAi ? t("search.askCocoAi.copy") : t("search.footer.open")}:{" "}
+            {goAskAi
+              ? t("search.askCocoAi.copy")
+              : visibleExtensionStore
+              ? t("search.footer.details")
+              : t("search.footer.open")}
           </span>
           <kbd className="coco-modal-footer-commands-key pr-1">
             <CornerDownLeft className="w-3 h-3" />

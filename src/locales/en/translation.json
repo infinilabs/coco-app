@@ -301,7 +301,9 @@
       "updateAvailable": "Update available",
       "select": "Select",
       "open": "Open",
-      "powered": "Powered by Coco AI"
+      "powered": "Powered by Coco AI",
+      "install": "Install",
+      "details": "Details"
     },
     "input": {
       "searchPlaceholder": "Search whatever you want ...",
