@@ -217,7 +217,7 @@ export default function ChatInput({
         disabledChange={disabledChange}
       />
 
-      {!isChatMode && sourceData && (
+      {!isChatMode && (sourceData || visibleExtensionStore) && (
         <div
           className={`absolute ${
             lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-25px)]"
