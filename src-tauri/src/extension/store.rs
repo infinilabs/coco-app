@@ -1,14 +1,79 @@
 //! Extension store related stuff.
 
+use super::LOCAL_QUERY_SOURCE_TYPE;
+use crate::common::document::DataSourceReference;
+use crate::common::document::Document;
+use crate::common::error::SearchError;
+use crate::common::search::QueryResponse;
+use crate::common::search::QuerySource;
+use crate::common::search::SearchQuery;
+use crate::common::traits::SearchSource;
 use crate::extension::canonicalize_relative_icon_path;
 use crate::extension::third_party::THIRD_PARTY_EXTENSIONS_DIRECTORY;
 use crate::extension::Extension;
 use crate::extension::PLUGIN_JSON_FILE_NAME;
 use crate::extension::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE;
+use async_trait::async_trait;
 use reqwest::Client;
 use serde_json::Map as JsonObject;
 use serde_json::Value as Json;
 use std::sync::LazyLock;
+
+const DATA_SOURCE_ID: &str = "extension_store";
+
+pub(crate) struct ExtensionStore;
+
+#[async_trait]
+impl SearchSource for ExtensionStore {
+    fn get_type(&self) -> QuerySource {
+        QuerySource {
+            r#type: LOCAL_QUERY_SOURCE_TYPE.into(),
+            name: hostname::get()
+                .unwrap_or(DATA_SOURCE_ID.into())
+                .to_string_lossy()
+                .into(),
+            id: DATA_SOURCE_ID.into(),
+        }
+    }
+
+    async fn search(&self, query: SearchQuery) -> Result<QueryResponse, SearchError> {
+        const SCORE: f64 = 2000.0;
+
+        let Some(query_string) = query.query_strings.get("query") else {
+            return Ok(QueryResponse {
+                source: self.get_type(),
+                hits: Vec::new(),
+                total_hits: 0,
+            });
+        };
+
+        if query_string.contains("extension") || query_string.contains("store") {
+            let doc = Document {
+                id: DATA_SOURCE_ID.to_string(),
+                category: Some(DATA_SOURCE_ID.to_string()),
+                source: Some(DataSourceReference {
+                    r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
+                    name: Some(DATA_SOURCE_ID.into()),
+                    id: Some(DATA_SOURCE_ID.into()),
+                    icon: None,
+                }),
+                ..Default::default()
+            };
+
+            Ok(QueryResponse {
+                source: self.get_type(),
+                hits: vec![(doc, SCORE)],
+                total_hits: 1,
+            })
+        } else {
+            Ok(QueryResponse {
+                source: self.get_type(),
+                hits: Vec::new(),
+                total_hits: 0,
+            })
+        }
+    }
+}
 
 // Cache the client since it caches connections internally.
 static CLIENT: LazyLock<Client> = LazyLock::new(|| Client::new());

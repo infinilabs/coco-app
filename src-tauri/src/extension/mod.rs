@@ -484,6 +484,9 @@ pub(crate) async fn init_extensions(mut extensions: Vec<Extension>) -> Result<()
     )
     .await?;
 
+    // extension store
+    search_source_registry_tauri_state .register_source(store::ExtensionStore).await;
+
     // Init the built-in enabled extensions
     for built_in_extension in extensions
         .extract_if(.., |ext| {
