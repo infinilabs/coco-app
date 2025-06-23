@@ -17,6 +17,8 @@ static CLIENT: LazyLock<Client> = LazyLock::new(|| Client::new());
 pub(crate) async fn search_extension(
     query_params: Option<Vec<String>>,
 ) -> Result<Vec<Json>, String> {
+    println!("query_params: {:?}", query_params);
+
     let query_params = query_params.unwrap_or_default();
     let response = CLIENT
         .get("http://infini.tpddns.cn:27200/store/extension/_search")

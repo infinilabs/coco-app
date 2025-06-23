@@ -97,6 +97,7 @@ export default function ChatInput({
   const textareaRef = useRef<{ reset: () => void; focus: () => void }>(null);
 
   const { curChatEnd, connected } = useChatStore();
+  const { setSearchValue } = useSearchStore();
 
   useEffect(() => {
     const handleFocus = () => {
@@ -135,6 +136,7 @@ export default function ChatInput({
   const handleInputChange = useCallback(
     (value: string) => {
       changeInput(value);
+      setSearchValue(value);
       if (!isChatMode) {
         onSend(value);
       }

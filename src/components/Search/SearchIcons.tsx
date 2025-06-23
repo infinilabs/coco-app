@@ -14,7 +14,14 @@ export default function SearchIcons({
   isChatMode,
   assistant,
 }: SearchIconsProps) {
-  const { sourceData, setSourceData, goAskAi, setGoAskAi } = useSearchStore();
+  const {
+    sourceData,
+    setSourceData,
+    goAskAi,
+    setGoAskAi,
+    visibleExtensionStore,
+    setVisibleExtensionStore,
+  } = useSearchStore();
 
   if (isChatMode) {
     return null;
@@ -49,11 +56,14 @@ export default function SearchIcons({
       );
     }
 
-    if (sourceData) {
+    if (sourceData || visibleExtensionStore) {
       return (
         <ArrowBigLeft
           className="w-4 h-4 text-[#ccc] dark:text-[#d8d8d8] cursor-pointer"
-          onClick={() => setSourceData(undefined)}
+          onClick={() => {
+            setSourceData(undefined);
+            setVisibleExtensionStore(false);
+          }}
         />
       );
     }
