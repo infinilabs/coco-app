@@ -18,6 +18,7 @@ use reqwest::Client;
 use serde_json::Map as JsonObject;
 use serde_json::Value as Json;
 use std::sync::LazyLock;
+use reqwest::StatusCode;
 
 const DATA_SOURCE_ID: &str = "extension_store";
 
@@ -197,6 +198,10 @@ pub(crate) async fn install_extension(id: String) -> Result<(), String> {
         .await
         .map_err(|e| format!("Failed to download extension: {}", e))?;
 
+    if response.status() == StatusCode::NOT_FOUND {
+        return Err(format!("extension [{}] not found", id));
+    }
+
     let bytes = response
         .bytes()
         .await
@@ -210,8 +215,17 @@ pub(crate) async fn install_extension(id: String) -> Result<(), String> {
     let mut plugin_json_content = String::new();
     std::io::Read::read_to_string(&mut plugin_json, &mut plugin_json_content)
         .map_err(|e| e.to_string())?;
-    let extension: Extension = serde_json::from_str(&plugin_json_content)
+    let mut extension: Json = serde_json::from_str(&plugin_json_content)
         .map_err(|e| format!("Failed to parse plugin.json: {}", e))?;
+
+    let mut_ref_to_developer_object: &mut Json = extension.as_object_mut().expect("plugin.json should be an object").get_mut("developer").expect("plugin.json should contain field [developer]");
+    let developer_id = mut_ref_to_developer_object.get("id").expect("plugin.json should contain [developer.id]").as_str().expect("plugin.json field [developer.id] should be a string");
+    *mut_ref_to_developer_object = Json::String(developer_id.into());
+
+    let extension: Extension = serde_json::from_value(extension).unwrap_or_else(|e| {
+      panic!("cannot parse plugin.json as struct Extension, error [{}]", e);
+    });
+
     drop(plugin_json);
 
     let developer = extension.developer.clone().unwrap_or_default();
