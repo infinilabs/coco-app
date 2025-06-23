@@ -23,8 +23,15 @@ export function useAssistantManager({
 }: AssistantManagerProps) {
   const isTauri = useAppStore((state) => state.isTauri);
 
-  const { goAskAi, setGoAskAi, setAskAiMessage, selectedAssistant } =
-    useSearchStore();
+  const {
+    goAskAi,
+    setGoAskAi,
+    setAskAiMessage,
+    selectedAssistant,
+    selectedSearchContent,
+    setVisibleExtensionStore,
+    setSearchValue,
+  } = useSearchStore();
 
   const { quickAiAccessAssistant, disabledExtensions } = useExtensionsStore();
 
@@ -78,29 +85,43 @@ export function useAssistantManager({
     setGoAskAi(true);
   }, [disabledExtensions, askAI, inputValue, goAskAi, selectedAssistant]);
 
-  const handleKeyDownAutoResizeTextarea = useCallback((
-    e: React.KeyboardEvent<HTMLTextAreaElement>
-  ) => {
-    const { key, shiftKey, currentTarget } = e;
-    const { value } = currentTarget;
+  const handleKeyDownAutoResizeTextarea = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      const { key, shiftKey, currentTarget } = e;
+      const { value } = currentTarget;
 
-    if (key === "Backspace" && value === "") {
-      return setGoAskAi(false);
-    }
+      if (key === "Backspace" && value === "") {
+        return setGoAskAi(false);
+      }
 
-    if (key === "Tab" && !isChatMode && isTauri) {
-      e.preventDefault();
+      if (key === "Tab" && !isChatMode && isTauri) {
+        e.preventDefault();
 
-      assistant_get();
-      return handleAskAi();
-    }
+        if (selectedSearchContent?.id === "extension_store") {
+          changeInput("");
+          setSearchValue("");
+          return setVisibleExtensionStore(true);
+        }
 
-    if (key === "Enter" && !shiftKey && !isChatMode && isTauri) {
-      e.preventDefault();
+        assistant_get();
+        return handleAskAi();
+      }
 
-      goAskAi ? handleAskAi() : handleSubmit();
-    }
-  }, [isChatMode, goAskAi, assistant_get, handleAskAi, handleSubmit]);
+      if (key === "Enter" && !shiftKey && !isChatMode && isTauri) {
+        e.preventDefault();
+
+        goAskAi ? handleAskAi() : handleSubmit();
+      }
+    },
+    [
+      isChatMode,
+      goAskAi,
+      assistant_get,
+      handleAskAi,
+      handleSubmit,
+      selectedSearchContent,
+    ]
+  );
 
   return {
     askAI,

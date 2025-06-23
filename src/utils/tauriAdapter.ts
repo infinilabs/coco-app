@@ -235,7 +235,9 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     async openSearchItem(data) {
       const { invoke } = await import("@tauri-apps/api/core");
 
-      if (data.type === "AI Assistant") {
+      console.log("data", data);
+
+      if (data?.type === "AI Assistant" || data?.id === "extension_store") {
         const textarea = document.querySelector("#search-textarea");
 
         if (!(textarea instanceof HTMLTextAreaElement)) return;

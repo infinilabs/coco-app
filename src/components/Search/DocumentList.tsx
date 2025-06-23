@@ -4,13 +4,13 @@ import { useTranslation } from "react-i18next";
 
 import { useSearchStore } from "@/stores/searchStore";
 import { SearchHeader } from "./SearchHeader";
-import noDataImg from "@/assets/coconut-tree.png";
 import { metaOrCtrlKey } from "@/utils/keyboardUtils";
 import SearchListItem from "./SearchListItem";
 import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
 import { useAppStore } from "@/stores/appStore";
 import { useConnectStore } from "@/stores/connectStore";
+import SearchEmpty from "../Common/SearchEmpty";
 
 interface DocumentListProps {
   onSelectDocument: (id: string) => void;
@@ -255,16 +255,9 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         {!loading && (!data?.list || data.list.length === 0) && (
           <div
             data-tauri-drag-region
-            className="h-full w-full flex flex-col items-center"
+            className="h-full w-full flex flex-col justify-center items-center"
           >
-            <img
-              src={noDataImg}
-              alt={t("search.list.noDataAlt")}
-              className="w-16 h-16 mt-24"
-            />
-            <div className="mt-4 text-sm text-[#999] dark:text-[#666]">
-              {t("search.list.noResults")}
-            </div>
+            <SearchEmpty />
           </div>
         )}
       </div>

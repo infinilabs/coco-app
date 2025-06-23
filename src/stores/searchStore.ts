@@ -74,7 +74,7 @@ export const useSearchStore = create<ISearchStore>()(
       setAskAiAssistantId: (askAiAssistantId) => {
         return set({ askAiAssistantId });
       },
-      visibleExtensionStore: true,
+      visibleExtensionStore: false,
       setVisibleExtensionStore: (visibleExtensionStore) => {
         return set({ visibleExtensionStore });
       },

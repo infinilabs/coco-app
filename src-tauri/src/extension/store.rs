@@ -52,6 +52,7 @@ impl SearchSource for ExtensionStore {
             let doc = Document {
                 id: DATA_SOURCE_ID.to_string(),
                 category: Some(DATA_SOURCE_ID.to_string()),
+                title: Some("Extension Store".to_string()),
                 source: Some(DataSourceReference {
                     r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
                     name: Some(DATA_SOURCE_ID.into()),

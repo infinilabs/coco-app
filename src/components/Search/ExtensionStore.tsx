@@ -2,6 +2,7 @@ import { useSearchStore } from "@/stores/searchStore";
 import { parseSearchQuery } from "@/utils";
 import platformAdapter from "@/utils/platformAdapter";
 import { useAsyncEffect, useDebounce } from "ahooks";
+import SearchEmpty from "../Common/SearchEmpty";
 
 const ExtensionStore = () => {
   const { searchValue } = useSearchStore();
@@ -21,7 +22,14 @@ const ExtensionStore = () => {
     console.log("result", result);
   }, [debouncedSearchValue]);
 
-  return <div>ExtensionStore</div>;
+  return (
+    <div className="h-full">
+      {/* ExtensionStore */}
+      <div className="flex justify-center items-center h-full">
+        <SearchEmpty />
+      </div>
+    </div>
+  );
 };
 
 export default ExtensionStore;
