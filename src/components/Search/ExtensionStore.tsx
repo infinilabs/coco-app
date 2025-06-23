@@ -10,6 +10,8 @@ const ExtensionStore = () => {
   useAsyncEffect(async () => {
     console.log("debouncedSearchValue", debouncedSearchValue);
 
+    if (!debouncedSearchValue.trim()) return;
+
     const result = await platformAdapter.invokeBackend("search_extension", {
       queryParams: parseSearchQuery({
         query: debouncedSearchValue,
