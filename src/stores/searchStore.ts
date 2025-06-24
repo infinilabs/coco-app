@@ -35,6 +35,8 @@ export type ISearchStore = {
   setSearchValue: (searchValue: string) => void;
   selectedExtension?: SearchExtensionItem;
   setSelectedExtension: (selectedExtension?: SearchExtensionItem) => void;
+  downloadingExtensions: string[];
+  setDownloadingExtensions: (downloadingExtensions: string[]) => void;
 };
 
 export const useSearchStore = create<ISearchStore>()(
@@ -87,6 +89,10 @@ export const useSearchStore = create<ISearchStore>()(
       },
       setSelectedExtension(selectedExtension) {
         return set({ selectedExtension });
+      },
+      downloadingExtensions: [],
+      setDownloadingExtensions: (downloadingExtensions) => {
+        return set({ downloadingExtensions });
       },
     }),
     {

@@ -4,9 +4,11 @@ import platformAdapter from "@/utils/platformAdapter";
 import { useAsyncEffect, useDebounce, useKeyPress } from "ahooks";
 import SearchEmpty from "../Common/SearchEmpty";
 import { useEffect, useState } from "react";
-import { CircleCheck, FolderDown } from "lucide-react";
+import { CircleCheck, FolderDown, Loader } from "lucide-react";
 import clsx from "clsx";
 import ExtensionDetail from "./ExtensionDetail";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
+import { useAppStore } from "@/stores/appStore";
 
 export interface SearchExtensionItem {
   id: string;
@@ -56,14 +58,31 @@ export interface SearchExtensionItem {
   };
   checksum: string;
   installed: boolean;
+  commands?: Array<{
+    type: string;
+    name: string;
+    icon: string;
+    description: string;
+    action: {
+      exec: string;
+      args: string[];
+    };
+  }>;
 }
 
 const ExtensionStore = () => {
-  const { searchValue, selectedExtension, setSelectedExtension } =
-    useSearchStore();
+  const {
+    searchValue,
+    selectedExtension,
+    setSelectedExtension,
+    downloadingExtensions,
+    setDownloadingExtensions,
+  } = useSearchStore();
   const debouncedSearchValue = useDebounce(searchValue);
   const [list, setList] = useState<SearchExtensionItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<SearchExtensionItem>();
+  const { modifierKey } = useShortcutsStore();
+  const { addError } = useAppStore();
 
   useAsyncEffect(async () => {
     console.log("debouncedSearchValue", debouncedSearchValue);
@@ -101,10 +120,65 @@ const ExtensionStore = () => {
     { exactMatch: true }
   );
 
+  useKeyPress(
+    `${modifierKey}.enter`,
+    () => {
+      if (!selectedItem) return;
+
+      handleDownload(selectedItem);
+    },
+    { exactMatch: true }
+  );
+
+  const handleDownload = async (item: SearchExtensionItem) => {
+    const { id, name } = item;
+
+    try {
+      if (downloadingExtensions.includes(id)) return;
+
+      setDownloadingExtensions(downloadingExtensions.concat(id));
+
+      await platformAdapter.invokeBackend("install_extension", { id });
+
+      setList((prev) => {
+        return prev.map((item) => {
+          if (item.id === id) {
+            return { ...item, installed: true };
+          }
+
+          return item;
+        });
+      });
+
+      if (selectedItem?.id === id) {
+        setSelectedItem((prev) => {
+          if (!prev) return;
+
+          return { ...prev, installed: true };
+        });
+      }
+
+      if (selectedExtension?.id === id) {
+        setSelectedExtension({
+          ...selectedExtension,
+          installed: true,
+        });
+      }
+
+      addError(`${name} installation completed`);
+    } catch (error) {
+      addError(String(error), "error");
+    } finally {
+      setDownloadingExtensions(
+        downloadingExtensions.filter((item) => item !== id)
+      );
+    }
+  };
+
   return (
-    <div className="h-full text-sm p-2">
+    <div className="h-full text-sm p-2 overflow-auto custom-scrollbar">
       {selectedExtension ? (
-        <ExtensionDetail />
+        <ExtensionDetail onDownload={handleDownload} />
       ) : (
         <>
           {list.length > 0 ? (
@@ -136,6 +210,10 @@ const ExtensionStore = () => {
                   <div className="flex items-center gap-3">
                     {installed && (
                       <CircleCheck className="size-4 text-green-500" />
+                    )}
+
+                    {downloadingExtensions.includes(item.id) && (
+                      <Loader className="size-4 text-blue-500 animate-spin" />
                     )}
 
                     <div className="flex items-center gap-1 text-[#999]">
