@@ -14,7 +14,12 @@ export function useKeyboardHandlers({
   handleSubmit,
   curChatEnd,
 }: KeyboardHandlersProps) {
-  const { setSourceData, setVisibleExtensionStore } = useSearchStore();
+  const {
+    setSourceData,
+    setVisibleExtensionStore,
+    selectedExtension,
+    setSelectedExtension,
+  } = useSearchStore();
   const { modifierKey } = useShortcutsStore();
 
   const getModifierKeyPressed = (event: KeyboardEvent) => {
@@ -30,6 +35,11 @@ export function useKeyboardHandlers({
       // Handle ArrowLeft with meta key
       if (e.code === "ArrowLeft" && getModifierKeyPressed(e)) {
         e.preventDefault();
+
+        if (selectedExtension) {
+          return setSelectedExtension(void 0);
+        }
+
         setSourceData(void 0);
         setVisibleExtensionStore(false);
         return;
@@ -41,7 +51,14 @@ export function useKeyboardHandlers({
         curChatEnd && handleSubmit();
       }
     },
-    [isChatMode, handleSubmit, setSourceData, curChatEnd, modifierKey]
+    [
+      isChatMode,
+      handleSubmit,
+      setSourceData,
+      curChatEnd,
+      modifierKey,
+      selectedExtension,
+    ]
   );
 
   useEffect(() => {

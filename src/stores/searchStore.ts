@@ -1,3 +1,4 @@
+import { SearchExtensionItem } from "@/components/Search/ExtensionStore";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -32,6 +33,8 @@ export type ISearchStore = {
   setVisibleExtensionStore: (visibleExtensionStore: boolean) => void;
   searchValue: string;
   setSearchValue: (searchValue: string) => void;
+  selectedExtension?: SearchExtensionItem;
+  setSelectedExtension: (selectedExtension?: SearchExtensionItem) => void;
 };
 
 export const useSearchStore = create<ISearchStore>()(
@@ -81,6 +84,9 @@ export const useSearchStore = create<ISearchStore>()(
       searchValue: "",
       setSearchValue: (searchValue) => {
         return set({ searchValue });
+      },
+      setSelectedExtension(selectedExtension) {
+        return set({ selectedExtension });
       },
     }),
     {

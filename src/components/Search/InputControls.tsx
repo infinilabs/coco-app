@@ -182,6 +182,7 @@ const InputControls = ({
     return state.aiOverviewAssistant;
   });
   const aiOverviewShortcut = useShortcutsStore((state) => state.aiOverview);
+  const { visibleExtensionStore } = useSearchStore();
 
   return (
     <div
@@ -265,7 +266,8 @@ const InputControls = ({
           {!disabledExtensions.includes("AIOverview") &&
             isTauri &&
             aiOverviewServer &&
-            aiOverviewAssistant && (
+            aiOverviewAssistant &&
+            !visibleExtensionStore && (
               <div
                 className={clsx(
                   "inline-flex items-center gap-1 px-2 py-1 rounded-full hover:!text-[#881c94] cursor-pointer transition",

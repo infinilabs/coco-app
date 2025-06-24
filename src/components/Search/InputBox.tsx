@@ -97,7 +97,8 @@ export default function ChatInput({
   const textareaRef = useRef<{ reset: () => void; focus: () => void }>(null);
 
   const { curChatEnd, connected } = useChatStore();
-  const { setSearchValue, visibleExtensionStore } = useSearchStore();
+  const { setSearchValue, visibleExtensionStore, selectedExtension } =
+    useSearchStore();
 
   useEffect(() => {
     const handleFocus = () => {
@@ -217,15 +218,16 @@ export default function ChatInput({
         disabledChange={disabledChange}
       />
 
-      {!isChatMode && (sourceData || visibleExtensionStore) && (
-        <div
-          className={`absolute ${
-            lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-25px)]"
-          } left-2`}
-        >
-          <VisibleKey shortcut="←" />
-        </div>
-      )}
+      {!isChatMode &&
+        (sourceData || visibleExtensionStore || selectedExtension) && (
+          <div
+            className={`absolute ${
+              lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-25px)]"
+            } left-2`}
+          >
+            <VisibleKey shortcut="←" />
+          </div>
+        )}
 
       {/* 
       <div
