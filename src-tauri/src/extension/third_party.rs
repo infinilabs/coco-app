@@ -250,25 +250,6 @@ fn validate_extension(
 
 /// Checks that can be performed against an extension or a sub item.
 fn validate_extension_or_sub_item(extension: &Extension) -> bool {
-    // Only
-    //
-    // 1. letters
-    // 2. underscore
-    // 3. numbers
-    //
-    // are allowed in the ID.
-    if !extension
-        .id
-        .chars()
-        .all(|c| c.is_ascii_alphabetic() || c == '_')
-    {
-        log::warn!(
-            "invalid extension [{}], [id] should contain only letters, numbers, or underscores",
-            extension.id
-        );
-        return false;
-    }
-
     // If field `action` is Some, then it should be a Command
     if extension.action.is_some() && extension.r#type != ExtensionType::Command {
         log::warn!(
@@ -339,15 +320,6 @@ fn validate_extension_or_sub_item(extension: &Extension) -> bool {
             );
             return false;
         }
-    }
-
-    // The developer field should not be set
-    if extension.developer.is_some() {
-        log::warn!(
-            "invalid extension [{}], unknown field [developer]",
-            extension.id,
-        );
-        return false;
     }
 
     true

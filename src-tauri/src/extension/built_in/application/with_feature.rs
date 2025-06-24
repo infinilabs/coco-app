@@ -1054,6 +1054,9 @@ pub async fn get_app_list<R: Runtime>(
             hotkey,
             enabled,
             settings: None,
+            screenshots: None,
+            url: None,
+            version: None,
         };
 
         app_entries.push(app_entry);

@@ -19,6 +19,10 @@ pub const LOCAL_QUERY_SOURCE_TYPE: &str = "local";
 const PLUGIN_JSON_FILE_NAME: &str = "plugin.json";
 const ASSETS_DIRECTORY_FILE_NAME: &str = "assets";
 
+fn default_true() -> bool {
+  true
+}
+
 #[derive(Debug, Deserialize, Serialize, Copy, Clone, Hash, PartialEq, Eq, Display)]
 #[serde(rename_all(serialize = "lowercase", deserialize = "lowercase"))]
 enum Platform {
@@ -92,11 +96,17 @@ pub struct Extension {
     hotkey: Option<String>,
 
     /// Is this extension enabled.
+    #[serde(default = "default_true")]
     enabled: bool,
 
     /// Extension settings
     #[serde(skip_serializing_if = "Option::is_none")]
     settings: Option<Json>,
+
+    // We do not care about these fields, just take it regardless of what it is.
+    screenshots: Option<Json>,
+    url: Option<Json>,
+    version: Option<Json>,
 }
 
 /// Bundle ID uniquely identifies an extension.
@@ -259,7 +269,7 @@ impl Extension {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub(crate) struct CommandAction {
     pub(crate) exec: String,
-    pub(crate) args: Vec<String>,
+    pub(crate) args: Option<Vec<String>>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]

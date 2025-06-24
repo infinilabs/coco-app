@@ -49,7 +49,7 @@ tauri-plugin-shell = "2"
 serde = { version = "1", features = ["derive"] }
 # Need `arbitrary_precision` feature to support storing u128
 # see: https://docs.rs/serde_json/latest/serde_json/struct.Number.html#method.from_u128
-serde_json = { version = "1", features = ["arbitrary_precision"] }
+serde_json = { version = "1", features = ["arbitrary_precision", "preserve_order"] }
 tauri-plugin-http = "2"
 tauri-plugin-websocket = "2"
 tauri-plugin-deep-link = "2.0.0"
