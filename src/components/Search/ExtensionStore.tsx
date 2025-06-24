@@ -130,11 +130,13 @@ const ExtensionStore = () => {
     { exactMatch: true }
   );
 
+  useKeyPress([], () => {});
+
   const handleDownload = async (item: SearchExtensionItem) => {
-    const { id, name } = item;
+    const { id, name, installed } = item;
 
     try {
-      if (downloadingExtensions.includes(id)) return;
+      if (installed || downloadingExtensions.includes(id)) return;
 
       setDownloadingExtensions(downloadingExtensions.concat(id));
 
