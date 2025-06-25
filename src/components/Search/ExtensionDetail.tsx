@@ -13,6 +13,7 @@ import {
 import { FC, useState } from "react";
 
 import DeleteDialog from "../Common/DeleteDialog";
+import { useTranslation } from "react-i18next";
 
 interface ExtensionDetailProps {
   onInstall: () => void;
@@ -23,6 +24,7 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
   const { onInstall, onUninstall } = props;
   const { selectedExtension, installingExtensions } = useSearchStore();
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useTranslation();
 
   const handleCancel = () => {
     setIsOpen(false);
@@ -70,7 +72,7 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
                   />
                   <div className="flex items-center gap-1 h-6 px-2 rounded-full text-[#22C461] bg-[#22C461]/20">
                     <CircleCheck className="size-4" />
-                    <span>Installed</span>
+                    <span>{t("extensionDetail.hints.installed")}</span>
                   </div>
                 </div>
               ) : (
@@ -100,14 +102,16 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
             </div>
           )}
 
-          <div className="mb-1 mt-4">Description</div>
+          <div className="mb-1 mt-4">
+            {t("extensionDetail.label.description")}
+          </div>
           <div className="mb-4 text-[#999]">
             {selectedExtension.description}
           </div>
 
           {(selectedExtension.commands?.length ?? 0) > 0 && (
             <>
-              <div className="mb-1">Commands</div>
+              <div className="mb-1">{t("extensionDetail.label.commands")}</div>
 
               {selectedExtension.commands?.map((item) => {
                 return (
@@ -122,7 +126,7 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
 
           {(selectedExtension.tags?.length ?? 0) > 0 && (
             <>
-              <div className="mb-1">Tags</div>
+              <div className="mb-1">{t("extensionDetail.label.tags")}</div>
               <div className="mb-4">
                 {selectedExtension.tags?.map((item) => {
                   return (
@@ -138,7 +142,7 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
             </>
           )}
 
-          <span className="mb-1">Last update</span>
+          <span className="mb-1">{t("extensionDetail.label.lastUpdate")}</span>
           <div className="text-[#999]">
             {dayjs(selectedExtension.updated).format("YYYY-MM-DD HH:mm:ss")}
           </div>
@@ -147,8 +151,10 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
         <DeleteDialog
           reverseButtonPosition
           isOpen={isOpen}
-          title={`Uninstall ${selectedExtension.name}`}
-          description="This will remove all the data and commands associated with this extension"
+          title={`${t("extensionDetail.deleteDialog.title")} ${
+            selectedExtension.name
+          }`}
+          description={t("extensionDetail.deleteDialog.description")}
           cancelButtonProps={{
             className:
               "text-white bg-[#007BFF] border-[#007BFF] dark:bg-[#007BFF] dark:border-[#007BFF]",

@@ -505,5 +505,27 @@
     "divide": "Divide",
     "remainder": "Remainder",
     "expression": "Expression"
+  },
+  "extensionStore": {},
+  "extensionDetail": {
+    "label": {
+      "description": "Description",
+      "commands": "Commands",
+      "tags": "Tags",
+      "lastUpdate": "Last Update"
+    },
+    "hints": {
+      "installed": "Installed"
+    },
+    "deleteDialog": {
+      "title": "Uninstall",
+      "description": "This will remove all the data and commands associated with this extension."
+    }
+  },
+  "deleteDialog": {
+    "button": {
+      "cancel": "Cancel",
+      "delete": "Delete"
+    }
   }
 }

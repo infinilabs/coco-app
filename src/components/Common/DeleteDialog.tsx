@@ -11,6 +11,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 
 import VisibleKey from "./VisibleKey";
+import { useTranslation } from "react-i18next";
 
 interface DeleteDialogProps {
   isOpen: boolean;
@@ -36,6 +37,7 @@ const DeleteDialog: FC<DeleteDialogProps> = (props) => {
     onCancel,
     onDelete,
   } = props;
+  const { t } = useTranslation();
 
   const handleEnter = (event: KeyboardEvent, fn: () => void) => {
     if (event.code !== "Enter") return;
@@ -84,7 +86,7 @@ const DeleteDialog: FC<DeleteDialogProps> = (props) => {
                   handleEnter(event, onCancel);
                 }}
               >
-                Cancel
+                {t("deleteDialog.button.cancel")}
               </Button>
             </VisibleKey>
 
@@ -104,7 +106,7 @@ const DeleteDialog: FC<DeleteDialogProps> = (props) => {
                   handleEnter(event, onDelete);
                 }}
               >
-                Delete
+                {t("deleteDialog.button.delete")}
               </Button>
             </VisibleKey>
           </div>

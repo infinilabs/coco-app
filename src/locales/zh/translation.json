@@ -504,5 +504,26 @@
     "divide": "相除",
     "remainder": "求余",
     "expression": "表达式"
+  },
+  "extensionDetail": {
+    "label": {
+      "description": "描述",
+      "commands": "命令",
+      "tags": "标签",
+      "lastUpdate": "最后更新时间"
+    },
+    "hints": {
+      "installed": "已安装"
+    },
+    "deleteDialog": {
+      "title": "卸载",
+      "description": "这将删除与该扩展相关的所有数据和命令。"
+    }
+  },
+  "deleteDialog": {
+    "button": {
+      "cancel": "取消",
+      "delete": "删除"
+    }
   }
 }
