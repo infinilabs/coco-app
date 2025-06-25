@@ -303,7 +303,8 @@
       "open": "Open",
       "powered": "Powered by Coco AI",
       "install": "Install",
-      "details": "Details"
+      "details": "Details",
+      "uninstall": "Uninstall"
     },
     "input": {
       "searchPlaceholder": "Search whatever you want ...",

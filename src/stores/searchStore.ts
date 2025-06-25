@@ -39,6 +39,8 @@ export type ISearchStore = {
   setInstallingExtensions: (installingExtensions: string[]) => void;
   uninstallingExtensions: string[];
   setUninstallingExtensions: (uninstallingExtensions: string[]) => void;
+  visibleExtensionDetail: boolean;
+  setVisibleExtensionDetail: (visibleExtensionDetail: boolean) => void;
 };
 
 export const useSearchStore = create<ISearchStore>()(
@@ -99,6 +101,10 @@ export const useSearchStore = create<ISearchStore>()(
       uninstallingExtensions: [],
       setUninstallingExtensions: (uninstallingExtensions) => {
         return set({ uninstallingExtensions });
+      },
+      visibleExtensionDetail: false,
+      setVisibleExtensionDetail: (visibleExtensionDetail) => {
+        return set({ visibleExtensionDetail });
       },
     }),
     {

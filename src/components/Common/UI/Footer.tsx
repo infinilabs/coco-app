@@ -26,7 +26,8 @@ interface FooterProps {
 export default function Footer({ setIsPinnedWeb }: FooterProps) {
   const { t } = useTranslation();
 
-  const { sourceData, goAskAi, visibleExtensionStore } = useSearchStore();
+  const { sourceData, goAskAi, selectedExtension, visibleExtensionDetail } =
+    useSearchStore();
 
   const isDark = useThemeStore((state) => state.isDark);
 
@@ -121,7 +122,9 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
           <span className="mr-1.5">
             {goAskAi
               ? t("search.askCocoAi.continueInChat")
-              : visibleExtensionStore
+              : selectedExtension?.installed
+              ? t("search.footer.uninstall")
+              : !selectedExtension?.installed
               ? t("search.footer.install")
               : t("search.footer.select")}
             :
@@ -133,7 +136,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
           </kbd>
           +
           <kbd className="coco-modal-footer-commands-key pr-1">
-            {goAskAi || visibleExtensionStore ? (
+            {goAskAi || selectedExtension ? (
               <CornerDownLeft className="w-3 h-3" />
             ) : (
               <ArrowDown01 className="w-3 h-3" />
@@ -144,7 +147,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
           <span className="mr-1.5">
             {goAskAi
               ? t("search.askCocoAi.copy")
-              : visibleExtensionStore
+              : selectedExtension
               ? t("search.footer.details")
               : t("search.footer.open")}
           </span>

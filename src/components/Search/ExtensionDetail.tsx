@@ -10,12 +10,11 @@ import {
   Trash2,
   User,
 } from "lucide-react";
-import { SearchExtensionItem } from "./ExtensionStore";
 import { FC } from "react";
 
 interface ExtensionDetailProps {
-  onInstall: (item: SearchExtensionItem) => void;
-  onUninstall: (item: SearchExtensionItem) => void;
+  onInstall: () => void;
+  onUninstall: () => void;
 }
 
 const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
@@ -49,7 +48,10 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
           <div className="pt-2">
             {selectedExtension.installed ? (
               <div className="flex items-center gap-2">
-                <Trash2 className="size-4 text-red-500 cursor-pointer" />
+                <Trash2
+                  className="size-4 text-red-500 cursor-pointer"
+                  onClick={onUninstall}
+                />
                 <div className="flex items-center gap-1 h-6 px-2 rounded-full text-[#22C461] bg-[#22C461]/20">
                   <CircleCheck className="size-4" />
                   <span>Installed</span>
@@ -59,7 +61,7 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
               <Button
                 className="flex justify-center items-center w-14 h-6 rounded-full bg-[#007BFF] text-white"
                 onClick={() => {
-                  onInstall(selectedExtension);
+                  onInstall();
                 }}
               >
                 {installingExtensions.includes(selectedExtension.id) ? (
@@ -71,6 +73,7 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
             )}
           </div>
         </div>
+
         {(selectedExtension.screenshots?.length ?? 0) > 0 && (
           <div className="flex gap-3 py-4 border-b">
             {selectedExtension.screenshots.map((item) => {
@@ -80,34 +83,46 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
             })}
           </div>
         )}
-        <div>
-          <div className="mb-1">Description</div>
-          <div className="mb-4 text-[#999]">
-            {selectedExtension.description}
-          </div>
 
-          {(selectedExtension.commands?.length ?? 0) > 0 && (
-            <>
-              <div className="mb-1">Commands</div>
+        <div className="mb-1 mt-4">Description</div>
+        <div className="mb-4 text-[#999]">{selectedExtension.description}</div>
 
-              {selectedExtension.commands?.map((item) => {
+        {(selectedExtension.commands?.length ?? 0) > 0 && (
+          <>
+            <div className="mb-1">Commands</div>
+
+            {selectedExtension.commands?.map((item) => {
+              return (
+                <div key={item.name}>
+                  <div className="mb-1">{item.name}</div>
+                  <div className="mb-4 text-[#999]">{item.description}</div>
+                </div>
+              );
+            })}
+          </>
+        )}
+
+        {(selectedExtension.tags?.length ?? 0) > 0 && (
+          <>
+            <div className="mb-1">Tags</div>
+            <div className="mb-4">
+              {selectedExtension.tags?.map((item) => {
                 return (
-                  <div key={item.name}>
-                    <div className="mb-1">{item.name}</div>
-                    <div className="mb-4 text-[#999]">{item.description}</div>
+                  <div
+                    key={item}
+                    className="h-6 px-2 rounded text-[#999] bg-[#E6E6E6] dark:bg-[#333]"
+                  >
+                    {item}
                   </div>
                 );
               })}
-            </>
-          )}
+            </div>
+          </>
+        )}
 
-          <div className="mb-1">Categories</div>
-          <div className="mb-4">{selectedExtension.category}</div>
-
-          <span className="mb-1">Last update</span>
-          <div className="text-[#999]">
-            {dayjs(selectedExtension.updated).format("YYYY-MM-DD HH:mm:ss")}
-          </div>
+        <span className="mb-1">Last update</span>
+        <div className="text-[#999]">
+          {dayjs(selectedExtension.updated).format("YYYY-MM-DD HH:mm:ss")}
         </div>
       </div>
     )

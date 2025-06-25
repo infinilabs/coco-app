@@ -16,9 +16,10 @@ export function useKeyboardHandlers({
 }: KeyboardHandlersProps) {
   const {
     setSourceData,
+    visibleExtensionStore,
     setVisibleExtensionStore,
-    selectedExtension,
-    setSelectedExtension,
+    visibleExtensionDetail,
+    setVisibleExtensionDetail,
   } = useSearchStore();
   const { modifierKey } = useShortcutsStore();
 
@@ -36,13 +37,15 @@ export function useKeyboardHandlers({
       if (e.code === "ArrowLeft" && getModifierKeyPressed(e)) {
         e.preventDefault();
 
-        if (selectedExtension) {
-          return setSelectedExtension(void 0);
+        if (visibleExtensionDetail) {
+          return setVisibleExtensionDetail(false);
         }
 
-        setSourceData(void 0);
-        setVisibleExtensionStore(false);
-        return;
+        if (visibleExtensionStore) {
+          return setVisibleExtensionStore(false);
+        }
+
+        return setSourceData(void 0);
       }
 
       // Handle Enter without meta key requirement
@@ -57,7 +60,7 @@ export function useKeyboardHandlers({
       setSourceData,
       curChatEnd,
       modifierKey,
-      selectedExtension,
+      visibleExtensionDetail,
     ]
   );
 

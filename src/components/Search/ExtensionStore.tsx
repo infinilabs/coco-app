@@ -1,7 +1,7 @@
 import { useSearchStore } from "@/stores/searchStore";
 import { parseSearchQuery } from "@/utils";
 import platformAdapter from "@/utils/platformAdapter";
-import { useAsyncEffect, useDebounce, useKeyPress } from "ahooks";
+import { useAsyncEffect, useDebounce, useKeyPress, useUnmount } from "ahooks";
 import SearchEmpty from "../Common/SearchEmpty";
 import { useState } from "react";
 import { CircleCheck, FolderDown, Loader } from "lucide-react";
@@ -9,6 +9,7 @@ import clsx from "clsx";
 import ExtensionDetail from "./ExtensionDetail";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useAppStore } from "@/stores/appStore";
+import { platform } from "@/utils/platform";
 
 export interface SearchExtensionItem {
   id: string;
@@ -19,7 +20,7 @@ export interface SearchExtensionItem {
   icon: string;
   type: string;
   category: string;
-  tags: string[];
+  tags?: string[];
   platforms: string[];
   developer: {
     id: string;
@@ -79,10 +80,11 @@ const ExtensionStore = () => {
     setInstallingExtensions,
     uninstallingExtensions,
     setUninstallingExtensions,
+    visibleExtensionDetail,
+    setVisibleExtensionDetail,
   } = useSearchStore();
   const debouncedSearchValue = useDebounce(searchValue);
   const [list, setList] = useState<SearchExtensionItem[]>([]);
-  const [selectedItem, setSelectedItem] = useState<SearchExtensionItem>();
   const { modifierKey } = useShortcutsStore();
   const { addError } = useAppStore();
 
@@ -97,10 +99,10 @@ const ExtensionStore = () => {
       "search_extension",
       {
         queryParams: parseSearchQuery({
-          // query: debouncedSearchValue,
-          // filters: {
-          //   platform: platform(),
-          // },
+          query: debouncedSearchValue,
+          filters: {
+            platforms: [platform()],
+          },
         }),
       }
     );
@@ -109,13 +111,17 @@ const ExtensionStore = () => {
 
     setList(result ?? []);
 
-    setSelectedItem(result?.[0]);
+    setSelectedExtension(result?.[0]);
   }, [debouncedSearchValue]);
+
+  useUnmount(() => {
+    setSelectedExtension(void 0);
+  });
 
   useKeyPress(
     "enter",
     () => {
-      setSelectedExtension(selectedItem);
+      setVisibleExtensionDetail(true);
     },
     { exactMatch: true }
   );
@@ -123,17 +129,21 @@ const ExtensionStore = () => {
   useKeyPress(
     `${modifierKey}.enter`,
     () => {
-      if (!selectedItem) return;
+      if (selectedExtension?.installed) {
+        return handleUnInstall();
+      }
 
-      handleInstall(selectedItem);
+      handleInstall();
     },
     { exactMatch: true }
   );
 
   useKeyPress([], () => {});
 
-  const toggleInstall = (item: SearchExtensionItem, installed = true) => {
-    const { id } = item;
+  const toggleInstall = (installed = true) => {
+    if (!selectedExtension) return;
+
+    const { id } = selectedExtension;
 
     setList((prev) => {
       return prev.map((item) => {
@@ -145,14 +155,6 @@ const ExtensionStore = () => {
       });
     });
 
-    if (selectedItem?.id === id) {
-      setSelectedItem((prev) => {
-        if (!prev) return;
-
-        return { ...prev, installed };
-      });
-    }
-
     if (selectedExtension?.id === id) {
       setSelectedExtension({
         ...selectedExtension,
@@ -161,8 +163,10 @@ const ExtensionStore = () => {
     }
   };
 
-  const handleInstall = async (item: SearchExtensionItem) => {
-    const { id, name, installed } = item;
+  const handleInstall = async () => {
+    if (!selectedExtension) return;
+
+    const { id, name, installed } = selectedExtension;
 
     try {
       if (installed || installingExtensions.includes(id)) return;
@@ -171,7 +175,7 @@ const ExtensionStore = () => {
 
       await platformAdapter.invokeBackend("install_extension", { id });
 
-      toggleInstall(item);
+      toggleInstall();
 
       addError(`${name} installation completed`, "info");
     } catch (error) {
@@ -183,17 +187,22 @@ const ExtensionStore = () => {
     }
   };
 
-  const handleUnInstall = async (item: SearchExtensionItem) => {
-    const { id, name, installed } = item;
+  const handleUnInstall = async () => {
+    if (!selectedExtension) return;
+
+    const { id, name, installed, developer } = selectedExtension;
 
     try {
       if (!installed || uninstallingExtensions.includes(id)) return;
 
       setUninstallingExtensions(uninstallingExtensions.concat(id));
 
-      await platformAdapter.invokeBackend("uninstall_extension", { id });
+      await platformAdapter.invokeBackend("uninstall_extension", {
+        developer: developer.id,
+        extensionId: id,
+      });
 
-      toggleInstall(item, false);
+      toggleInstall(false);
 
       addError(`${name} uninstallation completed`, "info");
     } catch (error) {
@@ -207,7 +216,7 @@ const ExtensionStore = () => {
 
   return (
     <div className="h-full text-sm p-2 overflow-auto custom-scrollbar">
-      {selectedExtension ? (
+      {visibleExtensionDetail ? (
         <ExtensionDetail
           onInstall={handleInstall}
           onUninstall={handleUnInstall}
@@ -224,14 +233,15 @@ const ExtensionStore = () => {
                   className={clsx(
                     "flex justify-between h-[40px] px-2 rounded-lg cursor-pointer text-[#333] dark:text-[#d8d8d8] transition",
                     {
-                      "bg-black/10 dark:bg-white/15": selectedItem?.id === id,
+                      "bg-black/10 dark:bg-white/15":
+                        selectedExtension?.id === id,
                     }
                   )}
                   onMouseOver={() => {
-                    setSelectedItem(item);
+                    setSelectedExtension(item);
                   }}
                   onClick={() => {
-                    setSelectedExtension(item);
+                    setVisibleExtensionDetail(true);
                   }}
                 >
                   <div className="flex items-center gap-2">

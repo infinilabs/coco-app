@@ -21,8 +21,8 @@ export default function SearchIcons({
     setGoAskAi,
     visibleExtensionStore,
     setVisibleExtensionStore,
-    selectedExtension,
-    setSelectedExtension,
+    visibleExtensionDetail,
+    setVisibleExtensionDetail,
   } = useSearchStore();
 
   if (isChatMode) {
@@ -58,17 +58,20 @@ export default function SearchIcons({
       );
     }
 
-    if (sourceData || visibleExtensionStore || selectedExtension) {
+    if (sourceData || visibleExtensionStore || visibleExtensionDetail) {
       return (
         <ArrowBigLeft
           className="w-4 h-4 text-[#ccc] dark:text-[#d8d8d8] cursor-pointer"
           onClick={() => {
-            if (selectedExtension) {
-              return setSelectedExtension(void 0);
+            if (visibleExtensionDetail) {
+              return setVisibleExtensionDetail(false);
+            }
+
+            if (visibleExtensionStore) {
+              return setVisibleExtensionStore(false);
             }
 
             setSourceData(void 0);
-            setVisibleExtensionStore(false);
           }}
         />
       );
