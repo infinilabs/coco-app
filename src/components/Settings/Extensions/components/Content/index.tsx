@@ -247,15 +247,15 @@ const Item: FC<ItemProps> = (props) => {
         className={clsx("flex items-center justify-end", {
           "opacity-50 pointer-events-none": parentDisabled,
         })}
-        onClick={(event) => {
-          event.stopPropagation();
-        }}
       >
         <SettingsToggle
           label={id}
           defaultChecked={enabled}
           className="scale-75"
           onChange={handleChange}
+          onClick={(event) => {
+            event.stopPropagation();
+          }}
         />
       </div>
     );
