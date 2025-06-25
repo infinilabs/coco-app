@@ -56,7 +56,7 @@ const DeleteDialog: FC<DeleteDialogProps> = (props) => {
         id="headlessui-popover-panel:delete-history"
         className="fixed inset-0 flex items-center justify-center w-screen"
       >
-        <DialogPanel className="flex flex-col justify-between w-[360px] h-[160px] p-3 text-[#333] dark:text-white/90 border border-[#e6e6e6] bg-white dark:bg-[#202126] dark:border-white/10 shadow-xl rounded-lg">
+        <DialogPanel className="flex flex-col justify-between w-[360px] h-[160px] p-3 text-[#333] dark:text-white/90 border border-[#e6e6e6] bg-white dark:bg-[#202126] dark:border-white/10 shadow-[0_4px_10px_rgba(0,0,0,0.2)] rounded-lg dark:shadow-[0_8px_20px_rgba(0,0,0,0.4)]">
           <div className="flex flex-col gap-3">
             <DialogTitle className="text-base font-bold">{title}</DialogTitle>
             <Description className="text-sm">{description}</Description>
