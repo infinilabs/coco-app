@@ -91,7 +91,7 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
           </div>
 
           {(selectedExtension.screenshots?.length ?? 0) > 0 && (
-            <div className="flex gap-3 py-4 border-b">
+            <div className="flex gap-3 py-4 border-b dark:border-b-[#262626]">
               {selectedExtension.screenshots.map((item) => {
                 return (
                   <img key={item.url} src={item.url} className="h-[125px]" />
