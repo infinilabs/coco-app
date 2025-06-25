@@ -26,7 +26,7 @@ const Details = () => {
   const renderContent = () => {
     if (!rootState.activeExtension) return;
 
-    const { id, type } = rootState.activeExtension;
+    const { id, type, description } = rootState.activeExtension;
 
     if (id === "Applications") {
       return <Applications />;
@@ -56,6 +56,8 @@ const Details = () => {
     if (id === "Calculator") {
       return <Calculator />;
     }
+
+    return <div className="text-[#999]">{description}</div>;
   };
 
   return (
