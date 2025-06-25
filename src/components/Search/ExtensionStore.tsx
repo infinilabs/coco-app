@@ -170,6 +170,9 @@ const ExtensionStore = () => {
       });
     });
 
+    console.log("selectedExtension?.id", selectedExtension?.id);
+    console.log("id", id);
+
     if (selectedExtension?.id === id) {
       setSelectedExtension({
         ...selectedExtension,

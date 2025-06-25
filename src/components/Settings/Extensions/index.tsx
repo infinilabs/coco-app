@@ -147,15 +147,16 @@ export const Extensions = () => {
           </div>
 
           <div className="flex justify-between gap-6 my-4">
-            <div className="flex h-8 border">
+            <div className="flex h-8 border dark:border-gray-700">
               {state.categories.map((item) => {
                 return (
                   <div
                     key={item}
                     className={clsx(
-                      "flex items-center h-8 px-4 cursor-pointer",
+                      "flex items-center h-full px-4 cursor-pointer",
                       {
-                        "bg-[#F0F6FE]": item === state.currentCategory,
+                        "bg-[#F0F6FE] dark:bg-gray-700":
+                          item === state.currentCategory,
                       }
                     )}
                     onClick={() => {
@@ -170,7 +171,7 @@ export const Extensions = () => {
 
             <SettingsInput
               className="flex-1"
-              placeholder="搜索扩展"
+              placeholder="Search"
               value={state.searchValue}
               onChange={(value) => {
                 state.searchValue = String(value);
