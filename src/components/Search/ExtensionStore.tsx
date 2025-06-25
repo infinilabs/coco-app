@@ -3,7 +3,7 @@ import { parseSearchQuery } from "@/utils";
 import platformAdapter from "@/utils/platformAdapter";
 import { useAsyncEffect, useDebounce, useKeyPress } from "ahooks";
 import SearchEmpty from "../Common/SearchEmpty";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CircleCheck, FolderDown, Loader } from "lucide-react";
 import clsx from "clsx";
 import ExtensionDetail from "./ExtensionDetail";
@@ -38,7 +38,7 @@ export interface SearchExtensionItem {
   }[];
   url: {
     code: string;
-    home: string;
+    download: string;
   };
   version: {
     number: string;
@@ -75,8 +75,10 @@ const ExtensionStore = () => {
     searchValue,
     selectedExtension,
     setSelectedExtension,
-    downloadingExtensions,
-    setDownloadingExtensions,
+    installingExtensions,
+    setInstallingExtensions,
+    uninstallingExtensions,
+    setUninstallingExtensions,
   } = useSearchStore();
   const debouncedSearchValue = useDebounce(searchValue);
   const [list, setList] = useState<SearchExtensionItem[]>([]);
@@ -103,14 +105,12 @@ const ExtensionStore = () => {
       }
     );
 
+    console.log("result", result);
+
     setList(result ?? []);
 
-    console.log("result", result);
+    setSelectedItem(result?.[0]);
   }, [debouncedSearchValue]);
-
-  useEffect(() => {
-    setSelectedItem(list[0]);
-  }, [list]);
 
   useKeyPress(
     "enter",
@@ -125,54 +125,82 @@ const ExtensionStore = () => {
     () => {
       if (!selectedItem) return;
 
-      handleDownload(selectedItem);
+      handleInstall(selectedItem);
     },
     { exactMatch: true }
   );
 
   useKeyPress([], () => {});
 
-  const handleDownload = async (item: SearchExtensionItem) => {
+  const toggleInstall = (item: SearchExtensionItem, installed = true) => {
+    const { id } = item;
+
+    setList((prev) => {
+      return prev.map((item) => {
+        if (item.id === id) {
+          return { ...item, installed };
+        }
+
+        return item;
+      });
+    });
+
+    if (selectedItem?.id === id) {
+      setSelectedItem((prev) => {
+        if (!prev) return;
+
+        return { ...prev, installed };
+      });
+    }
+
+    if (selectedExtension?.id === id) {
+      setSelectedExtension({
+        ...selectedExtension,
+        installed,
+      });
+    }
+  };
+
+  const handleInstall = async (item: SearchExtensionItem) => {
     const { id, name, installed } = item;
 
     try {
-      if (installed || downloadingExtensions.includes(id)) return;
+      if (installed || installingExtensions.includes(id)) return;
 
-      setDownloadingExtensions(downloadingExtensions.concat(id));
+      setInstallingExtensions(installingExtensions.concat(id));
 
       await platformAdapter.invokeBackend("install_extension", { id });
 
-      setList((prev) => {
-        return prev.map((item) => {
-          if (item.id === id) {
-            return { ...item, installed: true };
-          }
+      toggleInstall(item);
 
-          return item;
-        });
-      });
-
-      if (selectedItem?.id === id) {
-        setSelectedItem((prev) => {
-          if (!prev) return;
-
-          return { ...prev, installed: true };
-        });
-      }
-
-      if (selectedExtension?.id === id) {
-        setSelectedExtension({
-          ...selectedExtension,
-          installed: true,
-        });
-      }
-
-      addError(`${name} installation completed`);
+      addError(`${name} installation completed`, "info");
     } catch (error) {
       addError(String(error), "error");
     } finally {
-      setDownloadingExtensions(
-        downloadingExtensions.filter((item) => item !== id)
+      setInstallingExtensions(
+        installingExtensions.filter((item) => item !== id)
+      );
+    }
+  };
+
+  const handleUnInstall = async (item: SearchExtensionItem) => {
+    const { id, name, installed } = item;
+
+    try {
+      if (!installed || uninstallingExtensions.includes(id)) return;
+
+      setUninstallingExtensions(uninstallingExtensions.concat(id));
+
+      await platformAdapter.invokeBackend("uninstall_extension", { id });
+
+      toggleInstall(item, false);
+
+      addError(`${name} uninstallation completed`, "info");
+    } catch (error) {
+      addError(String(error), "error");
+    } finally {
+      setUninstallingExtensions(
+        uninstallingExtensions.filter((item) => item !== id)
       );
     }
   };
@@ -180,7 +208,10 @@ const ExtensionStore = () => {
   return (
     <div className="h-full text-sm p-2 overflow-auto custom-scrollbar">
       {selectedExtension ? (
-        <ExtensionDetail onDownload={handleDownload} />
+        <ExtensionDetail
+          onInstall={handleInstall}
+          onUninstall={handleUnInstall}
+        />
       ) : (
         <>
           {list.length > 0 ? (
@@ -214,7 +245,7 @@ const ExtensionStore = () => {
                       <CircleCheck className="size-4 text-green-500" />
                     )}
 
-                    {downloadingExtensions.includes(item.id) && (
+                    {installingExtensions.includes(item.id) && (
                       <Loader className="size-4 text-blue-500 animate-spin" />
                     )}
 

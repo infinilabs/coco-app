@@ -14,16 +14,17 @@ import { SearchExtensionItem } from "./ExtensionStore";
 import { FC } from "react";
 
 interface ExtensionDetailProps {
-  onDownload: (item: SearchExtensionItem) => void;
+  onInstall: (item: SearchExtensionItem) => void;
+  onUninstall: (item: SearchExtensionItem) => void;
 }
 
 const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
-  const { onDownload } = props;
-  const { selectedExtension, downloadingExtensions } = useSearchStore();
+  const { onInstall, onUninstall } = props;
+  const { selectedExtension, installingExtensions } = useSearchStore();
 
   return (
     selectedExtension && (
-      <div className="text-sm text-[#333]">
+      <div className="text-sm text-[#333] dark:text-white">
         <div className="flex justify-between">
           <div className="flex gap-4">
             <img src={selectedExtension.icon} className="size-[56px]" />
@@ -58,10 +59,10 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
               <Button
                 className="flex justify-center items-center w-14 h-6 rounded-full bg-[#007BFF] text-white"
                 onClick={() => {
-                  onDownload(selectedExtension);
+                  onInstall(selectedExtension);
                 }}
               >
-                {downloadingExtensions.includes(selectedExtension.id) ? (
+                {installingExtensions.includes(selectedExtension.id) ? (
                   <Loader className="size-4 animate-spin" />
                 ) : (
                   <Download className="size-4" />
