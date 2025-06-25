@@ -465,9 +465,12 @@
     "force_description2": "Please install the latest version to continue.",
     "releaseNotes": "Release Notes",
     "button": {
-      "install": "Install"
+      "install": "Install",
+      "ok": "Ok"
     },
-    "skip_version": "Skip this version"
+    "skip_version": "Skip this version",
+    "date": "You're up to date",
+    "latest": "\"{{0}}\" is the latest version"
   },
   "error": {
     "message": "Sorry, there is an error in your Coco App. Please contact the administrator."

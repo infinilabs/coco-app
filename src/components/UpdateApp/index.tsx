@@ -126,86 +126,75 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
       onClose={noop}
     >
       <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-        <div
-          className={clsx(
-            "flex min-h-full items-center justify-center",
-            {
-              "p-4": !isCheckPage,
-            }
-          )}>
+        <div className={clsx("flex min-h-full items-center justify-center", !isCheckPage && "p-4")}>
           <DialogPanel
             transition
-            className={clsx(
-              "relative w-[340px] py-8 flex flex-col items-center bg-white shadow-md border border-[#EDEDED] rounded-lg dark:bg-[#333] dark:border-black/20",
-            )}
+            className={`relative w-[340px] py-8 flex flex-col items-center bg-white shadow-md border border-[#EDEDED] dark:bg-[#333] dark:border-black/20 ${isCheckPage ? "" : "rounded-lg"}`}
           >
-            {isCheckPage ? null : <X
-              className={clsx(
-                "absolute size-5 text-[#999] top-3 right-3 dark:text-[#D8D8D8]",
-                cursorClassName,
-                {
-                  hidden: !isOptional,
-                }
-              )}
-              onClick={handleCancel}
-            />}
+            {!isCheckPage && isOptional && (
+              <X
+                className={clsx("absolute size-5 top-3 right-3 text-[#999] dark:text-[#D8D8D8]", cursorClassName)}
+                onClick={handleCancel}
+              />
+            )}
 
             <img src={isDark ? darkIcon : lightIcon} className="h-6" />
 
-            <div className="text-[#333] text-sm leading-5 py-2 dark:text-[#D8D8D8]">
-              {isOptional ? (
-                t("update.optional_description")
-              ) : (
-                <div className="leading-5 text-center">
-                  <p>{t("update.force_description1")}</p>
-                  <p>{t("update.force_description2")}</p>
-                </div>
-              )}
+            <div className="text-[#333] text-sm leading-5 py-2 dark:text-[#D8D8D8] text-center">
+              {updateInfo?.available ? (
+                isOptional ? t("update.optional_description") : (
+                  <>
+                    <p>{t("update.force_description1")}</p>
+                    <p>{t("update.force_description2")}</p>
+                  </>
+                )
+              ) : t("update.date")}
             </div>
 
-            <div
-              className="text-xs text-[#0072FF] cursor-pointer"
-              onClick={() => {
-                OpenURLWithBrowser(
-                  "https://docs.infinilabs.com/coco-app/main/docs/release-notes"
-                );
-              }}
-            >
-              v{updateInfo?.version} {t("update.releaseNotes")}
-            </div>
+            {updateInfo?.available ? (
+              <div
+                className="text-xs text-[#0072FF] cursor-pointer"
+                onClick={() =>
+                  OpenURLWithBrowser("https://docs.infinilabs.com/coco-app/main/docs/release-notes")
+                }
+              >
+                v{updateInfo.version} {t("update.releaseNotes")}
+              </div>
+            ) : (
+              <div className={clsx("text-xs text-[#999]", cursorClassName)}>
+                {t("update.latest", { replace: [updateInfo?.version] })}
+              </div>
+            )}
 
             <Button
               className={clsx(
                 "mb-3 mt-6 bg-[#0072FF] text-white text-sm px-[14px] py-[8px] rounded-lg",
                 cursorClassName,
-                {
-                  "opacity-50": state.loading,
-                }
+                state.loading && "opacity-50"
               )}
-              onClick={handleDownload}
+              onClick={updateInfo?.available ? handleDownload : handleSkip}
             >
               {state.loading ? (
                 <div className="flex justify-center items-center gap-2">
                   <LoaderCircle className="animate-spin size-5" />
                   {percent}%
                 </div>
-              ) : (
-                t("update.button.install")
-              )}
+              ) : updateInfo?.available ? t("update.button.install") : t("update.button.ok")}
             </Button>
 
-            <div
-              className={clsx("text-xs text-[#999]", cursorClassName, {
-                hidden: !isOptional,
-              })}
-              onClick={handleSkip}
-            >
-              {t("update.skip_version")}
-            </div>
+            {updateInfo?.available && isOptional && (
+              <div
+                className={clsx("text-xs text-[#999]", cursorClassName)}
+                onClick={handleSkip}
+              >
+                {t("update.skip_version")}
+              </div>
+            )}
           </DialogPanel>
         </div>
       </div>
     </Dialog>
+
   );
 };
 
