@@ -505,6 +505,12 @@
     "remainder": "求余",
     "expression": "表达式"
   },
+  "extensionStore": {
+    "hints": {
+      "installationCompleted": "安装成功",
+      "uninstallationCompleted": "卸载成功"
+    }
+  },
   "extensionDetail": {
     "label": {
       "description": "描述",

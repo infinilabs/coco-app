@@ -10,6 +10,7 @@ import ExtensionDetail from "./ExtensionDetail";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useAppStore } from "@/stores/appStore";
 import { platform } from "@/utils/platform";
+import { useTranslation } from "react-i18next";
 
 export interface SearchExtensionItem {
   id: string;
@@ -87,10 +88,9 @@ const ExtensionStore = () => {
   const [list, setList] = useState<SearchExtensionItem[]>([]);
   const { modifierKey } = useShortcutsStore();
   const { addError } = useAppStore();
+  const { t } = useTranslation();
 
   useAsyncEffect(async () => {
-    console.log("debouncedSearchValue", debouncedSearchValue);
-
     if (!debouncedSearchValue.trim()) {
       return setList([]);
     }
@@ -107,7 +107,7 @@ const ExtensionStore = () => {
       }
     );
 
-    console.log("result", result);
+    console.log("search_extension", result);
 
     setList(result ?? []);
 
@@ -138,7 +138,22 @@ const ExtensionStore = () => {
     { exactMatch: true }
   );
 
-  useKeyPress([], () => {});
+  useKeyPress(["uparrow", "downarrow"], (_, key) => {
+    const index = list.findIndex((item) => item.id === selectedExtension?.id);
+    const length = list.length;
+
+    if (length <= 1) return;
+
+    let nextIndex = index;
+
+    if (key === "uparrow") {
+      nextIndex = nextIndex > 0 ? nextIndex - 1 : length - 1;
+    } else {
+      nextIndex = nextIndex < length - 1 ? nextIndex + 1 : 0;
+    }
+
+    setSelectedExtension(list[nextIndex]);
+  });
 
   const toggleInstall = (installed = true) => {
     if (!selectedExtension) return;
@@ -177,7 +192,10 @@ const ExtensionStore = () => {
 
       toggleInstall();
 
-      addError(`${name} installation completed`, "info");
+      addError(
+        `${name} ${t("extensionStore.hints.installationCompleted")}`,
+        "info"
+      );
     } catch (error) {
       addError(String(error), "error");
     } finally {
@@ -204,7 +222,10 @@ const ExtensionStore = () => {
 
       toggleInstall(false);
 
-      addError(`${name} uninstallation completed`, "info");
+      addError(
+        `${name} ${t("extensionStore.hints.uninstallationCompleted")}`,
+        "info"
+      );
     } catch (error) {
       addError(String(error), "error");
     } finally {

@@ -506,7 +506,12 @@
     "remainder": "Remainder",
     "expression": "Expression"
   },
-  "extensionStore": {},
+  "extensionStore": {
+    "hints": {
+      "installationCompleted": "installation completed",
+      "uninstallationCompleted": "uninstallation completed"
+    }
+  },
   "extensionDetail": {
     "label": {
       "description": "Description",
