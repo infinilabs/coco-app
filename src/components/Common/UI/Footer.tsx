@@ -147,45 +147,48 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
         <Copyright />
       )}
 
-      <div className={`flex mobile:hidden items-center gap-3`}>
-        <div className="gap-1 flex items-center text-[#666] dark:text-[#666] text-xs">
-          <span className="mr-1.5">
-            {goAskAi
-              ? t("search.askCocoAi.continueInChat")
-              : selectedExtension?.installed
-              ? t("search.footer.uninstall")
-              : !selectedExtension?.installed
-              ? t("search.footer.install")
-              : t("search.footer.select")}
-            :
-          </span>
-          <kbd className="coco-modal-footer-commands-key pr-1">
-            <div className="flex items-center justify-center min-w-3 h-3">
-              {formatKey(modifierKey)}
-            </div>
-          </kbd>
-          +
-          <kbd className="coco-modal-footer-commands-key pr-1">
-            {goAskAi || selectedExtension ? (
+      {!visibleExtensionDetail && (
+        <div className={`flex mobile:hidden items-center gap-3`}>
+          <div className="gap-1 flex items-center text-[#666] dark:text-[#666] text-xs">
+            <span className="mr-1.5">
+              {goAskAi
+                ? t("search.askCocoAi.continueInChat")
+                : selectedExtension?.installed
+                ? t("search.footer.uninstall")
+                : !selectedExtension?.installed
+                ? t("search.footer.install")
+                : t("search.footer.select")}
+              :
+            </span>
+            <kbd className="coco-modal-footer-commands-key pr-1">
+              <div className="flex items-center justify-center min-w-3 h-3">
+                {formatKey(modifierKey)}
+              </div>
+            </kbd>
+            +
+            <kbd className="coco-modal-footer-commands-key pr-1">
+              {goAskAi || selectedExtension ? (
+                <CornerDownLeft className="w-3 h-3" />
+              ) : (
+                <ArrowDown01 className="w-3 h-3" />
+              )}
+            </kbd>
+          </div>
+
+          <div className="flex items-center text-[#666] dark:text-[#666] text-xs">
+            <span className="mr-1.5">
+              {goAskAi
+                ? t("search.askCocoAi.copy")
+                : visibleExtensionStore
+                ? t("search.footer.details")
+                : t("search.footer.open")}
+            </span>
+            <kbd className="coco-modal-footer-commands-key pr-1">
               <CornerDownLeft className="w-3 h-3" />
-            ) : (
-              <ArrowDown01 className="w-3 h-3" />
-            )}
-          </kbd>
+            </kbd>
+          </div>
         </div>
-        <div className="flex items-center text-[#666] dark:text-[#666] text-xs">
-          <span className="mr-1.5">
-            {goAskAi
-              ? t("search.askCocoAi.copy")
-              : selectedExtension
-              ? t("search.footer.details")
-              : t("search.footer.open")}
-          </span>
-          <kbd className="coco-modal-footer-commands-key pr-1">
-            <CornerDownLeft className="w-3 h-3" />
-          </kbd>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
