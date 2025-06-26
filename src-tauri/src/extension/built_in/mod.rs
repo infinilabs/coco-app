@@ -3,7 +3,7 @@
 pub mod ai_overview;
 pub mod application;
 pub mod calculator;
-pub mod file_system;
+pub mod file_search;
 pub mod pizza_engine_runtime;
 pub mod quick_ai_access;
 
@@ -149,12 +149,8 @@ pub(crate) async fn list_built_in_extensions() -> Result<Vec<Extension>, String>
         .await?,
     );
     built_in_extensions.push(
-        load_built_in_extension(
-            dir,
-            calculator::DATA_SOURCE_ID,
-            calculator::PLUGIN_JSON_FILE,
-        )
-        .await?,
+        load_built_in_extension(dir, calculator::EXTENSION_ID, calculator::PLUGIN_JSON_FILE)
+            .await?,
     );
     built_in_extensions.push(
         load_built_in_extension(
@@ -169,6 +165,14 @@ pub(crate) async fn list_built_in_extensions() -> Result<Vec<Extension>, String>
             dir,
             quick_ai_access::EXTENSION_ID,
             quick_ai_access::PLUGIN_JSON_FILE,
+        )
+        .await?,
+    );
+    built_in_extensions.push(
+        load_built_in_extension(
+            dir,
+            file_search::EXTENSION_ID,
+            file_search::PLUGIN_JSON_FILE,
         )
         .await?,
     );
@@ -191,10 +195,18 @@ pub(super) async fn init_built_in_extension<R: Runtime>(
         log::debug!("built-in extension [{}] initialized", extension.id);
     }
 
-    if extension.id == calculator::DATA_SOURCE_ID {
+    if extension.id == calculator::EXTENSION_ID {
         let calculator_search = calculator::CalculatorSource::new(2000f64);
         search_source_registry
             .register_source(calculator_search)
+            .await;
+        log::debug!("built-in extension [{}] initialized", extension.id);
+    }
+
+    if extension.id == file_search::EXTENSION_ID {
+        let file_system_search = file_search::FileSearchExtensionSearchSource::new(1500f64);
+        search_source_registry
+            .register_source(file_system_search)
             .await;
         log::debug!("built-in extension [{}] initialized", extension.id);
     }
@@ -245,7 +257,7 @@ pub(crate) async fn enable_built_in_extension(
         return Ok(());
     }
 
-    if bundle_id.extension_id == calculator::DATA_SOURCE_ID {
+    if bundle_id.extension_id == calculator::EXTENSION_ID {
         let calculator_search = calculator::CalculatorSource::new(2000f64);
         search_source_registry_tauri_state
             .register_source(calculator_search)
@@ -268,6 +280,19 @@ pub(crate) async fn enable_built_in_extension(
     }
 
     if bundle_id.extension_id == ai_overview::EXTENSION_ID {
+        alter_extension_json_file(
+            &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
+            bundle_id,
+            update_extension,
+        )?;
+        return Ok(());
+    }
+
+    if bundle_id.extension_id == file_search::EXTENSION_ID {
+        let file_system_search = file_search::FileSearchExtensionSearchSource::new(1500f64);
+        search_source_registry_tauri_state
+            .register_source(file_system_search)
+            .await;
         alter_extension_json_file(
             &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
             bundle_id,
@@ -317,7 +342,7 @@ pub(crate) async fn disable_built_in_extension(
         return Ok(());
     }
 
-    if bundle_id.extension_id == calculator::DATA_SOURCE_ID {
+    if bundle_id.extension_id == calculator::EXTENSION_ID {
         search_source_registry_tauri_state
             .remove_source(bundle_id.extension_id)
             .await;
@@ -346,6 +371,18 @@ pub(crate) async fn disable_built_in_extension(
             update_extension,
         )?;
 
+        return Ok(());
+    }
+
+    if bundle_id.extension_id == file_search::EXTENSION_ID {
+        search_source_registry_tauri_state
+            .remove_source(bundle_id.extension_id)
+            .await;
+        alter_extension_json_file(
+            &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
+            bundle_id,
+            update_extension,
+        )?;
         return Ok(());
     }
 
@@ -455,7 +492,7 @@ pub(crate) async fn is_built_in_extension_enabled(
         }
     }
 
-    if bundle_id.extension_id == calculator::DATA_SOURCE_ID {
+    if bundle_id.extension_id == calculator::EXTENSION_ID {
         return Ok(search_source_registry_tauri_state
             .get_source(bundle_id.extension_id)
             .await

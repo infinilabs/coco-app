@@ -239,7 +239,7 @@ pub async fn query_coco_fusion<R: Runtime>(
     let mut unique_sources = HashSet::new();
     for hit in &final_hits {
         if let Some(source) = &hit.source {
-            if source.id != crate::extension::built_in::calculator::DATA_SOURCE_ID {
+            if source.id != crate::extension::built_in::calculator::EXTENSION_ID {
                 unique_sources.insert(&source.id);
             }
         }
@@ -263,7 +263,7 @@ pub async fn query_coco_fusion<R: Runtime>(
                 let source = hit.source.as_ref()?;
                 let title = hit.document.title.as_deref()?;
 
-                if source.id != crate::extension::built_in::calculator::DATA_SOURCE_ID {
+                if source.id != crate::extension::built_in::calculator::EXTENSION_ID {
                     Some((idx, title))
                 } else {
                     None
