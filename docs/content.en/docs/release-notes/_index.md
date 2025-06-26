@@ -13,6 +13,8 @@ Information about release notes of Coco Server is provided here.
 
 ### 🚀 Features
 
+- feat: impl extension store #699
+
 ### 🐛 Bug fix
 
 - fix: quick ai state synchronous #693
