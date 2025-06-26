@@ -14,6 +14,7 @@ import { FC, useState } from "react";
 
 import DeleteDialog from "../Common/DeleteDialog";
 import { useTranslation } from "react-i18next";
+import { useKeyPress } from "ahooks";
 
 interface ExtensionDetailProps {
   onInstall: () => void;
@@ -25,6 +26,8 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
   const { selectedExtension, installingExtensions } = useSearchStore();
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
+
+  useKeyPress("enter", onInstall, { exactMatch: true });
 
   const handleCancel = () => {
     setIsOpen(false);

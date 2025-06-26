@@ -131,11 +131,7 @@ const ExtensionStore = () => {
   useKeyPress(
     `${modifierKey}.enter`,
     () => {
-      if (visibleExtensionDetail) return;
-
-      if (selectedExtension?.installed) {
-        return handleUnInstall();
-      }
+      if (visibleExtensionDetail || selectedExtension?.installed) return;
 
       handleInstall();
     },
