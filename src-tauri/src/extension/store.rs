@@ -85,8 +85,6 @@ static CLIENT: LazyLock<Client> = LazyLock::new(|| Client::new());
 pub(crate) async fn search_extension(
     query_params: Option<Vec<String>>,
 ) -> Result<Vec<Json>, String> {
-    println!("query_params: {:?}", query_params);
-
     let query_params: Vec<(&str, &str)> = match query_params {
         Some(ref v) => {
             let mut parsed = Vec::new();
