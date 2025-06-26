@@ -3,7 +3,7 @@ import { parseSearchQuery } from "@/utils";
 import platformAdapter from "@/utils/platformAdapter";
 import { useAsyncEffect, useDebounce, useKeyPress, useUnmount } from "ahooks";
 import SearchEmpty from "../Common/SearchEmpty";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CircleCheck, FolderDown, Loader } from "lucide-react";
 import clsx from "clsx";
 import ExtensionDetail from "./ExtensionDetail";
@@ -83,12 +83,29 @@ const ExtensionStore = () => {
     setUninstallingExtensions,
     visibleExtensionDetail,
     setVisibleExtensionDetail,
+    visibleContextMenu,
+    setVisibleContextMenu,
   } = useSearchStore();
   const debouncedSearchValue = useDebounce(searchValue);
   const [list, setList] = useState<SearchExtensionItem[]>([]);
   const { modifierKey } = useShortcutsStore();
   const { addError } = useAppStore();
   const { t } = useTranslation();
+
+  useEffect(() => {
+    const unlisten1 = platformAdapter.listenEvent("install-extension", () => {
+      handleInstall();
+    });
+
+    const unlisten2 = platformAdapter.listenEvent("uninstall-extension", () => {
+      handleUnInstall();
+    });
+
+    return () => {
+      unlisten1.then((fn) => fn());
+      unlisten2.then((fn) => fn());
+    };
+  }, [selectedExtension]);
 
   useAsyncEffect(async () => {
     if (!debouncedSearchValue.trim()) {
@@ -121,6 +138,8 @@ const ExtensionStore = () => {
   useKeyPress(
     "enter",
     () => {
+      if (visibleContextMenu) return;
+
       if (visibleExtensionDetail) {
         return handleInstall();
       }
@@ -133,7 +152,13 @@ const ExtensionStore = () => {
   useKeyPress(
     `${modifierKey}.enter`,
     () => {
-      if (visibleExtensionDetail || selectedExtension?.installed) return;
+      if (
+        visibleContextMenu ||
+        visibleExtensionDetail ||
+        selectedExtension?.installed
+      ) {
+        return;
+      }
 
       handleInstall();
     },
@@ -141,7 +166,9 @@ const ExtensionStore = () => {
   );
 
   useKeyPress(["uparrow", "downarrow"], (_, key) => {
-    if (visibleExtensionDetail) return;
+    console.log("visibleContextMenu", visibleContextMenu);
+
+    if (visibleContextMenu || visibleExtensionDetail) return;
 
     const index = list.findIndex((item) => item.id === selectedExtension?.id);
     const length = list.length;
@@ -267,6 +294,11 @@ const ExtensionStore = () => {
                   }}
                   onClick={() => {
                     setVisibleExtensionDetail(true);
+                  }}
+                  onContextMenu={(event) => {
+                    event.preventDefault();
+
+                    setVisibleContextMenu(true);
                   }}
                 >
                   <div className="flex items-center gap-2">

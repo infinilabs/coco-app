@@ -56,10 +56,16 @@ function SettingsPage() {
       platformAdapter.emitEvent("change-app-store", state);
     });
 
+    const unlisten2 = platformAdapter.listenEvent("config-extension", () => {
+      platformAdapter.showWindow();
+      setDefaultIndex(1);
+    });
+
     return () => {
-      unlisten.then((fn) => fn());
       unsubscribeConnect();
       unsubscribeAppStore();
+      unlisten.then((fn) => fn());
+      unlisten2.then((fn) => fn());
     };
   }, []);
 
