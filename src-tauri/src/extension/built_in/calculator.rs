@@ -17,7 +17,7 @@ pub(crate) const DATA_SOURCE_ID: &str = "Calculator";
 pub(crate) const PLUGIN_JSON_FILE: &str = r#"
 {
   "id": "Calculator",
-  "title": "Calculator",
+  "name": "Calculator",
   "platforms": ["macos", "linux", "windows"],
   "description": "...",
   "icon": "font_Calculator",

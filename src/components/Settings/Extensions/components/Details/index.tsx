@@ -26,7 +26,7 @@ const Details = () => {
   const renderContent = () => {
     if (!rootState.activeExtension) return;
 
-    const { id, type } = rootState.activeExtension;
+    const { id, type, description } = rootState.activeExtension;
 
     if (id === "Applications") {
       return <Applications />;
@@ -56,12 +56,14 @@ const Details = () => {
     if (id === "Calculator") {
       return <Calculator />;
     }
+
+    return <div className="text-[#999]">{description}</div>;
   };
 
   return (
     <div className="flex-1 h-full overflow-auto">
       <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        {rootState.activeExtension?.title}
+        {rootState.activeExtension?.name}
       </h2>
 
       <div className="pr-4 pb-4 text-sm">{renderContent()}</div>

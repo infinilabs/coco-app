@@ -15,6 +15,7 @@ import Extensions from "@/components/Settings/Extensions";
 import { useConnectStore } from "@/stores/connectStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore } from "@/stores/appStore";
+import { useExtensionsStore } from "@/stores/extensionsStore";
 
 const tabIndexMap: { [key: string]: number } = {
   general: 0,
@@ -26,6 +27,7 @@ const tabIndexMap: { [key: string]: number } = {
 
 function SettingsPage() {
   const { t } = useTranslation();
+  const { setConfigId } = useExtensionsStore();
 
   useTray();
 
@@ -37,7 +39,7 @@ function SettingsPage() {
     { name: t("settings.tabs.about"), icon: Info },
   ];
 
-  const [defaultIndex, setDefaultIndex] = useState<number>(0);
+  const [defaultIndex, setDefaultIndex] = useState<number>(1);
 
   useEffect(() => {
     const unlisten = listen("tab_index", (event) => {
@@ -56,10 +58,20 @@ function SettingsPage() {
       platformAdapter.emitEvent("change-app-store", state);
     });
 
+    const unlisten2 = platformAdapter.listenEvent(
+      "config-extension",
+      ({ payload }) => {
+        platformAdapter.showWindow();
+        setDefaultIndex(1);
+        setConfigId(payload);
+      }
+    );
+
     return () => {
-      unlisten.then((fn) => fn());
       unsubscribeConnect();
       unsubscribeAppStore();
+      unlisten.then((fn) => fn());
+      unlisten2.then((fn) => fn());
     };
   }, []);
 

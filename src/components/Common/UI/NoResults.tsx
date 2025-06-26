@@ -2,9 +2,9 @@ import { useTranslation } from "react-i18next";
 
 import { isMac } from "@/utils/platform";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
-import noDataImg from "@/assets/coconut-tree.png";
 import clsx from "clsx";
 import { formatKey } from "@/utils/keyboardUtils";
+import SearchEmpty from "../SearchEmpty";
 
 export const NoResults = () => {
   const { t } = useTranslation();
@@ -17,10 +17,8 @@ export const NoResults = () => {
       data-tauri-drag-region
       className="h-full w-full flex flex-col justify-center items-center"
     >
-      <img src={noDataImg} alt="no-data" className="w-16 h-16" />
-      <div className="mt-4 text-sm text-[#999] dark:text-[#666]">
-        {t("search.main.noResults")}
-      </div>
+      <SearchEmpty />
+
       <div
         className={`flex mobile:hidden mt-10 text-sm  text-[#333] dark:text-[#D8D8D8]`}
       >

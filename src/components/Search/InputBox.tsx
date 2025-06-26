@@ -97,6 +97,8 @@ export default function ChatInput({
   const textareaRef = useRef<{ reset: () => void; focus: () => void }>(null);
 
   const { curChatEnd, connected } = useChatStore();
+  const { setSearchValue, visibleExtensionStore, selectedExtension } =
+    useSearchStore();
 
   useEffect(() => {
     const handleFocus = () => {
@@ -135,6 +137,7 @@ export default function ChatInput({
   const handleInputChange = useCallback(
     (value: string) => {
       changeInput(value);
+      setSearchValue(value);
       if (!isChatMode) {
         onSend(value);
       }
@@ -215,15 +218,16 @@ export default function ChatInput({
         disabledChange={disabledChange}
       />
 
-      {!isChatMode && sourceData && (
-        <div
-          className={`absolute ${
-            lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-25px)]"
-          } left-2`}
-        >
-          <VisibleKey shortcut="←" />
-        </div>
-      )}
+      {!isChatMode &&
+        (sourceData || visibleExtensionStore || selectedExtension) && (
+          <div
+            className={`absolute ${
+              lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-25px)]"
+            } left-2`}
+          >
+            <VisibleKey shortcut="←" />
+          </div>
+        )}
 
       {/* 
       <div
@@ -244,7 +248,8 @@ export default function ChatInput({
         isTauri &&
         !goAskAi &&
         askAI &&
-        !disabledExtensions.includes("QuickAIAccess") && (
+        !disabledExtensions.includes("QuickAIAccess") &&
+        !visibleExtensionStore && (
           <div className="flex items-center gap-2 text-sm text-[#AEAEAE] dark:text-[#545454] whitespace-nowrap">
             <span>
               {t("search.askCocoAi.title", {

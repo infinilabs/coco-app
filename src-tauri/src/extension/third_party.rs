@@ -64,44 +64,44 @@ pub(crate) async fn list_third_party_extensions(
 
     let mut extensions = Vec::new();
 
-    'author: loop {
-        let opt_author_dir = extensions_dir_iter
+    'developer: loop {
+        let opt_developer_dir = extensions_dir_iter
             .next_entry()
             .await
             .map_err(|e| e.to_string())?;
-        let Some(author_dir) = opt_author_dir else {
+        let Some(developer_dir) = opt_developer_dir else {
             break;
         };
-        let author_dir_file_type = author_dir.file_type().await.map_err(|e| e.to_string())?;
-        if !author_dir_file_type.is_dir() {
+        let developer_dir_file_type = developer_dir.file_type().await.map_err(|e| e.to_string())?;
+        if !developer_dir_file_type.is_dir() {
             found_invalid_extensions = true;
             log::warn!(
                 "file [{}] under the third party extension directory should be a directory, but it is not",
-                author_dir.file_name().display()
+                developer_dir.file_name().display()
             );
 
             // Skip this file
-            continue 'author;
+            continue 'developer;
         }
 
-        let Ok(author) = author_dir.file_name().into_string() else {
+        let Ok(developer) = developer_dir.file_name().into_string() else {
             found_invalid_extensions = true;
 
             log::warn!(
-                "author [{}] ID is not UTF-8 encoded",
-                author_dir.file_name().display()
+                "developer [{}] ID is not UTF-8 encoded",
+                developer_dir.file_name().display()
             );
 
             // Skip this file
-            continue 'author;
+            continue 'developer;
         };
 
-        let mut author_dir_iter = read_dir(&author_dir.path())
+        let mut developer_dir_iter = read_dir(&developer_dir.path())
             .await
             .map_err(|e| e.to_string())?;
 
         'extension: loop {
-            let opt_extension_dir = author_dir_iter
+            let opt_extension_dir = developer_dir_iter
                 .next_entry()
                 .await
                 .map_err(|e| e.to_string())?;
@@ -172,8 +172,8 @@ pub(crate) async fn list_third_party_extensions(
                 continue;
             }
 
-            // Set extension's author info manually.
-            extension.author = Some(author.clone());
+            // Set extension's developer info manually.
+            extension.developer = Some(developer.clone());
 
             extensions.push(extension);
         }
@@ -250,25 +250,6 @@ fn validate_extension(
 
 /// Checks that can be performed against an extension or a sub item.
 fn validate_extension_or_sub_item(extension: &Extension) -> bool {
-    // Only
-    //
-    // 1. letters
-    // 2. underscore
-    // 3. numbers
-    //
-    // are allowed in the ID.
-    if !extension
-        .id
-        .chars()
-        .all(|c| c.is_ascii_alphabetic() || c == '_')
-    {
-        log::warn!(
-            "invalid extension [{}], [id] should contain only letters, numbers, or underscores",
-            extension.id
-        );
-        return false;
-    }
-
     // If field `action` is Some, then it should be a Command
     if extension.action.is_some() && extension.r#type != ExtensionType::Command {
         log::warn!(
@@ -339,15 +320,6 @@ fn validate_extension_or_sub_item(extension: &Extension) -> bool {
             );
             return false;
         }
-    }
-
-    // The author field should not be set
-    if extension.author.is_some() {
-        log::warn!(
-            "invalid extension [{}], unknown field [author]",
-            extension.id,
-        );
-        return false;
     }
 
     true
@@ -421,7 +393,7 @@ impl ThirdPartyExtensionsSearchSource {
         bundle_id: &ExtensionBundleIdBorrowed<'_>,
     ) -> Option<&'lock mut Extension> {
         let index = extensions_write_lock.iter().position(|ext| {
-            ext.id == bundle_id.extension_id && ext.author.as_deref() == bundle_id.author
+            ext.id == bundle_id.extension_id && ext.developer.as_deref() == bundle_id.developer
         })?;
 
         let extension = extensions_write_lock
@@ -659,7 +631,7 @@ impl ThirdPartyExtensionsSearchSource {
         Ok(())
     }
 
-    /// Initialize the third-party extensions, which literally means 
+    /// Initialize the third-party extensions, which literally means
     /// enabling/activating the enabled extensions.
     pub(super) async fn init(&self) -> Result<(), String> {
         let extensions_read_lock = self.inner.extensions.read().await;
@@ -794,7 +766,7 @@ impl ThirdPartyExtensionsSearchSource {
             .iter()
             .find(|root_ext| {
                 root_ext.id == bundle_id.extension_id
-                    && root_ext.author.as_deref() == bundle_id.author
+                    && root_ext.developer.as_deref() == bundle_id.developer
             })
             .ok_or_else(|| {
                 format!(
@@ -824,6 +796,51 @@ impl ThirdPartyExtensionsSearchSource {
         // 1. Its parent extension is enabled, and
         // 2. It is enabled
         Ok(root_extension.enabled && sub_extension.enabled)
+    }
+
+    pub(crate) async fn extension_exists(&self, developer: &str, extension_id: &str) -> bool {
+        let read_lock_guard = self.inner.extensions.read().await;
+        read_lock_guard
+            .iter()
+            .any(|ext| ext.developer.as_deref() == Some(developer) && ext.id == extension_id)
+    }
+
+    pub(crate) async fn add_extension(&self, extension: Extension) {
+        assert!(
+            extension.developer.is_some(),
+            "loaded third party extension should have its developer set"
+        );
+
+        let mut write_lock_guard = self.inner.extensions.write().await;
+        if write_lock_guard
+            .iter()
+            .any(|ext| ext.developer == extension.developer && ext.id == extension.id)
+        {
+            panic!(
+                "extension [{}/{}] already installed",
+                extension
+                    .developer
+                    .as_ref()
+                    .expect("just checked it is Some"),
+                extension.id
+            );
+        }
+        write_lock_guard.push(extension);
+    }
+
+    pub(crate) async fn remove_extension(&self, developer: &str, extension_id: &str) {
+        let mut write_lock_guard = self.inner.extensions.write().await;
+        let Some(index) = write_lock_guard
+            .iter()
+            .position(|ext| ext.developer.as_deref() == Some(developer) && ext.id == extension_id)
+        else {
+            panic!(
+                "extension [{}/{}] not installed, but we are trying to remove it",
+                developer, extension_id
+            );
+        };
+
+        write_lock_guard.remove(index);
     }
 }
 
@@ -955,7 +972,7 @@ fn extension_to_hit(
     // Score based on title match
     // Title is considered more important, so it gets a higher weight.
     if let Some(title_score) =
-        calculate_text_similarity(&query_lower, &extension.title.to_lowercase())
+        calculate_text_similarity(&query_lower, &extension.name.to_lowercase())
     {
         total_score += title_score * 1.0; // Weight for title
     }
@@ -980,7 +997,7 @@ fn extension_to_hit(
 
         let document = Document {
             id: extension.id.clone(),
-            title: Some(extension.title.clone()),
+            title: Some(extension.name.clone()),
             icon: Some(extension.icon.clone()),
             on_opened: Some(on_opened),
             url: Some(url),

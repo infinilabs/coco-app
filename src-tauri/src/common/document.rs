@@ -51,7 +51,9 @@ impl OnOpened {
                 const WHITESPACE: &str = " ";
                 let mut ret = action.exec.clone();
                 ret.push_str(WHITESPACE);
-                ret.push_str(action.args.join(WHITESPACE).as_str());
+                if let Some(ref args) = action.args {
+                  ret.push_str(args.join(WHITESPACE).as_str());
+                }
 
                 ret
             }
@@ -80,7 +82,9 @@ pub(crate) async fn open(on_opened: OnOpened) -> Result<(), String> {
         }
         OnOpened::Command { action } => {
             let mut cmd = Command::new(action.exec);
-            cmd.args(action.args);
+            if let Some(args) = action.args {
+              cmd.args(args);
+            }
             let output = cmd.output().map_err(|e| e.to_string())?;
             if !output.status.success() {
                 return Err(format!(

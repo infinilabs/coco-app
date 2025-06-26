@@ -203,7 +203,7 @@ pub(super) async fn init_built_in_extension<R: Runtime>(
 }
 
 pub(crate) fn is_extension_built_in(bundle_id: &ExtensionBundleIdBorrowed<'_>) -> bool {
-    bundle_id.author.is_none()
+    bundle_id.developer.is_none()
 }
 
 pub(crate) async fn enable_built_in_extension(

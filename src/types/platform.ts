@@ -44,6 +44,10 @@ export interface EventPayloads {
   "quick-ai-access-client-id": any;
   "ai-overview-client-id": any;
   "change-app-store": IAppStore;
+  "open-extension-store": void;
+  "install-extension": void;
+  "uninstall-extension": void;
+  "config-extension": string;
 }
 
 // Window operation interface

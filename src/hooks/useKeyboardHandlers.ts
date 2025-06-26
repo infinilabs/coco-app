@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from "react";
 
-import { isMetaOrCtrlKey } from "@/utils/keyboardUtils";
 import { useSearchStore } from "@/stores/searchStore";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 interface KeyboardHandlersProps {
   isChatMode: boolean;
@@ -14,15 +14,38 @@ export function useKeyboardHandlers({
   handleSubmit,
   curChatEnd,
 }: KeyboardHandlersProps) {
-  const { setSourceData } = useSearchStore();
+  const {
+    setSourceData,
+    visibleExtensionStore,
+    setVisibleExtensionStore,
+    visibleExtensionDetail,
+    setVisibleExtensionDetail,
+  } = useSearchStore();
+  const { modifierKey } = useShortcutsStore();
+
+  const getModifierKeyPressed = (event: KeyboardEvent) => {
+    const metaKeyPressed = event.metaKey && modifierKey === "meta";
+    const ctrlKeyPressed = event.ctrlKey && modifierKey === "ctrl";
+    const altKeyPressed = event.altKey && modifierKey === "alt";
+
+    return metaKeyPressed || ctrlKeyPressed || altKeyPressed;
+  };
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       // Handle ArrowLeft with meta key
-      if (e.code === "ArrowLeft" && isMetaOrCtrlKey(e)) {
+      if (e.code === "ArrowLeft" && getModifierKeyPressed(e)) {
         e.preventDefault();
-        setSourceData(undefined);
-        return;
+
+        if (visibleExtensionDetail) {
+          return setVisibleExtensionDetail(false);
+        }
+
+        if (visibleExtensionStore) {
+          return setVisibleExtensionStore(false);
+        }
+
+        return setSourceData(void 0);
       }
 
       // Handle Enter without meta key requirement
@@ -31,7 +54,14 @@ export function useKeyboardHandlers({
         curChatEnd && handleSubmit();
       }
     },
-    [isChatMode, handleSubmit, setSourceData, curChatEnd]
+    [
+      isChatMode,
+      handleSubmit,
+      setSourceData,
+      curChatEnd,
+      modifierKey,
+      visibleExtensionDetail,
+    ]
   );
 
   useEffect(() => {
@@ -45,6 +75,7 @@ export function useKeyboardHandlers({
   useEffect(() => {
     return () => {
       setSourceData(undefined);
+      setVisibleExtensionStore(false);
     };
   }, []);
 }

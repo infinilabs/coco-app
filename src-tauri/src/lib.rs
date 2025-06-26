@@ -156,6 +156,9 @@ pub fn run() {
             extension::register_extension_hotkey,
             extension::unregister_extension_hotkey,
             extension::is_extension_enabled,
+            extension::store::search_extension,
+            extension::store::install_extension,
+            extension::store::uninstall_extension,
             settings::set_allow_self_signature,
             settings::get_allow_self_signature,
             assistant::ask_ai,
@@ -396,7 +399,8 @@ fn move_window_to_active_monitor<R: Runtime>(window: &WebviewWindow<R>) {
 
 #[tauri::command]
 async fn get_app_search_source<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), String> {
-    let (_found_invalid_extensions, extensions) = extension::list_extensions()
+    // We want all the extensions here, so no filter condition specified.
+    let (_found_invalid_extensions, extensions) = extension::list_extensions(None, None, false)
         .await
         .map_err(|e| e.to_string())?;
     extension::init_extensions(extensions).await?;

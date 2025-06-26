@@ -1,4 +1,4 @@
-import { useCallback, useRef, useMemo, useState } from "react";
+import { useCallback, useRef, useMemo, useState, useEffect } from "react";
 import { cloneDeep, isEmpty } from "lodash-es";
 
 import { useSearchStore } from "@/stores/searchStore";
@@ -23,8 +23,17 @@ export function useAssistantManager({
 }: AssistantManagerProps) {
   const isTauri = useAppStore((state) => state.isTauri);
 
-  const { goAskAi, setGoAskAi, setAskAiMessage, selectedAssistant } =
-    useSearchStore();
+  const {
+    goAskAi,
+    setGoAskAi,
+    setAskAiMessage,
+    selectedAssistant,
+    selectedSearchContent,
+    visibleExtensionStore,
+    setVisibleExtensionStore,
+    setSearchValue,
+    visibleExtensionDetail,
+  } = useSearchStore();
 
   const { quickAiAccessAssistant, disabledExtensions } = useExtensionsStore();
 
@@ -78,29 +87,63 @@ export function useAssistantManager({
     setGoAskAi(true);
   }, [disabledExtensions, askAI, inputValue, goAskAi, selectedAssistant]);
 
-  const handleKeyDownAutoResizeTextarea = useCallback((
-    e: React.KeyboardEvent<HTMLTextAreaElement>
-  ) => {
-    const { key, shiftKey, currentTarget } = e;
-    const { value } = currentTarget;
+  const handleKeyDownAutoResizeTextarea = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      const { key, shiftKey, currentTarget } = e;
+      const { value } = currentTarget;
 
-    if (key === "Backspace" && value === "") {
-      return setGoAskAi(false);
-    }
+      if (key === "Backspace" && value === "") {
+        return setGoAskAi(false);
+      }
 
-    if (key === "Tab" && !isChatMode && isTauri) {
-      e.preventDefault();
+      if (key === "Tab" && !isChatMode && isTauri) {
+        e.preventDefault();
 
-      assistant_get();
-      return handleAskAi();
-    }
+        if (visibleExtensionStore) return;
 
-    if (key === "Enter" && !shiftKey && !isChatMode && isTauri) {
-      e.preventDefault();
+        if (selectedSearchContent?.id === "extension_store") {
+          changeInput("");
+          setSearchValue("");
+          return setVisibleExtensionStore(true);
+        }
 
-      goAskAi ? handleAskAi() : handleSubmit();
-    }
-  }, [isChatMode, goAskAi, assistant_get, handleAskAi, handleSubmit]);
+        assistant_get();
+        return handleAskAi();
+      }
+
+      if (key === "Enter" && !shiftKey && !isChatMode && isTauri) {
+        e.preventDefault();
+
+        goAskAi ? handleAskAi() : handleSubmit();
+      }
+    },
+    [
+      isChatMode,
+      goAskAi,
+      assistant_get,
+      handleAskAi,
+      handleSubmit,
+      selectedSearchContent,
+    ]
+  );
+
+  useEffect(() => {
+    const unlisten = platformAdapter.listenEvent("open-extension-store", () => {
+      platformAdapter.showWindow();
+
+      if (visibleExtensionStore || visibleExtensionDetail) return;
+
+      changeInput("");
+      setSearchValue("");
+      setVisibleExtensionStore(true);
+    });
+
+    return () => {
+      unlisten.then((fn) => {
+        fn();
+      });
+    };
+  }, [visibleExtensionStore, visibleExtensionDetail]);
 
   return {
     askAI,

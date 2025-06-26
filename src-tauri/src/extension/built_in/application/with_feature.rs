@@ -1038,9 +1038,9 @@ pub async fn get_app_list<R: Runtime>(
 
         let app_entry = Extension {
             id: path,
-            title: name,
+            name,
             platforms: None,
-            author: None,
+            developer: None,
             // Leave it empty as it won't be used
             description: String::new(),
             icon: icon_path,
@@ -1054,6 +1054,9 @@ pub async fn get_app_list<R: Runtime>(
             hotkey,
             enabled,
             settings: None,
+            screenshots: None,
+            url: None,
+            version: None,
         };
 
         app_entries.push(app_entry);

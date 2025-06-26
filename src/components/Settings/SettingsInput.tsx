@@ -3,10 +3,10 @@ import clsx from "clsx";
 import { isNumber } from "lodash-es";
 import { FC, FocusEvent } from "react";
 
-import { specialCharacterFiltering } from "@/utils"
+import { specialCharacterFiltering } from "@/utils";
 
 interface SettingsInputProps extends Omit<InputProps, "onChange"> {
-  onChange: (value?: string | number) => void;
+  onChange?: (value?: string | number) => void;
 }
 
 const SettingsInput: FC<SettingsInputProps> = (props) => {
@@ -40,7 +40,7 @@ const SettingsInput: FC<SettingsInputProps> = (props) => {
       )}
       onBlur={handleBlur}
       onChange={(event) => {
-        const value = specialCharacterFiltering(event.target.value)
+        const value = specialCharacterFiltering(event.target.value);
         onChange?.(value);
       }}
     />

@@ -1,4 +1,5 @@
 pub(crate) mod built_in;
+pub(crate) mod store;
 mod third_party;
 
 use crate::common::document::OnOpened;
@@ -18,6 +19,10 @@ pub const LOCAL_QUERY_SOURCE_TYPE: &str = "local";
 const PLUGIN_JSON_FILE_NAME: &str = "plugin.json";
 const ASSETS_DIRECTORY_FILE_NAME: &str = "assets";
 
+fn default_true() -> bool {
+  true
+}
+
 #[derive(Debug, Deserialize, Serialize, Copy, Clone, Hash, PartialEq, Eq, Display)]
 #[serde(rename_all(serialize = "lowercase", deserialize = "lowercase"))]
 enum Platform {
@@ -33,17 +38,17 @@ enum Platform {
 pub struct Extension {
     /// Extension ID.
     ///
-    /// The ID doesn't uniquely identifies an extension; Its bundle ID (ID & author) does.
+    /// The ID doesn't uniquely identifies an extension; Its bundle ID (ID & developer) does.
     id: String,
     /// Extension name.
-    title: String,
-    /// ID of the author.
+    name: String,
+    /// ID of the developer.
     ///
     /// * For built-in extensions, this will always be None.
     /// * For third-party first-layer extensions, the on-disk plugin.json file
     ///   won't contain this field, but we will set this field for them after reading them into the memory.
     /// * For third-party sub extensions, this field will be None.
-    author: Option<String>,
+    developer: Option<String>,
     /// Platforms supported by this extension.
     ///
     /// If `None`, then this extension can be used on all the platforms.
@@ -91,17 +96,23 @@ pub struct Extension {
     hotkey: Option<String>,
 
     /// Is this extension enabled.
+    #[serde(default = "default_true")]
     enabled: bool,
 
     /// Extension settings
     #[serde(skip_serializing_if = "Option::is_none")]
     settings: Option<Json>,
+
+    // We do not care about these fields, just take it regardless of what it is.
+    screenshots: Option<Json>,
+    url: Option<Json>,
+    version: Option<Json>,
 }
 
 /// Bundle ID uniquely identifies an extension.
 #[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
 pub(crate) struct ExtensionBundleId {
-    author: Option<String>,
+    developer: Option<String>,
     extension_id: String,
     sub_extension_id: Option<String>,
 }
@@ -111,7 +122,7 @@ impl Borrow for ExtensionBundleId {
 
     fn borrow(&self) -> Self::Target<'_> {
         ExtensionBundleIdBorrowed {
-            author: self.author.as_deref(),
+            developer: self.developer.as_deref(),
             extension_id: &self.extension_id,
             sub_extension_id: self.sub_extension_id.as_deref(),
         }
@@ -121,7 +132,7 @@ impl Borrow for ExtensionBundleId {
 /// Reference version of `ExtensionBundleId`.
 #[derive(Debug, Serialize, PartialEq)]
 pub(crate) struct ExtensionBundleIdBorrowed<'ext> {
-    author: Option<&'ext str>,
+    developer: Option<&'ext str>,
     extension_id: &'ext str,
     sub_extension_id: Option<&'ext str>,
 }
@@ -131,7 +142,7 @@ impl ToOwned for ExtensionBundleIdBorrowed<'_> {
 
     fn to_owned(&self) -> Self::Owned {
         ExtensionBundleId {
-            author: self.author.map(|s| s.to_string()),
+            developer: self.developer.map(|s| s.to_string()),
             extension_id: self.extension_id.to_string(),
             sub_extension_id: self.sub_extension_id.map(|s| s.to_string()),
         }
@@ -140,7 +151,7 @@ impl ToOwned for ExtensionBundleIdBorrowed<'_> {
 
 impl<'ext> PartialEq<ExtensionBundleIdBorrowed<'ext>> for ExtensionBundleId {
     fn eq(&self, other: &ExtensionBundleIdBorrowed<'ext>) -> bool {
-        self.author.as_deref() == other.author
+        self.developer.as_deref() == other.developer
             && self.extension_id == other.extension_id
             && self.sub_extension_id.as_deref() == other.sub_extension_id
     }
@@ -148,7 +159,7 @@ impl<'ext> PartialEq<ExtensionBundleIdBorrowed<'ext>> for ExtensionBundleId {
 
 impl<'ext> PartialEq<ExtensionBundleId> for ExtensionBundleIdBorrowed<'ext> {
     fn eq(&self, other: &ExtensionBundleId) -> bool {
-        self.author == other.author.as_deref()
+        self.developer == other.developer.as_deref()
             && self.extension_id == other.extension_id
             && self.sub_extension_id == other.sub_extension_id.as_deref()
     }
@@ -159,7 +170,7 @@ impl Extension {
     /// set to `None`, this may not be what you want.
     pub(crate) fn bundle_id_borrowed(&self) -> ExtensionBundleIdBorrowed<'_> {
         ExtensionBundleIdBorrowed {
-            author: self.author.as_deref(),
+            developer: self.developer.as_deref(),
             extension_id: &self.id,
             sub_extension_id: None,
         }
@@ -205,18 +216,12 @@ impl Extension {
             }
         }
         if let Some(ref scripts) = self.scripts {
-            if let Some(sub_ext) = scripts
-                .iter()
-                .find(|script| script.id == sub_extension_id)
-            {
+            if let Some(sub_ext) = scripts.iter().find(|script| script.id == sub_extension_id) {
                 return Some(sub_ext);
             }
         }
         if let Some(ref quick_links) = self.quicklinks {
-            if let Some(sub_ext) = quick_links
-                .iter()
-                .find(|link| link.id == sub_extension_id)
-            {
+            if let Some(sub_ext) = quick_links.iter().find(|link| link.id == sub_extension_id) {
                 return Some(sub_ext);
             }
         }
@@ -264,7 +269,7 @@ impl Extension {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub(crate) struct CommandAction {
     pub(crate) exec: String,
-    pub(crate) args: Vec<String>,
+    pub(crate) args: Option<Vec<String>>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -301,12 +306,151 @@ impl ExtensionType {
     }
 }
 
+/// Helper function to filter out the extensions that do not satisfy the specifies conditions.
+///
+/// used in `list_extensions()`
+fn filter_out_extensions(
+    extensions: &mut Vec<Extension>,
+    query: Option<&str>,
+    extension_type: Option<ExtensionType>,
+    list_enabled: bool,
+) {
+    // apply `list_enabled`
+    if list_enabled {
+        extensions.retain(|ext| ext.enabled);
+        for extension in extensions.iter_mut() {
+            if extension.r#type.contains_sub_items() {
+                if let Some(ref mut commands) = extension.commands {
+                    commands.retain(|cmd| cmd.enabled);
+                }
+                if let Some(ref mut scripts) = extension.scripts {
+                    scripts.retain(|script| script.enabled);
+                }
+                if let Some(ref mut quicklinks) = extension.quicklinks {
+                    quicklinks.retain(|link| link.enabled);
+                }
+            }
+        }
+    }
+
+    // apply extension type filter to non-group/extension extensions
+    if let Some(extension_type) = extension_type {
+        assert!(
+            extension_type != ExtensionType::Group && extension_type != ExtensionType::Extension,
+            "filtering in folder extensions is pointless"
+        );
+
+        extensions.retain(|ext| {
+            let ty = ext.r#type;
+            ty == ExtensionType::Group || ty == ExtensionType::Extension || ty == extension_type
+        });
+
+        // Filter sub-extensions to only include the requested type
+        for extension in extensions.iter_mut() {
+            if extension.r#type.contains_sub_items() {
+                if let Some(ref mut commands) = extension.commands {
+                    commands.retain(|cmd| cmd.r#type == extension_type);
+                }
+                if let Some(ref mut scripts) = extension.scripts {
+                    scripts.retain(|script| script.r#type == extension_type);
+                }
+                if let Some(ref mut quicklinks) = extension.quicklinks {
+                    quicklinks.retain(|link| link.r#type == extension_type);
+                }
+            }
+        }
+
+        // Application is special, technically, it should never be filtered out by
+        // this condition. But if our users will be surprising if they choose a
+        // non-Application type and see it in the results. So we do this to remedy the
+        // issue
+        if let Some(idx) = extensions.iter().position(|ext| {
+            ext.developer.is_none()
+                && ext.id == built_in::application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME
+        }) {
+            if extension_type != ExtensionType::Application {
+                extensions.remove(idx);
+            }
+        }
+    }
+
+    // apply query filter
+    if let Some(query) = query {
+        let match_closure = |ext: &Extension| {
+            let lowercase_title = ext.name.to_lowercase();
+            let lowercase_alias = ext.alias.as_ref().map(|alias| alias.to_lowercase());
+            let lowercase_query = query.to_lowercase();
+
+            lowercase_title.contains(&lowercase_query)
+                || lowercase_alias.map_or(false, |alias| alias.contains(&lowercase_query))
+        };
+
+        extensions.retain(|ext| {
+            if ext.r#type.contains_sub_items() {
+                // Keep all group/extension types
+                true
+            } else {
+                // Apply filter to non-group/extension types
+                match_closure(ext)
+            }
+        });
+
+        // Filter sub-extensions in groups and extensions
+        for extension in extensions.iter_mut() {
+            if extension.r#type.contains_sub_items() {
+                if let Some(ref mut commands) = extension.commands {
+                    commands.retain(&match_closure);
+                }
+                if let Some(ref mut scripts) = extension.scripts {
+                    scripts.retain(&match_closure);
+                }
+                if let Some(ref mut quicklinks) = extension.quicklinks {
+                    quicklinks.retain(&match_closure);
+                }
+            }
+        }
+    }
+
+    // Remove parent extensions (Group/Extension types) that have no sub-items after filtering
+    extensions.retain(|ext| {
+        if !ext.r#type.contains_sub_items() {
+            return true;
+        }
+
+        // We don't do this filter to applications since it is always empty, load at runtime.
+        if ext.developer.is_none()
+            && ext.id == built_in::application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME
+        {
+            return true;
+        }
+
+        let has_commands = ext
+            .commands
+            .as_ref()
+            .map_or(false, |commands| !commands.is_empty());
+        let has_scripts = ext
+            .scripts
+            .as_ref()
+            .map_or(false, |scripts| !scripts.is_empty());
+        let has_quicklinks = ext
+            .quicklinks
+            .as_ref()
+            .map_or(false, |quicklinks| !quicklinks.is_empty());
+
+        has_commands || has_scripts || has_quicklinks
+    });
+}
+
 /// Return value:
 ///
 /// * boolean: indicates if we found any invalid extensions
 /// * Vec<Extension>: loaded extensions
 #[tauri::command]
-pub(crate) async fn list_extensions() -> Result<(bool, Vec<Extension>), String> {
+pub(crate) async fn list_extensions(
+    query: Option<String>,
+    extension_type: Option<ExtensionType>,
+    list_enabled: bool,
+) -> Result<(bool, Vec<Extension>), String> {
     log::trace!("loading extensions");
 
     let third_party_dir = third_party::THIRD_PARTY_EXTENSIONS_DIRECTORY.as_path();
@@ -321,11 +465,18 @@ pub(crate) async fn list_extensions() -> Result<(bool, Vec<Extension>), String> 
     let built_in_extensions = built_in::list_built_in_extensions().await?;
 
     let found_invalid_extension = third_party_found_invalid_extension;
-    let extensions = {
+    let mut extensions = {
         third_party_extensions.extend(built_in_extensions);
 
         third_party_extensions
     };
+
+    filter_out_extensions(
+        &mut extensions,
+        query.as_deref(),
+        extension_type,
+        list_enabled,
+    );
 
     Ok((found_invalid_extension, extensions))
 }
@@ -342,6 +493,9 @@ pub(crate) async fn init_extensions(mut extensions: Vec<Extension>) -> Result<()
         tauri_app_handle.clone(),
     )
     .await?;
+
+    // extension store
+    search_source_registry_tauri_state .register_source(store::ExtensionStore).await;
 
     // Init the built-in enabled extensions
     for built_in_extension in extensions
@@ -451,7 +605,7 @@ pub(crate) async fn is_extension_enabled(bundle_id: ExtensionBundleId) -> Result
     third_party::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE.get().expect("global third party search source not set, looks like init_extensions() has not been executed").is_extension_enabled(&bundle_id_borrowed).await
 }
 
-fn canonicalize_relative_icon_path(
+pub(crate) fn canonicalize_relative_icon_path(
     extension_dir: &Path,
     extension: &mut Extension,
 ) -> Result<(), String> {
@@ -570,8 +724,8 @@ fn alter_extension_json_file(
     let json_file_path = {
         let mut path = extension_directory.to_path_buf();
 
-        if let Some(author) = bundle_id.author {
-            path.push(author);
+        if let Some(developer) = bundle_id.developer {
+            path.push(developer);
         }
         path.push(bundle_id.extension_id);
         path.push(PLUGIN_JSON_FILE_NAME);

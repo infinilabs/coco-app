@@ -1,3 +1,4 @@
+import { SearchExtensionItem } from "@/components/Search/ExtensionStore";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -28,6 +29,18 @@ export type ISearchStore = {
   setEnabledAiOverview: (enabledAiOverview: boolean) => void;
   askAiAssistantId?: string;
   setAskAiAssistantId: (askAiAssistantId?: string) => void;
+  visibleExtensionStore: boolean;
+  setVisibleExtensionStore: (visibleExtensionStore: boolean) => void;
+  searchValue: string;
+  setSearchValue: (searchValue: string) => void;
+  selectedExtension?: SearchExtensionItem;
+  setSelectedExtension: (selectedExtension?: SearchExtensionItem) => void;
+  installingExtensions: string[];
+  setInstallingExtensions: (installingExtensions: string[]) => void;
+  uninstallingExtensions: string[];
+  setUninstallingExtensions: (uninstallingExtensions: string[]) => void;
+  visibleExtensionDetail: boolean;
+  setVisibleExtensionDetail: (visibleExtensionDetail: boolean) => void;
 };
 
 export const useSearchStore = create<ISearchStore>()(
@@ -69,6 +82,29 @@ export const useSearchStore = create<ISearchStore>()(
       },
       setAskAiAssistantId: (askAiAssistantId) => {
         return set({ askAiAssistantId });
+      },
+      visibleExtensionStore: false,
+      setVisibleExtensionStore: (visibleExtensionStore) => {
+        return set({ visibleExtensionStore });
+      },
+      searchValue: "",
+      setSearchValue: (searchValue) => {
+        return set({ searchValue });
+      },
+      setSelectedExtension(selectedExtension) {
+        return set({ selectedExtension });
+      },
+      installingExtensions: [],
+      setInstallingExtensions: (installingExtensions) => {
+        return set({ installingExtensions });
+      },
+      uninstallingExtensions: [],
+      setUninstallingExtensions: (uninstallingExtensions) => {
+        return set({ uninstallingExtensions });
+      },
+      visibleExtensionDetail: false,
+      setVisibleExtensionDetail: (visibleExtensionDetail) => {
+        return set({ visibleExtensionDetail });
       },
     }),
     {

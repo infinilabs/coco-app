@@ -8,6 +8,7 @@ import { NoResults } from "@/components/Common/UI/NoResults";
 import Footer from "@/components/Common/UI/Footer";
 import AskAi from "./AskAi";
 import { useSearch } from "@/hooks/useSearch";
+import ExtensionStore from "./ExtensionStore";
 
 const SearchResultsPanel = memo<{
   input: string;
@@ -33,7 +34,8 @@ const SearchResultsPanel = memo<{
     }
   }, [input, isChatMode, performSearch, sourceData]);
 
-  const { setSelectedAssistant, selectedSearchContent } = useSearchStore();
+  const { setSelectedAssistant, selectedSearchContent, visibleExtensionStore } =
+    useSearchStore();
 
   useEffect(() => {
     if (selectedSearchContent?.type === "AI Assistant") {
@@ -46,6 +48,7 @@ const SearchResultsPanel = memo<{
     }
   }, [selectedSearchContent]);
 
+  if (visibleExtensionStore) return <ExtensionStore />;
   if (goAskAi) return <AskAi />;
   if (suggests.length === 0) return <NoResults />;
 

@@ -1,8 +1,16 @@
 import { useClickAway, useCreation, useReactive } from "ahooks";
 import clsx from "clsx";
 import { isNil, lowerCase, noop } from "lodash-es";
-import { Copy, Link, SquareArrowOutUpRight } from "lucide-react";
-import { cloneElement, FC, useEffect, useRef, useState } from "react";
+import {
+  Copy,
+  Download,
+  Info,
+  Link,
+  Settings,
+  SquareArrowOutUpRight,
+  Trash2,
+} from "lucide-react";
+import { cloneElement, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Input } from "@headlessui/react";
 
@@ -19,9 +27,7 @@ interface State {
   activeMenuIndex: number;
 }
 
-interface ContextMenuProps {}
-
-const ContextMenu: FC<ContextMenuProps> = () => {
+const ContextMenu = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { t, i18n } = useTranslation();
   const state = useReactive<State>({
@@ -39,28 +45,77 @@ const ContextMenu: FC<ContextMenuProps> = () => {
   });
   const [searchMenus, setSearchMenus] = useState<typeof menus>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const { selectedExtension, setVisibleExtensionDetail } = useSearchStore();
 
   const title = useCreation(() => {
+    if (selectedExtension) {
+      return selectedExtension.name;
+    }
+
     if (selectedSearchContent?.id === "Calculator") {
       return t("search.contextMenu.title.calculator");
     }
 
     return selectedSearchContent?.title;
-  }, [selectedSearchContent]);
+  }, [selectedSearchContent, selectedExtension]);
 
   const menus = useCreation(() => {
-    if (isNil(selectedSearchContent)) return [];
+    if (selectedExtension) {
+      return [
+        {
+          name: t("search.contextMenu.details"),
+          icon: <Info />,
+          keys: isMac ? ["↩︎"] : ["Enter"],
+          shortcut: "enter",
+          clickEvent() {
+            setVisibleExtensionDetail(true);
+          },
+        },
+        {
+          name: t("search.contextMenu.install"),
+          icon: <Download />,
+          keys: isMac ? ["⌘", "↩︎"] : ["Ctrl", "Enter"],
+          shortcut: isMac ? "meta.enter" : "ctrl.enter",
+          hide: selectedExtension.installed,
+          clickEvent() {
+            platformAdapter.emitEvent("install-extension");
+          },
+        },
+        {
+          name: t("search.contextMenu.configureExtension"),
+          icon: <Settings />,
+          keys: isMac ? ["⌘", "/"] : ["Ctrl", "/"],
+          shortcut: isMac ? "meta.forwardslash" : "ctrl.forwardslash",
+          hide: !selectedExtension.installed,
+          clickEvent() {
+            platformAdapter.emitEvent("config-extension", selectedExtension.id);
+          },
+        },
+        {
+          name: t("search.contextMenu.uninstall"),
+          icon: <Trash2 />,
+          keys: isMac ? ["⌘", "X"] : ["Ctrl", "X"],
+          shortcut: isMac ? "meta.x" : "ctrl.x",
+          hide: !selectedExtension.installed,
+          clickEvent() {
+            platformAdapter.emitEvent("uninstall-extension");
+          },
+        },
+      ];
+    }
 
-    const { url, category, type, payload } = selectedSearchContent;
-    const { query, result } = payload ?? {};
-
-    if (category === "AI Overview") {
-      setSearchMenus([]);
-
+    if (isNil(selectedSearchContent)) {
       return [];
     }
 
-    const menus = [
+    const { id, url, category, type, payload } = selectedSearchContent;
+    const { query, result } = payload ?? {};
+
+    if (category === "AI Overview") {
+      return [];
+    }
+
+    return [
       {
         name: t("search.contextMenu.open"),
         icon: <SquareArrowOutUpRight />,
@@ -76,7 +131,10 @@ const ContextMenu: FC<ContextMenuProps> = () => {
         icon: <Link />,
         keys: isMac ? ["⌘", "L"] : ["Ctrl", "L"],
         shortcut: isMac ? "meta.l" : "ctrl.l",
-        hide: category === "Calculator" || type === "AI Assistant",
+        hide:
+          category === "Calculator" ||
+          type === "AI Assistant" ||
+          id === "extension_store",
         clickEvent() {
           copyToClipboard(url);
         },
@@ -95,7 +153,7 @@ const ContextMenu: FC<ContextMenuProps> = () => {
         name: t("search.contextMenu.copyUppercaseAnswer"),
         icon: <Copy />,
         keys: isMac ? ["⌘", "↩︎"] : ["Ctrl", "Enter"],
-        shortcut: "meta.enter",
+        shortcut: isMac ? "meta.enter" : "ctrl.enter",
         hide: category !== "Calculator",
         clickEvent() {
           copyToClipboard(i18n.language === "zh" ? result.toZh : result.toEn);
@@ -105,24 +163,24 @@ const ContextMenu: FC<ContextMenuProps> = () => {
         name: t("search.contextMenu.copyQuestionAndAnswer"),
         icon: <Copy />,
         keys: isMac ? ["⌘", "L"] : ["Ctrl", "L"],
-        shortcut: "meta.l",
+        shortcut: isMac ? "meta.l" : "ctrl+l",
         hide: category !== "Calculator",
         clickEvent() {
           copyToClipboard(`${query.value} = ${result.value}`);
         },
       },
     ];
+  }, [selectedSearchContent, selectedExtension]);
 
-    const filterMenus = menus.filter((item) => !item.hide);
+  useEffect(() => {
+    const filterMenus = menus.filter((item) => !item?.hide);
 
     setSearchMenus(filterMenus);
-
-    return filterMenus;
-  }, [selectedSearchContent]);
+  }, [menus]);
 
   const shortcuts = useCreation(() => {
-    return menus.map((item) => item.shortcut);
-  }, [menus]);
+    return searchMenus.map((item) => item.shortcut);
+  }, [searchMenus]);
 
   useEffect(() => {
     state.activeMenuIndex = 0;
@@ -134,8 +192,8 @@ const ContextMenu: FC<ContextMenuProps> = () => {
     }
   }, [selectedSearchContent]);
 
-  useOSKeyPress(["meta.k", "ctrl.k"], () => {
-    if (isNil(selectedSearchContent)) return;
+  useOSKeyPress(["meta.k", "ctrl+k"], () => {
+    if (isNil(selectedSearchContent) && isNil(selectedExtension)) return;
 
     setVisibleContextMenu(!visibleContextMenu);
   });
@@ -148,7 +206,7 @@ const ContextMenu: FC<ContextMenuProps> = () => {
     if (!visibleContextMenu) return;
 
     const index = state.activeMenuIndex;
-    const length = menus.length;
+    const length = searchMenus.length;
 
     switch (key) {
       case "uparrow":
@@ -166,9 +224,9 @@ const ContextMenu: FC<ContextMenuProps> = () => {
     let matched;
 
     if (key === "enter") {
-      matched = menus.find((_, index) => index === state.activeMenuIndex);
+      matched = searchMenus.find((_, index) => index === state.activeMenuIndex);
     } else {
-      matched = menus.find((item) => item.shortcut === key);
+      matched = searchMenus.find((item) => item.shortcut === key);
     }
 
     handleClick(matched?.clickEvent);
@@ -181,7 +239,9 @@ const ContextMenu: FC<ContextMenuProps> = () => {
   const handleClick = (click = noop) => {
     click?.();
 
-    setVisibleContextMenu(false);
+    requestAnimationFrame(() => {
+      setVisibleContextMenu(false);
+    });
   };
 
   return (
@@ -272,11 +332,11 @@ const ContextMenu: FC<ContextMenuProps> = () => {
                   onChange={(event) => {
                     const value = specialCharacterFiltering(event.target.value);
 
-                    const searchMenus = menus.filter((item) => {
-                      return lowerCase(item.name).includes(lowerCase(value));
+                    setSearchMenus((prev) => {
+                      return prev.filter((item) => {
+                        return lowerCase(item.name).includes(lowerCase(value));
+                      });
                     });
-
-                    setSearchMenus(searchMenus);
                   }}
                 />
               </VisibleKey>
