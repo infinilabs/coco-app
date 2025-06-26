@@ -28,7 +28,7 @@ pub(crate) const PLUGIN_JSON_FILE: &str = r#"
   "platforms": ["macos"],
   "description": "Search files on your system using macOS Spotlight",
   "icon": "font_TODO",
-  "type": "file_system",
+  "type": "command",
   "enabled": true
 }
 "#;

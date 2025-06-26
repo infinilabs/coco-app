@@ -11,7 +11,7 @@ use num2words::Num2Words;
 use serde_json::Value;
 use std::collections::HashMap;
 
-pub(crate) const EXTENSION_ID: &str = "Calculator";
+pub(crate) const DATA_SOURCE_ID: &str = "Calculator";
 
 /// JSON file for this extension.
 pub(crate) const PLUGIN_JSON_FILE: &str = r#"
@@ -113,10 +113,10 @@ impl SearchSource for CalculatorSource {
         QuerySource {
             r#type: LOCAL_QUERY_SOURCE_TYPE.into(),
             name: hostname::get()
-                .unwrap_or(EXTENSION_ID.into())
+                .unwrap_or(DATA_SOURCE_ID.into())
                 .to_string_lossy()
                 .into(),
-            id: EXTENSION_ID.into(),
+            id: DATA_SOURCE_ID.into(),
         }
     }
 
@@ -158,13 +158,13 @@ impl SearchSource for CalculatorSource {
                     payload.insert("result".to_string(), payload_result);
 
                     let doc = Document {
-                        id: EXTENSION_ID.to_string(),
-                        category: Some(EXTENSION_ID.to_string()),
+                        id: DATA_SOURCE_ID.to_string(),
+                        category: Some(DATA_SOURCE_ID.to_string()),
                         payload: Some(payload),
                         source: Some(DataSourceReference {
                             r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
-                            name: Some(EXTENSION_ID.into()),
-                            id: Some(EXTENSION_ID.into()),
+                            name: Some(DATA_SOURCE_ID.into()),
+                            id: Some(DATA_SOURCE_ID.into()),
                             icon: Some(String::from("font_Calculator")),
                         }),
                         ..Default::default()
@@ -176,13 +176,11 @@ impl SearchSource for CalculatorSource {
                         total_hits: 1,
                     }
                 }
-                Err(_) => {
-                    QueryResponse {
-                        source: query_source,
-                        hits: Vec::new(),
-                        total_hits: 0,
-                    }
-                }
+                Err(_) => QueryResponse {
+                    source: query_source,
+                    hits: Vec::new(),
+                    total_hits: 0,
+                },
             }
         };
 

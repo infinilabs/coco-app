@@ -149,8 +149,12 @@ pub(crate) async fn list_built_in_extensions() -> Result<Vec<Extension>, String>
         .await?,
     );
     built_in_extensions.push(
-        load_built_in_extension(dir, calculator::EXTENSION_ID, calculator::PLUGIN_JSON_FILE)
-            .await?,
+        load_built_in_extension(
+            dir,
+            calculator::DATA_SOURCE_ID,
+            calculator::PLUGIN_JSON_FILE,
+        )
+        .await?,
     );
     built_in_extensions.push(
         load_built_in_extension(
@@ -195,7 +199,7 @@ pub(super) async fn init_built_in_extension<R: Runtime>(
         log::debug!("built-in extension [{}] initialized", extension.id);
     }
 
-    if extension.id == calculator::EXTENSION_ID {
+    if extension.id == calculator::DATA_SOURCE_ID {
         let calculator_search = calculator::CalculatorSource::new(2000f64);
         search_source_registry
             .register_source(calculator_search)
@@ -257,7 +261,7 @@ pub(crate) async fn enable_built_in_extension(
         return Ok(());
     }
 
-    if bundle_id.extension_id == calculator::EXTENSION_ID {
+    if bundle_id.extension_id == calculator::DATA_SOURCE_ID {
         let calculator_search = calculator::CalculatorSource::new(2000f64);
         search_source_registry_tauri_state
             .register_source(calculator_search)
@@ -342,7 +346,7 @@ pub(crate) async fn disable_built_in_extension(
         return Ok(());
     }
 
-    if bundle_id.extension_id == calculator::EXTENSION_ID {
+    if bundle_id.extension_id == calculator::DATA_SOURCE_ID {
         search_source_registry_tauri_state
             .remove_source(bundle_id.extension_id)
             .await;
@@ -492,7 +496,7 @@ pub(crate) async fn is_built_in_extension_enabled(
         }
     }
 
-    if bundle_id.extension_id == calculator::EXTENSION_ID {
+    if bundle_id.extension_id == calculator::DATA_SOURCE_ID {
         return Ok(search_source_registry_tauri_state
             .get_source(bundle_id.extension_id)
             .await
