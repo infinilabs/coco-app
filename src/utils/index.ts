@@ -4,6 +4,8 @@ import { isArray, isNil, isObject, isString } from "lodash-es";
 import platformAdapter from "./platformAdapter";
 import { useAppStore } from "@/stores/appStore";
 import { HISTORY_PANEL_ID } from "@/constants";
+import { useConnectStore } from "@/stores/connectStore";
+import { useAuthStore } from "@/stores/authStore";
 
 // 1
 export async function copyToClipboard(text: string) {
@@ -163,4 +165,17 @@ export const parseSearchQuery = (searchQuery: SearchQuery) => {
   }
 
   return result;
+};
+
+export const unrequitable = () => {
+  const { isTauri } = useAppStore.getState();
+  const { currentService } = useConnectStore.getState();
+  const { isCurrentLogin } = useAuthStore.getState();
+  const { id, available, enabled } = currentService ?? {};
+
+  const serviceAvailable = Boolean(
+    id && enabled && available && isCurrentLogin
+  );
+
+  return isTauri && !serviceAvailable;
 };

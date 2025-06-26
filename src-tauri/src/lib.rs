@@ -11,7 +11,7 @@ mod util;
 
 use crate::common::register::SearchSourceRegistry;
 // use crate::common::traits::SearchSource;
-use crate::common::{MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL};
+use crate::common::{CHECK_WINDOW_LABEL, MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL};
 use crate::server::servers::{load_or_insert_default_server, load_servers_token};
 use autostart::{change_autostart, ensure_autostart_state_consistent};
 use lazy_static::lazy_static;
@@ -105,6 +105,8 @@ pub fn run() {
             show_coco,
             hide_coco,
             show_settings,
+            show_check,
+            hide_check,
             server::servers::get_server_token,
             server::servers::add_coco_server,
             server::servers::remove_coco_server,
@@ -212,7 +214,13 @@ pub fn run() {
 
             let main_window = app.get_webview_window(MAIN_WINDOW_LABEL).unwrap();
             let settings_window = app.get_webview_window(SETTINGS_WINDOW_LABEL).unwrap();
-            setup::default(app, main_window.clone(), settings_window.clone());
+            let check_window = app.get_webview_window(CHECK_WINDOW_LABEL).unwrap();
+            setup::default(
+                app,
+                main_window.clone(),
+                settings_window.clone(),
+                check_window.clone(),
+            );
 
             Ok(())
         })
@@ -413,6 +421,28 @@ async fn show_settings(app_handle: AppHandle) {
     window.show().unwrap();
     window.unminimize().unwrap();
     window.set_focus().unwrap();
+}
+
+#[tauri::command]
+async fn show_check(app_handle: AppHandle) {
+    log::debug!("check menu item was clicked");
+    let window = app_handle
+        .get_webview_window(CHECK_WINDOW_LABEL)
+        .expect("we have a check window");
+
+    window.show().unwrap();
+    window.unminimize().unwrap();
+    window.set_focus().unwrap();
+}
+
+#[tauri::command]
+async fn hide_check(app_handle: AppHandle) {
+    log::debug!("check window was closed");
+    let window = &app_handle
+        .get_webview_window(CHECK_WINDOW_LABEL)
+        .expect("we have a check window");
+
+    window.hide().unwrap();
 }
 
 #[tauri::command]

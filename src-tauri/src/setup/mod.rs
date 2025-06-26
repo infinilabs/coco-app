@@ -18,10 +18,20 @@ pub use windows::*;
 #[cfg(target_os = "linux")]
 pub use linux::*;
 
-pub fn default(app: &mut App, main_window: WebviewWindow, settings_window: WebviewWindow) {
+pub fn default(
+    app: &mut App,
+    main_window: WebviewWindow,
+    settings_window: WebviewWindow,
+    check_window: WebviewWindow,
+) {
     // Development mode automatically opens the console: https://tauri.app/develop/debug
     #[cfg(debug_assertions)]
     main_window.open_devtools();
 
-    platform(app, main_window.clone(), settings_window.clone());
+    platform(
+        app,
+        main_window.clone(),
+        settings_window.clone(),
+        check_window.clone(),
+    );
 }

@@ -9,6 +9,7 @@ import FontIcon from "@/components/Common/Icons/FontIcon";
 import logoImg from "@/assets/icon.svg";
 import { AssistantFetcher } from "./AssistantFetcher";
 import type { StartPage } from "@/types/chat";
+import { unrequitable } from "@/utils";
 
 export interface Response {
   app_settings?: {
@@ -53,6 +54,10 @@ const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
 
     let response: any;
     if (isTauri) {
+      if (unrequitable()) {
+        return setVisibleStartPage(false);
+      }
+
       response = await platformAdapter.invokeBackend<Response>(
         "get_system_settings",
         {

@@ -30,6 +30,7 @@ import HistoryList from "@/components/Common/HistoryList";
 import { useSyncStore } from "@/hooks/useSyncStore";
 import { useAppStore } from "@/stores/appStore";
 import { useChatStore } from "@/stores/chatStore";
+import { unrequitable } from "@/utils";
 
 interface ChatProps {}
 
@@ -72,7 +73,7 @@ export default function Chat({}: ChatProps) {
 
   const getChatHistory = async () => {
     try {
-      if (!currentService.enabled) {
+      if (unrequitable()) {
         return setChats([]);
       }
 
