@@ -26,8 +26,7 @@ interface FooterProps {
 export default function Footer({ setIsPinnedWeb }: FooterProps) {
   const { t } = useTranslation();
 
-  const { sourceData, goAskAi, selectedExtension, visibleExtensionDetail } =
-    useSearchStore();
+  const { sourceData, goAskAi, selectedExtension } = useSearchStore();
 
   const isDark = useThemeStore((state) => state.isDark);
 
