@@ -141,7 +141,12 @@ export const Extensions = () => {
               {t("settings.extensions.title")}
             </h2>
 
-            <Button className="flex items-center justify-center size-6 border rounded-md dark:border-gray-700 hover:!border-[#0096FB] transition">
+            <Button
+              className="flex items-center justify-center size-6 border rounded-md dark:border-gray-700 hover:!border-[#0096FB] transition"
+              onClick={() => {
+                platformAdapter.emitEvent("open-extension-store");
+              }}
+            >
               <Plus className="size-4 text-[#0096FB]" />
             </Button>
           </div>

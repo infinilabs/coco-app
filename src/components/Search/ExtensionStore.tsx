@@ -121,6 +121,8 @@ const ExtensionStore = () => {
   useKeyPress(
     "enter",
     () => {
+      if (visibleExtensionDetail) return;
+
       setVisibleExtensionDetail(true);
     },
     { exactMatch: true }
@@ -129,6 +131,8 @@ const ExtensionStore = () => {
   useKeyPress(
     `${modifierKey}.enter`,
     () => {
+      if (visibleExtensionDetail) return;
+
       if (selectedExtension?.installed) {
         return handleUnInstall();
       }
@@ -139,6 +143,8 @@ const ExtensionStore = () => {
   );
 
   useKeyPress(["uparrow", "downarrow"], (_, key) => {
+    if (visibleExtensionDetail) return;
+
     const index = list.findIndex((item) => item.id === selectedExtension?.id);
     const length = list.length;
 
@@ -169,9 +175,6 @@ const ExtensionStore = () => {
         return item;
       });
     });
-
-    console.log("selectedExtension?.id", selectedExtension?.id);
-    console.log("id", id);
 
     if (selectedExtension?.id === id) {
       setSelectedExtension({

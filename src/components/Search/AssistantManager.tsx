@@ -1,4 +1,4 @@
-import { useCallback, useRef, useMemo, useState } from "react";
+import { useCallback, useRef, useMemo, useState, useEffect } from "react";
 import { cloneDeep, isEmpty } from "lodash-es";
 
 import { useSearchStore } from "@/stores/searchStore";
@@ -32,6 +32,7 @@ export function useAssistantManager({
     visibleExtensionStore,
     setVisibleExtensionStore,
     setSearchValue,
+    visibleExtensionDetail,
   } = useSearchStore();
 
   const { quickAiAccessAssistant, disabledExtensions } = useExtensionsStore();
@@ -125,6 +126,24 @@ export function useAssistantManager({
       selectedSearchContent,
     ]
   );
+
+  useEffect(() => {
+    const unlisten = platformAdapter.listenEvent("open-extension-store", () => {
+      platformAdapter.showWindow();
+
+      if (visibleExtensionStore || visibleExtensionDetail) return;
+
+      changeInput("");
+      setSearchValue("");
+      setVisibleExtensionStore(true);
+    });
+
+    return () => {
+      unlisten.then((fn) => {
+        fn();
+      });
+    };
+  }, [visibleExtensionStore, visibleExtensionDetail]);
 
   return {
     askAI,
