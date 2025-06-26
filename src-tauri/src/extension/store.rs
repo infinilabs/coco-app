@@ -48,7 +48,10 @@ impl SearchSource for ExtensionStore {
             });
         };
 
-        if query_string.contains("extension") || query_string.contains("store") {
+        let lowercase_query_string = query_string.to_lowercase();
+        let expected_str = "extension store";
+
+        if expected_str.contains(&lowercase_query_string) {
             let doc = Document {
                 id: DATA_SOURCE_ID.to_string(),
                 category: Some(DATA_SOURCE_ID.to_string()),
