@@ -85,11 +85,11 @@ export const ExtensionsContext = createContext<{ rootState: State }>({
 export const Extensions = () => {
   const { t } = useTranslation();
   const state = useReactive<State>(cloneDeep(INITIAL_STATE));
-  const { selectedId, setSelectedId } = useExtensionsStore();
+  const { configId, setConfigId } = useExtensionsStore();
 
   useEffect(() => {
     getExtensions();
-  }, [state.searchValue, state.currentCategory, selectedId]);
+  }, [state.searchValue, state.currentCategory, configId]);
 
   useEffect(() => {
     const unsubscribe = useExtensionsStore.subscribe((state) => {
@@ -115,14 +115,14 @@ export const Extensions = () => {
 
     state.extensions = sortBy(extensions, ["name"]);
 
-    if (selectedId) {
-      const matched = extensions.find((item) => item.id === selectedId);
+    if (configId) {
+      const matched = extensions.find((item) => item.id === configId);
 
       if (!matched) return;
 
       state.activeExtension = matched;
 
-      setSelectedId(void 0);
+      setConfigId(void 0);
     }
   };
 

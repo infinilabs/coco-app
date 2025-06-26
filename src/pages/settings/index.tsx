@@ -27,7 +27,7 @@ const tabIndexMap: { [key: string]: number } = {
 
 function SettingsPage() {
   const { t } = useTranslation();
-  const { setSelectedId } = useExtensionsStore();
+  const { setConfigId } = useExtensionsStore();
 
   useTray();
 
@@ -63,7 +63,7 @@ function SettingsPage() {
       ({ payload }) => {
         platformAdapter.showWindow();
         setDefaultIndex(1);
-        setSelectedId(payload);
+        setConfigId(payload);
       }
     );
 
