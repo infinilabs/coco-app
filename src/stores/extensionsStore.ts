@@ -19,6 +19,8 @@ export type IExtensionsStore = {
   setAiOverviewDelay: (aiOverviewDelay: number) => void;
   aiOverviewMinQuantity: number;
   setAiOverviewMinQuantity: (aiOverviewMinQuantity: number) => void;
+  selectedId?: string;
+  setSelectedId: (selectedId?: string) => void;
 };
 
 export const useExtensionsStore = create<IExtensionsStore>()(
@@ -52,6 +54,9 @@ export const useExtensionsStore = create<IExtensionsStore>()(
         aiOverviewMinQuantity: 5,
         setAiOverviewMinQuantity(aiOverviewMinQuantity) {
           return set({ aiOverviewMinQuantity });
+        },
+        setSelectedId(selectedId) {
+          return set({ selectedId });
         },
       }),
       {

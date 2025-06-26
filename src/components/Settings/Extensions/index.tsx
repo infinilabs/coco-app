@@ -1,5 +1,5 @@
 import { createContext, useEffect } from "react";
-import { useAsyncEffect, useReactive } from "ahooks";
+import { useReactive } from "ahooks";
 import { useTranslation } from "react-i18next";
 import type { LiteralUnion } from "type-fest";
 import { cloneDeep, sortBy } from "lodash-es";
@@ -85,8 +85,23 @@ export const ExtensionsContext = createContext<{ rootState: State }>({
 export const Extensions = () => {
   const { t } = useTranslation();
   const state = useReactive<State>(cloneDeep(INITIAL_STATE));
+  const { selectedId, setSelectedId } = useExtensionsStore();
 
-  useAsyncEffect(async () => {
+  useEffect(() => {
+    getExtensions();
+  }, [state.searchValue, state.currentCategory, selectedId]);
+
+  useEffect(() => {
+    const unsubscribe = useExtensionsStore.subscribe((state) => {
+      platformAdapter.emitEvent("change-extensions-store", state);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  });
+
+  const getExtensions = async () => {
     const result = await platformAdapter.invokeBackend<[boolean, Extension[]]>(
       "list_extensions",
       {
@@ -99,17 +114,17 @@ export const Extensions = () => {
     const extensions = result[1];
 
     state.extensions = sortBy(extensions, ["name"]);
-  }, [state.searchValue, state.currentCategory]);
 
-  useEffect(() => {
-    const unsubscribe = useExtensionsStore.subscribe((state) => {
-      platformAdapter.emitEvent("change-extensions-store", state);
-    });
+    if (selectedId) {
+      const matched = extensions.find((item) => item.id === selectedId);
 
-    return () => {
-      unsubscribe();
-    };
-  });
+      if (!matched) return;
+
+      state.activeExtension = matched;
+
+      setSelectedId(void 0);
+    }
+  };
 
   const getExtensionType = (): ExtensionType | undefined => {
     switch (state.currentCategory) {
