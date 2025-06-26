@@ -343,7 +343,11 @@
       "title": {
         "calculator": "Calculator"
       },
-      "search": "Search Operation"
+      "search": "Search Operation",
+      "details": "Details",
+      "install": "Install",
+      "uninstall": "Uninstall",
+      "configureExtension": "Configure Extension"
     },
     "askCocoAi": {
       "title": "{{0}} {{1}}",

@@ -343,7 +343,11 @@
       "title": {
         "calculator": "计算器"
       },
-      "search": "搜索操作"
+      "search": "搜索操作",
+      "details": "详情",
+      "install": "安装",
+      "uninstall": "卸载",
+      "configureExtension": "配置扩展"
     },
     "askCocoAi": {
       "title": "{{0}}{{1}}",

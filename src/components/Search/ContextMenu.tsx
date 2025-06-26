@@ -63,7 +63,7 @@ const ContextMenu = () => {
     if (selectedExtension) {
       return [
         {
-          name: "详情",
+          name: t("search.contextMenu.details"),
           icon: <Info />,
           keys: isMac ? ["↩︎"] : ["Enter"],
           shortcut: "enter",
@@ -72,7 +72,7 @@ const ContextMenu = () => {
           },
         },
         {
-          name: "安装",
+          name: t("search.contextMenu.install"),
           icon: <Download />,
           keys: isMac ? ["⌘", "↩︎"] : ["Ctrl", "Enter"],
           shortcut: isMac ? "meta.enter" : "ctrl.enter",
@@ -82,7 +82,7 @@ const ContextMenu = () => {
           },
         },
         {
-          name: "配置扩展",
+          name: t("search.contextMenu.configureExtension"),
           icon: <Settings />,
           keys: isMac ? ["⌘", "/"] : ["Ctrl", "/"],
           shortcut: isMac ? "meta.forwardslash" : "ctrl.forwardslash",
@@ -92,7 +92,7 @@ const ContextMenu = () => {
           },
         },
         {
-          name: "卸载",
+          name: t("search.contextMenu.uninstall"),
           icon: <Trash2 />,
           keys: isMac ? ["⌘", "X"] : ["Ctrl", "X"],
           shortcut: isMac ? "meta.x" : "ctrl.x",
