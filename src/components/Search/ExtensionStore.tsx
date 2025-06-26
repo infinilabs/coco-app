@@ -121,7 +121,9 @@ const ExtensionStore = () => {
   useKeyPress(
     "enter",
     () => {
-      if (visibleExtensionDetail) return;
+      if (visibleExtensionDetail) {
+        return handleInstall();
+      }
 
       setVisibleExtensionDetail(true);
     },
