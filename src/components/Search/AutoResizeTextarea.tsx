@@ -9,8 +9,6 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 
-import { specialCharacterFiltering } from "@/utils/index";
-
 const LINE_HEIGHT = 24; // 1.5rem
 const MAX_FIRST_LINE_WIDTH = 470; // Width in pixels for first line
 const MAX_HEIGHT = 240; // 15rem
@@ -51,7 +49,8 @@ const AutoResizeTextarea = forwardRef<
       () => {
         const textarea = textareaRef.current;
         if (!textarea) return;
-        if (typeof window === 'undefined' || typeof document === 'undefined') return;
+        if (typeof window === "undefined" || typeof document === "undefined")
+          return;
 
         // Reset height to auto to get the correct scrollHeight
         textarea.style.height = "auto";
@@ -138,8 +137,7 @@ const AutoResizeTextarea = forwardRef<
 
     const handleChange = useCallback(
       (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        const value = specialCharacterFiltering(e.target.value);
-        setInput(value);
+        setInput(e.target.value);
       },
       [setInput]
     );

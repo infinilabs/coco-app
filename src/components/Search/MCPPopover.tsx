@@ -16,7 +16,7 @@ import { useChatStore } from "@/stores/chatStore";
 import NoDataImage from "@/components/Common/NoDataImage";
 import PopoverInput from "@/components/Common/PopoverInput";
 import Pagination from "@/components/Common/Pagination";
-import { SearchQuery, specialCharacterFiltering } from "@/utils";
+import { SearchQuery } from "@/utils";
 
 interface MCPPopoverProps {
   mcp_servers: any;
@@ -253,9 +253,8 @@ export default function MCPPopover({
                       ref={searchInputRef}
                       className="size-full px-2 rounded-lg border dark:border-white/10 bg-transparent"
                       onChange={(e) => {
-                        const value = specialCharacterFiltering(
-                          e.target.value.trim()
-                        );
+                        const value = e.target.value.trim();
+
                         setKeyword(value);
                       }}
                     />

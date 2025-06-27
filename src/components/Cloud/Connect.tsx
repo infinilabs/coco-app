@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { specialCharacterFiltering } from "@/utils/index"
-
 interface ConnectServiceProps {
   setIsConnect: (isConnect: boolean) => void;
   onAddServer: (endpoint: string) => void;
@@ -29,9 +27,8 @@ export function Connect({ setIsConnect, onAddServer }: ConnectServiceProps) {
   };
 
   const onChangeEndpoint = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = specialCharacterFiltering(e.target.value)
-    setEndpointLink(value)
-  }
+    setEndpointLink(e.target.value);
+  };
 
   return (
     <div className="max-w-4xl">
