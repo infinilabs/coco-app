@@ -16,7 +16,7 @@ import { Input } from "@headlessui/react";
 
 import { useOSKeyPress } from "@/hooks/useOSKeyPress";
 import { useSearchStore } from "@/stores/searchStore";
-import { copyToClipboard, specialCharacterFiltering } from "@/utils";
+import { copyToClipboard } from "@/utils";
 import { isMac } from "@/utils/platform";
 import { CONTEXT_MENU_PANEL_ID } from "@/constants";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
@@ -334,7 +334,7 @@ const ContextMenu = () => {
                   placeholder={t("search.contextMenu.search")}
                   className="w-full bg-transparent"
                   onChange={(event) => {
-                    const value = specialCharacterFiltering(event.target.value);
+                    const value = event.target.value;
 
                     setSearchMenus((prev) => {
                       return prev.filter((item) => {

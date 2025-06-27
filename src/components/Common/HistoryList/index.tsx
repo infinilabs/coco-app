@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 
 import VisibleKey from "../VisibleKey";
 import { Chat } from "@/types/chat";
-import { closeHistoryPanel, specialCharacterFiltering } from "@/utils";
+import { closeHistoryPanel } from "@/utils";
 import HistoryListContent from "./HistoryListContent";
 
 interface HistoryListProps {
@@ -74,9 +74,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
             className="w-full bg-transparent outline-none"
             placeholder={t("history_list.search.placeholder")}
             onChange={(event) => {
-              const value = specialCharacterFiltering(event.target.value)
-
-              debouncedSearch(value);
+              debouncedSearch(event.target.value);
             }}
           />
         </div>

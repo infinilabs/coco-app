@@ -7,7 +7,6 @@ import { Pencil, Trash2 } from "lucide-react";
 
 import type { Chat } from "@/types/chat";
 import VisibleKey from "../VisibleKey";
-import { specialCharacterFiltering } from "@/utils/index"
 
 interface HistoryListItemProps {
   item: Chat;
@@ -108,14 +107,14 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
             onKeyDown={(event) => {
               if (event.key !== "Enter") return;
 
-              const value = specialCharacterFiltering(event.currentTarget.value)
+              const value = event.currentTarget.value;
 
               onRename(item._id, value);
 
               setIsEdit(false);
             }}
             onBlur={(event) => {
-              const value = specialCharacterFiltering(event.target.value)
+              const value = event.currentTarget.value;
 
               onRename(item._id, value);
 
