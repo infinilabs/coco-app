@@ -239,9 +239,7 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
               placeholder={t("assistant.popover.search")}
               className="w-full h-8 px-2 bg-transparent border rounded-md dark:border-white/10"
               onChange={(event) => {
-                const value = event.target.value.trim();
-
-                setKeyword(value);
+                setKeyword(event.target.value);
               }}
             />
           </VisibleKey>
