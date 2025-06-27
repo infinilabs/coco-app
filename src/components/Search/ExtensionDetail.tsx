@@ -14,6 +14,7 @@ import { FC, useState } from "react";
 
 import DeleteDialog from "../Common/DeleteDialog";
 import { useTranslation } from "react-i18next";
+import PreviewImage from "../Common/PreviewImage";
 
 interface ExtensionDetailProps {
   onInstall: () => void;
@@ -97,13 +98,12 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
           </div>
 
           {(selectedExtension.screenshots?.length ?? 0) > 0 && (
-            <div className="flex gap-3 pt-4">
-              {selectedExtension.screenshots.map((item) => {
-                return (
-                  <img key={item.url} src={item.url} className="h-[125px]" />
-                );
-              })}
-            </div>
+            <PreviewImage
+              urls={selectedExtension.screenshots.map((item) => item.url)}
+              classNames={{
+                container: "pt-4",
+              }}
+            />
           )}
 
           {renderDivider()}
