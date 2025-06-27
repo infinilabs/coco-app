@@ -261,7 +261,7 @@ export default function SearchPopover({
                       ref={searchInputRef}
                       className="size-full px-2 rounded-lg border dark:border-white/10 bg-transparent"
                       onChange={(e) => {
-                        const value = e.target.value.trim();
+                        const value = e.target.value;
 
                         setKeyword(value);
                       }}
