@@ -152,7 +152,10 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
           className={clsx(
             "gap-1 flex items-center text-[#666] dark:text-[#666] text-xs",
             {
-              hidden: visibleExtensionDetail || selectedExtension?.installed,
+              hidden:
+                (visibleExtensionStore && !selectedExtension) ||
+                visibleExtensionDetail ||
+                selectedExtension?.installed,
             }
           )}
         >
@@ -182,7 +185,9 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
           className={clsx(
             "flex items-center text-[#666] dark:text-[#666] text-xs",
             {
-              hidden: visibleExtensionDetail && selectedExtension?.installed,
+              hidden:
+                (visibleExtensionStore && !selectedExtension) ||
+                (visibleExtensionDetail && selectedExtension?.installed),
             }
           )}
         >
