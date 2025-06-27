@@ -20,7 +20,7 @@ use serde_json::Map as JsonObject;
 use serde_json::Value as Json;
 use std::sync::LazyLock;
 
-const DATA_SOURCE_ID: &str = "extension_store";
+const DATA_SOURCE_ID: &str = "Extension Store";
 
 pub(crate) struct ExtensionStore;
 
@@ -55,13 +55,13 @@ impl SearchSource for ExtensionStore {
             let doc = Document {
                 id: DATA_SOURCE_ID.to_string(),
                 category: Some(DATA_SOURCE_ID.to_string()),
-                title: Some("Extension Store".to_string()),
+                title: Some(DATA_SOURCE_ID.to_string()),
                 icon: Some("font_Store".to_string()),
                 source: Some(DataSourceReference {
                     r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
                     name: Some(DATA_SOURCE_ID.into()),
                     id: Some(DATA_SOURCE_ID.into()),
-                    icon: None,
+                    icon: Some("font_Store".to_string()),
                 }),
                 ..Default::default()
             };
