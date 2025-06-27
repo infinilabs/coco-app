@@ -36,6 +36,10 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
     setIsOpen(false);
   };
 
+  const renderDivider = () => {
+    return <div className="my-4 h-px bg-[#E6E6E6] dark:bg-[#262626]"></div>;
+  };
+
   return (
     selectedExtension && (
       <>
@@ -93,7 +97,7 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
           </div>
 
           {(selectedExtension.screenshots?.length ?? 0) > 0 && (
-            <div className="flex gap-3 py-4 border-b dark:border-b-[#262626]">
+            <div className="flex gap-3 pt-4">
               {selectedExtension.screenshots.map((item) => {
                 return (
                   <img key={item.url} src={item.url} className="h-[125px]" />
@@ -102,21 +106,28 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
             </div>
           )}
 
-          <div className="mb-1 mt-4">
+          {renderDivider()}
+
+          <div className="mb-2 text-[#999]">
             {t("extensionDetail.label.description")}
           </div>
-          <div className="mb-4 text-[#999]">
-            {selectedExtension.description}
-          </div>
+          <p>{selectedExtension.description}</p>
+
+          {renderDivider()}
 
           {(selectedExtension.commands?.length ?? 0) > 0 && (
             <>
-              <div className="mb-1">{t("extensionDetail.label.commands")}</div>
+              <div className="mb-2 text-[#999]">
+                {t("extensionDetail.label.commands")}
+              </div>
 
               {selectedExtension.commands?.map((item) => {
                 return (
                   <div key={item.name}>
-                    <div className="mb-1">{item.name}</div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <img src={item.icon} className="size-5" />
+                      <span>{item.name}</span>
+                    </div>
                     <div className="mb-4 text-[#999]">{item.description}</div>
                   </div>
                 );
@@ -124,15 +135,19 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
             </>
           )}
 
+          {renderDivider()}
+
           {(selectedExtension.tags?.length ?? 0) > 0 && (
             <>
-              <div className="mb-1">{t("extensionDetail.label.tags")}</div>
+              <div className="mb-2 text-[#999]">
+                {t("extensionDetail.label.tags")}
+              </div>
               <div className="flex gap-2 mb-4">
                 {selectedExtension.tags?.map((item) => {
                   return (
                     <div
                       key={item}
-                      className="flex items-center h-6 px-2 rounded text-[#999] bg-[#E6E6E6] dark:bg-[#333]"
+                      className="flex items-center h-6 px-2 rounded text-[#333] bg-[#E6E6E6] dark:text-white dark:bg-[#333]"
                     >
                       {item}
                     </div>
@@ -142,10 +157,14 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
             </>
           )}
 
-          <span className="mb-1">{t("extensionDetail.label.lastUpdate")}</span>
-          <div className="text-[#999]">
-            {dayjs(selectedExtension.updated).format("YYYY-MM-DD HH:mm:ss")}
+          {renderDivider()}
+
+          <div className="mb-2 text-[#999]">
+            {t("extensionDetail.label.lastUpdate")}
           </div>
+          <p>
+            {dayjs(selectedExtension.updated).format("YYYY-MM-DD HH:mm:ss")}
+          </p>
         </div>
 
         <DeleteDialog
