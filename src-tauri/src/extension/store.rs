@@ -13,12 +13,11 @@ use crate::extension::third_party::THIRD_PARTY_EXTENSIONS_DIRECTORY;
 use crate::extension::Extension;
 use crate::extension::PLUGIN_JSON_FILE_NAME;
 use crate::extension::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE;
+use crate::server::http_client::HttpClient;
 use async_trait::async_trait;
-use reqwest::Client;
 use reqwest::StatusCode;
 use serde_json::Map as JsonObject;
 use serde_json::Value as Json;
-use std::sync::LazyLock;
 
 const DATA_SOURCE_ID: &str = "Extension Store";
 
@@ -81,34 +80,17 @@ impl SearchSource for ExtensionStore {
     }
 }
 
-// Cache the client since it caches connections internally.
-static CLIENT: LazyLock<Client> = LazyLock::new(|| Client::new());
-
 #[tauri::command]
 pub(crate) async fn search_extension(
     query_params: Option<Vec<String>>,
 ) -> Result<Vec<Json>, String> {
-    let query_params: Vec<(&str, &str)> = match query_params {
-        Some(ref v) => {
-            let mut parsed = Vec::new();
-            for parameter in v.iter() {
-                let (key, value) = parameter
-                    .split_once('=')
-                    .expect("query parameter should contain a '='");
-                parsed.push((key, value));
-            }
-
-            parsed
-        }
-        None => Vec::new(),
-    };
-
-    let response = CLIENT
-        .get("https://coco.infini.cloud/store/extension/_search")
-        .query(&query_params)
-        .send()
-        .await
-        .map_err(|e| format!("Failed to send request: {:?}", e))?;
+    let response = HttpClient::get(
+        "default_coco_server",
+        "store/extension/_search",
+        query_params,
+    )
+    .await
+    .map_err(|e| format!("Failed to send request: {:?}", e))?;
 
     // The response of a ES style search request
     let mut response: JsonObject<String, Json> = response
@@ -192,12 +174,8 @@ async fn is_extension_installed(developer: String, extension_id: String) -> bool
 
 #[tauri::command]
 pub(crate) async fn install_extension(id: String) -> Result<(), String> {
-    let response = CLIENT
-        .get(format!(
-            "http://infini.tpddns.cn:27200/store/extension/{}/_download",
-            id
-        ))
-        .send()
+    let path = format!("store/extension/{}/_download", id);
+    let response = HttpClient::get("default_coco_server", &path, None)
         .await
         .map_err(|e| format!("Failed to download extension: {}", e))?;
 
