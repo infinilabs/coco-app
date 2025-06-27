@@ -97,6 +97,7 @@ const ContextMenu = () => {
           keys: isMac ? ["⌘", "X"] : ["Ctrl", "X"],
           shortcut: isMac ? "meta.x" : "ctrl.x",
           hide: !selectedExtension.installed,
+          color: "#fa4545",
           clickEvent() {
             platformAdapter.emitEvent("uninstall-extension");
           },
@@ -272,7 +273,7 @@ const ContextMenu = () => {
 
           <ul className="flex flex-col -mx-2 p-0">
             {searchMenus.map((item, index) => {
-              const { name, icon, keys, clickEvent } = item;
+              const { name, icon, keys, color, clickEvent } = item;
 
               return (
                 <li
@@ -290,9 +291,12 @@ const ContextMenu = () => {
                   onClick={() => handleClick(clickEvent)}
                 >
                   <div className="flex items-center gap-2 text-black/80 dark:text-white/80">
-                    {cloneElement(icon, { className: "size-4" })}
+                    {cloneElement(icon, {
+                      className: "size-4",
+                      style: { color },
+                    })}
 
-                    <span>{name}</span>
+                    <span style={{ color }}>{name}</span>
                   </div>
 
                   <div className="flex gap-[4px] text-black/60 dark:text-white/60">
