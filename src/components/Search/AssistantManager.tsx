@@ -33,6 +33,9 @@ export function useAssistantManager({
     setVisibleExtensionStore,
     setSearchValue,
     visibleExtensionDetail,
+    setVisibleExtensionDetail,
+    sourceData,
+    setSourceData,
   } = useSearchStore();
 
   const { quickAiAccessAssistant, disabledExtensions } = useExtensionsStore();
@@ -93,7 +96,21 @@ export function useAssistantManager({
       const { value } = currentTarget;
 
       if (key === "Backspace" && value === "") {
-        return setGoAskAi(false);
+        if (goAskAi) {
+          return setGoAskAi(false);
+        }
+
+        if (visibleExtensionDetail) {
+          return setVisibleExtensionDetail(false);
+        }
+
+        if (visibleExtensionStore) {
+          return setVisibleExtensionStore(false);
+        }
+
+        if (sourceData) {
+          return setSourceData(void 0);
+        }
       }
 
       if (key === "Tab" && !isChatMode && isTauri) {
@@ -124,6 +141,9 @@ export function useAssistantManager({
       handleAskAi,
       handleSubmit,
       selectedSearchContent,
+      visibleExtensionStore,
+      visibleExtensionDetail,
+      sourceData,
     ]
   );
 
