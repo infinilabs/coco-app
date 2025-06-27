@@ -16,6 +16,7 @@ Information about release notes of Coco Server is provided here.
 - feat: support `Tab` and `Enter` for delete dialog buttons #700
 - feat: add check for updates #701
 - feat: impl extension store #699
+- feat: support back navigation via delete key #717
 
 ### 🐛 Bug fix
 
