@@ -162,8 +162,6 @@ const ExtensionStore = () => {
   );
 
   useKeyPress(["uparrow", "downarrow"], (_, key) => {
-    console.log("visibleContextMenu", visibleContextMenu);
-
     if (visibleContextMenu || visibleExtensionDetail) return;
 
     const index = list.findIndex((item) => item.id === selectedExtension?.id);
@@ -279,7 +277,7 @@ const ExtensionStore = () => {
                 <div
                   key={id}
                   className={clsx(
-                    "flex justify-between h-[40px] px-2 rounded-lg cursor-pointer text-[#333] dark:text-[#d8d8d8] transition",
+                    "flex justify-between gap-4 h-[40px] px-2 rounded-lg cursor-pointer text-[#333] dark:text-[#d8d8d8] transition",
                     {
                       "bg-black/10 dark:bg-white/15":
                         selectedExtension?.id === id,
@@ -297,10 +295,10 @@ const ExtensionStore = () => {
                     setVisibleContextMenu(true);
                   }}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 overflow-hidden">
                     <img src={icon} className="size-[20px]" />
-                    <span>{name}</span>
-                    <span className="text-[#999]">{description}</span>
+                    <span className="whitespace-nowrap">{name}</span>
+                    <span className="truncate text-[#999]">{description}</span>
                   </div>
 
                   <div className="flex items-center gap-3">
