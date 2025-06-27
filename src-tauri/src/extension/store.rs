@@ -1,6 +1,5 @@
 //! Extension store related stuff.
 
-use crate::extension::canonicalize_relative_icon_path;
 use super::LOCAL_QUERY_SOURCE_TYPE;
 use crate::common::document::DataSourceReference;
 use crate::common::document::Document;
@@ -9,6 +8,7 @@ use crate::common::search::QueryResponse;
 use crate::common::search::QuerySource;
 use crate::common::search::SearchQuery;
 use crate::common::traits::SearchSource;
+use crate::extension::canonicalize_relative_icon_path;
 use crate::extension::third_party::THIRD_PARTY_EXTENSIONS_DIRECTORY;
 use crate::extension::Extension;
 use crate::extension::PLUGIN_JSON_FILE_NAME;
@@ -104,7 +104,7 @@ pub(crate) async fn search_extension(
     };
 
     let response = CLIENT
-        .get("http://infini.tpddns.cn:27200/store/extension/_search")
+        .get("https://coco.infini.cloud/store/extension/_search")
         .query(&query_params)
         .send()
         .await
@@ -238,18 +238,18 @@ pub(crate) async fn install_extension(id: String) -> Result<(), String> {
     // Set IDs for commands
     // Helper function to set IDs for array fields
     fn set_ids_for_field(extension: &mut Json, field_name: &str, counter: &mut i32) {
-      if let Some(field) = extension.as_object_mut().unwrap().get_mut(field_name) {
-        if let Some(array) = field.as_array_mut() {
-          for item in array {
-            if let Some(item_obj) = item.as_object_mut() {
-              if !item_obj.contains_key("id") {
-                item_obj.insert("id".to_string(), Json::String(counter.to_string()));
-                *counter += 1;
-              }
+        if let Some(field) = extension.as_object_mut().unwrap().get_mut(field_name) {
+            if let Some(array) = field.as_array_mut() {
+                for item in array {
+                    if let Some(item_obj) = item.as_object_mut() {
+                        if !item_obj.contains_key("id") {
+                            item_obj.insert("id".to_string(), Json::String(counter.to_string()));
+                            *counter += 1;
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     }
 
     // Set IDs for sub-extensions
@@ -283,37 +283,46 @@ pub(crate) async fn install_extension(id: String) -> Result<(), String> {
 
     // Extract all files except plugin.json
     for i in 0..archive.len() {
-      let mut file = archive.by_index(i).map_err(|e| e.to_string())?;
-      let outpath = match file.enclosed_name() {
-        Some(path) => extension_directory.join(path),
-        None => continue,
-      };
+        let mut file = archive.by_index(i).map_err(|e| e.to_string())?;
+        let outpath = match file.enclosed_name() {
+            Some(path) => extension_directory.join(path),
+            None => continue,
+        };
 
-      // Skip the plugin.json file as we'll create it from the extension variable
-      if file.name() == "plugin.json" {
-        continue;
-      }
-
-      if file.name().ends_with('/') {
-        tokio::fs::create_dir_all(&outpath).await.map_err(|e| e.to_string())?;
-      } else {
-        if let Some(p) = outpath.parent() {
-          if !p.exists() {
-            tokio::fs::create_dir_all(p).await.map_err(|e| e.to_string())?;
-          }
+        // Skip the plugin.json file as we'll create it from the extension variable
+        if file.name() == "plugin.json" {
+            continue;
         }
-        let mut outfile = tokio::fs::File::create(&outpath).await.map_err(|e| e.to_string())?;
-        let mut content = Vec::new();
-        std::io::Read::read_to_end(&mut file, &mut content).map_err(|e| e.to_string())?;
-        tokio::io::AsyncWriteExt::write_all(&mut outfile, &content).await.map_err(|e| e.to_string())?;
-      }
+
+        if file.name().ends_with('/') {
+            tokio::fs::create_dir_all(&outpath)
+                .await
+                .map_err(|e| e.to_string())?;
+        } else {
+            if let Some(p) = outpath.parent() {
+                if !p.exists() {
+                    tokio::fs::create_dir_all(p)
+                        .await
+                        .map_err(|e| e.to_string())?;
+                }
+            }
+            let mut outfile = tokio::fs::File::create(&outpath)
+                .await
+                .map_err(|e| e.to_string())?;
+            let mut content = Vec::new();
+            std::io::Read::read_to_end(&mut file, &mut content).map_err(|e| e.to_string())?;
+            tokio::io::AsyncWriteExt::write_all(&mut outfile, &content)
+                .await
+                .map_err(|e| e.to_string())?;
+        }
     }
 
     // Create plugin.json from the extension variable
     let plugin_json_path = extension_directory.join(PLUGIN_JSON_FILE_NAME);
     let extension_json = serde_json::to_string_pretty(&extension).map_err(|e| e.to_string())?;
-    tokio::fs::write(&plugin_json_path, extension_json).await.map_err(|e| e.to_string())?;
-
+    tokio::fs::write(&plugin_json_path, extension_json)
+        .await
+        .map_err(|e| e.to_string())?;
 
     // Turn it into an absolute path if it is a valid relative path because frontend code need this.
     canonicalize_relative_icon_path(&extension_directory, &mut extension)?;

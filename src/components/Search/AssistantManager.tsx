@@ -101,7 +101,7 @@ export function useAssistantManager({
 
         if (visibleExtensionStore) return;
 
-        if (selectedSearchContent?.id === "extension_store") {
+        if (selectedSearchContent?.id === "Extension Store") {
           changeInput("");
           setSearchValue("");
           return setVisibleExtensionStore(true);

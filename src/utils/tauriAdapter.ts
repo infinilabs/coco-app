@@ -237,7 +237,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
 
       console.log("data", data);
 
-      if (data?.type === "AI Assistant" || data?.id === "extension_store") {
+      if (data?.type === "AI Assistant" || data?.id === "Extension Store") {
         const textarea = document.querySelector("#search-textarea");
 
         if (!(textarea instanceof HTMLTextAreaElement)) return;

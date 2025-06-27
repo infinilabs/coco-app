@@ -127,12 +127,12 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
           {(selectedExtension.tags?.length ?? 0) > 0 && (
             <>
               <div className="mb-1">{t("extensionDetail.label.tags")}</div>
-              <div className="mb-4">
+              <div className="flex gap-2 mb-4">
                 {selectedExtension.tags?.map((item) => {
                   return (
                     <div
                       key={item}
-                      className="h-6 px-2 rounded text-[#999] bg-[#E6E6E6] dark:bg-[#333]"
+                      className="flex items-center h-6 px-2 rounded text-[#999] bg-[#E6E6E6] dark:bg-[#333]"
                     >
                       {item}
                     </div>

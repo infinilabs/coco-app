@@ -135,7 +135,7 @@ const ContextMenu = () => {
         hide:
           category === "Calculator" ||
           type === "AI Assistant" ||
-          id === "extension_store",
+          id === "Extension Store",
         clickEvent() {
           copyToClipboard(url);
         },
