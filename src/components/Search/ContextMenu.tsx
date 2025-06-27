@@ -22,6 +22,7 @@ import { CONTEXT_MENU_PANEL_ID } from "@/constants";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import VisibleKey from "../Common/VisibleKey";
 import platformAdapter from "@/utils/platformAdapter";
+import SearchEmpty from "../Common/SearchEmpty";
 
 interface State {
   activeMenuIndex: number;
@@ -33,19 +34,16 @@ const ContextMenu = () => {
   const state = useReactive<State>({
     activeMenuIndex: 0,
   });
-  const visibleContextMenu = useSearchStore((state) => {
-    return state.visibleContextMenu;
-  });
-  const setVisibleContextMenu = useSearchStore((state) => {
-    return state.setVisibleContextMenu;
-  });
-  const setOpenPopover = useShortcutsStore((state) => state.setOpenPopover);
-  const selectedSearchContent = useSearchStore((state) => {
-    return state.selectedSearchContent;
-  });
+  const { setOpenPopover } = useShortcutsStore();
   const [searchMenus, setSearchMenus] = useState<typeof menus>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const { selectedExtension, setVisibleExtensionDetail } = useSearchStore();
+  const {
+    visibleContextMenu,
+    setVisibleContextMenu,
+    selectedSearchContent,
+    selectedExtension,
+    setVisibleExtensionDetail,
+  } = useSearchStore();
 
   const title = useCreation(() => {
     if (selectedExtension) {
@@ -246,7 +244,7 @@ const ContextMenu = () => {
   };
 
   return (
-    searchMenus.length > 0 && (
+    menus.length > 0 && (
       <>
         {visibleContextMenu && (
           <div
@@ -271,53 +269,59 @@ const ContextMenu = () => {
         >
           <div className="text-[#999] dark:text-[#666] truncate">{title}</div>
 
-          <ul className="flex flex-col -mx-2 p-0">
-            {searchMenus.map((item, index) => {
-              const { name, icon, keys, color, clickEvent } = item;
+          {searchMenus.length > 0 ? (
+            <ul className="flex flex-col -mx-2 p-0">
+              {searchMenus.map((item, index) => {
+                const { name, icon, keys, color, clickEvent } = item;
 
-              return (
-                <li
-                  key={name}
-                  className={clsx(
-                    "flex justify-between items-center gap-2 px-2 py-2 rounded-lg cursor-pointer",
-                    {
-                      "bg-[#EDEDED] dark:bg-[#202126]":
-                        index === state.activeMenuIndex,
-                    }
-                  )}
-                  onMouseEnter={() => {
-                    state.activeMenuIndex = index;
-                  }}
-                  onClick={() => handleClick(clickEvent)}
-                >
-                  <div className="flex items-center gap-2 text-black/80 dark:text-white/80">
-                    {cloneElement(icon, {
-                      className: "size-4",
-                      style: { color },
-                    })}
+                return (
+                  <li
+                    key={name}
+                    className={clsx(
+                      "flex justify-between items-center gap-2 px-2 py-2 rounded-lg cursor-pointer",
+                      {
+                        "bg-[#EDEDED] dark:bg-[#202126]":
+                          index === state.activeMenuIndex,
+                      }
+                    )}
+                    onMouseEnter={() => {
+                      state.activeMenuIndex = index;
+                    }}
+                    onClick={() => handleClick(clickEvent)}
+                  >
+                    <div className="flex items-center gap-2 text-black/80 dark:text-white/80">
+                      {cloneElement(icon, {
+                        className: "size-4",
+                        style: { color },
+                      })}
 
-                    <span style={{ color }}>{name}</span>
-                  </div>
+                      <span style={{ color }}>{name}</span>
+                    </div>
 
-                  <div className="flex gap-[4px] text-black/60 dark:text-white/60">
-                    {keys.map((key) => (
-                      <kbd
-                        key={key}
-                        className={clsx(
-                          "flex justify-center items-center font-sans h-[20px] min-w-[20px] text-[10px] rounded-md border border-[#EDEDED] dark:border-white/10 bg-white dark:bg-[#202126]",
-                          {
-                            "px-1": key.length > 1,
-                          }
-                        )}
-                      >
-                        {key}
-                      </kbd>
-                    ))}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+                    <div className="flex gap-[4px] text-black/60 dark:text-white/60">
+                      {keys.map((key) => (
+                        <kbd
+                          key={key}
+                          className={clsx(
+                            "flex justify-center items-center font-sans h-[20px] min-w-[20px] text-[10px] rounded-md border border-[#EDEDED] dark:border-white/10 bg-white dark:bg-[#202126]",
+                            {
+                              "px-1": key.length > 1,
+                            }
+                          )}
+                        >
+                          {key}
+                        </kbd>
+                      ))}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <div className="py-4">
+              <SearchEmpty width={80} />
+            </div>
+          )}
 
           <div className="-mx-3 p-2 border-t border-[#E6E6E6] dark:border-[#262626]">
             {visibleContextMenu && (
@@ -331,16 +335,19 @@ const ContextMenu = () => {
                 <Input
                   ref={searchInputRef}
                   autoFocus
+                  autoCorrect="off"
                   placeholder={t("search.contextMenu.search")}
                   className="w-full bg-transparent"
                   onChange={(event) => {
-                    const value = event.target.value;
+                    const value = event.target.value.trim();
 
-                    setSearchMenus((prev) => {
-                      return prev.filter((item) => {
+                    const nextMenus = menus
+                      .filter((item) => !item.hide)
+                      .filter((item) => {
                         return lowerCase(item.name).includes(lowerCase(value));
                       });
-                    });
+
+                    setSearchMenus(nextMenus);
                   }}
                 />
               </VisibleKey>
