@@ -34,7 +34,6 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
     visibleExtensionStore,
     visibleExtensionDetail,
   } = useSearchStore();
-  console.log(11111111, selectedExtension, visibleExtensionDetail, !selectedExtension?.installed)
 
   const isDark = useThemeStore((state) => state.isDark);
 
