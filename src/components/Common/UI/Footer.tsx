@@ -162,7 +162,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
           <span className="mr-1.5">
             {goAskAi
               ? t("search.askCocoAi.continueInChat")
-              : !selectedExtension?.installed
+              : (visibleExtensionStore || visibleExtensionDetail) && !selectedExtension?.installed
               ? t("search.footer.install")
               : t("search.footer.select")}
           </span>
