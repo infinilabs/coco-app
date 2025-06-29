@@ -97,23 +97,6 @@ const Applications = () => {
         {t("settings.extensions.application.button.addDirectories")}
       </Button>
 
-      <div className="text-[#999]">
-        <p className="font-bold mb-2">
-          {t("settings.extensions.application.details.rebuildIndex")}
-        </p>
-
-        <p>
-          {t("settings.extensions.application.details.rebuildIndexDescription")}
-        </p>
-      </div>
-
-      <Button
-        className="w-full h-8 my-4 text-[#0087FF] border border-[#EEF0F3] hover:!border-[#0087FF] dark:border-gray-700 rounded-md transition"
-        onClick={handleReindex}
-      >
-        {t("settings.extensions.application.details.reindex")}
-      </Button>
-
       <ul className="flex flex-col gap-2 p-0">
         {paths.map((item) => {
           return (
@@ -141,6 +124,23 @@ const Applications = () => {
           );
         })}
       </ul>
+
+      <div className="text-[#999] mt-4">
+        <p className="font-bold mb-2">
+          {t("settings.extensions.application.details.rebuildIndex")}
+        </p>
+
+        <p>
+          {t("settings.extensions.application.details.rebuildIndexDescription")}
+        </p>
+      </div>
+
+      <Button
+        className="w-full h-8 my-4 text-[#0087FF] border border-[#EEF0F3] hover:!border-[#0087FF] dark:border-gray-700 rounded-md transition"
+        onClick={handleReindex}
+      >
+        {t("settings.extensions.application.details.reindex")}
+      </Button>
     </>
   );
 };
