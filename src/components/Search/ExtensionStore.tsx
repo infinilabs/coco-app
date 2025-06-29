@@ -1,16 +1,17 @@
-import { useSearchStore } from "@/stores/searchStore";
-import { parseSearchQuery } from "@/utils";
-import platformAdapter from "@/utils/platformAdapter";
 import { useAsyncEffect, useDebounce, useKeyPress, useUnmount } from "ahooks";
-import SearchEmpty from "../Common/SearchEmpty";
 import { useEffect, useState } from "react";
 import { CircleCheck, FolderDown, Loader } from "lucide-react";
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+
+import { useSearchStore } from "@/stores/searchStore";
+import { parseSearchQuery } from "@/utils";
+import platformAdapter from "@/utils/platformAdapter";
+import SearchEmpty from "../Common/SearchEmpty";
 import ExtensionDetail from "./ExtensionDetail";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useAppStore } from "@/stores/appStore";
 import { platform } from "@/utils/platform";
-import { useTranslation } from "react-i18next";
 
 export interface SearchExtensionItem {
   id: string;
@@ -261,7 +262,7 @@ const ExtensionStore = () => {
   };
 
   return (
-    <div className="h-full text-sm p-2 overflow-auto custom-scrollbar">
+    <div className="h-full text-sm p-4 overflow-auto custom-scrollbar">
       {visibleExtensionDetail ? (
         <ExtensionDetail
           onInstall={handleInstall}
