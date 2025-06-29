@@ -35,8 +35,6 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
     visibleExtensionDetail,
   } = useSearchStore();
 
-  console.log(111111, visibleExtensionDetail, selectedExtension?.installed)
-
   const isDark = useThemeStore((state) => state.isDark);
 
   const { isTauri, isPinned, setIsPinned } = useAppStore();
