@@ -25,6 +25,7 @@ use pizza_engine::store::{DiskStore, DiskStoreSnapshot};
 use pizza_engine::writer::Writer;
 use pizza_engine::{doc, Engine, EngineBuilder};
 use serde_json::Value as Json;
+use std::path::Path;
 use std::path::PathBuf;
 use tauri::{async_runtime, AppHandle, Manager, Runtime};
 use tauri_plugin_fs_pro::{icon, metadata, name, IconOptions};
@@ -46,6 +47,8 @@ const TAURI_STORE_APP_ALIAS: &str = "app_alias";
 
 const TAURI_STORE_KEY_SEARCH_PATH: &str = "search_path";
 const TAURI_STORE_KEY_DISABLED_APP_LIST: &str = "disabled_app_list";
+
+const INDEX_DIR: &str = "local_application_index";
 
 /// We use this as:
 ///
@@ -209,6 +212,86 @@ impl SearchSourceState for ApplicationSearchSourceState {
     }
 }
 
+/// Index applications if they have not been indexed (by checking if `app_index_dir` exists).
+async fn index_applications_if_not_indexed<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
+    app_index_dir: &Path,
+) -> anyhow::Result<ApplicationSearchSourceState> {
+    let index_exists = app_index_dir.exists();
+
+    let mut pizza_engine_builder = EngineBuilder::new();
+    let disk_store = DiskStore::new(&app_index_dir)?;
+    pizza_engine_builder.set_data_store(disk_store);
+
+    let mut schema = Schema::new();
+    let field_app_name = Property::builder(FieldType::Text).build();
+    schema
+        .add_property(FIELD_APP_NAME, field_app_name)
+        .expect("no collision could happen");
+    let property_icon = Property::builder(FieldType::Text).index(false).build();
+    schema
+        .add_property(FIELD_ICON_PATH, property_icon)
+        .expect("no collision could happen");
+    schema
+        .add_property(FIELD_APP_ALIAS, Property::as_text(None))
+        .expect("no collision could happen");
+    schema.freeze();
+    pizza_engine_builder.set_schema(schema);
+
+    let pizza_engine = pizza_engine_builder
+        .build()
+        .unwrap_or_else(|e| panic!("failed to build Pizza engine due to [{}]", e));
+    pizza_engine.start();
+    let mut writer = pizza_engine.acquire_writer();
+
+    if !index_exists {
+        let default_search_path = get_default_search_paths();
+        let apps = list_app_in(default_search_path).map_err(|str| anyhow::anyhow!(str))?;
+
+        for app in apps.iter() {
+            let app_path = get_app_path(app);
+            let app_name = get_app_name(app).await;
+            let app_icon_path = get_app_icon_path(&tauri_app_handle, app)
+                .await
+                .map_err(|str| anyhow::anyhow!(str))?;
+            let app_alias = get_app_alias(&tauri_app_handle, &app_path).unwrap_or(String::new());
+
+            if app_name.is_empty() || app_name.eq(&tauri_app_handle.package_info().name) {
+                continue;
+            }
+
+            // You cannot write `app_name.clone()` within the `doc!()` macro, we should fix this.
+            let app_name_clone = app_name.clone();
+            let app_path_clone = app_path.clone();
+            let document = doc!( app_path_clone,  {
+                FIELD_APP_NAME => app_name_clone,
+                FIELD_ICON_PATH => app_icon_path,
+                FIELD_APP_ALIAS => app_alias,
+              }
+            );
+
+            // We don't error out because one failure won't break the whole thing
+            if let Err(e) = writer.create_document(document).await {
+                warn!(
+                      "failed to index application [app name: '{}', app path: '{}'] due to error [{}]", app_name, app_path, e
+                    )
+            }
+        }
+
+        writer.commit()?;
+    }
+
+    let snapshot = pizza_engine.create_snapshot();
+    let searcher = pizza_engine.acquire_searcher();
+
+    Ok(ApplicationSearchSourceState {
+        searcher,
+        snapshot,
+        engine: pizza_engine,
+        writer,
+    })
+}
+
 /// Upon application start, index all the applications found in the `get_default_search_paths()`.
 struct IndexAllApplicationsTask<R: Runtime> {
     tauri_app_handle: AppHandle<R>,
@@ -228,87 +311,47 @@ impl<R: Runtime> Task for IndexAllApplicationsTask<R> {
             .path()
             .app_data_dir()
             .expect("failed to find the local dir");
-        app_index_dir.push("local_application_index");
+        app_index_dir.push(INDEX_DIR);
+        let app_search_source_state = task_exec_try!(
+            index_applications_if_not_indexed(&self.tauri_app_handle, &app_index_dir).await,
+            callback
+        );
+        *state = Some(Box::new(app_search_source_state));
+        callback.send(Ok(())).expect("rx dropped");
+    }
+}
 
-        let index_exists = app_index_dir.exists();
+struct ReindexAllApplicationsTask<R: Runtime> {
+    tauri_app_handle: AppHandle<R>,
+    callback: Option<tokio::sync::oneshot::Sender<Result<(), String>>>,
+}
 
-        let mut pizza_engine_builder = EngineBuilder::new();
-        let disk_store = task_exec_try!(DiskStore::new(&app_index_dir), callback);
-        pizza_engine_builder.set_data_store(disk_store);
+#[async_trait::async_trait(?Send)]
+impl<R: Runtime> Task for ReindexAllApplicationsTask<R> {
+    fn search_source_id(&self) -> &'static str {
+        APPLICATION_SEARCH_SOURCE_ID
+    }
 
-        let mut schema = Schema::new();
-        let field_app_name = Property::builder(FieldType::Text).build();
-        schema
-            .add_property(FIELD_APP_NAME, field_app_name)
-            .expect("no collision could happen");
-        let property_icon = Property::builder(FieldType::Text).index(false).build();
-        schema
-            .add_property(FIELD_ICON_PATH, property_icon)
-            .expect("no collision could happen");
-        schema
-            .add_property(FIELD_APP_ALIAS, Property::as_text(None))
-            .expect("no collision could happen");
-        schema.freeze();
-        pizza_engine_builder.set_schema(schema);
+    async fn exec(&mut self, state: &mut Option<Box<dyn SearchSourceState>>) {
+        let callback = self.callback.take().unwrap();
 
-        let pizza_engine = pizza_engine_builder
-            .build()
-            .unwrap_or_else(|e| panic!("failed to build Pizza engine due to [{}]", e));
-        pizza_engine.start();
-        let mut writer = pizza_engine.acquire_writer();
+        // Clear the state
+        *state = None;
+        let mut app_index_dir = self
+            .tauri_app_handle
+            .path()
+            .app_data_dir()
+            .expect("failed to find the local dir");
+        app_index_dir.push(INDEX_DIR);
+        task_exec_try!(tokio::fs::remove_dir_all(&app_index_dir).await, callback);
 
-        if !index_exists {
-            let default_search_path = get_default_search_paths();
-            let apps = task_exec_try!(list_app_in(default_search_path), callback);
-
-            for app in apps.iter() {
-                let app_path = get_app_path(app);
-                let app_name = get_app_name(app).await;
-                let app_icon_path = task_exec_try!(
-                    get_app_icon_path(&self.tauri_app_handle, app).await,
-                    callback
-                );
-                let app_alias =
-                    get_app_alias(&self.tauri_app_handle, &app_path).unwrap_or(String::new());
-
-                if app_name.is_empty() || app_name.eq(&self.tauri_app_handle.package_info().name) {
-                    continue;
-                }
-
-                // You cannot write `app_name.clone()` within the `doc!()` macro, we should fix this.
-                let app_name_clone = app_name.clone();
-                let app_path_clone = app_path.clone();
-                let document = doc!( app_path_clone,  {
-                    FIELD_APP_NAME => app_name_clone,
-                    FIELD_ICON_PATH => app_icon_path,
-                    FIELD_APP_ALIAS => app_alias,
-                  }
-                );
-
-                // We don't error out because one failure won't break the whole thing
-                if let Err(e) = writer.create_document(document).await {
-                    warn!(
-                      "failed to index application [app name: '{}', app path: '{}'] due to error [{}]", app_name, app_path, e
-                    )
-                }
-            }
-
-            task_exec_try!(writer.commit(), callback);
-        }
-
-        let snapshot = pizza_engine.create_snapshot();
-        let searcher = pizza_engine.acquire_searcher();
-
-        let state_to_store = Box::new(ApplicationSearchSourceState {
-            searcher,
-            snapshot,
-            engine: pizza_engine,
-            writer,
-        }) as Box<dyn SearchSourceState>;
-
-        *state = Some(state_to_store);
-
-        callback.send(Ok(())).unwrap();
+        // Then re-index the apps
+        let app_search_source_state = task_exec_try!(
+            index_applications_if_not_indexed(&self.tauri_app_handle, &app_index_dir).await,
+            callback
+        );
+        *state = Some(Box::new(app_search_source_state));
+        callback.send(Ok(())).expect("rx dropped");
     }
 }
 
@@ -326,6 +369,23 @@ impl<R: Runtime> Task for SearchApplicationsTask<R> {
 
     async fn exec(&mut self, state: &mut Option<Box<dyn SearchSourceState>>) {
         let callback = self.callback.take().unwrap();
+
+        let Some(state) = state.as_mut() else {
+            let empty_hits = SearchResult {
+                tracing_id: String::new(),
+                explains: None,
+                total_hits: 0,
+                hits: None,
+            };
+
+            let rx_dropped_error = callback.send(Ok(empty_hits)).is_err();
+            if rx_dropped_error {
+                warn!("failed to send local app search result back because the corresponding channel receiver end has been unexpected dropped, which could happen due to a low query timeout")
+            }
+
+            return;
+        };
+
         let disabled_app_list = get_disabled_app_list(&self.tauri_app_handle);
 
         // TODO: search via alias, implement this when Pizza engine supports update
@@ -344,8 +404,6 @@ impl<R: Runtime> Task for SearchApplicationsTask<R> {
             "{{ \"query\": {{ \"bool\": {{ \"should\": [ {{ \"match\": {{ \"{FIELD_APP_NAME}\": {:?} }} }}, {{ \"prefix\": {{ \"{FIELD_APP_NAME}\": {:?} }} }} ] }} }} }}", self.query_string, self.query_string);
 
         let state = state
-            .as_mut()
-            .expect("should be set before")
             .as_mut_any()
             .downcast_mut::<ApplicationSearchSourceState>()
             .unwrap();
@@ -1104,4 +1162,31 @@ pub async fn get_app_metadata(app_name: String, app_path: String) -> Result<AppM
         modified: raw_app_metadata.modified_at,
         last_opened,
     })
+}
+
+#[tauri::command]
+pub async fn reindex_applications<R: Runtime>(
+    tauri_app_handle: AppHandle<R>,
+) -> Result<(), String> {
+    let (tx, rx) = tokio::sync::oneshot::channel();
+    let reindex_applications_task = ReindexAllApplicationsTask {
+        tauri_app_handle: tauri_app_handle.clone(),
+        callback: Some(tx),
+    };
+
+    RUNTIME_TX
+        .get()
+        .unwrap()
+        .send(Box::new(reindex_applications_task))
+        .unwrap();
+
+    let reindexing_applications_result = rx.await.unwrap();
+    if let Err(ref e) = reindexing_applications_result {
+        error!(
+            "re-indexing local applications failed, app search won't work, error [{}]",
+            e
+        )
+    }
+
+    reindexing_applications_result
 }
