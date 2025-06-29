@@ -52,7 +52,7 @@ impl OnOpened {
                 let mut ret = action.exec.clone();
                 ret.push_str(WHITESPACE);
                 if let Some(ref args) = action.args {
-                  ret.push_str(args.join(WHITESPACE).as_str());
+                    ret.push_str(args.join(WHITESPACE).as_str());
                 }
 
                 ret
@@ -83,10 +83,24 @@ pub(crate) async fn open(on_opened: OnOpened) -> Result<(), String> {
         OnOpened::Command { action } => {
             let mut cmd = Command::new(action.exec);
             if let Some(args) = action.args {
-              cmd.args(args);
+                cmd.args(args);
             }
             let output = cmd.output().map_err(|e| e.to_string())?;
+            // Sometimes, we wanna see the result in logs even though it doesn't fail.
+            log::debug!(
+                "executing open(Command) result, exit code: [{}], stdout: [{}], stderr: [{}]",
+                output.status,
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            );
             if !output.status.success() {
+                log::warn!(
+                    "executing open(Command) failed, exit code: [{}], stdout: [{}], stderr: [{}]",
+                    output.status,
+                    String::from_utf8_lossy(&output.stdout),
+                    String::from_utf8_lossy(&output.stderr)
+                );
+
                 return Err(format!(
                     "Command failed, stderr [{}]",
                     String::from_utf8_lossy(&output.stderr)
