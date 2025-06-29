@@ -9,12 +9,21 @@ import Footer from "@/components/Common/UI/Footer";
 import AskAi from "./AskAi";
 import { useSearch } from "@/hooks/useSearch";
 import ExtensionStore from "./ExtensionStore";
+import platformAdapter from "@/utils/platformAdapter";
 
 const SearchResultsPanel = memo<{
   input: string;
   isChatMode: boolean;
-}>(({ input, isChatMode }) => {
-  const { sourceData, goAskAi } = useSearchStore();
+  changeInput: (val: string) => void;
+  changeMode?: (isChatMode: boolean) => void;
+}>(({ input, isChatMode, changeInput, changeMode }) => {
+  const {
+    sourceData,
+    goAskAi,
+    visibleExtensionDetail,
+    setSearchValue,
+    setVisibleExtensionStore,
+  } = useSearchStore();
 
   const searchState = useSearch();
   const {
@@ -48,6 +57,25 @@ const SearchResultsPanel = memo<{
     }
   }, [selectedSearchContent]);
 
+  useEffect(() => {
+    const unlisten = platformAdapter.listenEvent("open-extension-store", () => {
+      platformAdapter.showWindow();
+      changeMode && changeMode(false);
+
+      if (visibleExtensionStore || visibleExtensionDetail) return;
+
+      changeInput("");
+      setSearchValue("");
+      setVisibleExtensionStore(true);
+    });
+
+    return () => {
+      unlisten.then((fn) => {
+        fn();
+      });
+    };
+  }, [visibleExtensionStore, visibleExtensionDetail]);
+
   if (visibleExtensionStore) return <ExtensionStore />;
   if (goAskAi) return <AskAi />;
   if (suggests.length === 0) return <NoResults />;
@@ -71,14 +99,26 @@ interface SearchProps {
   isChatMode: boolean;
   input: string;
   setIsPinned?: (value: boolean) => void;
+  changeMode?: (isChatMode: boolean) => void;
 }
 
-function Search({ isChatMode, input, setIsPinned }: SearchProps) {
+function Search({
+  changeInput,
+  isChatMode,
+  input,
+  setIsPinned,
+  changeMode,
+}: SearchProps) {
   const mainWindowRef = useRef<HTMLDivElement>(null);
 
   return (
     <div ref={mainWindowRef} className={`h-full pb-8 w-full relative`}>
-      <SearchResultsPanel input={input} isChatMode={isChatMode} />
+      <SearchResultsPanel
+        input={input}
+        isChatMode={isChatMode}
+        changeInput={changeInput}
+        changeMode={changeMode}
+      />
 
       <Footer setIsPinnedWeb={setIsPinned} />
 

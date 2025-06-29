@@ -62,12 +62,15 @@ function SearchChat({
 
   const source = currentAssistant?._source;
 
-  const customInitialState = useMemo(() => ({
-    ...initialAppState,
-    isDeepThinkActive: source?.type === "deep_think",
-    isSearchActive: source?.datasource?.enabled_by_default === true,
-    isMCPActive: source?.mcp_servers?.enabled_by_default === true,
-  }), [source]);
+  const customInitialState = useMemo(
+    () => ({
+      ...initialAppState,
+      isDeepThinkActive: source?.type === "deep_think",
+      isSearchActive: source?.datasource?.enabled_by_default === true,
+      isMCPActive: source?.mcp_servers?.enabled_by_default === true,
+    }),
+    [source]
+  );
 
   const [state, dispatch] = useReducer(appReducer, customInitialState);
   const {
@@ -80,9 +83,18 @@ function SearchChat({
     isTyping,
   } = state;
   useEffect(() => {
-    dispatch({ type: "SET_SEARCH_ACTIVE", payload: customInitialState.isSearchActive });
-    dispatch({ type: "SET_DEEP_THINK_ACTIVE", payload: customInitialState.isDeepThinkActive });
-    dispatch({ type: "SET_MCP_ACTIVE", payload: customInitialState.isMCPActive });
+    dispatch({
+      type: "SET_SEARCH_ACTIVE",
+      payload: customInitialState.isSearchActive,
+    });
+    dispatch({
+      type: "SET_DEEP_THINK_ACTIVE",
+      payload: customInitialState.isDeepThinkActive,
+    });
+    dispatch({
+      type: "SET_MCP_ACTIVE",
+      payload: customInitialState.isMCPActive,
+    });
   }, [customInitialState]);
 
   const [isWin10, setIsWin10] = useState(false);
@@ -264,13 +276,11 @@ function SearchChat({
       )}
       style={{ opacity: blurred ? (opacity ?? 30) / 100 : 1 }}
     >
-
       <div
         data-tauri-drag-region={isTauri}
-        className={clsx(
-          "flex-1 w-full overflow-auto",
-          { "hidden": !isTransitioned }
-        )}
+        className={clsx("flex-1 w-full overflow-auto", {
+          hidden: !isTransitioned,
+        })}
       >
         <Suspense fallback={<LoadingFallback />}>
           <ChatAI
@@ -290,8 +300,9 @@ function SearchChat({
 
       <div
         data-tauri-drag-region={isTauri}
-        className={`p-2 w-full flex justify-center transition-all duration-500 min-h-[82px] ${isTransitioned ? "border-t" : "border-b"
-          } border-[#E6E6E6] dark:border-[#272626]`}
+        className={`p-2 w-full flex justify-center transition-all duration-500 min-h-[82px] ${
+          isTransitioned ? "border-t" : "border-b"
+        } border-[#E6E6E6] dark:border-[#272626]`}
       >
         <InputBox
           isChatMode={isChatMode}
@@ -326,10 +337,9 @@ function SearchChat({
 
       <div
         data-tauri-drag-region={isTauri}
-        className={clsx(
-          "flex-1 w-full overflow-auto",
-          { "hidden": isTransitioned }
-        )}
+        className={clsx("flex-1 w-full overflow-auto", {
+          hidden: isTransitioned,
+        })}
       >
         <Suspense fallback={<LoadingFallback />}>
           <Search
@@ -338,6 +348,7 @@ function SearchChat({
             isChatMode={isChatMode}
             changeInput={setInput}
             setIsPinned={setIsPinned}
+            changeMode={changeMode}
           />
         </Suspense>
       </div>
