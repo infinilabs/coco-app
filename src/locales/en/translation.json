@@ -220,7 +220,7 @@
         "details": {
           "searchScope": "Search Scope",
           "rebuildIndex": "Rebuild Index",
-          "reindex": "Reindex",
+          "reindex": "Rebuild Index",
           "searchScopeDescription": "Directories added here will be searched for applications and preference panes.",
           "rebuildIndexDescription": "Rebuild the index to search the latest application list.",
           "name": "Name",

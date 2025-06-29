@@ -220,7 +220,7 @@
         "details": {
           "searchScope": "搜索范围",
           "rebuildIndex": "重建索引",
-          "reindex": "重新索引",
+          "reindex": "重建索引",
           "searchScopeDescription": "在此添加的目录将用于搜索应用程序。",
           "rebuildIndexDescription": "重建索引以搜索最新的 App 列表。",
           "name": "名称",
