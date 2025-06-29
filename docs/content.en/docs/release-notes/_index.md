@@ -10,6 +10,13 @@ Information about release notes of Coco Server is provided here.
 ## Latest (In development)
 
 ### ❌ Breaking changes
+### 🚀 Features
+### 🐛 Bug fix
+### ✈️ Improvements
+
+## 0.6.0 (2025-06-29)
+
+### ❌ Breaking changes
 
 ### 🚀 Features
 
@@ -25,6 +32,7 @@ Information about release notes of Coco Server is provided here.
 - fix: take coco server back on refresh #696
 - fix: some input fields couldn’t accept spaces #709
 - fix: context menu search not working #713
+- fix: open extension store display #724
 
 ### ✈️ Improvements
 
