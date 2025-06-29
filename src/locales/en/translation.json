@@ -219,8 +219,10 @@
         },
         "details": {
           "searchScope": "Search Scope",
-          "reindex": "Reindex",
+          "rebuildIndex": "Rebuild Index",
+          "reindex": "Rebuild Index",
           "searchScopeDescription": "Directories added here will be searched for applications and preference panes.",
+          "rebuildIndexDescription": "Rebuild the index to search the latest application list.",
           "name": "Name",
           "where": "Where",
           "type": "Type",
