@@ -219,6 +219,7 @@
         },
         "details": {
           "searchScope": "Search Scope",
+          "reindex": "Reindex",
           "searchScopeDescription": "Directories added here will be searched for applications and preference panes.",
           "name": "Name",
           "where": "Where",

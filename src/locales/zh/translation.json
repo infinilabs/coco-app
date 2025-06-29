@@ -219,6 +219,7 @@
         },
         "details": {
           "searchScope": "搜索范围",
+          "reindex": "重新索引",
           "searchScopeDescription": "在此添加的目录将用于搜索应用程序。",
           "name": "名称",
           "where": "来源",

@@ -1,4 +1,3 @@
-import { useSearchStore } from "@/stores/searchStore";
 import { Button } from "@headlessui/react";
 import dayjs from "dayjs";
 import {
@@ -11,9 +10,10 @@ import {
   User,
 } from "lucide-react";
 import { FC, useState } from "react";
-
-import DeleteDialog from "../Common/DeleteDialog";
 import { useTranslation } from "react-i18next";
+
+import { useSearchStore } from "@/stores/searchStore";
+import DeleteDialog from "../Common/DeleteDialog";
 import PreviewImage from "../Common/PreviewImage";
 
 interface ExtensionDetailProps {
@@ -48,7 +48,7 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
           <div className="flex justify-between">
             <div className="flex gap-4">
               <img src={selectedExtension.icon} className="size-[56px]" />
-              <div className="flex flex-col justify-between">
+              <div className="flex flex-col justify-around">
                 <span>{selectedExtension.name}</span>
                 <div className="flex items-center gap-6 text-[#999]">
                   <div className="flex items-center gap-1">
@@ -106,7 +106,7 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
             />
           )}
 
-          {renderDivider()}
+          {(selectedExtension.screenshots?.length ?? 0) > 0 && renderDivider()}
 
           <div className="mb-2 text-[#999]">
             {t("extensionDetail.label.description")}
@@ -135,7 +135,7 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
             </>
           )}
 
-          {renderDivider()}
+          {(selectedExtension.commands?.length ?? 0) > 0 && renderDivider()}
 
           {(selectedExtension.tags?.length ?? 0) > 0 && (
             <>
@@ -157,7 +157,7 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
             </>
           )}
 
-          {renderDivider()}
+          {(selectedExtension.tags?.length ?? 0) > 0 && renderDivider()}
 
           <div className="mb-2 text-[#999]">
             {t("extensionDetail.label.lastUpdate")}
@@ -170,9 +170,8 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
         <DeleteDialog
           reverseButtonPosition
           isOpen={isOpen}
-          title={`${t("extensionDetail.deleteDialog.title")} ${
-            selectedExtension.name
-          }`}
+          title={`${t("extensionDetail.deleteDialog.title")} ${selectedExtension.name
+            }`}
           description={t("extensionDetail.deleteDialog.description")}
           cancelButtonProps={{
             className:

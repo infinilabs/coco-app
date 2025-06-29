@@ -1,11 +1,12 @@
-import { useAppStore } from "@/stores/appStore";
-import platformAdapter from "@/utils/platformAdapter";
 import { Button } from "@headlessui/react";
 import { useMount } from "ahooks";
 import { castArray } from "lodash-es";
 import { Folder, SquareArrowOutUpRight, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+
+import { useAppStore } from "@/stores/appStore";
+import platformAdapter from "@/utils/platformAdapter";
 
 const Applications = () => {
   const { t } = useTranslation();
@@ -73,12 +74,23 @@ const Applications = () => {
     });
   };
 
+  const handleReindex = () => {
+    platformAdapter.invokeBackend("reindex_applications");
+  };
+
   return (
     <>
       <div className="text-[#999]">
         <p className="font-bold mb-2">
           {t("settings.extensions.application.details.searchScope")}
         </p>
+
+        <Button
+          className="w-full h-8 my-4 text-[#0087FF] border border-[#EEF0F3] hover:!border-[#0087FF] dark:border-gray-700 rounded-md transition"
+          onClick={handleReindex}
+        >
+          {t("settings.extensions.application.details.reindex")}
+        </Button>
 
         <p>
           {t("settings.extensions.application.details.searchScopeDescription")}
