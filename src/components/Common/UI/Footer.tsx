@@ -35,6 +35,8 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
     visibleExtensionDetail,
   } = useSearchStore();
 
+  console.log(111111, visibleExtensionDetail, selectedExtension?.installed)
+
   const isDark = useThemeStore((state) => state.isDark);
 
   const { isTauri, isPinned, setIsPinned } = useAppStore();
@@ -162,7 +164,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
           <span className="mr-1.5">
             {goAskAi
               ? t("search.askCocoAi.continueInChat")
-              : !selectedExtension?.installed
+              : visibleExtensionDetail && !selectedExtension?.installed
               ? t("search.footer.install")
               : t("search.footer.select")}
           </span>
