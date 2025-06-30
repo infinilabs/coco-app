@@ -81,8 +81,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
 
+      - name: Add Rust build target for ${{ matrix.target }}
+        working-directory: src-tauri
+        shell: bash
+        run: |
+          rustup target add ${{ matrix.target }} || true
+
       - name: Add pizza engine as a dependency
         working-directory: src-tauri
+        shell: bash
         run: |
           BUILD_ARGS="--target ${{ matrix.target }}"
           if [[ "${{matrix.target }}" != "i686-pc-windows-msvc" ]]; then
