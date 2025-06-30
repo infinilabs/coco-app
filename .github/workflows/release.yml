@@ -83,6 +83,7 @@ jobs:
 
       - name: Add pizza engine as a dependency
         working-directory: src-tauri
+        shell: bash
         run: |
           BUILD_ARGS="--target ${{ matrix.target }}"
           if [[ "${{matrix.target }}" != "i686-pc-windows-msvc" ]]; then
