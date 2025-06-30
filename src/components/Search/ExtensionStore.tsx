@@ -109,6 +109,8 @@ const ExtensionStore = () => {
   }, [selectedExtension]);
 
   useAsyncEffect(async () => {
+    console.log("debouncedSearchValue", debouncedSearchValue);
+
     const result = await platformAdapter.invokeBackend<SearchExtensionItem[]>(
       "search_extension",
       {
