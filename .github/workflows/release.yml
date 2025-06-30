@@ -57,6 +57,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Checkout dependency repository
+        uses: actions/checkout@v4
+        with:
+          repository: 'infinilabs/pizza'
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          submodules: recursive
+          ref: main
+          path: pizza
+
       - name: Setup node
         uses: actions/setup-node@v4
         with:
@@ -65,18 +75,21 @@ jobs:
         with:
           version: latest
 
-      - name: Install rust target
-        if: matrix.target == 'i686-pc-windows-msvc'
-        run: rustup target add ${{ matrix.target }}
-
       - name: Install dependencies (ubuntu only)
         if: startsWith(matrix.platform, 'ubuntu-22.04')
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
 
-      - name: Install Rust stable
-        run: rustup toolchain install stable
+      - name: Add pizza engine as a dependency
+        working-directory: src-tauri
+        run: |
+          if [[ "${{matrix.target }}" != "i686-pc-windows-msvc" ]]; then
+            echo "Adding pizza engine as a dependency for ${{matrix.platform }}-${{matrix.target }}"
+            ( cargo add --path ../../pizza/lib/engine --features query_string_parser,persistence )
+          else
+            echo "Skipping pizza engine dependency for ${{matrix.platform }}-${{matrix.target }}"
+          fi
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
@@ -92,25 +105,11 @@ jobs:
       - name: Install app dependencies and build web
         run: pnpm install --frozen-lockfile
 
-      - name: Set up SSH agent for private repository clone
-        if: matrix.target != 'i686-pc-windows-msvc'
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Add Git server to known hosts
-        if: matrix.platform != 'windows-latest'
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
-
       - name: Pizza engine features setup
         working-directory: src-tauri
-        if: matrix.target != 'i686-pc-windows-msvc'
         run: |
-          rustup target add ${{ matrix.target }}
-          (cd .. && make add-dep-pizza-engine)
+          
+          
                     
       - name: Build the app with ${{ matrix.platform }}
         uses: tauri-apps/tauri-action@v0
