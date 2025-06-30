@@ -89,6 +89,8 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
             }
           );
 
+          console.log("response", response);
+
           const text = response?.results
             .flatMap((item: any) => item?.transcription?.transcripts)
             .map((item: any) => item?.text?.replace(/<\|[\/\w]+\|>/g, ""))
