@@ -269,8 +269,6 @@ export default function ChatInput({
           onChange={(text) => {
             const nextValue = inputValue + text;
 
-            console.log("nextValue", nextValue);
-
             changeInput(nextValue);
             setSearchValue(nextValue);
           }}
