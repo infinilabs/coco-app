@@ -89,9 +89,9 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
             }
           );
 
-          const text = response.results
-            .flatMap((item: any) => item.transcription.transcripts)
-            .map((item: any) => item.text.replace(/<\|[\/\w]+\|>/g, ""))
+          const text = response?.results
+            .flatMap((item: any) => item?.transcription?.transcripts)
+            .map((item: any) => item?.text?.replace(/<\|[\/\w]+\|>/g, ""))
             .join(" ");
 
           onChange?.(text);
