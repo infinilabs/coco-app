@@ -9,10 +9,16 @@ on:
 jobs:
   create-release:
     runs-on: ubuntu-latest
+
+    outputs:
+      APP_VERSION: ${{ steps.get-version.outputs.APP_VERSION }}
+      RELEASE_BODY: ${{ steps.create_release.outputs.RELEASE_BODY }}
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Set output
         id: vars
         run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
@@ -22,11 +28,28 @@ jobs:
         with:
           node-version: 20
 
+      - name: Get build version
+        shell: bash
+        id: get-version
+        run: |
+          PACKAGE_VERSION=$(jq -r '.version' package.json)
+          CARGO_VERSION=$(grep -m 1 '^version =' src-tauri/Cargo.toml | sed -E 's/.*"([^"]+)".*/\1/')
+          if [ "$PACKAGE_VERSION" != "$CARGO_VERSION" ]; then
+            echo "::error::Version mismatch!"
+          else
+            echo "Version match: $PACKAGE_VERSION"
+          fi
+          echo "APP_VERSION=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+
       - name: Generate changelog
         id: create_release
-        run: npx changelogithub --draft --name ${{ steps.vars.outputs.tag }}
+        run: |
+          CHANGELOG_BODY=$(npx changelogithub --draft --name ${{ steps.vars.outputs.tag }})
+          echo "RELEASE_BODY<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG_BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-app:
     needs: create-release
@@ -52,6 +75,9 @@ jobs:
             target: "x86_64-unknown-linux-gnu"
           - platform: "ubuntu-22.04-arm"
             target: "aarch64-unknown-linux-gnu"
+    env:
+      APP_VERSION: ${{ needs.create-release.outputs.APP_VERSION }}
+      RELEASE_BODY: ${{ needs.create-release.outputs.RELEASE_BODY }}
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -81,7 +107,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
 
-      - name: Add Rust build target for ${{ matrix.target }}
+      - name: Add Rust build target at ${{ matrix.platform}} for ${{ matrix.target }}
         working-directory: src-tauri
         shell: bash
         run: |
@@ -115,7 +141,7 @@ jobs:
       - name: Install app dependencies and build web
         run: pnpm install --frozen-lockfile
       
-      - name: Build the app with ${{ matrix.platform }}
+      - name: Build the coco at ${{ matrix.platform}} for ${{ matrix.target }} @ ${{ env.APP_VERSION }}
         uses: tauri-apps/tauri-action@v0
         env:
           CI: false
@@ -131,8 +157,8 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: Coco ${{ needs.create-release.outputs.APP_VERSION }}
-          releaseBody: ""
+          releaseName: Coco ${{ env.APP_VERSION }}
+          releaseBody: "${{ env.RELEASE_BODY }}"
           releaseDraft: true
           prerelease: false
           args: ${{ env.BUILD_ARGS }}
