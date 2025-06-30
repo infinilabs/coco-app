@@ -12,7 +12,7 @@ jobs:
 
     outputs:
       APP_VERSION: ${{ steps.get-version.outputs.APP_VERSION }}
-      RELEASE_BODY: ${{ steps.create_release.outputs.RELEASE_BODY }}
+      RELEASE_BODY: ${{ steps.get-changelog.outputs.RELEASE_BODY }}
 
     steps:
       - uses: actions/checkout@v4
@@ -42,7 +42,7 @@ jobs:
           echo "APP_VERSION=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
 
       - name: Generate changelog
-        id: create_release
+        id: get-changelog
         run: |
           CHANGELOG_BODY=$(npx changelogithub --draft --name ${{ steps.vars.outputs.tag }})
           echo "RELEASE_BODY<<EOF" >> $GITHUB_OUTPUT
