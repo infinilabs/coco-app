@@ -84,12 +84,15 @@ jobs:
       - name: Add pizza engine as a dependency
         working-directory: src-tauri
         run: |
+          BUILD_ARGS="--target ${{ matrix.target }}"
           if [[ "${{matrix.target }}" != "i686-pc-windows-msvc" ]]; then
             echo "Adding pizza engine as a dependency for ${{matrix.platform }}-${{matrix.target }}"
             ( cargo add --path ../pizza/lib/engine --features query_string_parser,persistence )
+            BUILD_ARGS+=" --features use_pizza_engine"
           else
             echo "Skipping pizza engine dependency for ${{matrix.platform }}-${{matrix.target }}"
           fi
+          echo "BUILD_ARGS=${BUILD_ARGS}" >> $GITHUB_ENV
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
@@ -113,7 +116,6 @@ jobs:
                     
       - name: Build the app with ${{ matrix.platform }}
         uses: tauri-apps/tauri-action@v0
-        if: matrix.target != 'i686-pc-windows-msvc'
         env:
           CI: false
           PLATFORM: ${{ matrix.platform }}
@@ -132,27 +134,4 @@ jobs:
           releaseBody: ""
           releaseDraft: true
           prerelease: false
-          args: --target ${{ matrix.target }} --features use_pizza_engine
-
-      - name: Build the app with ${{ matrix.platform }} (windows i686 only)
-        uses: tauri-apps/tauri-action@v0
-        if: matrix.target == 'i686-pc-windows-msvc'
-        env:
-          CI: false
-          PLATFORM: ${{ matrix.platform }}
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ""
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        with:
-          tagName: ${{ github.ref_name }}
-          releaseName: Coco ${{ needs.create-release.outputs.APP_VERSION }}
-          releaseBody: ""
-          releaseDraft: true
-          prerelease: false
-          args: --target ${{ matrix.target }}
+          args: ${{ env.BUILD_ARGS }}
