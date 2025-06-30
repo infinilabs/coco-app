@@ -176,13 +176,11 @@ impl SearchSource for CalculatorSource {
                         total_hits: 1,
                     }
                 }
-                Err(_) => {
-                    QueryResponse {
-                        source: query_source,
-                        hits: Vec::new(),
-                        total_hits: 0,
-                    }
-                }
+                Err(_) => QueryResponse {
+                    source: query_source,
+                    hits: Vec::new(),
+                    total_hits: 0,
+                },
             }
         };
 
