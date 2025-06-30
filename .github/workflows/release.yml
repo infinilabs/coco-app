@@ -86,7 +86,7 @@ jobs:
         run: |
           if [[ "${{matrix.target }}" != "i686-pc-windows-msvc" ]]; then
             echo "Adding pizza engine as a dependency for ${{matrix.platform }}-${{matrix.target }}"
-            ( cargo add --path ../../pizza/lib/engine --features query_string_parser,persistence )
+            ( cargo add --path ../pizza/lib/engine --features query_string_parser,persistence )
           else
             echo "Skipping pizza engine dependency for ${{matrix.platform }}-${{matrix.target }}"
           fi
