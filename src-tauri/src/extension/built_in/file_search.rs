@@ -5,29 +5,28 @@ use crate::common::{
     search::{QueryResponse, QuerySource, SearchQuery},
     traits::SearchSource,
 };
+use crate::extension::OnOpened;
 use async_trait::async_trait;
 use hostname;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::io::BufRead;
+use std::io::BufReader;
 use std::path::Path;
-use std::process::Command;
 use std::sync::LazyLock;
 use tauri_plugin_store::StoreExt;
+use tokio::process::Command;
 
-pub(crate) const EXTENSION_ID: &str = "FileSystem";
+pub(crate) const EXTENSION_ID: &str = "File Search";
 
-// TODO: field rename
-//
-// title -> name
-//
 /// JSON file for this extension.
 pub(crate) const PLUGIN_JSON_FILE: &str = r#"
 {
-  "id": "FileSystem",
-  "title": "File System Search",
+  "id": "File Search",
+  "name": "File Search",
   "platforms": ["macos"],
   "description": "Search files on your system using macOS Spotlight",
-  "icon": "font_TODO",
+  "icon": "Filesearch",
   "type": "command",
   "enabled": true
 }
@@ -263,27 +262,47 @@ impl FileSearchExtensionSearchSource {
         args
     }
 
-    fn execute_mdfind_static(args: &[String]) -> Result<Vec<String>, String> {
-        let output = Command::new(&args[0])
+    async fn execute_mdfind_static(args: &[String], limit: usize) -> Result<Vec<String>, String> {
+        let (rx, tx) = std::io::pipe().unwrap();
+        let mut buffered_rx = BufReader::new(rx);
+
+        let mut mdfind_child_process = Command::new(&args[0])
             .args(&args[1..])
-            .output()
+            .stdout(tx)
+            .stderr(std::process::Stdio::null())
+            .spawn()
             .map_err(|e| format!("Failed to execute mdfind: {}", e))?;
 
-        if !output.status.success() {
-            return Err(format!(
-                "mdfind command failed with status: {}",
-                output.status
-            ));
-        }
+        let handle = tokio::task::spawn_blocking(move || {
+            let mut file_paths = Vec::with_capacity(limit);
+            let mut line_buffer = String::new();
 
-        let output_str = String::from_utf8_lossy(&output.stdout);
-        let results: Vec<String> = output_str
-            .lines()
-            .filter(|line| !line.trim().is_empty())
-            .map(|line| line.trim().to_string())
-            .collect();
+            loop {
+                if file_paths.len() >= limit {
+                    break;
+                }
 
-        Ok(results)
+                let n_read = buffered_rx.read_line(&mut line_buffer).unwrap();
+
+                // EOF
+                if n_read == 0 {
+                    break;
+                }
+
+                // read_line() will read the tailing new-line char, trim it
+                let trimmed = line_buffer.trim_end();
+                file_paths.push(trimmed.to_string());
+                line_buffer.clear();
+            }
+
+            file_paths
+        });
+
+        let file_paths = handle.await.map_err(|e| format!("{:?}", e))?;
+
+        mdfind_child_process.kill().await.unwrap();
+
+        Ok(file_paths)
     }
 
     fn filter_excluded_paths(results: Vec<String>, config: &FileSearchConfig) -> Vec<String> {
@@ -324,6 +343,8 @@ impl SearchSource for FileSearchExtensionSearchSource {
                 total_hits: 0,
             });
         };
+        let from = usize::try_from(query.from).expect("from too big");
+        let size = usize::try_from(query.size).expect("size too big");
 
         let query_string = query_string.trim();
         if query_string.is_empty() {
@@ -342,8 +363,9 @@ impl SearchSource for FileSearchExtensionSearchSource {
         let base_score = self.base_score;
         let mdfind_args = self.build_mdfind_query(query_string, &config);
 
-        let search_results =
-            Self::execute_mdfind_static(&mdfind_args).map_err(SearchError::InternalError)?;
+        let search_results = Self::execute_mdfind_static(&mdfind_args, from + size)
+            .await
+            .map_err(SearchError::InternalError)?;
 
         // Filter out excluded paths
         let filtered_results = Self::filter_excluded_paths(search_results, &config);
@@ -351,15 +373,30 @@ impl SearchSource for FileSearchExtensionSearchSource {
         // Convert results to documents
         let hits: Vec<(Document, f64)> = filtered_results
             .into_iter()
+            .skip(from)
+            .take(size)
             .map(|file_path| {
+                let file_path_of_type_path = camino::Utf8Path::new(&file_path);
+                let file_name = file_path_of_type_path.file_name().unwrap_or_else(|| {
+                    panic!(
+                        "expect path [{}] to have a file name, but it does not",
+                        file_path
+                    );
+                });
+                let on_opened = OnOpened::Document {
+                    url: file_path.clone(),
+                };
+
                 let doc = Document {
                     id: file_path.clone(),
+                    title: Some(file_name.to_string()),
                     source: Some(DataSourceReference {
                         r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
                         name: Some(EXTENSION_ID.into()),
                         id: Some(EXTENSION_ID.into()),
-                        icon: Some(String::from("font_TODO")),
+                        icon: Some(String::from("Filesearch")),
                     }),
+                    on_opened: Some(on_opened),
                     url: Some(file_path),
                     ..Default::default()
                 };

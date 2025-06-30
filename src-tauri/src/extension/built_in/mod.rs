@@ -172,14 +172,17 @@ pub(crate) async fn list_built_in_extensions() -> Result<Vec<Extension>, String>
         )
         .await?,
     );
-    built_in_extensions.push(
-        load_built_in_extension(
-            dir,
-            file_search::EXTENSION_ID,
-            file_search::PLUGIN_JSON_FILE,
-        )
-        .await?,
-    );
+
+    if cfg!(target_os = "macos") {
+        built_in_extensions.push(
+            load_built_in_extension(
+                dir,
+                file_search::EXTENSION_ID,
+                file_search::PLUGIN_JSON_FILE,
+            )
+            .await?,
+        );
+    }
 
     Ok(built_in_extensions)
 }
@@ -189,7 +192,7 @@ pub(super) async fn init_built_in_extension<R: Runtime>(
     extension: &Extension,
     search_source_registry: &SearchSourceRegistry,
 ) -> Result<(), String> {
-    log::trace!("initializing built-in extensions");
+    log::trace!("initializing built-in extensions [{}]", extension.id);
 
     if extension.id == application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME {
         search_source_registry
@@ -208,7 +211,7 @@ pub(super) async fn init_built_in_extension<R: Runtime>(
     }
 
     if extension.id == file_search::EXTENSION_ID {
-        let file_system_search = file_search::FileSearchExtensionSearchSource::new(1500f64);
+        let file_system_search = file_search::FileSearchExtensionSearchSource::new(1f64);
         search_source_registry
             .register_source(file_system_search)
             .await;
@@ -293,7 +296,7 @@ pub(crate) async fn enable_built_in_extension(
     }
 
     if bundle_id.extension_id == file_search::EXTENSION_ID {
-        let file_system_search = file_search::FileSearchExtensionSearchSource::new(1500f64);
+        let file_system_search = file_search::FileSearchExtensionSearchSource::new(1f64);
         search_source_registry_tauri_state
             .register_source(file_system_search)
             .await;
@@ -517,6 +520,16 @@ pub(crate) async fn is_built_in_extension_enabled(
             bundle_id.extension_id,
         )?;
         return Ok(extension.enabled);
+    }
+
+
+    if bundle_id.extension_id == file_search::EXTENSION_ID
+        && bundle_id.sub_extension_id.is_none()
+    {
+        return Ok(search_source_registry_tauri_state
+            .get_source(bundle_id.extension_id)
+            .await
+            .is_some());
     }
 
     unreachable!("extension [{:?}] is not a built-in extension", bundle_id)
