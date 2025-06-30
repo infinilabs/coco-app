@@ -171,9 +171,10 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
             hidden: state.audioDevices.length === 0,
           }
         )}
+        onClick={startRecording}
       >
         <VisibleKey shortcut={voiceInput} onKeyPress={startRecording}>
-          <Mic className="size-4 text-[#999]" onClick={startRecording} />
+          <Mic className="size-4 text-[#999]" />
         </VisibleKey>
       </div>
 

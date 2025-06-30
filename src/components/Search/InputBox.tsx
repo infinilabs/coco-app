@@ -200,6 +200,10 @@ export default function ChatInput({
     return "Ask";
   }, [language, askAI]);
 
+  useEffect(() => {
+    console.log("inputValue", inputValue);
+  }, [inputValue]);
+
   const renderSearchIcon = () => (
     <SearchIcons
       lineCount={lineCount}
