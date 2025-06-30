@@ -107,13 +107,7 @@ jobs:
 
       - name: Install app dependencies and build web
         run: pnpm install --frozen-lockfile
-
-      - name: Pizza engine features setup
-        working-directory: src-tauri
-        run: |
-          
-          
-                    
+      
       - name: Build the app with ${{ matrix.platform }}
         uses: tauri-apps/tauri-action@v0
         env:
