@@ -7,6 +7,7 @@ import { useExtensionsStore } from "@/stores/extensionsStore";
 import SharedAi from "./SharedAi";
 import AiOverview from "./AiOverview";
 import Calculator from "./Calculator";
+import FileSearch from "./FileSearch";
 
 const Details = () => {
   const { rootState } = useContext(ExtensionsContext);
@@ -55,6 +56,10 @@ const Details = () => {
 
     if (id === "Calculator") {
       return <Calculator />;
+    }
+
+    if (id === "File Search") {
+      return <FileSearch />;
     }
 
     return <div className="text-[#999]">{description}</div>;

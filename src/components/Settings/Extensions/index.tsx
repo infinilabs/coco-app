@@ -14,7 +14,11 @@ import SettingsInput from "../SettingsInput";
 import clsx from "clsx";
 
 export type ExtensionId = LiteralUnion<
-  "Applications" | "Calculator" | "QuickAIAccess" | "AIOverview",
+  | "Applications"
+  | "Calculator"
+  | "QuickAIAccess"
+  | "AIOverview"
+  | "File Search",
   string
 >;
 

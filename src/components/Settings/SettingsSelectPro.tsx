@@ -91,6 +91,7 @@ const SettingsSelectPro: FC<SettingsSelectProProps> = (props) => {
                   )}
                   onClick={() => {
                     onChange?.(item?.[valueField]);
+                    setFalse();
                   }}
                 >
                   <span className="block truncate">{item?.[labelField]}</span>

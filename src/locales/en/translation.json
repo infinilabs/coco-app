@@ -210,13 +210,6 @@
       },
       "application": {
         "title": "Applications",
-        "hits": {
-          "pathDuplication": "Path \"{{0}}\" is already in search scope.",
-          "pathIncluded": "Path \"{{0}}\" is already covered by another search directory."
-        },
-        "button": {
-          "addDirectories": "Add Directories"
-        },
         "details": {
           "searchScope": "Search Scope",
           "rebuildIndex": "Rebuild Index",
@@ -263,6 +256,29 @@
               "minQuantity": "Minimum Number of Search Results"
             }
           }
+        }
+      },
+      "directoryScope": {
+        "hits": {
+          "pathDuplication": "Path \"{{0}}\" is already in search scope.",
+          "pathIncluded": "Path \"{{0}}\" is already covered by another search directory."
+        },
+        "button": {
+          "addDirectories": "Add Directories"
+        }
+      },
+      "fileSearch": {
+        "description": " Search for files and folders on your computer.",
+        "label": {
+          "searchBy": "File Search",
+          "searchScope": "Search Directories",
+          "excludeScope": "Exclude Directories",
+          "searchFileTypes": "Search File Types",
+          "name": "Name",
+          "nameAndContents": "Name and Contents"
+        },
+        "hints": {
+          "typeExists": "File type already exists."
         }
       }
     }
