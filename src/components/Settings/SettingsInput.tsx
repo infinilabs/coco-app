@@ -1,9 +1,11 @@
 import { Input, InputProps } from "@headlessui/react";
-import clsx from "clsx";
 import { isNumber } from "lodash-es";
 import { FC, FocusEvent } from "react";
+import { twMerge } from "tailwind-merge";
 
-interface SettingsInputProps extends Omit<InputProps, "onChange"> {
+interface SettingsInputProps
+  extends Omit<InputProps, "onChange" | "className"> {
+  className: string;
   onChange?: (value?: string | number) => void;
 }
 
@@ -32,7 +34,8 @@ const SettingsInput: FC<SettingsInputProps> = (props) => {
   return (
     <Input
       {...rest}
-      className={clsx(
+      autoCorrect="off"
+      className={twMerge(
         "w-20 h-8 px-2 rounded-md border bg-transparent border-black/5 dark:border-white/10 hover:!border-[#0072FF] focus:!border-[#0072FF] transition",
         className
       )}

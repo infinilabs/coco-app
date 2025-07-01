@@ -210,13 +210,6 @@
       },
       "application": {
         "title": "应用程序",
-        "hits": {
-          "pathDuplication": "路径 \"{{0}}\" 已存在于搜索范围中。",
-          "pathIncluded": "路径 \"{{0}}\" 已被其他搜索目录包含。"
-        },
-        "button": {
-          "addDirectories": "添加目录"
-        },
         "details": {
           "searchScope": "搜索范围",
           "rebuildIndex": "重建索引",
@@ -263,6 +256,29 @@
               "minQuantity": "最小搜索结果数"
             }
           }
+        }
+      },
+      "directoryScope": {
+        "hits": {
+          "pathDuplication": "路径 \"{{0}}\" 已存在于搜索范围中。",
+          "pathIncluded": "路径 \"{{0}}\" 已被其他搜索目录包含。"
+        },
+        "button": {
+          "addDirectories": "添加目录"
+        }
+      },
+      "fileSearch": {
+        "description": "搜索计算机上的文件和文件夹。",
+        "label": {
+          "searchBy": "搜索方式",
+          "searchScope": "搜索范围",
+          "excludeScope": "排除范围",
+          "searchFileTypes": "搜索文件类型",
+          "name": "名称",
+          "nameAndContents": "名称和内容"
+        },
+        "hints": {
+          "typeExists": "文件类型已存在。"
         }
       }
     }

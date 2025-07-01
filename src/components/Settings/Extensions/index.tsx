@@ -14,7 +14,11 @@ import { useExtensionsStore } from "@/stores/extensionsStore";
 import SettingsInput from "../SettingsInput";
 
 export type ExtensionId = LiteralUnion<
-  "Applications" | "Calculator" | "QuickAIAccess" | "AIOverview",
+  | "Applications"
+  | "Calculator"
+  | "QuickAIAccess"
+  | "AIOverview"
+  | "File Search",
   string
 >;
 
