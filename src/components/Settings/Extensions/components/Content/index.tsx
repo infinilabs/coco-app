@@ -1,13 +1,14 @@
 import { FC, MouseEvent, useContext, useMemo, useState } from "react";
-import { Extension, ExtensionId, ExtensionsContext } from "../..";
 import { useReactive } from "ahooks";
 import { ChevronRight, LoaderCircle } from "lucide-react";
 import clsx from "clsx";
 import { isArray, startCase, sortBy } from "lodash-es";
+import { useTranslation } from "react-i18next";
+
+import { Extension, ExtensionId, ExtensionsContext } from "../..";
 import platformAdapter from "@/utils/platformAdapter";
 import FontIcon from "@/components/Common/Icons/FontIcon";
 import SettingsInput from "@/components/Settings/SettingsInput";
-import { useTranslation } from "react-i18next";
 import Shortcut from "../Shortcut";
 import SettingsToggle from "@/components/Settings/SettingsToggle";
 import { platform } from "@/utils/platform";
@@ -318,7 +319,7 @@ const Item: FC<ItemProps> = (props) => {
               </div>
 
               <div
-                className={clsx("size-4", {
+                className={clsx("size-4 min-w-4", {
                   "opacity-50 pointer-events-none": isDisabled,
                 })}
               >
