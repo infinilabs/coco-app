@@ -30,5 +30,5 @@ export const useIconfontScript = () => {
   // Coco Server Icons
   useScript("https://at.alicdn.com/t/c/font_4878526_cykw3et0ezd.js");
   // Coco App Icons
-  useScript("https://at.alicdn.com/t/c/font_4934333_80wr9yn2eup.js");
+  useScript("https://at.alicdn.com/t/c/font_4934333_u4cgwrjketp.js");
 };
