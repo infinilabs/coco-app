@@ -377,7 +377,15 @@ impl SearchSource for FileSearchExtensionSearchSource {
             let file_type = get_file_type(&file_path).await;
             let icon = type_to_icon(file_type);
             let file_path_of_type_path = camino::Utf8Path::new(&file_path);
-            let components: Vec<String> = file_path_of_type_path.components().map(|com| com.as_str().to_string()).collect();
+            let r#where = file_path_of_type_path
+                .parent()
+                .unwrap_or_else(|| {
+                    panic!(
+                        "expect path [{}] to have a parent, but it does not",
+                        file_path
+                    );
+                })
+                .to_string();
 
             let file_name = file_path_of_type_path.file_name().unwrap_or_else(|| {
                 panic!(
@@ -398,7 +406,7 @@ impl SearchSource for FileSearchExtensionSearchSource {
                     id: Some(EXTENSION_ID.into()),
                     icon: Some(String::from("font_Filesearch")),
                 }),
-                categories: Some(components),
+                category: Some(r#where),
                 on_opened: Some(on_opened),
                 url: Some(file_path),
                 icon: Some(icon.to_string()),
@@ -505,7 +513,7 @@ async fn get_file_type(path: &str) -> FileType {
                 return FileType::Unknown;
             }
 
-            // Here is an example that could potentially make dealing with these index numbers easier: 
+            // Here is an example that could potentially make dealing with these index numbers easier:
             //
             // a: "coco"
             //
@@ -517,8 +525,7 @@ async fn get_file_type(path: &str) -> FileType {
                 return FileType::Unknown;
             };
 
-            let Some(file_type_str_len) = stdout[first_double_quote_idx + 1..].find('"')
-            else {
+            let Some(file_type_str_len) = stdout[first_double_quote_idx + 1..].find('"') else {
                 log::warn!("the output of [{:?}] changed, current output: [{}], please file an issue to Coco AI", cmd, stdout);
                 return FileType::Unknown;
             };
@@ -528,7 +535,8 @@ async fn get_file_type(path: &str) -> FileType {
                 return FileType::Unknown;
             }
 
-            let file_type_str = &stdout[first_double_quote_idx + 1..=first_double_quote_idx + file_type_str_len];
+            let file_type_str =
+                &stdout[first_double_quote_idx + 1..=first_double_quote_idx + file_type_str_len];
 
             file_type_str
                 .parse::<FileType>()
