@@ -13,6 +13,7 @@ use serde_json::Value;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::path::Path;
+use std::str::FromStr;
 use std::sync::LazyLock;
 use tauri_plugin_store::StoreExt;
 use tokio::process::Command;
@@ -26,7 +27,7 @@ pub(crate) const PLUGIN_JSON_FILE: &str = r#"
   "name": "File Search",
   "platforms": ["macos"],
   "description": "Search files on your system using macOS Spotlight",
-  "icon": "Filesearch",
+  "icon": "font_Filesearch",
   "type": "command",
   "enabled": true
 }
@@ -371,47 +372,196 @@ impl SearchSource for FileSearchExtensionSearchSource {
         let filtered_results = Self::filter_excluded_paths(search_results, &config);
 
         // Convert results to documents
-        let hits: Vec<(Document, f64)> = filtered_results
-            .into_iter()
-            .skip(from)
-            .take(size)
-            .map(|file_path| {
-                let file_path_of_type_path = camino::Utf8Path::new(&file_path);
-                let file_name = file_path_of_type_path.file_name().unwrap_or_else(|| {
-                    panic!(
-                        "expect path [{}] to have a file name, but it does not",
-                        file_path
-                    );
-                });
-                let on_opened = OnOpened::Document {
-                    url: file_path.clone(),
-                };
+        let mut hits: Vec<(Document, f64)> = Vec::new();
+        for file_path in filtered_results.into_iter().skip(from).take(size) {
+            let file_type = get_file_type(&file_path).await;
+            let icon = type_to_icon(file_type);
+            let file_path_of_type_path = camino::Utf8Path::new(&file_path);
+            let file_name = file_path_of_type_path.file_name().unwrap_or_else(|| {
+                panic!(
+                    "expect path [{}] to have a file name, but it does not",
+                    file_path
+                );
+            });
+            let on_opened = OnOpened::Document {
+                url: file_path.clone(),
+            };
 
-                let doc = Document {
-                    id: file_path.clone(),
-                    title: Some(file_name.to_string()),
-                    source: Some(DataSourceReference {
-                        r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
-                        name: Some(EXTENSION_ID.into()),
-                        id: Some(EXTENSION_ID.into()),
-                        icon: Some(String::from("Filesearch")),
-                    }),
-                    on_opened: Some(on_opened),
-                    url: Some(file_path),
-                    ..Default::default()
-                };
+            let doc = Document {
+                id: file_path.clone(),
+                title: Some(file_name.to_string()),
+                source: Some(DataSourceReference {
+                    r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
+                    name: Some(EXTENSION_ID.into()),
+                    id: Some(EXTENSION_ID.into()),
+                    icon: Some(String::from("font_Filesearch")),
+                }),
+                on_opened: Some(on_opened),
+                url: Some(file_path),
+                icon: Some(icon.to_string()),
+                ..Default::default()
+            };
 
-                (doc, base_score)
-            })
-            .collect();
+            hits.push((doc, base_score));
+        }
 
         let total_hits = hits.len();
-
         Ok(QueryResponse {
             source: query_source,
             hits,
             total_hits,
         })
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Copy)]
+enum FileType {
+    Folder,
+    JPEGImage,
+    PNGImage,
+    PDFDocument,
+    PlainTextDocument,
+    RichTextDocument,
+    MicrosoftWordDocument,
+    MicrosoftExcelSpreadsheet,
+    AudioFile,
+    VideoFile,
+    CHeaderFile,
+    TOMLDocument,
+    RustScript,
+    CSourceCode,
+    MarkdownDocument,
+    TerminalSettings,
+    ZipArchive,
+    Unknown,
+}
+
+impl FromStr for FileType {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.trim() {
+            "Folder" => Ok(FileType::Folder),
+            "JPEG image" => Ok(FileType::JPEGImage),
+            "PNG image" => Ok(FileType::PNGImage),
+            "PDF document" => Ok(FileType::PDFDocument),
+            "Plain text document" => Ok(FileType::PlainTextDocument),
+            "Rich text document" => Ok(FileType::RichTextDocument),
+            "Microsoft Word document" => Ok(FileType::MicrosoftWordDocument),
+            "Word 2007 (.docx) Document" => Ok(FileType::MicrosoftWordDocument),
+            "Microsoft Word document (.docx)" => Ok(FileType::MicrosoftWordDocument),
+            "Microsoft Excel spreadsheet" => Ok(FileType::MicrosoftExcelSpreadsheet),
+            "Audio file" => Ok(FileType::AudioFile),
+            "Video file" => Ok(FileType::VideoFile),
+            "C header" => Ok(FileType::CHeaderFile),
+            "TOML document" => Ok(FileType::TOMLDocument),
+            "Rust script" => Ok(FileType::RustScript),
+            "C source code" => Ok(FileType::CSourceCode),
+            "Markdown document" => Ok(FileType::MarkdownDocument),
+            "Terminal settings" => Ok(FileType::TerminalSettings),
+            "ZIP archive" => Ok(FileType::ZipArchive),
+            unknown => {
+                log::debug!("unknown file type string from mdls: [{}]", unknown);
+                Ok(FileType::Unknown)
+            }
+        }
+    }
+}
+
+/// WARNING: You should note that the first letter of "kMDItemKind" is lowercase.
+async fn get_file_type(path: &str) -> FileType {
+    const TYPE_ATTRIBUTE: &str = "kMDItemKind";
+
+    // Example output
+    //
+    // $ mdls -attr kMDItemKind target/debug/build
+    // kMDItemKind = "Folder"
+    let mut cmd = Command::new("mdls");
+    cmd.arg("-attr");
+    cmd.arg(TYPE_ATTRIBUTE);
+    cmd.arg(path);
+
+    let output = cmd.output().await;
+
+    match output {
+        Ok(output) => {
+            if !output.status.success() {
+                log::warn!(
+                    "failed to get file type of [{}], [mdls] failed with stderr [{}]",
+                    path,
+                    std::str::from_utf8(&output.stderr).expect("should be UTF-8 encoded")
+                );
+                return FileType::Unknown;
+            }
+
+            let stdout =
+                std::str::from_utf8(&output.stdout).expect("mdls output should be UTF-8 encoded");
+
+            // first letter k is lowercase
+            if !stdout.starts_with(TYPE_ATTRIBUTE) {
+                return FileType::Unknown;
+            }
+
+            // Here is an example that could potentially make dealing with these index numbers easier: 
+            //
+            // a: "coco"
+            //
+            // first_double_quote: 3
+            // file_type_str_len: 4
+            // file_type_str range: [4, 7] (inclusive)
+            let Some(first_double_quote_idx) = stdout.find('"') else {
+                log::warn!("the output of [{:?}] changed, current output: [{}], please file an issue to Coco AI", cmd, stdout);
+                return FileType::Unknown;
+            };
+
+            let Some(file_type_str_len) = stdout[first_double_quote_idx + 1..].find('"')
+            else {
+                log::warn!("the output of [{:?}] changed, current output: [{}], please file an issue to Coco AI", cmd, stdout);
+                return FileType::Unknown;
+            };
+
+            if file_type_str_len == 0 {
+                log::warn!("the output of [{:?}] changed, current output: [{}], please file an issue to Coco AI", cmd, stdout);
+                return FileType::Unknown;
+            }
+
+            let file_type_str = &stdout[first_double_quote_idx + 1..=first_double_quote_idx + file_type_str_len];
+
+            file_type_str
+                .parse::<FileType>()
+                .expect("our FromStr impl returns Ok")
+        }
+        Err(e) => {
+            log::warn!(
+                "failed to get file type of [{}], spawning [mdls] failed with error [{}]",
+                path,
+                e
+            );
+            FileType::Unknown
+        }
+    }
+}
+
+fn type_to_icon(ty: FileType) -> &'static str {
+    match ty {
+        FileType::Folder => "font_file_folder",
+        FileType::JPEGImage => "font_file_image",
+        FileType::PNGImage => "font_file_image",
+        FileType::PDFDocument => "font_file_document_pdf",
+        FileType::PlainTextDocument => "font_file_txt",
+        FileType::RichTextDocument => "font_file_txt",
+        FileType::MicrosoftWordDocument => "font_file_document_word",
+        FileType::MicrosoftExcelSpreadsheet => "font_file_spreadsheet_excel",
+        FileType::AudioFile => "font_file_audio",
+        FileType::VideoFile => "font_file_video",
+        FileType::CHeaderFile => "",
+        FileType::TOMLDocument => "",
+        FileType::RustScript => "",
+        FileType::CSourceCode => "",
+        FileType::MarkdownDocument => "",
+        FileType::TerminalSettings => "",
+        FileType::ZipArchive => "font_file_zip",
+        FileType::Unknown => "font_file_unknown",
     }
 }
 
