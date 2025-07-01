@@ -270,9 +270,9 @@
       "fileSearch": {
         "description": " Search for files and folders on your computer.",
         "label": {
-          "searchBy": "File Search",
-          "searchScope": "Search Directories",
-          "excludeScope": "Exclude Directories",
+          "searchBy": "Search By",
+          "searchScope": "Search Scope",
+          "excludeScope": "Exclude Scope",
           "searchFileTypes": "Search File Types",
           "name": "Name",
           "nameAndContents": "Name and Contents"
