@@ -125,11 +125,11 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
       className="relative z-10 focus:outline-none"
       onClose={noop}
     >
-      <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+      <div className={`fixed inset-0 z-10 w-screen overflow-y-auto ${isCheckPage ? "rounded-lg bg-white dark:bg-[#333] border border-[#EDEDED]  dark:border-black/20 shadow-md" : ""}`}>
         <div className={clsx("flex min-h-full items-center justify-center", !isCheckPage && "p-4")}>
           <DialogPanel
             transition
-            className={`relative w-[340px] py-8 flex flex-col items-center bg-white shadow-md border border-[#EDEDED] dark:bg-[#333] dark:border-black/20 ${isCheckPage ? "" : "rounded-lg"}`}
+            className={`relative w-[340px] py-8 flex flex-col items-center ${isCheckPage ? "" : "rounded-lg bg-white dark:bg-[#333] border border-[#EDEDED]  dark:border-black/20 shadow-md"}`}
           >
             {!isCheckPage && isOptional && (
               <X
@@ -162,7 +162,7 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
               </div>
             ) : (
               <div className={clsx("text-xs text-[#999]", cursorClassName)}>
-                {t("update.latest", { replace: [updateInfo?.version] })}
+                {t("update.latest", { replace: [updateInfo?.version || "v0.6.0"] })}
               </div>
             )}
 
