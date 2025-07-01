@@ -377,6 +377,8 @@ impl SearchSource for FileSearchExtensionSearchSource {
             let file_type = get_file_type(&file_path).await;
             let icon = type_to_icon(file_type);
             let file_path_of_type_path = camino::Utf8Path::new(&file_path);
+            let components: Vec<String> = file_path_of_type_path.components().map(|com| com.as_str().to_string()).collect();
+
             let file_name = file_path_of_type_path.file_name().unwrap_or_else(|| {
                 panic!(
                     "expect path [{}] to have a file name, but it does not",
@@ -396,6 +398,7 @@ impl SearchSource for FileSearchExtensionSearchSource {
                     id: Some(EXTENSION_ID.into()),
                     icon: Some(String::from("font_Filesearch")),
                 }),
+                categories: Some(components),
                 on_opened: Some(on_opened),
                 url: Some(file_path),
                 icon: Some(icon.to_string()),
