@@ -11,6 +11,7 @@ Information about release notes of Coco Server is provided here.
 
 ### ❌ Breaking changes
 ### 🚀 Features
+- feat: file search using spotlight #705
 ### 🐛 Bug fix
 ### ✈️ Improvements
 
