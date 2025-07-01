@@ -139,6 +139,7 @@ const FileSearch = () => {
         })}
 
         <SettingsInput
+          placeholder=".*"
           className="h-6 border-0 -ml-2"
           onKeyDown={(event) => {
             if (event.code !== "Enter") return;
