@@ -237,17 +237,6 @@ impl FileSearchExtensionSearchSource {
             }
         }
 
-        // Add file type filter if specified
-        if !config.file_types.is_empty() {
-            let type_query = config
-                .file_types
-                .iter()
-                .map(|t| format!("kMDItemKind == '{}'", t))
-                .collect::<Vec<_>>()
-                .join(" || ");
-            query_parts.push(format!("({})", type_query));
-        }
-
         // Combine all query parts
         let final_query = query_parts.join(" && ");
         args.push(final_query);
@@ -305,20 +294,46 @@ impl FileSearchExtensionSearchSource {
         Ok(file_paths)
     }
 
-    fn filter_excluded_paths(results: Vec<String>, config: &FileSearchConfig) -> Vec<String> {
-        if config.exclude_paths.is_empty() {
-            return results;
+    fn apply_exclude_path_and_file_type_filters(
+        results: Vec<String>,
+        config: &FileSearchConfig,
+    ) -> Vec<String> {
+        let mut filtered_results = Vec::new();
+
+        for path in results {
+            // Check if path should be excluded
+            let is_excluded = config
+                .exclude_paths
+                .iter()
+                .any(|exclude_path| path.starts_with(exclude_path));
+
+            if is_excluded {
+                continue;
+            }
+
+            // Check file type filter
+            let matches_file_type = if config.file_types.is_empty() {
+                true
+            } else {
+                let path_obj = camino::Utf8Path::new(&path);
+                if let Some(extension) = path_obj.extension() {
+                    config
+                        .file_types
+                        .iter()
+                        .any(|file_type| file_type == extension)
+                } else {
+                    false
+                }
+            };
+
+            if !matches_file_type {
+                continue;
+            }
+
+            filtered_results.push(path);
         }
 
-        results
-            .into_iter()
-            .filter(|path| {
-                !config
-                    .exclude_paths
-                    .iter()
-                    .any(|exclude_path| path.starts_with(exclude_path))
-            })
-            .collect()
+        filtered_results
     }
 }
 
@@ -358,6 +373,18 @@ impl SearchSource for FileSearchExtensionSearchSource {
         // Get configuration from tauri store
         let config = FileSearchConfig::get();
 
+        // If search paths are empty, then the hit should be empty.
+        //
+        // Without this, empty search paths will result in a mdfind that has no `-onlyin`
+        // option, which will in turn query the whole disk volume.
+        if config.search_paths.is_empty() {
+            return Ok(QueryResponse {
+                source: self.get_type(),
+                hits: Vec::new(),
+                total_hits: 0,
+            });
+        }
+
         // Execute search in a blocking task
         let query_source = self.get_type();
         let base_score = self.base_score;
@@ -368,7 +395,8 @@ impl SearchSource for FileSearchExtensionSearchSource {
             .map_err(SearchError::InternalError)?;
 
         // Filter out excluded paths
-        let filtered_results = Self::filter_excluded_paths(search_results, &config);
+        let filtered_results =
+            Self::apply_exclude_path_and_file_type_filters(search_results, &config);
 
         // Convert results to documents
         let mut hits: Vec<(Document, f64)> = Vec::new();
