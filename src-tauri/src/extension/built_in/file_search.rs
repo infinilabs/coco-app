@@ -521,10 +521,10 @@ fn type_to_icon(ty: FileType) -> &'static str {
         FileType::VideoFile => "font_file_video",
         FileType::CHeaderFile => "font_file_csource",
         FileType::TOMLDocument => "font_file_toml",
-        FileType::RustScript => "font_file_rustscript",
+        FileType::RustScript => "font_file_rustscript1",
         FileType::CSourceCode => "font_file_csource",
         FileType::MarkdownDocument => "font_file_markdown",
-        FileType::TerminalSettings => "font_file_terminal",
+        FileType::TerminalSettings => "font_file_terminal1",
         FileType::ZipArchive => "font_file_zip",
         FileType::Unknown => "font_file_unknown",
     }
