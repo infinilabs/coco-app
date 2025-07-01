@@ -13,7 +13,6 @@ use serde_json::Value;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::path::Path;
-use std::str::FromStr;
 use std::sync::LazyLock;
 use tauri_plugin_store::StoreExt;
 use tokio::process::Command;
@@ -432,7 +431,6 @@ enum FileType {
     PNGImage,
     PDFDocument,
     PlainTextDocument,
-    RichTextDocument,
     MicrosoftWordDocument,
     MicrosoftExcelSpreadsheet,
     AudioFile,
@@ -447,109 +445,38 @@ enum FileType {
     Unknown,
 }
 
-impl FromStr for FileType {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.trim() {
-            "Folder" => Ok(FileType::Folder),
-            "JPEG image" => Ok(FileType::JPEGImage),
-            "PNG image" => Ok(FileType::PNGImage),
-            "PDF document" => Ok(FileType::PDFDocument),
-            "Plain text document" => Ok(FileType::PlainTextDocument),
-            "Rich text document" => Ok(FileType::RichTextDocument),
-            "Microsoft Word document" => Ok(FileType::MicrosoftWordDocument),
-            "Word 2007 (.docx) Document" => Ok(FileType::MicrosoftWordDocument),
-            "Microsoft Word document (.docx)" => Ok(FileType::MicrosoftWordDocument),
-            "Microsoft Excel spreadsheet" => Ok(FileType::MicrosoftExcelSpreadsheet),
-            "Audio file" => Ok(FileType::AudioFile),
-            "Video file" => Ok(FileType::VideoFile),
-            "C header" => Ok(FileType::CHeaderFile),
-            "TOML document" => Ok(FileType::TOMLDocument),
-            "Rust script" => Ok(FileType::RustScript),
-            "C source code" => Ok(FileType::CSourceCode),
-            "Markdown document" => Ok(FileType::MarkdownDocument),
-            "Terminal settings" => Ok(FileType::TerminalSettings),
-            "ZIP archive" => Ok(FileType::ZipArchive),
-            unknown => {
-                log::debug!("unknown file type string from mdls: [{}]", unknown);
-                Ok(FileType::Unknown)
-            }
-        }
-    }
-}
-
-/// WARNING: You should note that the first letter of "kMDItemKind" is lowercase.
 async fn get_file_type(path: &str) -> FileType {
-    const TYPE_ATTRIBUTE: &str = "kMDItemKind";
+    let path = camino::Utf8Path::new(path);
 
-    // Example output
-    //
-    // $ mdls -attr kMDItemKind target/debug/build
-    // kMDItemKind = "Folder"
-    let mut cmd = Command::new("mdls");
-    cmd.arg("-attr");
-    cmd.arg(TYPE_ATTRIBUTE);
-    cmd.arg(path);
-
-    let output = cmd.output().await;
-
-    match output {
-        Ok(output) => {
-            if !output.status.success() {
-                log::warn!(
-                    "failed to get file type of [{}], [mdls] failed with stderr [{}]",
-                    path,
-                    std::str::from_utf8(&output.stderr).expect("should be UTF-8 encoded")
-                );
-                return FileType::Unknown;
+    // Get the file extension
+    let extension = match path.extension() {
+        Some(ext) => ext.to_lowercase(),
+        None => {
+            // Check if it's a directory
+            if path.is_dir() {
+                return FileType::Folder;
             }
-
-            let stdout =
-                std::str::from_utf8(&output.stdout).expect("mdls output should be UTF-8 encoded");
-
-            // first letter k is lowercase
-            if !stdout.starts_with(TYPE_ATTRIBUTE) {
-                return FileType::Unknown;
-            }
-
-            // Here is an example that could potentially make dealing with these index numbers easier:
-            //
-            // a: "coco"
-            //
-            // first_double_quote: 3
-            // file_type_str_len: 4
-            // file_type_str range: [4, 7] (inclusive)
-            let Some(first_double_quote_idx) = stdout.find('"') else {
-                log::warn!("the output of [{:?}] changed, current output: [{}], please file an issue to Coco AI", cmd, stdout);
-                return FileType::Unknown;
-            };
-
-            let Some(file_type_str_len) = stdout[first_double_quote_idx + 1..].find('"') else {
-                log::warn!("the output of [{:?}] changed, current output: [{}], please file an issue to Coco AI", cmd, stdout);
-                return FileType::Unknown;
-            };
-
-            if file_type_str_len == 0 {
-                log::warn!("the output of [{:?}] changed, current output: [{}], please file an issue to Coco AI", cmd, stdout);
-                return FileType::Unknown;
-            }
-
-            let file_type_str =
-                &stdout[first_double_quote_idx + 1..=first_double_quote_idx + file_type_str_len];
-
-            file_type_str
-                .parse::<FileType>()
-                .expect("our FromStr impl returns Ok")
+            return FileType::Unknown;
         }
-        Err(e) => {
-            log::warn!(
-                "failed to get file type of [{}], spawning [mdls] failed with error [{}]",
-                path,
-                e
-            );
-            FileType::Unknown
-        }
+    };
+
+    match extension.as_str() {
+        "pdf" => FileType::PDFDocument,
+        "txt" | "text" => FileType::PlainTextDocument,
+        "doc" | "docx" => FileType::MicrosoftWordDocument,
+        "xls" | "xlsx" => FileType::MicrosoftExcelSpreadsheet,
+        "jpg" | "jpeg" => FileType::JPEGImage,
+        "png" => FileType::PNGImage,
+        "mp3" | "wav" | "flac" | "aac" | "ogg" | "m4a" => FileType::AudioFile,
+        "mp4" | "avi" | "mov" | "mkv" | "wmv" | "flv" | "webm" => FileType::VideoFile,
+        "h" | "hpp" => FileType::CHeaderFile,
+        "c" | "cpp" | "cc" | "cxx" => FileType::CSourceCode,
+        "toml" => FileType::TOMLDocument,
+        "rs" => FileType::RustScript,
+        "md" | "markdown" => FileType::MarkdownDocument,
+        "terminal" => FileType::TerminalSettings,
+        "zip" | "rar" | "7z" | "tar" | "gz" | "bz2" => FileType::ZipArchive,
+        _ => FileType::Unknown,
     }
 }
 
@@ -560,7 +487,6 @@ fn type_to_icon(ty: FileType) -> &'static str {
         FileType::PNGImage => "font_file_image",
         FileType::PDFDocument => "font_file_document_pdf",
         FileType::PlainTextDocument => "font_file_txt",
-        FileType::RichTextDocument => "font_file_txt",
         FileType::MicrosoftWordDocument => "font_file_document_word",
         FileType::MicrosoftExcelSpreadsheet => "font_file_spreadsheet_excel",
         FileType::AudioFile => "font_file_audio",
