@@ -12,7 +12,6 @@ import { DataSource } from "@/types/commands";
 import Checkbox from "@/components/Common/Checkbox";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import VisibleKey from "@/components/Common/VisibleKey";
-import { useChatStore } from "@/stores/chatStore";
 import NoDataImage from "@/components/Common/NoDataImage";
 import PopoverInput from "@/components/Common/PopoverInput";
 import Pagination from "@/components/Common/Pagination";
@@ -102,7 +101,7 @@ export default function SearchPopover({
   }, [dataSourceList]);
 
   useEffect(() => {
-     getDataSourceList();
+    getDataSourceList();
   }, [currentService?.id, debouncedKeyword, currentAssistant]);
 
   useEffect(() => {

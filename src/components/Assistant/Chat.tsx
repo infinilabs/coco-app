@@ -241,9 +241,9 @@ const ChatAI = memo(
               return;
             }
             if (!activeChat?._id) {
-              await createNewChat(value, activeChat, websocketSessionId);
+              await createNewChat(value, activeChat);
             } else {
-              await handleSendMessage(value, activeChat, websocketSessionId);
+              await handleSendMessage(value, activeChat);
             }
           } catch (error) {
             console.error("Failed to initialize chat:", error);
@@ -255,7 +255,6 @@ const ChatAI = memo(
           activeChat?._id,
           createNewChat,
           handleSendMessage,
-          websocketSessionId,
         ]
       );
 

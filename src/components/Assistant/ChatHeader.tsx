@@ -13,7 +13,6 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { HISTORY_PANEL_ID } from "@/constants";
 import { AssistantList } from "./AssistantList";
 import { ServerList } from "./ServerList";
-import { Server } from "@/types/server";
 
 interface ChatHeaderProps {
   clearChat: () => void;

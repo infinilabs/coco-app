@@ -245,13 +245,13 @@ export function useChatActions(
   );
 
   const handleSendMessage = useCallback(
-    async (content: string, activeChat?: Chat, id?: string) => {
+    async (content: string, activeChat?: Chat) => {
       if (!activeChat?._id || !content) return;
       setQuestion(content);
 
       setTimedoutShow(false);
 
-      await chatHistory(activeChat, (chat) => sendMessage(content, chat, id));
+      await chatHistory(activeChat, (chat) => sendMessage(content, chat));
     },
     [chatHistory, sendMessage]
   );

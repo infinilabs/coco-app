@@ -164,6 +164,8 @@ pub async fn chat_create<R: Runtime>(
     message: String,
     query_params: Option<HashMap<String, Value>>,
 ) -> Result<(), String> {
+    println!("Sending message: {}", message);
+
     let body = if !message.is_empty() {
         let message = ChatRequestMessage {
             message: Some(message),
@@ -254,6 +256,8 @@ pub async fn chat_chat<R: Runtime>(
     message: String,
     query_params: Option<HashMap<String, Value>>, //search,deep_thinking
 ) -> Result<(), String> {
+    println!("Sending message: {}", message);
+
     let body = if !message.is_empty() {
         let message = ChatRequestMessage {
             message: Some(message),
