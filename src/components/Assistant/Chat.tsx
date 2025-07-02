@@ -23,9 +23,9 @@ import type { Chat, StartPage } from "@/types/chat";
 import PrevSuggestion from "@/components/ChatMessage/PrevSuggestion";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
-// import ReadAloud from "./ReadAloud";
 import { useAuthStore } from "@/stores/authStore";
 import Splash from "./Splash";
+import Synthesize from "./Synthesize";
 
 interface ChatAIProps {
   isSearchActive?: boolean;
@@ -87,9 +87,8 @@ const ChatAI = memo(
         return state.setIsCurrentLogin;
       });
 
-      const visibleStartPage = useConnectStore((state) => {
-        return state.visibleStartPage;
-      });
+      const { currentService, visibleStartPage, synthesizeItem } =
+        useConnectStore();
 
       const addError = useAppStore.getState().addError;
 
@@ -106,9 +105,6 @@ const ChatAI = memo(
       );
       const askAiServerId = useSearchStore((state) => {
         return state.askAiServerId;
-      });
-      const currentService = useConnectStore((state) => {
-        return state.currentService;
       });
 
       useEffect(() => {
@@ -420,7 +416,7 @@ const ChatAI = memo(
               <PrevSuggestion sendMessage={init} />
             )}
 
-            {/* <ReadAloud /> */}
+            {synthesizeItem && <Synthesize />}
           </div>
         </>
       );

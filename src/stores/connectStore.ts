@@ -12,6 +12,11 @@ type keyArrayObject = {
   [key: string]: any[];
 };
 
+interface SynthesizeItem {
+  id: string;
+  content: string;
+}
+
 export type IConnectStore = {
   serverList: Server[];
   setServerList: (servers: Server[]) => void;
@@ -35,6 +40,8 @@ export type IConnectStore = {
   setVisibleStartPage: (visibleStartPage: boolean) => void;
   allowSelfSignature: boolean;
   setAllowSelfSignature: (allowSelfSignature: boolean) => void;
+  synthesizeItem?: SynthesizeItem;
+  setSynthesizeItem: (synthesizeItem?: SynthesizeItem) => void;
 };
 
 export const useConnectStore = create<IConnectStore>()(
@@ -125,6 +132,9 @@ export const useConnectStore = create<IConnectStore>()(
         allowSelfSignature: false,
         setAllowSelfSignature: (allowSelfSignature: boolean) => {
           return set(() => ({ allowSelfSignature }));
+        },
+        setSynthesizeItem(synthesizeItem?: SynthesizeItem) {
+          return set(() => ({ synthesizeItem }));
         },
       }),
       {

@@ -9,7 +9,8 @@ import {
   RotateCcw,
 } from "lucide-react";
 
-import { copyToClipboard } from "@/utils";
+import { copyToClipboard, isDefaultServer } from "@/utils";
+import { useConnectStore } from "@/stores/connectStore";
 
 interface MessageActionsProps {
   id: string;
@@ -40,6 +41,8 @@ export const MessageActions = ({
 
   const isRefreshOnly = RefreshOnlyIds.includes(id);
 
+  const { synthesizeItem, setSynthesizeItem } = useConnectStore();
+
   const handleCopy = async () => {
     try {
       await copyToClipboard(content);
@@ -63,7 +66,11 @@ export const MessageActions = ({
     setLiked(false);
   };
 
-  const handleSpeak = () => {
+  const handleSpeak = async () => {
+    if (isDefaultServer()) {
+      return setSynthesizeItem({ id, content });
+    }
+
     if ("speechSynthesis" in window) {
       if (isSpeaking) {
         window.speechSynthesis.cancel();
@@ -162,22 +169,24 @@ export const MessageActions = ({
         </button>
       )}
       {!isRefreshOnly && (
-        <button
-          onClick={handleSpeak}
-          className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
-        >
-          <Volume2
-            className={`w-4 h-4 ${
-              isSpeaking
-                ? "text-[#1990FF] dark:text-[#1990FF]"
-                : "text-[#666666] dark:text-[#A3A3A3]"
-            }`}
-            style={{
-              width: actionIconSize,
-              height: actionIconSize,
-            }}
-          />
-        </button>
+        <>
+          <button
+            onClick={handleSpeak}
+            className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
+          >
+            <Volume2
+              className={`w-4 h-4 ${
+                isSpeaking || synthesizeItem?.id === id
+                  ? "text-[#1990FF] dark:text-[#1990FF]"
+                  : "text-[#666666] dark:text-[#A3A3A3]"
+              }`}
+              style={{
+                width: actionIconSize,
+                height: actionIconSize,
+              }}
+            />
+          </button>
+        </>
       )}
       {question && (
         <button
