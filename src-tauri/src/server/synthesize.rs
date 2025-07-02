@@ -1,9 +1,8 @@
 use crate::server::http_client::HttpClient;
-use futures::TryStreamExt;
+use futures_util::StreamExt;
 use http::Method;
 use serde_json::json;
 use tauri::{command, AppHandle, Emitter, Runtime};
-use tokio::io::AsyncBufReadExt;
 
 #[command]
 pub async fn synthesize<R: Runtime>(
@@ -42,18 +41,22 @@ pub async fn synthesize<R: Runtime>(
         return Err(format!("Request Failed: {}", response.status()));
     }
 
-    let stream = response.bytes_stream();
-    let reader = tokio_util::io::StreamReader::new(
-        stream.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)),
-    );
-    let mut lines = tokio::io::BufReader::new(reader).lines();
-
-    while let Ok(Some(line)) = lines.next_line().await {
-        dbg!("Received line: {}", &line);
-
-        let _ = app_handle.emit(&client_id, line).map_err(|err| {
-            println!("Failed to emit: {:?}", err);
-        });
+    let mut stream = response.bytes_stream();
+    while let Some(chunk) = stream.next().await {
+        match chunk {
+            Ok(bytes) => {
+                log::info!("Received audio chunk of size: {}", bytes.len());
+                // Encode audio chunk to base64 for frontend compatibility
+                let encoded = base64::encode(&bytes);
+                if let Err(err) = app_handle.emit(&client_id, encoded) {
+                    eprintln!("Emit error: {:?}", err);
+                }
+            }
+            Err(e) => {
+                eprintln!("Stream error: {:?}", e);
+                break;
+            }
+        }
     }
 
     Ok(())
