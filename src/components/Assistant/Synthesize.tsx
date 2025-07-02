@@ -24,6 +24,7 @@ import closeDark from "@/assets/images/ReadAloud/close-dark.png";
 import { useConnectStore } from "@/stores/connectStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore } from "@/stores/appStore";
+import {listen} from "@tauri-apps/api/event";
 
 dayjs.extend(durationPlugin);
 
@@ -50,6 +51,10 @@ const Synthesize = () => {
   const { addError } = useAppStore();
   const unlistenRef = useRef<() => void>();
 
+  // const audioContext = new AudioContext();
+  // const source = audioContext.createBufferSource();
+  // let audioBufferQueue = [];
+
   useAsyncEffect(async () => {
     try {
       if (!synthesizeItem) return;
@@ -59,18 +64,31 @@ const Synthesize = () => {
       const { id, content } = synthesizeItem;
 
       await platformAdapter.invokeBackend<number[]>("synthesize", {
-        clientId: id,
+        clientId: "synthesize_"+id,
         serverId: currentService.id,
         content,
         voice: "longwan_v2",
       });
 
-      unlistenRef.current = await platformAdapter.listenEvent(
-        id,
-        ({ payload }) => {
-          console.log("payload", payload);
-        }
-      );
+      listen<string>('synthesize_'+id, async (event) => {
+        const base64 = event.payload;
+        console.log("base64", base64);
+        // const binary = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+        //
+        // // Decode and play buffer (note: this may cause latency, consider using Web Audio stream)
+        // const buffer = await audioContext.decodeAudioData(binary.buffer.slice(0));
+        // const source = audioContext.createBufferSource();
+        // source.buffer = buffer;
+        // source.connect(audioContext.destination);
+        // source.start();
+      });
+
+      // unlistenRef.current = await platformAdapter.listenEvent(
+      //   id,
+      //   ({ payload }) => {
+      //     console.log("payload", payload);
+      //   }
+      // );
 
       // return () => {
       //   unlisten.then((fn) => {

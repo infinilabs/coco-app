@@ -33,6 +33,8 @@ pub async fn synthesize<R: Runtime>(
     )
     .await?;
 
+    log::info!("Synthesize response status: {}", response.status());
+
     if response.status() == 429 {
         return Ok(());
     }
