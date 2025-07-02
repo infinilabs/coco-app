@@ -46,7 +46,6 @@ interface ChatAIProps {
 export interface ChatAIRef {
   init: (value: string) => void;
   cancelChat: () => void;
-  reconnect: () => void;
   clearChat: () => void;
 }
 
@@ -73,11 +72,10 @@ const ChatAI = memo(
       useImperativeHandle(ref, () => ({
         init: init,
         cancelChat: () => cancelChat(activeChat),
-        reconnect: reconnect,
         clearChat: clearChat,
       }));
 
-      const { curChatEnd, setCurChatEnd, connected, setConnected } =
+      const { curChatEnd, setCurChatEnd } =
         useChatStore();
 
       const isTauri = useAppStore((state) => state.isTauri);
@@ -123,10 +121,10 @@ const ChatAI = memo(
           setIsCurrentLogin(false);
         }
 
-        if (showChatHistory && connected) {
+        if (showChatHistory) {
           getChatHistory();
         }
-      }, [currentService?.enabled, showChatHistory, connected]);
+      }, [currentService?.enabled, showChatHistory]);
 
       useEffect(() => {
         if (askAiServerId || !askAiSessionId) return;
@@ -171,10 +169,8 @@ const ChatAI = memo(
       const dealMsgRef = useRef<((msg: string) => void) | null>(null);
 
       const clientId = isChatPage ? "standalone" : "popup";
-      const { reconnect, updateDealMsg } = useWebSocket({
+      const { updateDealMsg } = useWebSocket({
         clientId,
-        connected,
-        setConnected,
         dealMsgRef,
         onWebsocketSessionId,
       });
@@ -384,7 +380,6 @@ const ChatAI = memo(
               setIsSidebarOpen={toggleSidebar}
               isSidebarOpen={isSidebarOpenChat}
               activeChat={activeChat}
-              reconnect={reconnect}
               isChatPage={isChatPage}
               showChatHistory={showChatHistory}
               assistantIDs={assistantIDs}

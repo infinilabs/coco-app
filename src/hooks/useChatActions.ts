@@ -5,7 +5,6 @@ import { useAppStore } from "@/stores/appStore";
 import { Get, Post } from "@/api/axiosRequest";
 import platformAdapter from "@/utils/platformAdapter";
 import { useConnectStore } from "@/stores/connectStore";
-import { useChatStore } from "@/stores/chatStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useAuthStore } from "@/stores/authStore";
 import { unrequitable } from "@/utils";
@@ -28,7 +27,6 @@ export function useChatActions(
   const isCurrentLogin = useAuthStore((state) => state.isCurrentLogin);
 
   const isTauri = useAppStore((state) => state.isTauri);
-  const addError = useAppStore((state) => state.addError);
   const {
     currentAssistant,
     setCurrentAssistant,
@@ -36,7 +34,6 @@ export function useChatActions(
     setVisibleStartPage,
     currentService,
   } = useConnectStore();
-  const { connected } = useChatStore();
   const sourceDataIds = useSearchStore((state) => state.sourceDataIds);
   const MCPIds = useSearchStore((state) => state.MCPIds);
 
@@ -134,18 +131,11 @@ export function useChatActions(
   );
 
   const createNewChat = useCallback(
-    async (value: string = "", activeChat?: Chat, id?: string) => {
+    async (value: string = "", activeChat?: Chat) => {
       setTimedoutShow(false);
       await chatClose(activeChat);
       clearAllChunkData();
       setQuestion(value);
-
-      const sessionId = websocketSessionId || id;
-      if (!sessionId) {
-        addError("websocketSessionId not found");
-        console.error("websocketSessionId", websocketSessionId, id);
-        return;
-      }
 
       //console.log("sourceDataIds", sourceDataIds, MCPIds, websocketSessionId, id);
       const queryParams = {
@@ -156,46 +146,33 @@ export function useChatActions(
         mcp_servers: MCPIds?.join(",") || "",
         assistant_id: currentAssistant?._id || "",
       };
-      let response: any;
       if (isTauri) {
         if (!currentService?.id) return;
-        response = await platformAdapter.commands("new_chat", {
+        await platformAdapter.commands("chat_create", {
           serverId: currentService?.id,
-          websocketId: sessionId,
           message: value,
           queryParams,
         });
       } else {
-        const [_error, res] = await Post(
-          "/chat/_new",
-          {
-            message: value,
-          },
-          queryParams,
-          {
-            "WEBSOCKET-SESSION-ID": sessionId,
-          }
-        );
-        response = res;
       }
 
-      console.log("_new", response, queryParams);
-      const newChat: Chat = response;
-      curIdRef.current = response?.payload?.id;
+      console.log("_create", queryParams);
+      // const newChat: Chat = response;
+      // curIdRef.current = response?.payload?.id;
 
-      newChat._source = {
-        ...response?.payload,
-        message: value,
-      };
-      const updatedChat: Chat = {
-        ...newChat,
-        messages: [newChat],
-      };
+      // newChat._source = {
+      //   ...response?.payload,
+      //   message: value,
+      // };
+      // const updatedChat: Chat = {
+      //   ...newChat,
+      //   messages: [newChat],
+      // };
 
-      changeInput && changeInput("");
-      setActiveChat(updatedChat);
-      setCurChatEnd(false);
-      setVisibleStartPage(false);
+      // changeInput && changeInput("");
+      // setActiveChat(updatedChat);
+      // setCurChatEnd(false);
+      // setVisibleStartPage(false);
     },
     [
       isTauri,
@@ -213,17 +190,10 @@ export function useChatActions(
   );
 
   const sendMessage = useCallback(
-    async (content: string, newChat: Chat, id?: string) => {
+    async (content: string, newChat: Chat) => {
       if (!newChat?._id || !content) return;
 
       clearAllChunkData();
-
-      const sessionId = websocketSessionId || id;
-      if (!sessionId) {
-        addError("websocketSessionId not found");
-        console.error("websocketSessionId", websocketSessionId, id);
-        return;
-      }
 
       const queryParams = {
         search: isSearchActive,
@@ -236,26 +206,14 @@ export function useChatActions(
       let response: any;
       if (isTauri) {
         if (!currentService?.id) return;
-        response = await platformAdapter.commands("send_message", {
+        response = await platformAdapter.commands("chat_chat", {
           serverId: currentService?.id,
-          websocketId: sessionId,
           sessionId: newChat?._id,
           queryParams,
           message: content,
         });
         response = response ? JSON.parse(response) : null;
       } else {
-        const [_error, res] = await Post(
-          `/chat/${newChat?._id}/_send`,
-          {
-            message: content,
-          },
-          queryParams,
-          {
-            "WEBSOCKET-SESSION-ID": sessionId,
-          }
-        );
-        response = res;
       }
 
       console.log("_send", response, queryParams);
@@ -357,10 +315,10 @@ export function useChatActions(
   ]);
 
   useEffect(() => {
-    if (showChatHistory && connected) {
+    if (showChatHistory) {
       getChatHistory();
     }
-  }, [showChatHistory, connected, getChatHistory, currentService?.id]);
+  }, [showChatHistory, getChatHistory, currentService?.id]);
 
   const createChatWindow = useCallback(
     async (createWin: any) => {

@@ -38,7 +38,6 @@ export default function SearchPopover({
   getDataSourcesByServer,
 }: SearchPopoverProps) {
   const { t } = useTranslation();
-  const { connected } = useChatStore();
 
   const [isRefreshDataSource, setIsRefreshDataSource] = useState(false);
   const [dataSourceList, setDataSourceList] = useState<DataSource[]>([]);
@@ -103,8 +102,8 @@ export default function SearchPopover({
   }, [dataSourceList]);
 
   useEffect(() => {
-    connected && getDataSourceList();
-  }, [connected, currentService?.id, debouncedKeyword, currentAssistant]);
+     getDataSourceList();
+  }, [currentService?.id, debouncedKeyword, currentAssistant]);
 
   useEffect(() => {
     setTotalPage(Math.max(Math.ceil(dataSourceList.length / 10), 1));

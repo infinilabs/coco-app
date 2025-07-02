@@ -29,7 +29,6 @@ import {
 import HistoryList from "@/components/Common/HistoryList";
 import { useSyncStore } from "@/hooks/useSyncStore";
 import { useAppStore } from "@/stores/appStore";
-import { useChatStore } from "@/stores/chatStore";
 import { unrequitable } from "@/utils";
 
 interface ChatProps {}
@@ -60,8 +59,6 @@ export default function Chat({}: ChatProps) {
   const [isDeepThinkActive, setIsDeepThinkActive] = useState(false);
   const [isMCPActive, setIsMCPActive] = useState(false);
   const [keyword, setKeyword] = useState("");
-
-  const { connected } = useChatStore();
 
   const isChatPage = true;
 
@@ -98,7 +95,7 @@ export default function Chat({}: ChatProps) {
     }
 
     getChatHistory();
-  }, [currentService?.enabled, connected]);
+  }, [currentService?.enabled]);
 
   const deleteChat = (chatId: string) => {
     handleDelete(chatId);
@@ -186,10 +183,6 @@ export default function Chat({}: ChatProps) {
   const clearChat = () => {
     chatClose();
     setActiveChat(undefined);
-  };
-
-  const reconnect = () => {
-    chatAIRef.current?.reconnect();
   };
 
   const getFileUrl = useCallback((path: string) => {
@@ -332,7 +325,6 @@ export default function Chat({}: ChatProps) {
               changeInput={setInput}
               disabled={isTyping}
               disabledChange={cancelChat}
-              reconnect={reconnect}
               isSearchActive={isSearchActive}
               setIsSearchActive={() => setIsSearchActive((prev) => !prev)}
               isDeepThinkActive={isDeepThinkActive}
