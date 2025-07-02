@@ -165,6 +165,7 @@ pub async fn chat_create<R: Runtime>(
     query_params: Option<HashMap<String, Value>>,
 ) -> Result<(), String> {
     println!("Sending message: {}", message);
+    println!("Sending server_id: {}", server_id);
 
     let body = if !message.is_empty() {
         let message = ChatRequestMessage {

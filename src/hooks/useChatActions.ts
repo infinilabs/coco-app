@@ -153,6 +153,7 @@ export function useChatActions(
           message: value,
           queryParams,
         });
+        console.log("11111111", currentService?.id, value, queryParams);
       } else {
       }
 
