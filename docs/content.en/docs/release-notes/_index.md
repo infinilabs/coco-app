@@ -19,6 +19,7 @@ Information about release notes of Coco Server is provided here.
 ### 🐛 Bug fix
 
 ### ✈️ Improvements
+- refactor: prioritize stat(2) when checking if a file is dir #737
 
 ## 0.6.0 (2025-06-29)
 

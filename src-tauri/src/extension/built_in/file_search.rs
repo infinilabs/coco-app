@@ -476,19 +476,17 @@ enum FileType {
 async fn get_file_type(path: &str) -> FileType {
     let path = camino::Utf8Path::new(path);
 
-    // Get the file extension
-    let extension = match path.extension() {
-        Some(ext) => ext.to_lowercase(),
-        None => {
-            // Check if it's a directory
-            if path.is_dir() {
-                return FileType::Folder;
-            }
-            return FileType::Unknown;
-        }
+    // stat() is more precise than file extension, use it if possible.
+    if path.is_dir() {
+        return FileType::Folder;
+    }
+
+    let Some(ext) = path.extension() else {
+        return FileType::Unknown;
     };
 
-    match extension.as_str() {
+    let ext = ext.to_lowercase();
+    match ext.as_str() {
         "pdf" => FileType::PDFDocument,
         "txt" | "text" => FileType::PlainTextDocument,
         "doc" | "docx" => FileType::MicrosoftWordDocument,
