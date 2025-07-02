@@ -3,7 +3,7 @@ import { isArray, isNil, isObject, isString } from "lodash-es";
 
 import platformAdapter from "./platformAdapter";
 import { useAppStore } from "@/stores/appStore";
-import { HISTORY_PANEL_ID } from "@/constants";
+import { DEFAULT_COCO_SERVER_ID, HISTORY_PANEL_ID } from "@/constants";
 import { useConnectStore } from "@/stores/connectStore";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -172,4 +172,23 @@ export const unrequitable = () => {
   );
 
   return isTauri && !serviceAvailable;
+};
+
+export const isDefaultServer = (checkAvailability = true) => {
+  const { isTauri } = useAppStore.getState();
+  const { currentService } = useConnectStore.getState();
+  const { isCurrentLogin } = useAuthStore.getState();
+  const { id, available, enabled } = currentService ?? {};
+
+  const isDefaultServer = currentService.id === DEFAULT_COCO_SERVER_ID;
+
+  const serviceAvailable = Boolean(
+    id && enabled && available && isCurrentLogin
+  );
+
+  if (checkAvailability) {
+    return isTauri && isDefaultServer && serviceAvailable;
+  }
+
+  return isTauri && isDefaultServer;
 };

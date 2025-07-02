@@ -40,9 +40,9 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
   const state = useReactive({ ...INITIAL_STATE });
   const containerRef = useRef<HTMLDivElement>(null);
   const recordRef = useRef<RecordPlugin>();
-  const withVisibility = useAppStore((state) => state.withVisibility);
-  const currentService = useConnectStore((state) => state.currentService);
-  const voiceInput = useShortcutsStore((state) => state.voiceInput);
+  const { withVisibility, addError } = useAppStore();
+  const { currentService } = useConnectStore();
+  const { voiceInput } = useShortcutsStore();
 
   const { wavesurfer } = useWavesurfer({
     container: containerRef,
@@ -75,23 +75,34 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
 
       const reader = new FileReader();
 
+      reader.readAsDataURL(blob);
+
       reader.onloadend = async () => {
         const base64Audio = (reader.result as string).split(",")[1];
 
-        const response: any = await platformAdapter.commands("transcription", {
-          serverId: currentService.id,
-          audioType: "mp3",
-          audioContent: base64Audio,
-        });
+        try {
+          const response: any = await platformAdapter.commands(
+            "transcription",
+            {
+              serverId: currentService.id,
+              audioContent: JSON.stringify({ content: base64Audio }),
+            }
+          );
 
-        if (!response) return;
+          console.log("response", response);
 
-        onChange?.(response.text);
+          const text = response?.results
+            .flatMap((item: any) => item?.transcription?.transcripts)
+            .map((item: any) => item?.text?.replace(/<\|[\/\w]+\|>/g, ""))
+            .join(" ");
 
-        resetState();
+          onChange?.(text);
+        } catch (error) {
+          addError(String(error));
+        } finally {
+          resetState();
+        }
       };
-
-      reader.readAsDataURL(blob);
     });
 
     recordRef.current = record;
@@ -157,20 +168,21 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
     <>
       <div
         className={clsx(
-          "p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition cursor-pointer",
+          "size-6 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition cursor-pointer",
           {
             hidden: state.audioDevices.length === 0,
           }
         )}
+        onClick={startRecording}
       >
         <VisibleKey shortcut={voiceInput} onKeyPress={startRecording}>
-          <Mic className="size-4 text-[#999]" onClick={startRecording} />
+          <Mic className="size-4 text-[#999]" />
         </VisibleKey>
       </div>
 
       <div
         className={clsx(
-          "absolute inset-0 flex items-center gap-1 px-1 rounded translate-x-full transition-all bg-[#ededed] dark:bg-[#202126]",
+          "absolute -inset-2 flex items-center gap-1 px-1 rounded translate-x-full transition-all bg-[#ededed] dark:bg-[#202126]",
           {
             "!translate-x-0": state.isRecording || state.converting,
           }

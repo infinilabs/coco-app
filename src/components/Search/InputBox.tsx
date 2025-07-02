@@ -17,6 +17,8 @@ import { useKeyboardHandlers } from "@/hooks/useKeyboardHandlers";
 import { useAssistantManager } from "./AssistantManager";
 import InputControls from "./InputControls";
 import { useExtensionsStore } from "@/stores/extensionsStore";
+import AudioRecording from "../AudioRecording";
+import { isDefaultServer } from "@/utils";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -199,6 +201,13 @@ export default function ChatInput({
     return "Ask";
   }, [language, askAI]);
 
+  const { currentService } = useConnectStore();
+  const [visibleAudioInput, setVisibleAudioInput] = useState(false);
+
+  useEffect(() => {
+    setVisibleAudioInput(isDefaultServer());
+  }, [currentService]);
+
   const renderSearchIcon = () => (
     <SearchIcons
       lineCount={lineCount}
@@ -262,12 +271,17 @@ export default function ChatInput({
           </div>
         )}
 
-      {/* <AudioRecording
-      key={isChatMode ? "chat" : "search"}
-      onChange={(text) => {
-        changeInput(inputValue + text);
-      }}
-    /> */}
+      {visibleAudioInput && (
+        <AudioRecording
+          key={isChatMode ? "chat" : "search"}
+          onChange={(text) => {
+            const nextValue = inputValue + text;
+
+            changeInput(nextValue);
+            setSearchValue(nextValue);
+          }}
+        />
+      )}
 
       {isChatMode && curChatEnd && (
         <div
