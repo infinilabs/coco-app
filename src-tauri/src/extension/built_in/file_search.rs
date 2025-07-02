@@ -597,7 +597,7 @@ fn type_to_icon(ty: FileType) -> &'static str {
         FileType::Javascript => "font_file_javascript",
         FileType::Typescript => "font_file_typescript",
         FileType::Python => "font_file_python",
-        FileType::Java => "font_file_javascript",
+        FileType::Java => "font_file_java",
         FileType::Golang => "font_file_golang",
         FileType::Ruby => "font_file_ruby",
         FileType::Php => "font_file_php",
