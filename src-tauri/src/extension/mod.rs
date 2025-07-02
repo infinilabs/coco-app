@@ -20,7 +20,7 @@ const PLUGIN_JSON_FILE_NAME: &str = "plugin.json";
 const ASSETS_DIRECTORY_FILE_NAME: &str = "assets";
 
 fn default_true() -> bool {
-  true
+    true
 }
 
 #[derive(Debug, Deserialize, Serialize, Copy, Clone, Hash, PartialEq, Eq, Display)]
@@ -410,35 +410,6 @@ fn filter_out_extensions(
             }
         }
     }
-
-    // Remove parent extensions (Group/Extension types) that have no sub-items after filtering
-    extensions.retain(|ext| {
-        if !ext.r#type.contains_sub_items() {
-            return true;
-        }
-
-        // We don't do this filter to applications since it is always empty, load at runtime.
-        if ext.developer.is_none()
-            && ext.id == built_in::application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME
-        {
-            return true;
-        }
-
-        let has_commands = ext
-            .commands
-            .as_ref()
-            .map_or(false, |commands| !commands.is_empty());
-        let has_scripts = ext
-            .scripts
-            .as_ref()
-            .map_or(false, |scripts| !scripts.is_empty());
-        let has_quicklinks = ext
-            .quicklinks
-            .as_ref()
-            .map_or(false, |quicklinks| !quicklinks.is_empty());
-
-        has_commands || has_scripts || has_quicklinks
-    });
 }
 
 /// Return value:
@@ -478,6 +449,40 @@ pub(crate) async fn list_extensions(
         list_enabled,
     );
 
+    // Cleanup after filtering extensions, don't do it if filter is not performed.
+    //
+    // Remove parent extensions (Group/Extension types) that have no sub-items after filtering
+    let filter_performed = query.is_some() || extension_type.is_some() || list_enabled;
+    if filter_performed {
+        extensions.retain(|ext| {
+            if !ext.r#type.contains_sub_items() {
+                return true;
+            }
+
+            // We don't do this filter to applications since it is always empty, load at runtime.
+            if ext.developer.is_none()
+                && ext.id == built_in::application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME
+            {
+                return true;
+            }
+
+            let has_commands = ext
+                .commands
+                .as_ref()
+                .map_or(false, |commands| !commands.is_empty());
+            let has_scripts = ext
+                .scripts
+                .as_ref()
+                .map_or(false, |scripts| !scripts.is_empty());
+            let has_quicklinks = ext
+                .quicklinks
+                .as_ref()
+                .map_or(false, |quicklinks| !quicklinks.is_empty());
+
+            has_commands || has_scripts || has_quicklinks
+        });
+    }
+
     Ok((found_invalid_extension, extensions))
 }
 
@@ -495,7 +500,9 @@ pub(crate) async fn init_extensions(mut extensions: Vec<Extension>) -> Result<()
     .await?;
 
     // extension store
-    search_source_registry_tauri_state .register_source(store::ExtensionStore).await;
+    search_source_registry_tauri_state
+        .register_source(store::ExtensionStore)
+        .await;
 
     // Init the built-in enabled extensions
     for built_in_extension in extensions

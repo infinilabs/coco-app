@@ -8,7 +8,7 @@ import { isMac } from "@/utils/platform";
 import {
   INITIAL_MODE_SWITCH,
   INITIAL_RETURN_TO_INPUT,
-  // INITIAL_VOICE_INPUT,
+  INITIAL_VOICE_INPUT,
   // INITIAL_ADD_FILE,
   INITIAL_DEEP_THINKING,
   INITIAL_INTERNET_SEARCH,
@@ -37,61 +37,44 @@ export const modifierKeys: ModifierKey[] = isMac
 
 const Shortcuts = () => {
   const { t } = useTranslation();
-  const modifierKey = useShortcutsStore((state) => state.modifierKey);
-  const setModifierKey = useShortcutsStore((state) => state.setModifierKey);
-  const modeSwitch = useShortcutsStore((state) => state.modeSwitch);
-  const setModeSwitch = useShortcutsStore((state) => state.setModeSwitch);
-  const returnToInput = useShortcutsStore((state) => state.returnToInput);
-  const setReturnToInput = useShortcutsStore((state) => state.setReturnToInput);
-  // const voiceInput = useShortcutsStore((state) => state.voiceInput);
-  // const setVoiceInput = useShortcutsStore((state) => state.setVoiceInput);
-  // const addFile = useShortcutsStore((state) => state.addFile);
-  // const setAddFile = useShortcutsStore((state) => state.setAddFile);
-  const deepThinking = useShortcutsStore((state) => state.deepThinking);
-  const setDeepThinking = useShortcutsStore((state) => state.setDeepThinking);
-  const internetSearch = useShortcutsStore((state) => state.internetSearch);
-  const setInternetSearch = useShortcutsStore((state) => {
-    return state.setInternetSearch;
-  });
-  const internetSearchScope = useShortcutsStore((state) => {
-    return state.internetSearchScope;
-  });
-  const setInternetSearchScope = useShortcutsStore((state) => {
-    return state.setInternetSearchScope;
-  });
-  const mcpSearch = useShortcutsStore((state) => state.mcpSearch);
-  const setMcpSearch = useShortcutsStore((state) => {
-    return state.setMcpSearch;
-  });
-  const mcpSearchScope = useShortcutsStore((state) => {
-    return state.mcpSearchScope;
-  });
-  const setMcpSearchScope = useShortcutsStore((state) => {
-    return state.setMcpSearchScope;
-  });
-  const historicalRecords = useShortcutsStore((state) => {
-    return state.historicalRecords;
-  });
-  const setHistoricalRecords = useShortcutsStore((state) => {
-    return state.setHistoricalRecords;
-  });
-  const aiAssistant = useShortcutsStore((state) => {
-    return state.aiAssistant;
-  });
-  const setAiAssistant = useShortcutsStore((state) => {
-    return state.setAiAssistant;
-  });
-  const newSession = useShortcutsStore((state) => state.newSession);
-  const setNewSession = useShortcutsStore((state) => state.setNewSession);
-  const fixedWindow = useShortcutsStore((state) => state.fixedWindow);
-  const setFixedWindow = useShortcutsStore((state) => state.setFixedWindow);
-  const serviceList = useShortcutsStore((state) => state.serviceList);
-  const setServiceList = useShortcutsStore((state) => state.setServiceList);
-  const external = useShortcutsStore((state) => state.external);
-  const setExternal = useShortcutsStore((state) => state.setExternal);
-  const addError = useAppStore((state) => state.addError);
-  const aiOverview = useShortcutsStore((state) => state.aiOverview);
-  const setAiOverview = useShortcutsStore((state) => state.setAiOverview);
+  const {
+    modifierKey,
+    setModifierKey,
+    modeSwitch,
+    setModeSwitch,
+    returnToInput,
+    setReturnToInput,
+    voiceInput,
+    setVoiceInput,
+    // addFile,
+    // setAddFile,
+    deepThinking,
+    setDeepThinking,
+    internetSearch,
+    setInternetSearch,
+    internetSearchScope,
+    setInternetSearchScope,
+    mcpSearch,
+    setMcpSearch,
+    mcpSearchScope,
+    setMcpSearchScope,
+    historicalRecords,
+    setHistoricalRecords,
+    aiAssistant,
+    setAiAssistant,
+    newSession,
+    setNewSession,
+    fixedWindow,
+    setFixedWindow,
+    serviceList,
+    setServiceList,
+    external,
+    setExternal,
+    aiOverview,
+    setAiOverview,
+  } = useShortcutsStore();
+
+  const { addError } = useAppStore();
 
   useEffect(() => {
     const unlisten = useShortcutsStore.subscribe((state) => {
@@ -116,15 +99,13 @@ const Shortcuts = () => {
       value: returnToInput,
       setValue: setReturnToInput,
     },
-    // {
-    //   title: "settings.advanced.shortcuts.voiceInput.title",
-    //   description: "settings.advanced.shortcuts.voiceInput.description",
-    //   value: voiceInput,
-    //   setValue: setVoiceInput,
-    //   reset: () => {
-    //     handleChange(INITIAL_VOICE_INPUT, setVoiceInput);
-    //   },
-    // },
+    {
+      title: "settings.advanced.shortcuts.voiceInput.title",
+      description: "settings.advanced.shortcuts.voiceInput.description",
+      initialValue: INITIAL_VOICE_INPUT,
+      value: voiceInput,
+      setValue: setVoiceInput,
+    },
     // {
     //   title: "settings.advanced.shortcuts.addFile.title",
     //   description: "settings.advanced.shortcuts.addFile.description",
