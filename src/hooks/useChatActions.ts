@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 
 import type { Chat } from "@/types/chat";
 import { useAppStore } from "@/stores/appStore";
@@ -10,7 +10,6 @@ import { useAuthStore } from "@/stores/authStore";
 import { unrequitable } from "@/utils";
 
 export function useChatActions(
-  activeChat: Chat | undefined,
   setActiveChat: (chat: Chat | undefined) => void,
   setCurChatEnd: (value: boolean) => void,
   setTimedoutShow: (value: boolean) => void,
@@ -85,6 +84,8 @@ export function useChatActions(
     [currentService?.id, isTauri]
   );
 
+  const updatedChatRef = useRef<Chat | null>(null);
+
   // 1. handleSendMessage callback
   // 2. onSelectChat no callback
   const chatHistory = useCallback(
@@ -124,6 +125,7 @@ export function useChatActions(
         messages: hits,
       };
       console.log("id_history", updatedChat);
+      updatedChatRef.current = updatedChat;
       setActiveChat(updatedChat);
       callback && callback(updatedChat);
       setVisibleStartPage(false);
@@ -250,11 +252,12 @@ export function useChatActions(
           if (Array.isArray(response)) {
             curIdRef.current = response[0]?._id;
             updatedChat = {
-              ...activeChat,
-              messages: [...(activeChat?.messages || []), ...(response || [])],
+              ...updatedChatRef.current,
+              messages: [...(updatedChatRef.current?.messages || []), ...(response || [])],
             };
+            console.log("array", updatedChat, updatedChatRef.current?.messages);
           } else {
-            const newChat: Chat = activeChat || response;
+            const newChat: Chat = response;
             curIdRef.current = response?.payload?.id;
 
             newChat._source = {
@@ -279,7 +282,7 @@ export function useChatActions(
     return () => {
       unlisten_message.then((fn) => fn());
     };
-  }, [currentService?.id, dealMsgRef, activeChat]);
+  }, [currentService?.id, dealMsgRef, updatedChatRef.current]);
 
   const openSessionChat = useCallback(
     async (chat: Chat) => {

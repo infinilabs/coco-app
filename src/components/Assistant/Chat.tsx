@@ -111,6 +111,10 @@ const ChatAI = memo(
       useEffect(() => {
         activeChatProp && setActiveChat(activeChatProp);
       }, [activeChatProp]);
+      
+      useEffect(() => {
+        console.log("activeChat12121212121", activeChat);
+      }, [activeChat]);
 
       useEffect(() => {
         if (!isTauri) return;
@@ -174,7 +178,6 @@ const ChatAI = memo(
         handleRename,
         handleDelete,
       } = useChatActions(
-        activeChat,
         setActiveChat,
         setCurChatEnd,
         setTimedoutShow,

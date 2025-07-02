@@ -40,7 +40,6 @@ export function useMessageHandler(
 
       try {
         const chunkData = JSON.parse(msg);
-        console.log("444444444:", chunkData);
 
         if (chunkData.reply_to_message !== curIdRef.current) return;
 
