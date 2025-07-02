@@ -81,11 +81,11 @@ const HistoryListContent: FC<HistoryListContentProps> = ({
     switch (key) {
       case "uparrow":
         nextIndex = currentIndex <= 0 ? length - 1 : currentIndex - 1;
-        setHighlightId(flattenedChats[nextIndex]._id);
+        setHighlightId(flattenedChats[nextIndex]._id || "");
         break;
       case "downarrow":
         nextIndex = currentIndex >= length - 1 ? 0 : currentIndex + 1;
-        setHighlightId(flattenedChats[nextIndex]._id);
+        setHighlightId(flattenedChats[nextIndex]._id || "");
         break;
       case "enter":
         if (document.activeElement instanceof HTMLTextAreaElement) {
@@ -225,7 +225,7 @@ const HistoryListContent: FC<HistoryListContentProps> = ({
                   active={active}
                   onSelect={onSelect}
                   onRename={onRename}
-                  onMouseEnter={() => setHighlightId(item._id)}
+                  onMouseEnter={() => setHighlightId(item._id || "")}
                   highlightId={highlightId}
                   handleDelete={handleDelete}
                 />

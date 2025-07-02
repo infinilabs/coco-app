@@ -164,9 +164,6 @@ pub async fn chat_create<R: Runtime>(
     message: String,
     query_params: Option<HashMap<String, Value>>,
 ) -> Result<(), String> {
-    println!("Sending message: {}", message);
-    println!("Sending server_id: {}", server_id);
-
     let body = if !message.is_empty() {
         let message = ChatRequestMessage {
             message: Some(message),
@@ -207,8 +204,6 @@ pub async fn chat_create<R: Runtime>(
 
     while let Ok(Some(line)) = lines.next_line().await {
         log::debug!("Received chat stream line: {}", &line);
-
-        println!("Received chat stream line: {}", &line);
 
         let _ = app_handle.emit("chat-create-stream", line).map_err(|err| {
             log::error!("Emit failed: {:?}", err);
@@ -257,8 +252,6 @@ pub async fn chat_chat<R: Runtime>(
     message: String,
     query_params: Option<HashMap<String, Value>>, //search,deep_thinking
 ) -> Result<(), String> {
-    println!("Sending message: {}", message);
-
     let body = if !message.is_empty() {
         let message = ChatRequestMessage {
             message: Some(message),
@@ -301,8 +294,6 @@ pub async fn chat_chat<R: Runtime>(
 
     while let Ok(Some(line)) = lines.next_line().await {
         log::debug!("Received chat stream line: {}", &line);
-
-        println!("Received chat stream line: {}", &line);
 
         let _ = app_handle.emit("chat-create-stream", line).map_err(|err| {
             log::error!("Emit failed: {:?}", err);

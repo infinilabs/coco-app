@@ -120,7 +120,7 @@ export default function Chat({}: ChatProps) {
     try {
       let response: any = await session_chat_history({
         serverId: currentService?.id,
-        sessionId: chat?._id,
+        sessionId: chat?._id || "",
         from: 0,
         size: 100,
       });

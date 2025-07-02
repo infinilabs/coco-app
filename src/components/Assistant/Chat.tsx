@@ -12,7 +12,6 @@ import { useChatStore } from "@/stores/chatStore";
 import { useConnectStore } from "@/stores/connectStore";
 import { useWindows } from "@/hooks/useWindows";
 import useMessageChunkData from "@/hooks/useMessageChunkData";
-import useWebSocket from "@/hooks/useWebSocket";
 import { useChatActions } from "@/hooks/useChatActions";
 import { useMessageHandler } from "@/hooks/useMessageHandler";
 import { ChatSidebar } from "./ChatSidebar";
@@ -136,12 +135,6 @@ const ChatAI = memo(
 
       const [Question, setQuestion] = useState<string>("");
 
-      const [websocketSessionId, setWebsocketSessionId] = useState("");
-
-      const onWebsocketSessionId = useCallback((sessionId: string) => {
-        setWebsocketSessionId(sessionId);
-      }, []);
-
       const {
         data: {
           query_intent,
@@ -168,13 +161,6 @@ const ChatAI = memo(
 
       const dealMsgRef = useRef<((msg: string) => void) | null>(null);
 
-      const clientId = isChatPage ? "standalone" : "popup";
-      const { updateDealMsg } = useWebSocket({
-        clientId,
-        dealMsgRef,
-        onWebsocketSessionId,
-      });
-
       const {
         chatClose,
         cancelChat,
@@ -188,6 +174,7 @@ const ChatAI = memo(
         handleRename,
         handleDelete,
       } = useChatActions(
+        activeChat,
         setActiveChat,
         setCurChatEnd,
         setTimedoutShow,
@@ -195,12 +182,12 @@ const ChatAI = memo(
         setQuestion,
         curIdRef,
         setChats,
+        dealMsgRef,
         isSearchActive,
         isDeepThinkActive,
         isMCPActive,
         changeInput,
-        websocketSessionId,
-        showChatHistory
+        showChatHistory,
       );
 
       const { dealMsg } = useMessageHandler(
@@ -210,6 +197,13 @@ const ChatAI = memo(
         (chat) => cancelChat(chat || activeChat),
         setLoadingStep,
         handlers
+      );
+
+      const updateDealMsg = useCallback(
+        (newDealMsg: (msg: string) => void) => {
+          dealMsgRef.current = newDealMsg;
+        },
+        [dealMsgRef]
       );
 
       useEffect(() => {

@@ -10,6 +10,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { unrequitable } from "@/utils";
 
 export function useChatActions(
+  activeChat: Chat | undefined,
   setActiveChat: (chat: Chat | undefined) => void,
   setCurChatEnd: (value: boolean) => void,
   setTimedoutShow: (value: boolean) => void,
@@ -17,11 +18,11 @@ export function useChatActions(
   setQuestion: (value: string) => void,
   curIdRef: React.MutableRefObject<string>,
   setChats: (chats: Chat[]) => void,
+  dealMsgRef: React.MutableRefObject<((msg: string) => void) | null>,
   isSearchActive?: boolean,
   isDeepThinkActive?: boolean,
   isMCPActive?: boolean,
   changeInput?: (val: string) => void,
-  websocketSessionId?: string,
   showChatHistory?: boolean
 ) {
   const isCurrentLogin = useAuthStore((state) => state.isCurrentLogin);
@@ -137,7 +138,7 @@ export function useChatActions(
       clearAllChunkData();
       setQuestion(value);
 
-      //console.log("sourceDataIds", sourceDataIds, MCPIds, websocketSessionId, id);
+      //console.log("sourceDataIds", sourceDataIds, MCPIds, id);
       const queryParams = {
         search: isSearchActive,
         deep_thinking: isDeepThinkActive,
@@ -153,27 +154,9 @@ export function useChatActions(
           message: value,
           queryParams,
         });
-        console.log("11111111", currentService?.id, value, queryParams);
       } else {
       }
-
-      console.log("_create", queryParams);
-      // const newChat: Chat = response;
-      // curIdRef.current = response?.payload?.id;
-
-      // newChat._source = {
-      //   ...response?.payload,
-      //   message: value,
-      // };
-      // const updatedChat: Chat = {
-      //   ...newChat,
-      //   messages: [newChat],
-      // };
-
-      // changeInput && changeInput("");
-      // setActiveChat(updatedChat);
-      // setCurChatEnd(false);
-      // setVisibleStartPage(false);
+      console.log("_create", currentService?.id, value, queryParams);
     },
     [
       isTauri,
@@ -184,7 +167,6 @@ export function useChatActions(
       isDeepThinkActive,
       isMCPActive,
       curIdRef,
-      websocketSessionId,
       currentAssistant,
       chatClose,
     ]
@@ -204,31 +186,24 @@ export function useChatActions(
         mcp_servers: MCPIds?.join(",") || "",
         assistant_id: currentAssistant?._id || "",
       };
-      let response: any;
       if (isTauri) {
         if (!currentService?.id) return;
-        response = await platformAdapter.commands("chat_chat", {
+        await platformAdapter.commands("chat_chat", {
           serverId: currentService?.id,
           sessionId: newChat?._id,
           queryParams,
           message: content,
         });
-        response = response ? JSON.parse(response) : null;
       } else {
       }
 
-      console.log("_send", response, queryParams);
-      curIdRef.current = response[0]?._id;
-
-      const updatedChat: Chat = {
-        ...newChat,
-        messages: [...(newChat?.messages || []), ...(response || [])],
-      };
-
-      changeInput && changeInput("");
-      setActiveChat(updatedChat);
-      setCurChatEnd(false);
-      setVisibleStartPage(false);
+      console.log(
+        "chat_chat",
+        currentService?.id,
+        newChat?._id,
+        queryParams,
+        content
+      );
     },
     [
       isTauri,
@@ -240,7 +215,6 @@ export function useChatActions(
       isMCPActive,
       curIdRef,
       changeInput,
-      websocketSessionId,
       currentAssistant,
     ]
   );
@@ -256,6 +230,56 @@ export function useChatActions(
     },
     [chatHistory, sendMessage]
   );
+
+  useEffect(() => {
+    if (!isTauri || !currentService?.id) return;
+
+    const unlisten_message = platformAdapter.listenEvent(
+      `chat-create-stream`,
+      (event) => {
+        const msg = event.payload as string;
+        //console.log("chat-create-stream", msg);
+        if (
+          msg.includes("_id") &&
+          msg.includes("_source") &&
+          msg.includes("result")
+        ) {
+          const response = JSON.parse(msg);
+          console.log("first", response);
+          let updatedChat: Chat;
+          if (Array.isArray(response)) {
+            curIdRef.current = response[0]?._id;
+            updatedChat = {
+              ...activeChat,
+              messages: [...(activeChat?.messages || []), ...(response || [])],
+            };
+          } else {
+            const newChat: Chat = activeChat || response;
+            curIdRef.current = response?.payload?.id;
+
+            newChat._source = {
+              ...response?.payload,
+            };
+            updatedChat = {
+              ...newChat,
+              messages: [newChat],
+            };
+          }
+
+          changeInput && changeInput("");
+          setActiveChat(updatedChat);
+          setCurChatEnd(false);
+          setVisibleStartPage(false);
+          return;
+        }
+        dealMsgRef.current?.(msg);
+      }
+    );
+
+    return () => {
+      unlisten_message.then((fn) => fn());
+    };
+  }, [currentService?.id, dealMsgRef, activeChat]);
 
   const openSessionChat = useCallback(
     async (chat: Chat) => {
