@@ -3,18 +3,22 @@ import { useReactive } from "ahooks";
 import { useTranslation } from "react-i18next";
 import type { LiteralUnion } from "type-fest";
 import { cloneDeep, sortBy } from "lodash-es";
+import clsx from "clsx";
+import { Plus } from "lucide-react";
+import { Button } from "@headlessui/react";
 
 import platformAdapter from "@/utils/platformAdapter";
 import Content from "./components/Content";
 import Details from "./components/Details";
 import { useExtensionsStore } from "@/stores/extensionsStore";
-import { Button } from "@headlessui/react";
-import { Plus } from "lucide-react";
 import SettingsInput from "../SettingsInput";
-import clsx from "clsx";
 
 export type ExtensionId = LiteralUnion<
-  "Applications" | "Calculator" | "QuickAIAccess" | "AIOverview",
+  | "Applications"
+  | "Calculator"
+  | "QuickAIAccess"
+  | "AIOverview"
+  | "File Search",
   string
 >;
 

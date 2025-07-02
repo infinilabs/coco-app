@@ -3,7 +3,7 @@
 pub mod ai_overview;
 pub mod application;
 pub mod calculator;
-pub mod file_system;
+pub mod file_search;
 pub mod pizza_engine_runtime;
 pub mod quick_ai_access;
 
@@ -173,6 +173,17 @@ pub(crate) async fn list_built_in_extensions() -> Result<Vec<Extension>, String>
         .await?,
     );
 
+    if cfg!(target_os = "macos") {
+        built_in_extensions.push(
+            load_built_in_extension(
+                dir,
+                file_search::EXTENSION_ID,
+                file_search::PLUGIN_JSON_FILE,
+            )
+            .await?,
+        );
+    }
+
     Ok(built_in_extensions)
 }
 
@@ -181,7 +192,7 @@ pub(super) async fn init_built_in_extension<R: Runtime>(
     extension: &Extension,
     search_source_registry: &SearchSourceRegistry,
 ) -> Result<(), String> {
-    log::trace!("initializing built-in extensions");
+    log::trace!("initializing built-in extensions [{}]", extension.id);
 
     if extension.id == application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME {
         search_source_registry
@@ -195,6 +206,14 @@ pub(super) async fn init_built_in_extension<R: Runtime>(
         let calculator_search = calculator::CalculatorSource::new(2000f64);
         search_source_registry
             .register_source(calculator_search)
+            .await;
+        log::debug!("built-in extension [{}] initialized", extension.id);
+    }
+
+    if extension.id == file_search::EXTENSION_ID {
+        let file_system_search = file_search::FileSearchExtensionSearchSource::new(1f64);
+        search_source_registry
+            .register_source(file_system_search)
             .await;
         log::debug!("built-in extension [{}] initialized", extension.id);
     }
@@ -276,6 +295,19 @@ pub(crate) async fn enable_built_in_extension(
         return Ok(());
     }
 
+    if bundle_id.extension_id == file_search::EXTENSION_ID {
+        let file_system_search = file_search::FileSearchExtensionSearchSource::new(1f64);
+        search_source_registry_tauri_state
+            .register_source(file_system_search)
+            .await;
+        alter_extension_json_file(
+            &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
+            bundle_id,
+            update_extension,
+        )?;
+        return Ok(());
+    }
+
     Ok(())
 }
 
@@ -346,6 +378,18 @@ pub(crate) async fn disable_built_in_extension(
             update_extension,
         )?;
 
+        return Ok(());
+    }
+
+    if bundle_id.extension_id == file_search::EXTENSION_ID {
+        search_source_registry_tauri_state
+            .remove_source(bundle_id.extension_id)
+            .await;
+        alter_extension_json_file(
+            &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
+            bundle_id,
+            update_extension,
+        )?;
         return Ok(());
     }
 
@@ -476,6 +520,16 @@ pub(crate) async fn is_built_in_extension_enabled(
             bundle_id.extension_id,
         )?;
         return Ok(extension.enabled);
+    }
+
+
+    if bundle_id.extension_id == file_search::EXTENSION_ID
+        && bundle_id.sub_extension_id.is_none()
+    {
+        return Ok(search_source_registry_tauri_state
+            .get_source(bundle_id.extension_id)
+            .await
+            .is_some());
     }
 
     unreachable!("extension [{:?}] is not a built-in extension", bundle_id)

@@ -14,7 +14,7 @@ import SettingsItem from "../SettingsItem";
 import { useStartupStore } from "@/stores/startupStore";
 import { useConnectStore } from "@/stores/connectStore";
 import Appearance from "./components/Appearance";
-import SettingsInput from "../SettingsInput";
+import SettingsInput from "@/components//Settings/SettingsInput";
 import platformAdapter from "@/utils/platformAdapter";
 import UpdateSettings from "./components/UpdateSettings";
 import SettingsToggle from "../SettingsToggle";

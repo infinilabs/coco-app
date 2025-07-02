@@ -13,6 +13,7 @@ Information about release notes of Coco Server is provided here.
 
 ### 🚀 Features
 
+- feat: file search using spotlight #705
 - feat: voice input support in both search and chat modes #732
 
 ### 🐛 Bug fix

@@ -9,10 +9,16 @@ on:
 jobs:
   create-release:
     runs-on: ubuntu-latest
+
+    outputs:
+      APP_VERSION: ${{ steps.get-version.outputs.APP_VERSION }}
+      RELEASE_BODY: ${{ steps.get-changelog.outputs.RELEASE_BODY }}
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Set output
         id: vars
         run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
@@ -22,11 +28,28 @@ jobs:
         with:
           node-version: 20
 
+      - name: Get build version
+        shell: bash
+        id: get-version
+        run: |
+          PACKAGE_VERSION=$(jq -r '.version' package.json)
+          CARGO_VERSION=$(grep -m 1 '^version =' src-tauri/Cargo.toml | sed -E 's/.*"([^"]+)".*/\1/')
+          if [ "$PACKAGE_VERSION" != "$CARGO_VERSION" ]; then
+            echo "::error::Version mismatch!"
+          else
+            echo "Version match: $PACKAGE_VERSION"
+          fi
+          echo "APP_VERSION=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+
       - name: Generate changelog
-        id: create_release
-        run: npx changelogithub --draft --name ${{ steps.vars.outputs.tag }}
+        id: get-changelog
+        run: |
+          CHANGELOG_BODY=$(npx changelogithub --draft --name ${{ steps.vars.outputs.tag }})
+          echo "RELEASE_BODY<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG_BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-app:
     needs: create-release
@@ -52,11 +75,23 @@ jobs:
             target: "x86_64-unknown-linux-gnu"
           - platform: "ubuntu-22.04-arm"
             target: "aarch64-unknown-linux-gnu"
+    env:
+      APP_VERSION: ${{ needs.create-release.outputs.APP_VERSION }}
 
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Checkout dependency repository
+        uses: actions/checkout@v4
+        with:
+          repository: 'infinilabs/pizza'
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          submodules: recursive
+          ref: main
+          path: pizza
+
       - name: Setup node
         uses: actions/setup-node@v4
         with:
@@ -65,18 +100,31 @@ jobs:
         with:
           version: latest
 
-      - name: Install rust target
-        if: matrix.target == 'i686-pc-windows-msvc'
-        run: rustup target add ${{ matrix.target }}
-
       - name: Install dependencies (ubuntu only)
         if: startsWith(matrix.platform, 'ubuntu-22.04')
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
 
-      - name: Install Rust stable
-        run: rustup toolchain install stable
+      - name: Add Rust build target
+        working-directory: src-tauri
+        shell: bash
+        run: |
+          rustup target add ${{ matrix.target }} || true
+
+      - name: Add pizza engine as a dependency
+        working-directory: src-tauri
+        shell: bash
+        run: |
+          BUILD_ARGS="--target ${{ matrix.target }}"
+          if [[ "${{matrix.target }}" != "i686-pc-windows-msvc" ]]; then
+            echo "Adding pizza engine as a dependency for ${{matrix.platform }}-${{matrix.target }}"
+            ( cargo add --path ../pizza/lib/engine --features query_string_parser,persistence )
+            BUILD_ARGS+=" --features use_pizza_engine"
+          else
+            echo "Skipping pizza engine dependency for ${{matrix.platform }}-${{matrix.target }}"
+          fi
+          echo "BUILD_ARGS=${BUILD_ARGS}" >> $GITHUB_ENV
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
@@ -91,30 +139,9 @@ jobs:
 
       - name: Install app dependencies and build web
         run: pnpm install --frozen-lockfile
-
-      - name: Set up SSH agent for private repository clone
-        if: matrix.target != 'i686-pc-windows-msvc'
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Add Git server to known hosts
-        if: matrix.platform != 'windows-latest'
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
-
-      - name: Pizza engine features setup
-        working-directory: src-tauri
-        if: matrix.target != 'i686-pc-windows-msvc'
-        run: |
-          rustup target add ${{ matrix.target }}
-          (cd .. && make add-dep-pizza-engine)
-                    
-      - name: Build the app with ${{ matrix.platform }}
+      
+      - name: Build the coco at ${{ matrix.platform}} for ${{ matrix.target }} @ ${{ env.APP_VERSION }}
         uses: tauri-apps/tauri-action@v0
-        if: matrix.target != 'i686-pc-windows-msvc'
         env:
           CI: false
           PLATFORM: ${{ matrix.platform }}
@@ -129,31 +156,8 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: Coco ${{ needs.create-release.outputs.APP_VERSION }}
-          releaseBody: ""
+          releaseName: Coco ${{ env.APP_VERSION }}
+          releaseBody: "${{ needs.create-release.outputs.RELEASE_BODY }}"
           releaseDraft: true
           prerelease: false
-          args: --target ${{ matrix.target }} --features use_pizza_engine
-
-      - name: Build the app with ${{ matrix.platform }} (windows i686 only)
-        uses: tauri-apps/tauri-action@v0
-        if: matrix.target == 'i686-pc-windows-msvc'
-        env:
-          CI: false
-          PLATFORM: ${{ matrix.platform }}
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ""
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        with:
-          tagName: ${{ github.ref_name }}
-          releaseName: Coco ${{ needs.create-release.outputs.APP_VERSION }}
-          releaseBody: ""
-          releaseDraft: true
-          prerelease: false
-          args: --target ${{ matrix.target }}
+          args: ${{ env.BUILD_ARGS }}
