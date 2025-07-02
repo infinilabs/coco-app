@@ -5,7 +5,7 @@ import { twMerge } from "tailwind-merge";
 
 interface SettingsInputProps
   extends Omit<InputProps, "onChange" | "className"> {
-  className: string;
+  className?: string;
   onChange?: (value?: string | number) => void;
 }
 
