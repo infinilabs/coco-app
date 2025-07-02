@@ -12,7 +12,6 @@ import { DataSource } from "@/types/commands";
 import Checkbox from "@/components/Common/Checkbox";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import VisibleKey from "@/components/Common/VisibleKey";
-import { useChatStore } from "@/stores/chatStore";
 import NoDataImage from "@/components/Common/NoDataImage";
 import PopoverInput from "@/components/Common/PopoverInput";
 import Pagination from "@/components/Common/Pagination";
@@ -35,7 +34,6 @@ export default function MCPPopover({
   getMCPByServer,
 }: MCPPopoverProps) {
   const { t } = useTranslation();
-  const { connected } = useChatStore();
 
   const [isRefreshDataSource, setIsRefreshDataSource] = useState(false);
   const [dataList, setDataList] = useState<DataSource[]>([]);
@@ -97,8 +95,8 @@ export default function MCPPopover({
   }, [dataList]);
 
   useEffect(() => {
-    connected && getDataSourceList();
-  }, [connected, currentService?.id, debouncedKeyword, currentAssistant]);
+    getDataSourceList();
+  }, [currentService?.id, debouncedKeyword, currentAssistant]);
 
   useEffect(() => {
     setTotalPage(Math.max(Math.ceil(dataList.length / 10), 1));

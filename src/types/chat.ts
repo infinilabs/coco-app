@@ -19,7 +19,7 @@ export interface ISource {
   assistant_item?: any;
 }
 export interface Chat {
-  _id: string;
+  _id?: string;
   _index?: string;
   _type?: string;
   _source?: ISource;

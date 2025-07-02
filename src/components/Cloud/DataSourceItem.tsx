@@ -20,8 +20,6 @@ interface DataSourceItemProps {
 }
 
 export function DataSourceItem({ name, icon, connector }: DataSourceItemProps) {
-  // const isConnected = true;
-
   const isDark = useThemeStore((state) => state.isDark);
 
   const connector_data = useConnectStore((state) => state.connector_data);

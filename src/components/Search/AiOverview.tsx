@@ -1,6 +1,7 @@
 import { Sparkles, X } from "lucide-react";
 import { FC, useState } from "react";
 import clsx from "clsx";
+
 import { useStreamChat } from "@/hooks/useStreamChat";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { ChatMessage } from "../ChatMessage";

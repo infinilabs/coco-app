@@ -14,6 +14,8 @@ pub use without_feature::*;
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
+
 pub struct AppEntry {
     path: String,
     name: String,

@@ -250,6 +250,22 @@ export function new_chat({
   });
 }
 
+export function chat_create({
+  serverId,
+  message,
+  queryParams,
+}: {
+  serverId: string;
+  message: string;
+  queryParams?: Record<string, any>;
+}): Promise<GetResponse> {
+  return invokeWithErrorHandler(`chat_create`, {
+    serverId,
+    message,
+    queryParams,
+  });
+}
+
 export function send_message({
   serverId,
   websocketId,
@@ -266,6 +282,25 @@ export function send_message({
   return invokeWithErrorHandler(`send_message`, {
     serverId,
     websocketId,
+    sessionId,
+    message,
+    queryParams,
+  });
+}
+
+export function chat_chat({
+  serverId,
+  sessionId,
+  message,
+  queryParams,
+}: {
+  serverId: string;
+  sessionId: string;
+  message: string;
+  queryParams?: Record<string, any>;
+}): Promise<string> {
+  return invokeWithErrorHandler(`chat_chat`, {
+    serverId,
     sessionId,
     message,
     queryParams,

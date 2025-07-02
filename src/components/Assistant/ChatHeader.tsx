@@ -13,8 +13,6 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { HISTORY_PANEL_ID } from "@/constants";
 import { AssistantList } from "./AssistantList";
 import { ServerList } from "./ServerList";
-import { Server } from "@/types/server"
-
 
 interface ChatHeaderProps {
   clearChat: () => void;
@@ -22,7 +20,6 @@ interface ChatHeaderProps {
   setIsSidebarOpen: () => void;
   isSidebarOpen: boolean;
   activeChat: Chat | undefined;
-  reconnect: (server?: Server) => void;
   isChatPage?: boolean;
   showChatHistory?: boolean;
   assistantIDs?: string[];
@@ -34,7 +31,6 @@ export function ChatHeader({
   isSidebarOpen,
   setIsSidebarOpen,
   activeChat,
-  reconnect,
   isChatPage = false,
   showChatHistory = true,
   assistantIDs,
@@ -98,7 +94,11 @@ export function ChatHeader({
             onClick={clearChat}
             className="p-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
           >
-            <VisibleKey shortcutClassName="top-2.5" shortcut={newSession} onKeyPress={clearChat}>
+            <VisibleKey
+              shortcutClassName="top-2.5"
+              shortcut={newSession}
+              onKeyPress={clearChat}
+            >
               <MessageSquarePlus className="h-4 w-4 relative top-0.5" />
             </VisibleKey>
           </button>
@@ -110,7 +110,7 @@ export function ChatHeader({
           activeChat?._source?.message ||
           activeChat?._id}
       </h2>
-      
+
       {isTauri ? (
         <div className="flex items-center gap-2">
           <button
@@ -124,10 +124,7 @@ export function ChatHeader({
             </VisibleKey>
           </button>
 
-          <ServerList
-            reconnect={reconnect}
-            clearChat={clearChat}
-          />
+          <ServerList clearChat={clearChat} />
 
           {isChatPage ? null : (
             <button className="inline-flex" onClick={onOpenChatAI}>

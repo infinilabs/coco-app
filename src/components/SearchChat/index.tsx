@@ -170,10 +170,6 @@ function SearchChat({
     chatAIRef.current?.cancelChat();
   }, []);
 
-  const reconnect = useCallback(() => {
-    chatAIRef.current?.reconnect();
-  }, []);
-
   const setInput = useCallback((value: string) => {
     dispatch({ type: "SET_INPUT", payload: value });
   }, []);
@@ -312,7 +308,6 @@ function SearchChat({
           disabledChange={cancelChat}
           changeMode={changeMode}
           changeInput={setInput}
-          reconnect={reconnect}
           isSearchActive={isSearchActive}
           setIsSearchActive={toggleSearchActive}
           isDeepThinkActive={isDeepThinkActive}

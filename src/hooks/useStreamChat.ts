@@ -1,9 +1,10 @@
-import { useAppStore } from "@/stores/appStore";
-import { EventPayloads } from "@/types/platform";
-import platformAdapter from "@/utils/platformAdapter";
 import { useAsyncEffect, useMount, useReactive, useUnmount } from "ahooks";
 import { noop } from "lodash-es";
 import { useRef, useState } from "react";
+
+import { useAppStore } from "@/stores/appStore";
+import { EventPayloads } from "@/types/platform";
+import platformAdapter from "@/utils/platformAdapter";
 import useMessageChunkData from "./useMessageChunkData";
 
 interface Options {
