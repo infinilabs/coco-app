@@ -205,9 +205,13 @@ pub async fn chat_create<R: Runtime>(
     while let Ok(Some(line)) = lines.next_line().await {
         log::debug!("Received chat stream line: {}", &line);
 
-        let _ = app_handle.emit("chat-create-stream", line).map_err(|err| {
+        if let Err(err) = app_handle.emit("chat-create-stream", line) {
             log::error!("Emit failed: {:?}", err);
-        });
+
+            print!("Error sending message: {:?}", err);
+
+            let _ = app_handle.emit("chat-create-error", format!("Emit failed: {:?}", err));
+        }
     }
 
     Ok(())
@@ -295,9 +299,10 @@ pub async fn chat_chat<R: Runtime>(
     while let Ok(Some(line)) = lines.next_line().await {
         log::debug!("Received chat stream line: {}", &line);
 
-        let _ = app_handle.emit("chat-create-stream", line).map_err(|err| {
+        if let Err(err) = app_handle.emit("chat-create-stream", line) {
             log::error!("Emit failed: {:?}", err);
-        });
+            let _ = app_handle.emit("chat-create-error", format!("Emit failed: {:?}", err));
+        }
     }
 
     Ok(())

@@ -8,6 +8,7 @@ import { useConnectStore } from "@/stores/connectStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useAuthStore } from "@/stores/authStore";
 import { unrequitable } from "@/utils";
+import { streamPost } from "@/api/streamFetch";
 
 export function useChatActions(
   setActiveChat: (chat: Chat | undefined) => void,
@@ -157,6 +158,15 @@ export function useChatActions(
           queryParams,
         });
       } else {
+        await streamPost({
+          url: "/chat/_create",
+          body: { message: value },
+          queryParams,
+          onMessage: (line) => {
+            console.log("⏳", line);
+            // append to chat box
+          },
+        });
       }
       console.log("_create", currentService?.id, value, queryParams);
     },
@@ -197,6 +207,15 @@ export function useChatActions(
           message: content,
         });
       } else {
+        await streamPost({
+          url: "/chat/_chat",
+          body: { message: content },
+          queryParams,
+          onMessage: (line) => {
+            console.log("line", line);
+            // append to chat box
+          },
+        });
       }
 
       console.log(
@@ -253,7 +272,10 @@ export function useChatActions(
             curIdRef.current = response[0]?._id;
             updatedChat = {
               ...updatedChatRef.current,
-              messages: [...(updatedChatRef.current?.messages || []), ...(response || [])],
+              messages: [
+                ...(updatedChatRef.current?.messages || []),
+                ...(response || []),
+              ],
             };
             console.log("array", updatedChat, updatedChatRef.current?.messages);
           } else {
@@ -279,8 +301,16 @@ export function useChatActions(
       }
     );
 
+    const unlisten_error = platformAdapter.listenEvent(
+      `chat-create-error`,
+      (event) => {
+        console.error("chat-create-error", event.payload);
+      }
+    );
+
     return () => {
       unlisten_message.then((fn) => fn());
+      unlisten_error.then((fn) => fn());
     };
   }, [currentService?.id, dealMsgRef, updatedChatRef.current]);
 

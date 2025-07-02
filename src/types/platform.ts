@@ -49,6 +49,7 @@ export interface EventPayloads {
   "uninstall-extension": void;
   "config-extension": string;
   "chat-create-stream": string;
+  "chat-create-error": string;
 }
 
 // Window operation interface
