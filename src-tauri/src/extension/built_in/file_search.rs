@@ -251,7 +251,7 @@ impl FileSearchExtensionSearchSource {
         args
     }
 
-    async fn execute_mdfind_static(args: &[String], limit: usize) -> Result<Vec<String>, String> {
+    async fn execute_mdfind_static(args: &[String], limit: usize, config: &FileSearchConfig) -> Result<Vec<String>, String> {
         let (rx, tx) = std::io::pipe().unwrap();
         let mut buffered_rx = BufReader::new(rx);
 
@@ -280,7 +280,9 @@ impl FileSearchExtensionSearchSource {
 
                 // read_line() will read the tailing new-line char, trim it
                 let trimmed = line_buffer.trim_end();
-                file_paths.push(trimmed.to_string());
+                if !Self::should_be_filtered(trimmed) {
+                    file_paths.push(trimmed.to_string());
+                }
                 line_buffer.clear();
             }
 
@@ -294,46 +296,35 @@ impl FileSearchExtensionSearchSource {
         Ok(file_paths)
     }
 
-    fn apply_exclude_path_and_file_type_filters(
-        results: Vec<String>,
+    fn should_be_filtered(
         config: &FileSearchConfig,
-    ) -> Vec<String> {
-        let mut filtered_results = Vec::new();
+        file_path: &str,
+    ) -> bool {
+          let is_excluded = config
+              .exclude_paths
+              .iter()
+              .any(|exclude_path| path.starts_with(exclude_path));
 
-        for path in results {
-            // Check if path should be excluded
-            let is_excluded = config
-                .exclude_paths
-                .iter()
-                .any(|exclude_path| path.starts_with(exclude_path));
+          if is_excluded {
+              return true;
+          }
 
-            if is_excluded {
-                continue;
-            }
+          // Check file type filter
+          let matches_file_type = if config.file_types.is_empty() {
+              true
+          } else {
+              let path_obj = camino::Utf8Path::new(&path);
+              if let Some(extension) = path_obj.extension() {
+                  config
+                      .file_types
+                      .iter()
+                      .any(|file_type| file_type == extension)
+              } else {
+                  false
+              }
+          };
 
-            // Check file type filter
-            let matches_file_type = if config.file_types.is_empty() {
-                true
-            } else {
-                let path_obj = camino::Utf8Path::new(&path);
-                if let Some(extension) = path_obj.extension() {
-                    config
-                        .file_types
-                        .iter()
-                        .any(|file_type| file_type == extension)
-                } else {
-                    false
-                }
-            };
-
-            if !matches_file_type {
-                continue;
-            }
-
-            filtered_results.push(path);
-        }
-
-        filtered_results
+          !matches_file_type
     }
 }
 
@@ -390,13 +381,9 @@ impl SearchSource for FileSearchExtensionSearchSource {
         let base_score = self.base_score;
         let mdfind_args = self.build_mdfind_query(query_string, &config);
 
-        let search_results = Self::execute_mdfind_static(&mdfind_args, from + size)
+        let search_results = Self::execute_mdfind_static(&mdfind_args, from + size, &config)
             .await
             .map_err(SearchError::InternalError)?;
-
-        // Filter out excluded paths
-        let filtered_results =
-            Self::apply_exclude_path_and_file_type_filters(search_results, &config);
 
         // Convert results to documents
         let mut hits: Vec<(Document, f64)> = Vec::new();
