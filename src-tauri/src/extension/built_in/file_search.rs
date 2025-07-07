@@ -7,15 +7,20 @@ use crate::common::{
 };
 use crate::extension::OnOpened;
 use async_trait::async_trait;
+use futures::stream::Stream;
+use futures::stream::StreamExt;
 use hostname;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::io::BufRead;
-use std::io::BufReader;
+use std::os::fd::OwnedFd;
 use std::path::Path;
 use std::sync::LazyLock;
 use tauri_plugin_store::StoreExt;
+use tokio::io::AsyncBufReadExt;
+use tokio::io::BufReader;
+use tokio::process::Child;
 use tokio::process::Command;
+use tokio_stream::wrappers::LinesStream;
 
 pub(crate) const EXTENSION_ID: &str = "File Search";
 
@@ -221,25 +226,18 @@ impl FileSearchExtensionSearchSource {
         FileSearchExtensionSearchSource { base_score }
     }
 
-    fn build_mdfind_query(&self, query_string: &str, config: &FileSearchConfig) -> Vec<String> {
+    /// Return an array containing the `mdfind` command and its arguments.
+    fn build_mdfind_query(query_string: &str, config: &FileSearchConfig) -> Vec<String> {
         let mut args = vec!["mdfind".to_string()];
 
-        // Build the query string with file type filters
-        let mut query_parts = Vec::new();
-
-        // Add search criteria based on search mode
         match config.search_by {
             SearchBy::Name => {
-                query_parts.push(format!("kMDItemFSName == '*{}*'", query_string));
+                args.push(format!("kMDItemFSName == '*{}*'", query_string));
             }
             SearchBy::NameAndContents => {
-                query_parts.push(format!("kMDItemTextContent == '{}'", query_string));
+                args.push(format!("kMDItemTextContent == '{}'", query_string));
             }
         }
-
-        // Combine all query parts
-        let final_query = query_parts.join(" && ");
-        args.push(final_query);
 
         // Add search paths using -onlyin
         for path in &config.search_paths {
@@ -251,89 +249,81 @@ impl FileSearchExtensionSearchSource {
         args
     }
 
-    async fn execute_mdfind_static(args: &[String], limit: usize) -> Result<Vec<String>, String> {
+    /// Spawn the `mdfind` child process and return an async iterator over its output,
+    /// allowing us to collect the results asynchronously.
+    ///
+    /// # Return value:
+    ///
+    /// * impl Stream: an async iterator that will yield the matched files
+    /// * Child: The handle to the mdfind process, we need to kill it once we
+    ///   collect all the results to avoid zombie processes.
+    fn execute_mdfind_query(
+        query_string: &str,
+        from: usize,
+        size: usize,
+        config: &FileSearchConfig,
+    ) -> Result<(impl Stream<Item = std::io::Result<String>>, Child), String> {
+        let args = Self::build_mdfind_query(query_string, &config);
         let (rx, tx) = std::io::pipe().unwrap();
-        let mut buffered_rx = BufReader::new(rx);
+        let rx_owned = OwnedFd::from(rx);
+        let async_rx = tokio::net::unix::pipe::Receiver::from_owned_fd(rx_owned).unwrap();
+        let buffered_rx = BufReader::new(async_rx);
+        let lines = LinesStream::new(buffered_rx.lines());
 
-        let mut mdfind_child_process = Command::new(&args[0])
+        let child = Command::new(&args[0])
             .args(&args[1..])
             .stdout(tx)
             .stderr(std::process::Stdio::null())
             .spawn()
-            .map_err(|e| format!("Failed to execute mdfind: {}", e))?;
+            .map_err(|e| format!("Failed to spawn mdfind: {}", e))?;
+        let config_clone = config.clone();
+        let iter = lines
+            .filter(move |res_path| {
+                std::future::ready({
+                    match res_path {
+                        Ok(path) => !Self::should_be_filtered_out(&config_clone, path),
+                        Err(_) => {
+                            // Don't filter out Err() values
+                            true
+                        }
+                    }
+                })
+            })
+            .skip(from)
+            .take(size);
 
-        let handle = tokio::task::spawn_blocking(move || {
-            let mut file_paths = Vec::with_capacity(limit);
-            let mut line_buffer = String::new();
-
-            loop {
-                if file_paths.len() >= limit {
-                    break;
-                }
-
-                let n_read = buffered_rx.read_line(&mut line_buffer).unwrap();
-
-                // EOF
-                if n_read == 0 {
-                    break;
-                }
-
-                // read_line() will read the tailing new-line char, trim it
-                let trimmed = line_buffer.trim_end();
-                file_paths.push(trimmed.to_string());
-                line_buffer.clear();
-            }
-
-            file_paths
-        });
-
-        let file_paths = handle.await.map_err(|e| format!("{:?}", e))?;
-
-        mdfind_child_process.kill().await.unwrap();
-
-        Ok(file_paths)
+        Ok((iter, child))
     }
 
-    fn apply_exclude_path_and_file_type_filters(
-        results: Vec<String>,
-        config: &FileSearchConfig,
-    ) -> Vec<String> {
-        let mut filtered_results = Vec::new();
+    /// If `file_path` should be removed from the search results given the filter
+    /// conditions specified in `config`.
+    fn should_be_filtered_out(config: &FileSearchConfig, file_path: &str) -> bool {
+        let is_excluded = config
+            .exclude_paths
+            .iter()
+            .any(|exclude_path| file_path.starts_with(exclude_path));
 
-        for path in results {
-            // Check if path should be excluded
-            let is_excluded = config
-                .exclude_paths
-                .iter()
-                .any(|exclude_path| path.starts_with(exclude_path));
-
-            if is_excluded {
-                continue;
-            }
-
-            // Check file type filter
-            let matches_file_type = if config.file_types.is_empty() {
-                true
-            } else {
-                let path_obj = camino::Utf8Path::new(&path);
-                if let Some(extension) = path_obj.extension() {
-                    config
-                        .file_types
-                        .iter()
-                        .any(|file_type| file_type == extension)
-                } else {
-                    false
-                }
-            };
-
-            if !matches_file_type {
-                continue;
-            }
-
-            filtered_results.push(path);
+        if is_excluded {
+            return true;
         }
 
-        filtered_results
+        let matches_file_type = if config.file_types.is_empty() {
+            true
+        } else {
+            let path_obj = camino::Utf8Path::new(&file_path);
+            if let Some(extension) = path_obj.extension() {
+                config
+                    .file_types
+                    .iter()
+                    .any(|file_type| file_type == extension)
+            } else {
+                // `config.file_types` is not empty, then the search results
+                // should have extensions.
+                false
+            }
+        };
+
+        !matches_file_type
     }
 }
 
@@ -388,19 +378,17 @@ impl SearchSource for FileSearchExtensionSearchSource {
         // Execute search in a blocking task
         let query_source = self.get_type();
         let base_score = self.base_score;
-        let mdfind_args = self.build_mdfind_query(query_string, &config);
 
-        let search_results = Self::execute_mdfind_static(&mdfind_args, from + size)
-            .await
-            .map_err(SearchError::InternalError)?;
-
-        // Filter out excluded paths
-        let filtered_results =
-            Self::apply_exclude_path_and_file_type_filters(search_results, &config);
+        let (mut iter, mut mdfind_child_process) =
+            Self::execute_mdfind_query(&query_string, from, size, &config)
+                .map_err(SearchError::InternalError)?;
 
         // Convert results to documents
         let mut hits: Vec<(Document, f64)> = Vec::new();
-        for file_path in filtered_results.into_iter().skip(from).take(size) {
+        while let Some(res_file_path) = iter.next().await {
+            let file_path =
+                res_file_path.map_err(|io_err| SearchError::InternalError(io_err.to_string()))?;
+
             let file_type = get_file_type(&file_path).await;
             let icon = type_to_icon(file_type);
             let file_path_of_type_path = camino::Utf8Path::new(&file_path);
@@ -442,6 +430,10 @@ impl SearchSource for FileSearchExtensionSearchSource {
 
             hits.push((doc, base_score));
         }
+        mdfind_child_process
+            .kill()
+            .await
+            .map_err(|e| SearchError::InternalError(format!("{:?}", e)))?;
 
         let total_hits = hits.len();
         Ok(QueryResponse {
