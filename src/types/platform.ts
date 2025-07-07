@@ -101,6 +101,8 @@ export interface SystemOperations {
   invokeBackend: <T = unknown>(command: string, args?: any) => Promise<T>;
   convertFileSrc: (path: string) => string;
   checkScreenRecordingPermission: () => Promise<boolean>;
+  checkMicrophonePermission: () => Promise<boolean>;
+  requestMicrophonePermission: () => void;
   requestScreenRecordingPermission: () => void;
   getScreenshotableMonitors: () => Promise<any[]>;
   getScreenshotableWindows: () => Promise<any[]>;

@@ -162,8 +162,9 @@ export function useChatActions(
           url: "/chat/_create",
           body: { message: value },
           queryParams,
-          onMessage: (line) => {
+          onMessage: (line) => {  
             console.log("⏳", line);
+            handleChatCreateStreamMessage(line);
             // append to chat box
           },
         });
@@ -208,11 +209,12 @@ export function useChatActions(
         });
       } else {
         await streamPost({
-          url: "/chat/_chat",
+          url: `/chat/${newChat?._id}/_chat`,
           body: { message: content },
           queryParams,
           onMessage: (line) => {
             console.log("line", line);
+            handleChatCreateStreamMessage(line);
             // append to chat box
           },
         });
@@ -252,6 +254,47 @@ export function useChatActions(
     [chatHistory, sendMessage]
   );
 
+  const handleChatCreateStreamMessage = useCallback((msg: string) => {
+    if (
+      msg.includes("_id") &&
+      msg.includes("_source") &&
+      msg.includes("result")
+    ) {
+      const response = JSON.parse(msg);
+      console.log("first", response);
+      let updatedChat: Chat;
+      if (Array.isArray(response)) {
+        curIdRef.current = response[0]?._id;
+        updatedChat = {
+          ...updatedChatRef.current,
+          messages: [
+            ...(updatedChatRef.current?.messages || []),
+            ...(response || []),
+          ],
+        };
+        console.log("array", updatedChat, updatedChatRef.current?.messages);
+      } else {
+        const newChat: Chat = response;
+        curIdRef.current = response?.payload?.id;
+
+        newChat._source = {
+          ...response?.payload,
+        };
+        updatedChat = {
+          ...newChat,
+          messages: [newChat],
+        };
+      }
+
+      changeInput && changeInput("");
+      setActiveChat(updatedChat);
+      setCurChatEnd(false);
+      setVisibleStartPage(false);
+      return;
+    }
+    dealMsgRef.current?.(msg);
+  }, [curIdRef, updatedChatRef, changeInput, setActiveChat, setCurChatEnd, setVisibleStartPage, dealMsgRef]);
+
   useEffect(() => {
     if (!isTauri || !currentService?.id) return;
 
@@ -260,44 +303,7 @@ export function useChatActions(
       (event) => {
         const msg = event.payload as string;
         //console.log("chat-create-stream", msg);
-        if (
-          msg.includes("_id") &&
-          msg.includes("_source") &&
-          msg.includes("result")
-        ) {
-          const response = JSON.parse(msg);
-          console.log("first", response);
-          let updatedChat: Chat;
-          if (Array.isArray(response)) {
-            curIdRef.current = response[0]?._id;
-            updatedChat = {
-              ...updatedChatRef.current,
-              messages: [
-                ...(updatedChatRef.current?.messages || []),
-                ...(response || []),
-              ],
-            };
-            console.log("array", updatedChat, updatedChatRef.current?.messages);
-          } else {
-            const newChat: Chat = response;
-            curIdRef.current = response?.payload?.id;
-
-            newChat._source = {
-              ...response?.payload,
-            };
-            updatedChat = {
-              ...newChat,
-              messages: [newChat],
-            };
-          }
-
-          changeInput && changeInput("");
-          setActiveChat(updatedChat);
-          setCurChatEnd(false);
-          setVisibleStartPage(false);
-          return;
-        }
-        dealMsgRef.current?.(msg);
+        handleChatCreateStreamMessage(msg);
       }
     );
 

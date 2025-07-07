@@ -5,6 +5,7 @@ export interface WebPlatformAdapter extends BasePlatformAdapter {
   // Add web-specific methods here
   openFileDialog: (options: any) => Promise<string | string[] | null>;
   metadata: (path: string, options: any) => Promise<Record<string, any>>;
+  error: (message: string) => void;
 }
 
 // Create Web adapter functions
@@ -59,6 +60,14 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     async checkScreenRecordingPermission() {
       console.log("Web mode simulated check screen recording permission");
       return false;
+    },
+
+    async checkMicrophonePermission() {
+      return false;
+    },
+    
+    async requestMicrophonePermission() {
+     return false;
     },
 
     requestScreenRecordingPermission() {
@@ -203,5 +212,7 @@ export const createWebAdapter = (): WebPlatformAdapter => {
         return copyToClipboard(data.payload.result.value);
       }
     },
+
+    error: console.error,
   };
 };

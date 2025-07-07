@@ -13,8 +13,15 @@ export async function streamPost({
   onMessage: (chunk: string) => void;
   onError?: (err: any) => void;
 }) {
+  const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
+
+  let baseURL = appStore.state?.endpoint_http
+  if (!baseURL || baseURL === "undefined") {
+    baseURL = "";
+  }
+
   const query = new URLSearchParams(queryParams || {}).toString();
-  const fullUrl = `${url}?${query}`;
+  const fullUrl = `${baseURL}${url}?${query}`;
 
   try {
     const res = await fetch(fullUrl, {
