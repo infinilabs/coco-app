@@ -164,7 +164,9 @@ pub fn run() {
             settings::get_allow_self_signature,
             assistant::ask_ai,
             crate::common::document::open,
+            #[cfg(target_os = "macos")]
             extension::built_in::file_search::get_file_system_config,
+            #[cfg(target_os = "macos")]
             extension::built_in::file_search::set_file_system_config,
         ])
         .setup(|app| {

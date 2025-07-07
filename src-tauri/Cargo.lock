@@ -801,9 +801,9 @@ dependencies = [
 
 [[package]]
 name = "cfg-if"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
+checksum = "9555578bc9e57714c812a1f84e4fc5b4d21fcb063490c624de019f7464c91268"
 
 [[package]]
 name = "cfg_aliases"
@@ -890,6 +890,7 @@ dependencies = [
  "base64 0.13.1",
  "borrowme",
  "camino",
+ "cfg-if",
  "chinese-number",
  "chrono",
  "derive_more 2.0.1",
@@ -942,6 +943,7 @@ dependencies = [
  "thiserror 1.0.69",
  "tokio",
  "tokio-native-tls",
+ "tokio-stream",
  "tokio-tungstenite 0.20.1",
  "tokio-util",
  "tungstenite 0.24.0",
@@ -6909,6 +6911,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8e727b36a1a0e8b74c376ac2211e40c2c8af09fb4013c60d910495810f008e9b"
 dependencies = [
  "rustls",
+ "tokio",
+]
+
+[[package]]
+name = "tokio-stream"
+version = "0.1.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eca58d7bba4a75707817a2c44174253f9236b2d5fbd055602e9d5c07c139a047"
+dependencies = [
+ "futures-core",
+ "pin-project-lite",
  "tokio",
 ]
 

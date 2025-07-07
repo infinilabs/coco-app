@@ -17,6 +17,7 @@ Information about release notes of Coco Server is provided here.
 - feat: voice input support in both search and chat modes #732
 
 ### 🐛 Bug fix
+- fix(file search): apply filters before from/size parameters #741
 
 ### ✈️ Improvements
 - refactor: prioritize stat(2) when checking if a file is dir #737
