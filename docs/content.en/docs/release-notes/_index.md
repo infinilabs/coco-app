@@ -20,8 +20,10 @@ Information about release notes of Coco Server is provided here.
 - fix(file search): apply filters before from/size parameters #741
 
 ### ✈️ Improvements
+
 - refactor: prioritize stat(2) when checking if a file is dir #737
 - refactor: change File Search ext type to extension #738
+- refactor: create chat & send chat api #739
 - chore: icon support for more file types #740
 
 ## 0.6.0 (2025-06-29)

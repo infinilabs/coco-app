@@ -19,11 +19,10 @@ import { useAuthStore } from "@/stores/authStore";
 import { useSearchStore } from "@/stores/searchStore";
 
 interface ServerListProps {
-  reconnect: (server?: IServer) => void;
   clearChat: () => void;
 }
 
-export function ServerList({ reconnect, clearChat }: ServerListProps) {
+export function ServerList({ clearChat }: ServerListProps) {
   const { t } = useTranslation();
 
   const isCurrentLogin = useAuthStore((state) => state.isCurrentLogin);
@@ -141,10 +140,6 @@ export function ServerList({ reconnect, clearChat }: ServerListProps) {
       }
       //
       setIsCurrentLogin(true);
-      // The Rust backend will automatically disconnect,
-      // so we don't need to handle disconnection on the frontend
-      // src-tauri/src/server/websocket.rs
-      reconnect && reconnect(server);
     } catch (error) {
       console.error("switchServer:", error);
     }

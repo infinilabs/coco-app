@@ -72,7 +72,7 @@ export default defineConfig({
 
     const packageJson = {
       name: "@infinilabs/search-chat",
-      version: "1.2.8",
+      version: "1.2.28",
       main: "index.js",
       module: "index.js",
       type: "module",
@@ -93,7 +93,6 @@ export default defineConfig({
     };
     
     const noNeedDeps = [
-        "@wavesurfer/react",
         "dotenv",
         "uuid",
         "wavesurfer.js",

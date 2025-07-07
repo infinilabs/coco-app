@@ -48,6 +48,8 @@ export interface EventPayloads {
   "install-extension": void;
   "uninstall-extension": void;
   "config-extension": string;
+  "chat-create-stream": string;
+  "chat-create-error": string;
 }
 
 // Window operation interface
@@ -99,6 +101,8 @@ export interface SystemOperations {
   invokeBackend: <T = unknown>(command: string, args?: any) => Promise<T>;
   convertFileSrc: (path: string) => string;
   checkScreenRecordingPermission: () => Promise<boolean>;
+  checkMicrophonePermission: () => Promise<boolean>;
+  requestMicrophonePermission: () => void;
   requestScreenRecordingPermission: () => void;
   getScreenshotableMonitors: () => Promise<any[]>;
   getScreenshotableWindows: () => Promise<any[]>;

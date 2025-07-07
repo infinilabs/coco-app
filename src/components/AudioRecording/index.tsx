@@ -2,10 +2,6 @@ import { useReactive } from "ahooks";
 import clsx from "clsx";
 import { Check, Loader, Mic, X } from "lucide-react";
 import { FC, useEffect, useRef } from "react";
-import {
-  checkMicrophonePermission,
-  requestMicrophonePermission,
-} from "tauri-plugin-macos-permissions-api";
 import { useWavesurfer } from "@wavesurfer/react";
 import RecordPlugin from "wavesurfer.js/dist/plugins/record.esm.js";
 
@@ -135,15 +131,15 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
   };
 
   const checkPermission = async () => {
-    const authorized = await checkMicrophonePermission();
+    const authorized = await platformAdapter.checkMicrophonePermission();
 
     if (authorized) return;
 
-    requestMicrophonePermission();
+    platformAdapter.requestMicrophonePermission();
 
     return new Promise(async (resolved) => {
       const timer = setInterval(async () => {
-        const authorized = await checkMicrophonePermission();
+        const authorized = await platformAdapter.checkMicrophonePermission();
 
         if (!authorized) return;
 

@@ -8,7 +8,6 @@ import {
   useTextSelection,
 } from "ahooks";
 import { isArray, isString } from "lodash-es";
-import { error } from "@tauri-apps/plugin-log";
 
 import { useAppStore } from "@/stores/appStore";
 import useEscape from "@/hooks/useEscape";
@@ -106,7 +105,7 @@ export default function Layout() {
   useEventListener("unhandledrejection", ({ reason }) => {
     const message = isString(reason) ? reason : JSON.stringify(reason);
 
-    error(message);
+    platformAdapter.error(message);
   });
 
   useIconfontScript();

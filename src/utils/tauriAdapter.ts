@@ -2,6 +2,7 @@ import type { OpenDialogOptions } from "@tauri-apps/plugin-dialog";
 import { isWindows10 } from "tauri-plugin-windows-version-api";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { metadata } from "tauri-plugin-fs-pro-api";
+import { error } from "@tauri-apps/plugin-log";
 
 import {
   windowWrapper,
@@ -20,6 +21,7 @@ export interface TauriPlatformAdapter extends BasePlatformAdapter {
     options: OpenDialogOptions
   ) => Promise<string | string[] | null>;
   metadata: typeof metadata;
+  error: typeof error;
 }
 
 // Create Tauri adapter functions
@@ -81,6 +83,20 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
         "tauri-plugin-macos-permissions-api"
       );
       return requestScreenRecordingPermission();
+    },
+    
+    async checkMicrophonePermission() {
+      const { checkMicrophonePermission } = await import(
+        "tauri-plugin-macos-permissions-api"
+      );
+      return checkMicrophonePermission();
+    },
+    
+    async requestMicrophonePermission() {
+      const { requestMicrophonePermission } = await import(
+        "tauri-plugin-macos-permissions-api"
+      );
+      return requestMicrophonePermission();
     },
 
     async getScreenshotableMonitors() {
@@ -282,5 +298,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
         return copyToClipboard(data.payload.result.value);
       }
     },
+
+    error,
   };
 };

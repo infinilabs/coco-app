@@ -123,7 +123,9 @@ pub fn run() {
             search::query_coco_fusion,
             assistant::chat_history,
             assistant::new_chat,
+            assistant::chat_create,
             assistant::send_message,
+            assistant::chat_chat,
             assistant::session_chat_history,
             assistant::open_session_chat,
             assistant::close_session_chat,
@@ -405,7 +407,7 @@ fn move_window_to_active_monitor<R: Runtime>(window: &WebviewWindow<R>) {
 #[tauri::command]
 async fn get_app_search_source<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), String> {
     // We want all the extensions here, so no filter condition specified.
-  let (_found_invalid_extensions, extensions) = extension::list_extensions(None, None, false)
+    let (_found_invalid_extensions, extensions) = extension::list_extensions(None, None, false)
         .await
         .map_err(|e| e.to_string())?;
     extension::init_extensions(extensions).await?;
