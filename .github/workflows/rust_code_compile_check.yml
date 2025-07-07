@@ -14,17 +14,38 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Checkout dependency (pizza-engine) repository
+      uses: actions/checkout@v4
+      with:
+        repository: 'infinilabs/pizza'
+        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        submodules: recursive
+        ref: main
+        path: pizza
 
     - name: Install dependencies (ubuntu only)
       if: startsWith(matrix.platform, 'ubuntu-latest')
       run: |
         sudo apt-get update
         sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
-    
-    - name: Check compilation
+
+    - name: Add pizza engine as a dependency
+      working-directory: src-tauri
+      shell: bash
+      run: cargo add --path ../pizza/lib/engine --features query_string_parser,persistence
+
+    - name: Check compilation (Without Pizza engine enabled)
       working-directory: ./src-tauri
-      run: cargo check
+      run: cargo check 
+
+    - name: Check compilation (With Pizza engine enabled)
+      working-directory: ./src-tauri
+      run: cargo check --features use_pizza_engine
     
-    - name: Run tests
+    - name: Run tests (Without Pizza engine)
       working-directory: ./src-tauri
       run: cargo test
+
+    - name: Run tests (With Pizza engine)
+      working-directory: ./src-tauri
+      run: cargo test --features use_pizza_engine
