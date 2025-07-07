@@ -2,6 +2,7 @@ name: Rust Code Compile Check
 
 on:
   pull_request:
+    # Only run it when Rust code changes
     paths:
       - 'src-tauri/**'
 
