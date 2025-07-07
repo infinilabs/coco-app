@@ -18,6 +18,7 @@ Information about release notes of Coco Server is provided here.
 
 ### 🐛 Bug fix
 - fix(file search): apply filters before from/size parameters #741
+- fix(file search): searching by name&content does not search file name #743
 
 ### ✈️ Improvements
 
