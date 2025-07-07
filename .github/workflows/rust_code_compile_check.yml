@@ -2,6 +2,8 @@ name: Rust Code Compile Check
 
 on:
   pull_request:
+    paths:
+      - 'src-tauri/**'
 
 jobs:
   compile-check:
