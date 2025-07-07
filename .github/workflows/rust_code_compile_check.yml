@@ -13,6 +13,13 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
+
+
+    - name: Install dependencies (ubuntu only)
+      if: startsWith(matrix.platform, 'ubuntu-latest')
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
     
     - name: Check compilation
       working-directory: ./src-tauri
