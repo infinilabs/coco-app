@@ -26,6 +26,7 @@ Information about release notes of Coco Server is provided here.
 - refactor: change File Search ext type to extension #738
 - refactor: create chat & send chat api #739
 - chore: icon support for more file types #740
+- chore: replace meval-rs with our fork to clear dep warning #745
 
 ## 0.6.0 (2025-06-29)
 
