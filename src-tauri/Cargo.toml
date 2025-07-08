@@ -87,7 +87,7 @@ http = "1.1.0"
 tungstenite = "0.24.0"
 tokio-util = "0.7.14"
 tauri-plugin-windows-version = "2"
-meval = "0.2"
+meval = { git = "https://github.com/infinilabs/meval-rs" }
 chinese-number = "0.7"
 num2words = "1"
 tauri-plugin-log = "2"
