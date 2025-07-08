@@ -4,7 +4,7 @@ use super::alter_extension_json_file;
 use super::canonicalize_relative_icon_path;
 use super::Extension;
 use super::ExtensionType;
-use super::Platform;
+use crate::util::platform::Platform;
 use super::LOCAL_QUERY_SOURCE_TYPE;
 use super::PLUGIN_JSON_FILE_NAME;
 use crate::common::document::open;
@@ -48,13 +48,6 @@ pub(crate) static THIRD_PARTY_EXTENSIONS_DIRECTORY: LazyLock<PathBuf> = LazyLock
     app_data_dir
 });
 
-/// Helper function to determine the current platform.
-fn current_platform() -> Platform {
-    let os_str = std::env::consts::OS;
-    serde_plain::from_str(os_str).unwrap_or_else(|_e| {
-      panic!("std::env::consts::OS is [{}], which is not a valid value for [enum Platform], valid values: ['macos', 'linux', 'windows']", os_str)
-    })
-}
 
 pub(crate) async fn list_third_party_extensions(
     directory: &Path,
@@ -62,7 +55,7 @@ pub(crate) async fn list_third_party_extensions(
     let mut found_invalid_extensions = false;
 
     let mut extensions_dir_iter = read_dir(&directory).await.map_err(|e| e.to_string())?;
-    let current_platform = current_platform();
+    let current_platform = Platform::current();
 
     let mut extensions = Vec::new();
 
