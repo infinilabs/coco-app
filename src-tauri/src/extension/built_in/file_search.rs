@@ -235,7 +235,10 @@ impl FileSearchExtensionSearchSource {
                 args.push(format!("kMDItemFSName == '*{}*'", query_string));
             }
             SearchBy::NameAndContents => {
-                args.push(format!("kMDItemTextContent == '{}'", query_string));
+                args.push(format!(
+                    "kMDItemFSName == '*{}*' || kMDItemTextContent == '{}'",
+                    query_string, query_string
+                ));
             }
         }
 
