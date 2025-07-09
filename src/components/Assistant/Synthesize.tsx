@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import dayjs from "dayjs";
 import durationPlugin from "dayjs/plugin/duration";
 
@@ -18,6 +18,7 @@ import closeDark from "@/assets/images/ReadAloud/close-dark.png";
 import { useConnectStore } from "@/stores/connectStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { useStreamAudio } from "@/hooks/useStreamAudio";
+import { nanoid } from "nanoid";
 
 dayjs.extend(durationPlugin);
 
@@ -25,6 +26,7 @@ const Synthesize = () => {
   const { isDark } = useThemeStore();
   const { synthesizeItem, currentService, setSynthesizeItem } =
     useConnectStore();
+  const clientIdRef = useRef(nanoid());
 
   const {
     loading,
@@ -43,7 +45,7 @@ const Synthesize = () => {
   } = useStreamAudio({
     onSourceopen() {
       return platformAdapter.invokeBackend("synthesize", {
-        clientId: synthesizeItem?.id,
+        clientId: clientIdRef.current,
         serverId: currentService.id,
         content: synthesizeItem?.content,
         voice: "longwan_v2",
@@ -52,11 +54,11 @@ const Synthesize = () => {
   });
 
   useEffect(() => {
-    if (!synthesizeItem) return;
+    const id = nanoid();
+
+    clientIdRef.current = id;
 
     initMediaSource();
-
-    const { id } = synthesizeItem;
 
     const unlisten = platformAdapter.listenEvent(id, ({ payload }) => {
       appendBuffer(new Uint8Array(payload));

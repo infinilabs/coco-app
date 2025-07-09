@@ -122,6 +122,9 @@ export const useStreamAudio = (options: Options = {}) => {
     pause();
 
     Object.assign(state, { ...INITIAL_STATE });
+    if (state.audioUrl) {
+      URL.revokeObjectURL(state.audioUrl);
+    }
 
     mediaSourceRef.current = void 0;
     sourceBufferRef.current = void 0;
