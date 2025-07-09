@@ -1,8 +1,10 @@
+import { useRef } from "react";
+import { debounce, noop } from "lodash-es";
+import { useMount, useUnmount } from "ahooks";
+
 import { useAppStore } from "@/stores/appStore";
 import { isMac } from "@/utils/platform";
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { debounce } from "lodash-es";
-import { useEffect } from "react";
+import platformAdapter from "@/utils/platformAdapter";
 
 interface Props {
   onFocus?: () => void;
@@ -12,11 +14,12 @@ interface Props {
 export const useTauriFocus = (props: Props) => {
   const { onFocus, onBlur } = props;
   const { isTauri } = useAppStore();
+  const unlistenRef = useRef(noop);
 
-  useEffect(() => {
+  useMount(async () => {
     if (!isTauri) return;
 
-    const appWindow = getCurrentWebviewWindow();
+    const appWindow = await platformAdapter.getWebviewWindow();
 
     const wait = isMac ? 0 : 100;
 
@@ -32,10 +35,10 @@ export const useTauriFocus = (props: Props) => {
       }
     }, wait);
 
-    const unlisten = appWindow.onFocusChanged(debounced);
+    unlistenRef.current = await appWindow.onFocusChanged(debounced);
+  });
 
-    return () => {
-      unlisten.then((unmount) => unmount());
-    };
+  useUnmount(() => {
+    unlistenRef.current();
   });
 };
