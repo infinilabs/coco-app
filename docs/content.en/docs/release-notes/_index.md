@@ -30,6 +30,7 @@ Information about release notes of Coco Server is provided here.
 - chore: icon support for more file types #740
 - chore: replace meval-rs with our fork to clear dep warning #745
 - refactor: adjust extension code hierarchy #747
+- chore: bump dep applications-rs #751
 
 ## 0.6.0 (2025-06-29)
 
