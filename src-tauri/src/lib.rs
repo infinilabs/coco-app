@@ -159,9 +159,9 @@ pub fn run() {
             extension::register_extension_hotkey,
             extension::unregister_extension_hotkey,
             extension::is_extension_enabled,
-            extension::store::search_extension,
-            extension::store::install_extension,
-            extension::store::uninstall_extension,
+            extension::third_party::store::search_extension,
+            extension::third_party::store::install_extension_from_store,
+            extension::third_party::uninstall_extension,
             settings::set_allow_self_signature,
             settings::get_allow_self_signature,
             assistant::ask_ai,
@@ -607,7 +607,12 @@ fn set_up_tauri_logger() -> TauriPlugin<tauri::Wry> {
     // When running the built binary, set `COCO_LOG` to `coco_lib=trace` to capture all logs
     // that come from Coco in the log file, which helps with debugging.
     if !tauri::is_dev() {
-        std::env::set_var("COCO_LOG", "coco_lib=trace");
+       // We have absolutely no guarantee that we (We have control over the Rust 
+       // code, but definitely no idea about the libc C code, all the shared objects
+       // that we will link) will not concurrently read/write `envp`, so just use unsafe.
+       unsafe {
+          std::env::set_var("COCO_LOG", "coco_lib=trace");
+       }
     }
 
     let mut builder = tauri_plugin_log::Builder::new();
