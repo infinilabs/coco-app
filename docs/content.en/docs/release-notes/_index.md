@@ -17,8 +17,10 @@ Information about release notes of Coco Server is provided here.
 - feat: voice input support in both search and chat modes #732
 
 ### 🐛 Bug fix
+
 - fix(file search): apply filters before from/size parameters #741
 - fix(file search): searching by name&content does not search file name #743
+- fix: prevent window from hiding when moved on Windows #748
 
 ### ✈️ Improvements
 

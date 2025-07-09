@@ -84,14 +84,14 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       );
       return requestScreenRecordingPermission();
     },
-    
+
     async checkMicrophonePermission() {
       const { checkMicrophonePermission } = await import(
         "tauri-plugin-macos-permissions-api"
       );
       return checkMicrophonePermission();
     },
-    
+
     async requestMicrophonePermission() {
       const { requestMicrophonePermission } = await import(
         "tauri-plugin-macos-permissions-api"
