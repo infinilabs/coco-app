@@ -1,4 +1,4 @@
-pub(crate) mod store;
+pub(crate) mod install;
 
 use super::alter_extension_json_file;
 use super::canonicalize_relative_icon_path;
@@ -1080,6 +1080,15 @@ pub(crate) async fn uninstall_extension(
         .await;
 
     Ok(())
+}
+
+
+pub(crate) async fn is_extension_installed(developer: &str, extension_id: &str) -> bool {
+    THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE
+        .get()
+        .unwrap()
+        .extension_exists(developer, extension_id)
+        .await
 }
 
 #[cfg(test)]
