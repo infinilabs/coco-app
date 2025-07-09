@@ -10,7 +10,6 @@ import { useSearchStore } from "@/stores/searchStore";
 import { useConnectStore } from "@/stores/connectStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import VisibleKey from "@/components/Common/VisibleKey";
-import ConnectionError from "./ConnectionError";
 import SearchIcons from "./SearchIcons";
 import ChatIcons from "./ChatIcons";
 import { useKeyboardHandlers } from "@/hooks/useKeyboardHandlers";
@@ -19,6 +18,7 @@ import InputControls from "./InputControls";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import AudioRecording from "../AudioRecording";
 import { isDefaultServer } from "@/utils";
+import { useTauriFocus } from "@/hooks/useTauriFocus";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -28,7 +28,6 @@ interface ChatInputProps {
   isChatMode: boolean;
   inputValue: string;
   changeInput: (val: string) => void;
-  reconnect: () => void;
   isSearchActive: boolean;
   setIsSearchActive: () => void;
   isDeepThinkActive: boolean;
@@ -61,7 +60,6 @@ export default function ChatInput({
   inputValue,
   changeInput,
   disabledChange,
-  reconnect,
   isSearchActive,
   setIsSearchActive,
   isDeepThinkActive,
@@ -98,22 +96,16 @@ export default function ChatInput({
 
   const textareaRef = useRef<{ reset: () => void; focus: () => void }>(null);
 
-  const { curChatEnd, connected } = useChatStore();
+  const { curChatEnd } = useChatStore();
   const { setSearchValue, visibleExtensionStore, selectedExtension } =
     useSearchStore();
 
-  useEffect(() => {
-    const handleFocus = () => {
+  useTauriFocus({
+    onFocus() {
       setBlurred(false);
       setModifierKeyPressed(false);
-    };
-
-    window.addEventListener("focus", handleFocus);
-
-    return () => {
-      window.removeEventListener("focus", handleFocus);
-    };
-  }, []);
+    },
+  });
 
   const handleToggleFocus = useCallback(() => {
     textareaRef.current?.focus();
@@ -292,10 +284,6 @@ export default function ChatInput({
           <VisibleKey shortcut="↩︎" />
         </div>
       )}
-
-      {!connected && isChatMode ? (
-        <ConnectionError reconnect={reconnect} connected={connected} />
-      ) : null}
     </div>
   );
 

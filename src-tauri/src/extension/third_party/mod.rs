@@ -1,3 +1,5 @@
+pub(crate) mod store;
+
 use super::alter_extension_json_file;
 use super::canonicalize_relative_icon_path;
 use super::Extension;
@@ -84,18 +86,6 @@ pub(crate) async fn list_third_party_extensions(
             continue 'developer;
         }
 
-        let Ok(developer) = developer_dir.file_name().into_string() else {
-            found_invalid_extensions = true;
-
-            log::warn!(
-                "developer [{}] ID is not UTF-8 encoded",
-                developer_dir.file_name().display()
-            );
-
-            // Skip this file
-            continue 'developer;
-        };
-
         let mut developer_dir_iter = read_dir(&developer_dir.path())
             .await
             .map_err(|e| e.to_string())?;
@@ -171,9 +161,6 @@ pub(crate) async fn list_third_party_extensions(
                 // Skip invalid extension
                 continue;
             }
-
-            // Set extension's developer info manually.
-            extension.developer = Some(developer.clone());
 
             extensions.push(extension);
         }
@@ -805,6 +792,7 @@ impl ThirdPartyExtensionsSearchSource {
             .any(|ext| ext.developer.as_deref() == Some(developer) && ext.id == extension_id)
     }
 
+    /// Add `extension` to the **in-memory** extension list.
     pub(crate) async fn add_extension(&self, extension: Extension) {
         assert!(
             extension.developer.is_some(),
@@ -828,6 +816,7 @@ impl ThirdPartyExtensionsSearchSource {
         write_lock_guard.push(extension);
     }
 
+    /// Remove `extension` from the **in-memory** extension list.
     pub(crate) async fn remove_extension(&self, developer: &str, extension_id: &str) {
         let mut write_lock_guard = self.inner.extensions.write().await;
         let Some(index) = write_lock_guard
@@ -1060,6 +1049,37 @@ fn calculate_text_similarity(query: &str, text: &str) -> Option<f64> {
     } else {
         None
     }
+}
+
+
+#[tauri::command]
+pub(crate) async fn uninstall_extension(
+    developer: String,
+    extension_id: String,
+) -> Result<(), String> {
+    let extension_dir = {
+        let mut path = THIRD_PARTY_EXTENSIONS_DIRECTORY.join(developer.as_str());
+        path.push(extension_id.as_str());
+
+        path
+    };
+    if !extension_dir.try_exists().map_err(|e| e.to_string())? {
+        panic!(
+            "we are uninstalling extension [{}/{}], but there is no such extension files on disk",
+            developer, extension_id
+        )
+    }
+    tokio::fs::remove_dir_all(extension_dir.as_path())
+        .await
+        .map_err(|e| e.to_string())?;
+
+    THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE
+        .get()
+        .unwrap()
+        .remove_extension(&developer, &extension_id)
+        .await;
+
+    Ok(())
 }
 
 #[cfg(test)]

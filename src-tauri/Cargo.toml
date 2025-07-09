@@ -3,7 +3,7 @@ name = "coco"
 version = "0.6.0"
 description = "Search, connect, collaborate – all in one place."
 authors = ["INFINI Labs"]
-edition = "2021"
+edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
@@ -87,7 +87,7 @@ http = "1.1.0"
 tungstenite = "0.24.0"
 tokio-util = "0.7.14"
 tauri-plugin-windows-version = "2"
-meval = "0.2"
+meval = { git = "https://github.com/infinilabs/meval-rs" }
 chinese-number = "0.7"
 num2words = "1"
 tauri-plugin-log = "2"
@@ -103,6 +103,8 @@ async-recursion = "1.1.1"
 zip = "4.0.0"
 url = "2.5.2"
 camino = "1.1.10"
+tokio-stream = { version = "0.1.17", features = ["io-util"] }
+cfg-if = "1.0.1"
 
 [target."cfg(target_os = \"macos\")".dependencies]
 tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }

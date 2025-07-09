@@ -109,14 +109,14 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
 
               const value = event.currentTarget.value;
 
-              onRename(item._id, value);
+              onRename(item._id || "", value);
 
               setIsEdit(false);
             }}
             onBlur={(event) => {
               const value = event.currentTarget.value;
 
-              onRename(item._id, value);
+              onRename(item._id || "", value);
 
               setIsEdit(false);
             }}

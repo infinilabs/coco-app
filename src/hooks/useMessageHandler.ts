@@ -32,17 +32,14 @@ export function useMessageHandler(
         clearTimeout(messageTimeoutRef.current);
       }
 
-      if (!msg.includes("PRIVATE")) return;
-
       messageTimeoutRef.current = setTimeout(() => {
         console.log("AI response timeout");
         setTimedoutShow(true);
         onCancel();
       }, (connectionTimeout ?? 120) * 1000);
 
-      const cleanedData = msg.replace(/^PRIVATE /, "");
       try {
-        const chunkData = JSON.parse(cleanedData);
+        const chunkData = JSON.parse(msg);
 
         if (chunkData.reply_to_message !== curIdRef.current) return;
 

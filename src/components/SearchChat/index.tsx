@@ -118,19 +118,6 @@ function SearchChat({
     const isWin10 = await platformAdapter.isWindows10();
 
     setIsWin10(isWin10);
-
-    const unlisten = platformAdapter.listenEvent("show-coco", () => {
-      //console.log("show-coco");
-
-      platformAdapter.invokeBackend("simulate_mouse_click", {
-        isChatMode: isChatModeRef.current,
-      });
-    });
-
-    return () => {
-      // Cleanup logic if needed
-      unlisten.then((fn) => fn());
-    };
   });
 
   useEffect(() => {
@@ -168,10 +155,6 @@ function SearchChat({
 
   const cancelChat = useCallback(() => {
     chatAIRef.current?.cancelChat();
-  }, []);
-
-  const reconnect = useCallback(() => {
-    chatAIRef.current?.reconnect();
   }, []);
 
   const setInput = useCallback((value: string) => {
@@ -312,7 +295,6 @@ function SearchChat({
           disabledChange={cancelChat}
           changeMode={changeMode}
           changeInput={setInput}
-          reconnect={reconnect}
           isSearchActive={isSearchActive}
           setIsSearchActive={toggleSearchActive}
           isDeepThinkActive={isDeepThinkActive}

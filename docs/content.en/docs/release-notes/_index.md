@@ -19,11 +19,18 @@ Information about release notes of Coco Server is provided here.
 
 ### 🐛 Bug fix
 
+- fix(file search): apply filters before from/size parameters #741
+- fix(file search): searching by name&content does not search file name #743
+- fix: prevent window from hiding when moved on Windows #748
+
 ### ✈️ Improvements
 
 - refactor: prioritize stat(2) when checking if a file is dir #737
 - refactor: change File Search ext type to extension #738
+- refactor: create chat & send chat api #739
 - chore: icon support for more file types #740
+- chore: replace meval-rs with our fork to clear dep warning #745
+- refactor: adjust extension code hierarchy #747
 
 ## 0.6.0 (2025-06-29)
 

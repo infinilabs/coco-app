@@ -12,7 +12,6 @@ import { useChatStore } from "@/stores/chatStore";
 import { useConnectStore } from "@/stores/connectStore";
 import { useWindows } from "@/hooks/useWindows";
 import useMessageChunkData from "@/hooks/useMessageChunkData";
-import useWebSocket from "@/hooks/useWebSocket";
 import { useChatActions } from "@/hooks/useChatActions";
 import { useMessageHandler } from "@/hooks/useMessageHandler";
 import { ChatSidebar } from "./ChatSidebar";
@@ -46,7 +45,6 @@ interface ChatAIProps {
 export interface ChatAIRef {
   init: (value: string) => void;
   cancelChat: () => void;
-  reconnect: () => void;
   clearChat: () => void;
 }
 
@@ -73,11 +71,10 @@ const ChatAI = memo(
       useImperativeHandle(ref, () => ({
         init: init,
         cancelChat: () => cancelChat(activeChat),
-        reconnect: reconnect,
         clearChat: clearChat,
       }));
 
-      const { curChatEnd, setCurChatEnd, connected, setConnected } =
+      const { curChatEnd, setCurChatEnd } =
         useChatStore();
 
       const isTauri = useAppStore((state) => state.isTauri);
@@ -110,6 +107,10 @@ const ChatAI = memo(
       useEffect(() => {
         activeChatProp && setActiveChat(activeChatProp);
       }, [activeChatProp]);
+      
+      useEffect(() => {
+        console.log("activeChat12121212121", activeChat);
+      }, [activeChat]);
 
       useEffect(() => {
         if (!isTauri) return;
@@ -119,10 +120,10 @@ const ChatAI = memo(
           setIsCurrentLogin(false);
         }
 
-        if (showChatHistory && connected) {
+        if (showChatHistory) {
           getChatHistory();
         }
-      }, [currentService?.enabled, showChatHistory, connected]);
+      }, [currentService?.enabled, showChatHistory]);
 
       useEffect(() => {
         if (askAiServerId || !askAiSessionId) return;
@@ -133,12 +134,6 @@ const ChatAI = memo(
       }, [askAiSessionId, askAiServerId]);
 
       const [Question, setQuestion] = useState<string>("");
-
-      const [websocketSessionId, setWebsocketSessionId] = useState("");
-
-      const onWebsocketSessionId = useCallback((sessionId: string) => {
-        setWebsocketSessionId(sessionId);
-      }, []);
 
       const {
         data: {
@@ -166,15 +161,6 @@ const ChatAI = memo(
 
       const dealMsgRef = useRef<((msg: string) => void) | null>(null);
 
-      const clientId = isChatPage ? "standalone" : "popup";
-      const { reconnect, updateDealMsg } = useWebSocket({
-        clientId,
-        connected,
-        setConnected,
-        dealMsgRef,
-        onWebsocketSessionId,
-      });
-
       const {
         chatClose,
         cancelChat,
@@ -195,12 +181,12 @@ const ChatAI = memo(
         setQuestion,
         curIdRef,
         setChats,
+        dealMsgRef,
         isSearchActive,
         isDeepThinkActive,
         isMCPActive,
         changeInput,
-        websocketSessionId,
-        showChatHistory
+        showChatHistory,
       );
 
       const { dealMsg } = useMessageHandler(
@@ -210,6 +196,13 @@ const ChatAI = memo(
         (chat) => cancelChat(chat || activeChat),
         setLoadingStep,
         handlers
+      );
+
+      const updateDealMsg = useCallback(
+        (newDealMsg: (msg: string) => void) => {
+          dealMsgRef.current = newDealMsg;
+        },
+        [dealMsgRef]
       );
 
       useEffect(() => {
@@ -241,9 +234,9 @@ const ChatAI = memo(
               return;
             }
             if (!activeChat?._id) {
-              await createNewChat(value, activeChat, websocketSessionId);
+              await createNewChat(value, activeChat);
             } else {
-              await handleSendMessage(value, activeChat, websocketSessionId);
+              await handleSendMessage(value, activeChat);
             }
           } catch (error) {
             console.error("Failed to initialize chat:", error);
@@ -255,7 +248,6 @@ const ChatAI = memo(
           activeChat?._id,
           createNewChat,
           handleSendMessage,
-          websocketSessionId,
         ]
       );
 
@@ -380,7 +372,6 @@ const ChatAI = memo(
               setIsSidebarOpen={toggleSidebar}
               isSidebarOpen={isSidebarOpenChat}
               activeChat={activeChat}
-              reconnect={reconnect}
               isChatPage={isChatPage}
               showChatHistory={showChatHistory}
               assistantIDs={assistantIDs}

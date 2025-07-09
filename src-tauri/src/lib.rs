@@ -123,7 +123,9 @@ pub fn run() {
             search::query_coco_fusion,
             assistant::chat_history,
             assistant::new_chat,
+            assistant::chat_create,
             assistant::send_message,
+            assistant::chat_chat,
             assistant::session_chat_history,
             assistant::open_session_chat,
             assistant::close_session_chat,
@@ -143,7 +145,6 @@ pub fn run() {
             server::attachment::delete_attachment,
             server::transcription::transcription,
             server::system_settings::get_system_settings,
-            simulate_mouse_click,
             extension::built_in::application::get_app_list,
             extension::built_in::application::get_app_search_path,
             extension::built_in::application::get_app_metadata,
@@ -157,14 +158,16 @@ pub fn run() {
             extension::register_extension_hotkey,
             extension::unregister_extension_hotkey,
             extension::is_extension_enabled,
-            extension::store::search_extension,
-            extension::store::install_extension,
-            extension::store::uninstall_extension,
+            extension::third_party::store::search_extension,
+            extension::third_party::store::install_extension_from_store,
+            extension::third_party::uninstall_extension,
             settings::set_allow_self_signature,
             settings::get_allow_self_signature,
             assistant::ask_ai,
             crate::common::document::open,
+            #[cfg(target_os = "macos")]
             extension::built_in::file_search::get_file_system_config,
+            #[cfg(target_os = "macos")]
             extension::built_in::file_search::set_file_system_config,
             server::synthesize::synthesize,
         ])
@@ -449,52 +452,6 @@ async fn hide_check(app_handle: AppHandle) {
     window.hide().unwrap();
 }
 
-#[tauri::command]
-async fn simulate_mouse_click<R: Runtime>(window: WebviewWindow<R>, is_chat_mode: bool) {
-    #[cfg(target_os = "windows")]
-    {
-        use enigo::{Button, Coordinate, Direction, Enigo, Mouse, Settings};
-        use std::{thread, time::Duration};
-
-        if let Ok(mut enigo) = Enigo::new(&Settings::default()) {
-            // Save the current mouse position
-            if let Ok((original_x, original_y)) = enigo.location() {
-                // Retrieve the window's outer position (top-left corner)
-                if let Ok(position) = window.outer_position() {
-                    // Retrieve the window's inner size (client area)
-                    if let Ok(size) = window.inner_size() {
-                        // Calculate the center position of the title bar
-                        let x = position.x + (size.width as i32 / 2);
-                        let y = if is_chat_mode {
-                            position.y + size.height as i32 - 50
-                        } else {
-                            position.y + 30
-                        };
-
-                        // Move the mouse cursor to the calculated position
-                        if enigo.move_mouse(x, y, Coordinate::Abs).is_ok() {
-                            // // Simulate a left mouse click
-                            let _ = enigo.button(Button::Left, Direction::Click);
-                            // let _ = enigo.button(Button::Left, Direction::Release);
-
-                            thread::sleep(Duration::from_millis(100));
-
-                            // Move the mouse cursor back to the original position
-                            let _ = enigo.move_mouse(original_x, original_y, Coordinate::Abs);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    {
-        let _ = window;
-        let _ = is_chat_mode;
-    }
-}
-
 /// Log format:
 ///
 /// ```text
@@ -604,7 +561,12 @@ fn set_up_tauri_logger() -> TauriPlugin<tauri::Wry> {
     // When running the built binary, set `COCO_LOG` to `coco_lib=trace` to capture all logs
     // that come from Coco in the log file, which helps with debugging.
     if !tauri::is_dev() {
-        std::env::set_var("COCO_LOG", "coco_lib=trace");
+       // We have absolutely no guarantee that we (We have control over the Rust 
+       // code, but definitely no idea about the libc C code, all the shared objects
+       // that we will link) will not concurrently read/write `envp`, so just use unsafe.
+       unsafe {
+          std::env::set_var("COCO_LOG", "coco_lib=trace");
+       }
     }
 
     let mut builder = tauri_plugin_log::Builder::new();
