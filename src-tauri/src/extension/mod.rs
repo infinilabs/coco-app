@@ -1,6 +1,5 @@
 pub(crate) mod built_in;
-pub(crate) mod store;
-mod third_party;
+pub(crate) mod third_party;
 
 use crate::common::document::OnOpened;
 use crate::{common::register::SearchSourceRegistry, GLOBAL_TAURI_APP_HANDLE};
@@ -56,7 +55,9 @@ pub struct Extension {
     platforms: Option<HashSet<Platform>>,
     /// Extension description.
     description: String,
-    //// Specify the icon for this extension, multi options are available:
+    //// Specify the icon for this extension, 
+    /// 
+    /// For the `plugin.json` file, this field can be specified in multi options:
     ///
     /// 1. It can be a path to the icon file, the path can be
     ///
@@ -68,6 +69,11 @@ pub struct Extension {
     /// In cases where your icon file is named similarly to a font class code, Coco
     /// will treat it as an icon file if it exists, i.e., if file `<extension>/assets/font_coco`
     /// exists, then Coco will use this file rather than the built-in 'font_coco' icon.
+    /// 
+    /// For the `struct Extension` loaded into memory, this field should be:
+    /// 
+    /// 1. An absolute path
+    /// 2. A font code
     icon: String,
     r#type: ExtensionType,
     /// If this is a Command extension, then action defines the operation to execute
@@ -501,7 +507,7 @@ pub(crate) async fn init_extensions(mut extensions: Vec<Extension>) -> Result<()
 
     // extension store
     search_source_registry_tauri_state
-        .register_source(store::ExtensionStore)
+        .register_source(third_party::store::ExtensionStore)
         .await;
 
     // Init the built-in enabled extensions

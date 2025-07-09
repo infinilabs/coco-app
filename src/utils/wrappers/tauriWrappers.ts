@@ -1,4 +1,4 @@
-import * as commands from '@/commands';
+import * as commands from "@/commands";
 
 // Window operations
 export const windowWrapper = {
@@ -6,12 +6,14 @@ export const windowWrapper = {
     const { getCurrentWindow } = await import("@tauri-apps/api/window");
     return getCurrentWindow();
   },
-  
+
   async getWebviewWindow() {
-    const { getCurrentWebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+    const { getCurrentWebviewWindow } = await import(
+      "@tauri-apps/api/webviewWindow"
+    );
     return getCurrentWebviewWindow();
   },
-  
+
   async setSize(width: number, height: number) {
     const { LogicalSize } = await import("@tauri-apps/api/dpi");
     const window = await this.getWebviewWindow();
@@ -27,7 +29,7 @@ export const eventWrapper = {
     const { emit } = await import("@tauri-apps/api/event");
     return emit(event, payload);
   },
-  
+
   async listen(event: string, callback: Function) {
     const { listen } = await import("@tauri-apps/api/event");
     return listen(event, (e) => callback(e));
@@ -37,16 +39,22 @@ export const eventWrapper = {
 // System functions
 export const systemWrapper = {
   async checkScreenPermission() {
-    const { checkScreenRecordingPermission } = await import("tauri-plugin-macos-permissions-api");
+    const { checkScreenRecordingPermission } = await import(
+      "tauri-plugin-macos-permissions-api"
+    );
     return checkScreenRecordingPermission();
   },
-  
-  async captureScreen(id: number, type: 'monitor' | 'window') {
-    if (type === 'monitor') {
-      const { getMonitorScreenshot } = await import("tauri-plugin-screenshots-api");
+
+  async captureScreen(id: number, type: "monitor" | "window") {
+    if (type === "monitor") {
+      const { getMonitorScreenshot } = await import(
+        "tauri-plugin-screenshots-api"
+      );
       return getMonitorScreenshot(id);
     } else {
-      const { getWindowScreenshot } = await import("tauri-plugin-screenshots-api");
+      const { getWindowScreenshot } = await import(
+        "tauri-plugin-screenshots-api"
+      );
       return getWindowScreenshot(id);
     }
   },
@@ -60,5 +68,5 @@ export const commandWrapper = {
       return (commands as any)[commandName](...args);
     }
     throw new Error(`Command ${commandName} not found`);
-  }
+  },
 };

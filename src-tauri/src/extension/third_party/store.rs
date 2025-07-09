@@ -18,6 +18,7 @@ use async_trait::async_trait;
 use reqwest::StatusCode;
 use serde_json::Map as JsonObject;
 use serde_json::Value as Json;
+use std::io::Read;
 
 const DATA_SOURCE_ID: &str = "Extension Store";
 
@@ -173,7 +174,7 @@ async fn is_extension_installed(developer: String, extension_id: String) -> bool
 }
 
 #[tauri::command]
-pub(crate) async fn install_extension(id: String) -> Result<(), String> {
+pub(crate) async fn install_extension_from_store(id: String) -> Result<(), String> {
     let path = format!("store/extension/{}/_download", id);
     let response = HttpClient::get("default_coco_server", &path, None)
         .await
@@ -192,7 +193,13 @@ pub(crate) async fn install_extension(id: String) -> Result<(), String> {
     let mut archive =
         zip::ZipArchive::new(cursor).map_err(|e| format!("Failed to read zip archive: {}", e))?;
 
-    let mut plugin_json = archive.by_name("plugin.json").map_err(|e| e.to_string())?;
+    // The plugin.json sent from the server does not conform to our `struct Extension` definition:
+    //
+    // 1. Its `developer` field is a JSON object, but we need a string
+    // 2. sub-extensions won't have their `id` fields set
+    // 
+    // we need to correct it
+    let mut plugin_json = archive.by_name(PLUGIN_JSON_FILE_NAME).map_err(|e| e.to_string())?;
     let mut plugin_json_content = String::new();
     std::io::Read::read_to_string(&mut plugin_json, &mut plugin_json_content)
         .map_err(|e| e.to_string())?;
@@ -213,7 +220,6 @@ pub(crate) async fn install_extension(id: String) -> Result<(), String> {
 
     // Set IDs for sub-extensions (commands, quicklinks, scripts)
     let mut counter = 0;
-    // Set IDs for commands
     // Helper function to set IDs for array fields
     fn set_ids_for_field(extension: &mut Json, field_name: &str, counter: &mut i32) {
         if let Some(field) = extension.as_object_mut().unwrap().get_mut(field_name) {
@@ -229,12 +235,11 @@ pub(crate) async fn install_extension(id: String) -> Result<(), String> {
             }
         }
     }
-
-    // Set IDs for sub-extensions
     set_ids_for_field(&mut extension, "commands", &mut counter);
     set_ids_for_field(&mut extension, "quicklinks", &mut counter);
     set_ids_for_field(&mut extension, "scripts", &mut counter);
 
+    // Now the extension JSON is valid
     let mut extension: Extension = serde_json::from_value(extension).unwrap_or_else(|e| {
         panic!(
             "cannot parse plugin.json as struct Extension, error [{:?}]",
@@ -244,63 +249,61 @@ pub(crate) async fn install_extension(id: String) -> Result<(), String> {
 
     drop(plugin_json);
 
+
+    // Write extension files to the extension directory
     let developer = extension.developer.clone().unwrap_or_default();
     let extension_id = extension.id.clone();
-
-    // Extract the zip file
     let extension_directory = {
         let mut path = THIRD_PARTY_EXTENSIONS_DIRECTORY.to_path_buf();
         path.push(developer);
         path.push(extension_id.as_str());
         path
     };
-
     tokio::fs::create_dir_all(extension_directory.as_path())
         .await
         .map_err(|e| e.to_string())?;
 
     // Extract all files except plugin.json
     for i in 0..archive.len() {
-        let mut file = archive.by_index(i).map_err(|e| e.to_string())?;
-        let outpath = match file.enclosed_name() {
-            Some(path) => extension_directory.join(path),
-            None => continue,
-        };
+        let mut zip_file = archive.by_index(i).map_err(|e| e.to_string())?;
+        // `.name()` is safe to use in our cases, the cases listed in the below 
+        // page won't happen to us.
+        //
+        // https://docs.rs/zip/4.2.0/zip/read/struct.ZipFile.html#method.name
+        //
+        // Example names:
+        //
+        // * `assets/icon.png`
+        // * `assets/screenshot.png`
+        // * `plugin.json`
+        //
+        // Yes, the `assets` directory is not a part of it.
+        let zip_file_name = zip_file.name();
 
         // Skip the plugin.json file as we'll create it from the extension variable
-        if file.name() == "plugin.json" {
+        if zip_file_name == PLUGIN_JSON_FILE_NAME {
             continue;
         }
 
-        if file.name().ends_with('/') {
-            tokio::fs::create_dir_all(&outpath)
-                .await
-                .map_err(|e| e.to_string())?;
-        } else {
-            if let Some(p) = outpath.parent() {
-                if !p.exists() {
-                    tokio::fs::create_dir_all(p)
-                        .await
-                        .map_err(|e| e.to_string())?;
-                }
-            }
-            let mut outfile = tokio::fs::File::create(&outpath)
-                .await
-                .map_err(|e| e.to_string())?;
-            let mut content = Vec::new();
-            std::io::Read::read_to_end(&mut file, &mut content).map_err(|e| e.to_string())?;
-            tokio::io::AsyncWriteExt::write_all(&mut outfile, &content)
-                .await
-                .map_err(|e| e.to_string())?;
-        }
-    }
+        let dest_file_path = extension_directory.join(zip_file_name);
 
+        // For cases like `assets/xxx.png`
+        if let Some(parent_dir) = dest_file_path.parent() && !parent_dir.exists() {
+            tokio::fs::create_dir_all(parent_dir).await.map_err(|e| e.to_string())?;
+        }
+
+        let mut dest_file = tokio::fs::File::create(&dest_file_path) .await .map_err(|e| e.to_string())?;
+        let mut src_bytes = Vec::with_capacity(zip_file.size().try_into().expect("we won't have a extension file that is bigger than 4GiB"));
+        zip_file.read_to_end(&mut src_bytes).map_err(|e| e.to_string())?;
+        tokio::io::copy(&mut src_bytes.as_slice(), &mut dest_file).await.map_err(|e| e.to_string())?;
+    }
     // Create plugin.json from the extension variable
     let plugin_json_path = extension_directory.join(PLUGIN_JSON_FILE_NAME);
     let extension_json = serde_json::to_string_pretty(&extension).map_err(|e| e.to_string())?;
     tokio::fs::write(&plugin_json_path, extension_json)
         .await
         .map_err(|e| e.to_string())?;
+
 
     // Turn it into an absolute path if it is a valid relative path because frontend code need this.
     canonicalize_relative_icon_path(&extension_directory, &mut extension)?;
@@ -309,36 +312,6 @@ pub(crate) async fn install_extension(id: String) -> Result<(), String> {
         .get()
         .unwrap()
         .add_extension(extension)
-        .await;
-
-    Ok(())
-}
-
-#[tauri::command]
-pub(crate) async fn uninstall_extension(
-    developer: String,
-    extension_id: String,
-) -> Result<(), String> {
-    let extension_dir = {
-        let mut path = THIRD_PARTY_EXTENSIONS_DIRECTORY.join(developer.as_str());
-        path.push(extension_id.as_str());
-
-        path
-    };
-    if !extension_dir.try_exists().map_err(|e| e.to_string())? {
-        panic!(
-            "we are uninstalling extension [{}/{}], but there is no such extension files on disk",
-            developer, extension_id
-        )
-    }
-    tokio::fs::remove_dir_all(extension_dir.as_path())
-        .await
-        .map_err(|e| e.to_string())?;
-
-    THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE
-        .get()
-        .unwrap()
-        .remove_extension(&developer, &extension_id)
         .await;
 
     Ok(())

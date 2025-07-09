@@ -18,6 +18,7 @@ import InputControls from "./InputControls";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import AudioRecording from "../AudioRecording";
 import { isDefaultServer } from "@/utils";
+import { useTauriFocus } from "@/hooks/useTauriFocus";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -99,18 +100,12 @@ export default function ChatInput({
   const { setSearchValue, visibleExtensionStore, selectedExtension } =
     useSearchStore();
 
-  useEffect(() => {
-    const handleFocus = () => {
+  useTauriFocus({
+    onFocus() {
       setBlurred(false);
       setModifierKeyPressed(false);
-    };
-
-    window.addEventListener("focus", handleFocus);
-
-    return () => {
-      window.removeEventListener("focus", handleFocus);
-    };
-  }, []);
+    },
+  });
 
   const handleToggleFocus = useCallback(() => {
     textareaRef.current?.focus();

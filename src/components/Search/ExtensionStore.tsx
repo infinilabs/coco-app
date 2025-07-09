@@ -214,7 +214,7 @@ const ExtensionStore = () => {
 
       setInstallingExtensions(installingExtensions.concat(id));
 
-      await platformAdapter.invokeBackend("install_extension", { id });
+      await platformAdapter.invokeBackend("install_extension_from_store", { id });
 
       toggleInstall();
 
