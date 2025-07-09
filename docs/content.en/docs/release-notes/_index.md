@@ -15,10 +15,12 @@ Information about release notes of Coco Server is provided here.
 
 - feat: file search using spotlight #705
 - feat: voice input support in both search and chat modes #732
+- feat: text to speech now powered by LLM #750
 
 ### 🐛 Bug fix
 
 ### ✈️ Improvements
+
 - refactor: prioritize stat(2) when checking if a file is dir #737
 - refactor: change File Search ext type to extension #738
 - chore: icon support for more file types #740
