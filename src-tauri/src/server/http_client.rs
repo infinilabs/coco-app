@@ -10,7 +10,7 @@ pub(crate) fn new_reqwest_http_client(accept_invalid_certs: bool) -> Client {
     Client::builder()
         .read_timeout(Duration::from_secs(3)) // Set a timeout of 3 second
         .connect_timeout(Duration::from_secs(3)) // Set a timeout of 3 second
-        .timeout(Duration::from_secs(10)) // Set a timeout of 10 seconds
+        .timeout(Duration::from_secs(5 * 60)) // Set a timeout of 10 seconds
         .danger_accept_invalid_certs(accept_invalid_certs) // allow self-signed certificates
         .build()
         .expect("Failed to build client")
@@ -106,10 +106,8 @@ impl HttpClient {
         }
 
         if let Some(params) = query_params {
-            let query: Vec<(&str, &str)> = params
-                .iter()
-                .filter_map(|s| s.split_once('='))
-                .collect();
+            let query: Vec<(&str, &str)> =
+                params.iter().filter_map(|s| s.split_once('=')).collect();
             request_builder = request_builder.query(&query);
         }
 
@@ -120,7 +118,6 @@ impl HttpClient {
 
         request_builder
     }
-
 
     pub async fn send_request(
         server_id: &str,
@@ -171,8 +168,7 @@ impl HttpClient {
         path: &str,
         query_params: Option<Vec<String>>,
     ) -> Result<reqwest::Response, String> {
-        HttpClient::send_request(server_id, Method::GET, path, None, query_params,
-                                 None).await
+        HttpClient::send_request(server_id, Method::GET, path, None, query_params, None).await
     }
 
     // Convenience method for POST requests
@@ -200,7 +196,7 @@ impl HttpClient {
             query_params,
             body,
         )
-            .await
+        .await
     }
 
     // Convenience method for PUT requests
@@ -220,7 +216,7 @@ impl HttpClient {
             query_params,
             body,
         )
-            .await
+        .await
     }
 
     // Convenience method for DELETE requests
@@ -239,6 +235,6 @@ impl HttpClient {
             query_params,
             None,
         )
-            .await
+        .await
     }
 }

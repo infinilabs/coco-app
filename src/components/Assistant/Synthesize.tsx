@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   useAsyncEffect,
   useEventListener,
@@ -24,7 +24,7 @@ import closeDark from "@/assets/images/ReadAloud/close-dark.png";
 import { useConnectStore } from "@/stores/connectStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore } from "@/stores/appStore";
-import {listen} from "@tauri-apps/api/event";
+import { listen } from "@tauri-apps/api/event";
 
 dayjs.extend(durationPlugin);
 
@@ -51,9 +51,95 @@ const Synthesize = () => {
   const { addError } = useAppStore();
   const unlistenRef = useRef<() => void>();
 
-  // const audioContext = new AudioContext();
-  // const source = audioContext.createBufferSource();
-  // let audioBufferQueue = [];
+  // References related to MediaSource
+  const mediaSourceRef = useRef<MediaSource>();
+  const sourceBufferRef = useRef<SourceBuffer>();
+  const [objectUrl, setObjectUrl] = useState<string>("");
+  const pendingDataRef = useRef<Uint8Array[]>([]);
+  const isSourceBufferUpdatingRef = useRef(false);
+
+  // init MediaSource
+  useEffect(() => {
+    const mediaSource = new MediaSource();
+    mediaSourceRef.current = mediaSource;
+    
+    const url = URL.createObjectURL(mediaSource);
+    setObjectUrl(url);
+
+    const handleSourceOpen = () => {
+      try {
+        // Check the MIME types supported by the browser
+        const mimeType = 'audio/mpeg';
+        if (!MediaSource.isTypeSupported(mimeType)) {
+          console.warn('MIME type not supported:', mimeType);
+          return;
+        }
+
+        const sourceBuffer = mediaSource.addSourceBuffer(mimeType);
+        sourceBufferRef.current = sourceBuffer;
+
+        // Listen for the SourceBuffer update event
+        sourceBuffer.addEventListener('updateend', () => {
+          isSourceBufferUpdatingRef.current = false;
+
+          processPendingData();
+        });
+
+        sourceBuffer.addEventListener('error', (e) => {
+          console.error('SourceBuffer error:', e);
+        });
+
+      } catch (error) {
+        console.error('Failed to setup MediaSource:', error);
+      }
+    };
+
+    mediaSource.addEventListener('sourceopen', handleSourceOpen);
+
+    return () => {
+      if (url) {
+        URL.revokeObjectURL(url);
+      }
+      mediaSource.removeEventListener('sourceopen', handleSourceOpen);
+    };
+  }, []);
+
+  // Process the audio data to be processed
+  const processPendingData = () => {
+    if (!sourceBufferRef.current || isSourceBufferUpdatingRef.current || pendingDataRef.current.length === 0) {
+      return;
+    }
+
+    try {
+      const data = pendingDataRef.current.shift();
+      if (data) {
+        isSourceBufferUpdatingRef.current = true;
+        sourceBufferRef.current.appendBuffer(data);
+      }
+    } catch (error) {
+      console.error('Error appending buffer:', error);
+      isSourceBufferUpdatingRef.current = false;
+    }
+  };
+
+  const appendAudioData = (base64Data: string) => {
+    try {
+      // Convert base64 to binary data
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      // Add to the pending queue
+      pendingDataRef.current.push(bytes);
+      
+      processPendingData();
+
+    } catch (error) {
+      console.error('Error processing audio data:', error);
+    }
+  };
 
   useAsyncEffect(async () => {
     try {
@@ -63,61 +149,40 @@ const Synthesize = () => {
 
       const { id, content } = synthesizeItem;
 
+      const unlisten = await listen<string>("synthesize_" + id, async (event) => {
+        const base64 = event.payload;
+        console.log("base64:", base64.length);
+
+        appendAudioData(base64);
+      });
+
+      unlistenRef.current = unlisten;
+
       await platformAdapter.invokeBackend<number[]>("synthesize", {
-        clientId: "synthesize_"+id,
+        clientId: "synthesize_" + id,
         serverId: currentService.id,
         content,
         voice: "longwan_v2",
       });
 
-      listen<string>('synthesize_'+id, async (event) => {
-        const base64 = event.payload;
-        console.log("base64", base64);
-        // const binary = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
-        //
-        // // Decode and play buffer (note: this may cause latency, consider using Web Audio stream)
-        // const buffer = await audioContext.decodeAudioData(binary.buffer.slice(0));
-        // const source = audioContext.createBufferSource();
-        // source.buffer = buffer;
-        // source.connect(audioContext.destination);
-        // source.start();
-      });
-
-      // unlistenRef.current = await platformAdapter.listenEvent(
-      //   id,
-      //   ({ payload }) => {
-      //     console.log("payload", payload);
-      //   }
-      // );
-
-      // return () => {
-      //   unlisten.then((fn) => {
-      //     fn();
-      //   });
-      // };
-
-      // const blob = new Blob([new Uint8Array(result)], { type: "audio/wav" });
-
-      // url = URL.createObjectURL(blob);
-
-      // setSynthesizeUrls(synthesizeUrls.concat({ id, url }));
-
-      // if (audioRef.current) {
-      //   audioRef.current.src = url;
-      // } else {
-      //   audioRef.current = new Audio(url);
-      // }
     } catch (error) {
       addError(error as string);
-
       setSynthesizeItem(void 0);
     }
   }, [synthesizeItem?.id]);
 
   useUnmount(() => {
     unlistenRef.current?.();
-
     resetState();
+    
+    // clear MediaSource
+    if (mediaSourceRef.current && mediaSourceRef.current.readyState === 'open') {
+      try {
+        mediaSourceRef.current.endOfStream();
+      } catch (error) {
+        console.warn('Error ending MediaSource stream:', error);
+      }
+    }
   });
 
   useEventListener(
@@ -135,11 +200,13 @@ const Synthesize = () => {
   );
 
   useEventListener(
-    "canplaythrough",
+    "canplay",
     () => {
       state.loading = false;
-
-      state.playing = true;
+      // 自动开始播放
+      if (!state.playing) {
+        state.playing = true;
+      }
     },
     {
       target: audioRef,
@@ -182,8 +249,11 @@ const Synthesize = () => {
 
   const resetState = () => {
     audioRef.current?.pause();
-
     Object.assign(state, { ...INITIAL_STATE });
+    
+    // Clean the data to be processed
+    pendingDataRef.current = [];
+    isSourceBufferUpdatingRef.current = false;
   };
 
   const changeCurrentDuration = (duration: number) => {
@@ -210,6 +280,14 @@ const Synthesize = () => {
 
   return (
     <div className="fixed top-[60px] left-1/2 z-1000 w-[200px] h-12 px-4 flex items-center justify-between -translate-x-1/2 border rounded-lg text-[#333] dark:text-[#D8D8D8] bg-white dark:bg-black dark:border-[#272828] shadow-[0_4px_8px_rgba(0,0,0,0.2)] dark:shadow-[0_4px_8px_rgba(255,255,255,0.15)]">
+      <audio
+        ref={(el) => {
+          audioRef.current = el || undefined;
+        }}
+        src={objectUrl}
+        controls={false}
+      />
+
       <div className="flex items-center gap-2">
         {state.loading ? (
           <img
