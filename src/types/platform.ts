@@ -118,6 +118,8 @@ export interface SystemOperations {
   isWindows10: () => Promise<boolean>;
   revealItemInDir: (path: string) => Promise<unknown>;
   openSearchItem: (data: SearchDocument) => Promise<unknown>;
+  searchMCPServers: (serverId: string, queryParams: string[]) => Promise<any[]>;
+  searchDataSources: (serverId: string, queryParams: string[]) => Promise<any[]>;
 }
 
 // Base platform adapter interface

@@ -1,5 +1,6 @@
 import type { BasePlatformAdapter } from "@/types/platform";
 import { copyToClipboard, OpenURLWithBrowser } from ".";
+import { Post } from "@/api/axiosRequest";
 
 export interface WebPlatformAdapter extends BasePlatformAdapter {
   // Add web-specific methods here
@@ -65,9 +66,9 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     async checkMicrophonePermission() {
       return false;
     },
-    
+
     async requestMicrophonePermission() {
-     return false;
+      return false;
     },
 
     requestScreenRecordingPermission() {
@@ -214,5 +215,59 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     },
 
     error: console.error,
+
+    async searchMCPServers(_serverId, queryParams) {
+      const urlParams = new URLSearchParams();
+      queryParams.forEach((param) => {
+        const [key, value] = param.split("=");
+        urlParams.append(key, decodeURIComponent(value));
+      });
+
+      const [error, res]: any = await Post(
+        "/mcp_server/_search",
+        {},
+        Object.fromEntries(urlParams)
+      );
+
+      if (error) {
+        console.error("_search", error);
+        return [];
+      }
+
+      return (
+        res?.hits?.hits?.map((item: any) => ({
+          ...item,
+          id: item._source.id,
+          name: item._source.name,
+        })) || []
+      );
+    },
+
+    async searchDataSources(_serverId, queryParams) {
+      const urlParams = new URLSearchParams();
+      queryParams.forEach((param) => {
+        const [key, value] = param.split("=");
+        urlParams.append(key, decodeURIComponent(value));
+      });
+
+      const [error, res]: any = await Post(
+        "/datasource/_search",
+        {},
+        Object.fromEntries(urlParams)
+      );
+
+      if (error) {
+        console.error("_search", error);
+        return [];
+      }
+
+      return (
+        res?.hits?.hits?.map((item: any) => ({
+          ...item,
+          id: item._source.id,
+          name: item._source.name,
+        })) || []
+      );
+    },
   };
 };
