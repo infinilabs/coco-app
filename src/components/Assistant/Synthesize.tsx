@@ -56,13 +56,16 @@ const Synthesize = () => {
   useEffect(() => {
     const id = nanoid();
 
-    clientIdRef.current = id;
+    clientIdRef.current = `synthesize-${id}`;
 
     initMediaSource();
 
-    const unlisten = platformAdapter.listenEvent(id, ({ payload }) => {
-      appendBuffer(new Uint8Array(payload));
-    });
+    const unlisten = platformAdapter.listenEvent(
+      `synthesize-${id}`,
+      ({ payload }) => {
+        appendBuffer(new Uint8Array(payload));
+      }
+    );
 
     return () => {
       unlisten.then((unmount) => unmount());

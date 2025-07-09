@@ -50,7 +50,7 @@ export interface EventPayloads {
   "config-extension": string;
   "chat-create-stream": string;
   "chat-create-error": string;
-  [key: string]: any;
+  [key: `synthesize-${string}`]: any;
 }
 
 // Window operation interface
