@@ -17,6 +17,7 @@ Information about release notes of Coco Server is provided here.
 - feat: voice input support in both search and chat modes #732
 
 ### 🐛 Bug fix
+
 - fix(file search): apply filters before from/size parameters #741
 - fix(file search): searching by name&content does not search file name #743
 
@@ -27,6 +28,7 @@ Information about release notes of Coco Server is provided here.
 - refactor: create chat & send chat api #739
 - chore: icon support for more file types #740
 - chore: replace meval-rs with our fork to clear dep warning #745
+- chore: handle mcp interface parameters #746
 
 ## 0.6.0 (2025-06-29)
 
