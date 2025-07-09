@@ -12,11 +12,6 @@ pub async fn synthesize<R: Runtime>(
     voice: String,
     content: String,
 ) -> Result<(), String> {
-    println!("client_id: {:?}", &client_id);
-    println!("server_id: {:?}", &server_id);
-    println!("voice: {:?}", &voice);
-    println!("content: {:?}", &content);
-
     let body = json!({
         "voice": voice,
         "content": content,
@@ -47,15 +42,12 @@ pub async fn synthesize<R: Runtime>(
     while let Some(chunk) = stream.next().await {
         match chunk {
             Ok(bytes) => {
-                log::info!("Received audio chunk of size: {}", bytes.len());
-                // Encode audio chunk to base64 for frontend compatibility
-                let encoded = base64::encode(&bytes);
-                if let Err(err) = app_handle.emit(&client_id, encoded) {
-                    eprintln!("Emit error: {:?}", err);
+                if let Err(err) = app_handle.emit(&client_id, bytes.to_vec()) {
+                    log::error!("Emit error: {:?}", err);
                 }
             }
             Err(e) => {
-                eprintln!("Stream error: {:?}", e);
+                log::error!("Stream error: {:?}", e);
                 break;
             }
         }

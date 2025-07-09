@@ -10,7 +10,7 @@ pub(crate) fn new_reqwest_http_client(accept_invalid_certs: bool) -> Client {
     Client::builder()
         .read_timeout(Duration::from_secs(3)) // Set a timeout of 3 second
         .connect_timeout(Duration::from_secs(3)) // Set a timeout of 3 second
-        .timeout(Duration::from_secs(5 * 60)) // Set a timeout of 10 seconds
+        .timeout(Duration::from_secs(5 * 60)) // Set a timeout of 5 minute
         .danger_accept_invalid_certs(accept_invalid_certs) // allow self-signed certificates
         .build()
         .expect("Failed to build client")
