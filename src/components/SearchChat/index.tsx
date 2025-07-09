@@ -118,19 +118,6 @@ function SearchChat({
     const isWin10 = await platformAdapter.isWindows10();
 
     setIsWin10(isWin10);
-
-    const unlisten = platformAdapter.listenEvent("show-coco", () => {
-      //console.log("show-coco");
-
-      platformAdapter.invokeBackend("simulate_mouse_click", {
-        isChatMode: isChatModeRef.current,
-      });
-    });
-
-    return () => {
-      // Cleanup logic if needed
-      unlisten.then((fn) => fn());
-    };
   });
 
   useEffect(() => {

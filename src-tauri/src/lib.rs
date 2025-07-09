@@ -145,7 +145,6 @@ pub fn run() {
             server::attachment::delete_attachment,
             server::transcription::transcription,
             server::system_settings::get_system_settings,
-            simulate_mouse_click,
             extension::built_in::application::get_app_list,
             extension::built_in::application::get_app_search_path,
             extension::built_in::application::get_app_metadata,
@@ -450,52 +449,6 @@ async fn hide_check(app_handle: AppHandle) {
         .expect("we have a check window");
 
     window.hide().unwrap();
-}
-
-#[tauri::command]
-async fn simulate_mouse_click<R: Runtime>(window: WebviewWindow<R>, is_chat_mode: bool) {
-    #[cfg(target_os = "windows")]
-    {
-        use enigo::{Button, Coordinate, Direction, Enigo, Mouse, Settings};
-        use std::{thread, time::Duration};
-
-        if let Ok(mut enigo) = Enigo::new(&Settings::default()) {
-            // Save the current mouse position
-            if let Ok((original_x, original_y)) = enigo.location() {
-                // Retrieve the window's outer position (top-left corner)
-                if let Ok(position) = window.outer_position() {
-                    // Retrieve the window's inner size (client area)
-                    if let Ok(size) = window.inner_size() {
-                        // Calculate the center position of the title bar
-                        let x = position.x + (size.width as i32 / 2);
-                        let y = if is_chat_mode {
-                            position.y + size.height as i32 - 50
-                        } else {
-                            position.y + 30
-                        };
-
-                        // Move the mouse cursor to the calculated position
-                        if enigo.move_mouse(x, y, Coordinate::Abs).is_ok() {
-                            // // Simulate a left mouse click
-                            let _ = enigo.button(Button::Left, Direction::Click);
-                            // let _ = enigo.button(Button::Left, Direction::Release);
-
-                            thread::sleep(Duration::from_millis(100));
-
-                            // Move the mouse cursor back to the original position
-                            let _ = enigo.move_mouse(original_x, original_y, Coordinate::Abs);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    {
-        let _ = window;
-        let _ = is_chat_mode;
-    }
 }
 
 /// Log format:
