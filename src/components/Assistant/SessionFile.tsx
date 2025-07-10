@@ -44,8 +44,6 @@ const SessionFile = (props: SessionFileProps) => {
         sessionId,
       });
 
-      console.log("get_attachment response", response);
-
       setUploadedFiles(response?.hits?.hits ?? []);
     } else {
     }

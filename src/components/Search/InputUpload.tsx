@@ -19,7 +19,6 @@ import { useAppStore } from "@/stores/appStore";
 import Tooltip from "@/components/Common/Tooltip";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import clsx from "clsx";
-import platformAdapter from "@/utils/platformAdapter";
 
 interface State {
   screenRecordingPermission?: boolean;
@@ -101,15 +100,10 @@ const InputUpload: FC<InputUploadProps> = (props) => {
         continue;
       }
 
-      const icon = await platformAdapter.invokeBackend("get_file_icon", {
-        path,
-      });
-
       files.push({
         ...stat,
         id: nanoid(),
         path,
-        icon,
       });
     }
 

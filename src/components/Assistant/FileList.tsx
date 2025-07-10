@@ -86,8 +86,8 @@ const FileList = (props: FileListProps) => {
       {uploadFiles.map((file) => {
         const {
           id,
-          icon,
           name,
+          path,
           extname,
           size,
           uploaded,
@@ -110,7 +110,7 @@ const FileList = (props: FileListProps) => {
                 </div>
               )}
 
-              <FileIcon name={icon} className="size-8" />
+              <FileIcon name={path} className="size-8" />
 
               <div className="flex flex-col justify-between overflow-hidden">
                 <div className="truncate text-[#333333] dark:text-[#D8D8D8]">
