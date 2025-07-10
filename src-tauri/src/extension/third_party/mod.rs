@@ -226,8 +226,8 @@ fn validate_extension(
         }
     }
 
-    if let Some(ref quick_links) = extension.quicklinks {
-        if !validate_sub_items(&extension.id, quick_links) {
+    if let Some(ref quicklinks) = extension.quicklinks {
+        if !validate_sub_items(&extension.id, quicklinks) {
             return false;
         }
     }
@@ -254,10 +254,10 @@ fn validate_extension_or_sub_item(extension: &Extension) -> bool {
         return false;
     }
 
-    // If field `quick_link` is Some, then it should be a QuickLink
+    // If field `quicklink` is Some, then it should be a Quicklink
     if extension.quicklink.is_some() && extension.r#type != ExtensionType::Quicklink {
         log::warn!(
-            "invalid extension [{}], [quick_link] is set for a non-QuickLink extension",
+            "invalid extension [{}], [quicklink] is set for a non-Quicklink extension",
             extension.id
         );
         return false;
@@ -265,7 +265,7 @@ fn validate_extension_or_sub_item(extension: &Extension) -> bool {
 
     if extension.r#type == ExtensionType::Quicklink && extension.quicklink.is_none() {
         log::warn!(
-            "invalid extension [{}], [quick_link] should be set for a QuickLink extension",
+            "invalid extension [{}], [quicklink] should be set for a Quicklink extension",
             extension.id
         );
         return false;
@@ -898,10 +898,10 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
                         }
                     }
 
-                    if let Some(ref quick_links) = extension.quicklinks {
-                        for quick_link in quick_links.iter().filter(|link| link.enabled) {
+                    if let Some(ref quicklinks) = extension.quicklinks {
+                        for quicklink in quicklinks.iter().filter(|link| link.enabled) {
                             if let Some(hit) = extension_to_hit(
-                                quick_link,
+                                quicklink,
                                 &query_lower,
                                 opt_data_source.as_deref(),
                             ) {
