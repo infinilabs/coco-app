@@ -6,10 +6,10 @@ import { useTranslation } from "react-i18next";
 
 import { useConnectStore } from "@/stores/connectStore";
 import Checkbox from "@/components/Common/Checkbox";
-import FileIcon from "@/components/Common/Icons/FileIcon";
 import { AttachmentHit } from "@/types/commands";
 import { useAppStore } from "@/stores/appStore";
 import platformAdapter from "@/utils/platformAdapter";
+import FileIcon from "../Common/Icons/FileIcon";
 
 interface SessionFileProps {
   sessionId: string;
@@ -138,16 +138,16 @@ const SessionFile = (props: SessionFileProps) => {
                 key={id}
                 className="flex items-center justify-between min-h-12 px-2  rounded-[4px] bg-[#ededed] dark:bg-[#202126]"
               >
-                <div className="flex items-center gap-2">
-                  <FileIcon extname={icon} />
+                <div className="flex items-center gap-1">
+                  <FileIcon name={name} className="size-8" />
 
                   <div>
                     <div className="text-sm leading-4 text-[#333] dark:text-[#D8D8D8]">
                       {name}
                     </div>
                     <div className="text-xs text-[#999]">
-                      <span>{icon}</span>
-                      <span className="pl-2">
+                      {icon && <span className="pr-2">{icon}</span>}
+                      <span>
                         {filesize(size, { standard: "jedec", spacer: "" })}
                       </span>
                     </div>
