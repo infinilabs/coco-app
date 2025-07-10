@@ -35,6 +35,7 @@ Information about release notes of Coco Server is provided here.
 - chore: bump dep applications-rs #751
 - chore: rename QuickLink/quick_link to Quicklink/quicklink #752
 - chore: assistant params & styles #753
+- chore: make optional fields optional #758
 
 ## 0.6.0 (2025-06-29)
 
