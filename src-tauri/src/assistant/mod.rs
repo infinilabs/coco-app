@@ -1,10 +1,10 @@
 use crate::common::assistant::ChatRequestMessage;
-use crate::common::http::{convert_query_params_to_strings, GetResponse};
+use crate::common::http::{GetResponse, convert_query_params_to_strings};
 use crate::common::register::SearchSourceRegistry;
 use crate::server::http_client::HttpClient;
 use crate::{common, server::servers::COCO_SERVERS};
-use futures::stream::FuturesUnordered;
 use futures::StreamExt;
+use futures::stream::FuturesUnordered;
 use futures_util::TryStreamExt;
 use http::Method;
 use serde_json::Value;

@@ -1,10 +1,8 @@
 import { useRef } from "react";
 
-import { Post } from "@/api/axiosRequest";
 import platformAdapter from "@/utils/platformAdapter";
 import { useConnectStore } from "@/stores/connectStore";
-import { useAppStore } from "@/stores/appStore";
-import { parseSearchQuery, SearchQuery, unrequitable } from "@/utils";
+import { parseSearchQuery, unrequitable } from "@/utils";
 
 interface AssistantFetcherProps {
   debounceKeyword?: string;
@@ -15,8 +13,6 @@ export const AssistantFetcher = ({
   debounceKeyword = "",
   assistantIDs = [],
 }: AssistantFetcherProps) => {
-  const isTauri = useAppStore((state) => state.isTauri);
-
   const { currentService, currentAssistant, setCurrentAssistant } =
     useConnectStore();
 

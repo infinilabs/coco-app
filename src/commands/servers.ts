@@ -325,9 +325,7 @@ export const update_session_chat = (payload: {
 
 export const assistant_search = (payload: {
   serverId: string;
-  from: number;
-  size: number;
-  query?: Record<string, any>;
+  queryParams?: string[];
 }): Promise<boolean> => {
   return invokeWithErrorHandler<boolean>("assistant_search", payload);
 };

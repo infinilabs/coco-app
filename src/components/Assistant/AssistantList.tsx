@@ -182,7 +182,7 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
         </PopoverButton>
 
         <PopoverPanel
-          className="absolute z-50 top-full mt-1 left-0 w-60 rounded-xl bg-white dark:bg-[#202126] p-3 text-sm/6 text-[#333] dark:text-[#D8D8D8] shadow-lg border dark:border-white/10 focus:outline-none max-h-[calc(100vh-80px)] overflow-y-auto"
+          className="absolute z-50 top-full mt-1 left-0 w-60 rounded-xl bg-white dark:bg-[#202126] p-3 text-sm/6 text-[#333] dark:text-[#D8D8D8] shadow-lg border dark:border-white/10 focus:outline-none max-h-[calc(100vh-150px)] overflow-y-auto"
           onMouseMove={handleMouseMove}
         >
           <div className="flex items-center justify-between text-sm font-bold">

@@ -34,6 +34,7 @@ Information about release notes of Coco Server is provided here.
 - refactor: adjust extension code hierarchy #747
 - chore: bump dep applications-rs #751
 - chore: rename QuickLink/quick_link to Quicklink/quicklink #752
+- chore: assistant params & styles #753
 
 ## 0.6.0 (2025-06-29)
 
