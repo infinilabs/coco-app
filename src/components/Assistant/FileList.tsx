@@ -18,9 +18,8 @@ interface FileListProps {
 const FileList = (props: FileListProps) => {
   const { sessionId } = props;
   const { t } = useTranslation();
-  const uploadFiles = useChatStore((state) => state.uploadFiles);
-  const setUploadFiles = useChatStore((state) => state.setUploadFiles);
-  const currentService = useConnectStore((state) => state.currentService);
+  const { uploadFiles, setUploadFiles } = useChatStore();
+  const { currentService } = useConnectStore();
 
   const serverId = useMemo(() => {
     return currentService.id;
