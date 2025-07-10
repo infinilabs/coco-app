@@ -10,13 +10,7 @@ import platformAdapter from "@/utils/platformAdapter";
 import Tooltip2 from "../Common/Tooltip2";
 import FileIcon from "../Common/Icons/FileIcon";
 
-interface FileListProps {
-  sessionId: string;
-  getFileUrl: (path: string) => string;
-}
-
-const FileList = (props: FileListProps) => {
-  const { sessionId } = props;
+const FileList = () => {
   const { t } = useTranslation();
   const { uploadFiles, setUploadFiles } = useChatStore();
   const { currentService } = useConnectStore();
@@ -44,7 +38,6 @@ const FileList = (props: FileListProps) => {
           "upload_attachment",
           {
             serverId,
-            sessionId,
             filePaths: [path],
           }
         );

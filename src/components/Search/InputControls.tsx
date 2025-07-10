@@ -70,7 +70,7 @@ const InputControls = ({
 
   const isTauri = useAppStore((state) => state.isTauri);
 
-  const { currentAssistant, currentSessionId } = useConnectStore();
+  const { currentAssistant } = useConnectStore();
   const { modeSwitch, deepThinking } = useShortcutsStore();
 
   const source = currentAssistant?._source;
@@ -171,19 +171,17 @@ const InputControls = ({
     >
       {isChatMode ? (
         <div className="flex gap-2 text-[12px] leading-3 text-[#333] dark:text-[#d8d8d8]">
-          {currentSessionId && (
-            <InputUpload
-              checkScreenPermission={checkScreenPermission}
-              requestScreenPermission={requestScreenPermission}
-              getScreenMonitors={getScreenMonitors}
-              getScreenWindows={getScreenWindows}
-              captureMonitorScreenshot={captureMonitorScreenshot}
-              captureWindowScreenshot={captureWindowScreenshot}
-              openFileDialog={openFileDialog}
-              getFileMetadata={getFileMetadata}
-              getFileIcon={getFileIcon}
-            />
-          )}
+          <InputUpload
+            checkScreenPermission={checkScreenPermission}
+            requestScreenPermission={requestScreenPermission}
+            getScreenMonitors={getScreenMonitors}
+            getScreenWindows={getScreenWindows}
+            captureMonitorScreenshot={captureMonitorScreenshot}
+            captureWindowScreenshot={captureWindowScreenshot}
+            openFileDialog={openFileDialog}
+            getFileMetadata={getFileMetadata}
+            getFileIcon={getFileIcon}
+          />
 
           {source?.type === "deep_think" && source?.config?.visible && (
             <button
@@ -233,8 +231,7 @@ const InputControls = ({
             getMCPByServer={getMCPByServer}
           />
 
-          {!currentSessionId &&
-            !(source?.datasource?.enabled && source?.datasource?.visible) &&
+          {!(source?.datasource?.enabled && source?.datasource?.visible) &&
             (source?.type !== "deep_think" || !source?.config?.visible) &&
             !(source?.mcp_servers?.enabled && source?.mcp_servers?.visible) && (
               <div className="px-[9px]">

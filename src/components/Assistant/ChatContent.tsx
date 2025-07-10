@@ -42,7 +42,6 @@ export const ChatContent = ({
   timedoutShow,
   Question,
   handleSendMessage,
-  getFileUrl,
 }: ChatContentProps) => {
   const sessionId = useConnectStore((state) => state.currentSessionId);
   const setCurrentSessionId = useConnectStore((state) => {
@@ -165,9 +164,9 @@ export const ChatContent = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {sessionId && uploadFiles.length > 0 && (
+      {uploadFiles.length > 0 && (
         <div key={sessionId} className="max-h-[120px] overflow-auto p-2">
-          <FileList sessionId={sessionId} getFileUrl={getFileUrl} />
+          <FileList />
         </div>
       )}
 

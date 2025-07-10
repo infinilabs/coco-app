@@ -24,7 +24,6 @@ pub struct DeleteAttachmentResponse {
 #[command]
 pub async fn upload_attachment(
     server_id: String,
-    session_id: String,
     file_paths: Vec<PathBuf>,
 ) -> Result<UploadAttachmentResponse, String> {
     let mut form = Form::new();
@@ -47,7 +46,7 @@ pub async fn upload_attachment(
     }
 
     let server = get_server_by_id(&server_id).ok_or("Server not found")?;
-    let url = HttpClient::join_url(&server.endpoint, &format!("chat/{}/_upload", session_id));
+    let url = HttpClient::join_url(&server.endpoint, &format!("attachment/_upload"));
 
     let token = get_server_token(&server_id).await?;
     let mut headers = HashMap::new();
