@@ -120,6 +120,7 @@ export interface SystemOperations {
   openSearchItem: (data: SearchDocument) => Promise<unknown>;
   searchMCPServers: (serverId: string, queryParams: string[]) => Promise<any[]>;
   searchDataSources: (serverId: string, queryParams: string[]) => Promise<any[]>;
+  fetchAssistant: (serverId: string, queryParams: string[]) => Promise<any>;
 }
 
 // Base platform adapter interface

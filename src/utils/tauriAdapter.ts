@@ -319,5 +319,16 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
         queryParams,
       });
     },
+
+    async fetchAssistant(serverId, queryParams) {
+      if (!serverId) {
+        throw new Error("currentService is undefined");
+      }
+
+      return await commandWrapper.commands("assistant_search", {
+        id: serverId,
+        queryParams,
+      });
+    },
   };
 };

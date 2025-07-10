@@ -269,5 +269,26 @@ export const createWebAdapter = (): WebPlatformAdapter => {
         })) || []
       );
     },
+
+    async fetchAssistant(_serverId, queryParams) {
+      const urlParams = new URLSearchParams();
+      queryParams.forEach((param) => {
+        const [key, value] = param.split("=");
+        urlParams.append(key, decodeURIComponent(value));
+      });
+
+      const [error, res]: any = await Post(
+        "/assistant/_search",
+        {},
+        Object.fromEntries(urlParams)
+      );
+
+      if (error) {
+        console.error("_search", error);
+        return {};
+      }
+
+      return res;
+    },
   };
 };
