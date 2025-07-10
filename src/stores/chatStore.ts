@@ -13,6 +13,11 @@ interface UploadFile extends Metadata {
   attachmentId?: string;
 }
 
+interface SynthesizeItem {
+  id: string;
+  content: string;
+}
+
 export type IChatStore = {
   curChatEnd: boolean;
   setCurChatEnd: (value: boolean) => void;
@@ -24,6 +29,8 @@ export type IChatStore = {
   setMessages: (value: string | ((prev: string) => string)) => void;
   uploadFiles: UploadFile[];
   setUploadFiles: (value: UploadFile[]) => void;
+  synthesizeItem?: SynthesizeItem;
+  setSynthesizeItem: (synthesizeItem?: SynthesizeItem) => void;
 };
 
 export const useChatStore = create<IChatStore>()(
@@ -43,6 +50,9 @@ export const useChatStore = create<IChatStore>()(
       uploadFiles: [],
       setUploadFiles: (uploadFiles: UploadFile[]) => {
         return set(() => ({ uploadFiles }));
+      },
+      setSynthesizeItem(synthesizeItem?: SynthesizeItem) {
+        return set(() => ({ synthesizeItem }));
       },
     }),
     {
