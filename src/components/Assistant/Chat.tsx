@@ -108,10 +108,6 @@ const ChatAI = memo(
       }, [activeChatProp]);
 
       useEffect(() => {
-        console.log("activeChat12121212121", activeChat);
-      }, [activeChat]);
-
-      useEffect(() => {
         if (!isTauri) return;
 
         if (!currentService?.enabled) {

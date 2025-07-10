@@ -43,7 +43,7 @@ export const AssistantFetcher = ({
         query,
       } = params;
 
-      const searchQuery: SearchQuery = {
+      const queryParams = parseSearchQuery({
         from: (current - 1) * pageSize,
         size: pageSize,
         query: query ?? debounceKeyword,
@@ -52,33 +52,12 @@ export const AssistantFetcher = ({
           enabled: true,
           id: assistantIDs,
         },
-      };
+      });
 
-      const queryParams = parseSearchQuery(searchQuery);
-
-      const body: Record<string, any> = {
+      const response = await platformAdapter.fetchAssistant(
         serverId,
-        queryParams,
-      };
-
-      let response: any;
-
-      if (isTauri) {
-        if (!currentService?.id) {
-          throw new Error("currentService is undefined");
-        }
-
-        response = await platformAdapter.commands("assistant_search", body);
-      } else {
-        body.serverId = undefined;
-        const [error, res] = await Post(`/assistant/_search`, body);
-
-        if (error) {
-          throw new Error(error);
-        }
-
-        response = res;
-      }
+        queryParams
+      );
 
       let assistantList = response?.hits?.hits ?? [];
 

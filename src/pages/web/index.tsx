@@ -35,13 +35,9 @@ function WebApp({
   width = 680,
   height = 590,
   headers = {
-    "X-API-TOKEN":
-      "d1lmnn77271h79qdse0gbss0ev8usfin593h5qpa0zgismc8u1fxhg99ju0syeuy54j16ect58ybqzytp7v3",
-    "APP-INTEGRATION-ID": "cvkm9hmhpcemufsg3vug",
+    "X-API-TOKEN": "",
+    "APP-INTEGRATION-ID": "",
   },
-  // token = "cva1j5ehpcenic3ir7k0h8fb8qtv35iwtywze248oscrej8yoivhb5b1hyovp24xejjk27jy9ddt69ewfi3n",   // https://coco.infini.cloud
-  // token = "cvqt6r02sdb2v3bkgip0x3ixv01f3r2lhnxoz1efbn160wm9og58wtv8t6wrv1ebvnvypuc23dx9pb33aemh",  // http://localhost:9000
-  // token = "cv5djeb9om602jdvtnmg6kc1muyn2vcadr6te48j9t9pvt59ewrnwj7fwvxrw3va84j2a0lb5y8194fbr3jd",  // http://43.153.113.88:9000
   serverUrl = "",
   hasModules = ["search", "chat"],
   defaultModule = "search",
