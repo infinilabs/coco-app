@@ -16,7 +16,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { parseSearchQuery, SearchQuery } from "@/utils";
-// import InputExtra from "./InputExtra";
+import InputUpload from "./InputUpload";
 // import AiSummaryIcon from "@/components/Common/Icons/AiSummaryIcon";
 
 interface InputControlsProps {
@@ -32,6 +32,17 @@ interface InputControlsProps {
   searchPlaceholder?: string;
   chatPlaceholder?: string;
   changeMode?: (isChatMode: boolean) => void;
+  checkScreenPermission: () => Promise<boolean>;
+  requestScreenPermission: () => void;
+  getScreenMonitors: () => Promise<any[]>;
+  getScreenWindows: () => Promise<any[]>;
+  captureMonitorScreenshot: (id: number) => Promise<string>;
+  captureWindowScreenshot: (id: number) => Promise<string>;
+  openFileDialog: (options: {
+    multiple: boolean;
+  }) => Promise<string | string[] | null>;
+  getFileMetadata: (path: string) => Promise<any>;
+  getFileIcon: (path: string, size: number) => Promise<string>;
 }
 
 const InputControls = ({
@@ -45,12 +56,21 @@ const InputControls = ({
   isChatPage,
   hasModules,
   changeMode,
+  checkScreenPermission,
+  requestScreenPermission,
+  getScreenMonitors,
+  getScreenWindows,
+  captureWindowScreenshot,
+  captureMonitorScreenshot,
+  openFileDialog,
+  getFileMetadata,
+  getFileIcon,
 }: InputControlsProps) => {
   const { t } = useTranslation();
 
   const isTauri = useAppStore((state) => state.isTauri);
 
-  const currentAssistant = useConnectStore((state) => state.currentAssistant);
+  const { currentAssistant, currentSessionId } = useConnectStore();
   const { modeSwitch, deepThinking } = useShortcutsStore();
 
   const source = currentAssistant?._source;
@@ -151,24 +171,24 @@ const InputControls = ({
     >
       {isChatMode ? (
         <div className="flex gap-2 text-[12px] leading-3 text-[#333] dark:text-[#d8d8d8]">
-          {/* {sessionId && (
-        <InputExtra
-          checkScreenPermission={checkScreenPermission}
-          requestScreenPermission={requestScreenPermission}
-          getScreenMonitors={getScreenMonitors}
-          getScreenWindows={getScreenWindows}
-          captureMonitorScreenshot={captureMonitorScreenshot}
-          captureWindowScreenshot={captureWindowScreenshot}
-          openFileDialog={openFileDialog}
-          getFileMetadata={getFileMetadata}
-          getFileIcon={getFileIcon}
-        />
-      )} */}
+          {currentSessionId && (
+            <InputUpload
+              checkScreenPermission={checkScreenPermission}
+              requestScreenPermission={requestScreenPermission}
+              getScreenMonitors={getScreenMonitors}
+              getScreenWindows={getScreenWindows}
+              captureMonitorScreenshot={captureMonitorScreenshot}
+              captureWindowScreenshot={captureWindowScreenshot}
+              openFileDialog={openFileDialog}
+              getFileMetadata={getFileMetadata}
+              getFileIcon={getFileIcon}
+            />
+          )}
 
           {source?.type === "deep_think" && source?.config?.visible && (
             <button
               className={clsx(
-                "flex items-center gap-1 py-[3px] pl-1 pr-1.5 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
+                "flex items-center gap-1 p-1 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
                 {
                   "!bg-[rgba(0,114,255,0.3)]": isDeepThinkActive,
                 }
@@ -213,13 +233,14 @@ const InputControls = ({
             getMCPByServer={getMCPByServer}
           />
 
-          {!(source?.datasource?.enabled && source?.datasource?.visible) &&
-          (source?.type !== "deep_think" || !source?.config?.visible) &&
-          !(source?.mcp_servers?.enabled && source?.mcp_servers?.visible) ? (
-            <div className="px-[9px]">
-              <Copyright />
-            </div>
-          ) : null}
+          {!currentSessionId &&
+            !(source?.datasource?.enabled && source?.datasource?.visible) &&
+            (source?.type !== "deep_think" || !source?.config?.visible) &&
+            !(source?.mcp_servers?.enabled && source?.mcp_servers?.visible) && (
+              <div className="px-[9px]">
+                <Copyright />
+              </div>
+            )}
         </div>
       ) : (
         <div data-tauri-drag-region className="w-28 flex gap-2 relative">

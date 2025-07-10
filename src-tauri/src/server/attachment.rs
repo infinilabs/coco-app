@@ -16,42 +16,6 @@ pub struct UploadAttachmentResponse {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct AttachmentSource {
-    pub id: String,
-    pub created: String,
-    pub updated: String,
-    pub session: String,
-    pub name: String,
-    pub icon: String,
-    pub url: String,
-    pub size: u64,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct AttachmentHit {
-    pub _index: String,
-    pub _type: Option<String>,
-    pub _id: String,
-    pub _score: Option<f64>,
-    pub _source: AttachmentSource,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct AttachmentHits {
-    pub total: Value,
-    pub max_score: Option<f64>,
-    pub hits: Option<Vec<AttachmentHit>>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct GetAttachmentResponse {
-    pub took: u32,
-    pub timed_out: bool,
-    pub _shards: Option<Value>,
-    pub hits: AttachmentHits,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
 pub struct DeleteAttachmentResponse {
     pub _id: String,
     pub result: String,
@@ -107,10 +71,7 @@ pub async fn upload_attachment(
 }
 
 #[command]
-pub async fn get_attachment(
-    server_id: String,
-    session_id: String,
-) -> Result<GetAttachmentResponse, String> {
+pub async fn get_attachment(server_id: String, session_id: String) -> Result<Value, String> {
     let mut query_params = Vec::new();
     query_params.push(format!("session={}", session_id));
 
@@ -120,7 +81,7 @@ pub async fn get_attachment(
 
     let body = get_response_body_text(response).await?;
 
-    serde_json::from_str::<GetAttachmentResponse>(&body)
+    serde_json::from_str::<Value>(&body)
         .map_err(|e| format!("Failed to parse attachment response: {}", e))
 }
 

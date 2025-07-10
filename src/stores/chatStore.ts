@@ -5,12 +5,14 @@ import {
 } from "zustand/middleware";
 import { Metadata } from "tauri-plugin-fs-pro-api";
 
-interface UploadFile extends Metadata {
+export interface UploadFile extends Metadata {
   id: string;
   path: string;
   icon: string;
   uploaded?: boolean;
   attachmentId?: string;
+  uploadFailed?: boolean;
+  failedMessage?: string;
 }
 
 interface SynthesizeItem {
