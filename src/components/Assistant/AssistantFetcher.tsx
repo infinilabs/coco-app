@@ -2,7 +2,6 @@ import { useRef } from "react";
 
 import platformAdapter from "@/utils/platformAdapter";
 import { useConnectStore } from "@/stores/connectStore";
-import { useAppStore } from "@/stores/appStore";
 import { parseSearchQuery, unrequitable } from "@/utils";
 
 interface AssistantFetcherProps {
