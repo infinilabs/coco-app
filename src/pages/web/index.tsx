@@ -35,9 +35,8 @@ function WebApp({
   width = 680,
   height = 590,
   headers = {
-    "X-API-TOKEN":
-      "d1mtph62a899808kfgggh507q9dxm5ah9x9di133p65nu93001scg82my2zugtn4sr0o04xeec629pjyoasa",
-    "APP-INTEGRATION-ID": "cvkm9hmhpcemufsg3vug",
+    "X-API-TOKEN": "",
+    "APP-INTEGRATION-ID": "",
   },
   serverUrl = "",
   hasModules = ["search", "chat"],

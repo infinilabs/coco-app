@@ -29,7 +29,7 @@ Information about release notes of Coco Server is provided here.
 - refactor: create chat & send chat api #739
 - chore: icon support for more file types #740
 - chore: replace meval-rs with our fork to clear dep warning #745
-- chore: handle mcp interface parameters #746
+- refactor: adjusted assistant, datasource, mcp_server interface parameters #746
 - refactor: adjust extension code hierarchy #747
 - chore: bump dep applications-rs #751
 
