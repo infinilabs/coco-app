@@ -9,14 +9,13 @@ import ChatSwitch from "@/components/Common/ChatSwitch";
 import Copyright from "@/components/Common/Copyright";
 import type { DataSource } from "@/types/commands";
 import platformAdapter from "@/utils/platformAdapter";
-import { Post } from "@/api/axiosRequest";
 import { useConnectStore } from "@/stores/connectStore";
 import VisibleKey from "@/components/Common/VisibleKey";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
-import { parseSearchQuery, SearchQuery, unrequitable } from "@/utils";
+import { parseSearchQuery, SearchQuery } from "@/utils";
 // import InputExtra from "./InputExtra";
 // import AiSummaryIcon from "@/components/Common/Icons/AiSummaryIcon";
 
@@ -76,45 +75,21 @@ const InputControls = ({
       searchQuery.from ??= 0;
       searchQuery.size ??= 1000;
 
-      const body: Record<string, any> = {
-        id: serverId,
-        queryParams: parseSearchQuery({
-          ...searchQuery,
-          fuzziness: 5,
-          filters: {
-            enabled: true,
-          },
-        }),
-      };
+      const queryParams = parseSearchQuery({
+        ...searchQuery,
+        fuzziness: 5,
+        filters: {
+          enabled: true,
+        },
+      });
+      const response = await platformAdapter.searchDataSources(
+        serverId,
+        queryParams
+      );
 
-      let response: any;
-      if (isTauri) {
-        if (unrequitable()) {
-          return [];
-        }
-
-        response = await platformAdapter.invokeBackend(
-          "datasource_search",
-          body
-        );
-      } else {
-        body.id = undefined;
-        const [error, res]: any = await Post("/datasource/_search", body);
-        if (error) {
-          console.error("_search", error);
-          return [];
-        }
-        response = res?.hits?.hits?.map((item: any) => {
-          return {
-            ...item,
-            id: item._source.id,
-            name: item._source.name,
-          };
-        });
-      }
       let ids = assistantConfig.datasourceIds;
       if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
-        response = response?.filter((item: any) => ids.includes(item.id));
+        return response?.filter((item: any) => ids.includes(item.id)) || [];
       }
       return response || [];
     },
@@ -129,45 +104,22 @@ const InputControls = ({
       searchQuery.from ??= 0;
       searchQuery.size ??= 1000;
 
-      const body: Record<string, any> = {
-        id: serverId,
-        queryParams: parseSearchQuery({
-          ...searchQuery,
-          fuzziness: 5,
-          filters: {
-            enabled: true,
-          },
-        }),
-      };
+      const queryParams = parseSearchQuery({
+        ...searchQuery,
+        fuzziness: 5,
+        filters: {
+          enabled: true,
+        },
+      });
 
-      let response: any;
-      if (isTauri) {
-        if (unrequitable()) {
-          return [];
-        }
+      const response = await platformAdapter.searchMCPServers(
+        serverId,
+        queryParams
+      );
 
-        response = await platformAdapter.invokeBackend(
-          "mcp_server_search",
-          body
-        );
-      } else {
-        body.id = undefined;
-        const [error, res]: any = await Post("/mcp_server/_search", body);
-        if (error) {
-          console.error("_search", error);
-          return [];
-        }
-        response = res?.hits?.hits?.map((item: any) => {
-          return {
-            ...item,
-            id: item._source.id,
-            name: item._source.name,
-          };
-        });
-      }
       let ids = assistantConfig.mcpIds;
       if (Array.isArray(ids) && ids.length > 0 && !ids.includes("*")) {
-        response = response?.filter((item: any) => ids.includes(item.id));
+        return response?.filter((item: any) => ids.includes(item.id)) || [];
       }
       return response || [];
     },

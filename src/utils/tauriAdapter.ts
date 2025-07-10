@@ -15,6 +15,7 @@ import type { AppTheme } from "@/types/index";
 import { useAppearanceStore } from "@/stores/appearanceStore";
 import { copyToClipboard, OpenURLWithBrowser } from ".";
 import { useAppStore } from "@/stores/appStore";
+import { unrequitable } from "@/utils";
 
 export interface TauriPlatformAdapter extends BasePlatformAdapter {
   openFileDialog: (
@@ -300,5 +301,34 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     error,
+
+    async searchMCPServers(serverId, queryParams) {
+      if (unrequitable()) {
+        return [];
+      }
+
+      return await commandWrapper.commands("mcp_server_search", {
+        id: serverId,
+        queryParams,
+      });
+    },
+
+    async searchDataSources(serverId, queryParams) {
+      return await commandWrapper.commands("datasource_search", {
+        id: serverId,
+        queryParams,
+      });
+    },
+
+    async fetchAssistant(serverId, queryParams) {
+      if (!serverId) {
+        throw new Error("currentService is undefined");
+      }
+
+      return await commandWrapper.commands("assistant_search", {
+        serverId,
+        ...queryParams,
+      });
+    },
   };
 };
