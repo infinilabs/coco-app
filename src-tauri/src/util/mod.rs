@@ -1,3 +1,5 @@
+pub(crate) mod file;
+
 use std::{path::Path, process::Command};
 use tauri::{AppHandle, Runtime};
 use tauri_plugin_shell::ShellExt;
