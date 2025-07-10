@@ -15,6 +15,7 @@ Information about release notes of Coco Server is provided here.
 
 - feat: file search using spotlight #705
 - feat: voice input support in both search and chat modes #732
+- feat: text to speech now powered by LLM #750
 
 ### 🐛 Bug fix
 
@@ -32,6 +33,7 @@ Information about release notes of Coco Server is provided here.
 - refactor: adjusted assistant, datasource, mcp_server interface parameters #746
 - refactor: adjust extension code hierarchy #747
 - chore: bump dep applications-rs #751
+- chore: rename QuickLink/quick_link to Quicklink/quicklink #752
 
 ## 0.6.0 (2025-06-29)
 

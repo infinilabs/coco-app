@@ -169,6 +169,7 @@ pub fn run() {
             extension::built_in::file_search::get_file_system_config,
             #[cfg(target_os = "macos")]
             extension::built_in::file_search::set_file_system_config,
+            server::synthesize::synthesize,
         ])
         .setup(|app| {
             #[cfg(target_os = "macos")]
