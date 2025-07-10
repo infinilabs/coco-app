@@ -7,8 +7,8 @@ use std::error::Error;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SearchResponse<T> {
-    pub took: u64,
-    pub timed_out: bool,
+    pub took: Option<u64>,
+    pub timed_out: Option<bool>,
     pub _shards: Option<Shards>,
     pub hits: Hits<T>,
 }
