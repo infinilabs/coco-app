@@ -84,7 +84,6 @@ export default function ChatInput({
   const { t } = useTranslation();
 
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
-  // const sessionId = useConnectStore((state) => state.currentSessionId);
 
   const setBlurred = useAppStore((state) => state.setBlurred);
   const isTauri = useAppStore((state) => state.isTauri);
