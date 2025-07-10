@@ -1,22 +1,24 @@
 import platformAdapter from "@/utils/platformAdapter";
 import { FC, useEffect, useState } from "react";
-import FontIcon, { FontIconProps } from "./FontIcon";
+import FontIcon from "./FontIcon";
+import { twMerge } from "tailwind-merge";
 
-const FileIcon: FC<FontIconProps> = (props) => {
-  const { name, ...rest } = props;
+interface FileIconProps {
+  path: string;
+  className?: string;
+}
+
+const FileIcon: FC<FileIconProps> = (props) => {
+  const { path, className } = props;
   const [iconName, setIconName] = useState("");
 
   useEffect(() => {
-    if (name.startsWith("font_")) {
-      return setIconName(name);
-    }
-
     platformAdapter
-      .invokeBackend<string>("get_file_icon", { path: name })
+      .invokeBackend<string>("get_file_icon", { path })
       .then(setIconName);
   });
 
-  return <FontIcon {...rest} name={iconName} />;
+  return <FontIcon name={iconName} className={twMerge("size-8", className)} />;
 };
 
 export default FileIcon;

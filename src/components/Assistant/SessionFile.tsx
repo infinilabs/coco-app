@@ -137,7 +137,7 @@ const SessionFile = (props: SessionFileProps) => {
                 className="flex items-center justify-between min-h-12 px-2  rounded-[4px] bg-[#ededed] dark:bg-[#202126]"
               >
                 <div className="flex items-center gap-1">
-                  <FileIcon name={name} className="size-8" />
+                  <FileIcon path={name} />
 
                   <div>
                     <div className="text-sm leading-4 text-[#333] dark:text-[#D8D8D8]">

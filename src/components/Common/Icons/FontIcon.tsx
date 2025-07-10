@@ -2,7 +2,7 @@ import { useAppStore } from "@/stores/appStore";
 import logoImg from "@/assets/icon.svg";
 import { FC } from "react";
 
-export interface FontIconProps {
+interface FontIconProps {
   name: string;
   className?: string;
   style?: React.CSSProperties;

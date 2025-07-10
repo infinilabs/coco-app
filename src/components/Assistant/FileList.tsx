@@ -110,7 +110,7 @@ const FileList = (props: FileListProps) => {
                 </div>
               )}
 
-              <FileIcon name={path} className="size-8" />
+              <FileIcon path={path} />
 
               <div className="flex flex-col justify-between overflow-hidden">
                 <div className="truncate text-[#333333] dark:text-[#D8D8D8]">
