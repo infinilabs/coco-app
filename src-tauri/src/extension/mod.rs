@@ -80,9 +80,9 @@ pub struct Extension {
     /// when the it is triggered.
     #[serde(skip_serializing_if = "Option::is_none")]
     action: Option<CommandAction>,
-    /// The link to open if this is a QuickLink extension.
+    /// The link to open if this is a Quicklink extension.
     #[serde(skip_serializing_if = "Option::is_none")]
-    quicklink: Option<QuickLink>,
+    quicklink: Option<Quicklink>,
 
     // If this extension is of type Group or Extension, then it behaves like a
     // directory, i.e., it could contain sub items.
@@ -226,8 +226,8 @@ impl Extension {
                 return Some(sub_ext);
             }
         }
-        if let Some(ref quick_links) = self.quicklinks {
-            if let Some(sub_ext) = quick_links.iter().find(|link| link.id == sub_extension_id) {
+        if let Some(ref quicklinks) = self.quicklinks {
+            if let Some(sub_ext) = quicklinks.iter().find(|link| link.id == sub_extension_id) {
                 return Some(sub_ext);
             }
         }
@@ -253,8 +253,8 @@ impl Extension {
                 return Some(sub_ext);
             }
         }
-        if let Some(ref mut quick_links) = self.quicklinks {
-            if let Some(sub_ext) = quick_links
+        if let Some(ref mut quicklinks) = self.quicklinks {
+            if let Some(sub_ext) = quicklinks
                 .iter_mut()
                 .find(|link| link.id == sub_extension_id)
             {
@@ -279,7 +279,7 @@ pub(crate) struct CommandAction {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct QuickLink {
+pub struct Quicklink {
     link: String,
 }
 
@@ -312,7 +312,7 @@ impl ExtensionType {
     }
 }
 
-/// Helper function to filter out the extensions that do not satisfy the specifies conditions.
+/// Helper function to filter out the extensions that do not satisfy the specified conditions.
 ///
 /// used in `list_extensions()`
 fn filter_out_extensions(
@@ -662,9 +662,9 @@ pub(crate) fn canonicalize_relative_icon_path(
         }
     }
 
-    if let Some(quick_links) = &mut extension.quicklinks {
-        for quick_link in quick_links {
-            _canonicalize_relative_icon_path(extension_dir, quick_link)?;
+    if let Some(quicklinks) = &mut extension.quicklinks {
+        for quicklink in quicklinks {
+            _canonicalize_relative_icon_path(extension_dir, quicklink)?;
         }
     }
 
@@ -712,9 +712,9 @@ fn alter_extension_json_file(
             }
         }
 
-        // Search in quick_links
-        if let Some(ref mut quick_links) = root_extension.quicklinks {
-            if let Some(link) = quick_links
+        // Search in quicklinks
+        if let Some(ref mut quicklinks) = root_extension.quicklinks {
+            if let Some(link) = quicklinks
                 .iter_mut()
                 .find(|lnk| lnk.id == sub_extension_id)
             {

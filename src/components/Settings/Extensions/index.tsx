@@ -40,7 +40,7 @@ interface ExtensionAction {
   args: string[];
 }
 
-interface ExtensionQuickLink {
+interface ExtensionQuicklink {
   link: string;
 }
 
@@ -55,7 +55,7 @@ export interface Extension {
   enabled: boolean;
   platforms?: ExtensionPlatform[];
   action: ExtensionAction;
-  quicklink: ExtensionQuickLink;
+  quicklink: ExtensionQuicklink;
   commands?: Extension[];
   scripts?: Extension[];
   quicklinks?: Extension[];
@@ -64,7 +64,7 @@ export interface Extension {
 }
 
 type Category = LiteralUnion<
-  "All" | "Commands" | "Scripts" | "Apps" | "QuickLinks",
+  "All" | "Commands" | "Scripts" | "Apps" | "Quicklinks",
   string
 >;
 
@@ -78,7 +78,7 @@ interface State {
 
 const INITIAL_STATE: State = {
   extensions: [],
-  categories: ["All", "Commands", "Scripts", "Apps", "QuickLinks"],
+  categories: ["All", "Commands", "Scripts", "Apps", "Quicklinks"],
   currentCategory: "All",
 };
 
@@ -140,7 +140,7 @@ export const Extensions = () => {
         return "script";
       case "Apps":
         return "application";
-      case "QuickLinks":
+      case "Quicklinks":
         return "quicklink";
       default:
         return void 0;
