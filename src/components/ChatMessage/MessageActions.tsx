@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 import { copyToClipboard, isDefaultServer } from "@/utils";
-import { useConnectStore } from "@/stores/connectStore";
+import { useChatStore } from "@/stores/chatStore";
 
 interface MessageActionsProps {
   id: string;
@@ -41,7 +41,7 @@ export const MessageActions = ({
 
   const isRefreshOnly = RefreshOnlyIds.includes(id);
 
-  const { synthesizeItem, setSynthesizeItem } = useConnectStore();
+  const { synthesizeItem, setSynthesizeItem } = useChatStore();
 
   const handleCopy = async () => {
     try {

@@ -19,13 +19,14 @@ import { useConnectStore } from "@/stores/connectStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { useStreamAudio } from "@/hooks/useStreamAudio";
 import { nanoid } from "nanoid";
+import { useChatStore } from "@/stores/chatStore";
 
 dayjs.extend(durationPlugin);
 
 const Synthesize = () => {
   const { isDark } = useThemeStore();
-  const { synthesizeItem, currentService, setSynthesizeItem } =
-    useConnectStore();
+  const { currentService } = useConnectStore();
+  const { synthesizeItem, setSynthesizeItem } = useChatStore();
   const clientIdRef = useRef(nanoid());
 
   const {

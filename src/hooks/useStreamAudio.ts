@@ -1,9 +1,10 @@
+import { useChatStore } from "@/stores/chatStore";
 import { useReactive } from "ahooks";
 import { SyntheticEvent, useEffect, useRef } from "react";
 
 interface Options {
   mimeType?: string;
-  onSourceopen?: () => Promise<void>;
+  onSourceopen?: () => Promise<any>;
 }
 
 interface State {
@@ -31,6 +32,7 @@ export const useStreamAudio = (options: Options = {}) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const mediaSourceRef = useRef<MediaSource>();
   const sourceBufferRef = useRef<SourceBuffer>();
+  const { synthesizeItem, setSynthesizeItem } = useChatStore();
 
   useEffect(() => {
     initMediaSource();
@@ -41,6 +43,8 @@ export const useStreamAudio = (options: Options = {}) => {
   }, []);
 
   const initMediaSource = () => {
+    if (!synthesizeItem) return;
+
     reset();
 
     const mediaSource = new MediaSource();
@@ -140,12 +144,14 @@ export const useStreamAudio = (options: Options = {}) => {
     const { currentTime, duration } = event.currentTarget;
 
     Object.assign(state, {
-      currentTime,
-      totalTime: duration,
+      currentTime: Math.round(currentTime),
+      totalTime: Math.round(duration),
     });
   };
 
-  const onEnded = pause;
+  const onEnded = () => {
+    setSynthesizeItem(void 0);
+  };
 
   return {
     ...state,

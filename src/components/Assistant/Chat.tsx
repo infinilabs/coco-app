@@ -74,8 +74,7 @@ const ChatAI = memo(
         clearChat: clearChat,
       }));
 
-      const { curChatEnd, setCurChatEnd } =
-        useChatStore();
+      const { curChatEnd, setCurChatEnd } = useChatStore();
 
       const isTauri = useAppStore((state) => state.isTauri);
 
@@ -84,8 +83,8 @@ const ChatAI = memo(
         return state.setIsCurrentLogin;
       });
 
-      const { currentService, visibleStartPage, synthesizeItem } =
-        useConnectStore();
+      const { currentService, visibleStartPage } = useConnectStore();
+      const { synthesizeItem } = useChatStore();
 
       const addError = useAppStore.getState().addError;
 
@@ -107,7 +106,7 @@ const ChatAI = memo(
       useEffect(() => {
         activeChatProp && setActiveChat(activeChatProp);
       }, [activeChatProp]);
-      
+
       useEffect(() => {
         console.log("activeChat12121212121", activeChat);
       }, [activeChat]);
@@ -186,7 +185,7 @@ const ChatAI = memo(
         isDeepThinkActive,
         isMCPActive,
         changeInput,
-        showChatHistory,
+        showChatHistory
       );
 
       const { dealMsg } = useMessageHandler(
