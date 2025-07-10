@@ -105,8 +105,6 @@ const InputUpload: FC<InputUploadProps> = (props) => {
         path,
       });
 
-      console.log("icon", icon);
-
       files.push({
         ...stat,
         id: nanoid(),
