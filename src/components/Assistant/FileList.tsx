@@ -4,10 +4,11 @@ import { X } from "lucide-react";
 import { useAsyncEffect } from "ahooks";
 import { useTranslation } from "react-i18next";
 
-import { useChatStore } from "@/stores/chatStore";
+import { useChatStore, UploadFile } from "@/stores/chatStore";
 import { useConnectStore } from "@/stores/connectStore";
 import FileIcon from "../Common/Icons/FileIcon";
 import platformAdapter from "@/utils/platformAdapter";
+import Tooltip2 from "../Common/Tooltip2";
 
 interface FileListProps {
   sessionId: string;
@@ -17,9 +18,8 @@ interface FileListProps {
 const FileList = (props: FileListProps) => {
   const { sessionId } = props;
   const { t } = useTranslation();
-  const uploadFiles = useChatStore((state) => state.uploadFiles);
-  const setUploadFiles = useChatStore((state) => state.setUploadFiles);
-  const currentService = useConnectStore((state) => state.currentService);
+  const { uploadFiles, setUploadFiles } = useChatStore();
+  const { currentService } = useConnectStore();
 
   const serverId = useMemo(() => {
     return currentService.id;
@@ -39,28 +39,41 @@ const FileList = (props: FileListProps) => {
 
       if (uploaded) continue;
 
-      const attachmentIds: any = await platformAdapter.commands(
-        "upload_attachment",
-        {
-          serverId,
-          sessionId,
-          filePaths: [path],
+      try {
+        const attachmentIds: any = await platformAdapter.commands(
+          "upload_attachment",
+          {
+            serverId,
+            sessionId,
+            filePaths: [path],
+          }
+        );
+
+        if (!attachmentIds) {
+          throw new Error("Failed to get attachment id");
+        } else {
+          Object.assign(item, {
+            uploaded: true,
+            attachmentId: attachmentIds[0],
+          });
         }
-      );
 
-      if (!attachmentIds) continue;
-
-      Object.assign(item, {
-        uploaded: true,
-        attachmentId: attachmentIds[0],
-      });
-
-      setUploadFiles(uploadFiles);
+        setUploadFiles(uploadFiles);
+      } catch (error) {
+        Object.assign(item, {
+          uploadFailed: true,
+          failedMessage: String(error),
+        });
+      }
     }
   }, [uploadFiles]);
 
-  const deleteFile = async (id: string, attachmentId: string) => {
+  const deleteFile = async (file: UploadFile) => {
+    const { id, uploadFailed, attachmentId } = file;
+
     setUploadFiles(uploadFiles.filter((file) => file.id !== id));
+
+    if (uploadFailed) return;
 
     platformAdapter.commands("delete_attachment", {
       serverId,
@@ -71,16 +84,25 @@ const FileList = (props: FileListProps) => {
   return (
     <div className="flex flex-wrap gap-y-2 -mx-1 text-sm">
       {uploadFiles.map((file) => {
-        const { id, name, extname, size, uploaded, attachmentId } = file;
+        const {
+          id,
+          name,
+          extname,
+          size,
+          uploaded,
+          attachmentId,
+          uploadFailed,
+          failedMessage,
+        } = file;
 
         return (
           <div key={id} className="w-1/3 px-1">
             <div className="relative group flex items-center gap-1 p-1 rounded-[4px] bg-[#dedede] dark:bg-[#202126]">
-              {attachmentId && (
+              {(uploadFailed || attachmentId) && (
                 <div
                   className="absolute flex justify-center items-center size-[14px] bg-red-600 top-0 right-0 rounded-full cursor-pointer translate-x-[5px] -translate-y-[5px] transition opacity-0 group-hover:opacity-100 "
                   onClick={() => {
-                    deleteFile(id, attachmentId);
+                    deleteFile(file);
                   }}
                 >
                   <X className="size-[10px] text-white" />
@@ -94,16 +116,24 @@ const FileList = (props: FileListProps) => {
                   {name}
                 </div>
 
-                <div className="text-xs text-[#999999]">
-                  {uploaded ? (
-                    <div className="flex gap-2">
-                      {extname && <span>{extname}</span>}
-                      <span>
-                        {filesize(size, { standard: "jedec", spacer: "" })}
-                      </span>
-                    </div>
+                <div className="text-xs">
+                  {uploadFailed && failedMessage ? (
+                    <Tooltip2 content={failedMessage}>
+                      <span className="text-red-500">Upload Failed</span>
+                    </Tooltip2>
                   ) : (
-                    <span>{t("assistant.fileList.uploading")}</span>
+                    <div className="text-[#999]">
+                      {uploaded ? (
+                        <div className="flex gap-2">
+                          {extname && <span>{extname}</span>}
+                          <span>
+                            {filesize(size, { standard: "jedec", spacer: "" })}
+                          </span>
+                        </div>
+                      ) : (
+                        <span>{t("assistant.fileList.uploading")}</span>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>

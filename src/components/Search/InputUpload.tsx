@@ -1,4 +1,4 @@
-import { Fragment, MouseEvent } from "react";
+import { FC, Fragment, MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronRight, Plus } from "lucide-react";
 import {
@@ -35,7 +35,7 @@ interface MenuItem {
   clickEvent?: (event: MouseEvent) => void;
 }
 
-interface InputExtraProps {
+interface InputUploadProps {
   checkScreenPermission: () => Promise<boolean>;
   requestScreenPermission: () => void;
   getScreenMonitors: () => Promise<any[]>;
@@ -49,30 +49,22 @@ interface InputExtraProps {
   getFileIcon: (path: string, size: number) => Promise<string>;
 }
 
-const InputExtra = ({
-  checkScreenPermission,
-  requestScreenPermission,
-  getScreenMonitors,
-  getScreenWindows,
-  captureMonitorScreenshot,
-  captureWindowScreenshot,
-  openFileDialog,
-  getFileMetadata,
-  getFileIcon,
-}: InputExtraProps) => {
+const InputUpload: FC<InputUploadProps> = (props) => {
+  const {
+    checkScreenPermission,
+    requestScreenPermission,
+    getScreenMonitors,
+    getScreenWindows,
+    captureMonitorScreenshot,
+    captureWindowScreenshot,
+    openFileDialog,
+    getFileMetadata,
+    getFileIcon,
+  } = props;
   const { t, i18n } = useTranslation();
-  const uploadFiles = useChatStore((state) => state.uploadFiles);
-  const setUploadFiles = useChatStore((state) => state.setUploadFiles);
-  const withVisibility = useAppStore((state) => state.withVisibility);
-  const modifierKey = useShortcutsStore((state) => {
-    return state.modifierKey;
-  });
-  const addFile = useShortcutsStore((state) => {
-    return state.addFile;
-  });
-  const modifierKeyPressed = useShortcutsStore((state) => {
-    return state.modifierKeyPressed;
-  });
+  const { uploadFiles, setUploadFiles } = useChatStore();
+  const { withVisibility, addError } = useAppStore();
+  const { modifierKey, addFile, modifierKeyPressed } = useShortcutsStore();
 
   const state = useReactive<State>({
     screenshotableMonitors: [],
@@ -104,6 +96,8 @@ const InputExtra = ({
       const stat = await getFileMetadata(path);
 
       if (stat.size / 1024 / 1024 > 100) {
+        addError(t("search.input.uploadFileHints.maxSize"));
+
         continue;
       }
 
@@ -184,25 +178,23 @@ const InputExtra = ({
 
   return (
     <Menu>
-      <MenuButton className="size-6">
-        <Tooltip content="支持截图、上传文件，最多 50个，单个文件最大 100 MB。">
-          <div className="size-full flex justify-center items-center rounded-lg transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]">
-            <Plus
-              className={clsx("size-5", {
-                hidden: modifierKeyPressed,
-              })}
-            />
+      <MenuButton className="flex p-1 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]">
+        <Tooltip content={t("search.input.uploadFileHints.tooltip")}>
+          <Plus
+            className={clsx("size-3 scale-[1.3]", {
+              hidden: modifierKeyPressed,
+            })}
+          />
 
-            <div
-              className={clsx(
-                "size-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]",
-                {
-                  hidden: !modifierKeyPressed,
-                }
-              )}
-            >
-              {addFile}
-            </div>
+          <div
+            className={clsx(
+              "size-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]",
+              {
+                hidden: !modifierKeyPressed,
+              }
+            )}
+          >
+            {addFile}
           </div>
         </Tooltip>
       </MenuButton>
@@ -280,4 +272,4 @@ const InputExtra = ({
   );
 };
 
-export default InputExtra;
+export default InputUpload;

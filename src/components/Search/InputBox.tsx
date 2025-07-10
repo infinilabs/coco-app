@@ -71,6 +71,15 @@ export default function ChatInput({
   hasModules = [],
   searchPlaceholder,
   chatPlaceholder,
+  checkScreenPermission,
+  requestScreenPermission,
+  getScreenMonitors,
+  getScreenWindows,
+  captureWindowScreenshot,
+  captureMonitorScreenshot,
+  openFileDialog,
+  getFileMetadata,
+  getFileIcon,
 }: ChatInputProps) {
   const { t } = useTranslation();
 
@@ -351,6 +360,15 @@ export default function ChatInput({
         isMCPActive={isMCPActive}
         setIsMCPActive={setIsMCPActive}
         changeMode={changeMode}
+        checkScreenPermission={checkScreenPermission}
+        requestScreenPermission={requestScreenPermission}
+        getScreenMonitors={getScreenMonitors}
+        getScreenWindows={getScreenWindows}
+        captureMonitorScreenshot={captureMonitorScreenshot}
+        captureWindowScreenshot={captureWindowScreenshot}
+        openFileDialog={openFileDialog}
+        getFileMetadata={getFileMetadata}
+        getFileIcon={getFileIcon}
       />
     </div>
   );

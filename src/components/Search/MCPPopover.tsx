@@ -166,7 +166,7 @@ export default function MCPPopover({
   return (
     <div
       className={clsx(
-        "flex items-center gap-1 p-[3px] pr-1 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126] cursor-pointer",
+        "flex items-center gap-1 p-1 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126] cursor-pointer",
         {
           "!bg-[rgba(0,114,255,0.3)]": isMCPActive,
         }
