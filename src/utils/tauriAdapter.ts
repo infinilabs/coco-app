@@ -327,7 +327,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
 
       return await commandWrapper.commands("assistant_search", {
         serverId,
-        ...queryParams,
+        queryParams,
       });
     },
   };
