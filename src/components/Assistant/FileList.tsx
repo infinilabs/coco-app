@@ -6,9 +6,9 @@ import { useTranslation } from "react-i18next";
 
 import { useChatStore, UploadFile } from "@/stores/chatStore";
 import { useConnectStore } from "@/stores/connectStore";
-import FileIcon from "../Common/Icons/FileIcon";
 import platformAdapter from "@/utils/platformAdapter";
 import Tooltip2 from "../Common/Tooltip2";
+import FileIcon from "../Common/Icons/FileIcon";
 
 interface FileListProps {
   sessionId: string;
@@ -87,6 +87,7 @@ const FileList = (props: FileListProps) => {
         const {
           id,
           name,
+          path,
           extname,
           size,
           uploaded,
@@ -109,7 +110,7 @@ const FileList = (props: FileListProps) => {
                 </div>
               )}
 
-              <FileIcon extname={extname} />
+              <FileIcon path={path} />
 
               <div className="flex flex-col justify-between overflow-hidden">
                 <div className="truncate text-[#333333] dark:text-[#D8D8D8]">

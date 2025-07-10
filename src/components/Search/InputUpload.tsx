@@ -59,7 +59,6 @@ const InputUpload: FC<InputUploadProps> = (props) => {
     captureWindowScreenshot,
     openFileDialog,
     getFileMetadata,
-    getFileIcon,
   } = props;
   const { t, i18n } = useTranslation();
   const { uploadFiles, setUploadFiles } = useChatStore();
@@ -105,7 +104,6 @@ const InputUpload: FC<InputUploadProps> = (props) => {
         ...stat,
         id: nanoid(),
         path,
-        icon: await getFileIcon(path, 256),
       });
     }
 
