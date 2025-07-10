@@ -6,8 +6,6 @@ import { useWavesurfer } from "@wavesurfer/react";
 import RecordPlugin from "wavesurfer.js/dist/plugins/record.esm.js";
 
 import { useConnectStore } from "@/stores/connectStore";
-import { useShortcutsStore } from "@/stores/shortcutsStore";
-import VisibleKey from "@/components/Common/VisibleKey";
 import { useAppStore } from "@/stores/appStore";
 import platformAdapter from "@/utils/platformAdapter";
 
@@ -38,7 +36,6 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
   const recordRef = useRef<RecordPlugin>();
   const { withVisibility, addError } = useAppStore();
   const { currentService } = useConnectStore();
-  const { voiceInput } = useShortcutsStore();
 
   const { wavesurfer } = useWavesurfer({
     container: containerRef,
@@ -171,9 +168,9 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
         )}
         onClick={startRecording}
       >
-        <VisibleKey shortcut={voiceInput} onKeyPress={startRecording}>
-          <Mic className="size-4 text-[#999]" />
-        </VisibleKey>
+        {/* <VisibleKey shortcut={voiceInput} onKeyPress={startRecording}> */}
+        <Mic className="size-4 text-[#999]" />
+        {/* </VisibleKey>  */}
       </div>
 
       <div
