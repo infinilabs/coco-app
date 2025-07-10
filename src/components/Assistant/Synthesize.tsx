@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
-import { useReactive } from "ahooks";
+import { useEffect, useRef } from "react";
 import dayjs from "dayjs";
 import durationPlugin from "dayjs/plugin/duration";
 
@@ -16,77 +15,83 @@ import forwardLight from "@/assets/images/ReadAloud/forward-light.png";
 import forwardDark from "@/assets/images/ReadAloud/forward-dark.png";
 import closeLight from "@/assets/images/ReadAloud/close-light.png";
 import closeDark from "@/assets/images/ReadAloud/close-dark.png";
+import { useConnectStore } from "@/stores/connectStore";
+import platformAdapter from "@/utils/platformAdapter";
+import { useStreamAudio } from "@/hooks/useStreamAudio";
+import { nanoid } from "nanoid";
+import { useChatStore } from "@/stores/chatStore";
 
 dayjs.extend(durationPlugin);
 
-interface State {
-  loading: boolean;
-  playing: boolean;
-  totalDuration: number;
-  currentDuration: number;
-}
+const Synthesize = () => {
+  const { isDark } = useThemeStore();
+  const { currentService } = useConnectStore();
+  const { synthesizeItem, setSynthesizeItem } = useChatStore();
+  const clientIdRef = useRef(nanoid());
 
-const ReadAloud = () => {
-  const isDark = useThemeStore((state) => state.isDark);
-  const state = useReactive<State>({
-    loading: false,
-    playing: true,
-    totalDuration: 300,
-    currentDuration: 0,
+  const {
+    loading,
+    playing,
+    currentTime,
+    totalTime,
+    audioRef,
+    audioUrl,
+    initMediaSource,
+    toggle,
+    seek,
+    appendBuffer,
+    onCanplay,
+    onTimeupdate,
+    onEnded,
+  } = useStreamAudio({
+    onSourceopen() {
+      return platformAdapter.invokeBackend("synthesize", {
+        clientId: clientIdRef.current,
+        serverId: currentService.id,
+        content: synthesizeItem?.content,
+        voice: "longwan_v2",
+      });
+    },
   });
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
-
-  const formatTime = useMemo(() => {
-    return dayjs.duration(state.currentDuration * 1000).format("mm:ss");
-  }, [state.currentDuration]);
 
   useEffect(() => {
-    if (state.playing && state.currentDuration >= state.totalDuration) {
-      state.currentDuration = 0;
-    }
+    const id = nanoid();
 
-    changeCurrentDuration();
-  }, [state.playing]);
+    clientIdRef.current = `synthesize-${id}`;
 
-  const changeCurrentDuration = (duration = state.currentDuration) => {
-    clearTimeout(timerRef.current);
+    initMediaSource();
 
-    let nextDuration = duration;
+    const unlisten = platformAdapter.listenEvent(
+      `synthesize-${id}`,
+      ({ payload }) => {
+        appendBuffer(new Uint8Array(payload));
+      }
+    );
 
-    if (duration < 0) {
-      nextDuration = 0;
-    }
-
-    if (duration >= state.totalDuration) {
-      state.currentDuration = state.totalDuration;
-
-      state.playing = false;
-    }
-
-    if (!state.playing) return;
-
-    state.currentDuration = nextDuration;
-
-    timerRef.current = setTimeout(() => {
-      changeCurrentDuration(duration + 1);
-    }, 1000);
-  };
+    return () => {
+      unlisten.then((unmount) => unmount());
+    };
+  }, [synthesizeItem?.id]);
 
   return (
     <div className="fixed top-[60px] left-1/2 z-1000 w-[200px] h-12 px-4 flex items-center justify-between -translate-x-1/2 border rounded-lg text-[#333] dark:text-[#D8D8D8] bg-white dark:bg-black dark:border-[#272828] shadow-[0_4px_8px_rgba(0,0,0,0.2)] dark:shadow-[0_4px_8px_rgba(255,255,255,0.15)]">
+      <audio
+        ref={audioRef}
+        src={audioUrl}
+        onCanPlay={onCanplay}
+        onTimeUpdate={onTimeupdate}
+        onEnded={onEnded}
+      />
+
       <div className="flex items-center gap-2">
-        {state.loading ? (
+        {loading ? (
           <img
             src={isDark ? loadingDark : loadingLight}
             className="size-4 animate-spin"
           />
         ) : (
-          <div
-            onClick={() => {
-              state.playing = !state.playing;
-            }}
-          >
-            {state.playing ? (
+          <div onClick={toggle}>
+            {playing ? (
               <img
                 src={isDark ? playDark : playLight}
                 className="size-4 cursor-pointer"
@@ -100,16 +105,20 @@ const ReadAloud = () => {
           </div>
         )}
 
-        <span className="text-sm">{formatTime}</span>
+        {!loading && (
+          <span className="text-sm">
+            {dayjs.duration(currentTime * 1000).format("mm:ss")}
+          </span>
+        )}
       </div>
       <div className="flex gap-3">
-        {!state.loading && (
+        {!loading && totalTime !== Infinity && (
           <>
             <img
               src={isDark ? backDark : backLight}
               className="size-4 cursor-pointer"
               onClick={() => {
-                changeCurrentDuration(state.currentDuration - 15);
+                seek(currentTime - 15);
               }}
             />
 
@@ -117,7 +126,7 @@ const ReadAloud = () => {
               src={isDark ? forwardDark : forwardLight}
               className="size-4 cursor-pointer"
               onClick={() => {
-                changeCurrentDuration(state.currentDuration + 15);
+                seek(currentTime + 15);
               }}
             />
           </>
@@ -126,10 +135,13 @@ const ReadAloud = () => {
         <img
           src={isDark ? closeDark : closeLight}
           className="size-4 cursor-pointer"
+          onClick={() => {
+            setSynthesizeItem(void 0);
+          }}
         />
       </div>
     </div>
   );
 };
 
-export default ReadAloud;
+export default Synthesize;
