@@ -1203,4 +1203,126 @@ mod tests {
 
         assert!(result.is_err());
     }
+
+    #[test]
+    fn test_serialize_quicklink_link_empty_components() {
+        // Case 1: Empty components should result in empty string
+        let link = QuicklinkLink { components: vec![] };
+
+        let mut serializer = serde_json::Serializer::new(Vec::new());
+        serialize_quicklink_link(&link, &mut serializer).unwrap();
+        let serialized = String::from_utf8(serializer.into_inner()).unwrap();
+        assert_eq!(serialized, r#""""#); // Empty string
+    }
+
+    #[test]
+    fn test_serialize_quicklink_link_static_str_only() {
+        // Case 2: Only StaticStr components
+        let link = QuicklinkLink {
+            components: vec![
+                QuicklinkLinkComponent::StaticStr("https://www.google.com/search?q=".to_string()),
+                QuicklinkLinkComponent::StaticStr("rust".to_string()),
+            ],
+        };
+
+        let mut serializer = serde_json::Serializer::new(Vec::new());
+        serialize_quicklink_link(&link, &mut serializer).unwrap();
+        let serialized = String::from_utf8(serializer.into_inner()).unwrap();
+        assert_eq!(serialized, r#""https://www.google.com/search?q=rust""#);
+    }
+
+    #[test]
+    fn test_serialize_quicklink_link_dynamic_placeholder_only() {
+        // Case 3: Only DynamicPlaceholder components
+        let link = QuicklinkLink {
+            components: vec![
+                QuicklinkLinkComponent::DynamicPlaceholder {
+                    argument_name: "query".to_string(),
+                    default: None,
+                },
+                QuicklinkLinkComponent::DynamicPlaceholder {
+                    argument_name: "language".to_string(),
+                    default: Some("en".to_string()),
+                },
+            ],
+        };
+
+        let mut serializer = serde_json::Serializer::new(Vec::new());
+        serialize_quicklink_link(&link, &mut serializer).unwrap();
+        let serialized = String::from_utf8(serializer.into_inner()).unwrap();
+        assert_eq!(
+            serialized,
+            r#""{query}{argument_name: \"language\", default: \"en\"}""#
+        );
+    }
+
+    #[test]
+    fn test_serialize_quicklink_link_mixed_components() {
+        // Case 4: Mix of StaticStr and DynamicPlaceholder components
+        let link = QuicklinkLink {
+            components: vec![
+                QuicklinkLinkComponent::StaticStr("https://www.google.com/search?q=".to_string()),
+                QuicklinkLinkComponent::DynamicPlaceholder {
+                    argument_name: "query".to_string(),
+                    default: None,
+                },
+                QuicklinkLinkComponent::StaticStr("&lang=".to_string()),
+                QuicklinkLinkComponent::DynamicPlaceholder {
+                    argument_name: "language".to_string(),
+                    default: Some("en".to_string()),
+                },
+            ],
+        };
+
+        let mut serializer = serde_json::Serializer::new(Vec::new());
+        serialize_quicklink_link(&link, &mut serializer).unwrap();
+        let serialized = String::from_utf8(serializer.into_inner()).unwrap();
+        assert_eq!(
+            serialized,
+            r#""https://www.google.com/search?q={query}&lang={argument_name: \"language\", default: \"en\"}""#
+        );
+    }
+
+    #[test]
+    fn test_serialize_quicklink_link_dynamic_placeholder_no_default() {
+        // Additional test: DynamicPlaceholder without default value
+        let link = QuicklinkLink {
+            components: vec![
+                QuicklinkLinkComponent::StaticStr("https://example.com/".to_string()),
+                QuicklinkLinkComponent::DynamicPlaceholder {
+                    argument_name: "category".to_string(),
+                    default: None,
+                },
+                QuicklinkLinkComponent::StaticStr("/items".to_string()),
+            ],
+        };
+
+        let mut serializer = serde_json::Serializer::new(Vec::new());
+        serialize_quicklink_link(&link, &mut serializer).unwrap();
+        let serialized = String::from_utf8(serializer.into_inner()).unwrap();
+        assert_eq!(serialized, r#""https://example.com/{category}/items""#);
+    }
+
+    #[test]
+    fn test_serialize_quicklink_link_dynamic_placeholder_with_default() {
+        // Additional test: DynamicPlaceholder with default value
+        let link = QuicklinkLink {
+            components: vec![
+                QuicklinkLinkComponent::StaticStr("https://api.example.com/".to_string()),
+                QuicklinkLinkComponent::DynamicPlaceholder {
+                    argument_name: "version".to_string(),
+                    default: Some("v1".to_string()),
+                },
+                QuicklinkLinkComponent::StaticStr("/data".to_string()),
+            ],
+        };
+
+        let mut serializer = serde_json::Serializer::new(Vec::new());
+        serialize_quicklink_link(&link, &mut serializer).unwrap();
+        let serialized = String::from_utf8(serializer.into_inner()).unwrap();
+        assert_eq!(
+            serialized,
+            r#""https://api.example.com/{argument_name: \"version\", default: \"v1\"}/data""#
+        );
+    }
 }
