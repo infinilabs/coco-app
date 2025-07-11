@@ -9,6 +9,7 @@ use derive_more::Display;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::Value as Json;
+use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::Path;
 use tauri::Manager;
@@ -45,8 +46,8 @@ pub struct Extension {
     platforms: Option<HashSet<Platform>>,
     /// Extension description.
     description: String,
-    //// Specify the icon for this extension, 
-    /// 
+    //// Specify the icon for this extension,
+    ///
     /// For the `plugin.json` file, this field can be specified in multi options:
     ///
     /// 1. It can be a path to the icon file, the path can be
@@ -59,9 +60,9 @@ pub struct Extension {
     /// In cases where your icon file is named similarly to a font class code, Coco
     /// will treat it as an icon file if it exists, i.e., if file `<extension>/assets/font_coco`
     /// exists, then Coco will use this file rather than the built-in 'font_coco' icon.
-    /// 
+    ///
     /// For the `struct Extension` loaded into memory, this field should be:
-    /// 
+    ///
     /// 1. An absolute path
     /// 2. A font code
     icon: String,
@@ -193,8 +194,16 @@ impl Extension {
             ExtensionType::Application => Some(OnOpened::Application {
                 app_path: self.id.clone(),
             }),
+            ExtensionType::Quicklink => {
+                let quicklink = self.quicklink.clone().unwrap_or_else(|| {
+                  panic!(
+                    "Quicklink extension [{}]'s [quicklink] field is not set, something wrong with your extension validity check", self.id
+                  )
+                });
+
+                Some(OnOpened::Quicklink(quicklink))
+            }
             ExtensionType::Script => todo!("not supported yet"),
-            ExtensionType::Quicklink => todo!("not supported yet"),
             ExtensionType::Setting => todo!("not supported yet"),
             ExtensionType::Calculator => None,
             ExtensionType::AiExtension => None,
@@ -270,7 +279,103 @@ pub(crate) struct CommandAction {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Quicklink {
-    link: String,
+    // NOTE that `struct QuicklinkLink` has its own derived `Deserialize`
+    // impl, but here, we need to deserialize it from a string,
+    //
+    // "https://www.google.com/search?q={query}"
+    //
+    // not a JSON object, so use a custom method.
+    #[serde(deserialize_with = "deserialize_quicklink_link")]
+    link: QuicklinkLink,
+    /// Specify the application to use to open this quicklink.
+    pub(crate) open_with: String,
+}
+
+impl Quicklink {
+    pub(crate) fn concatenate_url(
+        &self,
+        user_supplied_args: &Option<HashMap<String, String>>,
+    ) -> String {
+        let mut out = String::new();
+        for component in self.link.components.iter() {
+            match component {
+                QuicklinkLinkComponent::StaticStr(str) => {
+                    out.push_str(str.as_str());
+                }
+                QuicklinkLinkComponent::DynamicPlaceholder {
+                    argument_name,
+                    default,
+                } => {
+                    let opt_argument_value = match user_supplied_args {
+                        Some(args) => args.get(argument_name.as_str()),
+                        None => default.as_ref(),
+                    };
+                    // None => "" (an empty string)
+                    let argument_value_str = opt_argument_value.cloned().unwrap_or(String::new());
+
+                    out.push_str(&argument_value_str);
+                }
+            }
+        }
+        todo!()
+    }
+}
+
+/// Return the names of all the dynamic placeholder arguments.
+///
+/// NOTE that it is not a Rust associated function because we need to expose it
+/// to the frontend code:
+///
+/// ```javascript
+/// invoke('quicklink_placeholder_argument_names', { <A JSON that can be deserialized to `struct Quicklink`> } )
+/// ```
+#[tauri::command]
+pub(crate) fn quicklink_placeholder_argument_names(quicklink: Quicklink) -> Vec<String> {
+    let mut argument_names = Vec::new();
+
+    for component in quicklink.link.components.iter() {
+        if let QuicklinkLinkComponent::DynamicPlaceholder { argument_name, .. } = component {
+            argument_names.push(argument_name.clone());
+        }
+    }
+
+    argument_names
+}
+
+/// A quicklink consists of a sequence of components.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub(crate) struct QuicklinkLink {
+    components: Vec<QuicklinkLinkComponent>,
+}
+
+/// Custom deserialization function for QuicklinkLink from string
+fn deserialize_quicklink_link<'de, D>(deserializer: D) -> Result<QuicklinkLink, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let link_str = String::deserialize(deserializer)?;
+    let components = parse_quicklink_components(&link_str).map_err(serde::de::Error::custom)?;
+
+    Ok(QuicklinkLink { components })
+}
+
+/// A link component is either a static string, or a dynamic placeholder, e.g.,
+///
+/// "https://www.google.com/search?q={query}"
+///
+/// The above link can be split into the following components:
+///
+/// [StaticStr("https://www.google.com/search?q="), DynamicPlaceholder { argument_name: "query", default: None }]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub(crate) enum QuicklinkLinkComponent {
+    StaticStr(String),
+    /// For the valid formats of dynamic placeholder, see the doc comments of `fn parse_dynamic_placeholder()`
+    DynamicPlaceholder {
+        argument_name: String,
+        /// Will use this default value if this dynamic parameter is not supplied
+        /// by the user.
+        default: Option<String>,
+    },
 }
 
 #[derive(Debug, PartialEq, Deserialize, Serialize, Clone, Display, Copy)]
@@ -704,10 +809,7 @@ fn alter_extension_json_file(
 
         // Search in quicklinks
         if let Some(ref mut quicklinks) = root_extension.quicklinks {
-            if let Some(link) = quicklinks
-                .iter_mut()
-                .find(|lnk| lnk.id == sub_extension_id)
-            {
+            if let Some(link) = quicklinks.iter_mut().find(|lnk| lnk.id == sub_extension_id) {
                 how(link)?;
                 return Ok(());
             }
@@ -757,4 +859,306 @@ fn alter_extension_json_file(
     .map_err(|e| e.to_string())?;
 
     Ok(())
+}
+
+/// Helper function to impl Deserialize for `QuicklinkLink`.
+///
+/// Parse a quicklink string into components, handling dynamic placeholders
+fn parse_quicklink_components(input: &str) -> Result<Vec<QuicklinkLinkComponent>, String> {
+    let mut components = Vec::new();
+    let mut current_pos = 0;
+    let chars: Vec<char> = input.chars().collect();
+
+    while current_pos < chars.len() {
+        // Find the next opening brace
+        if let Some(open_pos) = chars[current_pos..].iter().position(|&c| c == '{') {
+            let absolute_open_pos = current_pos + open_pos;
+
+            // Add static string before the opening brace (if any)
+            if absolute_open_pos > current_pos {
+                let static_str: String = chars[current_pos..absolute_open_pos].iter().collect();
+                components.push(QuicklinkLinkComponent::StaticStr(static_str));
+            }
+
+            // Find the matching closing brace, handling nested braces
+            let mut brace_count = 1;
+            let mut close_pos = None;
+
+            for (i, &c) in chars[absolute_open_pos + 1..].iter().enumerate() {
+                match c {
+                    '{' => brace_count += 1,
+                    '}' => {
+                        brace_count -= 1;
+                        if brace_count == 0 {
+                            close_pos = Some(i);
+                            break;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+
+            if let Some(close_pos) = close_pos {
+                let absolute_close_pos = absolute_open_pos + 1 + close_pos;
+
+                // Extract the placeholder content
+                let placeholder_content: String = chars[absolute_open_pos + 1..absolute_close_pos]
+                    .iter()
+                    .collect();
+                let placeholder = parse_dynamic_placeholder(&placeholder_content)?;
+                components.push(placeholder);
+
+                current_pos = absolute_close_pos + 1;
+            } else {
+                return Err(format!(
+                    "Unmatched opening brace at position {}",
+                    absolute_open_pos
+                ));
+            }
+        } else {
+            // No more opening braces, add the remaining string as static
+            if current_pos < chars.len() {
+                let static_str: String = chars[current_pos..].iter().collect();
+                components.push(QuicklinkLinkComponent::StaticStr(static_str));
+            }
+            break;
+        }
+    }
+
+    Ok(components)
+}
+
+/// Helper function to impl Deserialize for `QuicklinkLink`.
+///
+/// Parse the content inside braces into a DynamicPlaceholder.
+///
+/// It supports the following formats:
+///
+/// 1. {query}: should be parsed to DynamicPlaceholder {argument_name: "query", default: None }
+/// 2. {argument_name: "query" }: should be parsed to DynamicPlaceholder {argument_name: "query", default: None }
+/// 3. {argument_name: "query", default: "rust" }: should be parsed to DynamicPlaceholder {argument_name: "query", default: Some("rust") }
+fn parse_dynamic_placeholder(content: &str) -> Result<QuicklinkLinkComponent, String> {
+    let trimmed = content.trim();
+
+    // Case 1: {query} - simple argument name
+    if !trimmed.contains(':') && !trimmed.contains(',') {
+        return Ok(QuicklinkLinkComponent::DynamicPlaceholder {
+            argument_name: trimmed.to_string(),
+            default: None,
+        });
+    }
+
+    // Case 2 & 3: {argument_name: "query"} or {argument_name: "query", default: "rust"}
+    // Parse as a simplified JSON-like structure
+    let mut argument_name = None;
+    let mut default_value = None;
+
+    // Split by commas and process each part
+    let parts: Vec<&str> = trimmed.split(',').collect();
+
+    for part in parts {
+        let part = part.trim();
+        if let Some(colon_pos) = part.find(':') {
+            let key = part[..colon_pos].trim();
+            let value = part[colon_pos + 1..].trim();
+
+            // Remove quotes from value if present
+            let value = if (value.starts_with('"') && value.ends_with('"'))
+                || (value.starts_with('\'') && value.ends_with('\''))
+            {
+                &value[1..value.len() - 1]
+            } else {
+                value
+            };
+
+            match key {
+                "argument_name" => argument_name = Some(value.to_string()),
+                "default" => default_value = Some(value.to_string()),
+                _ => return Err(format!("Unknown key '{}' in placeholder", key)),
+            }
+        }
+    }
+
+    let argument_name = argument_name.ok_or("Missing argument_name in placeholder")?;
+
+    Ok(QuicklinkLinkComponent::DynamicPlaceholder {
+        argument_name,
+        default: default_value,
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json;
+
+    #[test]
+    fn test_deserialize_quicklink_link_case1() {
+        // Case 1: {query} - simple argument name
+        let test_string = "https://www.google.com/search?q={query}";
+        let components = parse_quicklink_components(test_string).unwrap();
+        let link = QuicklinkLink { components };
+
+        assert_eq!(link.components.len(), 2);
+
+        match &link.components[0] {
+            QuicklinkLinkComponent::StaticStr(s) => {
+                assert_eq!(s, "https://www.google.com/search?q=")
+            }
+            _ => panic!("Expected StaticStr component"),
+        }
+
+        match &link.components[1] {
+            QuicklinkLinkComponent::DynamicPlaceholder {
+                argument_name,
+                default,
+            } => {
+                assert_eq!(argument_name, "query");
+                assert_eq!(default, &None);
+            }
+            _ => panic!("Expected DynamicPlaceholder component"),
+        }
+    }
+
+    #[test]
+    fn test_deserialize_quicklink_link_case2() {
+        // Case 2: {argument_name: "query"} - explicit argument name
+        let test_string = r#"https://www.google.com/search?q={argument_name: "query"}"#;
+        let components = parse_quicklink_components(test_string).unwrap();
+        let link = QuicklinkLink { components };
+
+        assert_eq!(link.components.len(), 2);
+
+        match &link.components[0] {
+            QuicklinkLinkComponent::StaticStr(s) => {
+                assert_eq!(s, "https://www.google.com/search?q=")
+            }
+            _ => panic!("Expected StaticStr component"),
+        }
+
+        match &link.components[1] {
+            QuicklinkLinkComponent::DynamicPlaceholder {
+                argument_name,
+                default,
+            } => {
+                assert_eq!(argument_name, "query");
+                assert_eq!(default, &None);
+            }
+            _ => panic!("Expected DynamicPlaceholder component"),
+        }
+    }
+
+    #[test]
+    fn test_deserialize_quicklink_link_case3() {
+        // Case 3: {argument_name: "query", default: "rust"} - with default value
+        let test_string =
+            r#"https://www.google.com/search?q={argument_name: "query", default: "rust"}"#;
+        let components = parse_quicklink_components(test_string).unwrap();
+        let link = QuicklinkLink { components };
+
+        assert_eq!(link.components.len(), 2);
+
+        match &link.components[0] {
+            QuicklinkLinkComponent::StaticStr(s) => {
+                assert_eq!(s, "https://www.google.com/search?q=")
+            }
+            _ => panic!("Expected StaticStr component"),
+        }
+
+        match &link.components[1] {
+            QuicklinkLinkComponent::DynamicPlaceholder {
+                argument_name,
+                default,
+            } => {
+                assert_eq!(argument_name, "query");
+                assert_eq!(default, &Some("rust".to_string()));
+            }
+            _ => panic!("Expected DynamicPlaceholder component"),
+        }
+    }
+
+    #[test]
+    fn test_deserialize_quicklink_link_multiple_placeholders() {
+        // Test multiple placeholders in one string
+        let test_string = r#"https://example.com/{category}/search?q={query}&lang={argument_name: "language", default: "en"}"#;
+        let components = parse_quicklink_components(test_string).unwrap();
+        let link = QuicklinkLink { components };
+
+        assert_eq!(link.components.len(), 6);
+
+        // Check the components
+        match &link.components[0] {
+            QuicklinkLinkComponent::StaticStr(s) => assert_eq!(s, "https://example.com/"),
+            _ => panic!("Expected StaticStr component"),
+        }
+
+        match &link.components[1] {
+            QuicklinkLinkComponent::DynamicPlaceholder {
+                argument_name,
+                default,
+            } => {
+                assert_eq!(argument_name, "category");
+                assert_eq!(default, &None);
+            }
+            _ => panic!("Expected DynamicPlaceholder component"),
+        }
+
+        match &link.components[2] {
+            QuicklinkLinkComponent::StaticStr(s) => assert_eq!(s, "/search?q="),
+            _ => panic!("Expected StaticStr component"),
+        }
+
+        match &link.components[3] {
+            QuicklinkLinkComponent::DynamicPlaceholder {
+                argument_name,
+                default,
+            } => {
+                assert_eq!(argument_name, "query");
+                assert_eq!(default, &None);
+            }
+            _ => panic!("Expected DynamicPlaceholder component"),
+        }
+
+        match &link.components[4] {
+            QuicklinkLinkComponent::StaticStr(s) => assert_eq!(s, "&lang="),
+            _ => panic!("Expected StaticStr component"),
+        }
+
+        match &link.components[5] {
+            QuicklinkLinkComponent::DynamicPlaceholder {
+                argument_name,
+                default,
+            } => {
+                assert_eq!(argument_name, "language");
+                assert_eq!(default, &Some("en".to_string()));
+            }
+            _ => panic!("Expected DynamicPlaceholder component"),
+        }
+    }
+
+    #[test]
+    fn test_deserialize_quicklink_link_no_placeholders() {
+        // Test string with no placeholders
+        let test_string = "https://www.google.com/search?q=fixed";
+        let components = parse_quicklink_components(test_string).unwrap();
+        let link = QuicklinkLink { components };
+
+        assert_eq!(link.components.len(), 1);
+
+        match &link.components[0] {
+            QuicklinkLinkComponent::StaticStr(s) => {
+                assert_eq!(s, "https://www.google.com/search?q=fixed")
+            }
+            _ => panic!("Expected StaticStr component"),
+        }
+    }
+
+    #[test]
+    fn test_deserialize_quicklink_link_error_unmatched_brace() {
+        // Test error case with unmatched brace
+        let test_string = "https://www.google.com/search?q={query";
+        let result = parse_quicklink_components(test_string);
+
+        assert!(result.is_err());
+    }
 }
