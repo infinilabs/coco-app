@@ -33,18 +33,22 @@ pub struct EditorInfo {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) enum OnOpened {
     /// Launch the application
-    Application {
-        app_path: String,
-    },
+    Application { app_path: String },
     /// Open the URL.
-    Document {
-        url: String,
-    },
+    Document { url: String },
     /// Spawn a child process to run the `CommandAction`.
     Command {
         action: crate::extension::CommandAction,
     },
-    Quicklink(crate::extension::Quicklink),
+    // NOTE that this variant has the same definition as `struct Quicklink`, but we
+    // cannot use it directly, its `link` field should be deserialized from a string,
+    // we need a JSON object here.
+    //
+    // See also the comments in `struct Quicklink`.
+    Quicklink {
+        link: crate::extension::QuicklinkLink,
+        open_with: String,
+    },
 }
 
 impl OnOpened {
@@ -62,7 +66,7 @@ impl OnOpened {
 
                 ret
             }
-            Self::Quicklink(_quicklink) => String::from("todo"),
+            Self::Quicklink { .. } => String::from("todo"),
         }
     }
 }
@@ -116,12 +120,12 @@ pub(crate) async fn open(
                 ));
             }
         }
-        OnOpened::Quicklink(quicklink) => {
-            let url = quicklink.concatenate_url(&extra_args);
+        OnOpened::Quicklink { link, open_with } => {
+            let url = link.concatenate_url(&extra_args);
 
             cfg_if::cfg_if! {
                 if #[cfg(target_os = "macos")] {
-                    let open_with = quicklink.open_with.as_str();
+                    let open_with = open_with.as_str();
                     let mut cmd = Command::new("open");
                     cmd.arg("-a").arg(open_with).arg(&url);
                     let output = cmd.output().map_err(|e| format!("failed to spawn open due to error [{}]", e))?;

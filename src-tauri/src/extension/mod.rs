@@ -211,7 +211,10 @@ impl Extension {
                   )
                 });
 
-                Some(OnOpened::Quicklink(quicklink))
+                Some(OnOpened::Quicklink{
+                  link: quicklink.link.clone(),
+                  open_with: quicklink.open_with.clone(),
+                })
             }
             ExtensionType::Script => todo!("not supported yet"),
             ExtensionType::Setting => todo!("not supported yet"),
@@ -296,39 +299,10 @@ pub struct Quicklink {
     //
     // not a JSON object, so use a custom method.
     #[serde(deserialize_with = "deserialize_quicklink_link")]
+    #[serde(serialize_with = "serialize_quicklink_link")]
     link: QuicklinkLink,
     /// Specify the application to use to open this quicklink.
     pub(crate) open_with: String,
-}
-
-impl Quicklink {
-    pub(crate) fn concatenate_url(
-        &self,
-        user_supplied_args: &Option<HashMap<String, String>>,
-    ) -> String {
-        let mut out = String::new();
-        for component in self.link.components.iter() {
-            match component {
-                QuicklinkLinkComponent::StaticStr(str) => {
-                    out.push_str(str.as_str());
-                }
-                QuicklinkLinkComponent::DynamicPlaceholder {
-                    argument_name,
-                    default,
-                } => {
-                    let opt_argument_value = match user_supplied_args {
-                        Some(args) => args.get(argument_name.as_str()),
-                        None => default.as_ref(),
-                    };
-                    // None => "" (an empty string)
-                    let argument_value_str = opt_argument_value.cloned().unwrap_or(String::new());
-
-                    out.push_str(&argument_value_str);
-                }
-            }
-        }
-        todo!()
-    }
 }
 
 /// Return the names of all the dynamic placeholder arguments.
@@ -358,6 +332,36 @@ pub(crate) struct QuicklinkLink {
     components: Vec<QuicklinkLinkComponent>,
 }
 
+impl QuicklinkLink {
+    pub(crate) fn concatenate_url(
+        &self,
+        user_supplied_args: &Option<HashMap<String, String>>,
+    ) -> String {
+        let mut out = String::new();
+        for component in self.components.iter() {
+            match component {
+                QuicklinkLinkComponent::StaticStr(str) => {
+                    out.push_str(str.as_str());
+                }
+                QuicklinkLinkComponent::DynamicPlaceholder {
+                    argument_name,
+                    default,
+                } => {
+                    let opt_argument_value = match user_supplied_args {
+                        Some(args) => args.get(argument_name.as_str()),
+                        None => default.as_ref(),
+                    };
+                    // None => "" (an empty string)
+                    let argument_value_str = opt_argument_value.cloned().unwrap_or(String::new());
+
+                    out.push_str(&argument_value_str);
+                }
+            }
+        }
+        out
+    }
+}
+
 /// Custom deserialization function for QuicklinkLink from string
 fn deserialize_quicklink_link<'de, D>(deserializer: D) -> Result<QuicklinkLink, D::Error>
 where
@@ -367,6 +371,44 @@ where
     let components = parse_quicklink_components(&link_str).map_err(serde::de::Error::custom)?;
 
     Ok(QuicklinkLink { components })
+}
+
+/// Custom serialization function for QuicklinkLink to a string
+fn serialize_quicklink_link<S>(link: &QuicklinkLink, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    let mut result = String::new();
+
+    for component in &link.components {
+        match component {
+            QuicklinkLinkComponent::StaticStr(s) => {
+                result.push_str(s);
+            }
+            QuicklinkLinkComponent::DynamicPlaceholder {
+                argument_name,
+                default,
+            } => {
+                result.push('{');
+
+                // If it's a simple case (no default), just use the argument name
+                if default.is_none() {
+                    result.push_str(argument_name);
+                } else {
+                    // Use the full format with argument_name and default
+                    result.push_str(&format!(
+                        r#"argument_name: "{}", default: "{}""#,
+                        argument_name,
+                        default.as_ref().unwrap()
+                    ));
+                }
+
+                result.push('}');
+            }
+        }
+    }
+
+    serializer.serialize_str(&result)
 }
 
 /// A link component is either a static string, or a dynamic placeholder, e.g.,
