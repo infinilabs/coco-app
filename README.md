@@ -91,6 +91,8 @@ pnpm tauri build
 
 - [Coco App Documentation](https://docs.infinilabs.com/coco-app/main/)
 - [Coco Server Documentation](https://docs.infinilabs.com/coco-server/main/)
+- [DeepWiki Coco App](https://deepwiki.com/infinilabs/coco-app)
+- [DeepWiki Coco Server](https://deepwiki.com/infinilabs/coco-server)
 - [Tauri Documentation](https://tauri.app/)
 
 ## Contributors
