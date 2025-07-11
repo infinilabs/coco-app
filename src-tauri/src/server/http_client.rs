@@ -5,6 +5,8 @@ use reqwest::{Client, Method, RequestBuilder};
 use std::collections::HashMap;
 use std::time::Duration;
 use tokio::sync::Mutex;
+use std::sync::LazyLock;
+use crate::util::platform::Platform;
 
 pub(crate) fn new_reqwest_http_client(accept_invalid_certs: bool) -> Client {
     Client::builder()
@@ -25,6 +27,20 @@ pub static HTTP_CLIENT: Lazy<Mutex<Client>> = Lazy::new(|| {
     );
     Mutex::new(new_reqwest_http_client(allow_self_signature))
 });
+
+/// These header values won't change during a process's lifetime.
+static STATIC_HEADERS: LazyLock<HashMap<String, String>> = LazyLock::new(|| {
+    HashMap::from(
+      [
+        ("X-OS-NAME".into(), Platform::current().to_os_name_http_header_str().into_owned()),
+        ("X-OS-VER".into(), sysinfo::System::os_version().expect("sysinfo::System::os_version() should be Some on major systems")),
+        ("X-OS-ARCH".into(), sysinfo::System::cpu_arch()),
+        ("X-APP-NAME".into(), "coco-app".into()),
+        ("X-APP-VER".into(), env!("CARGO_PKG_VERSION").into()),
+      ]
+    )
+});
+
 
 pub struct HttpClient;
 
@@ -81,8 +97,18 @@ impl HttpClient {
         // Build the request
         let mut request_builder = client.request(method.clone(), url);
 
+        // Populate headers
+        let mut req_headers = reqwest::header::HeaderMap::new();
+        // headers defined by us
+        for (key, value) in STATIC_HEADERS.iter() {
+            let key = HeaderName::from_bytes(key.as_bytes()).expect("headers defined by us should be valid");
+            let value = HeaderValue::from_str(value.trim()).expect("headers defined by us should be valid");
+            req_headers.insert(key, value);
+        }
+        // TODO: X-APP-LANG
+
+        // Headers from the function parameter
         if let Some(h) = headers {
-            let mut req_headers = reqwest::header::HeaderMap::new();
             for (key, value) in h.into_iter() {
                 match (
                     HeaderName::from_bytes(key.as_bytes()),
