@@ -4,13 +4,14 @@ import { Send } from "lucide-react";
 import StopIcon from "@/icons/Stop";
 import { useChatStore } from "@/stores/chatStore";
 import clsx from "clsx";
+import { SendMessageParams } from "../Assistant/Chat";
 
 interface ChatIconsProps {
   lineCount: number;
   isChatMode: boolean;
   curChatEnd: boolean;
   inputValue: string;
-  onSend: (value: string) => void;
+  onSend: (params: SendMessageParams) => void;
   disabledChange: () => void;
 }
 
@@ -37,7 +38,12 @@ const ChatIcons: React.FC<ChatIconsProps> = ({
             }
           )}
           type="submit"
-          onClick={() => onSend(inputValue.trim())}
+          onClick={() =>
+            onSend({
+              message: inputValue.trim(),
+              attachments: uploadFiles.map((item) => item.id),
+            })
+          }
         >
           <Send className="w-4 h-4 text-white" />
         </button>

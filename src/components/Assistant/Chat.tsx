@@ -42,8 +42,13 @@ interface ChatAIProps {
   startPage?: StartPage;
 }
 
+export interface SendMessageParams {
+  message?: string;
+  attachments?: string[];
+}
+
 export interface ChatAIRef {
-  init: (value: string) => void;
+  init: (params: SendMessageParams) => void;
   cancelChat: () => void;
   clearChat: () => void;
 }
@@ -217,7 +222,7 @@ const ChatAI = memo(
       }, [activeChat, chatClose]);
 
       const init = useCallback(
-        async (value: string) => {
+        async (params: SendMessageParams) => {
           try {
             //console.log("init", curChatEnd, activeChat?._id);
             if (!isCurrentLogin) {
@@ -229,9 +234,9 @@ const ChatAI = memo(
               return;
             }
             if (!activeChat?._id) {
-              await createNewChat(value, activeChat);
+              await createNewChat(activeChat, params);
             } else {
-              await handleSendMessage(value, activeChat);
+              await handleSendMessage(activeChat, params);
             }
           } catch (error) {
             console.error("Failed to initialize chat:", error);
@@ -276,7 +281,9 @@ const ChatAI = memo(
               if (updatedChats.length > 0) {
                 setActiveChat(updatedChats[0]);
               } else {
-                init("");
+                init({
+                  message: "",
+                });
               }
             }
 
@@ -387,8 +394,8 @@ const ChatAI = memo(
                   loadingStep={loadingStep}
                   timedoutShow={timedoutShow}
                   Question={Question}
-                  handleSendMessage={(value) =>
-                    handleSendMessage(value, activeChat)
+                  handleSendMessage={(message) =>
+                    handleSendMessage(activeChat, { message })
                   }
                   getFileUrl={getFileUrl}
                 />
@@ -399,7 +406,11 @@ const ChatAI = memo(
             )}
 
             {!activeChat?._id && !visibleStartPage && (
-              <PrevSuggestion sendMessage={init} />
+              <PrevSuggestion
+                sendMessage={(message) => {
+                  init({ message });
+                }}
+              />
             )}
 
             {synthesizeItem && <Synthesize />}

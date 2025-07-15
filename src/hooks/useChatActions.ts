@@ -9,6 +9,8 @@ import { useSearchStore } from "@/stores/searchStore";
 import { useAuthStore } from "@/stores/authStore";
 import { unrequitable } from "@/utils";
 import { streamPost } from "@/api/streamFetch";
+import { SendMessageParams } from "@/components/Assistant/Chat";
+import { isEmpty } from "lodash-es";
 
 export function useChatActions(
   setActiveChat: (chat: Chat | undefined) => void,
@@ -135,11 +137,15 @@ export function useChatActions(
   );
 
   const createNewChat = useCallback(
-    async (value: string = "", activeChat?: Chat) => {
+    async (activeChat?: Chat, params?: SendMessageParams) => {
+      const { message, attachments } = params || {};
+
+      if (!message || isEmpty(attachments)) return;
+
       setTimedoutShow(false);
       await chatClose(activeChat);
       clearAllChunkData();
-      setQuestion(value);
+      setQuestion(message);
 
       //console.log("sourceDataIds", sourceDataIds, MCPIds, id);
       const queryParams = {
@@ -154,22 +160,29 @@ export function useChatActions(
         if (!currentService?.id) return;
         await platformAdapter.commands("chat_create", {
           serverId: currentService?.id,
-          message: value,
+          message,
+          attachments,
           queryParams,
         });
       } else {
         await streamPost({
           url: "/chat/_create",
-          body: { message: value },
+          body: { message },
           queryParams,
-          onMessage: (line) => {  
+          onMessage: (line) => {
             console.log("⏳", line);
             handleChatCreateStreamMessage(line);
             // append to chat box
           },
         });
       }
-      console.log("_create", currentService?.id, value, queryParams);
+      console.log(
+        "_create",
+        currentService?.id,
+        message,
+        attachments,
+        queryParams
+      );
     },
     [
       isTauri,
@@ -186,8 +199,12 @@ export function useChatActions(
   );
 
   const sendMessage = useCallback(
-    async (content: string, newChat: Chat) => {
-      if (!newChat?._id || !content) return;
+    async (newChat: Chat, params?: SendMessageParams) => {
+      if (!newChat?._id || !params) return;
+
+      const { message, attachments } = params;
+
+      if (!message || isEmpty(attachments)) return;
 
       clearAllChunkData();
 
@@ -205,12 +222,13 @@ export function useChatActions(
           serverId: currentService?.id,
           sessionId: newChat?._id,
           queryParams,
-          message: content,
+          message,
+          attachments,
         });
       } else {
         await streamPost({
           url: `/chat/${newChat?._id}/_chat`,
-          body: { message: content },
+          body: { message },
           queryParams,
           onMessage: (line) => {
             console.log("line", line);
@@ -225,7 +243,8 @@ export function useChatActions(
         currentService?.id,
         newChat?._id,
         queryParams,
-        content
+        message,
+        attachments
       );
     },
     [
@@ -243,57 +262,73 @@ export function useChatActions(
   );
 
   const handleSendMessage = useCallback(
-    async (content: string, activeChat?: Chat) => {
-      if (!activeChat?._id || !content) return;
-      setQuestion(content);
+    async (activeChat?: Chat, params?: SendMessageParams) => {
+      if (!activeChat?._id || !params) return;
+
+      const { message, attachments } = params;
+
+      if (!message || isEmpty(attachments)) return;
+
+      setQuestion(message);
 
       setTimedoutShow(false);
 
-      await chatHistory(activeChat, (chat) => sendMessage(content, chat));
+      await chatHistory(activeChat, (chat) => sendMessage(chat, params));
     },
     [chatHistory, sendMessage]
   );
 
-  const handleChatCreateStreamMessage = useCallback((msg: string) => {
-    if (
-      msg.includes("_id") &&
-      msg.includes("_source") &&
-      msg.includes("result")
-    ) {
-      const response = JSON.parse(msg);
-      console.log("first", response);
-      let updatedChat: Chat;
-      if (Array.isArray(response)) {
-        curIdRef.current = response[0]?._id;
-        updatedChat = {
-          ...updatedChatRef.current,
-          messages: [
-            ...(updatedChatRef.current?.messages || []),
-            ...(response || []),
-          ],
-        };
-        console.log("array", updatedChat, updatedChatRef.current?.messages);
-      } else {
-        const newChat: Chat = response;
-        curIdRef.current = response?.payload?.id;
+  const handleChatCreateStreamMessage = useCallback(
+    (msg: string) => {
+      if (
+        msg.includes("_id") &&
+        msg.includes("_source") &&
+        msg.includes("result")
+      ) {
+        const response = JSON.parse(msg);
+        console.log("first", response);
+        let updatedChat: Chat;
+        if (Array.isArray(response)) {
+          curIdRef.current = response[0]?._id;
+          updatedChat = {
+            ...updatedChatRef.current,
+            messages: [
+              ...(updatedChatRef.current?.messages || []),
+              ...(response || []),
+            ],
+          };
+          console.log("array", updatedChat, updatedChatRef.current?.messages);
+        } else {
+          const newChat: Chat = response;
+          curIdRef.current = response?.payload?.id;
 
-        newChat._source = {
-          ...response?.payload,
-        };
-        updatedChat = {
-          ...newChat,
-          messages: [newChat],
-        };
+          newChat._source = {
+            ...response?.payload,
+          };
+          updatedChat = {
+            ...newChat,
+            messages: [newChat],
+          };
+        }
+
+        changeInput && changeInput("");
+        setActiveChat(updatedChat);
+        setCurChatEnd(false);
+        setVisibleStartPage(false);
+        return;
       }
-
-      changeInput && changeInput("");
-      setActiveChat(updatedChat);
-      setCurChatEnd(false);
-      setVisibleStartPage(false);
-      return;
-    }
-    dealMsgRef.current?.(msg);
-  }, [curIdRef, updatedChatRef, changeInput, setActiveChat, setCurChatEnd, setVisibleStartPage, dealMsgRef]);
+      dealMsgRef.current?.(msg);
+    },
+    [
+      curIdRef,
+      updatedChatRef,
+      changeInput,
+      setActiveChat,
+      setCurChatEnd,
+      setVisibleStartPage,
+      dealMsgRef,
+    ]
+  );
 
   useEffect(() => {
     if (!isTauri || !currentService?.id) return;
