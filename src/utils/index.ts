@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { isArray, isNil, isObject, isString } from "lodash-es";
+import { filesize as filesizeLib } from "filesize";
 
 import platformAdapter from "./platformAdapter";
 import { useAppStore } from "@/stores/appStore";
@@ -191,4 +192,8 @@ export const isDefaultServer = (checkAvailability = true) => {
   }
 
   return isTauri && isDefaultServer;
+};
+
+export const filesize = (value: number, spacer?: string) => {
+  return filesizeLib(value, { standard: "jedec", spacer });
 };

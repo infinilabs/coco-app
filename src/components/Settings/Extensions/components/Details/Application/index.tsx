@@ -1,10 +1,10 @@
 import { useContext, useMemo, useState } from "react";
-import { filesize } from "filesize";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 import { useAsyncEffect } from "ahooks";
 import platformAdapter from "@/utils/platformAdapter";
 import { ExtensionsContext } from "../../../index";
+import { filesize } from "@/utils";
 
 interface Metadata {
   name: string;
@@ -57,7 +57,7 @@ const App = () => {
       },
       {
         label: t("settings.extensions.application.details.size"),
-        value: filesize(size, { standard: "jedec", spacer: "" }),
+        value: filesize(size),
       },
       {
         label: t("settings.extensions.application.details.created"),

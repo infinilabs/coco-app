@@ -1,4 +1,4 @@
-import { FC, Fragment, MouseEvent } from "react";
+import { FC, Fragment, MouseEvent, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronRight, Plus } from "lucide-react";
 import {
@@ -19,6 +19,8 @@ import { useAppStore } from "@/stores/appStore";
 import Tooltip from "@/components/Common/Tooltip";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import clsx from "clsx";
+import { useConnectStore } from "@/stores/connectStore";
+import { filesize } from "@/utils";
 
 interface State {
   screenRecordingPermission?: boolean;
@@ -64,6 +66,20 @@ const InputUpload: FC<InputUploadProps> = (props) => {
   const { uploadFiles, setUploadFiles } = useChatStore();
   const { withVisibility, addError } = useAppStore();
   const { modifierKey, addFile, modifierKeyPressed } = useShortcutsStore();
+  const { currentAssistant } = useConnectStore();
+  const uploadMaxSizeRef = useRef(1024 * 1024);
+  const uploadMaxCountRef = useRef(6);
+
+  useEffect(() => {
+    if (!currentAssistant?._source?.upload) return;
+
+    const { max_file_size_in_bytes, max_file_count } =
+      currentAssistant._source.upload;
+
+    uploadMaxSizeRef.current = max_file_size_in_bytes;
+
+    uploadMaxCountRef.current = max_file_count;
+  }, [currentAssistant]);
 
   const state = useReactive<State>({
     screenshotableMonitors: [],
@@ -94,8 +110,12 @@ const InputUpload: FC<InputUploadProps> = (props) => {
 
       const stat = await getFileMetadata(path);
 
-      if (stat.size / 1024 / 1024 > 100) {
-        addError(t("search.input.uploadFileHints.maxSize"));
+      if (stat.size > uploadMaxSizeRef.current) {
+        addError(
+          t("search.input.uploadFileHints.maxSize", {
+            replace: [filesize(uploadMaxSizeRef.current)],
+          })
+        );
 
         continue;
       }
@@ -177,7 +197,14 @@ const InputUpload: FC<InputUploadProps> = (props) => {
   return (
     <Menu>
       <MenuButton className="flex p-1 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]">
-        <Tooltip content={t("search.input.uploadFileHints.tooltip")}>
+        <Tooltip
+          content={t("search.input.uploadFileHints.tooltip", {
+            replace: [
+              uploadMaxCountRef.current,
+              filesize(uploadMaxSizeRef.current),
+            ],
+          })}
+        >
           <Plus
             className={clsx("size-3 scale-[1.3]", {
               hidden: modifierKeyPressed,

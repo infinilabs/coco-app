@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from "react";
-import { filesize } from "filesize";
 import { X } from "lucide-react";
 import { useAsyncEffect } from "ahooks";
 import { useTranslation } from "react-i18next";
@@ -9,6 +8,7 @@ import { useConnectStore } from "@/stores/connectStore";
 import platformAdapter from "@/utils/platformAdapter";
 import Tooltip2 from "../Common/Tooltip2";
 import FileIcon from "../Common/Icons/FileIcon";
+import { filesize } from "@/utils";
 
 const FileList = () => {
   const { t } = useTranslation();
@@ -26,6 +26,8 @@ const FileList = () => {
   }, []);
 
   useAsyncEffect(async () => {
+    const { uploadFiles } = useChatStore.getState();
+
     if (uploadFiles.length === 0) return;
 
     for await (const item of uploadFiles) {
@@ -63,6 +65,8 @@ const FileList = () => {
 
   const deleteFile = async (file: UploadFile) => {
     const { id, uploadFailed, attachmentId } = file;
+
+    const { uploadFiles } = useChatStore.getState();
 
     setUploadFiles(uploadFiles.filter((file) => file.id !== id));
 
@@ -120,9 +124,7 @@ const FileList = () => {
                       {uploaded ? (
                         <div className="flex gap-2">
                           {extname && <span>{extname}</span>}
-                          <span>
-                            {filesize(size, { standard: "jedec", spacer: "" })}
-                          </span>
+                          <span>{filesize(size)}</span>
                         </div>
                       ) : (
                         <span>{t("assistant.fileList.uploading")}</span>

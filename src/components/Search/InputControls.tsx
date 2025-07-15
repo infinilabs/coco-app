@@ -75,6 +75,8 @@ const InputControls = ({
 
   const source = currentAssistant?._source;
 
+  console.log("source", source);
+
   const assistantConfig = useMemo(() => {
     return {
       datasourceEnabled: source?.datasource?.enabled,
@@ -171,17 +173,19 @@ const InputControls = ({
     >
       {isChatMode ? (
         <div className="flex gap-2 text-[12px] leading-3 text-[#333] dark:text-[#d8d8d8]">
-          <InputUpload
-            checkScreenPermission={checkScreenPermission}
-            requestScreenPermission={requestScreenPermission}
-            getScreenMonitors={getScreenMonitors}
-            getScreenWindows={getScreenWindows}
-            captureMonitorScreenshot={captureMonitorScreenshot}
-            captureWindowScreenshot={captureWindowScreenshot}
-            openFileDialog={openFileDialog}
-            getFileMetadata={getFileMetadata}
-            getFileIcon={getFileIcon}
-          />
+          {source?.upload?.enabled && (
+            <InputUpload
+              checkScreenPermission={checkScreenPermission}
+              requestScreenPermission={requestScreenPermission}
+              getScreenMonitors={getScreenMonitors}
+              getScreenWindows={getScreenWindows}
+              captureMonitorScreenshot={captureMonitorScreenshot}
+              captureWindowScreenshot={captureWindowScreenshot}
+              openFileDialog={openFileDialog}
+              getFileMetadata={getFileMetadata}
+              getFileIcon={getFileIcon}
+            />
+          )}
 
           {source?.type === "deep_think" && source?.config?.visible && (
             <button
@@ -231,7 +235,8 @@ const InputControls = ({
             getMCPByServer={getMCPByServer}
           />
 
-          {!(source?.datasource?.enabled && source?.datasource?.visible) &&
+          {!source?.upload?.enabled &&
+            !(source?.datasource?.enabled && source?.datasource?.visible) &&
             (source?.type !== "deep_think" || !source?.config?.visible) &&
             !(source?.mcp_servers?.enabled && source?.mcp_servers?.visible) && (
               <div className="px-[9px]">
