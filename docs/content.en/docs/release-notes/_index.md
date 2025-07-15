@@ -16,6 +16,7 @@ Information about release notes of Coco Server is provided here.
 - feat: file search using spotlight #705
 - feat: voice input support in both search and chat modes #732
 - feat: text to speech now powered by LLM #750
+- feat: file search for Windows #762
 
 ### 🐛 Bug fix
 
