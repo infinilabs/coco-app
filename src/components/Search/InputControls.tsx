@@ -75,8 +75,6 @@ const InputControls = ({
 
   const source = currentAssistant?._source;
 
-  console.log("source", source);
-
   const assistantConfig = useMemo(() => {
     return {
       datasourceEnabled: source?.datasource?.enabled,
