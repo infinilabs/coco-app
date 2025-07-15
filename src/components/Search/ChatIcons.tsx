@@ -2,6 +2,8 @@ import React from "react";
 import { Send } from "lucide-react";
 
 import StopIcon from "@/icons/Stop";
+import { useChatStore } from "@/stores/chatStore";
+import clsx from "clsx";
 
 interface ChatIconsProps {
   lineCount: number;
@@ -20,15 +22,20 @@ const ChatIcons: React.FC<ChatIconsProps> = ({
   onSend,
   disabledChange,
 }) => {
+  const { uploadFiles } = useChatStore();
+
   const renderSendButton = () => {
     if (!isChatMode) return null;
 
     if (curChatEnd) {
       return (
         <button
-          className={`ml-1 p-1 ${
-            inputValue ? "bg-[#0072FF]" : "bg-[#E4E5F0] dark:bg-[rgb(84,84,84)]"
-          } rounded-full transition-colors h-6`}
+          className={clsx(
+            "ml-1 p-1 rounded-full transition-colors h-6 bg-[#E4E5F0] dark:bg-[rgb(84,84,84)]",
+            {
+              "!bg-[#0072FF]": inputValue || uploadFiles.length > 0,
+            }
+          )}
           type="submit"
           onClick={() => onSend(inputValue.trim())}
         >
