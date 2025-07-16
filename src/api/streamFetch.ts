@@ -15,10 +15,13 @@ export async function streamPost({
 }) {
   const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
 
-  let baseURL = appStore.state?.endpoint_http
+  let baseURL = appStore.state?.endpoint_http;
   if (!baseURL || baseURL === "undefined") {
     baseURL = "";
   }
+
+  const headersStr = localStorage.getItem("headers") || "{}";
+  const headersStorage = JSON.parse(headersStr);
 
   const query = new URLSearchParams(queryParams || {}).toString();
   const fullUrl = `${baseURL}${url}?${query}`;
@@ -28,6 +31,7 @@ export async function streamPost({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...(headersStorage),
         ...(headers || {}),
       },
       body: JSON.stringify(body),
