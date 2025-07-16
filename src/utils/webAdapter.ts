@@ -200,13 +200,13 @@ export const createWebAdapter = (): WebPlatformAdapter => {
       console.log("revealItemInDir is not supported in web environment", path);
     },
 
-    async openSearchItem(data) {
+    async openSearchItem(data, formatUrl) {
       if (data.type === "AI Assistant") {
         return;
       }
 
       if (data?.url) {
-        return OpenURLWithBrowser(data.url);
+        return OpenURLWithBrowser(formatUrl && formatUrl(data) || data.url);
       }
 
       if (data?.payload?.result?.value) {

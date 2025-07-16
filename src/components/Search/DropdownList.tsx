@@ -26,6 +26,7 @@ interface DropdownListProps {
   isSearchComplete: boolean;
   isChatMode: boolean;
   globalItemIndexMap: Record<number, SearchDocument>;
+  formatUrl?: (item: any) => string;
 }
 
 function DropdownList({
@@ -34,6 +35,7 @@ function DropdownList({
   isError,
   isChatMode,
   globalItemIndexMap,
+  formatUrl,
 }: DropdownListProps) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -77,7 +79,7 @@ function DropdownList({
         setSelectedSearchContent(item);
       },
       onItemClick: (item: SearchDocument) => {
-        platformAdapter.openSearchItem(item);
+        platformAdapter.openSearchItem(item, formatUrl);
       },
       goToTwoPage: (item: SearchDocument) => {
         setSourceData(item);
@@ -142,6 +144,7 @@ function DropdownList({
     globalItemIndexMap,
     handleItemAction,
     isChatMode,
+    formatUrl,
   });
 
   return (

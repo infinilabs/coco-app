@@ -1,143 +1,64 @@
-# SearchChat Web Component API
+# @infinilabs/search-chat 组件安装与使用说明
 
-A customizable search and chat interface component for web applications.
-
-## Installation
+## 安装
 
 ```bash
-npm install @infini/coco-app
+npm install @infinilabs/search-chat
+# 或
+pnpm add @infinilabs/search-chat
+# 或
+yarn add @infinilabs/search-chat
 ```
 
-## Basic Usage
+## 快速开始
 
-```jsx
-import SearchChat from '@infini/coco-app';
+```tsx
+import SearchChat from '@infinilabs/search-chat';
 
 function App() {
   return (
-    <SearchChat 
-      serverUrl="https://your-server.com"
-      headers={{
-        "X-API-TOKEN": "your-token",
-        "APP-INTEGRATION-ID": "your-app-id"
-      }}
+    <SearchChat
+      serverUrl="https://your-api-url"
+      width={800}
+      height={600}
+      hasModules={['search', 'chat']}
+      defaultModule="search"
+      assistantIDs={["a1", "a2"]}
+      theme="auto"
+      searchPlaceholder="请输入搜索内容"
+      chatPlaceholder="请输入聊天内容"
+      showChatHistory={true}
+      // 其他参数...
     />
   );
 }
 ```
 
-## Props
+## 参数说明
 
-### `width`
-- **Type**: `number`
-- **Default**: `680`
-- **Description**: Maximum width of the component in pixels
+| 参数名             | 类型                           | 说明                                                         |
+|--------------------|--------------------------------|--------------------------------------------------------------|
+| headers            | Record<string, unknown>        | 可选，自定义请求头                                           |
+| serverUrl          | string                         | 可选，后端服务地址                                           |
+| width              | number                         | 可选，组件宽度（像素）                                       |
+| height             | number                         | 可选，组件高度（像素）                                       |
+| hasModules         | string[]                       | 可选，启用的模块列表，如 ['search', 'chat']                  |
+| defaultModule      | "search" \| "chat"            | 可选，默认模块                                               |
+| assistantIDs       | string[]                       | 可选，指定可用的助手 ID 列表                                 |
+| theme              | "auto" \| "light" \| "dark"   | 可选，主题模式                                               |
+| searchPlaceholder  | string                         | 可选，搜索输入框占位符                                       |
+| chatPlaceholder    | string                         | 可选，聊天输入框占位符                                       |
+| showChatHistory    | boolean                        | 可选，是否显示聊天历史                                       |
+| startPage          | StartPage                      | 可选，初始页面配置（类型需参考实际定义）                     |
+| setIsPinned        | (value: boolean) => void       | 可选，设置是否置顶的回调                                     |
+| onCancel           | () => void                     | 可选，取消操作回调                                           |
+| formatUrl          | (item: any) => string          | 可选，格式化 URL 的函数                                      |
+| isOpen             | boolean                        | 可选，是否打开组件                                           |
 
-### `height`
-- **Type**: `number`
-- **Default**: `590`
-- **Description**: Height of the component in pixels
+> 其中 `StartPage` 类型请参考项目内定义。
 
-### `headers`
-- **Type**: `Record<string, unknown>`
-- **Default**: 
-```typescript
-{
-  "X-API-TOKEN": "default-token",
-  "APP-INTEGRATION-ID": "default-id"
-}
-```
-- **Description**: HTTP headers for API requests
-
-### `serverUrl`
-- **Type**: `string`
-- **Default**: `""`
-- **Description**: Base URL for the server API
-
-### `hasModules`
-- **Type**: `string[]`
-- **Default**: `["search", "chat"]`
-- **Description**: Available modules to show
-
-### `defaultModule`
-- **Type**: `"search" | "chat"`
-- **Default**: `"search"`
-- **Description**: Initial active module
-
-### `assistantIDs`
-- **Type**: `string[]`
-- **Default**: `[]`
-- **Description**: List of assistant IDs to use
-
-### `theme`
-- **Type**: `"auto" | "light" | "dark"`
-- **Default**: `"dark"`
-- **Description**: UI theme setting
-
-### `searchPlaceholder`
-- **Type**: `string`
-- **Default**: `""`
-- **Description**: Placeholder text for search input
-
-### `chatPlaceholder`
-- **Type**: `string`
-- **Default**: `""`
-- **Description**: Placeholder text for chat input
-
-### `showChatHistory`
-- **Type**: `boolean`
-- **Default**: `false`
-- **Description**: Whether to display chat history panel
-
-### `startPage`
-- **Type**: `StartPage`
-- **Optional**: Yes
-- **Description**: Initial page configuration
-
-### `setIsPinned`
-- **Type**: `(value: boolean) => void`
-- **Optional**: Yes
-- **Description**: Callback when pin status changes
-
-### `onCancel`
-- **Type**: `() => void`
-- **Optional**: Yes
-- **Description**: Callback when close button is clicked (mobile only)
-
-### `isOpen`
-- **Type**: `boolean`
-- **Optional**: Yes
-- **Description**: Control component visibility
-
-## Events
-
-The component emits the following events:
-
-- `onModeChange`: Triggered when switching between search and chat modes
-- `onCancel`: Triggered when the close button is clicked (mobile only)
-
-## Mobile Support
-
-The component is responsive and includes mobile-specific features:
-- Automatic height adjustment
-- Close button in top-right corner
-- Touch-friendly interface
-
-## Example
-
-```jsx
-<SearchChat
-  width={800}
-  height={600}
-  serverUrl="https://api.example.com"
-  headers={{
-    "X-API-TOKEN": "your-token",
-    "APP-INTEGRATION-ID": "your-app-id"
-  }}
-  theme="dark"
-  showChatHistory={true}
-  hasModules={["search", "chat"]}
-  defaultModule="chat"
-  setIsPinned={(isPinned) => console.log('Pinned:', isPinned)}
-/>
-```
+## 说明
+- 依赖 React 18 及以上版本。
+- 组件打包为 ESM 格式，需由宿主项目提供 `react`、`react-dom`。
+- 支持按需加载模块与自定义主题。
+- 更多高级用法请参考源码或联系开发者。

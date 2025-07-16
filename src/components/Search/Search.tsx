@@ -16,7 +16,8 @@ const SearchResultsPanel = memo<{
   isChatMode: boolean;
   changeInput: (val: string) => void;
   changeMode?: (isChatMode: boolean) => void;
-}>(({ input, isChatMode, changeInput, changeMode }) => {
+  formatUrl?: (item: string) => string;
+}>(({ input, isChatMode, changeInput, changeMode, formatUrl }) => {
   const {
     sourceData,
     goAskAi,
@@ -90,6 +91,7 @@ const SearchResultsPanel = memo<{
       isError={isError}
       isSearchComplete={isSearchComplete}
       isChatMode={isChatMode}
+      formatUrl={formatUrl}
     />
   );
 });
@@ -100,6 +102,7 @@ interface SearchProps {
   input: string;
   setIsPinned?: (value: boolean) => void;
   changeMode?: (isChatMode: boolean) => void;
+  formatUrl?: (item: any) => string;
 }
 
 function Search({
@@ -108,6 +111,7 @@ function Search({
   input,
   setIsPinned,
   changeMode,
+  formatUrl,
 }: SearchProps) {
   const mainWindowRef = useRef<HTMLDivElement>(null);
 
@@ -118,11 +122,12 @@ function Search({
         isChatMode={isChatMode}
         changeInput={changeInput}
         changeMode={changeMode}
+        formatUrl={formatUrl}
       />
 
       <Footer setIsPinnedWeb={setIsPinned} />
 
-      <ContextMenu />
+      <ContextMenu formatUrl={formatUrl}/>
     </div>
   );
 }

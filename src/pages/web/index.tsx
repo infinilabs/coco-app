@@ -28,6 +28,7 @@ interface WebAppProps {
   startPage?: StartPage;
   setIsPinned?: (value: boolean) => void;
   onCancel?: () => void;
+  formatUrl?: (item: any) => string;
   isOpen?: boolean;
 }
 
@@ -49,6 +50,7 @@ function WebApp({
   startPage,
   setIsPinned,
   onCancel,
+  formatUrl,
 }: WebAppProps) {
   const setIsTauri = useAppStore((state) => state.setIsTauri);
   const setEndpoint = useAppStore((state) => state.setEndpoint);
@@ -73,7 +75,7 @@ function WebApp({
   useEscape();
   useModifierKeyPress();
   useViewportHeight();
-  useIconfontScript();
+  useIconfontScript('web');
 
   return (
     <div
@@ -116,6 +118,7 @@ function WebApp({
         isMobile={isMobile}
         assistantIDs={assistantIDs}
         startPage={startPage}
+        formatUrl={formatUrl}
       />
     </div>
   );
