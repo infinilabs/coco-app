@@ -75,7 +75,7 @@ function WebApp({
   useEscape();
   useModifierKeyPress();
   useViewportHeight();
-  useIconfontScript('web');
+  useIconfontScript('web', serverUrl);
 
   return (
     <div

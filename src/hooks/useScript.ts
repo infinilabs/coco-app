@@ -26,10 +26,10 @@ const useScript = (src: string, onError?: () => void) => {
 
 export default useScript;
 
-export const useIconfontScript = (type: "web" | "app") => {
+export const useIconfontScript = (type: "web" | "app", serverUrl?: string) => {
   if (type === "web") {
-    useScript("../../assets/fonts/icons/iconfont.js");
-    useScript("../../assets/fonts/icons-app/iconfont.js");
+    useScript(`${serverUrl}/assets/fonts/icons/iconfont.js`);
+    useScript(`${serverUrl}/assets/fonts/icons-app/iconfont.js`);
   } else {
     // Coco Server Icons
     useScript("https://at.alicdn.com/t/c/font_4878526_cykw3et0ezd.js");
