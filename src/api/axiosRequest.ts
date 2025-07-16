@@ -96,7 +96,7 @@ export const Get = <T>(
 
 export const Post = <T>(
   url: string,
-  data: IAnyObj,
+  data: IAnyObj | undefined,
   params: IAnyObj = {},
   headers: IAnyObj = {}
 ): Promise<[any, FcResponse<T> | undefined]> => {
