@@ -129,3 +129,4 @@ tauri-plugin-updater = { git = "https://github.com/infinilabs/plugins-workspace"
 
 [target."cfg(target_os = \"windows\")".dependencies]
 enigo="0.3"
+windows = { version = "0.60", features = ["Win32_Foundation", "Win32_System_Com", "Win32_System_Ole", "Win32_System_Search", "Win32_UI_Shell_PropertiesSystem", "Win32_Data"] }

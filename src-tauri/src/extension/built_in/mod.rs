@@ -3,7 +3,7 @@
 pub mod ai_overview;
 pub mod application;
 pub mod calculator;
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "windows"))]
 pub mod file_search;
 pub mod pizza_engine_runtime;
 pub mod quick_ai_access;
@@ -175,7 +175,7 @@ pub(crate) async fn list_built_in_extensions() -> Result<Vec<Extension>, String>
     );
 
     cfg_if::cfg_if! {
-        if #[cfg(target_os = "macos")] {
+        if #[cfg(any(target_os = "macos", target_os = "windows"))] {
             built_in_extensions.push(
                 load_built_in_extension(
                     dir,
@@ -214,9 +214,9 @@ pub(super) async fn init_built_in_extension<R: Runtime>(
     }
 
     cfg_if::cfg_if! {
-        if #[cfg(target_os = "macos")] {
+        if #[cfg(any(target_os = "macos", target_os = "windows"))] {
             if extension.id == file_search::EXTENSION_ID {
-                let file_system_search = file_search::FileSearchExtensionSearchSource::new(1f64);
+                let file_system_search = file_search::FileSearchExtensionSearchSource;
                 search_source_registry
                     .register_source(file_system_search)
                     .await;
@@ -303,18 +303,18 @@ pub(crate) async fn enable_built_in_extension(
     }
 
     cfg_if::cfg_if! {
-        if #[cfg(target_os = "macos")] {
+        if #[cfg(any(target_os = "macos", target_os = "windows"))] {
             if bundle_id.extension_id == file_search::EXTENSION_ID {
-                let file_system_search = file_search::FileSearchExtensionSearchSource::new(1f64);
-                search_source_registry_tauri_state
-                    .register_source(file_system_search)
-                    .await;
-                alter_extension_json_file(
-                    &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
-                    bundle_id,
-                    update_extension,
-                )?;
-                return Ok(());
+            let file_system_search = file_search::FileSearchExtensionSearchSource;
+            search_source_registry_tauri_state
+                .register_source(file_system_search)
+                .await;
+            alter_extension_json_file(
+                &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
+                bundle_id,
+                update_extension,
+            )?;
+            return Ok(());
             }
         }
     }
@@ -393,7 +393,7 @@ pub(crate) async fn disable_built_in_extension(
     }
 
     cfg_if::cfg_if! {
-        if #[cfg(target_os = "macos")] {
+        if #[cfg(any(target_os = "macos", target_os = "windows"))] {
             if bundle_id.extension_id == file_search::EXTENSION_ID {
                 search_source_registry_tauri_state
                     .remove_source(bundle_id.extension_id)
@@ -538,7 +538,7 @@ pub(crate) async fn is_built_in_extension_enabled(
     }
 
     cfg_if::cfg_if! {
-        if #[cfg(target_os = "macos")] {
+        if #[cfg(any(target_os = "macos", target_os = "windows"))] {
             if bundle_id.extension_id == file_search::EXTENSION_ID
                 && bundle_id.sub_extension_id.is_none()
             {

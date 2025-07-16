@@ -165,10 +165,10 @@ pub fn run() {
             settings::get_allow_self_signature,
             assistant::ask_ai,
             crate::common::document::open,
-            #[cfg(target_os = "macos")]
-            extension::built_in::file_search::get_file_system_config,
-            #[cfg(target_os = "macos")]
-            extension::built_in::file_search::set_file_system_config,
+            #[cfg(any(target_os = "macos", target_os = "windows"))]
+            extension::built_in::file_search::config::get_file_system_config,
+            #[cfg(any(target_os = "macos", target_os = "windows"))]
+            extension::built_in::file_search::config::set_file_system_config,
             server::synthesize::synthesize,
             util::file::get_file_icon, 
         ])
