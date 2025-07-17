@@ -63,7 +63,7 @@ const InputUpload: FC<InputUploadProps> = (props) => {
     getFileMetadata,
   } = props;
   const { t, i18n } = useTranslation();
-  const { uploadFiles, setUploadFiles } = useChatStore();
+  const { uploadAttachments, setUploadAttachments } = useChatStore();
   const { withVisibility, addError } = useAppStore();
   const { modifierKey, addFile, modifierKeyPressed } = useShortcutsStore();
   const { currentAssistant } = useConnectStore();
@@ -103,10 +103,10 @@ const InputUpload: FC<InputUploadProps> = (props) => {
   };
 
   const handleUploadFiles = async (paths: string | string[]) => {
-    const files: typeof uploadFiles = [];
+    const files: typeof uploadAttachments = [];
 
     for await (const path of castArray(paths)) {
-      if (find(uploadFiles, { path })) continue;
+      if (find(uploadAttachments, { path })) continue;
 
       const stat = await getFileMetadata(path);
 
@@ -127,7 +127,7 @@ const InputUpload: FC<InputUploadProps> = (props) => {
       });
     }
 
-    setUploadFiles([...uploadFiles, ...files]);
+    setUploadAttachments([...uploadAttachments, ...files]);
   };
 
   const menuItems = useCreation<MenuItem[]>(() => {

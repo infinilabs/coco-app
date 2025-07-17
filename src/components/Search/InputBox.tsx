@@ -20,7 +20,7 @@ import AudioRecording from "../AudioRecording";
 import { isDefaultServer } from "@/utils";
 import { useTauriFocus } from "@/hooks/useTauriFocus";
 import { SendMessageParams } from "../Assistant/Chat";
-import { isEmpty } from "lodash-es";
+import { isEmpty, isNil } from "lodash-es";
 
 interface ChatInputProps {
   onSend: (params: SendMessageParams) => void;
@@ -104,7 +104,7 @@ export default function ChatInput({
   const { curChatEnd } = useChatStore();
   const { setSearchValue, visibleExtensionStore, selectedExtension } =
     useSearchStore();
-  const { uploadFiles } = useChatStore();
+  const { uploadAttachments } = useChatStore();
 
   useTauriFocus({
     onFocus() {
@@ -120,14 +120,16 @@ export default function ChatInput({
   const handleSubmit = useCallback(() => {
     const trimmedValue = inputValue.trim();
     console.log("handleSubmit", trimmedValue, disabled);
-    if ((trimmedValue || !isEmpty(uploadFiles)) && !disabled) {
+    if ((trimmedValue || !isEmpty(uploadAttachments)) && !disabled) {
       changeInput("");
       onSend({
         message: trimmedValue,
-        attachments: uploadFiles.map((item) => item.id),
+        attachments: uploadAttachments
+          .map((item) => item.attachmentId)
+          .filter((item) => !isNil(item)),
       });
     }
-  }, [inputValue, disabled, onSend, uploadFiles]);
+  }, [inputValue, disabled, onSend, uploadAttachments]);
 
   useKeyboardHandlers({
     isChatMode,
