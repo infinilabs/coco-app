@@ -1,7 +1,7 @@
 use crate::server::servers::{get_server_by_id, get_server_token};
 use crate::util::app_lang::get_app_lang;
 use crate::util::platform::Platform;
-use http::{HeaderName, HeaderValue};
+use http::{HeaderName, HeaderValue, StatusCode};
 use once_cell::sync::Lazy;
 use reqwest::{Client, Method, RequestBuilder};
 use std::collections::HashMap;
@@ -283,5 +283,32 @@ impl HttpClient {
             None,
         )
         .await
+    }
+}
+
+/// Helper function to check status code.
+///
+/// If the status code is not in the `allowed_status_codes` list, return an error.
+pub(crate) fn status_code_check(
+    response: &reqwest::Response,
+    allowed_status_codes: &[StatusCode],
+) -> Result<(), String> {
+    let status_code = response.status();
+
+    if !allowed_status_codes.contains(&status_code) {
+        let msg = format!(
+            "Response of request [{}] status code failed: status code [{}], which is not in the 'allow' list {:?}",
+            response.url(),
+            status_code,
+            allowed_status_codes
+                .iter()
+                .map(|status| status.to_string())
+                .collect::<Vec<String>>()
+        );
+        log::warn!("{}", msg);
+
+        Err(msg)
+    } else {
+        Ok(())
     }
 }
