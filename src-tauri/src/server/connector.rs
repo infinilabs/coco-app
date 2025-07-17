@@ -1,7 +1,8 @@
 use crate::common::connector::Connector;
 use crate::common::search::parse_search_results;
-use crate::server::http_client::HttpClient;
+use crate::server::http_client::{HttpClient, status_code_check};
 use crate::server::servers::get_all_servers;
+use http::StatusCode;
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -107,6 +108,7 @@ pub async fn fetch_connectors_by_server(id: &str) -> Result<Vec<Connector>, Stri
             // dbg!("Error fetching connector for id {}: {}", &id, &e);
             format!("Error fetching connector: {}", e)
         })?;
+    status_code_check(&resp, &[StatusCode::OK, StatusCode::CREATED])?;
 
     // Parse the search results directly from the response body
     let datasource: Vec<Connector> = parse_search_results(resp)
