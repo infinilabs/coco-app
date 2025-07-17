@@ -84,13 +84,21 @@ const AttachmentList = () => {
   return (
     <div className="flex flex-wrap gap-y-2 -mx-1 text-sm">
       {uploadAttachments.map((file) => {
-        return <AttachmentItem key={file.id} {...file} onDelete={deleteFile} />;
+        return (
+          <AttachmentItem
+            key={file.id}
+            {...file}
+            deletable
+            onDelete={deleteFile}
+          />
+        );
       })}
     </div>
   );
 };
 
 interface AttachmentItemProps extends UploadAttachments {
+  deletable?: boolean;
   onDelete?: (id: string) => void;
 }
 
@@ -105,6 +113,7 @@ export const AttachmentItem: FC<AttachmentItemProps> = (props) => {
     attachmentId,
     uploadFailed,
     failedMessage,
+    deletable,
     onDelete,
   } = props;
   const { t } = useTranslation();
@@ -112,7 +121,7 @@ export const AttachmentItem: FC<AttachmentItemProps> = (props) => {
   return (
     <div key={id} className="w-1/3 px-1">
       <div className="relative group flex items-center gap-1 p-1 rounded-[4px] bg-[#dedede] dark:bg-[#202126]">
-        {(uploadFailed || attachmentId) && (
+        {(uploadFailed || attachmentId) && deletable && (
           <div
             className="absolute flex justify-center items-center size-[14px] bg-red-600 top-0 right-0 rounded-full cursor-pointer translate-x-[5px] -translate-y-[5px] transition opacity-0 group-hover:opacity-100 "
             onClick={() => {

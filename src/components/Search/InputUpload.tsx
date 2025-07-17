@@ -196,7 +196,7 @@ const InputUpload: FC<InputUploadProps> = (props) => {
 
   return (
     <Menu>
-      <MenuButton className="flex items-center justify-center size-[20px] rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]">
+      <MenuButton className="flex items-center justify-center h-[20px] px-1 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]">
         <Tooltip
           content={t("search.input.uploadFileHints.tooltip", {
             replace: [
