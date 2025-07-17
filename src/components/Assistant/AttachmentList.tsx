@@ -30,9 +30,9 @@ const AttachmentList = () => {
     if (uploadAttachments.length === 0) return;
 
     for await (const item of uploadAttachments) {
-      const { uploading, uploaded, uploadFailed, path } = item;
+      const { uploading, path } = item;
 
-      if (uploading || uploaded || uploadFailed) continue;
+      if (uploading) continue;
 
       try {
         const attachmentIds: any = await platformAdapter.commands(
@@ -47,7 +47,6 @@ const AttachmentList = () => {
           throw new Error("Failed to get attachment id");
         } else {
           Object.assign(item, {
-            uploading: false,
             uploaded: true,
             attachmentId: attachmentIds[0],
           });
@@ -58,6 +57,10 @@ const AttachmentList = () => {
         Object.assign(item, {
           uploadFailed: true,
           failedMessage: String(error),
+        });
+      } finally {
+        Object.assign(item, {
+          uploading: false,
         });
       }
     }
