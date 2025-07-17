@@ -30,6 +30,7 @@ import {
   change_shortcut,
   unregister_shortcut,
 } from "@/commands";
+import platformAdapter from "@/utils/platformAdapter";
 
 export function ThemeOption({
   icon: Icon,
@@ -74,10 +75,13 @@ export default function GeneralSettings() {
 
   const [launchAtLogin, setLaunchAtLogin] = useState(true);
 
-  const showTooltip = useAppStore((state) => state.showTooltip);
-  const setShowTooltip = useAppStore((state) => state.setShowTooltip);
-  const language = useAppStore((state) => state.language);
-  const setLanguage = useAppStore((state) => state.setLanguage);
+  const { showTooltip, setShowTooltip, language, setLanguage } = useAppStore();
+
+  useEffect(() => {
+    platformAdapter.invokeBackend("update_app_lang", {
+      lang: language,
+    });
+  }, [language]);
 
   const fetchAutoStartStatus = async () => {
     if (isTauri()) {
@@ -251,7 +255,9 @@ export default function GeneralSettings() {
             <div className="flex items-center gap-2">
               <select
                 value={currentLanguage}
-                onChange={(e) => setLanguage(e.target.value)}
+                onChange={(e) => {
+                  setLanguage(e.currentTarget.value);
+                }}
                 className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="en">{t("settings.language.english")}</option>

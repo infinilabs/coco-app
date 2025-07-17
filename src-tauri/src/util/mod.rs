@@ -1,4 +1,6 @@
 pub(crate) mod file;
+pub(crate) mod platform;
+pub(crate) mod app_lang;
 
 use std::{path::Path, process::Command};
 use tauri::{AppHandle, Runtime};

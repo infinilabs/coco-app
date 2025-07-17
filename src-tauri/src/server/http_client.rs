@@ -1,8 +1,11 @@
 use crate::server::servers::{get_server_by_id, get_server_token};
+use crate::util::app_lang::get_app_lang;
+use crate::util::platform::Platform;
 use http::{HeaderName, HeaderValue};
 use once_cell::sync::Lazy;
 use reqwest::{Client, Method, RequestBuilder};
 use std::collections::HashMap;
+use std::sync::LazyLock;
 use std::time::Duration;
 use tokio::sync::Mutex;
 
@@ -24,6 +27,26 @@ pub static HTTP_CLIENT: Lazy<Mutex<Client>> = Lazy::new(|| {
             .clone(),
     );
     Mutex::new(new_reqwest_http_client(allow_self_signature))
+});
+
+/// These header values won't change during a process's lifetime.
+static STATIC_HEADERS: LazyLock<HashMap<String, String>> = LazyLock::new(|| {
+    HashMap::from([
+        (
+            "X-OS-NAME".into(),
+            Platform::current()
+                .to_os_name_http_header_str()
+                .into_owned(),
+        ),
+        (
+            "X-OS-VER".into(),
+            sysinfo::System::os_version()
+                .expect("sysinfo::System::os_version() should be Some on major systems"),
+        ),
+        ("X-OS-ARCH".into(), sysinfo::System::cpu_arch()),
+        ("X-APP-NAME".into(), "coco-app".into()),
+        ("X-APP-VER".into(), env!("CARGO_PKG_VERSION").into()),
+    ])
 });
 
 pub struct HttpClient;
@@ -81,8 +104,32 @@ impl HttpClient {
         // Build the request
         let mut request_builder = client.request(method.clone(), url);
 
+        // Populate the headers defined by us
+        let mut req_headers = reqwest::header::HeaderMap::new();
+        for (key, value) in STATIC_HEADERS.iter() {
+            let key = HeaderName::from_bytes(key.as_bytes())
+                .expect("headers defined by us should be valid");
+            let value = HeaderValue::from_str(value.trim()).unwrap_or_else(|e| {
+                panic!(
+                    "header value [{}] is invalid, error [{}], this should be unreachable",
+                    value, e
+                );
+            });
+            req_headers.insert(key, value);
+        }
+        let app_lang = get_app_lang().await.to_string();
+        req_headers.insert(
+            "X-APP-LANG",
+            HeaderValue::from_str(&app_lang).unwrap_or_else(|e| {
+                panic!(
+                    "header value [{}] is invalid, error [{}], this should be unreachable",
+                    app_lang, e
+                );
+            }),
+        );
+
+        // Headers from the function parameter
         if let Some(h) = headers {
-            let mut req_headers = reqwest::header::HeaderMap::new();
             for (key, value) in h.into_iter() {
                 match (
                     HeaderName::from_bytes(key.as_bytes()),

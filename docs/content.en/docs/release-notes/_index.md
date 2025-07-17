@@ -38,6 +38,7 @@ Information about release notes of Coco Server is provided here.
 - chore: assistant params & styles #753
 - chore: make optional fields optional #758
 - chore: search-chat components add formatUrl & think data & icons url #765
+- chore: Coco app http request headers #744
 
 ## 0.6.0 (2025-06-29)
 

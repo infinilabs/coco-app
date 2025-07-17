@@ -13,6 +13,7 @@ use std::collections::HashSet;
 use std::path::Path;
 use tauri::Manager;
 use third_party::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE;
+use crate::util::platform::Platform;
 
 pub const LOCAL_QUERY_SOURCE_TYPE: &str = "local";
 const PLUGIN_JSON_FILE_NAME: &str = "plugin.json";
@@ -20,17 +21,6 @@ const ASSETS_DIRECTORY_FILE_NAME: &str = "assets";
 
 fn default_true() -> bool {
     true
-}
-
-#[derive(Debug, Deserialize, Serialize, Copy, Clone, Hash, PartialEq, Eq, Display)]
-#[serde(rename_all(serialize = "lowercase", deserialize = "lowercase"))]
-enum Platform {
-    #[display("macOS")]
-    Macos,
-    #[display("Linux")]
-    Linux,
-    #[display("windows")]
-    Windows,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
