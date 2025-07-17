@@ -200,13 +200,14 @@ export const createWebAdapter = (): WebPlatformAdapter => {
       console.log("revealItemInDir is not supported in web environment", path);
     },
 
-    async openSearchItem(data) {
+    async openSearchItem(data, formatUrl) {
       if (data.type === "AI Assistant") {
         return;
       }
 
-      if (data?.url) {
-        return OpenURLWithBrowser(data.url);
+      const url = (formatUrl && formatUrl(data)) || data.url;
+      if (url) {
+        return OpenURLWithBrowser(url);
       }
 
       if (data?.payload?.result?.value) {
@@ -217,16 +218,9 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     error: console.error,
 
     async searchMCPServers(_serverId, queryParams) {
-      const urlParams = new URLSearchParams();
-      queryParams.forEach((param) => {
-        const [key, value] = param.split("=");
-        urlParams.append(key, decodeURIComponent(value));
-      });
-
       const [error, res]: any = await Post(
-        "/mcp_server/_search",
-        {},
-        Object.fromEntries(urlParams)
+        `/mcp_server/_search?${queryParams?.join("&")}`,
+        undefined
       );
 
       if (error) {
@@ -244,16 +238,9 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     },
 
     async searchDataSources(_serverId, queryParams) {
-      const urlParams = new URLSearchParams();
-      queryParams.forEach((param) => {
-        const [key, value] = param.split("=");
-        urlParams.append(key, decodeURIComponent(value));
-      });
-
       const [error, res]: any = await Post(
-        "/datasource/_search",
-        {},
-        Object.fromEntries(urlParams)
+        `/datasource/_search?${queryParams?.join("&")}`,
+        undefined
       );
 
       if (error) {
@@ -271,16 +258,9 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     },
 
     async fetchAssistant(_serverId, queryParams) {
-      const urlParams = new URLSearchParams();
-      queryParams.forEach((param) => {
-        const [key, value] = param.split("=");
-        urlParams.append(key, decodeURIComponent(value));
-      });
-
       const [error, res]: any = await Post(
-        "/assistant/_search",
-        {},
-        Object.fromEntries(urlParams)
+        `/assistant/_search?${queryParams?.join("&")}`,
+        undefined
       );
 
       if (error) {

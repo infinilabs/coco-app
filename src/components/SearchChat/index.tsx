@@ -42,6 +42,7 @@ interface SearchChatProps {
   isMobile?: boolean;
   assistantIDs?: string[];
   startPage?: StartPage;
+  formatUrl?: (item: any) => string;
 }
 
 function SearchChat({
@@ -57,6 +58,7 @@ function SearchChat({
   isMobile = false,
   assistantIDs,
   startPage,
+  formatUrl,
 }: SearchChatProps) {
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
 
@@ -331,6 +333,7 @@ function SearchChat({
             changeInput={setInput}
             setIsPinned={setIsPinned}
             changeMode={changeMode}
+            formatUrl={formatUrl}
           />
         </Suspense>
       </div>

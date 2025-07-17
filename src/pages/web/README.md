@@ -1,26 +1,34 @@
-# SearchChat Web Component API
-
-A customizable search and chat interface component for web applications.
+# @infinilabs/search-chat 
 
 ## Installation
 
 ```bash
-npm install @infini/coco-app
+npm install @infinilabs/search-chat
+# or
+pnpm add @infinilabs/search-chat
+# or
+yarn add @infinilabs/search-chat
 ```
 
-## Basic Usage
+## Quick Start
 
-```jsx
-import SearchChat from '@infini/coco-app';
+```tsx
+import SearchChat from '@infinilabs/search-chat';
 
 function App() {
   return (
-    <SearchChat 
-      serverUrl="https://your-server.com"
-      headers={{
-        "X-API-TOKEN": "your-token",
-        "APP-INTEGRATION-ID": "your-app-id"
-      }}
+    <SearchChat
+      serverUrl="https://your-api-url"
+      width={800}
+      height={600}
+      hasModules={['search', 'chat']}
+      defaultModule="search"
+      assistantIDs={["a1", "a2"]}
+      theme="auto"
+      searchPlaceholder="Please enter search content"
+      chatPlaceholder="Please enter chat content"
+      showChatHistory={true}
+      // other props...
     />
   );
 }
@@ -28,116 +36,29 @@ function App() {
 
 ## Props
 
-### `width`
-- **Type**: `number`
-- **Default**: `680`
-- **Description**: Maximum width of the component in pixels
+| Name               | Type                           | Description                                              |
+|--------------------|--------------------------------|----------------------------------------------------------|
+| headers            | Record<string, unknown>        | Optional, custom request headers                         |
+| serverUrl          | string                         | Optional, backend service URL                            |
+| width              | number                         | Optional, component width (pixels)                       |
+| height             | number                         | Optional, component height (pixels)                      |
+| hasModules         | string[]                       | Optional, enabled modules, e.g. ['search', 'chat']       |
+| defaultModule      | "search" \| "chat"            | Optional, default module                                 |
+| assistantIDs       | string[]                       | Optional, list of available assistant IDs                |
+| theme              | "auto" \| "light" \| "dark"   | Optional, theme mode                                     |
+| searchPlaceholder  | string                         | Optional, search input placeholder                       |
+| chatPlaceholder    | string                         | Optional, chat input placeholder                         |
+| showChatHistory    | boolean                        | Optional, whether to show chat history                   |
+| startPage          | StartPage                      | Optional, initial page config (see project definition)   |
+| setIsPinned        | (value: boolean) => void       | Optional, callback for pinning the component             |
+| onCancel           | () => void                     | Optional, cancel callback                                |
+| formatUrl          | (item: any) => string          | Optional, function to format URLs                        |
+| isOpen             | boolean                        | Optional, whether the component is open                  |
 
-### `height`
-- **Type**: `number`
-- **Default**: `590`
-- **Description**: Height of the component in pixels
+> For the `StartPage` type, please refer to the project definition.
 
-### `headers`
-- **Type**: `Record<string, unknown>`
-- **Default**: 
-```typescript
-{
-  "X-API-TOKEN": "default-token",
-  "APP-INTEGRATION-ID": "default-id"
-}
-```
-- **Description**: HTTP headers for API requests
-
-### `serverUrl`
-- **Type**: `string`
-- **Default**: `""`
-- **Description**: Base URL for the server API
-
-### `hasModules`
-- **Type**: `string[]`
-- **Default**: `["search", "chat"]`
-- **Description**: Available modules to show
-
-### `defaultModule`
-- **Type**: `"search" | "chat"`
-- **Default**: `"search"`
-- **Description**: Initial active module
-
-### `assistantIDs`
-- **Type**: `string[]`
-- **Default**: `[]`
-- **Description**: List of assistant IDs to use
-
-### `theme`
-- **Type**: `"auto" | "light" | "dark"`
-- **Default**: `"dark"`
-- **Description**: UI theme setting
-
-### `searchPlaceholder`
-- **Type**: `string`
-- **Default**: `""`
-- **Description**: Placeholder text for search input
-
-### `chatPlaceholder`
-- **Type**: `string`
-- **Default**: `""`
-- **Description**: Placeholder text for chat input
-
-### `showChatHistory`
-- **Type**: `boolean`
-- **Default**: `false`
-- **Description**: Whether to display chat history panel
-
-### `startPage`
-- **Type**: `StartPage`
-- **Optional**: Yes
-- **Description**: Initial page configuration
-
-### `setIsPinned`
-- **Type**: `(value: boolean) => void`
-- **Optional**: Yes
-- **Description**: Callback when pin status changes
-
-### `onCancel`
-- **Type**: `() => void`
-- **Optional**: Yes
-- **Description**: Callback when close button is clicked (mobile only)
-
-### `isOpen`
-- **Type**: `boolean`
-- **Optional**: Yes
-- **Description**: Control component visibility
-
-## Events
-
-The component emits the following events:
-
-- `onModeChange`: Triggered when switching between search and chat modes
-- `onCancel`: Triggered when the close button is clicked (mobile only)
-
-## Mobile Support
-
-The component is responsive and includes mobile-specific features:
-- Automatic height adjustment
-- Close button in top-right corner
-- Touch-friendly interface
-
-## Example
-
-```jsx
-<SearchChat
-  width={800}
-  height={600}
-  serverUrl="https://api.example.com"
-  headers={{
-    "X-API-TOKEN": "your-token",
-    "APP-INTEGRATION-ID": "your-app-id"
-  }}
-  theme="dark"
-  showChatHistory={true}
-  hasModules={["search", "chat"]}
-  defaultModule="chat"
-  setIsPinned={(isPinned) => console.log('Pinned:', isPinned)}
-/>
-```
+## Notes
+- Requires React 18 or above.
+- The component is bundled as ESM format; `react` and `react-dom` must be provided by the host project.
+- Supports on-demand module loading and custom themes.
+- For more advanced usage, please refer to the source code or contact the developer.

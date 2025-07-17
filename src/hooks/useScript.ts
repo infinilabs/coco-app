@@ -26,9 +26,15 @@ const useScript = (src: string, onError?: () => void) => {
 
 export default useScript;
 
-export const useIconfontScript = () => {
-  // Coco Server Icons
-  useScript("https://at.alicdn.com/t/c/font_4878526_cykw3et0ezd.js");
-  // Coco App Icons
-  useScript("https://at.alicdn.com/t/c/font_4934333_zclkkzo4fgo.js");
+export const useIconfontScript = (type: "web" | "app", serverUrl?: string) => {
+  if (type === "web") {
+    useScript(`${serverUrl}/assets/fonts/icons/iconfont.js`);
+    useScript(`${serverUrl}/assets/fonts/icons-app/iconfont.js`);
+  } else {
+    // Coco Server Icons
+    useScript("https://at.alicdn.com/t/c/font_4878526_cykw3et0ezd.js");
+
+    // Coco App Icons
+    useScript("https://at.alicdn.com/t/c/font_4934333_zclkkzo4fgo.js");
+  }
 };
