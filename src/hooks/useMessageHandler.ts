@@ -29,6 +29,8 @@ export function useMessageHandler(
 
   const dealMsg = useCallback(
     (msg: string) => {
+      console.log("msg", msg);
+
       if (messageTimeoutRef.current) {
         clearTimeout(messageTimeoutRef.current);
       }
@@ -54,8 +56,6 @@ export function useMessageHandler(
           response: false,
           [chunkData.chunk_type]: true,
         }));
-
-       
 
         if (chunkData.chunk_type === "query_intent") {
           handlers.deal_query_intent(chunkData);
@@ -87,7 +87,7 @@ export function useMessageHandler(
             }
 
             if (inThinkRef.current) {
-              handlers.deal_think({...chunkData, chunk_type: "think"});
+              handlers.deal_think({ ...chunkData, chunk_type: "think" });
             } else {
               handlers.deal_response(chunkData);
             }

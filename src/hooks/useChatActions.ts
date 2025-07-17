@@ -140,12 +140,15 @@ export function useChatActions(
     async (activeChat?: Chat, params?: SendMessageParams) => {
       const { message, attachments } = params || {};
 
-      if (!message || isEmpty(attachments)) return;
+      if (!message && isEmpty(attachments)) return;
 
       setTimedoutShow(false);
       await chatClose(activeChat);
       clearAllChunkData();
-      setQuestion(message);
+
+      if (message) {
+        setQuestion(message);
+      }
 
       //console.log("sourceDataIds", sourceDataIds, MCPIds, id);
       const queryParams = {
@@ -158,6 +161,7 @@ export function useChatActions(
       };
       if (isTauri) {
         if (!currentService?.id) return;
+
         await platformAdapter.commands("chat_create", {
           serverId: currentService?.id,
           message,
@@ -204,7 +208,7 @@ export function useChatActions(
 
       const { message, attachments } = params;
 
-      if (!message || isEmpty(attachments)) return;
+      if (!message && isEmpty(attachments)) return;
 
       clearAllChunkData();
 
@@ -267,9 +271,11 @@ export function useChatActions(
 
       const { message, attachments } = params;
 
-      if (!message || isEmpty(attachments)) return;
+      if (!message && isEmpty(attachments)) return;
 
-      setQuestion(message);
+      if (message) {
+        setQuestion(message);
+      }
 
       setTimedoutShow(false);
 

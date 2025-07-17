@@ -172,6 +172,9 @@ pub async fn chat_create<R: Runtime>(
     attachments: Option<Vec<String>>,
     query_params: Option<HashMap<String, Value>>,
 ) -> Result<(), String> {
+    println!("chat_create message: {:?}", message);
+    println!("chat_create attachments: {:?}", attachments);
+
     let message_empty = message.as_ref().map_or(true, |m| m.is_empty());
     let attachments_empty = attachments.as_ref().map_or(true, |a| a.is_empty());
 
@@ -180,10 +183,13 @@ pub async fn chat_create<R: Runtime>(
     }
 
     let body = {
-        let request_message = ChatRequestMessage {
-            message: if message_empty { None } else { message },
-            attachments: if attachments_empty { None } else { attachments },
+        let request_message: ChatRequestMessage = ChatRequestMessage {
+            message,
+            attachments,
         };
+
+        println!("chat_create body: {:?}", request_message);
+
         Some(
             serde_json::to_string(&request_message)
                 .map_err(|e| format!("Failed to serialize message: {}", e))?
@@ -221,8 +227,6 @@ pub async fn chat_create<R: Runtime>(
 
         if let Err(err) = app_handle.emit("chat-create-stream", line) {
             log::error!("Emit failed: {:?}", err);
-
-            print!("Error sending message: {:?}", err);
 
             let _ = app_handle.emit("chat-create-error", format!("Emit failed: {:?}", err));
         }
@@ -280,18 +284,24 @@ pub async fn chat_chat<R: Runtime>(
     attachments: Option<Vec<String>>,
     query_params: Option<HashMap<String, Value>>, //search,deep_thinking
 ) -> Result<(), String> {
+    println!("chat_chat message: {:?}", message);
+    println!("chat_chat attachments: {:?}", attachments);
+
     let message_empty = message.as_ref().map_or(true, |m| m.is_empty());
     let attachments_empty = attachments.as_ref().map_or(true, |a| a.is_empty());
 
     if message_empty && attachments_empty {
-        return Ok(());
+        return Err("Message and attachments are empty".to_string());
     }
 
     let body = {
         let request_message = ChatRequestMessage {
-            message: if message_empty { None } else { message },
-            attachments: if attachments_empty { None } else { attachments },
+            message,
+            attachments,
         };
+
+        println!("chat_chat body: {:?}", request_message);
+
         Some(
             serde_json::to_string(&request_message)
                 .map_err(|e| format!("Failed to serialize message: {}", e))?

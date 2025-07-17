@@ -87,6 +87,7 @@ export const ChatMessage = memo(function ChatMessage({
   ]);
 
   const messageContent = message?._source?.message || "";
+  const attachments = message?._source?.attachments ?? [];
   const details = message?._source?.details || [];
   const question = message?._source?.question || "";
 
@@ -101,7 +102,7 @@ export const ChatMessage = memo(function ChatMessage({
 
   const renderContent = () => {
     if (!isAssistant) {
-      return <UserMessage messageContent={messageContent} />;
+      return <UserMessage message={messageContent} attachments={attachments} />;
     }
 
     return (

@@ -75,6 +75,10 @@ pub async fn get_attachment(
     session_id: String,
     attachments: Option<Vec<String>>,
 ) -> Result<Value, String> {
+    println!("get_attachment server_id: {}", server_id);
+    println!("get_attachment session_id: {}", session_id);
+    println!("get_attachment attachments: {:?}", attachments);
+
     let mut query_params = Vec::new();
     query_params.push(format!("session={}", session_id));
 

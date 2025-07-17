@@ -150,7 +150,7 @@ function SearchChat({
 
   const handleSendMessage = useCallback(
     async (params: SendMessageParams) => {
-      dispatch({ type: "SET_INPUT", payload: params?.message || "" });
+      dispatch({ type: "SET_INPUT", payload: params?.message ?? "" });
       if (isChatMode) {
         chatAIRef.current?.init(params);
       }

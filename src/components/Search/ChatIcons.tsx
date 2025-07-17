@@ -38,12 +38,12 @@ const ChatIcons: React.FC<ChatIconsProps> = ({
             }
           )}
           type="submit"
-          onClick={() =>
+          onClick={() => {
             onSend({
               message: inputValue.trim(),
               attachments: uploadFiles.map((item) => item.id),
-            })
-          }
+            });
+          }}
         >
           <Send className="w-4 h-4 text-white" />
         </button>

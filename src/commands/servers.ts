@@ -253,15 +253,18 @@ export function new_chat({
 export function chat_create({
   serverId,
   message,
+  attachments,
   queryParams,
 }: {
   serverId: string;
   message: string;
+  attachments: string[];
   queryParams?: Record<string, any>;
 }): Promise<GetResponse> {
   return invokeWithErrorHandler(`chat_create`, {
     serverId,
     message,
+    attachments,
     queryParams,
   });
 }
@@ -271,12 +274,14 @@ export function send_message({
   websocketId,
   sessionId,
   message,
+  attachments,
   queryParams,
 }: {
   serverId: string;
   websocketId: string;
   sessionId: string;
   message: string;
+  attachments: string[];
   queryParams?: Record<string, any>;
 }): Promise<string> {
   return invokeWithErrorHandler(`send_message`, {
@@ -284,6 +289,7 @@ export function send_message({
     websocketId,
     sessionId,
     message,
+    attachments,
     queryParams,
   });
 }
@@ -292,17 +298,20 @@ export function chat_chat({
   serverId,
   sessionId,
   message,
+  attachments,
   queryParams,
 }: {
   serverId: string;
   sessionId: string;
   message: string;
+  attachments: string[];
   queryParams?: Record<string, any>;
 }): Promise<string> {
   return invokeWithErrorHandler(`chat_chat`, {
     serverId,
     sessionId,
     message,
+    attachments,
     queryParams,
   });
 }
