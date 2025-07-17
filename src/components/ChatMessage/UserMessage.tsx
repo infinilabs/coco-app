@@ -14,10 +14,8 @@ interface UserMessageProps {
 export const UserMessage: FC<UserMessageProps> = (props) => {
   const { message, attachments } = props;
 
-  console.log("attachments", attachments);
-
   const [showCopyButton, setShowCopyButton] = useState(false);
-  const { currentService, currentSessionId } = useConnectStore();
+  const { currentService } = useConnectStore();
 
   const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (typeof window !== "undefined" && typeof document !== "undefined") {
@@ -37,20 +35,15 @@ export const UserMessage: FC<UserMessageProps> = (props) => {
   };
 
   useAsyncEffect(async () => {
-    console.log("currentSessionId", currentSessionId);
+    if (attachments.length === 0) return;
 
-    if (!currentSessionId || attachments.length === 0) return;
-
-    console.log("attachments", attachments);
-
-    const result = await platformAdapter.commands("get_attachment", {
+    const result = await platformAdapter.commands("get_attachment_by_ids", {
       serverId: currentService.id,
-      sessionId: currentSessionId,
       attachments,
     });
 
-    console.log("result", result);
-  }, [currentSessionId, attachments]);
+    console.log("get_attachment_by_ids result", result);
+  }, [attachments]);
 
   return (
     <>

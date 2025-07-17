@@ -123,12 +123,10 @@ export interface UploadAttachmentResponse {
   attachments: string[];
 }
 
-export type GetAttachmentPayload = Omit<
-  UploadAttachmentPayload,
-  "filePaths"
-> & {
-  attachments?: string[];
-};
+export interface GetAttachmentByIdsPayload {
+  serverId: string;
+  attachments: string[];
+}
 
 export interface AttachmentHit {
   _index: string;

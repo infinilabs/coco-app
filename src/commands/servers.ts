@@ -8,7 +8,7 @@ import {
   GetResponse,
   UploadAttachmentPayload,
   UploadAttachmentResponse,
-  GetAttachmentPayload,
+  GetAttachmentByIdsPayload,
   GetAttachmentResponse,
   DeleteAttachmentPayload,
   TranscriptionPayload,
@@ -365,10 +365,13 @@ export const upload_attachment = async (payload: UploadAttachmentPayload) => {
   }
 };
 
-export const get_attachment = (payload: GetAttachmentPayload) => {
-  return invokeWithErrorHandler<GetAttachmentResponse>("get_attachment", {
-    ...payload,
-  });
+export const get_attachment_by_ids = (payload: GetAttachmentByIdsPayload) => {
+  return invokeWithErrorHandler<GetAttachmentResponse>(
+    "get_attachment_by_ids",
+    {
+      ...payload,
+    }
+  );
 };
 
 export const delete_attachment = (payload: DeleteAttachmentPayload) => {

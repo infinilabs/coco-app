@@ -141,7 +141,7 @@ pub fn run() {
             server::websocket::disconnect,
             get_app_search_source,
             server::attachment::upload_attachment,
-            server::attachment::get_attachment,
+            server::attachment::get_attachment_by_ids,
             server::attachment::delete_attachment,
             server::transcription::transcription,
             server::system_settings::get_system_settings,
@@ -170,7 +170,7 @@ pub fn run() {
             #[cfg(any(target_os = "macos", target_os = "windows"))]
             extension::built_in::file_search::config::set_file_system_config,
             server::synthesize::synthesize,
-            util::file::get_file_icon, 
+            util::file::get_file_icon,
         ])
         .setup(|app| {
             #[cfg(target_os = "macos")]
@@ -562,12 +562,12 @@ fn set_up_tauri_logger() -> TauriPlugin<tauri::Wry> {
     // When running the built binary, set `COCO_LOG` to `coco_lib=trace` to capture all logs
     // that come from Coco in the log file, which helps with debugging.
     if !tauri::is_dev() {
-       // We have absolutely no guarantee that we (We have control over the Rust 
-       // code, but definitely no idea about the libc C code, all the shared objects
-       // that we will link) will not concurrently read/write `envp`, so just use unsafe.
-       unsafe {
-          std::env::set_var("COCO_LOG", "coco_lib=trace");
-       }
+        // We have absolutely no guarantee that we (We have control over the Rust
+        // code, but definitely no idea about the libc C code, all the shared objects
+        // that we will link) will not concurrently read/write `envp`, so just use unsafe.
+        unsafe {
+            std::env::set_var("COCO_LOG", "coco_lib=trace");
+        }
     }
 
     let mut builder = tauri_plugin_log::Builder::new();

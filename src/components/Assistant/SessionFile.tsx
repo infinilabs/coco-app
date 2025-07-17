@@ -39,10 +39,13 @@ const SessionFile = (props: SessionFileProps) => {
     if (isTauri) {
       console.log("sessionId", sessionId);
 
-      const response: any = await platformAdapter.commands("get_attachment", {
-        serverId,
-        sessionId,
-      });
+      const response: any = await platformAdapter.commands(
+        "get_attachment_by_ids",
+        {
+          serverId,
+          sessionId,
+        }
+      );
 
       setUploadedFiles(response?.hits?.hits ?? []);
     } else {

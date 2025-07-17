@@ -70,39 +70,21 @@ pub async fn upload_attachment(
 }
 
 #[command]
-pub async fn get_attachment(
+pub async fn get_attachment_by_ids(
     server_id: String,
-    session_id: String,
-    attachments: Option<Vec<String>>,
+    attachments: Vec<String>,
 ) -> Result<Value, String> {
-    println!("get_attachment server_id: {}", server_id);
-    println!("get_attachment session_id: {}", session_id);
-    println!("get_attachment attachments: {:?}", attachments);
+    println!("get_attachment_by_ids server_id: {}", server_id);
+    println!("get_attachment_by_ids attachments: {:?}", attachments);
 
-    let mut query_params = Vec::new();
-    query_params.push(format!("session={}", session_id));
+    let request_body = serde_json::json!({
+        "attachments": attachments
+    });
+    let body = reqwest::Body::from(serde_json::to_string(&request_body).unwrap());
 
-    let attachments_empty = attachments.as_ref().map_or(true, |a| a.is_empty());
-
-    let response = if attachments_empty {
-        HttpClient::get(&server_id, "/attachment/_search", Some(query_params))
-            .await
-            .map_err(|e| format!("Request error: {}", e))?
-    } else {
-        let request_body = serde_json::json!({
-            "attachments": attachments
-        });
-        let body = reqwest::Body::from(serde_json::to_string(&request_body).unwrap());
-
-        HttpClient::post(
-            &server_id,
-            "/attachment/_search",
-            Some(query_params),
-            Some(body),
-        )
+    let response = HttpClient::post(&server_id, "/attachment/_search", None, Some(body))
         .await
-        .map_err(|e| format!("Request error: {}", e))?
-    };
+        .map_err(|e| format!("Request error: {}", e))?;
 
     let body = get_response_body_text(response).await?;
 
