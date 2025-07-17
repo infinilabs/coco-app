@@ -6,6 +6,7 @@ import { useAsyncEffect } from "ahooks";
 import platformAdapter from "@/utils/platformAdapter";
 import { useConnectStore } from "@/stores/connectStore";
 import { AttachmentItem } from "../Assistant/AttachmentList";
+import { useAppStore } from "@/stores/appStore";
 
 interface UserMessageProps {
   message: string;
@@ -18,6 +19,7 @@ export const UserMessage: FC<UserMessageProps> = (props) => {
   const [showCopyButton, setShowCopyButton] = useState(false);
   const { currentService } = useConnectStore();
   const [attachmentData, setAttachmentData] = useState<any[]>([]);
+  const { addError } = useAppStore();
 
   const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (typeof window !== "undefined" && typeof document !== "undefined") {
@@ -37,17 +39,21 @@ export const UserMessage: FC<UserMessageProps> = (props) => {
   };
 
   useAsyncEffect(async () => {
-    if (attachments.length === 0) return;
+    try {
+      if (attachments.length === 0) return;
 
-    const result: any = await platformAdapter.commands(
-      "get_attachment_by_ids",
-      {
-        serverId: currentService.id,
-        attachments,
-      }
-    );
+      const result: any = await platformAdapter.commands(
+        "get_attachment_by_ids",
+        {
+          serverId: currentService.id,
+          attachments,
+        }
+      );
 
-    setAttachmentData(result?.hits?.hits);
+      setAttachmentData(result?.hits?.hits);
+    } catch (error) {
+      addError(String(error));
+    }
   }, [attachments]);
 
   return (
