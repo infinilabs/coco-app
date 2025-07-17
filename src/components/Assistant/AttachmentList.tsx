@@ -51,8 +51,6 @@ const AttachmentList = () => {
             attachmentId: attachmentIds[0],
           });
         }
-
-        setUploadAttachments(uploadAttachments);
       } catch (error) {
         Object.assign(item, {
           uploadFailed: true,
@@ -62,6 +60,10 @@ const AttachmentList = () => {
         Object.assign(item, {
           uploading: false,
         });
+
+        console.log("uploadAttachments", uploadAttachments);
+
+        setUploadAttachments(uploadAttachments);
       }
     }
   }, [uploadAttachments]);
