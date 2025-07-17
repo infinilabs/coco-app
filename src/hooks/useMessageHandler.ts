@@ -25,6 +25,7 @@ export function useMessageHandler(
 ) {
   const messageTimeoutRef = useRef<NodeJS.Timeout>();
   const connectionTimeout = useConnectStore((state) => state.connectionTimeout);
+  const inThinkRef = useRef<boolean>(false);
 
   const dealMsg = useCallback(
     (msg: string) => {
@@ -54,6 +55,8 @@ export function useMessageHandler(
           [chunkData.chunk_type]: true,
         }));
 
+       
+
         if (chunkData.chunk_type === "query_intent") {
           handlers.deal_query_intent(chunkData);
         } else if (chunkData.chunk_type === "tools") {
@@ -67,7 +70,28 @@ export function useMessageHandler(
         } else if (chunkData.chunk_type === "think") {
           handlers.deal_think(chunkData);
         } else if (chunkData.chunk_type === "response") {
-          handlers.deal_response(chunkData);
+          const message_chunk = chunkData.message_chunk;
+          if (typeof message_chunk === "string") {
+            if (
+              message_chunk.includes("\u003cthink\u003e") ||
+              message_chunk.includes("<think>")
+            ) {
+              inThinkRef.current = true;
+              return;
+            } else if (
+              message_chunk.includes("\u003c/think\u003e") ||
+              message_chunk.includes("</think>")
+            ) {
+              inThinkRef.current = false;
+              return;
+            }
+
+            if (inThinkRef.current) {
+              handlers.deal_think({...chunkData, chunk_type: "think"});
+            } else {
+              handlers.deal_response(chunkData);
+            }
+          }
         } else if (chunkData.chunk_type === "reply_end") {
           if (messageTimeoutRef.current) {
             clearTimeout(messageTimeoutRef.current);

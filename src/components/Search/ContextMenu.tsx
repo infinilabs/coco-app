@@ -28,7 +28,11 @@ interface State {
   activeMenuIndex: number;
 }
 
-const ContextMenu = () => {
+interface ContextMenuProps {
+  formatUrl?: (item: any) => string;
+}
+
+const ContextMenu = ({ formatUrl }: ContextMenuProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { t, i18n } = useTranslation();
   const state = useReactive<State>({
@@ -122,7 +126,10 @@ const ContextMenu = () => {
         shortcut: "enter",
         hide: category === "Calculator",
         clickEvent: () => {
-          platformAdapter.openSearchItem(selectedSearchContent as any);
+          platformAdapter.openSearchItem(
+            selectedSearchContent as any,
+            formatUrl
+          );
         },
       },
       {
@@ -135,7 +142,7 @@ const ContextMenu = () => {
           type === "AI Assistant" ||
           id === "Extension Store",
         clickEvent() {
-          copyToClipboard(url);
+          copyToClipboard(formatUrl && formatUrl(selectedSearchContent) || url);
         },
       },
       {

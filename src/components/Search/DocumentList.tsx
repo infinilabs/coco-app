@@ -20,6 +20,7 @@ interface DocumentListProps {
   selectedId?: string;
   viewMode: "detail" | "list";
   setViewMode: (mode: "detail" | "list") => void;
+  formatUrl?: (item: any) => string;
 }
 
 const PAGE_SIZE = 20;
@@ -30,6 +31,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   isChatMode,
   viewMode,
   setViewMode,
+  formatUrl,
 }) => {
   const { t } = useTranslation();
   const sourceData = useSearchStore((state) => state.sourceData);
@@ -174,7 +176,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         if (selectedItem === null) return;
         const item = data.list[selectedItem]?.document;
 
-        platformAdapter.openSearchItem(item);
+        platformAdapter.openSearchItem(item, formatUrl);
       };
 
       switch (e.key) {
@@ -238,7 +240,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                 currentIndex={index}
                 onMouseEnter={() => onMouseEnter(index, hit.document)}
                 onItemClick={() => {
-                  platformAdapter.openSearchItem(hit.document);
+                  platformAdapter.openSearchItem(hit.document, formatUrl);
                 }}
                 showListRight={viewMode === "list"}
               />

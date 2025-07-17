@@ -28,6 +28,7 @@ pub(crate) enum FileType {
     Sql,
     Csv,
     Javascript,
+    Lnk,
     Typescript,
     Python,
     Java,
@@ -110,6 +111,7 @@ async fn get_file_type(path: &str) -> FileType {
         "indd" => FileType::AdobeId,
         "svg" => FileType::Svg,
         "epub" => FileType::Epub,
+        "lnk" => FileType::Lnk,
         _ => FileType::Unknown,
     }
 }
@@ -144,6 +146,7 @@ fn type_to_icon(ty: FileType) -> &'static str {
         FileType::Sql => "font_file_sql",
         FileType::Csv => "font_file_csv",
         FileType::Javascript => "font_file_javascript",
+        FileType::Lnk => "font_file_lnk",
         FileType::Typescript => "font_file_typescript",
         FileType::Python => "font_file_python",
         FileType::Java => "font_file_java",

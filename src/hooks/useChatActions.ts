@@ -317,6 +317,7 @@ export function useChatActions(
         setVisibleStartPage(false);
         return;
       }
+
       dealMsgRef.current?.(msg);
     },
     [

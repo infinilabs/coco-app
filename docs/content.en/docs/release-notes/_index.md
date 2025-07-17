@@ -16,6 +16,7 @@ Information about release notes of Coco Server is provided here.
 - feat: file search using spotlight #705
 - feat: voice input support in both search and chat modes #732
 - feat: text to speech now powered by LLM #750
+- feat: file search for Windows #762
 
 ### 🐛 Bug fix
 
@@ -36,6 +37,7 @@ Information about release notes of Coco Server is provided here.
 - chore: rename QuickLink/quick_link to Quicklink/quicklink #752
 - chore: assistant params & styles #753
 - chore: make optional fields optional #758
+- chore: search-chat components add formatUrl & think data & icons url #765
 
 ## 0.6.0 (2025-06-29)
 

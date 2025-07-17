@@ -7,9 +7,10 @@ import { useAppStore } from "@/stores/appStore";
 interface SearchResultsProps {
   input: string;
   isChatMode: boolean;
+  formatUrl?: (item: any) => string;
 }
 
-export function SearchResults({ input, isChatMode }: SearchResultsProps) {
+export function SearchResults({ input, isChatMode, formatUrl }: SearchResultsProps) { 
   const isTauri = useAppStore((state) => state.isTauri);
 
   const [selectedDocumentId, setSelectedDocumentId] = useState("1");
@@ -46,6 +47,7 @@ export function SearchResults({ input, isChatMode }: SearchResultsProps) {
           isChatMode={isChatMode}
           viewMode={viewMode}
           setViewMode={setViewMode}
+          formatUrl={formatUrl}
         />
 
         {/* Right Panel */}

@@ -15,6 +15,7 @@ interface UseKeyboardNavigationProps {
   globalItemIndexMap: Record<number, SearchDocument>;
   handleItemAction: (item: SearchDocument) => void;
   isChatMode: boolean;
+  formatUrl?: (item: any) => string;
 }
 
 export function useKeyboardNavigation({
@@ -27,6 +28,7 @@ export function useKeyboardNavigation({
   globalItemIndexMap,
   handleItemAction,
   isChatMode,
+  formatUrl,
 }: UseKeyboardNavigationProps) {
   const openPopover = useShortcutsStore((state) => state.openPopover);
   const visibleContextMenu = useSearchStore((state) => {
@@ -109,7 +111,7 @@ export function useKeyboardNavigation({
       if (e.key === "Enter" && !e.shiftKey && selectedIndex !== null) {
         const item = globalItemIndexMap[selectedIndex];
 
-        return platformAdapter.openSearchItem(item);
+        return platformAdapter.openSearchItem(item, formatUrl);
       }
 
       if (e.key >= "0" && e.key <= "9" && showIndex && modifierKeyPressed) {
@@ -121,7 +123,7 @@ export function useKeyboardNavigation({
 
         const item = globalItemIndexMap[index];
 
-        platformAdapter.openSearchItem(item);
+        platformAdapter.openSearchItem(item, formatUrl);
       }
     },
     [suggests, selectedIndex, showIndex, globalItemIndexMap, openPopover]
