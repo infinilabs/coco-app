@@ -5,7 +5,6 @@ import { CopyButton } from "@/components/Common/CopyButton";
 import { useAsyncEffect } from "ahooks";
 import platformAdapter from "@/utils/platformAdapter";
 import { useConnectStore } from "@/stores/connectStore";
-import { useAppStore } from "@/stores/appStore";
 import { AttachmentItem } from "../Assistant/AttachmentList";
 
 interface UserMessageProps {
@@ -18,7 +17,6 @@ export const UserMessage: FC<UserMessageProps> = (props) => {
 
   const [showCopyButton, setShowCopyButton] = useState(false);
   const { currentService } = useConnectStore();
-  const { addError } = useAppStore();
   const [attachmentData, setAttachmentData] = useState<any[]>([]);
 
   const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -50,8 +48,6 @@ export const UserMessage: FC<UserMessageProps> = (props) => {
     );
 
     setAttachmentData(result?.hits?.hits);
-
-    console.log("get_attachment_by_ids result", result);
   }, [attachments]);
 
   return (
