@@ -78,24 +78,28 @@ export const UserMessage: FC<UserMessageProps> = (props) => {
         </div>
       )}
 
-      {attachmentData &&
-        attachmentData.map((item) => {
-          const { id, name, size } = item._source;
+      {attachmentData && (
+        <div className="flex justify-end flex-wrap gap-y-2 w-screen mt-3 pl-14">
+          {attachmentData.map((item) => {
+            const { id, name, size, icon } = item._source;
 
-          return (
-            <AttachmentItem
-              {...item._source}
-              key={id}
-              uploaded
-              id={id}
-              attachmentId={id}
-              name={name}
-              path={name}
-              size={size}
-              deletable={false}
-            />
-          );
-        })}
+            return (
+              <AttachmentItem
+                {...item._source}
+                key={id}
+                uploaded
+                id={id}
+                extname={icon}
+                attachmentId={id}
+                name={name}
+                path={name}
+                size={size}
+                deletable={false}
+              />
+            );
+          })}
+        </div>
+      )}
     </>
   );
 };
