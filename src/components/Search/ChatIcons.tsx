@@ -35,7 +35,10 @@ const ChatIcons: React.FC<ChatIconsProps> = ({
           className={clsx(
             "ml-1 p-1 rounded-full transition-colors h-6 bg-[#E4E5F0] dark:bg-[rgb(84,84,84)]",
             {
-              "!bg-[#0072FF]": inputValue || uploadAttachments.length > 0,
+              "!bg-[#0072FF]":
+                inputValue ||
+                (uploadAttachments.length > 0 &&
+                  uploadAttachments.every((item) => !item.uploading)),
             }
           )}
           type="submit"

@@ -30,9 +30,9 @@ const AttachmentList = () => {
     if (uploadAttachments.length === 0) return;
 
     for await (const item of uploadAttachments) {
-      const { uploaded, path } = item;
+      const { uploading, uploaded, uploadFailed, path } = item;
 
-      if (uploaded) continue;
+      if (uploading || uploaded || uploadFailed) continue;
 
       try {
         const attachmentIds: any = await platformAdapter.commands(
@@ -47,6 +47,7 @@ const AttachmentList = () => {
           throw new Error("Failed to get attachment id");
         } else {
           Object.assign(item, {
+            uploading: false,
             uploaded: true,
             attachmentId: attachmentIds[0],
           });
@@ -147,12 +148,12 @@ export const AttachmentItem: FC<AttachmentItemProps> = (props) => {
             ) : (
               <div className="text-[#999]">
                 {uploaded ? (
+                  <span>{t("assistant.fileList.uploading")}</span>
+                ) : (
                   <div className="flex gap-2">
                     {extname && <span>{extname}</span>}
                     <span>{filesize(size)}</span>
                   </div>
-                ) : (
-                  <span>{t("assistant.fileList.uploading")}</span>
                 )}
               </div>
             )}

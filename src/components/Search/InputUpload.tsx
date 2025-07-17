@@ -123,6 +123,7 @@ const InputUpload: FC<InputUploadProps> = (props) => {
       files.push({
         ...stat,
         id: nanoid(),
+        uploading: true,
         path,
       });
     }

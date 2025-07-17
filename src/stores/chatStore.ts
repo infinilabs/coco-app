@@ -8,6 +8,7 @@ import { Metadata } from "tauri-plugin-fs-pro-api";
 export interface UploadAttachments extends Metadata {
   id: string;
   path: string;
+  uploading: boolean;
   uploaded?: boolean;
   attachmentId?: string;
   uploadFailed?: boolean;

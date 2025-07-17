@@ -89,6 +89,7 @@ export const UserMessage: FC<UserMessageProps> = (props) => {
               <AttachmentItem
                 {...item._source}
                 key={id}
+                uploading={false}
                 uploaded
                 id={id}
                 extname={icon}
