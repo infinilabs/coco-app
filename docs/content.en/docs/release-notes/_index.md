@@ -23,6 +23,7 @@ Information about release notes of Coco Server is provided here.
 - fix(file search): apply filters before from/size parameters #741
 - fix(file search): searching by name&content does not search file name #743
 - fix: prevent window from hiding when moved on Windows #748
+- fix: unregister ext hotkey when it gets deleted #770
 
 ### ✈️ Improvements
 
