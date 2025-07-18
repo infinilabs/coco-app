@@ -30,7 +30,6 @@ import {
   change_shortcut,
   unregister_shortcut,
 } from "@/commands";
-import platformAdapter from "@/utils/platformAdapter";
 
 export function ThemeOption({
   icon: Icon,
@@ -76,12 +75,6 @@ export default function GeneralSettings() {
   const [launchAtLogin, setLaunchAtLogin] = useState(true);
 
   const { showTooltip, setShowTooltip, language, setLanguage } = useAppStore();
-
-  useEffect(() => {
-    platformAdapter.invokeBackend("update_app_lang", {
-      lang: language,
-    });
-  }, [language]);
 
   const fetchAutoStartStatus = async () => {
     if (isTauri()) {
