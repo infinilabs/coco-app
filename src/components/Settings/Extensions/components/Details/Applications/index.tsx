@@ -5,10 +5,12 @@ import { useTranslation } from "react-i18next";
 
 import platformAdapter from "@/utils/platformAdapter";
 import DirectoryScope from "../DirectoryScope";
+import { useAppStore } from "@/stores/appStore";
 
 const Applications = () => {
   const { t } = useTranslation();
   const [paths, setPaths] = useState<string[]>([]);
+  const { addError } = useAppStore();
 
   useMount(async () => {
     const paths = await platformAdapter.invokeBackend<string[]>(
@@ -18,8 +20,17 @@ const Applications = () => {
     setPaths(paths);
   });
 
-  const handleReindex = () => {
-    platformAdapter.invokeBackend("reindex_applications");
+  const handleReindex = async () => {
+    try {
+      await platformAdapter.invokeBackend("reindex_applications");
+
+      addError(
+        t("settings.extensions.application.hints.reindexSuccess"),
+        "info"
+      );
+    } catch {
+      addError(t("settings.extensions.application.hints.reindexFailed"));
+    }
   };
 
   return (
