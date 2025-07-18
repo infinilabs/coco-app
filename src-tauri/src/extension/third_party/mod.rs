@@ -4,7 +4,6 @@ use super::alter_extension_json_file;
 use super::canonicalize_relative_icon_path;
 use super::Extension;
 use super::ExtensionType;
-use crate::util::platform::Platform;
 use super::LOCAL_QUERY_SOURCE_TYPE;
 use super::PLUGIN_JSON_FILE_NAME;
 use crate::common::document::open;
@@ -16,6 +15,7 @@ use crate::common::search::QuerySource;
 use crate::common::search::SearchQuery;
 use crate::common::traits::SearchSource;
 use crate::extension::ExtensionBundleIdBorrowed;
+use crate::util::platform::Platform;
 use crate::GLOBAL_TAURI_APP_HANDLE;
 use async_trait::async_trait;
 use borrowme::ToOwned;
@@ -47,7 +47,6 @@ pub(crate) static THIRD_PARTY_EXTENSIONS_DIRECTORY: LazyLock<PathBuf> = LazyLock
 
     app_data_dir
 });
-
 
 pub(crate) async fn list_third_party_extensions(
     directory: &Path,
@@ -810,7 +809,7 @@ impl ThirdPartyExtensionsSearchSource {
     }
 
     /// Remove `extension` from the **in-memory** extension list.
-    pub(crate) async fn remove_extension(&self, developer: &str, extension_id: &str) {
+    pub(crate) async fn remove_extension(&self, developer: &str, extension_id: &str) -> Extension {
         let mut write_lock_guard = self.inner.extensions.write().await;
         let Some(index) = write_lock_guard
             .iter()
@@ -822,7 +821,7 @@ impl ThirdPartyExtensionsSearchSource {
             );
         };
 
-        write_lock_guard.remove(index);
+        write_lock_guard.remove(index)
     }
 }
 
@@ -1044,7 +1043,6 @@ fn calculate_text_similarity(query: &str, text: &str) -> Option<f64> {
     }
 }
 
-
 #[tauri::command]
 pub(crate) async fn uninstall_extension(
     developer: String,
@@ -1066,11 +1064,18 @@ pub(crate) async fn uninstall_extension(
         .await
         .map_err(|e| e.to_string())?;
 
-    THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE
+    let extension = THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE
         .get()
         .unwrap()
         .remove_extension(&developer, &extension_id)
         .await;
+
+    // Unregister the extension hotkey, if set.
+    //
+    // Unregistering hotkey is the only thing that we will do when we disable
+    // an extension, so we directly use this function here even though "disabling"
+    // the extension that one is trying to uninstall does not make too much sense.
+    ThirdPartyExtensionsSearchSource::_disable_extension(&extension).await?;
 
     Ok(())
 }
