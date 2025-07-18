@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -27,13 +27,16 @@ export default function Layout() {
   const { language } = useAppStore();
   const { i18n } = useTranslation();
   const { activeTheme, isDark, setIsDark, setTheme } = useThemeStore();
+  const [languageUpdated, setLanguageUpdated] = useState(false);
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
     i18n.changeLanguage(language);
 
-    platformAdapter.invokeBackend("update_app_lang", {
+    await platformAdapter.invokeBackend("update_app_lang", {
       lang: language,
     });
+
+    setLanguageUpdated(true);
   }, [language]);
 
   function updateBodyClass(path: string) {
@@ -132,7 +135,7 @@ export default function Layout() {
 
   return (
     <>
-      <Outlet />
+      {languageUpdated && <Outlet />}
       <ErrorNotification />
     </>
   );
