@@ -3,12 +3,12 @@ import { useTranslation } from "react-i18next";
 
 import { ChatMessage } from "@/components/ChatMessage";
 import { Greetings } from "./Greetings";
-import FileList from "@/components/Assistant/FileList";
+// import FileList from "@/components/Assistant/FileList";
 import { useChatScroll } from "@/hooks/useChatScroll";
-import { useChatStore } from "@/stores/chatStore";
+// import { useChatStore } from "@/stores/chatStore";
 import type { Chat, IChunkData } from "@/types/chat";
 import { useConnectStore } from "@/stores/connectStore";
-import SessionFile from "./SessionFile";
+// import SessionFile from "./SessionFile";
 import ScrollToBottom from "@/components/Common/ScrollToBottom";
 
 interface ChatContentProps {
@@ -43,14 +43,14 @@ export const ChatContent = ({
   Question,
   handleSendMessage,
 }: ChatContentProps) => {
-  const sessionId = useConnectStore((state) => state.currentSessionId);
+  // const sessionId = useConnectStore((state) => state.currentSessionId);
   const setCurrentSessionId = useConnectStore((state) => {
     return state.setCurrentSessionId;
   });
 
   const { t } = useTranslation();
 
-  const uploadFiles = useChatStore((state) => state.uploadFiles);
+  // const uploadFiles = useChatStore((state) => state.uploadFiles);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { scrollToBottom } = useChatScroll(messagesEndRef);
@@ -164,13 +164,13 @@ export const ChatContent = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {uploadFiles.length > 0 && (
+      {/* {uploadFiles.length > 0 && (
         <div key={sessionId} className="max-h-[120px] overflow-auto p-2">
           <FileList />
         </div>
-      )}
+      )} */}
 
-      {sessionId && <SessionFile sessionId={sessionId} />}
+      {/* {sessionId && <SessionFile sessionId={sessionId} />} */}
 
       <ScrollToBottom scrollRef={scrollRef} isAtBottom={isAtBottom} />
     </div>
