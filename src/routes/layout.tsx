@@ -27,7 +27,7 @@ export default function Layout() {
   const { language } = useAppStore();
   const { i18n } = useTranslation();
   const { activeTheme, isDark, setIsDark, setTheme } = useThemeStore();
-  const [languageUpdated, setLanguageUpdated] = useState(false);
+  const [langUpdated, setLangUpdated] = useState(false);
 
   useAsyncEffect(async () => {
     i18n.changeLanguage(language);
@@ -36,7 +36,7 @@ export default function Layout() {
       lang: language,
     });
 
-    setLanguageUpdated(true);
+    setLangUpdated(true);
   }, [language]);
 
   function updateBodyClass(path: string) {
@@ -135,7 +135,7 @@ export default function Layout() {
 
   return (
     <>
-      {languageUpdated && <Outlet />}
+      {langUpdated && <Outlet />}
       <ErrorNotification />
     </>
   );
