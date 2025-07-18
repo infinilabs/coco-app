@@ -16,7 +16,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { parseSearchQuery, SearchQuery } from "@/utils";
-import InputUpload from "./InputUpload";
+// import InputUpload from "./InputUpload";
 // import AiSummaryIcon from "@/components/Common/Icons/AiSummaryIcon";
 
 interface InputControlsProps {
@@ -56,16 +56,16 @@ const InputControls = ({
   isChatPage,
   hasModules,
   changeMode,
-  checkScreenPermission,
-  requestScreenPermission,
-  getScreenMonitors,
-  getScreenWindows,
-  captureWindowScreenshot,
-  captureMonitorScreenshot,
-  openFileDialog,
-  getFileMetadata,
-  getFileIcon,
-}: InputControlsProps) => {
+}: // checkScreenPermission,
+// requestScreenPermission,
+// getScreenMonitors,
+// getScreenWindows,
+// captureWindowScreenshot,
+// captureMonitorScreenshot,
+// openFileDialog,
+// getFileMetadata,
+// getFileIcon,
+InputControlsProps) => {
   const { t } = useTranslation();
 
   const isTauri = useAppStore((state) => state.isTauri);
@@ -171,7 +171,7 @@ const InputControls = ({
     >
       {isChatMode ? (
         <div className="flex gap-2 text-[12px] leading-3 text-[#333] dark:text-[#d8d8d8]">
-          <InputUpload
+          {/* <InputUpload
             checkScreenPermission={checkScreenPermission}
             requestScreenPermission={requestScreenPermission}
             getScreenMonitors={getScreenMonitors}
@@ -181,7 +181,7 @@ const InputControls = ({
             openFileDialog={openFileDialog}
             getFileMetadata={getFileMetadata}
             getFileIcon={getFileIcon}
-          />
+          /> */}
 
           {source?.type === "deep_think" && source?.config?.visible && (
             <button
