@@ -140,6 +140,9 @@ export function useChatActions(
     async (activeChat?: Chat, params?: SendMessageParams) => {
       const { message, attachments } = params || {};
 
+      console.log("message", message);
+      console.log("attachments", attachments);
+
       if (!message && isEmpty(attachments)) return;
 
       setTimedoutShow(false);

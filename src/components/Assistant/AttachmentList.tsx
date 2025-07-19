@@ -25,14 +25,14 @@ const AttachmentList = () => {
   }, []);
 
   useAsyncEffect(async () => {
-    const { uploadAttachments } = useChatStore.getState();
+    console.log("uploadAttachments", uploadAttachments);
 
     if (uploadAttachments.length === 0) return;
 
     for await (const item of uploadAttachments) {
-      const { uploading, path } = item;
+      const { uploading, uploaded, uploadFailed, path } = item;
 
-      if (uploading) continue;
+      if (uploading && (uploaded || uploadFailed)) continue;
 
       try {
         const attachmentIds: any = await platformAdapter.commands(
@@ -61,7 +61,11 @@ const AttachmentList = () => {
           uploading: false,
         });
 
-        console.log("uploadAttachments", uploadAttachments);
+        console.log("finally item", JSON.stringify(item));
+        console.log(
+          "finally uploadAttachments",
+          JSON.stringify(uploadAttachments)
+        );
 
         setUploadAttachments(uploadAttachments);
       }
@@ -124,6 +128,8 @@ export const AttachmentItem: FC<AttachmentItemProps> = (props) => {
   } = props;
   const { t } = useTranslation();
 
+  console.log("uploaded", uploaded);
+
   return (
     <div key={id} className="w-1/3 px-1">
       <div className="relative group flex items-center gap-1 p-1 rounded-[4px] bg-[#dedede] dark:bg-[#202126]">
@@ -153,12 +159,12 @@ export const AttachmentItem: FC<AttachmentItemProps> = (props) => {
             ) : (
               <div className="text-[#999]">
                 {uploaded ? (
-                  <span>{t("assistant.fileList.uploading")}</span>
-                ) : (
                   <div className="flex gap-2">
                     {extname && <span>{extname}</span>}
                     <span>{filesize(size)}</span>
                   </div>
+                ) : (
+                  <span>{t("assistant.fileList.uploading")}</span>
                 )}
               </div>
             )}
