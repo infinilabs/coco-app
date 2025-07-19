@@ -5,11 +5,11 @@ import { ChatMessage } from "@/components/ChatMessage";
 import { Greetings } from "./Greetings";
 import AttachmentList from "@/components/Assistant/AttachmentList";
 import { useChatScroll } from "@/hooks/useChatScroll";
-// import { useChatStore } from "@/stores/chatStore";
 import type { Chat, IChunkData } from "@/types/chat";
 import { useConnectStore } from "@/stores/connectStore";
 // import SessionFile from "./SessionFile";
 import ScrollToBottom from "@/components/Common/ScrollToBottom";
+import { useChatStore } from "@/stores/chatStore";
 
 interface ChatContentProps {
   activeChat?: Chat;
@@ -45,13 +45,9 @@ export const ChatContent = ({
   handleSendMessage,
   formatUrl,
 }: ChatContentProps) => {
-  // const sessionId = useConnectStore((state) => state.currentSessionId);
-  const setCurrentSessionId = useConnectStore((state) => {
-    return state.setCurrentSessionId;
-  });
+  const { currentSessionId, setCurrentSessionId } = useConnectStore();
 
   const { t } = useTranslation();
-
 
   const { uploadAttachments } = useChatStore();
 
@@ -169,14 +165,13 @@ export const ChatContent = ({
         <div ref={messagesEndRef} />
       </div>
 
-
       {uploadAttachments.length > 0 && (
-        <div key={sessionId} className="max-h-[120px] overflow-auto p-2">
+        <div key={currentSessionId} className="max-h-[120px] overflow-auto p-2">
           <AttachmentList />
         </div>
-      )} */}
+      )}
 
-      {/* {sessionId && <SessionFile sessionId={sessionId} />} */}
+      {/* {currentSessionId && <SessionFile sessionId={currentSessionId} />} */}
 
       <ScrollToBottom scrollRef={scrollRef} isAtBottom={isAtBottom} />
     </div>
