@@ -16,8 +16,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { parseSearchQuery, SearchQuery } from "@/utils";
-// import InputUpload from "./InputUpload";
-// import AiSummaryIcon from "@/components/Common/Icons/AiSummaryIcon";
+import InputUpload from "./InputUpload";
 
 interface InputControlsProps {
   isChatMode: boolean;
@@ -56,16 +55,16 @@ const InputControls = ({
   isChatPage,
   hasModules,
   changeMode,
-}: // checkScreenPermission,
-// requestScreenPermission,
-// getScreenMonitors,
-// getScreenWindows,
-// captureWindowScreenshot,
-// captureMonitorScreenshot,
-// openFileDialog,
-// getFileMetadata,
-// getFileIcon,
-InputControlsProps) => {
+  checkScreenPermission,
+  requestScreenPermission,
+  getScreenMonitors,
+  getScreenWindows,
+  captureWindowScreenshot,
+  captureMonitorScreenshot,
+  openFileDialog,
+  getFileMetadata,
+  getFileIcon,
+}: InputControlsProps) => {
   const { t } = useTranslation();
 
   const isTauri = useAppStore((state) => state.isTauri);
