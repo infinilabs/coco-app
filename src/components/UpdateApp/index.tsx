@@ -29,7 +29,15 @@ interface UpdateAppProps {
 const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
   const { t } = useTranslation();
   const isDark = useThemeStore((state) => state.isDark);
-  const { visible, setVisible, skipVersion, setSkipVersion, isOptional, updateInfo, setUpdateInfo } = useUpdateStore();
+  const {
+    visible,
+    setVisible,
+    skipVersion,
+    setSkipVersion,
+    isOptional,
+    updateInfo,
+    setUpdateInfo,
+  } = useUpdateStore();
   const addError = useAppStore((state) => state.addError);
   const snapshotUpdate = useAppearanceStore((state) => state.snapshotUpdate);
 
@@ -125,16 +133,37 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
       className="relative z-10 focus:outline-none"
       onClose={noop}
     >
-      <div className={`fixed inset-0 z-10 w-screen overflow-y-auto ${isCheckPage ? "rounded-lg bg-white dark:bg-[#333] border border-[#EDEDED]  dark:border-black/20 shadow-md" : ""}`}>
-        <div className={clsx("flex min-h-full items-center justify-center", !isCheckPage && "p-4")}>
+      <div
+        className={`fixed inset-0 z-10 w-screen overflow-y-auto ${
+          isCheckPage
+            ? "rounded-lg bg-white dark:bg-[#333] border border-[#EDEDED]  dark:border-black/20 shadow-md"
+            : ""
+        }`}
+      >
+        <div
+          className={clsx(
+            "flex min-h-full items-center justify-center",
+            !isCheckPage && "p-4"
+          )}
+        >
           <DialogPanel
             transition
-            className={`relative w-[340px] py-8 flex flex-col items-center ${isCheckPage ? "" : "rounded-lg bg-white dark:bg-[#333] border border-[#EDEDED]  dark:border-black/20 shadow-md"}`}
+            className={`relative w-[340px] py-8 flex flex-col items-center ${
+              isCheckPage
+                ? ""
+                : "rounded-lg bg-white dark:bg-[#333] border border-[#EDEDED]  dark:border-black/20 shadow-md"
+            }`}
           >
             {!isCheckPage && isOptional && (
               <X
-                className={clsx("absolute size-5 top-3 right-3 text-[#999] dark:text-[#D8D8D8]", cursorClassName)}
+                className={clsx(
+                  "absolute size-5 top-3 right-3 text-[#999] dark:text-[#D8D8D8]",
+                  cursorClassName
+                )}
                 onClick={handleCancel}
+                role="button"
+                aria-label="Close dialog"
+                tabIndex={0}
               />
             )}
 
@@ -142,27 +171,35 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
 
             <div className="text-[#333] text-sm leading-5 py-2 dark:text-[#D8D8D8] text-center">
               {updateInfo?.available ? (
-                isOptional ? t("update.optional_description") : (
+                isOptional ? (
+                  t("update.optional_description")
+                ) : (
                   <>
                     <p>{t("update.force_description1")}</p>
                     <p>{t("update.force_description2")}</p>
                   </>
                 )
-              ) : t("update.date")}
+              ) : (
+                t("update.date")
+              )}
             </div>
 
             {updateInfo?.available ? (
               <div
                 className="text-xs text-[#0072FF] cursor-pointer"
                 onClick={() =>
-                  OpenURLWithBrowser("https://docs.infinilabs.com/coco-app/main/docs/release-notes")
+                  OpenURLWithBrowser(
+                    "https://docs.infinilabs.com/coco-app/main/docs/release-notes"
+                  )
                 }
               >
                 v{updateInfo.version} {t("update.releaseNotes")}
               </div>
             ) : (
               <div className={clsx("text-xs text-[#999]", cursorClassName)}>
-                {t("update.latest", { replace: [updateInfo?.version || "v0.6.0"] })}
+                {t("update.latest", {
+                  replace: [updateInfo?.version || "v0.6.0"],
+                })}
               </div>
             )}
 
@@ -179,7 +216,11 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
                   <LoaderCircle className="animate-spin size-5" />
                   {percent}%
                 </div>
-              ) : updateInfo?.available ? t("update.button.install") : t("update.button.ok")}
+              ) : updateInfo?.available ? (
+                t("update.button.install")
+              ) : (
+                t("update.button.ok")
+              )}
             </Button>
 
             {updateInfo?.available && isOptional && (
@@ -194,7 +235,6 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
         </div>
       </div>
     </Dialog>
-
   );
 };
 
