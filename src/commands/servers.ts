@@ -254,15 +254,18 @@ export function chat_create({
   serverId,
   message,
   queryParams,
+  clientId,
 }: {
   serverId: string;
   message: string;
   queryParams?: Record<string, any>;
+  clientId: string;
 }): Promise<GetResponse> {
   return invokeWithErrorHandler(`chat_create`, {
     serverId,
     message,
     queryParams,
+    clientId,
   });
 }
 
@@ -293,17 +296,20 @@ export function chat_chat({
   sessionId,
   message,
   queryParams,
+  clientId,
 }: {
   serverId: string;
   sessionId: string;
   message: string;
   queryParams?: Record<string, any>;
+  clientId: string;
 }): Promise<string> {
   return invokeWithErrorHandler(`chat_chat`, {
     serverId,
     sessionId,
     message,
     queryParams,
+    clientId,
   });
 }
 

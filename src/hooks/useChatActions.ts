@@ -19,6 +19,7 @@ export function useChatActions(
   curIdRef: React.MutableRefObject<string>,
   setChats: (chats: Chat[]) => void,
   dealMsgRef: React.MutableRefObject<((msg: string) => void) | null>,
+  isChatPage: boolean,
   isSearchActive?: boolean,
   isDeepThinkActive?: boolean,
   isMCPActive?: boolean,
@@ -39,6 +40,14 @@ export function useChatActions(
   const MCPIds = useSearchStore((state) => state.MCPIds);
 
   const [keyword, setKeyword] = useState("");
+  const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
+
+  // Add a ref at the beginning of the useChatActions function to store the listener.
+  const unlistenersRef = useRef<{
+    message?: () => void;
+    chatMessage?: () => void;
+    error?: () => void;
+  }>({});
 
   const chatClose = useCallback(
     async (activeChat?: Chat) => {
@@ -64,6 +73,21 @@ export function useChatActions(
   const cancelChat = useCallback(
     async (activeChat?: Chat) => {
       setCurChatEnd(true);
+
+      // Stop listening for streaming data.
+      if (unlistenersRef.current.message) {
+        unlistenersRef.current.message();
+        unlistenersRef.current.message = undefined;
+      }
+      if (unlistenersRef.current.chatMessage) {
+        unlistenersRef.current.chatMessage();
+        unlistenersRef.current.chatMessage = undefined;
+      }
+      if (unlistenersRef.current.error) {
+        unlistenersRef.current.error();
+        unlistenersRef.current.error = undefined;
+      }
+
       if (!activeChat?._id) return;
       let response: any;
       if (isTauri) {
@@ -134,8 +158,12 @@ export function useChatActions(
     [currentService?.id, isTauri, assistantList]
   );
 
+  const clientId = isChatPage ? "standalone" : "popup";
   const createNewChat = useCallback(
     async (value: string = "", activeChat?: Chat) => {
+      const requestId = `${Date.now()}-${Math.random()}`;
+      setCurrentRequestId(requestId);
+
       setTimedoutShow(false);
       await chatClose(activeChat);
       clearAllChunkData();
@@ -156,6 +184,7 @@ export function useChatActions(
           serverId: currentService?.id,
           message: value,
           queryParams,
+          clientId: `chat-create-stream-${clientId}-${requestId}`,
         });
       } else {
         await streamPost({
@@ -206,6 +235,7 @@ export function useChatActions(
           sessionId: newChat?._id,
           queryParams,
           message: content,
+          clientId: `chat-chat-stream-${clientId}`,
         });
       } else {
         await streamPost({
@@ -294,43 +324,80 @@ export function useChatActions(
         return;
       }
 
+      console.log("msg", msg);
       dealMsgRef.current?.(msg);
     },
     [
-      curIdRef,
-      updatedChatRef,
       changeInput,
       setActiveChat,
       setCurChatEnd,
       setVisibleStartPage,
-      dealMsgRef,
     ]
   );
 
   useEffect(() => {
     if (!isTauri || !currentService?.id) return;
 
-    const unlisten_message = platformAdapter.listenEvent(
-      `chat-create-stream`,
-      (event) => {
-        const msg = event.payload as string;
-        //console.log("chat-create-stream", msg);
-        handleChatCreateStreamMessage(msg);
-      }
-    );
+    // Clean up previous listeners.
+    if (unlistenersRef.current.message) {
+      unlistenersRef.current.message();
+    }
+    if (unlistenersRef.current.chatMessage) {
+      unlistenersRef.current.chatMessage();
+    }
+    if (unlistenersRef.current.error) {
+      unlistenersRef.current.error();
+    }
 
-    const unlisten_error = platformAdapter.listenEvent(
-      `chat-create-error`,
-      (event) => {
-        console.error("chat-create-error", event.payload);
-      }
-    );
+    const setupListeners = async () => {
+      const unlisten_message = await platformAdapter.listenEvent(
+        `chat-create-stream-${clientId}`,
+        (event) => {
+          const msg = event.payload as string;
+          console.log(`chat-create-stream-${clientId}`, msg);
+          handleChatCreateStreamMessage(msg);
+        }
+      );
+
+      const unlisten_chat_message = await platformAdapter.listenEvent(
+        `chat-chat-stream-${clientId}`,
+        (event) => {
+          const msg = event.payload as string;
+          console.log(`chat-chat-stream-${clientId}`, msg);
+          handleChatCreateStreamMessage(msg);
+        }
+      );
+
+      const unlisten_error = await platformAdapter.listenEvent(
+        `chat-create-error`,
+        (event) => {
+          console.error("chat-create-error", event.payload);
+        }
+      );
+
+      // Store the listener references.
+      unlistenersRef.current = {
+        message: unlisten_message,
+        chatMessage: unlisten_chat_message,
+        error: unlisten_error,
+      };
+    };
+
+    setupListeners();
 
     return () => {
-      unlisten_message.then((fn) => fn());
-      unlisten_error.then((fn) => fn());
+      if (unlistenersRef.current.message) {
+        unlistenersRef.current.message();
+      }
+      if (unlistenersRef.current.chatMessage) {
+        unlistenersRef.current.chatMessage();
+      }
+      if (unlistenersRef.current.error) {
+        unlistenersRef.current.error();
+      }
+      unlistenersRef.current = {};
     };
-  }, [currentService?.id, dealMsgRef, updatedChatRef.current]);
+  }, [currentService?.id, clientId]);
 
   const openSessionChat = useCallback(
     async (chat: Chat) => {

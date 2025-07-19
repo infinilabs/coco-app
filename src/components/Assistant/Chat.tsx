@@ -177,11 +177,12 @@ const ChatAI = memo(
         curIdRef,
         setChats,
         dealMsgRef,
+        isChatPage,
         isSearchActive,
         isDeepThinkActive,
         isMCPActive,
         changeInput,
-        showChatHistory
+        showChatHistory,
       );
 
       const { dealMsg } = useMessageHandler(
