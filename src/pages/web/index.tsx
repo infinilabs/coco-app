@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import SearchChat from "@/components/SearchChat";
 import { useAppStore } from "@/stores/appStore";
@@ -30,6 +31,7 @@ interface WebAppProps {
   onCancel?: () => void;
   formatUrl?: (item: any) => string;
   isOpen?: boolean;
+  language?: string;
 }
 
 function WebApp({
@@ -51,13 +53,18 @@ function WebApp({
   setIsPinned,
   onCancel,
   formatUrl,
+  language = 'en',
 }: WebAppProps) {
-  const setIsTauri = useAppStore((state) => state.setIsTauri);
-  const setEndpoint = useAppStore((state) => state.setEndpoint);
+  const {setIsTauri, setEndpoint} = useAppStore();
   const setModeSwitch = useShortcutsStore((state) => state.setModeSwitch);
   const setInternetSearch = useShortcutsStore((state) => {
     return state.setInternetSearch;
   });
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    i18n.changeLanguage(language);
+  }, [language]);
 
   useEffect(() => {
     setIsTauri(false);

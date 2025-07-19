@@ -15,6 +15,7 @@ interface FetchSourceProps {
   Detail?: any;
   ChunkData?: IChunkData;
   loading?: boolean;
+  formatUrl?: (data: ISourceData) => string;
 }
 
 interface ISourceData {
@@ -38,6 +39,7 @@ export const FetchSource = ({
   Detail,
   ChunkData,
   loading,
+  formatUrl,
 }: FetchSourceProps) => {
   const { t } = useTranslation();
 
@@ -77,6 +79,13 @@ export const FetchSource = ({
       }
     }
   }, [ChunkData?.message_chunk, loading]);
+
+  const sourceClick = (item: ISourceData) => () => {
+    const url = (formatUrl && formatUrl(item)) || item.url;
+    if (url) {
+      OpenURLWithBrowser(url);
+    }
+  };
 
   // Must be after hooks !!!
   if (!ChunkData && !Detail) return null;
@@ -125,7 +134,7 @@ export const FetchSource = ({
           {data?.map((item, idx) => (
             <div
               key={idx}
-              onClick={() => item.url && OpenURLWithBrowser(item.url)}
+              onClick={sourceClick(item)}
               className="group flex items-center p-2 hover:bg-[#F7F7F7] dark:hover:bg-[#2C2C2C] border-b border-[#E6E6E6] dark:border-[#272626] last:border-b-0 cursor-pointer transition-colors"
             >
               <div className="w-full flex items-center gap-2">

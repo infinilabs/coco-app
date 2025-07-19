@@ -26,6 +26,7 @@ interface ChatContentProps {
   Question: string;
   handleSendMessage: (content: string, newChat?: Chat) => void;
   getFileUrl: (path: string) => string;
+  formatUrl?: (data: any) => string;
 }
 
 export const ChatContent = ({
@@ -42,6 +43,7 @@ export const ChatContent = ({
   timedoutShow,
   Question,
   handleSendMessage,
+  formatUrl,
 }: ChatContentProps) => {
   // const sessionId = useConnectStore((state) => state.currentSessionId);
   const setCurrentSessionId = useConnectStore((state) => {
@@ -143,6 +145,7 @@ export const ChatContent = ({
             think={think}
             response={response}
             loadingStep={loadingStep}
+            formatUrl={formatUrl}
           />
         ) : null}
 

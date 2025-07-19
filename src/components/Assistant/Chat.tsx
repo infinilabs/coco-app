@@ -40,6 +40,7 @@ interface ChatAIProps {
   showChatHistory?: boolean;
   assistantIDs?: string[];
   startPage?: StartPage;
+  formatUrl?: (data: any) => string;
 }
 
 export interface ChatAIRef {
@@ -65,6 +66,7 @@ const ChatAI = memo(
         showChatHistory,
         assistantIDs,
         startPage,
+        formatUrl,
       },
       ref
     ) => {
@@ -391,6 +393,7 @@ const ChatAI = memo(
                     handleSendMessage(value, activeChat)
                   }
                   getFileUrl={getFileUrl}
+                  formatUrl={formatUrl}
                 />
                 <Splash assistantIDs={assistantIDs} startPage={startPage} />
               </>
