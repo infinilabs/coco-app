@@ -209,11 +209,11 @@ const Shortcuts = () => {
 
     const isSystemKey = systemKeys.includes(value);
 
-    const state = useShortcutsStore.getState();
+    const initialKeys = list.map((item) => item.initialValue);
 
-    console.log("state", state);
+    console.log("initialKeys", initialKeys);
 
-    const isUsed = value !== "" && Object.values(state).includes(value);
+    const isUsed = value !== "" && initialKeys.includes(value);
 
     if (isSystemKey) {
       return addError(
