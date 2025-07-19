@@ -459,7 +459,8 @@
     "login": "Login",
     "cancel": "Cancel",
     "copyUrl": "Copy URL",
-    "privacyPolicy": "EULA | Privacy Policy",
+    "eula": "EULA",
+    "privacyPolicy": "Privacy Policy",
     "connect": {
       "back": "Back",
       "title": "Connecting to Your Coco-Server",
