@@ -161,7 +161,7 @@ export function useChatActions(
   const clientId = isChatPage ? "standalone" : "popup";
   const createNewChat = useCallback(
     async (value: string = "", activeChat?: Chat) => {
-      const requestId = `${Date.now()}-${Math.random()}`;
+      const requestId = `${Date.now()}`;
       setCurrentRequestId(requestId);
 
       setTimedoutShow(false);
@@ -217,6 +217,9 @@ export function useChatActions(
   const sendMessage = useCallback(
     async (content: string, newChat: Chat) => {
       if (!newChat?._id || !content) return;
+
+      const requestId = `${Date.now()}`;
+      setCurrentRequestId(requestId);
 
       clearAllChunkData();
 
@@ -327,12 +330,7 @@ export function useChatActions(
       console.log("msg", msg);
       dealMsgRef.current?.(msg);
     },
-    [
-      changeInput,
-      setActiveChat,
-      setCurChatEnd,
-      setVisibleStartPage,
-    ]
+    [changeInput, setActiveChat, setCurChatEnd, setVisibleStartPage]
   );
 
   useEffect(() => {
@@ -351,19 +349,22 @@ export function useChatActions(
 
     const setupListeners = async () => {
       const unlisten_message = await platformAdapter.listenEvent(
-        `chat-create-stream-${clientId}`,
+        `chat-create-stream-${clientId}-${currentRequestId}`,
         (event) => {
           const msg = event.payload as string;
-          console.log(`chat-create-stream-${clientId}`, msg);
+          console.log(
+            `chat-create-stream-${clientId}-${currentRequestId}`,
+            msg
+          );
           handleChatCreateStreamMessage(msg);
         }
       );
 
       const unlisten_chat_message = await platformAdapter.listenEvent(
-        `chat-chat-stream-${clientId}`,
+        `chat-chat-stream-${clientId}-${currentRequestId}`,
         (event) => {
           const msg = event.payload as string;
-          console.log(`chat-chat-stream-${clientId}`, msg);
+          console.log(`chat-chat-stream-${clientId}-${currentRequestId}`, msg);
           handleChatCreateStreamMessage(msg);
         }
       );
@@ -397,7 +398,7 @@ export function useChatActions(
       }
       unlistenersRef.current = {};
     };
-  }, [currentService?.id, clientId]);
+  }, [currentService?.id, clientId, currentRequestId]);
 
   const openSessionChat = useCallback(
     async (chat: Chat) => {
