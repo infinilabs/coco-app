@@ -211,8 +211,6 @@ const Shortcuts = () => {
 
     const usedKeys = list.map((item) => item.value);
 
-    console.log("usedKeys", usedKeys);
-
     const isUsed = value !== "" && usedKeys.includes(value);
 
     if (isSystemKey) {
@@ -225,9 +223,11 @@ const Shortcuts = () => {
     }
 
     if (isUsed) {
+      const matched = list.find((item) => item.value === value)!;
+
       return addError(
         t("settings.advanced.shortcuts.hints.isUse", {
-          replace: [value],
+          replace: [value, t(matched.title)],
         }),
         "warning"
       );

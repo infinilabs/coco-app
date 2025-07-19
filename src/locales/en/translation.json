@@ -149,7 +149,7 @@
         },
         "hints": {
           "isSystem": "This shortcut \"{{0}}\" is reserved by the system, please choose another key.",
-          "isUse": "This shortcut \"{{0}}\" is already in use, please choose another key."
+          "isUse": "The shortcut key \"{{0}}\" is already used by \"{{1}}\". Please choose a different key."
         },
         "aiOverview": {
           "title": "AI Overview",
