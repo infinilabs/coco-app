@@ -211,17 +211,26 @@ const Shortcuts = () => {
 
     const state = useShortcutsStore.getState();
 
+    console.log("state", state);
+
     const isUsed = Object.values(state).includes(value);
 
     if (isSystemKey) {
       return addError(
-        t("settings.advanced.shortcuts.hints.isSystem"),
+        t("settings.advanced.shortcuts.hints.isSystem", {
+          replace: [value],
+        }),
         "warning"
       );
     }
 
     if (isUsed) {
-      return addError(t("settings.advanced.shortcuts.hints.isUse"), "warning");
+      return addError(
+        t("settings.advanced.shortcuts.hints.isUse", {
+          replace: [value],
+        }),
+        "warning"
+      );
     }
 
     setValue(value);
