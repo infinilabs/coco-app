@@ -204,9 +204,15 @@
         "hotkey": "热键",
         "enabled": "启用状态"
       },
+      "menuItem": {
+        "extensionStore": "插件商店",
+        "localPluginImport": "本地插件导入"
+      },
       "hits": {
         "addAlias": "添加别名",
-        "recordHotkey": "录制热键"
+        "recordHotkey": "录制热键",
+        "importSuccess": "插件导入成功。",
+        "importFailed": "未在该目录中找到有效的插件，请检查目录结构是否正确。"
       },
       "application": {
         "title": "应用程序",

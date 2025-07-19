@@ -204,9 +204,15 @@
         "hotkey": "Hotkey",
         "enabled": "Enabled"
       },
+      "menuItem": {
+        "extensionStore": "Extension Store",
+        "localExtensionImport": "Import Local Extension"
+      },
       "hits": {
         "addAlias": "Add Alias",
-        "recordHotkey": "Record Hotkey"
+        "recordHotkey": "Record Hotkey",
+        "importSuccess": "Extension imported successfully.",
+        "importFailed": "No valid extension found in the selected folder. Please check the folder structure."
       },
       "application": {
         "title": "Applications",
