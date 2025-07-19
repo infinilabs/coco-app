@@ -211,6 +211,8 @@ const Shortcuts = () => {
 
     const state = useShortcutsStore.getState();
 
+    console.log("state", state);
+
     const isUsed = value !== "" && Object.values(state).includes(value);
 
     if (isSystemKey) {
