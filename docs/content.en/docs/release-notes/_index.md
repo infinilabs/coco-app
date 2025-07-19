@@ -45,6 +45,7 @@ Information about release notes of Coco Server is provided here.
 - chore: Coco app http request headers #744
 - refactor: do status code check before deserializing response #767
 - style: splash adapts to the width of mobile phones #768
+- chore: search-chat add language and formatUrl parameters #775
 
 ## 0.6.0 (2025-06-29)
 

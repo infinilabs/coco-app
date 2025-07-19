@@ -34,6 +34,7 @@ interface ChatMessageProps {
   actionClassName?: string;
   actionIconSize?: number;
   copyButtonId?: string;
+  formatUrl?: (data: any) => string;
 }
 
 export const ChatMessage = memo(function ChatMessage({
@@ -53,6 +54,7 @@ export const ChatMessage = memo(function ChatMessage({
   actionClassName,
   actionIconSize,
   copyButtonId,
+  formatUrl,
 }: ChatMessageProps) {
   const { t } = useTranslation();
 
@@ -123,6 +125,7 @@ export const ChatMessage = memo(function ChatMessage({
           Detail={details.find((item) => item.type === "fetch_source")}
           ChunkData={fetch_source}
           loading={loadingStep?.fetch_source}
+          formatUrl={formatUrl}
         />
         <PickSource
           Detail={details.find((item) => item.type === "pick_source")}
