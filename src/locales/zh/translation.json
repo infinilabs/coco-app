@@ -459,7 +459,8 @@
     "login": "登录",
     "cancel": "取消",
     "copyUrl": "复制链接",
-    "privacyPolicy": "用户协议 | 隐私政策",
+    "eula": "用户协议",
+    "privacyPolicy": "隐私政策",
     "connect": {
       "back": "返回",
       "title": "连接到您的 Coco-Server",
