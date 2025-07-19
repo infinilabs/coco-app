@@ -205,23 +205,32 @@ const Shortcuts = () => {
   const handleChange = (value: string, setValue: (value: string) => void) => {
     if (value.length > 1) return;
 
-    const systemKeys = ["C", "V", "X", "Z", "Q", "H"];
+    const systemKeys = ["C", "V", "X", "Z", "Q", "H", "K", ","];
 
     const isSystemKey = systemKeys.includes(value);
 
-    const state = useShortcutsStore.getState();
+    const usedKeys = list.map((item) => item.value);
 
-    const isUsed = Object.values(state).includes(value);
+    const isUsed = value !== "" && usedKeys.includes(value);
 
     if (isSystemKey) {
       return addError(
-        t("settings.advanced.shortcuts.hints.isSystem"),
+        t("settings.advanced.shortcuts.hints.isSystem", {
+          replace: [value],
+        }),
         "warning"
       );
     }
 
     if (isUsed) {
-      return addError(t("settings.advanced.shortcuts.hints.isUse"), "warning");
+      const matched = list.find((item) => item.value === value)!;
+
+      return addError(
+        t("settings.advanced.shortcuts.hints.isUse", {
+          replace: [value, t(matched.title)],
+        }),
+        "warning"
+      );
     }
 
     setValue(value);

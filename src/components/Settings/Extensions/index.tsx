@@ -171,7 +171,7 @@ export const Extensions = () => {
           </div>
 
           <div className="flex justify-between gap-6 my-4">
-            <div className="flex h-8 border dark:border-gray-700">
+            <div className="flex h-8 border dark:border-gray-700 rounded-md overflow-hidden">
               {state.categories.map((item) => {
                 return (
                   <div

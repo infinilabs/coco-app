@@ -210,15 +210,31 @@ const ServiceAuth = memo(
               />
             )}
 
-            {/* Privacy Policy Link */}
-            <button
-              className="text-xs text-[#0096FB] dark:text-blue-400 block"
-              onClick={() =>
-                OpenURLWithBrowser(currentService?.provider?.privacy_policy)
-              }
-            >
-              {t("cloud.privacyPolicy")}
-            </button>
+            <div className="flex items-center gap-2">
+              {/* EULA Link */}
+              <button
+                className="text-xs text-[#0096FB] dark:text-blue-400 block"
+                onClick={() =>
+                  OpenURLWithBrowser(currentService?.provider?.eula)
+                }
+              >
+                {t("cloud.eula")}
+              </button>
+
+              <span className="text-xs text-[#0096FB] dark:text-blue-400 block">
+                |
+              </span>
+
+              {/* Privacy Policy Link */}
+              <button
+                className="text-xs text-[#0096FB] dark:text-blue-400 block"
+                onClick={() =>
+                  OpenURLWithBrowser(currentService?.provider?.privacy_policy)
+                }
+              >
+                {t("cloud.privacyPolicy")}
+              </button>
+            </div>
           </div>
         )}
       </div>
