@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef, useMemo } from "react";
+import { v4 as uuidv4 } from 'uuid';
 
 import type { Chat } from "@/types/chat";
 import { useAppStore } from "@/stores/appStore";
@@ -16,7 +17,7 @@ export function useChatActions(
   setTimedoutShow: (value: boolean) => void,
   clearAllChunkData: () => void,
   setQuestion: (value: string) => void,
-  curIdRef: React.MutableRefObject<string>,
+  curSessionIdRef: React.MutableRefObject<string>,
   setChats: (chats: Chat[]) => void,
   dealMsgRef: React.MutableRefObject<((msg: string) => void) | null>,
   isChatPage: boolean,
@@ -24,8 +25,14 @@ export function useChatActions(
   isDeepThinkActive?: boolean,
   isMCPActive?: boolean,
   changeInput?: (val: string) => void,
-  showChatHistory?: boolean
+  showChatHistory?: boolean,
+  instanceId?: string
 ) {
+  // Generate a unique instance ID
+  const uniqueInstanceId = useMemo(() => {
+    return instanceId || uuidv4();
+  }, [instanceId]);
+
   const isCurrentLogin = useAuthStore((state) => state.isCurrentLogin);
 
   const isTauri = useAppStore((state) => state.isTauri);
@@ -40,7 +47,7 @@ export function useChatActions(
   const MCPIds = useSearchStore((state) => state.MCPIds);
 
   const [keyword, setKeyword] = useState("");
-  const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
+  const [currentRequestId, setCurrentRequestId] = useState<string>("");
 
   // Add a ref at the beginning of the useChatActions function to store the listener.
   const unlistenersRef = useRef<{
@@ -117,6 +124,7 @@ export function useChatActions(
     async (chat: Chat, callback?: (chat: Chat) => void) => {
       if (!chat?._id) return;
 
+      curSessionIdRef.current = chat?._id;
       let response: any;
       if (isTauri) {
         if (!currentService?.id) return;
@@ -158,10 +166,14 @@ export function useChatActions(
     [currentService?.id, isTauri, assistantList]
   );
 
-  const clientId = isChatPage ? "standalone" : "popup";
+  // Modify the clientId generation logic to include the instance ID.
+  const clientId = useMemo(() => {
+    const baseId = isChatPage ? "standalone-chat" : "search-chat";
+    return `${baseId}-${uniqueInstanceId}`;
+  }, [isChatPage, uniqueInstanceId]);
   const createNewChat = useCallback(
     async (value: string = "", activeChat?: Chat) => {
-      const requestId = `${Date.now()}`;
+      const requestId = `${Date.now()}-${uniqueInstanceId}`;
       setCurrentRequestId(requestId);
 
       setTimedoutShow(false);
@@ -208,9 +220,10 @@ export function useChatActions(
       isSearchActive,
       isDeepThinkActive,
       isMCPActive,
-      curIdRef,
       currentAssistant,
       chatClose,
+      uniqueInstanceId,
+      clientId
     ]
   );
 
@@ -218,7 +231,7 @@ export function useChatActions(
     async (content: string, newChat: Chat) => {
       if (!newChat?._id || !content) return;
 
-      const requestId = `${Date.now()}`;
+      const requestId = `${Date.now()}-${uniqueInstanceId}`;
       setCurrentRequestId(requestId);
 
       clearAllChunkData();
@@ -238,7 +251,7 @@ export function useChatActions(
           sessionId: newChat?._id,
           queryParams,
           message: content,
-          clientId: `chat-chat-stream-${clientId}`,
+          clientId: `chat-chat-stream-${clientId}-${requestId}`,
         });
       } else {
         await streamPost({
@@ -269,9 +282,10 @@ export function useChatActions(
       isSearchActive,
       isDeepThinkActive,
       isMCPActive,
-      curIdRef,
       changeInput,
       currentAssistant,
+      uniqueInstanceId,
+      clientId
     ]
   );
 
@@ -296,9 +310,11 @@ export function useChatActions(
       ) {
         const response = JSON.parse(msg);
         console.log("first", response);
+
         let updatedChat: Chat;
         if (Array.isArray(response)) {
-          curIdRef.current = response[0]?._id;
+          curSessionIdRef.current = response[0]?._source?.session_id;
+          console.log("first-curSessionIdRef", curSessionIdRef.current);
           updatedChat = {
             ...updatedChatRef.current,
             messages: [
@@ -309,7 +325,8 @@ export function useChatActions(
           console.log("array", updatedChat, updatedChatRef.current?.messages);
         } else {
           const newChat: Chat = response;
-          curIdRef.current = response?.payload?.id;
+          curSessionIdRef.current = response?._source?.session_id;
+          console.log("first-curSessionIdRef", curSessionIdRef.current);
 
           newChat._source = {
             ...response?.payload,
@@ -327,7 +344,7 @@ export function useChatActions(
         return;
       }
 
-      console.log("msg", msg);
+      // console.log("msg", msg);
       dealMsgRef.current?.(msg);
     },
     [changeInput, setActiveChat, setCurChatEnd, setVisibleStartPage]
@@ -352,10 +369,7 @@ export function useChatActions(
         `chat-create-stream-${clientId}-${currentRequestId}`,
         (event) => {
           const msg = event.payload as string;
-          console.log(
-            `chat-create-stream-${clientId}-${currentRequestId}`,
-            msg
-          );
+          // console.log(`chat-create-stream-${clientId}-${currentRequestId}`, msg);
           handleChatCreateStreamMessage(msg);
         }
       );
@@ -364,7 +378,7 @@ export function useChatActions(
         `chat-chat-stream-${clientId}-${currentRequestId}`,
         (event) => {
           const msg = event.payload as string;
-          console.log(`chat-chat-stream-${clientId}-${currentRequestId}`, msg);
+          // console.log(`chat-chat-stream-${clientId}-${currentRequestId}`, msg);
           handleChatCreateStreamMessage(msg);
         }
       );
@@ -398,7 +412,7 @@ export function useChatActions(
       }
       unlistenersRef.current = {};
     };
-  }, [currentService?.id, clientId, currentRequestId]);
+  }, [currentService?.id, clientId, currentRequestId, uniqueInstanceId]);
 
   const openSessionChat = useCallback(
     async (chat: Chat) => {
@@ -531,5 +545,6 @@ export function useChatActions(
     handleSearch,
     handleRename,
     handleDelete,
+    instanceId: uniqueInstanceId
   };
 }

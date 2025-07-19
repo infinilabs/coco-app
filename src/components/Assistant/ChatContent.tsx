@@ -27,6 +27,7 @@ interface ChatContentProps {
   handleSendMessage: (content: string, newChat?: Chat) => void;
   getFileUrl: (path: string) => string;
   formatUrl?: (data: any) => string;
+  curSessionIdRef: React.MutableRefObject<string>;
 }
 
 export const ChatContent = ({
@@ -44,7 +45,9 @@ export const ChatContent = ({
   Question,
   handleSendMessage,
   formatUrl,
+  curSessionIdRef,
 }: ChatContentProps) => {
+  console.log("curSessionIdRef", curSessionIdRef.current === activeChat?._id);
   // const sessionId = useConnectStore((state) => state.currentSessionId);
   const setCurrentSessionId = useConnectStore((state) => {
     return state.setCurrentSessionId;
@@ -68,7 +71,7 @@ export const ChatContent = ({
   useEffect(() => {
     scrollToBottom();
   }, [
-    activeChat?.id,
+    activeChat?._id,
     query_intent?.message_chunk,
     fetch_source?.message_chunk,
     pick_source?.message_chunk,
@@ -122,7 +125,7 @@ export const ChatContent = ({
           deep_read ||
           think ||
           response) &&
-        activeChat?._id ? (
+        activeChat?._id === curSessionIdRef.current ? (
           <ChatMessage
             key={"current"}
             message={{

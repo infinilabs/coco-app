@@ -31,9 +31,9 @@ import { useSyncStore } from "@/hooks/useSyncStore";
 import { useAppStore } from "@/stores/appStore";
 import { unrequitable } from "@/utils";
 
-interface ChatProps {}
+interface StandaloneChatProps {}
 
-export default function Chat({}: ChatProps) {
+export default function StandaloneChat({}: StandaloneChatProps) {
   const setIsTauri = useAppStore((state) => state.setIsTauri);
   useEffect(() => {
     setIsTauri(true);
@@ -304,6 +304,7 @@ export default function Chat({}: ChatProps) {
             <ChatAI
               ref={chatAIRef}
               key="ChatAI"
+              instanceId="standalone-chat"
               activeChatProp={activeChat}
               isSearchActive={isSearchActive}
               isDeepThinkActive={isDeepThinkActive}

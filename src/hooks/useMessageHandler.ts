@@ -4,7 +4,7 @@ import type { IChunkData, Chat } from "@/types/chat";
 import { useConnectStore } from "@/stores/connectStore";
 
 export function useMessageHandler(
-  curIdRef: React.MutableRefObject<string>,
+  curSessionIdRef: React.MutableRefObject<string>,
   setCurChatEnd: (value: boolean) => void,
   setTimedoutShow: (value: boolean) => void,
   onCancel: (chat?: Chat) => void,
@@ -41,8 +41,9 @@ export function useMessageHandler(
 
       try {
         const chunkData = JSON.parse(msg);
+        // console.log("chunkData", chunkData);
 
-        if (chunkData.reply_to_message !== curIdRef.current) return;
+        if (chunkData.session_id !== curSessionIdRef.current) return;
 
         setLoadingStep(() => ({
           query_intent: false,
@@ -109,7 +110,6 @@ export function useMessageHandler(
       onCancel,
       setCurChatEnd,
       setTimedoutShow,
-      curIdRef.current,
       connectionTimeout,
     ]
   );
