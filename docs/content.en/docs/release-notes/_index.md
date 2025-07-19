@@ -27,6 +27,7 @@ Information about release notes of Coco Server is provided here.
 - fix: indexing apps does not respect search scope config #773
 - fix: restore missing category titles on subpages #772
 - fix: correct incorrect assistant display when quick ai access #779
+- fix: resolved minor issues with voice playback #780
 
 ### ✈️ Improvements
 

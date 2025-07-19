@@ -21,7 +21,7 @@ const AiOverview: FC<AiSummaryProps> = (props) => {
 
   const [visible, setVisible] = useState(false);
 
-  const { isTyping, chunkData, loadingStep } = useStreamChat({
+  const { isTyping, chunkData, loadingStep, messageId } = useStreamChat({
     message,
     clientId: "ai-overview-client-id",
     server: aiOverviewServer,
@@ -56,10 +56,10 @@ const AiOverview: FC<AiSummaryProps> = (props) => {
         <div className="flex-1 overflow-auto text-sm hide-scrollbar">
           <div className="-ml-11 -mr-4 user-select-text">
             <ChatMessage
-              key="current"
+              key={messageId}
               hide_assistant
               message={{
-                _id: "current",
+                _id: messageId,
                 _source: {
                   type: "assistant",
                   message: "",
