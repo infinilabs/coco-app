@@ -148,7 +148,7 @@
           "description": "Shortcut to open the current conversation as an independent window in chat mode."
         },
         "hints": {
-          "isSystem": "This shortcut \"{{0}}\" is reserved by the system, please choose another key.",
+          "isSystem": "The shortcut key \"{{0}}\" is reserved by the system. Please choose a different key.",
           "isUse": "The shortcut key \"{{0}}\" is already used by \"{{1}}\". Please choose a different key."
         },
         "aiOverview": {
