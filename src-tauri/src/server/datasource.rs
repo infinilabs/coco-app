@@ -1,8 +1,9 @@
 use crate::common::datasource::DataSource;
 use crate::common::search::parse_search_results;
 use crate::server::connector::get_connector_by_id;
-use crate::server::http_client::HttpClient;
+use crate::server::http_client::{HttpClient, status_code_check};
 use crate::server::servers::get_all_servers;
+use http::StatusCode;
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -25,7 +26,7 @@ pub fn save_datasource_to_cache(server_id: &str, datasources: Vec<DataSource>) {
 #[allow(dead_code)]
 pub fn get_datasources_from_cache(server_id: &str) -> Option<HashMap<String, DataSource>> {
     let cache = DATASOURCE_CACHE.read().unwrap(); // Acquire read lock
-                                                  // dbg!("cache: {:?}", &cache);
+    // dbg!("cache: {:?}", &cache);
     let server_cache = cache.get(server_id)?; // Get the server's cache
     Some(server_cache.clone())
 }
@@ -95,6 +96,7 @@ pub async fn datasource_search(
     let resp = HttpClient::post(id, "/datasource/_search", query_params, None)
         .await
         .map_err(|e| format!("Error fetching datasource: {}", e))?;
+    status_code_check(&resp, &[StatusCode::OK, StatusCode::CREATED])?;
 
     // Parse the search results from the response
     let datasources: Vec<DataSource> = parse_search_results(resp).await.map_err(|e| {
@@ -117,6 +119,7 @@ pub async fn mcp_server_search(
     let resp = HttpClient::post(id, "/mcp_server/_search", query_params, None)
         .await
         .map_err(|e| format!("Error fetching datasource: {}", e))?;
+    status_code_check(&resp, &[StatusCode::OK, StatusCode::CREATED])?;
 
     // Parse the search results from the response
     let mcp_server: Vec<DataSource> = parse_search_results(resp).await.map_err(|e| {

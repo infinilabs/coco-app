@@ -147,9 +147,9 @@
           "title": "Detach Window",
           "description": "Shortcut to open the current conversation as an independent window in chat mode."
         },
-        "hits": {
-          "isSystem": "This shortcut is reserved by the system, please choose another key.",
-          "isUse": "This shortcut is already in use, please choose another key."
+        "hints": {
+          "isSystem": "The shortcut key \"{{0}}\" is reserved by the system. Please choose a different key.",
+          "isUse": "The shortcut key \"{{0}}\" is already used by \"{{1}}\". Please choose a different key."
         },
         "aiOverview": {
           "title": "AI Overview",
@@ -204,7 +204,7 @@
         "hotkey": "Hotkey",
         "enabled": "Enabled"
       },
-      "hits": {
+      "hints": {
         "addAlias": "Add Alias",
         "recordHotkey": "Record Hotkey"
       },
@@ -224,6 +224,10 @@
           "created": "Created",
           "modified": "Modified",
           "lastOpened": "Last Opened"
+        },
+        "hints": {
+          "reindexSuccess": "Index rebuilt successfully. The latest application list is now updated.",
+          "reindexFailed": "Failed to rebuild the index. Please try again later."
         }
       },
       "calculator": {
@@ -259,7 +263,7 @@
         }
       },
       "directoryScope": {
-        "hits": {
+        "hints": {
           "pathDuplication": "Path \"{{0}}\" is already in search scope.",
           "pathIncluded": "Path \"{{0}}\" is already covered by another search directory."
         },
@@ -455,7 +459,8 @@
     "login": "Login",
     "cancel": "Cancel",
     "copyUrl": "Copy URL",
-    "privacyPolicy": "EULA | Privacy Policy",
+    "eula": "EULA",
+    "privacyPolicy": "Privacy Policy",
     "connect": {
       "back": "Back",
       "title": "Connecting to Your Coco-Server",

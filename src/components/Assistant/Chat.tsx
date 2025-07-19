@@ -24,7 +24,6 @@ import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useAuthStore } from "@/stores/authStore";
 import Splash from "./Splash";
-import Synthesize from "./Synthesize";
 
 interface ChatAIProps {
   isSearchActive?: boolean;
@@ -40,6 +39,7 @@ interface ChatAIProps {
   showChatHistory?: boolean;
   assistantIDs?: string[];
   startPage?: StartPage;
+  formatUrl?: (data: any) => string;
 }
 
 export interface SendMessageParams {
@@ -70,6 +70,7 @@ const ChatAI = memo(
         showChatHistory,
         assistantIDs,
         startPage,
+        formatUrl,
       },
       ref
     ) => {
@@ -89,7 +90,6 @@ const ChatAI = memo(
       });
 
       const { currentService, visibleStartPage } = useConnectStore();
-      const { synthesizeItem } = useChatStore();
 
       const addError = useAppStore.getState().addError;
 
@@ -398,6 +398,7 @@ const ChatAI = memo(
                     handleSendMessage(activeChat, { message })
                   }
                   getFileUrl={getFileUrl}
+                  formatUrl={formatUrl}
                 />
                 <Splash assistantIDs={assistantIDs} startPage={startPage} />
               </>
@@ -412,8 +413,6 @@ const ChatAI = memo(
                 }}
               />
             )}
-
-            {synthesizeItem && <Synthesize />}
           </div>
         </>
       );

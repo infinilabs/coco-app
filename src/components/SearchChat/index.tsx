@@ -282,6 +282,7 @@ function SearchChat({
             showChatHistory={showChatHistory}
             assistantIDs={assistantIDs}
             startPage={startPage}
+            formatUrl={formatUrl}
           />
         </Suspense>
       </div>

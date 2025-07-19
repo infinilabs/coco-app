@@ -4,13 +4,15 @@ import SearchChat from "@/components/SearchChat";
 import { useAppStore } from "@/stores/appStore";
 import { useSyncStore } from "@/hooks/useSyncStore";
 import UpdateApp from "@/components/UpdateApp";
+import Synthesize from "@/components/Assistant/Synthesize";
+import { useChatStore } from "@/stores/chatStore";
 
 function MainApp() {
-
-  const setIsTauri = useAppStore((state) => state.setIsTauri);
+  const { setIsTauri } = useAppStore();
   useEffect(() => {
     setIsTauri(true);
   }, []);
+  const { synthesizeItem } = useChatStore();
 
   useSyncStore();
 
@@ -18,6 +20,8 @@ function MainApp() {
     <>
       <SearchChat isTauri={true} hasModules={["search", "chat"]} />
       <UpdateApp />
+
+      {synthesizeItem && <Synthesize />}
     </>
   );
 }

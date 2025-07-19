@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -24,10 +24,20 @@ import { useExtensionsStore } from "@/stores/extensionsStore";
 export default function Layout() {
   const location = useLocation();
 
-  const activeTheme = useThemeStore((state) => state.activeTheme);
-  const setTheme = useThemeStore((state) => state.setTheme);
-  const isDark = useThemeStore((state) => state.isDark);
-  const setIsDark = useThemeStore((state) => state.setIsDark);
+  const { language } = useAppStore();
+  const { i18n } = useTranslation();
+  const { activeTheme, isDark, setIsDark, setTheme } = useThemeStore();
+  const [langUpdated, setLangUpdated] = useState(false);
+
+  useAsyncEffect(async () => {
+    i18n.changeLanguage(language);
+
+    await platformAdapter.invokeBackend("update_app_lang", {
+      lang: language,
+    });
+
+    setLangUpdated(true);
+  }, [language]);
 
   function updateBodyClass(path: string) {
     const body = document.body;
@@ -85,13 +95,7 @@ export default function Layout() {
 
   useSettingsWindow();
 
-  const { i18n } = useTranslation();
-  const language = useAppStore((state) => state.language);
   const { text: selectionText } = useTextSelection();
-
-  useEffect(() => {
-    i18n.changeLanguage(language);
-  }, [language]);
 
   // Disable right-click for production environment
   useEventListener("contextmenu", (event) => {
@@ -108,7 +112,7 @@ export default function Layout() {
     platformAdapter.error(message);
   });
 
-  useIconfontScript('app');
+  useIconfontScript("app");
 
   const setDisabledExtensions = useExtensionsStore((state) => {
     return state.setDisabledExtensions;
@@ -131,7 +135,7 @@ export default function Layout() {
 
   return (
     <>
-      <Outlet />
+      {langUpdated && <Outlet />}
       <ErrorNotification />
     </>
   );

@@ -66,13 +66,17 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
   const renderLeft = () => {
     if (sourceData?.source?.name) {
       return (
-        <CommonIcon
-          item={sourceData}
-          renderOrder={["connector_icon", "default_icon"]}
-          itemIcon={sourceData?.source?.icon}
-          defaultIcon={isDark ? source_default_dark_img : source_default_img}
-          className="w-4 h-4"
-        />
+        <div className="flex items-center gap-2">
+          <CommonIcon
+            item={sourceData}
+            renderOrder={["connector_icon", "default_icon"]}
+            itemIcon={sourceData?.source?.icon}
+            defaultIcon={isDark ? source_default_dark_img : source_default_img}
+            className="w-4 h-4"
+          />
+
+          <span className="text-sm">{sourceData.source.name}</span>
+        </div>
       );
     }
 
@@ -112,7 +116,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
           ) : (
             sourceData?.source?.name ||
             t("search.footer.version", {
-              version: process.env.VERSION || "v1.0.0",
+              version: process.env.VERSION || "N/A",
             })
           )}
         </div>
@@ -162,7 +166,8 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
           <span className="mr-1.5">
             {goAskAi
               ? t("search.askCocoAi.continueInChat")
-              : (visibleExtensionStore || visibleExtensionDetail) && !selectedExtension?.installed
+              : (visibleExtensionStore || visibleExtensionDetail) &&
+                !selectedExtension?.installed
               ? t("search.footer.install")
               : t("search.footer.select")}
           </span>

@@ -23,6 +23,11 @@ Information about release notes of Coco Server is provided here.
 - fix(file search): apply filters before from/size parameters #741
 - fix(file search): searching by name&content does not search file name #743
 - fix: prevent window from hiding when moved on Windows #748
+- fix: unregister ext hotkey when it gets deleted #770
+- fix: indexing apps does not respect search scope config #773
+- fix: restore missing category titles on subpages #772
+- fix: correct incorrect assistant display when quick ai access #779
+- fix: resolved minor issues with voice playback #780
 
 ### ✈️ Improvements
 
@@ -38,6 +43,10 @@ Information about release notes of Coco Server is provided here.
 - chore: assistant params & styles #753
 - chore: make optional fields optional #758
 - chore: search-chat components add formatUrl & think data & icons url #765
+- chore: Coco app http request headers #744
+- refactor: do status code check before deserializing response #767
+- style: splash adapts to the width of mobile phones #768
+- chore: search-chat add language and formatUrl parameters #775
 
 ## 0.6.0 (2025-06-29)
 

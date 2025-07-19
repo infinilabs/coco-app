@@ -80,6 +80,8 @@ export function ServerList({ clearChat }: ServerListProps) {
   );
 
   useEffect(() => {
+    if (!isTauri) return;
+    
     fetchServers(true);
   }, [currentService?.enabled]);
 

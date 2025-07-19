@@ -147,9 +147,9 @@
           "title": "独立窗口",
           "description": "在聊天模式下将当前对话打开为一个独立窗口的快捷按键。"
         },
-        "hits": {
-          "isSystem": "该快捷键已被系统保留，请选择其他按键。",
-          "isUse": "该快捷键已被占用，请选择其他按键。"
+        "hints": {
+          "isSystem": "快捷键“{{0}}”已被系统保留，请选择其他按键。",
+          "isUse": "快捷键“{{0}}”已被“{{1}}”占用，请选择其他按键。"
         },
         "aiOverview": {
           "title": "AI 总结",
@@ -204,7 +204,7 @@
         "hotkey": "热键",
         "enabled": "启用状态"
       },
-      "hits": {
+      "hints": {
         "addAlias": "添加别名",
         "recordHotkey": "录制热键"
       },
@@ -224,6 +224,10 @@
           "created": "创建时间",
           "modified": "修改时间",
           "lastOpened": "上次打开时间"
+        },
+        "hints": {
+          "reindexSuccess": "索引重建成功，最新应用列表已更新。",
+          "reindexFailed": "索引重建失败，请稍后重试。"
         }
       },
       "calculator": {
@@ -259,7 +263,7 @@
         }
       },
       "directoryScope": {
-        "hits": {
+        "hints": {
           "pathDuplication": "路径 \"{{0}}\" 已存在于搜索范围中。",
           "pathIncluded": "路径 \"{{0}}\" 已被其他搜索目录包含。"
         },
@@ -455,7 +459,8 @@
     "login": "登录",
     "cancel": "取消",
     "copyUrl": "复制链接",
-    "privacyPolicy": "用户协议 | 隐私政策",
+    "eula": "用户协议",
+    "privacyPolicy": "隐私政策",
     "connect": {
       "back": "返回",
       "title": "连接到您的 Coco-Server",

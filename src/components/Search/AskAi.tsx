@@ -20,11 +20,20 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 interface State {
   serverId?: string;
   assistantId?: string;
-  copyButtonId?: string;
+  messageId: string;
+  copyButtonId: string;
 }
 
 const AskAi = () => {
-  const { askAiMessage, setGoAskAi, setSelectedAssistant, setAskAiSessionId, selectedAssistant, setAskAiServerId, setAskAiAssistantId } = useSearchStore();
+  const {
+    askAiMessage,
+    setGoAskAi,
+    setSelectedAssistant,
+    setAskAiSessionId,
+    selectedAssistant,
+    setAskAiServerId,
+    setAskAiAssistantId,
+  } = useSearchStore();
 
   const addError = useAppStore((state) => state.addError);
 
@@ -62,7 +71,10 @@ const AskAi = () => {
 
   const { quickAiAccessServer, quickAiAccessAssistant } = useExtensionsStore();
 
-  const state = useReactive<State>({});
+  const state = useReactive<State>({
+    messageId: nanoid(),
+    copyButtonId: nanoid(),
+  });
 
   const modifierKey = useShortcutsStore((state) => state.modifierKey);
 
@@ -154,7 +166,10 @@ const AskAi = () => {
 
     const { serverId, assistantId } = state;
 
-    state.copyButtonId = nanoid();
+    Object.assign(state, {
+      messageId: nanoid(),
+      copyButtonId: nanoid(),
+    });
 
     try {
       await platformAdapter.invokeBackend("ask_ai", {
@@ -210,10 +225,10 @@ const AskAi = () => {
 
           <div className="-my-8 -ml-11 user-select-text">
             <ChatMessage
-              key={"current"}
+              key={state.messageId}
               hide_assistant
               message={{
-                _id: "current",
+                _id: state.messageId,
                 _source: {
                   type: "assistant",
                   message: "",

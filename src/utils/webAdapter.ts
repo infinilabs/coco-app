@@ -111,7 +111,6 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     },
 
     async checkUpdate() {
-      console.log("Web mode simulated check update");
       return null;
     },
 

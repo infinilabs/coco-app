@@ -1,4 +1,4 @@
-import { useCallback, useRef, useMemo, useState } from "react";
+import { useCallback, useRef, useMemo, useState, useEffect } from "react";
 import { cloneDeep, isEmpty } from "lodash-es";
 
 import { useSearchStore } from "@/stores/searchStore";
@@ -43,11 +43,16 @@ export function useAssistantManager({
   const askAIRef = useRef<Assistant | null>(null);
 
   const askAI = useMemo(() => {
-    const newAssistant = selectedAssistant ?? quickAiAccessAssistant;
-    return newAssistant;
+    return selectedAssistant ?? quickAiAccessAssistant;
   }, [quickAiAccessAssistant, selectedAssistant]);
 
   const [assistantDetail, setAssistantDetail] = useState<any>({});
+
+  useEffect(() => {
+    if (goAskAi) return;
+
+    askAIRef.current = null;
+  }, [goAskAi]);
 
   const assistant_get = useCallback(async () => {
     if (!askAI?.id) return;
@@ -75,7 +80,8 @@ export function useAssistantManager({
 
     if (disabledExtensions.includes("QuickAIAccess")) return;
 
-    askAIRef.current = cloneDeep(askAI);
+    askAIRef.current ??= cloneDeep(askAI);
+
     if (!askAIRef.current) return;
 
     let value = inputValue.trim();

@@ -5,7 +5,7 @@ import { ChatMessage } from "@/components/ChatMessage";
 import { Greetings } from "./Greetings";
 import AttachmentList from "@/components/Assistant/AttachmentList";
 import { useChatScroll } from "@/hooks/useChatScroll";
-import { useChatStore } from "@/stores/chatStore";
+// import { useChatStore } from "@/stores/chatStore";
 import type { Chat, IChunkData } from "@/types/chat";
 import { useConnectStore } from "@/stores/connectStore";
 // import SessionFile from "./SessionFile";
@@ -26,6 +26,7 @@ interface ChatContentProps {
   Question: string;
   handleSendMessage: (content: string, newChat?: Chat) => void;
   getFileUrl: (path: string) => string;
+  formatUrl?: (data: any) => string;
 }
 
 export const ChatContent = ({
@@ -42,15 +43,18 @@ export const ChatContent = ({
   timedoutShow,
   Question,
   handleSendMessage,
+  formatUrl,
 }: ChatContentProps) => {
-  const sessionId = useConnectStore((state) => state.currentSessionId);
+  // const sessionId = useConnectStore((state) => state.currentSessionId);
   const setCurrentSessionId = useConnectStore((state) => {
     return state.setCurrentSessionId;
   });
 
   const { t } = useTranslation();
 
+
   const { uploadAttachments } = useChatStore();
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { scrollToBottom } = useChatScroll(messagesEndRef);
@@ -143,6 +147,7 @@ export const ChatContent = ({
             think={think}
             response={response}
             loadingStep={loadingStep}
+            formatUrl={formatUrl}
           />
         ) : null}
 
@@ -164,11 +169,12 @@ export const ChatContent = ({
         <div ref={messagesEndRef} />
       </div>
 
+
       {uploadAttachments.length > 0 && (
         <div key={sessionId} className="max-h-[120px] overflow-auto p-2">
           <AttachmentList />
         </div>
-      )}
+      )} */}
 
       {/* {sessionId && <SessionFile sessionId={sessionId} />} */}
 
