@@ -25,8 +25,6 @@ const AttachmentList = () => {
   }, []);
 
   useAsyncEffect(async () => {
-    console.log("uploadAttachments", uploadAttachments);
-
     if (uploadAttachments.length === 0) return;
 
     for await (const item of uploadAttachments) {
@@ -60,12 +58,6 @@ const AttachmentList = () => {
         Object.assign(item, {
           uploading: false,
         });
-
-        console.log("finally item", JSON.stringify(item));
-        console.log(
-          "finally uploadAttachments",
-          JSON.stringify(uploadAttachments)
-        );
 
         setUploadAttachments(uploadAttachments);
       }
@@ -127,8 +119,6 @@ export const AttachmentItem: FC<AttachmentItemProps> = (props) => {
     onDelete,
   } = props;
   const { t } = useTranslation();
-
-  console.log("uploaded", uploaded);
 
   return (
     <div key={id} className="w-1/3 px-1">
