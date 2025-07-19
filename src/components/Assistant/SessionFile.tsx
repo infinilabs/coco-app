@@ -1,5 +1,4 @@
 import clsx from "clsx";
-import { filesize } from "filesize";
 import { Files, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,6 +9,7 @@ import { AttachmentHit } from "@/types/commands";
 import { useAppStore } from "@/stores/appStore";
 import platformAdapter from "@/utils/platformAdapter";
 import FileIcon from "../Common/Icons/FileIcon";
+import { filesize } from "@/utils";
 
 interface SessionFileProps {
   sessionId: string;
@@ -39,10 +39,13 @@ const SessionFile = (props: SessionFileProps) => {
     if (isTauri) {
       console.log("sessionId", sessionId);
 
-      const response: any = await platformAdapter.commands("get_attachment", {
-        serverId,
-        sessionId,
-      });
+      const response: any = await platformAdapter.commands(
+        "get_attachment_by_ids",
+        {
+          serverId,
+          sessionId,
+        }
+      );
 
       setUploadedFiles(response?.hits?.hits ?? []);
     } else {
@@ -145,9 +148,7 @@ const SessionFile = (props: SessionFileProps) => {
                     </div>
                     <div className="text-xs text-[#999]">
                       {icon && <span className="pr-2">{icon}</span>}
-                      <span>
-                        {filesize(size, { standard: "jedec", spacer: "" })}
-                      </span>
+                      <span>{filesize(size)}</span>
                     </div>
                   </div>
                 </div>

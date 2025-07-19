@@ -2,13 +2,17 @@ import React from "react";
 import { Send } from "lucide-react";
 
 import StopIcon from "@/icons/Stop";
+import { useChatStore } from "@/stores/chatStore";
+import clsx from "clsx";
+import { SendMessageParams } from "../Assistant/Chat";
+import { isNil } from "lodash-es";
 
 interface ChatIconsProps {
   lineCount: number;
   isChatMode: boolean;
   curChatEnd: boolean;
   inputValue: string;
-  onSend: (value: string) => void;
+  onSend: (params: SendMessageParams) => void;
   disabledChange: () => void;
 }
 
@@ -20,17 +24,31 @@ const ChatIcons: React.FC<ChatIconsProps> = ({
   onSend,
   disabledChange,
 }) => {
+  const { uploadAttachments } = useChatStore();
+
   const renderSendButton = () => {
     if (!isChatMode) return null;
 
     if (curChatEnd) {
       return (
         <button
-          className={`ml-1 p-1 ${
-            inputValue ? "bg-[#0072FF]" : "bg-[#E4E5F0] dark:bg-[rgb(84,84,84)]"
-          } rounded-full transition-colors h-6`}
+          className={clsx(
+            "ml-1 p-1 rounded-full transition-colors h-6 bg-[#E4E5F0] dark:bg-[rgb(84,84,84)]",
+            {
+              "!bg-[#0072FF]": inputValue || uploadAttachments.length > 0,
+            }
+          )}
           type="submit"
-          onClick={() => onSend(inputValue.trim())}
+          onClick={() => {
+            console.log("uploadAttachments", uploadAttachments);
+
+            onSend({
+              message: inputValue.trim(),
+              attachments: uploadAttachments
+                .map((item) => item.attachmentId)
+                .filter((id) => !isNil(id)),
+            });
+          }}
         >
           <Send className="w-4 h-4 text-white" />
         </button>
