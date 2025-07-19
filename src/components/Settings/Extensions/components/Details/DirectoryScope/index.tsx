@@ -34,7 +34,7 @@ const DirectoryScope: FC<DirectoryScopeProps> = (props) => {
     const selectedPaths = castArray(selected).filter((selectedPath) => {
       if (paths.includes(selectedPath)) {
         addError(
-          t("settings.extensions.directoryScope.hits.pathDuplication", {
+          t("settings.extensions.directoryScope.hints.pathDuplication", {
             replace: [selectedPath],
           })
         );
@@ -48,7 +48,7 @@ const DirectoryScope: FC<DirectoryScopeProps> = (props) => {
 
       if (isChildPath) {
         addError(
-          t("settings.extensions.directoryScope.hits.pathIncluded", {
+          t("settings.extensions.directoryScope.hints.pathIncluded", {
             replace: [selectedPath],
           })
         );

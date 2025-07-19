@@ -215,13 +215,13 @@ const Shortcuts = () => {
 
     if (isSystemKey) {
       return addError(
-        t("settings.advanced.shortcuts.hits.isSystem"),
+        t("settings.advanced.shortcuts.hints.isSystem"),
         "warning"
       );
     }
 
     if (isUsed) {
-      return addError(t("settings.advanced.shortcuts.hits.isUse"), "warning");
+      return addError(t("settings.advanced.shortcuts.hints.isUse"), "warning");
     }
 
     setValue(value);

@@ -24,6 +24,9 @@ Information about release notes of Coco Server is provided here.
 - fix(file search): searching by name&content does not search file name #743
 - fix: prevent window from hiding when moved on Windows #748
 - fix: unregister ext hotkey when it gets deleted #770
+- fix: indexing apps does not respect search scope config #773
+- fix: restore missing category titles on subpages #772
+
 
 ### ✈️ Improvements
 

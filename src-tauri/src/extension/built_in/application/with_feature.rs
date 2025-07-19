@@ -245,8 +245,29 @@ async fn index_applications_if_not_indexed<R: Runtime>(
     let mut writer = pizza_engine.acquire_writer();
 
     if !index_exists {
-        let default_search_path = get_default_search_paths();
-        let apps = list_app_in(default_search_path).map_err(|str| anyhow::anyhow!(str))?;
+        let search_path = {
+            let disabled_app_list_and_search_path_store = tauri_app_handle
+                .store(TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH)?;
+            let search_path_json = disabled_app_list_and_search_path_store
+              .get(TAURI_STORE_KEY_SEARCH_PATH)
+              .unwrap_or_else(|| {
+                panic!("search path should be persisted in the store, but it is not, plz ensure that the store gets initialized before calling this function")
+              });
+
+            let search_path: Vec<String> = match search_path_json {
+              Json::Array(array) => array
+                .into_iter()
+                .map(|json| match json {
+                  Json::String(str) => str,
+                  _ => unreachable!("search path is stored in a string"),
+                })
+                .collect(),
+              _ => unreachable!("search path is stored in an array"),
+            };
+
+            search_path
+        };
+        let apps = list_app_in(search_path).map_err(|str| anyhow::anyhow!(str))?;
 
         for app in apps.iter() {
             let app_path = get_app_path(app);
@@ -489,6 +510,33 @@ impl ApplicationSearchSource {
     pub async fn prepare_index_and_store<R: Runtime>(
         app_handle: AppHandle<R>,
     ) -> Result<(), String> {
+        app_handle
+            .store(TAURI_STORE_APP_HOTKEY)
+            .map_err(|e| e.to_string())?;
+        let disabled_app_list_and_search_path_store = app_handle
+            .store(TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH)
+            .map_err(|e| e.to_string())?;
+        if disabled_app_list_and_search_path_store
+            .get(TAURI_STORE_KEY_DISABLED_APP_LIST)
+            .is_none()
+        {
+            disabled_app_list_and_search_path_store
+                .set(TAURI_STORE_KEY_DISABLED_APP_LIST, Json::Array(Vec::new()));
+        }
+
+        // IndexAllApplicationsTask will read the apps installed in search paths and 
+        // index them, so it depends on this configuration entry. Init this entry 
+        // before indexing apps.
+        if disabled_app_list_and_search_path_store
+            .get(TAURI_STORE_KEY_SEARCH_PATH)
+            .is_none()
+        {
+            let default_search_path = get_default_search_paths();
+            disabled_app_list_and_search_path_store
+                .set(TAURI_STORE_KEY_SEARCH_PATH, default_search_path);
+        }
+
+
         let (tx, rx) = tokio::sync::oneshot::channel();
         let index_applications_task = IndexAllApplicationsTask {
             tauri_app_handle: app_handle.clone(),
@@ -509,28 +557,6 @@ impl ApplicationSearchSource {
             )
         }
 
-        app_handle
-            .store(TAURI_STORE_APP_HOTKEY)
-            .map_err(|e| e.to_string())?;
-        let disabled_app_list_and_search_path_store = app_handle
-            .store(TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH)
-            .map_err(|e| e.to_string())?;
-        if disabled_app_list_and_search_path_store
-            .get(TAURI_STORE_KEY_DISABLED_APP_LIST)
-            .is_none()
-        {
-            disabled_app_list_and_search_path_store
-                .set(TAURI_STORE_KEY_DISABLED_APP_LIST, Json::Array(Vec::new()));
-        }
-
-        if disabled_app_list_and_search_path_store
-            .get(TAURI_STORE_KEY_SEARCH_PATH)
-            .is_none()
-        {
-            let default_search_path = get_default_search_paths();
-            disabled_app_list_and_search_path_store
-                .set(TAURI_STORE_KEY_SEARCH_PATH, default_search_path);
-        }
 
         Ok(())
     }
