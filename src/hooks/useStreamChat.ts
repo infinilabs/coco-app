@@ -6,6 +6,7 @@ import { useAppStore } from "@/stores/appStore";
 import { EventPayloads } from "@/types/platform";
 import platformAdapter from "@/utils/platformAdapter";
 import useMessageChunkData from "./useMessageChunkData";
+import { nanoid } from "nanoid";
 
 interface Options {
   message: string;
@@ -18,15 +19,17 @@ interface Options {
 interface State {
   sessionId?: string;
   isTyping?: boolean;
+  messageId: string;
 }
 
 export const useStreamChat = (options: Options) => {
   const { message, clientId, server, assistant, setVisible } = options;
 
   const unlistenRef = useRef<() => void>(noop);
-  const addError = useAppStore((state) => state.addError);
+  const { addError } = useAppStore();
   const state = useReactive<State>({
     isTyping: true,
+    messageId: nanoid(),
   });
   const [loadingStep, setLoadingStep] = useState<Record<string, boolean>>({
     query_intent: false,
@@ -111,6 +114,8 @@ export const useStreamChat = (options: Options) => {
     if (!message || !server || !assistant) return;
 
     clearAllChunkData();
+
+    state.messageId = nanoid();
 
     try {
       await platformAdapter.invokeBackend("ask_ai", {

@@ -62,6 +62,8 @@ export const ChatMessage = memo(function ChatMessage({
   const assistantList = useConnectStore((state) => state.assistantList);
   const [assistant, setAssistant] = useState<any>({});
 
+  console.log("message", message);
+
   const isAssistant = message?._source?.type === "assistant";
   const assistant_id = message?._source?.assistant_id;
   const assistant_item = message?._source?.assistant_item;

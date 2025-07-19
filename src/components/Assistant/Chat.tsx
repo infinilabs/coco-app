@@ -24,7 +24,6 @@ import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useAuthStore } from "@/stores/authStore";
 import Splash from "./Splash";
-import Synthesize from "./Synthesize";
 
 interface ChatAIProps {
   isSearchActive?: boolean;
@@ -86,7 +85,6 @@ const ChatAI = memo(
       });
 
       const { currentService, visibleStartPage } = useConnectStore();
-      const { synthesizeItem } = useChatStore();
 
       const addError = useAppStore.getState().addError;
 
@@ -404,8 +402,6 @@ const ChatAI = memo(
             {!activeChat?._id && !visibleStartPage && (
               <PrevSuggestion sendMessage={init} />
             )}
-
-            {synthesizeItem && <Synthesize />}
           </div>
         </>
       );
