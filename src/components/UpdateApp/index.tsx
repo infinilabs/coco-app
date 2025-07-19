@@ -198,7 +198,7 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
             ) : (
               <div className={clsx("text-xs text-[#999]", cursorClassName)}>
                 {t("update.latest", {
-                  replace: [updateInfo?.version || "N/A"],
+                  replace: [updateInfo?.version || process.env.VERSION || "N/A"],
                 })}
               </div>
             )}
