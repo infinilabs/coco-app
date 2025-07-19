@@ -213,7 +213,7 @@ const Shortcuts = () => {
 
     console.log("state", state);
 
-    const isUsed = Object.values(state).includes(value);
+    const isUsed = value !== "" && Object.values(state).includes(value);
 
     if (isSystemKey) {
       return addError(
