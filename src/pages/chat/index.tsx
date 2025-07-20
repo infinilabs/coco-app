@@ -77,7 +77,7 @@ export default function StandaloneChat({}: StandaloneChatProps) {
       let response: any = await chat_history({
         serverId: currentService?.id,
         from: 0,
-        size: 100,
+        size: 1000,
         query: keyword,
       });
       response = response ? JSON.parse(response) : null;
@@ -122,7 +122,7 @@ export default function StandaloneChat({}: StandaloneChatProps) {
         serverId: currentService?.id,
         sessionId: chat?._id || "",
         from: 0,
-        size: 100,
+        size: 1000,
       });
       response = response ? JSON.parse(response) : null;
       console.log("id_history", response);
