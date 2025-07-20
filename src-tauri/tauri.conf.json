@@ -113,20 +113,6 @@
       "icons/Square310x310Logo.png",
       "icons/StoreLogo.png"
     ],
-    "macOS": {
-      "minimumSystemVersion": "10.12",
-      "hardenedRuntime": true,
-      "dmg": {
-        "appPosition": {
-          "x": 180,
-          "y": 180
-        },
-        "applicationFolderPosition": {
-          "x": 480,
-          "y": 180
-        }
-      }
-    },
     "resources": ["assets/**/*", "icons"]
   },
   "plugins": {
