@@ -1,10 +1,10 @@
 use crate::common::assistant::ChatRequestMessage;
-use crate::common::http::{GetResponse, convert_query_params_to_strings};
+use crate::common::http::{convert_query_params_to_strings, GetResponse};
 use crate::common::register::SearchSourceRegistry;
 use crate::server::http_client::HttpClient;
 use crate::{common, server::servers::COCO_SERVERS};
-use futures::StreamExt;
 use futures::stream::FuturesUnordered;
+use futures::StreamExt;
 use futures_util::TryStreamExt;
 use http::Method;
 use serde_json::Value;
@@ -196,25 +196,13 @@ pub async fn chat_create<R: Runtime>(
         return Err(format!("Request failed with status: {}", response.status()));
     }
 
-    let stream = response.bytes_stream();
-    let reader = tokio_util::io::StreamReader::new(
-        stream.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)),
-    );
-    let mut lines = tokio::io::BufReader::new(reader).lines();
-
-    while let Ok(Some(line)) = lines.next_line().await {
-        log::debug!("Received chat stream line: {}", &line);
-
-        if let Err(err) = app_handle.emit("chat-create-stream", line) {
-            log::error!("Emit failed: {:?}", err);
-
-            print!("Error sending message: {:?}", err);
-
-            let _ = app_handle.emit("chat-create-error", format!("Emit failed: {:?}", err));
-        }
-    }
-
-    Ok(())
+    emit_json_stream_lines(
+        &app_handle,
+        "chat-create-stream",
+        "chat-create-error",
+        response,
+    )
+    .await
 }
 
 #[tauri::command]
@@ -290,6 +278,21 @@ pub async fn chat_chat<R: Runtime>(
         return Err(format!("Request failed with status: {}", response.status()));
     }
 
+    emit_json_stream_lines(
+        &app_handle,
+        "chat-create-stream",
+        "chat-create-error",
+        response,
+    )
+    .await
+}
+
+pub async fn emit_json_stream_lines<R: Runtime>(
+    app_handle: &AppHandle<R>,
+    event_name: &str,
+    error_event_name: &str,
+    response: reqwest::Response,
+) -> Result<(), String> {
     let stream = response.bytes_stream();
     let reader = tokio_util::io::StreamReader::new(
         stream.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)),
@@ -297,11 +300,36 @@ pub async fn chat_chat<R: Runtime>(
     let mut lines = tokio::io::BufReader::new(reader).lines();
 
     while let Ok(Some(line)) = lines.next_line().await {
-        log::debug!("Received chat stream line: {}", &line);
+        log::debug!("Received stream line: {}", &line);
 
-        if let Err(err) = app_handle.emit("chat-create-stream", line) {
-            log::error!("Emit failed: {:?}", err);
-            let _ = app_handle.emit("chat-create-error", format!("Emit failed: {:?}", err));
+        match serde_json::from_str::<Value>(&line) {
+            Ok(Value::Array(items)) => {
+                for item in items {
+                    if let Ok(json_str) = serde_json::to_string(&item) {
+                        if let Err(err) = app_handle.emit(event_name, json_str) {
+                            log::error!("Emit failed: {:?}", err);
+                            let _ = app_handle
+                                .emit(error_event_name, format!("Emit failed: {:?}", err));
+                        }
+                    }
+                }
+            }
+            Ok(obj @ Value::Object(_)) => {
+                if let Ok(json_str) = serde_json::to_string(&obj) {
+                    if let Err(err) = app_handle.emit(event_name, json_str) {
+                        log::error!("Emit failed: {:?}", err);
+                        let _ =
+                            app_handle.emit(error_event_name, format!("Emit failed: {:?}", err));
+                    }
+                }
+            }
+            Err(err) => {
+                log::warn!("Invalid JSON line: {} | Error: {}", line, err);
+                let _ = app_handle.emit(error_event_name, format!("Invalid JSON: {}", err));
+            }
+            _ => {
+                log::warn!("Unexpected JSON type: {}", line);
+            }
         }
     }
 
