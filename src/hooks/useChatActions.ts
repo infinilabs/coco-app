@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef, useMemo } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 import type { Chat } from "@/types/chat";
 import { useAppStore } from "@/stores/appStore";
@@ -16,15 +17,22 @@ export function useChatActions(
   setTimedoutShow: (value: boolean) => void,
   clearAllChunkData: () => void,
   setQuestion: (value: string) => void,
-  curIdRef: React.MutableRefObject<string>,
+  curSessionIdRef: React.MutableRefObject<string>,
   setChats: (chats: Chat[]) => void,
   dealMsgRef: React.MutableRefObject<((msg: string) => void) | null>,
+  isChatPage: boolean,
   isSearchActive?: boolean,
   isDeepThinkActive?: boolean,
   isMCPActive?: boolean,
   changeInput?: (val: string) => void,
-  showChatHistory?: boolean
+  showChatHistory?: boolean,
+  instanceId?: string
 ) {
+  // Generate a unique instance ID
+  const uniqueInstanceId = useMemo(() => {
+    return instanceId || uuidv4();
+  }, [instanceId]);
+
   const isCurrentLogin = useAuthStore((state) => state.isCurrentLogin);
 
   const isTauri = useAppStore((state) => state.isTauri);
@@ -39,6 +47,14 @@ export function useChatActions(
   const MCPIds = useSearchStore((state) => state.MCPIds);
 
   const [keyword, setKeyword] = useState("");
+  const [currentRequestId, setCurrentRequestId] = useState<string>("");
+
+  // Add a ref at the beginning of the useChatActions function to store the listener.
+  const unlistenersRef = useRef<{
+    message?: () => void;
+    chatMessage?: () => void;
+    error?: () => void;
+  }>({});
 
   const chatClose = useCallback(
     async (activeChat?: Chat) => {
@@ -64,6 +80,21 @@ export function useChatActions(
   const cancelChat = useCallback(
     async (activeChat?: Chat) => {
       setCurChatEnd(true);
+
+      // Stop listening for streaming data.
+      if (unlistenersRef.current.message) {
+        unlistenersRef.current.message();
+        unlistenersRef.current.message = undefined;
+      }
+      if (unlistenersRef.current.chatMessage) {
+        unlistenersRef.current.chatMessage();
+        unlistenersRef.current.chatMessage = undefined;
+      }
+      if (unlistenersRef.current.error) {
+        unlistenersRef.current.error();
+        unlistenersRef.current.error = undefined;
+      }
+
       if (!activeChat?._id) return;
       let response: any;
       if (isTauri) {
@@ -93,6 +124,7 @@ export function useChatActions(
     async (chat: Chat, callback?: (chat: Chat) => void) => {
       if (!chat?._id) return;
 
+      curSessionIdRef.current = chat?._id;
       let response: any;
       if (isTauri) {
         if (!currentService?.id) return;
@@ -100,13 +132,13 @@ export function useChatActions(
           serverId: currentService?.id,
           sessionId: chat?._id,
           from: 0,
-          size: 100,
+          size: 1000,
         });
         response = response ? JSON.parse(response) : null;
       } else {
         const [_error, res] = await Get(`/chat/${chat?._id}/_history`, {
           from: 0,
-          size: 100,
+          size: 1000,
         });
         response = res;
       }
@@ -134,8 +166,17 @@ export function useChatActions(
     [currentService?.id, isTauri, assistantList]
   );
 
+  // Modify the clientId generation logic to include the instance ID.
+  const clientId = useMemo(() => {
+    const baseId = isChatPage ? "standalone-chat" : "search-chat";
+    return `${baseId}-${uniqueInstanceId}`;
+  }, [isChatPage, uniqueInstanceId]);
   const createNewChat = useCallback(
     async (value: string = "", activeChat?: Chat) => {
+      const requestId = `${Date.now()}-${uniqueInstanceId}`;
+      setCurrentRequestId(requestId);
+      await setupListeners(requestId);
+
       setTimedoutShow(false);
       await chatClose(activeChat);
       clearAllChunkData();
@@ -156,6 +197,7 @@ export function useChatActions(
           serverId: currentService?.id,
           message: value,
           queryParams,
+          clientId: `chat-create-stream-${clientId}-${requestId}`,
         });
       } else {
         await streamPost({
@@ -179,15 +221,20 @@ export function useChatActions(
       isSearchActive,
       isDeepThinkActive,
       isMCPActive,
-      curIdRef,
       currentAssistant,
       chatClose,
+      uniqueInstanceId,
+      clientId,
     ]
   );
 
   const sendMessage = useCallback(
     async (content: string, newChat: Chat) => {
       if (!newChat?._id || !content) return;
+
+      const requestId = `${Date.now()}-${uniqueInstanceId}`;
+      setCurrentRequestId(requestId);
+      await setupListeners(requestId);
 
       clearAllChunkData();
 
@@ -199,6 +246,7 @@ export function useChatActions(
         mcp_servers: MCPIds?.join(",") || "",
         assistant_id: currentAssistant?._id || "",
       };
+
       if (isTauri) {
         if (!currentService?.id) return;
         await platformAdapter.commands("chat_chat", {
@@ -206,6 +254,7 @@ export function useChatActions(
           sessionId: newChat?._id,
           queryParams,
           message: content,
+          clientId: `chat-chat-stream-${clientId}-${requestId}`,
         });
       } else {
         await streamPost({
@@ -236,9 +285,10 @@ export function useChatActions(
       isSearchActive,
       isDeepThinkActive,
       isMCPActive,
-      curIdRef,
       changeInput,
       currentAssistant,
+      uniqueInstanceId,
+      clientId,
     ]
   );
 
@@ -256,16 +306,39 @@ export function useChatActions(
 
   const handleChatCreateStreamMessage = useCallback(
     (msg: string) => {
+      // const data = [
+      //   {
+      //     _id: "d1u92dh4d9v2eoei6490",
+      //     _source: {
+      //       id: "d1u92dh4d9v2eoei6490",
+      //       created: "2025-07-20T14:48:22.230445102+08:00",
+      //       updated: "2025-07-20T14:48:22.230445102+08:00",
+      //       type: "user",
+      //       session_id: "d1u6iip4d9vfhkrsiut0",
+      //       from: "",
+      //       message: "水电费第十六课放假的开始了解回复就回家肯定是 fjkj",
+      //       details: null,
+      //       up_vote: 0,
+      //       down_vote: 0,
+      //       assistant_id: "default",
+      //     },
+      //     result: "created",
+      //   },
+      // ];
+      // msg = `[{"_id":"d1u99094d9v2eoei67hg","_source":{"id":"d1u99094d9v2eoei67hg","created":"2025-07-20T15:02:25.464040234+08:00","updated":"2025-07-20T15:02:25.464040234+08:00","type":"user","session_id":"d1u94ep4d9v2eoei651g","from":"","message":"给我写一篇 9000 字作文","details":null,"up_vote":0,"down_vote":0,"assistant_id":"default"},"result":"created"}]`
+
       if (
-        msg.includes("_id") &&
+        msg.includes(`"user"`) &&
         msg.includes("_source") &&
         msg.includes("result")
       ) {
         const response = JSON.parse(msg);
         console.log("first", response);
+
         let updatedChat: Chat;
         if (Array.isArray(response)) {
-          curIdRef.current = response[0]?._id;
+          curSessionIdRef.current = response[0]?._source?.session_id;
+          console.log("first-curSessionIdRef", curSessionIdRef.current);
           updatedChat = {
             ...updatedChatRef.current,
             messages: [
@@ -276,7 +349,8 @@ export function useChatActions(
           console.log("array", updatedChat, updatedChatRef.current?.messages);
         } else {
           const newChat: Chat = response;
-          curIdRef.current = response?.payload?.id;
+          curSessionIdRef.current = response?._source?.session_id;
+          console.log("first-curSessionIdRef", curSessionIdRef.current);
 
           newChat._source = {
             ...response?.payload,
@@ -296,41 +370,84 @@ export function useChatActions(
 
       dealMsgRef.current?.(msg);
     },
-    [
-      curIdRef,
-      updatedChatRef,
-      changeInput,
-      setActiveChat,
-      setCurChatEnd,
-      setVisibleStartPage,
-      dealMsgRef,
-    ]
+    [changeInput, setActiveChat, setCurChatEnd, setVisibleStartPage]
+  );
+
+  const setupListeners = useCallback(
+    async (requestId: string) => {
+      const unlisten_message = await platformAdapter.listenEvent(
+        `chat-create-stream-${clientId}-${requestId}`,
+        (event) => {
+          const msg = event.payload as string;
+          // console.log(`chat-create-stream-${clientId}-${currentRequestId}`, msg);
+          handleChatCreateStreamMessage(msg);
+        }
+      );
+
+      const unlisten_chat_message = await platformAdapter.listenEvent(
+        `chat-chat-stream-${clientId}-${requestId}`,
+        (event) => {
+          const msg = event.payload as string;
+          console.log("msg:", JSON.parse(msg));
+          console.log("user:", msg.includes(`"user"`));
+          console.log("_source:", msg.includes("_source"));
+          console.log("result:", msg.includes("result"));
+          console.log("");
+          console.log("");
+          console.log("");
+          console.log("");
+          console.log("");
+          console.log("");
+          console.log("");
+          // console.log(`chat-chat-stream-${clientId}-${currentRequestId}`, msg);
+          handleChatCreateStreamMessage(msg);
+        }
+      );
+
+      const unlisten_error = await platformAdapter.listenEvent(
+        `chat-create-error`,
+        (event) => {
+          console.error("chat-create-error", event.payload);
+        }
+      );
+
+      // Store the listener references.
+      unlistenersRef.current = {
+        message: unlisten_message,
+        chatMessage: unlisten_chat_message,
+        error: unlisten_error,
+      };
+    },
+    [currentService?.id, clientId]
   );
 
   useEffect(() => {
     if (!isTauri || !currentService?.id) return;
 
-    const unlisten_message = platformAdapter.listenEvent(
-      `chat-create-stream`,
-      (event) => {
-        const msg = event.payload as string;
-        //console.log("chat-create-stream", msg);
-        handleChatCreateStreamMessage(msg);
-      }
-    );
-
-    const unlisten_error = platformAdapter.listenEvent(
-      `chat-create-error`,
-      (event) => {
-        console.error("chat-create-error", event.payload);
-      }
-    );
+    // Clean up previous listeners.
+    if (unlistenersRef.current.message) {
+      unlistenersRef.current.message();
+    }
+    if (unlistenersRef.current.chatMessage) {
+      unlistenersRef.current.chatMessage();
+    }
+    if (unlistenersRef.current.error) {
+      unlistenersRef.current.error();
+    }
 
     return () => {
-      unlisten_message.then((fn) => fn());
-      unlisten_error.then((fn) => fn());
+      if (unlistenersRef.current.message) {
+        unlistenersRef.current.message();
+      }
+      if (unlistenersRef.current.chatMessage) {
+        unlistenersRef.current.chatMessage();
+      }
+      if (unlistenersRef.current.error) {
+        unlistenersRef.current.error();
+      }
+      unlistenersRef.current = {};
     };
-  }, [currentService?.id, dealMsgRef, updatedChatRef.current]);
+  }, [currentService?.id, clientId, currentRequestId]);
 
   const openSessionChat = useCallback(
     async (chat: Chat) => {
@@ -366,7 +483,7 @@ export function useChatActions(
       response = await platformAdapter.commands("chat_history", {
         serverId: currentService?.id,
         from: 0,
-        size: 100,
+        size: 1000,
         query: keyword,
       });
 
@@ -374,7 +491,7 @@ export function useChatActions(
     } else {
       const [_error, res] = await Get(`/chat/_history`, {
         from: 0,
-        size: 100,
+        size: 1000,
       });
       response = res;
     }
@@ -463,5 +580,6 @@ export function useChatActions(
     handleSearch,
     handleRename,
     handleDelete,
+    instanceId: uniqueInstanceId,
   };
 }

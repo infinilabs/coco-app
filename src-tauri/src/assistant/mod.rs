@@ -163,6 +163,7 @@ pub async fn chat_create<R: Runtime>(
     server_id: String,
     message: String,
     query_params: Option<HashMap<String, Value>>,
+    client_id: String,
 ) -> Result<(), String> {
     let body = if !message.is_empty() {
         let message = ChatRequestMessage {
@@ -205,7 +206,7 @@ pub async fn chat_create<R: Runtime>(
     while let Ok(Some(line)) = lines.next_line().await {
         log::debug!("Received chat stream line: {}", &line);
 
-        if let Err(err) = app_handle.emit("chat-create-stream", line) {
+        if let Err(err) = app_handle.emit(&client_id, line) {
             log::error!("Emit failed: {:?}", err);
 
             print!("Error sending message: {:?}", err);
@@ -255,6 +256,7 @@ pub async fn chat_chat<R: Runtime>(
     session_id: String,
     message: String,
     query_params: Option<HashMap<String, Value>>, //search,deep_thinking
+    client_id: String,
 ) -> Result<(), String> {
     let body = if !message.is_empty() {
         let message = ChatRequestMessage {
@@ -295,11 +297,16 @@ pub async fn chat_chat<R: Runtime>(
         stream.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)),
     );
     let mut lines = tokio::io::BufReader::new(reader).lines();
+    let mut first_log = true;
 
     while let Ok(Some(line)) = lines.next_line().await {
         log::debug!("Received chat stream line: {}", &line);
+        if first_log {
+            log::info!("first stream line: {}", &line);
+            first_log = false;
+        }
 
-        if let Err(err) = app_handle.emit("chat-create-stream", line) {
+        if let Err(err) = app_handle.emit(&client_id, line) {
             log::error!("Emit failed: {:?}", err);
             let _ = app_handle.emit("chat-create-error", format!("Emit failed: {:?}", err));
         }

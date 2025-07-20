@@ -31,9 +31,9 @@ import { useSyncStore } from "@/hooks/useSyncStore";
 import { useAppStore } from "@/stores/appStore";
 import { unrequitable } from "@/utils";
 
-interface ChatProps {}
+interface StandaloneChatProps {}
 
-export default function Chat({}: ChatProps) {
+export default function StandaloneChat({}: StandaloneChatProps) {
   const setIsTauri = useAppStore((state) => state.setIsTauri);
   useEffect(() => {
     setIsTauri(true);
@@ -77,7 +77,7 @@ export default function Chat({}: ChatProps) {
       let response: any = await chat_history({
         serverId: currentService?.id,
         from: 0,
-        size: 100,
+        size: 1000,
         query: keyword,
       });
       response = response ? JSON.parse(response) : null;
@@ -122,7 +122,7 @@ export default function Chat({}: ChatProps) {
         serverId: currentService?.id,
         sessionId: chat?._id || "",
         from: 0,
-        size: 100,
+        size: 1000,
       });
       response = response ? JSON.parse(response) : null;
       console.log("id_history", response);
@@ -304,6 +304,7 @@ export default function Chat({}: ChatProps) {
             <ChatAI
               ref={chatAIRef}
               key="ChatAI"
+              instanceId="standalone-chat"
               activeChatProp={activeChat}
               isSearchActive={isSearchActive}
               isDeepThinkActive={isDeepThinkActive}

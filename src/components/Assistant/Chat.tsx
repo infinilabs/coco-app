@@ -40,6 +40,7 @@ interface ChatAIProps {
   assistantIDs?: string[];
   startPage?: StartPage;
   formatUrl?: (data: any) => string;
+  instanceId?: string;
 }
 
 export interface ChatAIRef {
@@ -66,6 +67,7 @@ const ChatAI = memo(
         assistantIDs,
         startPage,
         formatUrl,
+        instanceId,
       },
       ref
     ) => {
@@ -91,7 +93,7 @@ const ChatAI = memo(
       const [activeChat, setActiveChat] = useState<Chat>();
       const [timedoutShow, setTimedoutShow] = useState(false);
 
-      const curIdRef = useRef("");
+      const curSessionIdRef = useRef("");
 
       const [isSidebarOpenChat, setIsSidebarOpenChat] = useState(isSidebarOpen);
       const [chats, setChats] = useState<Chat[]>([]);
@@ -168,24 +170,27 @@ const ChatAI = memo(
         handleSearch,
         handleRename,
         handleDelete,
+        instanceId: actualInstanceId
       } = useChatActions(
         setActiveChat,
         setCurChatEnd,
         setTimedoutShow,
         clearAllChunkData,
         setQuestion,
-        curIdRef,
+        curSessionIdRef,
         setChats,
         dealMsgRef,
+        isChatPage,
         isSearchActive,
         isDeepThinkActive,
         isMCPActive,
         changeInput,
-        showChatHistory
+        showChatHistory,
+        instanceId
       );
 
       const { dealMsg } = useMessageHandler(
-        curIdRef,
+        curSessionIdRef,
         setCurChatEnd,
         setTimedoutShow,
         (chat) => cancelChat(chat || activeChat),
@@ -359,6 +364,7 @@ const ChatAI = memo(
           )}
           <div
             data-tauri-drag-region
+            data-chat-instance={actualInstanceId}
             className={`flex flex-col rounded-md h-full overflow-hidden relative`}
           >
             <ChatHeader
@@ -392,6 +398,7 @@ const ChatAI = memo(
                   }
                   getFileUrl={getFileUrl}
                   formatUrl={formatUrl}
+                  curSessionIdRef={curSessionIdRef}
                 />
                 <Splash assistantIDs={assistantIDs} startPage={startPage} />
               </>
