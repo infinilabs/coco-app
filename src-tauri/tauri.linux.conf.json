@@ -1,0 +1,15 @@
+{
+  "identifier": "rs.coco.app",
+  "bundle": {
+    "linux": {
+      "deb": {
+        "depends": ["gstreamer1.0-plugins-good"],
+        "desktopTemplate": "./Coco.desktop"
+      },
+      "rpm": {
+        "depends": ["gstreamer1-plugins-good"],
+        "desktopTemplate": "./Coco.desktop"
+      }
+    }
+  }
+}
