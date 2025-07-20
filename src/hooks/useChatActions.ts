@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useRef, useMemo } from "react";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 import type { Chat } from "@/types/chat";
 import { useAppStore } from "@/stores/appStore";
@@ -79,7 +79,7 @@ export function useChatActions(
 
   const cancelChat = useCallback(
     async (activeChat?: Chat) => {
-      setCurChatEnd(true);
+      setCurChatEnd(true, activeChat?._id || "");
 
       // Stop listening for streaming data.
       if (unlistenersRef.current.message) {
@@ -123,8 +123,9 @@ export function useChatActions(
   const chatHistory = useCallback(
     async (chat: Chat, callback?: (chat: Chat) => void) => {
       if (!chat?._id) return;
+      // For historical chats, set the current CurSessionId
+      setCurSessionId(chat?._id);
 
-      setCurSessionId(chat?._id)
       let response: any;
       if (isTauri) {
         if (!currentService?.id) return;
@@ -223,7 +224,7 @@ export function useChatActions(
       currentAssistant,
       chatClose,
       uniqueInstanceId,
-      clientId
+      clientId,
     ]
   );
 
@@ -285,7 +286,7 @@ export function useChatActions(
       changeInput,
       currentAssistant,
       uniqueInstanceId,
-      clientId
+      clientId,
     ]
   );
 
@@ -303,6 +304,8 @@ export function useChatActions(
 
   const handleChatCreateStreamMessage = useCallback(
     (msg: string) => {
+      // The first record of a new session is the rendered data,
+      // similar to the history record, not the AI answer stream
       if (
         msg.includes("_id") &&
         msg.includes("_source") &&
@@ -312,9 +315,9 @@ export function useChatActions(
         console.log("first", response);
 
         let updatedChat: Chat;
+        let sessionId: string;
         if (Array.isArray(response)) {
-          setCurSessionId(response[0]?._source?.session_id)
-          console.log("first-curSessionIdRef", curSessionId);
+          sessionId = response[0]?._source?.session_id || response[0]?._id;
           updatedChat = {
             ...updatedChatRef.current,
             messages: [
@@ -325,8 +328,8 @@ export function useChatActions(
           console.log("array", updatedChat, updatedChatRef.current?.messages);
         } else {
           const newChat: Chat = response;
-          setCurSessionId(response?._source?.session_id);
-          console.log("first-curSessionIdRef", curSessionId);
+          sessionId = response?._source?.session_id || response?._id;
+          newChat._id = sessionId;
 
           newChat._source = {
             ...response?.payload,
@@ -336,10 +339,10 @@ export function useChatActions(
             messages: [newChat],
           };
         }
+        setCurSessionId(sessionId);
 
         changeInput && changeInput("");
         setActiveChat(updatedChat);
-        setCurChatEnd(false);
         setVisibleStartPage(false);
         return;
       }
@@ -545,6 +548,6 @@ export function useChatActions(
     handleSearch,
     handleRename,
     handleDelete,
-    instanceId: uniqueInstanceId
+    instanceId: uniqueInstanceId,
   };
 }

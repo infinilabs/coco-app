@@ -77,7 +77,7 @@ const ChatAI = memo(
         clearChat: clearChat,
       }));
 
-      const { setCurChatEnd } = useChatStore();
+      const { curSessionId, setCurChatEnd, setCurSessionId } = useChatStore();
       const curChatEnd = useCurChatEnd();
 
       const isTauri = useAppStore((state) => state.isTauri);
@@ -129,6 +129,12 @@ const ChatAI = memo(
         setAskAiSessionId(void 0);
       }, [askAiSessionId, askAiServerId]);
 
+      useEffect(() => {
+        if (activeChat?._id && activeChat._id !== curSessionId) {
+          setCurSessionId(activeChat._id);
+        }
+      }, [activeChat?._id, curSessionId, setCurSessionId]);
+
       const [Question, setQuestion] = useState<string>("");
 
       const {
@@ -169,7 +175,7 @@ const ChatAI = memo(
         handleSearch,
         handleRename,
         handleDelete,
-        instanceId: actualInstanceId
+        instanceId: actualInstanceId,
       } = useChatActions(
         setActiveChat,
         setTimedoutShow,
@@ -212,7 +218,7 @@ const ChatAI = memo(
         setTimedoutShow(false);
         chatClose(activeChat);
         setActiveChat(undefined);
-        setCurChatEnd(true);
+        setCurChatEnd(true, activeChat?._id || "");
         clearChatPage && clearChatPage();
       }, [activeChat, chatClose]);
 
@@ -253,6 +259,8 @@ const ChatAI = memo(
 
       const onSelectChat = useCallback(
         async (chat: Chat) => {
+          setCurSessionId(chat?._id || "");
+
           setTimedoutShow(false);
           clearAllChunkData();
           await cancelChat(activeChat);

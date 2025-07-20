@@ -37,7 +37,7 @@ export type IChatStore = {
   chatSessions: Record<string, ChatSessionState>;
   curSessionId: string;
   setCurSessionId: (sessionId: string) => void;
-  setCurChatEnd: (value: boolean) => void;
+  setCurChatEnd: (value: boolean, sessionId: string) => void;
   clearChatSession: (sessionId: string) => void;
 };
 
@@ -66,12 +66,12 @@ export const useChatStore = create<IChatStore>()(
       setCurSessionId: (sessionId: string) => {
         set(() => ({ curSessionId: sessionId }));
       },
-      setCurChatEnd: (value: boolean) => {
+      setCurChatEnd: (value: boolean, sessionId: string) => {
         set((state) => ({
           chatSessions: {
             ...state.chatSessions,
-            [state.curSessionId]: {
-              ...state.chatSessions[state.curSessionId],
+            [sessionId]: {
+              ...state.chatSessions[sessionId],
               curChatEnd: value,
             },
           },

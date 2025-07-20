@@ -95,12 +95,12 @@ export function useMessageHandler(
           if (messageTimeoutRef.current) {
             clearTimeout(messageTimeoutRef.current);
           }
-          setCurChatEnd(true);
+          setCurChatEnd(true, chunkData.session_id);
           console.log("AI finished output");
           return;
         }
       } catch (error) {
-        setCurChatEnd(true);
+        setCurChatEnd(true, curSessionId);
         console.error("parse error:", error);
       }
     },
