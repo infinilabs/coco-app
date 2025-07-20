@@ -19,9 +19,11 @@ interface SynthesizeItem {
   content: string;
 }
 
-export type IChatStore = {
+interface ChatSessionState {
   curChatEnd: boolean;
-  setCurChatEnd: (value: boolean) => void;
+}
+
+export type IChatStore = {
   stopChat: boolean;
   setStopChat: (value: boolean) => void;
   connected: boolean;
@@ -32,13 +34,16 @@ export type IChatStore = {
   setUploadFiles: (value: UploadFile[]) => void;
   synthesizeItem?: SynthesizeItem;
   setSynthesizeItem: (synthesizeItem?: SynthesizeItem) => void;
+  chatSessions: Record<string, ChatSessionState>;
+  curSessionId: string;
+  setCurSessionId: (sessionId: string) => void;
+  setCurChatEnd: (value: boolean) => void;
+  clearChatSession: (sessionId: string) => void;
 };
 
 export const useChatStore = create<IChatStore>()(
   persist(
     (set) => ({
-      curChatEnd: true,
-      setCurChatEnd: (value: boolean) => set(() => ({ curChatEnd: value })),
       stopChat: false,
       setStopChat: (value: boolean) => set(() => ({ stopChat: value })),
       connected: false,
@@ -55,11 +60,50 @@ export const useChatStore = create<IChatStore>()(
       setSynthesizeItem(synthesizeItem?: SynthesizeItem) {
         return set(() => ({ synthesizeItem }));
       },
+
+      chatSessions: {},
+      curSessionId: "",
+      setCurSessionId: (sessionId: string) => {
+        set(() => ({ curSessionId: sessionId }));
+      },
+      setCurChatEnd: (value: boolean) => {
+        set((state) => ({
+          chatSessions: {
+            ...state.chatSessions,
+            [state.curSessionId]: {
+              ...state.chatSessions[state.curSessionId],
+              curChatEnd: value,
+            },
+          },
+        }));
+      },
+      clearChatSession: (sessionId: string) => {
+        set((state) => {
+          const newSessions = { ...state.chatSessions };
+          delete newSessions[sessionId];
+          return { chatSessions: newSessions };
+        });
+      },
     }),
     {
       name: "chat-state",
       // storage: createJSONStorage(() => sessionStorage),
-      partialize: (_state) => ({}),
+      partialize: (state) => ({
+        chatSessions: state.chatSessions,
+      }),
     }
   )
 );
+
+export const getCurChatEnd = (): boolean => {
+  const chatSessions = useChatStore.getState().chatSessions;
+  const curSessionId = useChatStore.getState().curSessionId;
+  return chatSessions[curSessionId]?.curChatEnd ?? true;
+};
+
+export const useCurChatEnd = (): boolean => {
+  return useChatStore((state) => {
+    const { chatSessions, curSessionId } = state;
+    return chatSessions[curSessionId]?.curChatEnd ?? true;
+  });
+};

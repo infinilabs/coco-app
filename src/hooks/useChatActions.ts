@@ -10,14 +10,13 @@ import { useSearchStore } from "@/stores/searchStore";
 import { useAuthStore } from "@/stores/authStore";
 import { unrequitable } from "@/utils";
 import { streamPost } from "@/api/streamFetch";
+import { useChatStore } from "@/stores/chatStore";
 
 export function useChatActions(
   setActiveChat: (chat: Chat | undefined) => void,
-  setCurChatEnd: (value: boolean) => void,
   setTimedoutShow: (value: boolean) => void,
   clearAllChunkData: () => void,
   setQuestion: (value: string) => void,
-  curSessionIdRef: React.MutableRefObject<string>,
   setChats: (chats: Chat[]) => void,
   dealMsgRef: React.MutableRefObject<((msg: string) => void) | null>,
   isChatPage: boolean,
@@ -33,6 +32,7 @@ export function useChatActions(
     return instanceId || uuidv4();
   }, [instanceId]);
 
+  const { curSessionId, setCurSessionId, setCurChatEnd } = useChatStore();
   const isCurrentLogin = useAuthStore((state) => state.isCurrentLogin);
 
   const isTauri = useAppStore((state) => state.isTauri);
@@ -124,7 +124,7 @@ export function useChatActions(
     async (chat: Chat, callback?: (chat: Chat) => void) => {
       if (!chat?._id) return;
 
-      curSessionIdRef.current = chat?._id;
+      setCurSessionId(chat?._id)
       let response: any;
       if (isTauri) {
         if (!currentService?.id) return;
@@ -313,8 +313,8 @@ export function useChatActions(
 
         let updatedChat: Chat;
         if (Array.isArray(response)) {
-          curSessionIdRef.current = response[0]?._source?.session_id;
-          console.log("first-curSessionIdRef", curSessionIdRef.current);
+          setCurSessionId(response[0]?._source?.session_id)
+          console.log("first-curSessionIdRef", curSessionId);
           updatedChat = {
             ...updatedChatRef.current,
             messages: [
@@ -325,8 +325,8 @@ export function useChatActions(
           console.log("array", updatedChat, updatedChatRef.current?.messages);
         } else {
           const newChat: Chat = response;
-          curSessionIdRef.current = response?._source?.session_id;
-          console.log("first-curSessionIdRef", curSessionIdRef.current);
+          setCurSessionId(response?._source?.session_id);
+          console.log("first-curSessionIdRef", curSessionId);
 
           newChat._source = {
             ...response?.payload,
@@ -347,7 +347,7 @@ export function useChatActions(
       // console.log("msg", msg);
       dealMsgRef.current?.(msg);
     },
-    [changeInput, setActiveChat, setCurChatEnd, setVisibleStartPage]
+    [changeInput, setActiveChat, setVisibleStartPage]
   );
 
   useEffect(() => {

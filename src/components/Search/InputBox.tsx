@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useKeyPress } from "ahooks";
 
 import AutoResizeTextarea from "./AutoResizeTextarea";
-import { useChatStore } from "@/stores/chatStore";
+import { useCurChatEnd } from "@/stores/chatStore";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 // import AudioRecording from "../AudioRecording";
@@ -82,6 +82,7 @@ export default function ChatInput({
   getFileIcon,
 }: ChatInputProps) {
   const { t } = useTranslation();
+  const curChatEnd = useCurChatEnd();
 
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
 
@@ -104,7 +105,6 @@ export default function ChatInput({
 
   const textareaRef = useRef<{ reset: () => void; focus: () => void }>(null);
 
-  const { curChatEnd } = useChatStore();
   const { setSearchValue, visibleExtensionStore, selectedExtension } =
     useSearchStore();
 
@@ -131,7 +131,6 @@ export default function ChatInput({
   useKeyboardHandlers({
     isChatMode,
     handleSubmit,
-    curChatEnd,
   });
 
   useKeyPress(`${modifierKey}.${returnToInput}`, handleToggleFocus);
@@ -221,7 +220,6 @@ export default function ChatInput({
       <ChatIcons
         lineCount={lineCount}
         isChatMode={isChatMode}
-        curChatEnd={curChatEnd}
         inputValue={inputValue}
         onSend={onSend}
         disabledChange={disabledChange}

@@ -5,15 +5,14 @@ import { ChatMessage } from "@/components/ChatMessage";
 import { Greetings } from "./Greetings";
 // import FileList from "@/components/Assistant/FileList";
 import { useChatScroll } from "@/hooks/useChatScroll";
-// import { useChatStore } from "@/stores/chatStore";
 import type { Chat, IChunkData } from "@/types/chat";
 import { useConnectStore } from "@/stores/connectStore";
 // import SessionFile from "./SessionFile";
 import ScrollToBottom from "@/components/Common/ScrollToBottom";
+import { useChatStore, useCurChatEnd } from "@/stores/chatStore";
 
 interface ChatContentProps {
   activeChat?: Chat;
-  curChatEnd: boolean;
   query_intent?: IChunkData;
   tools?: IChunkData;
   fetch_source?: IChunkData;
@@ -27,12 +26,10 @@ interface ChatContentProps {
   handleSendMessage: (content: string, newChat?: Chat) => void;
   getFileUrl: (path: string) => string;
   formatUrl?: (data: any) => string;
-  curSessionIdRef: React.MutableRefObject<string>;
 }
 
 export const ChatContent = ({
   activeChat,
-  curChatEnd,
   query_intent,
   tools,
   fetch_source,
@@ -45,9 +42,11 @@ export const ChatContent = ({
   Question,
   handleSendMessage,
   formatUrl,
-  curSessionIdRef,
 }: ChatContentProps) => {
-  console.log("curSessionIdRef", curSessionIdRef.current === activeChat?._id);
+  const { curSessionId } = useChatStore();
+  const curChatEnd = useCurChatEnd();
+
+  console.log("curSessionIdRef", curSessionId === activeChat?._id);
   // const sessionId = useConnectStore((state) => state.currentSessionId);
   const setCurrentSessionId = useConnectStore((state) => {
     return state.setCurrentSessionId;
@@ -62,6 +61,7 @@ export const ChatContent = ({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const visibleStartPage = useConnectStore((state) => state.visibleStartPage);
+
 
   useEffect(() => {
     setIsAtBottom(true);
@@ -78,7 +78,6 @@ export const ChatContent = ({
     deep_read?.message_chunk,
     think?.message_chunk,
     response?.message_chunk,
-    curChatEnd,
   ]);
 
   useEffect(() => {
@@ -125,7 +124,7 @@ export const ChatContent = ({
           deep_read ||
           think ||
           response) &&
-        activeChat?._id === curSessionIdRef.current ? (
+        activeChat?._id === curSessionId ? (
           <ChatMessage
             key={"current"}
             message={{

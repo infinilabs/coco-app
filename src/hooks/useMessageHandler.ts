@@ -2,10 +2,9 @@ import { useCallback, useRef } from "react";
 
 import type { IChunkData, Chat } from "@/types/chat";
 import { useConnectStore } from "@/stores/connectStore";
+import { useChatStore } from "@/stores/chatStore";
 
 export function useMessageHandler(
-  curSessionIdRef: React.MutableRefObject<string>,
-  setCurChatEnd: (value: boolean) => void,
   setTimedoutShow: (value: boolean) => void,
   onCancel: (chat?: Chat) => void,
   setLoadingStep: (
@@ -26,6 +25,7 @@ export function useMessageHandler(
   const messageTimeoutRef = useRef<NodeJS.Timeout>();
   const connectionTimeout = useConnectStore((state) => state.connectionTimeout);
   const inThinkRef = useRef<boolean>(false);
+  const { curSessionId, setCurChatEnd } = useChatStore();
 
   const dealMsg = useCallback(
     (msg: string) => {
@@ -43,7 +43,7 @@ export function useMessageHandler(
         const chunkData = JSON.parse(msg);
         // console.log("chunkData", chunkData);
 
-        if (chunkData.session_id !== curSessionIdRef.current) return;
+        if (chunkData.session_id !== curSessionId) return;
 
         setLoadingStep(() => ({
           query_intent: false,
@@ -55,8 +55,6 @@ export function useMessageHandler(
           response: false,
           [chunkData.chunk_type]: true,
         }));
-
-       
 
         if (chunkData.chunk_type === "query_intent") {
           handlers.deal_query_intent(chunkData);
@@ -88,7 +86,7 @@ export function useMessageHandler(
             }
 
             if (inThinkRef.current) {
-              handlers.deal_think({...chunkData, chunk_type: "think"});
+              handlers.deal_think({ ...chunkData, chunk_type: "think" });
             } else {
               handlers.deal_response(chunkData);
             }
@@ -106,12 +104,7 @@ export function useMessageHandler(
         console.error("parse error:", error);
       }
     },
-    [
-      onCancel,
-      setCurChatEnd,
-      setTimedoutShow,
-      connectionTimeout,
-    ]
+    [onCancel, setTimedoutShow, connectionTimeout]
   );
 
   return {

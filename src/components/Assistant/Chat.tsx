@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 
-import { useChatStore } from "@/stores/chatStore";
+import { useChatStore, useCurChatEnd } from "@/stores/chatStore";
 import { useConnectStore } from "@/stores/connectStore";
 import { useWindows } from "@/hooks/useWindows";
 import useMessageChunkData from "@/hooks/useMessageChunkData";
@@ -77,7 +77,8 @@ const ChatAI = memo(
         clearChat: clearChat,
       }));
 
-      const { curChatEnd, setCurChatEnd } = useChatStore();
+      const { setCurChatEnd } = useChatStore();
+      const curChatEnd = useCurChatEnd();
 
       const isTauri = useAppStore((state) => state.isTauri);
 
@@ -92,8 +93,6 @@ const ChatAI = memo(
 
       const [activeChat, setActiveChat] = useState<Chat>();
       const [timedoutShow, setTimedoutShow] = useState(false);
-
-      const curSessionIdRef = useRef("");
 
       const [isSidebarOpenChat, setIsSidebarOpenChat] = useState(isSidebarOpen);
       const [chats, setChats] = useState<Chat[]>([]);
@@ -173,11 +172,9 @@ const ChatAI = memo(
         instanceId: actualInstanceId
       } = useChatActions(
         setActiveChat,
-        setCurChatEnd,
         setTimedoutShow,
         clearAllChunkData,
         setQuestion,
-        curSessionIdRef,
         setChats,
         dealMsgRef,
         isChatPage,
@@ -190,8 +187,6 @@ const ChatAI = memo(
       );
 
       const { dealMsg } = useMessageHandler(
-        curSessionIdRef,
-        setCurChatEnd,
         setTimedoutShow,
         (chat) => cancelChat(chat || activeChat),
         setLoadingStep,
@@ -224,7 +219,7 @@ const ChatAI = memo(
       const init = useCallback(
         async (value: string) => {
           try {
-            //console.log("init", curChatEnd, activeChat?._id);
+            //console.log("init", activeChat?._id);
             if (!isCurrentLogin) {
               addError("Please login to continue chatting");
               return;
@@ -244,10 +239,10 @@ const ChatAI = memo(
         },
         [
           isCurrentLogin,
-          curChatEnd,
           activeChat?._id,
           createNewChat,
           handleSendMessage,
+          curChatEnd,
         ]
       );
 
@@ -382,7 +377,6 @@ const ChatAI = memo(
               <>
                 <ChatContent
                   activeChat={activeChat}
-                  curChatEnd={curChatEnd}
                   query_intent={query_intent}
                   tools={tools}
                   fetch_source={fetch_source}
@@ -398,7 +392,6 @@ const ChatAI = memo(
                   }
                   getFileUrl={getFileUrl}
                   formatUrl={formatUrl}
-                  curSessionIdRef={curSessionIdRef}
                 />
                 <Splash assistantIDs={assistantIDs} startPage={startPage} />
               </>

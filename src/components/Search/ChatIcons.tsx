@@ -1,12 +1,12 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { Send } from "lucide-react";
 
 import StopIcon from "@/icons/Stop";
+import { useCurChatEnd } from "@/stores/chatStore";
 
 interface ChatIconsProps {
   lineCount: number;
   isChatMode: boolean;
-  curChatEnd: boolean;
   inputValue: string;
   onSend: (value: string) => void;
   disabledChange: () => void;
@@ -15,12 +15,13 @@ interface ChatIconsProps {
 const ChatIcons: React.FC<ChatIconsProps> = ({
   lineCount,
   isChatMode,
-  curChatEnd,
   inputValue,
   onSend,
   disabledChange,
 }) => {
-  const renderSendButton = () => {
+  const curChatEnd = useCurChatEnd();
+
+  const renderSendButton = useCallback(() => {
     if (!isChatMode) return null;
 
     if (curChatEnd) {
@@ -54,7 +55,7 @@ const ChatIcons: React.FC<ChatIconsProps> = ({
     }
 
     return null;
-  };
+  }, [isChatMode, curChatEnd]);
 
   return (
     <>
