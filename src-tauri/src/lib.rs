@@ -107,7 +107,6 @@ pub fn run() {
             show_settings,
             show_check,
             hide_check,
-            server::servers::get_server_token,
             server::servers::add_coco_server,
             server::servers::remove_coco_server,
             server::servers::list_coco_servers,

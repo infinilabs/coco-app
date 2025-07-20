@@ -72,10 +72,6 @@ async function invokeWithErrorHandler<T>(
   }
 }
 
-export function get_server_token(id: string): Promise<ServerTokenResponse> {
-  return invokeWithErrorHandler(`get_server_token`, { id });
-}
-
 export function list_coco_servers(): Promise<Server[]> {
   return invokeWithErrorHandler(`list_coco_servers`);
 }
