@@ -1,7 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 
 import {
-  ServerTokenResponse,
   Server,
   Connector,
   DataSource,
