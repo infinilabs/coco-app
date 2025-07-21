@@ -83,19 +83,6 @@ where
         .collect())
 }
 
-pub async fn parse_search_results_with_score<T>(
-    response: Response,
-) -> Result<Vec<(T, Option<f64>)>, Box<dyn Error>>
-where
-    T: for<'de> Deserialize<'de> + std::fmt::Debug,
-{
-    Ok(parse_search_hits(response)
-        .await?
-        .into_iter()
-        .map(|hit| (hit._source, hit._score))
-        .collect())
-}
-
 #[derive(Debug, Clone, Serialize)]
 pub struct SearchQuery {
     pub from: u64,

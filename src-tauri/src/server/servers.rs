@@ -587,6 +587,7 @@ pub async fn try_register_server_to_search_source(
 }
 
 #[function_name::named]
+#[allow(unused)]
 async fn mark_server_as_online<R: Runtime>(app_handle: AppHandle<R>, id: &str) {
     let server = get_server_by_id(id).await;
     if let Some(mut server) = server {

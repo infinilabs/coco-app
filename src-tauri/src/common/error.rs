@@ -15,6 +15,8 @@ where
     }
 }
 
+
+#[allow(unused)]
 #[derive(Debug, Deserialize)]
 pub struct ErrorCause {
     #[serde(default)]
@@ -24,6 +26,7 @@ pub struct ErrorCause {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(unused)]
 pub struct ErrorDetail {
     #[serde(default)]
     pub root_cause: Option<Vec<ErrorCause>>,
@@ -40,6 +43,7 @@ pub struct ErrorResponse {
     #[serde(default)]
     pub error: Option<ErrorDetail>,
     #[serde(default)]
+    #[allow(unused)]
     pub status: Option<u16>,
 }
 
@@ -57,9 +61,6 @@ pub enum SearchError {
 
     #[error("Timeout occurred")]
     Timeout,
-
-    #[error("UnknownError: {0}")]
-    Unknown(String),
 
     #[error("InternalError: {0}")]
     InternalError(String),
