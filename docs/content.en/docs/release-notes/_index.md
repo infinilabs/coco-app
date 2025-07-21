@@ -30,6 +30,7 @@ Information about release notes of Coco Server is provided here.
 - fix: resolved minor issues with voice playback #780
 - fix: fixed incorrect taskbar icon display on linux #783
 - fix: fix data inconsistency issue on secondary pages #784
+- fix: incorrect status when installing extension #789
 
 ### ✈️ Improvements
 
