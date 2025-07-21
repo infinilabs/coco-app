@@ -2,10 +2,9 @@ import React from "react";
 import { Send } from "lucide-react";
 
 import StopIcon from "@/icons/Stop";
-import { useChatStore } from "@/stores/chatStore";
 import clsx from "clsx";
 import { SendMessageParams } from "../Assistant/Chat";
-import { isNil } from "lodash-es";
+import { getUploadedAttachmentsId, isAttachmentsUploaded } from "@/utils";
 
 interface ChatIconsProps {
   lineCount: number;
@@ -24,8 +23,6 @@ const ChatIcons: React.FC<ChatIconsProps> = ({
   onSend,
   disabledChange,
 }) => {
-  const { uploadAttachments } = useChatStore();
-
   const renderSendButton = () => {
     if (!isChatMode) return null;
 
@@ -35,18 +32,14 @@ const ChatIcons: React.FC<ChatIconsProps> = ({
           className={clsx(
             "ml-1 p-1 rounded-full transition-colors h-6 bg-[#E4E5F0] dark:bg-[rgb(84,84,84)]",
             {
-              "!bg-[#0072FF]": inputValue || uploadAttachments.length > 0,
+              "!bg-[#0072FF]": inputValue || isAttachmentsUploaded(),
             }
           )}
           type="submit"
           onClick={() => {
-            console.log("uploadAttachments", uploadAttachments);
-
             onSend({
               message: inputValue.trim(),
-              attachments: uploadAttachments
-                .map((item) => item.attachmentId)
-                .filter((id) => !isNil(id)),
+              attachments: getUploadedAttachmentsId(),
             });
           }}
         >

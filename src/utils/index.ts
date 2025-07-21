@@ -7,6 +7,7 @@ import { useAppStore } from "@/stores/appStore";
 import { DEFAULT_COCO_SERVER_ID, HISTORY_PANEL_ID } from "@/constants";
 import { useConnectStore } from "@/stores/connectStore";
 import { useAuthStore } from "@/stores/authStore";
+import { useChatStore } from "@/stores/chatStore";
 
 // 1
 export async function copyToClipboard(text: string) {
@@ -196,4 +197,20 @@ export const isDefaultServer = (checkAvailability = true) => {
 
 export const filesize = (value: number, spacer?: string) => {
   return filesizeLib(value, { standard: "jedec", spacer });
+};
+
+export const isAttachmentsUploaded = () => {
+  const { uploadAttachments } = useChatStore.getState();
+
+  if (uploadAttachments.length === 0) return true;
+
+  return uploadAttachments.every((item) => !item.uploading);
+};
+
+export const getUploadedAttachmentsId = () => {
+  const { uploadAttachments } = useChatStore.getState();
+
+  return uploadAttachments
+    .map((item) => item.attachmentId)
+    .filter((id) => !isNil(id));
 };

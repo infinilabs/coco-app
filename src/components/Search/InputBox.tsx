@@ -17,10 +17,14 @@ import { useAssistantManager } from "./AssistantManager";
 import InputControls from "./InputControls";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import AudioRecording from "../AudioRecording";
-import { isDefaultServer } from "@/utils";
+import {
+  getUploadedAttachmentsId,
+  isAttachmentsUploaded,
+  isDefaultServer,
+} from "@/utils";
 import { useTauriFocus } from "@/hooks/useTauriFocus";
 import { SendMessageParams } from "../Assistant/Chat";
-import { isEmpty, isNil } from "lodash-es";
+import { isEmpty } from "lodash-es";
 
 interface ChatInputProps {
   onSend: (params: SendMessageParams) => void;
@@ -119,14 +123,16 @@ export default function ChatInput({
 
   const handleSubmit = useCallback(() => {
     const trimmedValue = inputValue.trim();
+
+    if (!isAttachmentsUploaded()) return;
+
     console.log("handleSubmit", trimmedValue, disabled);
+
     if ((trimmedValue || !isEmpty(uploadAttachments)) && !disabled) {
       changeInput("");
       onSend({
         message: trimmedValue,
-        attachments: uploadAttachments
-          .map((item) => item.attachmentId)
-          .filter((item) => !isNil(item)),
+        attachments: getUploadedAttachmentsId(),
       });
     }
   }, [inputValue, disabled, onSend, uploadAttachments]);
