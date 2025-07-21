@@ -1,10 +1,10 @@
 use crate::common::assistant::ChatRequestMessage;
-use crate::common::http::{GetResponse, convert_query_params_to_strings};
+use crate::common::http::{convert_query_params_to_strings, GetResponse};
 use crate::common::register::SearchSourceRegistry;
 use crate::server::http_client::HttpClient;
 use crate::{common, server::servers::COCO_SERVERS};
-use futures::StreamExt;
 use futures::stream::FuturesUnordered;
+use futures::StreamExt;
 use futures_util::TryStreamExt;
 use http::Method;
 use serde_json::Value;
@@ -204,7 +204,7 @@ pub async fn chat_create<R: Runtime>(
     let mut lines = tokio::io::BufReader::new(reader).lines();
 
     while let Ok(Some(line)) = lines.next_line().await {
-        log::debug!("Received chat stream line: {}", &line);
+        log::info!("Received chat stream line: {}", &line);
 
         if let Err(err) = app_handle.emit(&client_id, line) {
             log::error!("Emit failed: {:?}", err);
@@ -300,7 +300,7 @@ pub async fn chat_chat<R: Runtime>(
     let mut first_log = true;
 
     while let Ok(Some(line)) = lines.next_line().await {
-        log::debug!("Received chat stream line: {}", &line);
+        log::info!("Received chat stream line: {}", &line);
         if first_log {
             log::info!("first stream line: {}", &line);
             first_log = false;
