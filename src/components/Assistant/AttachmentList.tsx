@@ -24,43 +24,57 @@ const AttachmentList = () => {
     };
   }, []);
 
+  const uploadAttachment = async (data: UploadAttachments) => {
+    const { uploading, uploaded, uploadFailed, path } = data;
+
+    if (uploading || uploaded || uploadFailed) return;
+
+    const { uploadAttachments } = useChatStore.getState();
+
+    const matched = uploadAttachments.find((item) => item.id === data.id);
+
+    if (matched) {
+      matched.uploading = true;
+
+      setUploadAttachments(uploadAttachments);
+    }
+
+    try {
+      const attachmentIds: any = await platformAdapter.commands(
+        "upload_attachment",
+        {
+          serverId,
+          filePaths: [path],
+        }
+      );
+
+      if (!attachmentIds) {
+        throw new Error("Failed to get attachment id");
+      } else {
+        Object.assign(data, {
+          uploaded: true,
+          attachmentId: attachmentIds[0],
+        });
+      }
+    } catch (error) {
+      Object.assign(data, {
+        uploadFailed: true,
+        failedMessage: String(error),
+      });
+    } finally {
+      Object.assign(data, {
+        uploading: false,
+      });
+
+      setUploadAttachments(uploadAttachments);
+    }
+  };
+
   useAsyncEffect(async () => {
     if (uploadAttachments.length === 0) return;
 
-    for await (const item of uploadAttachments) {
-      const { uploading, uploaded, uploadFailed, path } = item;
-
-      if (uploading && (uploaded || uploadFailed)) continue;
-
-      try {
-        const attachmentIds: any = await platformAdapter.commands(
-          "upload_attachment",
-          {
-            serverId,
-            filePaths: [path],
-          }
-        );
-
-        if (!attachmentIds) {
-          throw new Error("Failed to get attachment id");
-        } else {
-          Object.assign(item, {
-            uploaded: true,
-            attachmentId: attachmentIds[0],
-          });
-        }
-      } catch (error) {
-        Object.assign(item, {
-          uploadFailed: true,
-          failedMessage: String(error),
-        });
-      } finally {
-        Object.assign(item, {
-          uploading: false,
-        });
-
-        setUploadAttachments(uploadAttachments);
-      }
+    for (const item of uploadAttachments) {
+      uploadAttachment(item);
     }
   }, [uploadAttachments]);
 
