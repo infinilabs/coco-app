@@ -173,6 +173,8 @@ export function useChatActions(
   }, [isChatPage, uniqueInstanceId]);
   const createNewChat = useCallback(
     async (value: string = "", activeChat?: Chat) => {
+      if (!value) return;
+
       const requestId = `${Date.now()}-${uniqueInstanceId}`;
       setCurrentRequestId(requestId);
       await setupListeners(requestId);
@@ -191,6 +193,11 @@ export function useChatActions(
         mcp_servers: MCPIds?.join(",") || "",
         assistant_id: currentAssistant?._id || "",
       };
+
+      changeInput && changeInput("");
+      setCurChatEnd(false);
+      setVisibleStartPage(false);
+
       if (isTauri) {
         if (!currentService?.id) return;
         await platformAdapter.commands("chat_create", {
@@ -247,6 +254,10 @@ export function useChatActions(
         assistant_id: currentAssistant?._id || "",
       };
 
+      changeInput && changeInput("");
+      setCurChatEnd(false);
+      setVisibleStartPage(false);
+
       if (isTauri) {
         if (!currentService?.id) return;
         await platformAdapter.commands("chat_chat", {
@@ -295,6 +306,7 @@ export function useChatActions(
   const handleSendMessage = useCallback(
     async (content: string, activeChat?: Chat) => {
       if (!activeChat?._id || !content) return;
+
       setQuestion(content);
 
       setTimedoutShow(false);
@@ -306,27 +318,6 @@ export function useChatActions(
 
   const handleChatCreateStreamMessage = useCallback(
     (msg: string) => {
-      // const data = [
-      //   {
-      //     _id: "d1u92dh4d9v2eoei6490",
-      //     _source: {
-      //       id: "d1u92dh4d9v2eoei6490",
-      //       created: "2025-07-20T14:48:22.230445102+08:00",
-      //       updated: "2025-07-20T14:48:22.230445102+08:00",
-      //       type: "user",
-      //       session_id: "d1u6iip4d9vfhkrsiut0",
-      //       from: "",
-      //       message: "水电费第十六课放假的开始了解回复就回家肯定是 fjkj",
-      //       details: null,
-      //       up_vote: 0,
-      //       down_vote: 0,
-      //       assistant_id: "default",
-      //     },
-      //     result: "created",
-      //   },
-      // ];
-      // msg = `[{"_id":"d1u99094d9v2eoei67hg","_source":{"id":"d1u99094d9v2eoei67hg","created":"2025-07-20T15:02:25.464040234+08:00","updated":"2025-07-20T15:02:25.464040234+08:00","type":"user","session_id":"d1u94ep4d9v2eoei651g","from":"","message":"给我写一篇 9000 字作文","details":null,"up_vote":0,"down_vote":0,"assistant_id":"default"},"result":"created"}]`
-
       if (
         msg.includes(`"user"`) &&
         msg.includes("_source") &&
@@ -361,10 +352,7 @@ export function useChatActions(
           };
         }
 
-        changeInput && changeInput("");
         setActiveChat(updatedChat);
-        setCurChatEnd(false);
-        setVisibleStartPage(false);
         return;
       }
 
