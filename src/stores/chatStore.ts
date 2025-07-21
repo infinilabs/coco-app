@@ -5,9 +5,10 @@ import {
 } from "zustand/middleware";
 import { Metadata } from "tauri-plugin-fs-pro-api";
 
-export interface UploadFile extends Metadata {
+export interface UploadAttachments extends Metadata {
   id: string;
   path: string;
+  uploading: boolean;
   uploaded?: boolean;
   attachmentId?: string;
   uploadFailed?: boolean;
@@ -28,8 +29,8 @@ export type IChatStore = {
   setConnected: (value: boolean) => void;
   messages: string;
   setMessages: (value: string | ((prev: string) => string)) => void;
-  uploadFiles: UploadFile[];
-  setUploadFiles: (value: UploadFile[]) => void;
+  uploadAttachments: UploadAttachments[];
+  setUploadAttachments: (value: UploadAttachments[]) => void;
   synthesizeItem?: SynthesizeItem;
   setSynthesizeItem: (synthesizeItem?: SynthesizeItem) => void;
 };
@@ -48,9 +49,9 @@ export const useChatStore = create<IChatStore>()(
         set((state) => ({
           messages: typeof value === "function" ? value(state.messages) : value,
         })),
-      uploadFiles: [],
-      setUploadFiles: (uploadFiles: UploadFile[]) => {
-        return set(() => ({ uploadFiles }));
+      uploadAttachments: [],
+      setUploadAttachments: (uploadAttachments: UploadAttachments[]) => {
+        return set(() => ({ uploadAttachments }));
       },
       setSynthesizeItem(synthesizeItem?: SynthesizeItem) {
         return set(() => ({ synthesizeItem }));

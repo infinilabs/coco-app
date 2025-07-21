@@ -17,11 +17,17 @@ import { useAssistantManager } from "./AssistantManager";
 import InputControls from "./InputControls";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import AudioRecording from "../AudioRecording";
-import { isDefaultServer } from "@/utils";
+import {
+  getUploadedAttachmentsId,
+  isAttachmentsUploaded,
+  isDefaultServer,
+} from "@/utils";
 import { useTauriFocus } from "@/hooks/useTauriFocus";
+import { SendMessageParams } from "../Assistant/Chat";
+import { isEmpty } from "lodash-es";
 
 interface ChatInputProps {
-  onSend: (message: string) => void;
+  onSend: (params: SendMessageParams) => void;
   disabled: boolean;
   disabledChange: () => void;
   changeMode?: (isChatMode: boolean) => void;
@@ -83,18 +89,13 @@ export default function ChatInput({
 }: ChatInputProps) {
   const { t } = useTranslation();
 
-  const currentAssistant = useConnectStore((state) => state.currentAssistant);
-
-  const setBlurred = useAppStore((state) => state.setBlurred);
-  const isTauri = useAppStore((state) => state.isTauri);
+  const { currentAssistant } = useConnectStore();
 
   const { sourceData, goAskAi } = useSearchStore();
 
   const { modifierKey, returnToInput, setModifierKeyPressed } =
     useShortcutsStore();
-  const language = useAppStore((state) => {
-    return state.language;
-  });
+  const { isTauri, language, setBlurred } = useAppStore();
 
   useEffect(() => {
     return () => {
@@ -107,6 +108,7 @@ export default function ChatInput({
   const { curChatEnd } = useChatStore();
   const { setSearchValue, visibleExtensionStore, selectedExtension } =
     useSearchStore();
+  const { uploadAttachments } = useChatStore();
 
   useTauriFocus({
     onFocus() {
@@ -121,12 +123,19 @@ export default function ChatInput({
 
   const handleSubmit = useCallback(() => {
     const trimmedValue = inputValue.trim();
+
+    if (!isAttachmentsUploaded()) return;
+
     console.log("handleSubmit", trimmedValue, disabled);
-    if (trimmedValue && !disabled) {
+
+    if ((trimmedValue || !isEmpty(uploadAttachments)) && !disabled) {
       changeInput("");
-      onSend(trimmedValue);
+      onSend({
+        message: trimmedValue,
+        attachments: getUploadedAttachmentsId(),
+      });
     }
-  }, [inputValue, disabled, onSend]);
+  }, [inputValue, disabled, onSend, uploadAttachments]);
 
   useKeyboardHandlers({
     isChatMode,
@@ -141,7 +150,7 @@ export default function ChatInput({
       changeInput(value);
       setSearchValue(value);
       if (!isChatMode) {
-        onSend(value);
+        onSend({ message: value });
       }
     },
     [changeInput, isChatMode, onSend]

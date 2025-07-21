@@ -9,6 +9,8 @@ import { useSearchStore } from "@/stores/searchStore";
 import { useAuthStore } from "@/stores/authStore";
 import { unrequitable } from "@/utils";
 import { streamPost } from "@/api/streamFetch";
+import { SendMessageParams } from "@/components/Assistant/Chat";
+import { isEmpty } from "lodash-es";
 
 export function useChatActions(
   setActiveChat: (chat: Chat | undefined) => void,
@@ -135,11 +137,21 @@ export function useChatActions(
   );
 
   const createNewChat = useCallback(
-    async (value: string = "", activeChat?: Chat) => {
+    async (activeChat?: Chat, params?: SendMessageParams) => {
+      const { message, attachments } = params || {};
+
+      console.log("message", message);
+      console.log("attachments", attachments);
+
+      if (!message && isEmpty(attachments)) return;
+
       setTimedoutShow(false);
       await chatClose(activeChat);
       clearAllChunkData();
-      setQuestion(value);
+
+      if (message) {
+        setQuestion(message);
+      }
 
       //console.log("sourceDataIds", sourceDataIds, MCPIds, id);
       const queryParams = {
@@ -152,15 +164,17 @@ export function useChatActions(
       };
       if (isTauri) {
         if (!currentService?.id) return;
+
         await platformAdapter.commands("chat_create", {
           serverId: currentService?.id,
-          message: value,
+          message,
+          attachments,
           queryParams,
         });
       } else {
         await streamPost({
           url: "/chat/_create",
-          body: { message: value },
+          body: { message },
           queryParams,
           onMessage: (line) => {
             console.log("⏳", line);
@@ -169,7 +183,13 @@ export function useChatActions(
           },
         });
       }
-      console.log("_create", currentService?.id, value, queryParams);
+      console.log(
+        "_create",
+        currentService?.id,
+        message,
+        attachments,
+        queryParams
+      );
     },
     [
       isTauri,
@@ -186,8 +206,12 @@ export function useChatActions(
   );
 
   const sendMessage = useCallback(
-    async (content: string, newChat: Chat) => {
-      if (!newChat?._id || !content) return;
+    async (newChat: Chat, params?: SendMessageParams) => {
+      if (!newChat?._id || !params) return;
+
+      const { message, attachments } = params;
+
+      if (!message && isEmpty(attachments)) return;
 
       clearAllChunkData();
 
@@ -205,12 +229,13 @@ export function useChatActions(
           serverId: currentService?.id,
           sessionId: newChat?._id,
           queryParams,
-          message: content,
+          message,
+          attachments,
         });
       } else {
         await streamPost({
           url: `/chat/${newChat?._id}/_chat`,
-          body: { message: content },
+          body: { message },
           queryParams,
           onMessage: (line) => {
             console.log("line", line);
@@ -225,7 +250,8 @@ export function useChatActions(
         currentService?.id,
         newChat?._id,
         queryParams,
-        content
+        message,
+        attachments
       );
     },
     [
@@ -243,13 +269,20 @@ export function useChatActions(
   );
 
   const handleSendMessage = useCallback(
-    async (content: string, activeChat?: Chat) => {
-      if (!activeChat?._id || !content) return;
-      setQuestion(content);
+    async (activeChat?: Chat, params?: SendMessageParams) => {
+      if (!activeChat?._id || !params) return;
+
+      const { message, attachments } = params;
+
+      if (!message && isEmpty(attachments)) return;
+
+      if (message) {
+        setQuestion(message);
+      }
 
       setTimedoutShow(false);
 
-      await chatHistory(activeChat, (chat) => sendMessage(content, chat));
+      await chatHistory(activeChat, (chat) => sendMessage(chat, params));
     },
     [chatHistory, sendMessage]
   );
