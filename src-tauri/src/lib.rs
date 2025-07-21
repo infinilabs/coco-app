@@ -169,7 +169,7 @@ pub fn run() {
             #[cfg(any(target_os = "macos", target_os = "windows"))]
             extension::built_in::file_search::config::set_file_system_config,
             server::synthesize::synthesize,
-            util::file::get_file_icon, 
+            util::file::get_file_icon,
             util::app_lang::update_app_lang,
         ])
         .setup(|app| {
@@ -273,7 +273,7 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
         log::error!("Failed to load server tokens: {}", err);
     }
 
-    let coco_servers = server::servers::get_all_servers();
+    let coco_servers = server::servers::get_all_servers().await;
 
     // Get the registry from Tauri's state
     // let registry: State<SearchSourceRegistry> = app_handle.state::<SearchSourceRegistry>();
@@ -562,12 +562,12 @@ fn set_up_tauri_logger() -> TauriPlugin<tauri::Wry> {
     // When running the built binary, set `COCO_LOG` to `coco_lib=trace` to capture all logs
     // that come from Coco in the log file, which helps with debugging.
     if !tauri::is_dev() {
-       // We have absolutely no guarantee that we (We have control over the Rust 
-       // code, but definitely no idea about the libc C code, all the shared objects
-       // that we will link) will not concurrently read/write `envp`, so just use unsafe.
-       unsafe {
-          std::env::set_var("COCO_LOG", "coco_lib=trace");
-       }
+        // We have absolutely no guarantee that we (We have control over the Rust
+        // code, but definitely no idea about the libc C code, all the shared objects
+        // that we will link) will not concurrently read/write `envp`, so just use unsafe.
+        unsafe {
+            std::env::set_var("COCO_LOG", "coco_lib=trace");
+        }
     }
 
     let mut builder = tauri_plugin_log::Builder::new();

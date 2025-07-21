@@ -4,12 +4,12 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter, Runtime};
 use tokio::net::TcpStream;
-use tokio::sync::{mpsc, Mutex};
-use tokio_tungstenite::tungstenite::handshake::client::generate_key;
-use tokio_tungstenite::tungstenite::Message;
+use tokio::sync::{Mutex, mpsc};
 use tokio_tungstenite::MaybeTlsStream;
 use tokio_tungstenite::WebSocketStream;
-use tokio_tungstenite::{connect_async_tls_with_config, Connector};
+use tokio_tungstenite::tungstenite::Message;
+use tokio_tungstenite::tungstenite::handshake::client::generate_key;
+use tokio_tungstenite::{Connector, connect_async_tls_with_config};
 #[derive(Default)]
 pub struct WebSocketManager {
     connections: Arc<Mutex<HashMap<String, Arc<WebSocketInstance>>>>,
@@ -53,9 +53,11 @@ pub async fn connect_to_server<R: Runtime>(
     // Disconnect old connection first
     disconnect(client_id.clone(), state.clone()).await.ok();
 
-    let server = get_server_by_id(&id).ok_or(format!("Server with ID {} not found", id))?;
+    let server = get_server_by_id(&id)
+        .await
+        .ok_or(format!("Server with ID {} not found", id))?;
     let endpoint = convert_to_websocket(&server.endpoint)?;
-    let token = get_server_token(&id).await?.map(|t| t.access_token.clone());
+    let token = get_server_token(&id).await.map(|t| t.access_token.clone());
 
     let mut request =
         tokio_tungstenite::tungstenite::client::IntoClientRequest::into_client_request(&endpoint)
@@ -95,8 +97,8 @@ pub async fn connect_to_server<R: Runtime>(
         true,            // disable_nagle
         Some(connector), // Connector
     )
-        .await
-        .map_err(|e| format!("WebSocket TLS error: {:?}", e))?;
+    .await
+    .map_err(|e| format!("WebSocket TLS error: {:?}", e))?;
 
     let (cancel_tx, mut cancel_rx) = mpsc::channel(1);
 

@@ -50,9 +50,17 @@ pub struct Server {
     pub updated: String,
     #[serde(default = "default_enabled_type")]
     pub enabled: bool,
+    /// Public Coco servers can be used without signing in.
     #[serde(default = "default_bool_type")]
     pub public: bool,
 
+    /// A coco server is available if:
+    ///
+    /// 1. It is still online, we check this via the `GET /base_url/provider/_info`
+    ///    interface.
+    /// 2. A user is logged in to this Coco server, i.e., a token is stored in the
+    ///    `SERVER_TOKEN_LIST_CACHE`.
+    ///    For public Coco servers, requirement 2 is not needed.
     #[serde(default = "default_available_type")]
     pub available: bool,
 
@@ -84,7 +92,10 @@ pub struct ServerAccessToken {
     #[serde(default = "default_empty_string")] // Custom default function for empty string
     pub id: String,
     pub access_token: String,
-    pub expired_at: u32, //unix timestamp in seconds
+    /// Unix timestamp in seconds
+    ///
+    /// Currently, this is UNUSED.
+    pub expired_at: u32,
 }
 
 impl ServerAccessToken {

@@ -4,9 +4,12 @@ use crate::common::search::{
     FailedRequest, MultiSourceQueryResponse, QueryHits, QueryResponse, QuerySource, SearchQuery,
 };
 use crate::common::traits::SearchSource;
+use crate::server::servers::logout_coco_server;
+use crate::server::servers::mark_server_as_offline;
 use function_name::named;
-use futures::stream::FuturesUnordered;
 use futures::StreamExt;
+use futures::stream::FuturesUnordered;
+use reqwest::StatusCode;
 use std::cmp::Reverse;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -14,7 +17,7 @@ use std::future::Future;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::time::error::Elapsed;
-use tokio::time::{timeout, Duration};
+use tokio::time::{Duration, timeout};
 
 /// Helper function to return the Future used for querying querysources.
 ///
@@ -191,9 +194,38 @@ pub async fn query_coco_fusion<R: Runtime>(
                         query_source.id,
                         search_error
                     );
+
+                    let mut status_code_num: u16 = 0;
+
+                    if let SearchError::HttpError {
+                        status_code: opt_status_code,
+                        msg: _,
+                    } = search_error
+                    {
+                        if let Some(status_code) = opt_status_code {
+                            status_code_num = status_code.as_u16();
+                            if status_code != StatusCode::OK {
+                                if status_code == StatusCode::UNAUTHORIZED {
+                                    // This Coco server is unavailable. In addition to marking it as
+                                    // unavailable, we need to log out because the status code is 401.
+                                    logout_coco_server(app_handle.clone(), query_source.id.clone()).await.unwrap_or_else(|e| {
+                                        panic!(
+                                          "the search request to Coco server [id {}, name {}] failed with status code {}, the login token is invalid, we are trying to log out, but failed with error [{}]", 
+                                          query_source.id, query_source.name, StatusCode::UNAUTHORIZED, e
+                                        );
+                                    })
+                                } else {
+                                    // This Coco server is unavailable
+                                    mark_server_as_offline(app_handle.clone(), &query_source.id)
+                                        .await;
+                                }
+                            }
+                        }
+                    }
+
                     failed_requests.push(FailedRequest {
                         source: query_source,
-                        status: 0,
+                        status: status_code_num,
                         error: Some(search_error.to_string()),
                         reason: None,
                     });

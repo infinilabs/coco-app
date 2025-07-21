@@ -45,10 +45,12 @@ pub async fn upload_attachment(
         form = form.part("files", part);
     }
 
-    let server = get_server_by_id(&server_id).ok_or("Server not found")?;
+    let server = get_server_by_id(&server_id)
+        .await
+        .ok_or("Server not found")?;
     let url = HttpClient::join_url(&server.endpoint, &format!("attachment/_upload"));
 
-    let token = get_server_token(&server_id).await?;
+    let token = get_server_token(&server_id).await;
     let mut headers = HashMap::new();
     if let Some(token) = token {
         headers.insert("X-API-TOKEN".to_string(), token.access_token);
