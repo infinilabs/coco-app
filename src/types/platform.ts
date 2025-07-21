@@ -48,8 +48,7 @@ export interface EventPayloads {
   "install-extension": void;
   "uninstall-extension": void;
   "config-extension": string;
-  [key: `chat-create-stream-${string}`]: string;
-  [key: `chat-chat-stream-${string}`]: string;
+  [key: `chat-stream-${string}`]: string;
   "chat-create-error": string;
   [key: `synthesize-${string}`]: any;
 }

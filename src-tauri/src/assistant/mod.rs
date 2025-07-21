@@ -1,10 +1,10 @@
 use crate::common::assistant::ChatRequestMessage;
-use crate::common::http::{convert_query_params_to_strings, GetResponse};
+use crate::common::http::{GetResponse, convert_query_params_to_strings};
 use crate::common::register::SearchSourceRegistry;
 use crate::server::http_client::HttpClient;
 use crate::{common, server::servers::COCO_SERVERS};
-use futures::stream::FuturesUnordered;
 use futures::StreamExt;
+use futures::stream::FuturesUnordered;
 use futures_util::TryStreamExt;
 use http::Method;
 use serde_json::Value;
@@ -203,6 +203,8 @@ pub async fn chat_create<R: Runtime>(
     );
     let mut lines = tokio::io::BufReader::new(reader).lines();
 
+    log::info!("client_id_create: {}", &client_id);
+
     while let Ok(Some(line)) = lines.next_line().await {
         log::info!("Received chat stream line: {}", &line);
 
@@ -298,6 +300,8 @@ pub async fn chat_chat<R: Runtime>(
     );
     let mut lines = tokio::io::BufReader::new(reader).lines();
     let mut first_log = true;
+
+    log::info!("client_id: {}", &client_id);
 
     while let Ok(Some(line)) = lines.next_line().await {
         log::info!("Received chat stream line: {}", &line);

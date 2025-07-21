@@ -170,7 +170,6 @@ const ChatAI = memo(
         handleSearch,
         handleRename,
         handleDelete,
-        instanceId: actualInstanceId
       } = useChatActions(
         setActiveChat,
         setCurChatEnd,
@@ -186,7 +185,6 @@ const ChatAI = memo(
         isMCPActive,
         changeInput,
         showChatHistory,
-        instanceId
       );
 
       const { dealMsg } = useMessageHandler(
@@ -364,7 +362,7 @@ const ChatAI = memo(
           )}
           <div
             data-tauri-drag-region
-            data-chat-instance={actualInstanceId}
+            data-chat-instance={instanceId}
             className={`flex flex-col rounded-md h-full overflow-hidden relative`}
           >
             <ChatHeader
