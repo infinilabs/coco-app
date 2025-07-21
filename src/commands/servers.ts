@@ -16,6 +16,7 @@ import {
 } from "@/types/commands";
 import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
+import { useConnectStore } from "@/stores/connectStore";
 
 // Endpoints that don't require authentication
 const WHITELIST_SERVERS = [
@@ -36,6 +37,11 @@ async function invokeWithErrorHandler<T>(
   args?: Record<string, any>
 ): Promise<T> {
   const isCurrentLogin = useAuthStore.getState().isCurrentLogin;
+  const currentService = useConnectStore.getState().currentService;
+  const setCurrentService = useConnectStore.getState().setCurrentService;
+  const serverList = useConnectStore.getState().serverList;
+  const setServerList = useConnectStore.getState().setServerList;
+
   if (!WHITELIST_SERVERS.includes(command) && !isCurrentLogin) {
     console.error("This command requires authentication");
     throw new Error("This command requires authentication");
@@ -66,6 +72,14 @@ async function invokeWithErrorHandler<T>(
     return result;
   } catch (error: any) {
     const errorMessage = error || "Command execution failed";
+    // 401 Unauthorized
+    if (errorMessage.includes("Unauthorized")) {
+      setCurrentService({ ...currentService, profile: null });
+      const updatedServerList = serverList.map((server) =>
+        server.id === currentService.id ? { ...server, profile: null } : server
+      );
+      setServerList(updatedServerList);
+    }
     addError(command + ":" + errorMessage, "error");
     throw error;
   }
