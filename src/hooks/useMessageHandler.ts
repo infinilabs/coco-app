@@ -4,7 +4,7 @@ import type { IChunkData, Chat } from "@/types/chat";
 import { useConnectStore } from "@/stores/connectStore";
 
 export function useMessageHandler(
-  curIdRef: React.MutableRefObject<string>,
+  curSessionIdRef: React.MutableRefObject<string>,
   setCurChatEnd: (value: boolean) => void,
   setTimedoutShow: (value: boolean) => void,
   onCancel: (chat?: Chat) => void,
@@ -41,8 +41,9 @@ export function useMessageHandler(
 
       try {
         const chunkData = JSON.parse(msg);
+        // console.log("chunkData", chunkData);
 
-        if (chunkData.reply_to_message !== curIdRef.current) return;
+        if (chunkData.session_id !== curSessionIdRef.current) return;
 
         setLoadingStep(() => ({
           query_intent: false,
@@ -54,8 +55,6 @@ export function useMessageHandler(
           response: false,
           [chunkData.chunk_type]: true,
         }));
-
-       
 
         if (chunkData.chunk_type === "query_intent") {
           handlers.deal_query_intent(chunkData);
@@ -87,7 +86,7 @@ export function useMessageHandler(
             }
 
             if (inThinkRef.current) {
-              handlers.deal_think({...chunkData, chunk_type: "think"});
+              handlers.deal_think({ ...chunkData, chunk_type: "think" });
             } else {
               handlers.deal_response(chunkData);
             }
@@ -105,13 +104,7 @@ export function useMessageHandler(
         console.error("parse error:", error);
       }
     },
-    [
-      onCancel,
-      setCurChatEnd,
-      setTimedoutShow,
-      curIdRef.current,
-      connectionTimeout,
-    ]
+    [onCancel, setCurChatEnd, setTimedoutShow, connectionTimeout]
   );
 
   return {

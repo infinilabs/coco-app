@@ -43,17 +43,21 @@ export const QueryIntent = ({
   useEffect(() => {
     if (!ChunkData?.message_chunk) return;
     if (!loading) {
-      const cleanContent = ChunkData.message_chunk.replace(/^"|"$/g, "");
-      const allMatches = cleanContent.match(/<JSON>([\s\S]*?)<\/JSON>/g);
-      if (allMatches) {
-        const lastMatch = allMatches[allMatches.length - 1];
-        const jsonString = lastMatch.replace(/<JSON>|<\/JSON>/g, "");
-        const data = JSON.parse(jsonString);
-        //console.log("QueryIntent", data);
-        if (data?.suggestion && getSuggestion) {
-          getSuggestion(data?.suggestion);
+      try {
+        const cleanContent = ChunkData.message_chunk.replace(/^"|"$/g, "");
+        const allMatches = cleanContent.match(/<JSON>([\s\S]*?)<\/JSON>/g);
+        if (allMatches) {
+          const lastMatch = allMatches[allMatches.length - 1];
+          const jsonString = lastMatch.replace(/<JSON>|<\/JSON>/g, "");
+          const data = JSON.parse(jsonString);
+          //console.log("QueryIntent", data);
+          if (data?.suggestion && getSuggestion) {
+            getSuggestion(data?.suggestion);
+          }
+          setData(data);
         }
-        setData(data);
+      } catch (error) {
+        console.error("Failed to process message chunk in QueryIntent:", error);
       }
     }
   }, [ChunkData?.message_chunk, loading]);
@@ -79,14 +83,22 @@ export const QueryIntent = ({
           <>
             <Loader className="w-4 h-4 animate-spin text-[#1990FF]" />
             <span className="text-xs text-[#999999] italic">
-              {t(`assistant.message.steps.${ChunkData?.chunk_type || Detail.type}`)}
+              {t(
+                `assistant.message.steps.${
+                  ChunkData?.chunk_type || Detail.type
+                }`
+              )}
             </span>
           </>
         ) : (
           <>
             <UnderstandIcon className="w-4 h-4 text-[#38C200]" />
             <span className="text-xs text-[#999999]">
-              {t(`assistant.message.steps.${ChunkData?.chunk_type || Detail.type}`)}
+              {t(
+                `assistant.message.steps.${
+                  ChunkData?.chunk_type || Detail.type
+                }`
+              )}
             </span>
           </>
         )}

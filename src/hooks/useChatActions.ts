@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef, useMemo } from "react";
 
 import type { Chat } from "@/types/chat";
 import { useAppStore } from "@/stores/appStore";
@@ -16,9 +16,10 @@ export function useChatActions(
   setTimedoutShow: (value: boolean) => void,
   clearAllChunkData: () => void,
   setQuestion: (value: string) => void,
-  curIdRef: React.MutableRefObject<string>,
+  curSessionIdRef: React.MutableRefObject<string>,
   setChats: (chats: Chat[]) => void,
   dealMsgRef: React.MutableRefObject<((msg: string) => void) | null>,
+  isChatPage?: boolean,
   isSearchActive?: boolean,
   isDeepThinkActive?: boolean,
   isMCPActive?: boolean,
@@ -39,6 +40,13 @@ export function useChatActions(
   const MCPIds = useSearchStore((state) => state.MCPIds);
 
   const [keyword, setKeyword] = useState("");
+
+  // Add a ref at the beginning of the useChatActions function to store the listener.
+  const unlistenersRef = useRef<{
+    message?: () => void;
+    chatMessage?: () => void;
+    error?: () => void;
+  }>({});
 
   const chatClose = useCallback(
     async (activeChat?: Chat) => {
@@ -61,9 +69,16 @@ export function useChatActions(
     [currentService?.id, isTauri]
   );
 
+  // 1. onSelectChat
+  // 2. dealMsg setTimedoutShow
+  // 3. disabledChange Manual shutdown
   const cancelChat = useCallback(
     async (activeChat?: Chat) => {
       setCurChatEnd(true);
+
+      // Stop listening for streaming data.
+      cleanupListeners();
+
       if (!activeChat?._id) return;
       let response: any;
       if (isTauri) {
@@ -93,6 +108,7 @@ export function useChatActions(
     async (chat: Chat, callback?: (chat: Chat) => void) => {
       if (!chat?._id) return;
 
+      curSessionIdRef.current = chat?._id;
       let response: any;
       if (isTauri) {
         if (!currentService?.id) return;
@@ -100,13 +116,13 @@ export function useChatActions(
           serverId: currentService?.id,
           sessionId: chat?._id,
           from: 0,
-          size: 100,
+          size: 1000,
         });
         response = response ? JSON.parse(response) : null;
       } else {
         const [_error, res] = await Get(`/chat/${chat?._id}/_history`, {
           from: 0,
-          size: 100,
+          size: 1000,
         });
         response = res;
       }
@@ -134,14 +150,32 @@ export function useChatActions(
     [currentService?.id, isTauri, assistantList]
   );
 
+  // Modify the clientId generation logic to include the instance ID.
+  const clientId = useMemo(() => {
+    const timestamp = Date.now();
+    const pageType = isChatPage ? "standalone-chat" : "search-chat";
+    return `${pageType}-${timestamp}`;
+  }, [isChatPage]);
+
   const createNewChat = useCallback(
     async (value: string = "", activeChat?: Chat) => {
+      if (!value) return;
+
+      // 1. Set up the listener first
+      await setupListeners();
+
+      // 2. Update the status again
+      changeInput && changeInput("");
+      setCurChatEnd(false);
+      setVisibleStartPage(false);
       setTimedoutShow(false);
+
+      // 3. Cleaning and preparation
       await chatClose(activeChat);
       clearAllChunkData();
       setQuestion(value);
 
-      //console.log("sourceDataIds", sourceDataIds, MCPIds, id);
+      // 4. request API
       const queryParams = {
         search: isSearchActive,
         deep_thinking: isDeepThinkActive,
@@ -150,13 +184,17 @@ export function useChatActions(
         mcp_servers: MCPIds?.join(",") || "",
         assistant_id: currentAssistant?._id || "",
       };
+
       if (isTauri) {
         if (!currentService?.id) return;
         await platformAdapter.commands("chat_create", {
           serverId: currentService?.id,
           message: value,
           queryParams,
+          clientId: `chat-stream-${clientId}`,
         });
+        console.log("_create end", value);
+        setCurChatEnd(true);
       } else {
         await streamPost({
           url: "/chat/_create",
@@ -169,7 +207,6 @@ export function useChatActions(
           },
         });
       }
-      console.log("_create", currentService?.id, value, queryParams);
     },
     [
       isTauri,
@@ -179,9 +216,9 @@ export function useChatActions(
       isSearchActive,
       isDeepThinkActive,
       isMCPActive,
-      curIdRef,
       currentAssistant,
       chatClose,
+      clientId,
     ]
   );
 
@@ -189,7 +226,18 @@ export function useChatActions(
     async (content: string, newChat: Chat) => {
       if (!newChat?._id || !content) return;
 
+      // 1.
+      await setupListeners();
+
+      // 2.
+      changeInput && changeInput("");
+      setCurChatEnd(false);
+      setVisibleStartPage(false);
+      setTimedoutShow(false);
+
+      // 3.
       clearAllChunkData();
+      setQuestion(content);
 
       const queryParams = {
         search: isSearchActive,
@@ -199,6 +247,7 @@ export function useChatActions(
         mcp_servers: MCPIds?.join(",") || "",
         assistant_id: currentAssistant?._id || "",
       };
+
       if (isTauri) {
         if (!currentService?.id) return;
         await platformAdapter.commands("chat_chat", {
@@ -206,7 +255,10 @@ export function useChatActions(
           sessionId: newChat?._id,
           queryParams,
           message: content,
+          clientId: `chat-stream-${clientId}`,
         });
+        console.log("chat_chat end", content);
+        setCurChatEnd(true);
       } else {
         await streamPost({
           url: `/chat/${newChat?._id}/_chat`,
@@ -219,14 +271,6 @@ export function useChatActions(
           },
         });
       }
-
-      console.log(
-        "chat_chat",
-        currentService?.id,
-        newChat?._id,
-        queryParams,
-        content
-      );
     },
     [
       isTauri,
@@ -236,18 +280,15 @@ export function useChatActions(
       isSearchActive,
       isDeepThinkActive,
       isMCPActive,
-      curIdRef,
       changeInput,
       currentAssistant,
+      clientId,
     ]
   );
 
   const handleSendMessage = useCallback(
     async (content: string, activeChat?: Chat) => {
       if (!activeChat?._id || !content) return;
-      setQuestion(content);
-
-      setTimedoutShow(false);
 
       await chatHistory(activeChat, (chat) => sendMessage(content, chat));
     },
@@ -257,80 +298,110 @@ export function useChatActions(
   const handleChatCreateStreamMessage = useCallback(
     (msg: string) => {
       if (
-        msg.includes("_id") &&
+        msg.includes(`"user"`) &&
         msg.includes("_source") &&
         msg.includes("result")
       ) {
-        const response = JSON.parse(msg);
-        console.log("first", response);
-        let updatedChat: Chat;
-        if (Array.isArray(response)) {
-          curIdRef.current = response[0]?._id;
-          updatedChat = {
-            ...updatedChatRef.current,
-            messages: [
-              ...(updatedChatRef.current?.messages || []),
-              ...(response || []),
-            ],
-          };
-          console.log("array", updatedChat, updatedChatRef.current?.messages);
-        } else {
-          const newChat: Chat = response;
-          curIdRef.current = response?.payload?.id;
+        try {
+          const response = JSON.parse(msg);
+          console.log("first", response);
 
-          newChat._source = {
-            ...response?.payload,
-          };
-          updatedChat = {
-            ...newChat,
-            messages: [newChat],
-          };
+          let updatedChat: Chat;
+          if (Array.isArray(response)) {
+            curSessionIdRef.current = response[0]?._source?.session_id;
+            console.log("first-curSessionIdRef-Array", curSessionIdRef.current);
+            updatedChat = {
+              ...updatedChatRef.current,
+              messages: [
+                ...(updatedChatRef.current?.messages || []),
+                ...(response || []),
+              ],
+            };
+            console.log("array", updatedChat, updatedChatRef.current?.messages);
+          } else {
+            const newChat: Chat = response;
+            curSessionIdRef.current = response?.payload?.session_id;
+            console.log("first-curSessionIdRef", curSessionIdRef.current);
+
+            newChat._source = {
+              ...response?.payload,
+            };
+            updatedChat = {
+              ...newChat,
+              messages: [newChat],
+            };
+          }
+
+          setActiveChat(updatedChat);
+          return;
+        } catch (error) {
+          console.error("Failed to parse JSON:", error, "Raw message:", msg);
+          return;
         }
-
-        changeInput && changeInput("");
-        setActiveChat(updatedChat);
-        setCurChatEnd(false);
-        setVisibleStartPage(false);
-        return;
       }
 
       dealMsgRef.current?.(msg);
     },
-    [
-      curIdRef,
-      updatedChatRef,
-      changeInput,
-      setActiveChat,
-      setCurChatEnd,
-      setVisibleStartPage,
-      dealMsgRef,
-    ]
+    [changeInput, setActiveChat, setCurChatEnd, setVisibleStartPage]
   );
 
-  useEffect(() => {
-    if (!isTauri || !currentService?.id) return;
+  const cleanupListeners = useCallback(() => {
+    if (unlistenersRef.current.chatMessage) {
+      unlistenersRef.current.chatMessage();
+    }
+    if (unlistenersRef.current.error) {
+      unlistenersRef.current.error();
+    }
+    unlistenersRef.current = {};
+  }, []);
 
-    const unlisten_message = platformAdapter.listenEvent(
-      `chat-create-stream`,
+  const setupListeners = useCallback(async () => {
+    cleanupListeners();
+
+    console.log("setupListeners", clientId);
+    const unlisten_chat_message = await platformAdapter.listenEvent(
+      `chat-stream-${clientId}`,
       (event) => {
         const msg = event.payload as string;
-        //console.log("chat-create-stream", msg);
+        try {
+          console.log("msg:", JSON.parse(msg));
+          console.log("user:", msg.includes(`"user"`));
+          console.log("_source:", msg.includes("_source"));
+          console.log("result:", msg.includes("result"));
+          console.log("");
+          console.log("");
+          console.log("");
+          console.log("");
+          console.log("");
+        } catch (error) {
+          console.error("Failed to parse JSON in listener:", error);
+        }
+
         handleChatCreateStreamMessage(msg);
       }
     );
 
-    const unlisten_error = platformAdapter.listenEvent(
+    const unlisten_error = await platformAdapter.listenEvent(
       `chat-create-error`,
       (event) => {
         console.error("chat-create-error", event.payload);
       }
     );
 
-    return () => {
-      unlisten_message.then((fn) => fn());
-      unlisten_error.then((fn) => fn());
+    // Store the listener references.
+    unlistenersRef.current = {
+      chatMessage: unlisten_chat_message,
+      error: unlisten_error,
     };
-  }, [currentService?.id, dealMsgRef, updatedChatRef.current]);
+  }, [currentService?.id, clientId, handleChatCreateStreamMessage]);
+
+  useEffect(() => {
+    if (!isTauri || !currentService?.id) return;
+
+    return () => {
+      cleanupListeners();
+    };
+  }, [currentService?.id]);
 
   const openSessionChat = useCallback(
     async (chat: Chat) => {
@@ -366,7 +437,7 @@ export function useChatActions(
       response = await platformAdapter.commands("chat_history", {
         serverId: currentService?.id,
         from: 0,
-        size: 100,
+        size: 1000,
         query: keyword,
       });
 
@@ -374,7 +445,7 @@ export function useChatActions(
     } else {
       const [_error, res] = await Get(`/chat/_history`, {
         from: 0,
-        size: 100,
+        size: 1000,
       });
       response = res;
     }
