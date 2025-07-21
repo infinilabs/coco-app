@@ -29,7 +29,7 @@ export const UserMessage = ({ messageContent }: UserMessageProps) => {
 
   return (
     <div
-      className="flex gap-1 items-center justify-end"
+      className="max-w-full flex gap-1 items-center justify-end"
       onMouseEnter={() => setShowCopyButton(true)}
       onMouseLeave={() => setShowCopyButton(false)}
     >

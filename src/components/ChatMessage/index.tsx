@@ -176,13 +176,13 @@ export const ChatMessage = memo(function ChatMessage({
   return (
     <div
       className={clsx(
-        "py-8 flex",
+        "w-full py-8 flex",
         [isAssistant ? "justify-start" : "justify-end"],
         rootClassName
       )}
     >
       <div
-        className={`px-4 flex gap-4 ${
+        className={`w-full px-4 flex gap-4 ${
           isAssistant ? "w-full" : "flex-row-reverse"
         }`}
       >
