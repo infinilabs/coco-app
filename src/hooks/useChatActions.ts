@@ -314,7 +314,7 @@ export function useChatActions(
           let updatedChat: Chat;
           if (Array.isArray(response)) {
             curSessionIdRef.current = response[0]?._source?.session_id;
-            console.log("first-curSessionIdRef", curSessionIdRef.current);
+            console.log("first-curSessionIdRef-Array", curSessionIdRef.current);
             updatedChat = {
               ...updatedChatRef.current,
               messages: [
@@ -325,7 +325,7 @@ export function useChatActions(
             console.log("array", updatedChat, updatedChatRef.current?.messages);
           } else {
             const newChat: Chat = response;
-            curSessionIdRef.current = response?._source?.session_id;
+            curSessionIdRef.current = response?.payload?.session_id;
             console.log("first-curSessionIdRef", curSessionIdRef.current);
 
             newChat._source = {
