@@ -193,6 +193,8 @@ export function useChatActions(
           queryParams,
           clientId: `chat-stream-${clientId}`,
         });
+        console.log("_create end", value);
+        setCurChatEnd(true);
       } else {
         await streamPost({
           url: "/chat/_create",
@@ -205,7 +207,6 @@ export function useChatActions(
           },
         });
       }
-      console.log("_create", currentService?.id, value, queryParams);
     },
     [
       isTauri,
@@ -256,6 +257,8 @@ export function useChatActions(
           message: content,
           clientId: `chat-stream-${clientId}`,
         });
+        console.log("chat_chat end", content);
+        setCurChatEnd(true);
       } else {
         await streamPost({
           url: `/chat/${newChat?._id}/_chat`,
@@ -268,14 +271,6 @@ export function useChatActions(
           },
         });
       }
-
-      console.log(
-        "chat_chat",
-        currentService?.id,
-        newChat?._id,
-        queryParams,
-        content
-      );
     },
     [
       isTauri,
