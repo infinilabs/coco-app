@@ -175,14 +175,14 @@ impl HttpClient {
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, String> {
         // Fetch the server using the server_id
-        let server = get_server_by_id(server_id);
+        let server = get_server_by_id(server_id).await;
         if let Some(s) = server {
             // Construct the URL
             let url = HttpClient::join_url(&s.endpoint, path);
 
             // Retrieve the token for the server (token is optional)
             let token = get_server_token(server_id)
-                .await?
+                .await
                 .map(|t| t.access_token.clone());
 
             let mut headers = if let Some(custom_headers) = custom_headers {
@@ -205,7 +205,7 @@ impl HttpClient {
 
             Self::send_raw_request(method, &url, query_params, Some(headers), body).await
         } else {
-            Err("Server not found".to_string())
+            Err(format!("Server [{}] not found", server_id))
         }
     }
 

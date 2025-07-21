@@ -30,7 +30,7 @@ pub fn get_connector_by_id(server_id: &str, connector_id: &str) -> Option<Connec
 }
 
 pub async fn refresh_all_connectors<R: Runtime>(app_handle: &AppHandle<R>) -> Result<(), String> {
-    let servers = get_all_servers();
+    let servers = get_all_servers().await;
 
     // Collect all the tasks for fetching and refreshing connectors
     let mut server_map = HashMap::new();

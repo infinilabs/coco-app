@@ -20,15 +20,15 @@ pub async fn handle_sso_callback<R: Runtime>(
     code: String,
 ) -> Result<(), String> {
     // Retrieve the server details using the server ID
-    let server = get_server_by_id(&server_id);
+    let server = get_server_by_id(&server_id).await;
 
     let expire_in = 3600; // TODO, need to update to actual expire_in value
     if let Some(mut server) = server {
         // Save the access token for the server
         let access_token = ServerAccessToken::new(server_id.clone(), code.clone(), expire_in);
         // dbg!(&server_id, &request_id, &code, &token);
-        save_access_token(server_id.clone(), access_token);
-        persist_servers_token(&app_handle)?;
+        save_access_token(server_id.clone(), access_token).await;
+        persist_servers_token(&app_handle).await?;
 
         // Register the server to the search source
         try_register_server_to_search_source(app_handle.clone(), &server).await;
@@ -41,7 +41,7 @@ pub async fn handle_sso_callback<R: Runtime>(
             Ok(p) => {
                 server.profile = Some(p);
                 server.available = true;
-                save_server(&server);
+                save_server(&server).await;
                 persist_servers(&app_handle).await?;
                 Ok(())
             }

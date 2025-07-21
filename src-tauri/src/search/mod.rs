@@ -4,9 +4,11 @@ use crate::common::search::{
     FailedRequest, MultiSourceQueryResponse, QueryHits, QueryResponse, QuerySource, SearchQuery,
 };
 use crate::common::traits::SearchSource;
+use crate::server::servers::mark_server_as_offline;
 use function_name::named;
-use futures::stream::FuturesUnordered;
 use futures::StreamExt;
+use futures::stream::FuturesUnordered;
+use reqwest::StatusCode;
 use std::cmp::Reverse;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -14,7 +16,7 @@ use std::future::Future;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::time::error::Elapsed;
-use tokio::time::{timeout, Duration};
+use tokio::time::{Duration, timeout};
 
 /// Helper function to return the Future used for querying querysources.
 ///
@@ -191,6 +193,20 @@ pub async fn query_coco_fusion<R: Runtime>(
                         query_source.id,
                         search_error
                     );
+
+                    if let SearchError::HttpError {
+                        status_code: opt_status_code,
+                        msg: _,
+                    } = search_error
+                    {
+                        if let Some(status_code) = opt_status_code {
+                            if status_code != StatusCode::OK && status_code != StatusCode::CREATED {
+                                // This Coco server is unavailable
+                                mark_server_as_offline(app_handle.clone(), &query_source.id).await;
+                            }
+                        }
+                    }
+
                     failed_requests.push(FailedRequest {
                         source: query_source,
                         status: 0,
