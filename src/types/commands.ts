@@ -1,7 +1,3 @@
-export interface ServerTokenResponse {
-  access_token?: string;
-}
-
 interface Provider {
   name: string;
   icon: string;
