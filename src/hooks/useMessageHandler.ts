@@ -56,8 +56,6 @@ export function useMessageHandler(
           [chunkData.chunk_type]: true,
         }));
 
-       
-
         if (chunkData.chunk_type === "query_intent") {
           handlers.deal_query_intent(chunkData);
         } else if (chunkData.chunk_type === "tools") {
@@ -88,7 +86,7 @@ export function useMessageHandler(
             }
 
             if (inThinkRef.current) {
-              handlers.deal_think({...chunkData, chunk_type: "think"});
+              handlers.deal_think({ ...chunkData, chunk_type: "think" });
             } else {
               handlers.deal_response(chunkData);
             }
@@ -106,12 +104,7 @@ export function useMessageHandler(
         console.error("parse error:", error);
       }
     },
-    [
-      onCancel,
-      setCurChatEnd,
-      setTimedoutShow,
-      connectionTimeout,
-    ]
+    [onCancel, setCurChatEnd, setTimedoutShow, connectionTimeout]
   );
 
   return {

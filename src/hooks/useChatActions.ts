@@ -69,23 +69,15 @@ export function useChatActions(
     [currentService?.id, isTauri]
   );
 
+  // 1. onSelectChat
+  // 2. dealMsg setTimedoutShow
+  // 3. disabledChange Manual shutdown
   const cancelChat = useCallback(
     async (activeChat?: Chat) => {
       setCurChatEnd(true);
 
       // Stop listening for streaming data.
-      if (unlistenersRef.current.message) {
-        unlistenersRef.current.message();
-        unlistenersRef.current.message = undefined;
-      }
-      if (unlistenersRef.current.chatMessage) {
-        unlistenersRef.current.chatMessage();
-        unlistenersRef.current.chatMessage = undefined;
-      }
-      if (unlistenersRef.current.error) {
-        unlistenersRef.current.error();
-        unlistenersRef.current.error = undefined;
-      }
+      cleanupListeners();
 
       if (!activeChat?._id) return;
       let response: any;
@@ -359,14 +351,14 @@ export function useChatActions(
   );
 
   const cleanupListeners = useCallback(() => {
-  if (unlistenersRef.current.chatMessage) {
-    unlistenersRef.current.chatMessage();
-  }
-  if (unlistenersRef.current.error) {
-    unlistenersRef.current.error();
-  }
-  unlistenersRef.current = {};
-}, []);
+    if (unlistenersRef.current.chatMessage) {
+      unlistenersRef.current.chatMessage();
+    }
+    if (unlistenersRef.current.error) {
+      unlistenersRef.current.error();
+    }
+    unlistenersRef.current = {};
+  }, []);
 
   const setupListeners = useCallback(async () => {
     cleanupListeners();
