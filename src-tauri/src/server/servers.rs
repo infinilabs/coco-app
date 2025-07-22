@@ -303,6 +303,8 @@ pub async fn list_coco_servers<R: Runtime>(
     refresh_all_coco_server_info(app_handle.clone()).await;
 
     let servers: Vec<Server> = get_all_servers().await;
+    println!("DBG: {:#?}", servers);
+
     Ok(servers)
 }
 
