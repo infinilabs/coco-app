@@ -47,12 +47,6 @@ export function useKeyboardHandlers({
 
         return setSourceData(void 0);
       }
-
-      // Handle Enter without meta key requirement
-      if (e.code === "Enter" && !e.shiftKey && isChatMode) {
-        e.preventDefault();
-        curChatEnd && handleSubmit();
-      }
     },
     [
       isChatMode,
