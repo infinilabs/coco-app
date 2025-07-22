@@ -379,6 +379,7 @@ pub async fn refresh_coco_server_info<R: Runtime>(
 
     // Save and persist
     save_server(&updated_server).await;
+    try_register_server_to_search_source(app_handle.clone(), &updated_server).await;
     persist_servers(&app_handle)
         .await
         .map_err(|e| format!("Failed to persist servers: {}", e))?;
