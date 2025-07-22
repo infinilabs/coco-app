@@ -8,17 +8,18 @@ use crate::common::search::QueryResponse;
 use crate::common::search::QuerySource;
 use crate::common::search::SearchQuery;
 use crate::common::traits::SearchSource;
-use crate::extension::canonicalize_relative_icon_path;
-use crate::extension::third_party::THIRD_PARTY_EXTENSIONS_DIRECTORY;
 use crate::extension::Extension;
 use crate::extension::PLUGIN_JSON_FILE_NAME;
 use crate::extension::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE;
+use crate::extension::canonicalize_relative_icon_path;
+use crate::extension::third_party::get_third_party_extension_directory;
 use crate::server::http_client::HttpClient;
 use async_trait::async_trait;
 use reqwest::StatusCode;
 use serde_json::Map as JsonObject;
 use serde_json::Value as Json;
 use std::io::Read;
+use tauri::AppHandle;
 
 const DATA_SOURCE_ID: &str = "Extension Store";
 
@@ -37,7 +38,11 @@ impl SearchSource for ExtensionStore {
         }
     }
 
-    async fn search(&self, query: SearchQuery) -> Result<QueryResponse, SearchError> {
+    async fn search(
+        &self,
+        _tauri_app_handle: AppHandle,
+        query: SearchQuery,
+    ) -> Result<QueryResponse, SearchError> {
         const SCORE: f64 = 2000.0;
 
         let Some(query_string) = query.query_strings.get("query") else {
@@ -174,7 +179,10 @@ async fn is_extension_installed(developer: String, extension_id: String) -> bool
 }
 
 #[tauri::command]
-pub(crate) async fn install_extension_from_store(id: String) -> Result<(), String> {
+pub(crate) async fn install_extension_from_store(
+    tauri_app_handle: AppHandle,
+    id: String,
+) -> Result<(), String> {
     let path = format!("store/extension/{}/_download", id);
     let response = HttpClient::get("default_coco_server", &path, None)
         .await
@@ -197,9 +205,11 @@ pub(crate) async fn install_extension_from_store(id: String) -> Result<(), Strin
     //
     // 1. Its `developer` field is a JSON object, but we need a string
     // 2. sub-extensions won't have their `id` fields set
-    // 
+    //
     // we need to correct it
-    let mut plugin_json = archive.by_name(PLUGIN_JSON_FILE_NAME).map_err(|e| e.to_string())?;
+    let mut plugin_json = archive
+        .by_name(PLUGIN_JSON_FILE_NAME)
+        .map_err(|e| e.to_string())?;
     let mut plugin_json_content = String::new();
     std::io::Read::read_to_string(&mut plugin_json, &mut plugin_json_content)
         .map_err(|e| e.to_string())?;
@@ -249,12 +259,11 @@ pub(crate) async fn install_extension_from_store(id: String) -> Result<(), Strin
 
     drop(plugin_json);
 
-
     // Write extension files to the extension directory
     let developer = extension.developer.clone().unwrap_or_default();
     let extension_id = extension.id.clone();
     let extension_directory = {
-        let mut path = THIRD_PARTY_EXTENSIONS_DIRECTORY.to_path_buf();
+        let mut path = get_third_party_extension_directory(&tauri_app_handle);
         path.push(developer);
         path.push(extension_id.as_str());
         path
@@ -266,7 +275,7 @@ pub(crate) async fn install_extension_from_store(id: String) -> Result<(), Strin
     // Extract all files except plugin.json
     for i in 0..archive.len() {
         let mut zip_file = archive.by_index(i).map_err(|e| e.to_string())?;
-        // `.name()` is safe to use in our cases, the cases listed in the below 
+        // `.name()` is safe to use in our cases, the cases listed in the below
         // page won't happen to us.
         //
         // https://docs.rs/zip/4.2.0/zip/read/struct.ZipFile.html#method.name
@@ -288,14 +297,29 @@ pub(crate) async fn install_extension_from_store(id: String) -> Result<(), Strin
         let dest_file_path = extension_directory.join(zip_file_name);
 
         // For cases like `assets/xxx.png`
-        if let Some(parent_dir) = dest_file_path.parent() && !parent_dir.exists() {
-            tokio::fs::create_dir_all(parent_dir).await.map_err(|e| e.to_string())?;
+        if let Some(parent_dir) = dest_file_path.parent()
+            && !parent_dir.exists()
+        {
+            tokio::fs::create_dir_all(parent_dir)
+                .await
+                .map_err(|e| e.to_string())?;
         }
 
-        let mut dest_file = tokio::fs::File::create(&dest_file_path) .await .map_err(|e| e.to_string())?;
-        let mut src_bytes = Vec::with_capacity(zip_file.size().try_into().expect("we won't have a extension file that is bigger than 4GiB"));
-        zip_file.read_to_end(&mut src_bytes).map_err(|e| e.to_string())?;
-        tokio::io::copy(&mut src_bytes.as_slice(), &mut dest_file).await.map_err(|e| e.to_string())?;
+        let mut dest_file = tokio::fs::File::create(&dest_file_path)
+            .await
+            .map_err(|e| e.to_string())?;
+        let mut src_bytes = Vec::with_capacity(
+            zip_file
+                .size()
+                .try_into()
+                .expect("we won't have a extension file that is bigger than 4GiB"),
+        );
+        zip_file
+            .read_to_end(&mut src_bytes)
+            .map_err(|e| e.to_string())?;
+        tokio::io::copy(&mut src_bytes.as_slice(), &mut dest_file)
+            .await
+            .map_err(|e| e.to_string())?;
     }
     // Create plugin.json from the extension variable
     let plugin_json_path = extension_directory.join(PLUGIN_JSON_FILE_NAME);
@@ -303,7 +327,6 @@ pub(crate) async fn install_extension_from_store(id: String) -> Result<(), Strin
     tokio::fs::write(&plugin_json_path, extension_json)
         .await
         .map_err(|e| e.to_string())?;
-
 
     // Turn it into an absolute path if it is a valid relative path because frontend code need this.
     canonicalize_relative_icon_path(&extension_directory, &mut extension)?;

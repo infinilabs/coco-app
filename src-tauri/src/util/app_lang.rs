@@ -1,7 +1,7 @@
 //! Configuration entry App language is persisted in the frontend code, but we
 //! need to access it on the backend.
 //!
-//! So we duplicate it here **in the MEMORY** and expose a setter method to the 
+//! So we duplicate it here **in the MEMORY** and expose a setter method to the
 //! frontend so that the value can be updated and stay update-to-date.
 
 use function_name::named;
