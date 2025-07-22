@@ -42,7 +42,7 @@ jobs:
       shell: bash
       run: |
         rustup component add rustfmt
-        cargo fmt --check
+        cargo fmt --all --check
 
     - name: Check compilation (Without Pizza engine enabled)
       working-directory: ./src-tauri
