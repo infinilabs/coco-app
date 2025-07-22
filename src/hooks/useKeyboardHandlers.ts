@@ -3,17 +3,9 @@ import { useCallback, useEffect } from "react";
 import { useSearchStore } from "@/stores/searchStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 
-interface KeyboardHandlersProps {
-  isChatMode: boolean;
-  handleSubmit: () => void;
-  curChatEnd?: boolean;
-}
+interface KeyboardHandlersProps {}
 
-export function useKeyboardHandlers({
-  isChatMode,
-  handleSubmit,
-  curChatEnd,
-}: KeyboardHandlersProps) {
+export function useKeyboardHandlers({}: KeyboardHandlersProps) {
   const {
     setSourceData,
     visibleExtensionStore,
@@ -48,14 +40,7 @@ export function useKeyboardHandlers({
         return setSourceData(void 0);
       }
     },
-    [
-      isChatMode,
-      handleSubmit,
-      setSourceData,
-      curChatEnd,
-      modifierKey,
-      visibleExtensionDetail,
-    ]
+    [setSourceData, modifierKey, visibleExtensionDetail]
   );
 
   useEffect(() => {
