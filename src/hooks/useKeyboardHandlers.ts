@@ -3,17 +3,7 @@ import { useCallback, useEffect } from "react";
 import { useSearchStore } from "@/stores/searchStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 
-interface KeyboardHandlersProps {
-  isChatMode: boolean;
-  handleSubmit: () => void;
-  curChatEnd?: boolean;
-}
-
-export function useKeyboardHandlers({
-  isChatMode,
-  handleSubmit,
-  curChatEnd,
-}: KeyboardHandlersProps) {
+export function useKeyboardHandlers() {
   const {
     setSourceData,
     visibleExtensionStore,
@@ -47,21 +37,8 @@ export function useKeyboardHandlers({
 
         return setSourceData(void 0);
       }
-
-      // Handle Enter without meta key requirement
-      if (e.code === "Enter" && !e.shiftKey && isChatMode) {
-        e.preventDefault();
-        curChatEnd && handleSubmit();
-      }
     },
-    [
-      isChatMode,
-      handleSubmit,
-      setSourceData,
-      curChatEnd,
-      modifierKey,
-      visibleExtensionDetail,
-    ]
+    [setSourceData, modifierKey, visibleExtensionDetail]
   );
 
   useEffect(() => {
