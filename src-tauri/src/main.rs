@@ -52,7 +52,7 @@ fn setup_panic_hook() {
             return;
         }
 
-        let panic_file = log_dir.join(format!("{}.panic", datetime_str));
+        let panic_file = log_dir.join(format!("{}_panic.log", datetime_str));
 
         // Prepare panic information
         let panic_message = if let Some(s) = panic_info.payload().downcast_ref::<&str>() {

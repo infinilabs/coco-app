@@ -15,7 +15,6 @@ where
     }
 }
 
-
 #[allow(unused)]
 #[derive(Debug, Deserialize)]
 pub struct ErrorCause {

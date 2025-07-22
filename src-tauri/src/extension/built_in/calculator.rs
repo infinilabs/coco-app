@@ -10,6 +10,7 @@ use chinese_number::{ChineseCase, ChineseCountMethod, ChineseVariant, NumberToCh
 use num2words::Num2Words;
 use serde_json::Value;
 use std::collections::HashMap;
+use tauri::AppHandle;
 
 pub(crate) const DATA_SOURCE_ID: &str = "Calculator";
 
@@ -120,7 +121,11 @@ impl SearchSource for CalculatorSource {
         }
     }
 
-    async fn search(&self, query: SearchQuery) -> Result<QueryResponse, SearchError> {
+    async fn search(
+        &self,
+        _tauri_app_handle: AppHandle,
+        query: SearchQuery,
+    ) -> Result<QueryResponse, SearchError> {
         let Some(query_string) = query.query_strings.get("query") else {
             return Ok(QueryResponse {
                 source: self.get_type(),

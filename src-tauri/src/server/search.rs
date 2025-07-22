@@ -6,10 +6,10 @@ use crate::common::server::Server;
 use crate::common::traits::SearchSource;
 use crate::server::http_client::HttpClient;
 use async_trait::async_trait;
-// use futures::stream::StreamExt;
 use ordered_float::OrderedFloat;
 use reqwest::StatusCode;
 use std::collections::HashMap;
+use tauri::AppHandle;
 
 #[allow(dead_code)]
 pub(crate) struct DocumentsSizedCollector {
@@ -90,7 +90,11 @@ impl SearchSource for CocoSearchSource {
         }
     }
 
-    async fn search(&self, query: SearchQuery) -> Result<QueryResponse, SearchError> {
+    async fn search(
+        &self,
+        _tauri_app_handle: AppHandle,
+        query: SearchQuery,
+    ) -> Result<QueryResponse, SearchError> {
         let url = "/query/_search";
         let mut total_hits = 0;
         let mut hits: Vec<(Document, f64)> = Vec::new();

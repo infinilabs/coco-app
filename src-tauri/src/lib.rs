@@ -28,9 +28,14 @@ pub(crate) const COCO_TAURI_STORE: &str = "coco_tauri_store";
 lazy_static! {
     static ref PREVIOUS_MONITOR_NAME: Mutex<Option<String>> = Mutex::new(None);
 }
-
 /// To allow us to access tauri's `AppHandle` when its context is inaccessible,
 /// store it globally. It will be set in `init()`.
+/// 
+/// # WARNING
+///
+/// You may find this work, but the usage is discouraged and should be generally
+/// avoided. If you do need it, always be careful that it may not be set() when
+/// you access it.
 pub(crate) static GLOBAL_TAURI_APP_HANDLE: OnceLock<AppHandle> = OnceLock::new();
 
 #[tauri::command]
@@ -173,18 +178,18 @@ pub fn run() {
             util::app_lang::update_app_lang,
         ])
         .setup(|app| {
+            let app_handle = app.handle().clone();
+            GLOBAL_TAURI_APP_HANDLE
+                .set(app_handle.clone())
+                .expect("global tauri AppHandle already initialized");
+            log::trace!("global Tauri AppHandle set");
+
             #[cfg(target_os = "macos")]
             {
                 log::trace!("hiding Dock icon on macOS");
                 app.set_activation_policy(tauri::ActivationPolicy::Accessory);
                 log::trace!("Dock icon should be hidden now");
             }
-
-            let app_handle = app.handle().clone();
-            GLOBAL_TAURI_APP_HANDLE
-                .set(app_handle.clone())
-                .expect("variable already initialized");
-            log::trace!("global Tauri app handle set");
 
             let registry = SearchSourceRegistry::default();
 
@@ -406,12 +411,13 @@ fn move_window_to_active_monitor<R: Runtime>(window: &WebviewWindow<R>) {
 }
 
 #[tauri::command]
-async fn get_app_search_source<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), String> {
+async fn get_app_search_source(app_handle: AppHandle) -> Result<(), String> {
     // We want all the extensions here, so no filter condition specified.
-    let (_found_invalid_extensions, extensions) = extension::list_extensions(None, None, false)
-        .await
-        .map_err(|e| e.to_string())?;
-    extension::init_extensions(extensions).await?;
+    let (_found_invalid_extensions, extensions) =
+        extension::list_extensions(app_handle.clone(), None, None, false)
+            .await
+            .map_err(|e| e.to_string())?;
+    extension::init_extensions(app_handle.clone(), extensions).await?;
 
     let _ = server::connector::refresh_all_connectors(&app_handle).await;
     let _ = server::datasource::refresh_all_datasources(&app_handle).await;

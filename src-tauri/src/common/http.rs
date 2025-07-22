@@ -38,7 +38,6 @@ pub async fn get_response_body_text(response: Response) -> Result<String, String
             return Err(fallback_error);
         }
 
-
         match serde_json::from_str::<common::error::ErrorResponse>(&body) {
             Ok(parsed_error) => {
                 dbg!(&parsed_error);
@@ -57,7 +56,6 @@ pub async fn get_response_body_text(response: Response) -> Result<String, String
     }
 }
 
-
 pub fn convert_query_params_to_strings(
     query_params: Option<HashMap<String, JsonValue>>,
 ) -> Option<Vec<String>> {
@@ -68,10 +66,7 @@ pub fn convert_query_params_to_strings(
                 JsonValue::Number(n) => Some(format!("{}={}", k, n)),
                 JsonValue::Bool(b) => Some(format!("{}={}", k, b)),
                 _ => {
-                    eprintln!(
-                        "Skipping unsupported query value for key '{}': {:?}",
-                        k, v
-                    );
+                    eprintln!("Skipping unsupported query value for key '{}': {:?}", k, v);
                     None
                 }
             })
