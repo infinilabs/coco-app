@@ -57,7 +57,7 @@ async function invokeWithErrorHandler<T>(
   const currentService = useConnectStore.getState().currentService;
 
   // Not logged in
-  console.log(111111, command, isCurrentLogin, currentService?.profile)
+  console.log(command, isCurrentLogin, currentService?.profile)
   if (
     !WHITELIST_SERVERS.includes(command) &&
     (!isCurrentLogin || !currentService?.profile)

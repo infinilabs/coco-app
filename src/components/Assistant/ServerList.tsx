@@ -52,7 +52,7 @@ export function ServerList({ clearChat }: ServerListProps) {
   const fetchServers = useCallback(
     async (resetSelection: boolean) => {
       platformAdapter.commands("list_coco_servers").then((res: any) => {
-        console.log("111111 list_coco_servers", res);
+        console.log("list_coco_servers", res);
         if (!Array.isArray(res)) {
           // If res is not an array, it might be an error message or something else.
           // Log it and don't proceed.
