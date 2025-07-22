@@ -9,29 +9,25 @@ pub mod pizza_engine_runtime;
 pub mod quick_ai_access;
 
 use super::Extension;
+use crate::SearchSourceRegistry;
 use crate::extension::built_in::application::{set_apps_hotkey, unset_apps_hotkey};
 use crate::extension::{
-    alter_extension_json_file, ExtensionBundleIdBorrowed, PLUGIN_JSON_FILE_NAME,
+    ExtensionBundleIdBorrowed, PLUGIN_JSON_FILE_NAME, alter_extension_json_file,
 };
-use crate::{SearchSourceRegistry, GLOBAL_TAURI_APP_HANDLE};
 use anyhow::Context;
 use std::path::{Path, PathBuf};
-use std::sync::LazyLock;
 use tauri::{AppHandle, Manager, Runtime};
 
-pub(crate) static BUILT_IN_EXTENSION_DIRECTORY: LazyLock<PathBuf> = LazyLock::new(|| {
-    let mut resource_dir = GLOBAL_TAURI_APP_HANDLE
-        .get()
-        .expect("global tauri app handle not set")
-        .path()
-        .app_data_dir()
-        .expect(
-            "User home directory not found, which should be impossible on desktop environments",
-        );
+pub(crate) fn get_built_in_extension_directory<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
+) -> PathBuf {
+    let mut resource_dir = tauri_app_handle.path().app_data_dir().expect(
+        "User home directory not found, which should be impossible on desktop environments",
+    );
     resource_dir.push("built_in_extensions");
 
     resource_dir
-});
+}
 
 /// Helper function to load the built-in extension specified by `extension_id`, used
 /// in `list_built_in_extensions()`.
@@ -86,7 +82,10 @@ async fn load_built_in_extension(
         .map_err(|e| e.to_string())?;
     let res_plugin_json = serde_json::from_str::<Extension>(&plugin_json_file_content);
     let Ok(plugin_json) = res_plugin_json else {
-        log::warn!("user invalidated built-in extension [{}] file, overwriting it with the default template", extension_id);
+        log::warn!(
+            "user invalidated built-in extension [{}] file, overwriting it with the default template",
+            extension_id
+        );
 
         // If the JSON file cannot be parsed as `struct Extension`, overwrite it with the default template and return.
         tokio::fs::write(plugin_json_file_path, default_plugin_json_file)
@@ -137,13 +136,15 @@ async fn load_built_in_extension(
 /// We only read alias/hotkey/enabled from the JSON file, we have ensured that if
 /// alias/hotkey is not supported, then it will be `None`. Besides that, no further
 /// validation is needed because nothing could go wrong.
-pub(crate) async fn list_built_in_extensions() -> Result<Vec<Extension>, String> {
-    let dir = BUILT_IN_EXTENSION_DIRECTORY.as_path();
+pub(crate) async fn list_built_in_extensions<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
+) -> Result<Vec<Extension>, String> {
+    let dir = get_built_in_extension_directory(tauri_app_handle);
 
     let mut built_in_extensions = Vec::new();
     built_in_extensions.push(
         load_built_in_extension(
-            dir,
+            &dir,
             application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME,
             application::PLUGIN_JSON_FILE,
         )
@@ -151,7 +152,7 @@ pub(crate) async fn list_built_in_extensions() -> Result<Vec<Extension>, String>
     );
     built_in_extensions.push(
         load_built_in_extension(
-            dir,
+            &dir,
             calculator::DATA_SOURCE_ID,
             calculator::PLUGIN_JSON_FILE,
         )
@@ -159,7 +160,7 @@ pub(crate) async fn list_built_in_extensions() -> Result<Vec<Extension>, String>
     );
     built_in_extensions.push(
         load_built_in_extension(
-            dir,
+            &dir,
             ai_overview::EXTENSION_ID,
             ai_overview::PLUGIN_JSON_FILE,
         )
@@ -167,7 +168,7 @@ pub(crate) async fn list_built_in_extensions() -> Result<Vec<Extension>, String>
     );
     built_in_extensions.push(
         load_built_in_extension(
-            dir,
+            &dir,
             quick_ai_access::EXTENSION_ID,
             quick_ai_access::PLUGIN_JSON_FILE,
         )
@@ -178,7 +179,7 @@ pub(crate) async fn list_built_in_extensions() -> Result<Vec<Extension>, String>
         if #[cfg(any(target_os = "macos", target_os = "windows"))] {
             built_in_extensions.push(
                 load_built_in_extension(
-                    dir,
+                    &dir,
                     file_search::EXTENSION_ID,
                     file_search::PLUGIN_JSON_FILE,
                 )
@@ -232,12 +233,10 @@ pub(crate) fn is_extension_built_in(bundle_id: &ExtensionBundleIdBorrowed<'_>) -
     bundle_id.developer.is_none()
 }
 
-pub(crate) async fn enable_built_in_extension(
+pub(crate) async fn enable_built_in_extension<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
     bundle_id: &ExtensionBundleIdBorrowed<'_>,
 ) -> Result<(), String> {
-    let tauri_app_handle = GLOBAL_TAURI_APP_HANDLE
-        .get()
-        .expect("global tauri app handle not set");
     let search_source_registry_tauri_state = tauri_app_handle.state::<SearchSourceRegistry>();
 
     let update_extension = |extension: &mut Extension| -> Result<(), String> {
@@ -254,7 +253,7 @@ pub(crate) async fn enable_built_in_extension(
         set_apps_hotkey(tauri_app_handle)?;
 
         alter_extension_json_file(
-            &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
+            &get_built_in_extension_directory(tauri_app_handle),
             bundle_id,
             update_extension,
         )?;
@@ -277,7 +276,7 @@ pub(crate) async fn enable_built_in_extension(
             .register_source(calculator_search)
             .await;
         alter_extension_json_file(
-            &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
+            &get_built_in_extension_directory(tauri_app_handle),
             bundle_id,
             update_extension,
         )?;
@@ -286,7 +285,7 @@ pub(crate) async fn enable_built_in_extension(
 
     if bundle_id.extension_id == quick_ai_access::EXTENSION_ID {
         alter_extension_json_file(
-            &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
+            &get_built_in_extension_directory(tauri_app_handle),
             bundle_id,
             update_extension,
         )?;
@@ -295,7 +294,7 @@ pub(crate) async fn enable_built_in_extension(
 
     if bundle_id.extension_id == ai_overview::EXTENSION_ID {
         alter_extension_json_file(
-            &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
+            &get_built_in_extension_directory(tauri_app_handle),
             bundle_id,
             update_extension,
         )?;
@@ -310,7 +309,7 @@ pub(crate) async fn enable_built_in_extension(
                 .register_source(file_system_search)
                 .await;
             alter_extension_json_file(
-                &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
+                &get_built_in_extension_directory(tauri_app_handle),
                 bundle_id,
                 update_extension,
             )?;
@@ -322,12 +321,10 @@ pub(crate) async fn enable_built_in_extension(
     Ok(())
 }
 
-pub(crate) async fn disable_built_in_extension(
+pub(crate) async fn disable_built_in_extension<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
     bundle_id: &ExtensionBundleIdBorrowed<'_>,
 ) -> Result<(), String> {
-    let tauri_app_handle = GLOBAL_TAURI_APP_HANDLE
-        .get()
-        .expect("global tauri app handle not set");
     let search_source_registry_tauri_state = tauri_app_handle.state::<SearchSourceRegistry>();
 
     let update_extension = |extension: &mut Extension| -> Result<(), String> {
@@ -344,7 +341,7 @@ pub(crate) async fn disable_built_in_extension(
         unset_apps_hotkey(tauri_app_handle)?;
 
         alter_extension_json_file(
-            &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
+            &get_built_in_extension_directory(tauri_app_handle),
             bundle_id,
             update_extension,
         )?;
@@ -365,7 +362,7 @@ pub(crate) async fn disable_built_in_extension(
             .remove_source(bundle_id.extension_id)
             .await;
         alter_extension_json_file(
-            &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
+            &get_built_in_extension_directory(tauri_app_handle),
             bundle_id,
             update_extension,
         )?;
@@ -374,7 +371,7 @@ pub(crate) async fn disable_built_in_extension(
 
     if bundle_id.extension_id == quick_ai_access::EXTENSION_ID {
         alter_extension_json_file(
-            &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
+            &get_built_in_extension_directory(tauri_app_handle),
             bundle_id,
             update_extension,
         )?;
@@ -384,7 +381,7 @@ pub(crate) async fn disable_built_in_extension(
 
     if bundle_id.extension_id == ai_overview::EXTENSION_ID {
         alter_extension_json_file(
-            &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
+            &get_built_in_extension_directory(tauri_app_handle),
             bundle_id,
             update_extension,
         )?;
@@ -399,7 +396,7 @@ pub(crate) async fn disable_built_in_extension(
                     .remove_source(bundle_id.extension_id)
                     .await;
                 alter_extension_json_file(
-                    &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
+                    &get_built_in_extension_directory(tauri_app_handle),
                     bundle_id,
                     update_extension,
                 )?;
@@ -411,11 +408,11 @@ pub(crate) async fn disable_built_in_extension(
     Ok(())
 }
 
-pub(crate) fn set_built_in_extension_alias(bundle_id: &ExtensionBundleIdBorrowed<'_>, alias: &str) {
-    let tauri_app_handle = GLOBAL_TAURI_APP_HANDLE
-        .get()
-        .expect("global tauri app handle not set");
-
+pub(crate) fn set_built_in_extension_alias<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
+    bundle_id: &ExtensionBundleIdBorrowed<'_>,
+    alias: &str,
+) {
     if bundle_id.extension_id == application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME {
         if let Some(app_path) = bundle_id.sub_extension_id {
             application::set_app_alias(tauri_app_handle, app_path, alias);
@@ -423,14 +420,11 @@ pub(crate) fn set_built_in_extension_alias(bundle_id: &ExtensionBundleIdBorrowed
     }
 }
 
-pub(crate) fn register_built_in_extension_hotkey(
+pub(crate) fn register_built_in_extension_hotkey<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
     bundle_id: &ExtensionBundleIdBorrowed<'_>,
     hotkey: &str,
 ) -> Result<(), String> {
-    let tauri_app_handle = GLOBAL_TAURI_APP_HANDLE
-        .get()
-        .expect("global tauri app handle not set");
-
     if bundle_id.extension_id == application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME {
         if let Some(app_path) = bundle_id.sub_extension_id {
             application::register_app_hotkey(&tauri_app_handle, app_path, hotkey)?;
@@ -439,13 +433,10 @@ pub(crate) fn register_built_in_extension_hotkey(
     Ok(())
 }
 
-pub(crate) fn unregister_built_in_extension_hotkey(
+pub(crate) fn unregister_built_in_extension_hotkey<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
     bundle_id: &ExtensionBundleIdBorrowed<'_>,
 ) -> Result<(), String> {
-    let tauri_app_handle = GLOBAL_TAURI_APP_HANDLE
-        .get()
-        .expect("global tauri app handle not set");
-
     if bundle_id.extension_id == application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME {
         if let Some(app_path) = bundle_id.sub_extension_id {
             application::unregister_app_hotkey(&tauri_app_handle, app_path)?;
@@ -490,12 +481,10 @@ fn load_extension_from_json_file(
     Ok(extension)
 }
 
-pub(crate) async fn is_built_in_extension_enabled(
+pub(crate) async fn is_built_in_extension_enabled<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
     bundle_id: &ExtensionBundleIdBorrowed<'_>,
 ) -> Result<bool, String> {
-    let tauri_app_handle = GLOBAL_TAURI_APP_HANDLE
-        .get()
-        .expect("global tauri app handle not set");
     let search_source_registry_tauri_state = tauri_app_handle.state::<SearchSourceRegistry>();
 
     if bundle_id.extension_id == application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME
@@ -523,7 +512,7 @@ pub(crate) async fn is_built_in_extension_enabled(
 
     if bundle_id.extension_id == quick_ai_access::EXTENSION_ID {
         let extension = load_extension_from_json_file(
-            &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
+            &get_built_in_extension_directory(tauri_app_handle),
             bundle_id.extension_id,
         )?;
         return Ok(extension.enabled);
@@ -531,7 +520,7 @@ pub(crate) async fn is_built_in_extension_enabled(
 
     if bundle_id.extension_id == ai_overview::EXTENSION_ID {
         let extension = load_extension_from_json_file(
-            &BUILT_IN_EXTENSION_DIRECTORY.as_path(),
+            &get_built_in_extension_directory(tauri_app_handle),
             bundle_id.extension_id,
         )?;
         return Ok(extension.enabled);

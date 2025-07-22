@@ -1,14 +1,14 @@
 pub(crate) mod store;
 
-use super::alter_extension_json_file;
-use super::canonicalize_relative_icon_path;
 use super::Extension;
 use super::ExtensionType;
 use super::LOCAL_QUERY_SOURCE_TYPE;
 use super::PLUGIN_JSON_FILE_NAME;
-use crate::common::document::open;
+use super::alter_extension_json_file;
+use super::canonicalize_relative_icon_path;
 use crate::common::document::DataSourceReference;
 use crate::common::document::Document;
+use crate::common::document::open;
 use crate::common::error::SearchError;
 use crate::common::search::QueryResponse;
 use crate::common::search::QuerySource;
@@ -16,7 +16,6 @@ use crate::common::search::SearchQuery;
 use crate::common::traits::SearchSource;
 use crate::extension::ExtensionBundleIdBorrowed;
 use crate::util::platform::Platform;
-use crate::GLOBAL_TAURI_APP_HANDLE;
 use async_trait::async_trait;
 use borrowme::ToOwned;
 use function_name::named;
@@ -24,29 +23,27 @@ use std::ffi::OsStr;
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
-use std::sync::LazyLock;
 use std::sync::OnceLock;
-use tauri::async_runtime;
+use tauri::AppHandle;
 use tauri::Manager;
+use tauri::Runtime;
+use tauri::async_runtime;
 use tauri_plugin_global_shortcut::GlobalShortcutExt;
 use tauri_plugin_global_shortcut::ShortcutState;
 use tokio::fs::read_dir;
 use tokio::sync::RwLock;
 use tokio::sync::RwLockWriteGuard;
 
-pub(crate) static THIRD_PARTY_EXTENSIONS_DIRECTORY: LazyLock<PathBuf> = LazyLock::new(|| {
-    let mut app_data_dir = GLOBAL_TAURI_APP_HANDLE
-        .get()
-        .expect("global tauri app handle not set")
-        .path()
-        .app_data_dir()
-        .expect(
-            "User home directory not found, which should be impossible on desktop environments",
-        );
+pub(crate) fn get_third_party_extension_directory<R: Runtime>(
+    tauri_app_handle: &AppHandle<R>,
+) -> PathBuf {
+    let mut app_data_dir = tauri_app_handle.path().app_data_dir().expect(
+        "User home directory not found, which should be impossible on desktop environments",
+    );
     app_data_dir.push("third_party_extensions");
 
     app_data_dir
-});
+}
 
 pub(crate) async fn list_third_party_extensions(
     directory: &Path,
@@ -201,7 +198,15 @@ fn validate_extension(
     // Extension is incompatible
     if let Some(ref platforms) = extension.platforms {
         if !platforms.contains(&current_platform) {
-            log::warn!("extension [{}] is not compatible with the current platform [{}], it is available to {:?}", extension.id, current_platform, platforms.iter().map(|os|os.to_string()).collect::<Vec<_>>());
+            log::warn!(
+                "extension [{}] is not compatible with the current platform [{}], it is available to {:?}",
+                extension.id,
+                current_platform,
+                platforms
+                    .iter()
+                    .map(|os| os.to_string())
+                    .collect::<Vec<_>>()
+            );
             return false;
         }
     }
@@ -320,7 +325,8 @@ fn validate_sub_items(extension_id: &str, sub_items: &[Extension]) -> bool {
         if sub_item.r#type == ExtensionType::Group || sub_item.r#type == ExtensionType::Extension {
             log::warn!(
                 "invalid extension sub-item [{}-{}]: sub-item should not be of type [Group] or [Extension]",
-                extension_id, sub_item.id
+                extension_id,
+                sub_item.id
             );
             return false;
         }
@@ -394,11 +400,11 @@ impl ThirdPartyExtensionsSearchSource {
     /// Note that when you enable a parent extension, its **enabled** children extensions
     /// should also be enabled.
     #[async_recursion::async_recursion]
-    async fn _enable_extension(extension: &Extension) -> Result<(), String> {
+    async fn _enable_extension(
+        tauri_app_handle: &AppHandle,
+        extension: &Extension,
+    ) -> Result<(), String> {
         if extension.supports_alias_hotkey() {
-            let tauri_app_handle = GLOBAL_TAURI_APP_HANDLE
-                .get()
-                .expect("global tauri app handle not set");
             if let Some(ref hotkey) = extension.hotkey {
                 let on_opened = extension.on_opened().unwrap_or_else(|| panic!( "extension has hotkey, but on_open() returns None, extension ID [{}], extension type [{:?}]", extension.id, extension.r#type));
 
@@ -406,12 +412,14 @@ impl ThirdPartyExtensionsSearchSource {
 
                 tauri_app_handle
                     .global_shortcut()
-                    .on_shortcut(hotkey.as_str(), move |_tauri_app_handle, _hotkey, event| {
+                    .on_shortcut(hotkey.as_str(), move |tauri_app_handle, _hotkey, event| {
                         let on_opened_clone = on_opened.clone();
                         let extension_id_clone = extension_id_clone.clone();
+                        let app_handle_clone = tauri_app_handle.clone();
+
                         if event.state() == ShortcutState::Pressed {
                             async_runtime::spawn(async move {
-                                let result = open(on_opened_clone).await;
+                                let result = open(app_handle_clone, on_opened_clone).await;
                                 if let Err(msg) = result {
                                     log::warn!(
                                         "failed to open extension [{}], error [{}]",
@@ -430,19 +438,19 @@ impl ThirdPartyExtensionsSearchSource {
         if extension.r#type.contains_sub_items() {
             if let Some(commands) = &extension.commands {
                 for command in commands.iter().filter(|ext| ext.enabled) {
-                    Self::_enable_extension(command).await?;
+                    Self::_enable_extension(&tauri_app_handle, command).await?;
                 }
             }
 
             if let Some(scripts) = &extension.scripts {
                 for script in scripts.iter().filter(|ext| ext.enabled) {
-                    Self::_enable_extension(script).await?;
+                    Self::_enable_extension(&tauri_app_handle, script).await?;
                 }
             }
 
             if let Some(quicklinks) = &extension.quicklinks {
                 for quicklink in quicklinks.iter().filter(|ext| ext.enabled) {
-                    Self::_enable_extension(quicklink).await?;
+                    Self::_enable_extension(&tauri_app_handle, quicklink).await?;
                 }
             }
         }
@@ -457,12 +465,11 @@ impl ThirdPartyExtensionsSearchSource {
     /// Note that when you disable a parent extension, its **enabled** children extensions
     /// should also be disabled.
     #[async_recursion::async_recursion]
-    async fn _disable_extension(extension: &Extension) -> Result<(), String> {
+    async fn _disable_extension(
+        tauri_app_handle: &AppHandle,
+        extension: &Extension,
+    ) -> Result<(), String> {
         if let Some(ref hotkey) = extension.hotkey {
-            let tauri_app_handle = GLOBAL_TAURI_APP_HANDLE
-                .get()
-                .expect("global tauri app handle not set");
-
             tauri_app_handle
                 .global_shortcut()
                 .unregister(hotkey.as_str())
@@ -473,19 +480,19 @@ impl ThirdPartyExtensionsSearchSource {
         if extension.r#type.contains_sub_items() {
             if let Some(commands) = &extension.commands {
                 for command in commands.iter().filter(|ext| ext.enabled) {
-                    Self::_disable_extension(command).await?;
+                    Self::_disable_extension(tauri_app_handle, command).await?;
                 }
             }
 
             if let Some(scripts) = &extension.scripts {
                 for script in scripts.iter().filter(|ext| ext.enabled) {
-                    Self::_disable_extension(script).await?;
+                    Self::_disable_extension(tauri_app_handle, script).await?;
                 }
             }
 
             if let Some(quicklinks) = &extension.quicklinks {
                 for quicklink in quicklinks.iter().filter(|ext| ext.enabled) {
-                    Self::_disable_extension(quicklink).await?;
+                    Self::_disable_extension(tauri_app_handle, quicklink).await?;
                 }
             }
         }
@@ -504,6 +511,7 @@ impl ThirdPartyExtensionsSearchSource {
     #[named]
     pub(super) async fn enable_extension(
         &self,
+        tauri_app_handle: &AppHandle,
         bundle_id: &ExtensionBundleIdBorrowed<'_>,
     ) -> Result<(), String> {
         let mut extensions_write_lock = self.inner.extensions.write().await;
@@ -531,11 +539,11 @@ impl ThirdPartyExtensionsSearchSource {
 
         update_extension(extension)?;
         alter_extension_json_file(
-            &THIRD_PARTY_EXTENSIONS_DIRECTORY,
+            &get_third_party_extension_directory(tauri_app_handle),
             bundle_id,
             update_extension,
         )?;
-        Self::_enable_extension(extension).await?;
+        Self::_enable_extension(tauri_app_handle, extension).await?;
 
         Ok(())
     }
@@ -543,6 +551,7 @@ impl ThirdPartyExtensionsSearchSource {
     #[named]
     pub(super) async fn disable_extension(
         &self,
+        tauri_app_handle: &AppHandle,
         bundle_id: &ExtensionBundleIdBorrowed<'_>,
     ) -> Result<(), String> {
         let mut extensions_write_lock = self.inner.extensions.write().await;
@@ -570,11 +579,11 @@ impl ThirdPartyExtensionsSearchSource {
 
         update_extension(extension)?;
         alter_extension_json_file(
-            &THIRD_PARTY_EXTENSIONS_DIRECTORY,
+            &get_third_party_extension_directory(tauri_app_handle),
             bundle_id,
             update_extension,
         )?;
-        Self::_disable_extension(extension).await?;
+        Self::_disable_extension(tauri_app_handle, extension).await?;
 
         Ok(())
     }
@@ -582,6 +591,7 @@ impl ThirdPartyExtensionsSearchSource {
     #[named]
     pub(super) async fn set_extension_alias(
         &self,
+        tauri_app_handle: &AppHandle,
         bundle_id: &ExtensionBundleIdBorrowed<'_>,
         alias: &str,
     ) -> Result<(), String> {
@@ -602,7 +612,7 @@ impl ThirdPartyExtensionsSearchSource {
 
         update_extension(extension)?;
         alter_extension_json_file(
-            &THIRD_PARTY_EXTENSIONS_DIRECTORY,
+            &get_third_party_extension_directory(tauri_app_handle),
             bundle_id,
             update_extension,
         )?;
@@ -612,11 +622,11 @@ impl ThirdPartyExtensionsSearchSource {
 
     /// Initialize the third-party extensions, which literally means
     /// enabling/activating the enabled extensions.
-    pub(super) async fn init(&self) -> Result<(), String> {
+    pub(super) async fn init(&self, tauri_app_handle: &AppHandle) -> Result<(), String> {
         let extensions_read_lock = self.inner.extensions.read().await;
 
         for extension in extensions_read_lock.iter().filter(|ext| ext.enabled) {
-            Self::_enable_extension(extension).await?;
+            Self::_enable_extension(tauri_app_handle, extension).await?;
         }
 
         Ok(())
@@ -625,10 +635,12 @@ impl ThirdPartyExtensionsSearchSource {
     #[named]
     pub(super) async fn register_extension_hotkey(
         &self,
+        tauri_app_handle: &AppHandle,
         bundle_id: &ExtensionBundleIdBorrowed<'_>,
         hotkey: &str,
     ) -> Result<(), String> {
-        self.unregister_extension_hotkey(bundle_id).await?;
+        self.unregister_extension_hotkey(tauri_app_handle, bundle_id)
+            .await?;
 
         let mut extensions_write_lock = self.inner.extensions.write().await;
         let extension =
@@ -648,15 +660,12 @@ impl ThirdPartyExtensionsSearchSource {
         // Update extension (memory and file)
         update_extension(extension)?;
         alter_extension_json_file(
-            &THIRD_PARTY_EXTENSIONS_DIRECTORY,
+            &get_third_party_extension_directory(tauri_app_handle),
             bundle_id,
             update_extension,
         )?;
 
         // Set hotkey
-        let tauri_app_handle = GLOBAL_TAURI_APP_HANDLE
-            .get()
-            .expect("global tauri app handle not set");
         let on_opened = extension.on_opened().unwrap_or_else(|| panic!(
             "setting hotkey for an extension that cannot be opened, extension ID [{:?}], extension type [{:?}]", bundle_id, extension.r#type,
         ));
@@ -664,12 +673,14 @@ impl ThirdPartyExtensionsSearchSource {
         let bundle_id_owned = bundle_id.to_owned();
         tauri_app_handle
             .global_shortcut()
-            .on_shortcut(hotkey, move |_tauri_app_handle, _hotkey, event| {
+            .on_shortcut(hotkey, move |tauri_app_handle, _hotkey, event| {
                 let on_opened_clone = on_opened.clone();
                 let bundle_id_clone = bundle_id_owned.clone();
+                let app_handle_clone = tauri_app_handle.clone();
+
                 if event.state() == ShortcutState::Pressed {
                     async_runtime::spawn(async move {
-                        let result = open(on_opened_clone).await;
+                        let result = open(app_handle_clone, on_opened_clone).await;
                         if let Err(msg) = result {
                             log::warn!(
                                 "failed to open extension [{:?}], error [{}]",
@@ -690,6 +701,7 @@ impl ThirdPartyExtensionsSearchSource {
     #[named]
     pub(super) async fn unregister_extension_hotkey(
         &self,
+        tauri_app_handle: &AppHandle,
         bundle_id: &ExtensionBundleIdBorrowed<'_>,
     ) -> Result<(), String> {
         let mut extensions_write_lock = self.inner.extensions.write().await;
@@ -717,15 +729,12 @@ impl ThirdPartyExtensionsSearchSource {
 
         update_extension(extension)?;
         alter_extension_json_file(
-            &THIRD_PARTY_EXTENSIONS_DIRECTORY,
+            &get_third_party_extension_directory(tauri_app_handle),
             bundle_id,
             update_extension,
         )?;
 
         // Set hotkey
-        let tauri_app_handle = GLOBAL_TAURI_APP_HANDLE
-            .get()
-            .expect("global tauri app handle not set");
         tauri_app_handle
             .global_shortcut()
             .unregister(hotkey.as_str())
@@ -846,7 +855,11 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
         }
     }
 
-    async fn search(&self, query: SearchQuery) -> Result<QueryResponse, SearchError> {
+    async fn search(
+        &self,
+        _tauri_app_handle: AppHandle,
+        query: SearchQuery,
+    ) -> Result<QueryResponse, SearchError> {
         let Some(query_string) = query.query_strings.get("query") else {
             return Ok(QueryResponse {
                 source: self.get_type(),
@@ -1045,11 +1058,13 @@ fn calculate_text_similarity(query: &str, text: &str) -> Option<f64> {
 
 #[tauri::command]
 pub(crate) async fn uninstall_extension(
+    tauri_app_handle: AppHandle,
     developer: String,
     extension_id: String,
 ) -> Result<(), String> {
     let extension_dir = {
-        let mut path = THIRD_PARTY_EXTENSIONS_DIRECTORY.join(developer.as_str());
+        let mut path = get_third_party_extension_directory(&tauri_app_handle);
+        path.push(developer.as_str());
         path.push(extension_id.as_str());
 
         path
@@ -1075,7 +1090,7 @@ pub(crate) async fn uninstall_extension(
     // Unregistering hotkey is the only thing that we will do when we disable
     // an extension, so we directly use this function here even though "disabling"
     // the extension that one is trying to uninstall does not make too much sense.
-    ThirdPartyExtensionsSearchSource::_disable_extension(&extension).await?;
+    ThirdPartyExtensionsSearchSource::_disable_extension(&tauri_app_handle, &extension).await?;
 
     Ok(())
 }

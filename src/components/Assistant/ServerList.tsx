@@ -51,37 +51,40 @@ export function ServerList({ clearChat }: ServerListProps) {
 
   const fetchServers = useCallback(
     async (resetSelection: boolean) => {
-      platformAdapter
-        .commands("list_coco_servers")
-        .then((res: any) => {
-          const enabledServers = (res as IServer[]).filter(
-            (server) => server.enabled && server.available
+      platformAdapter.commands("list_coco_servers").then((res: any) => {
+        console.log("list_coco_servers", res);
+        if (!Array.isArray(res)) {
+          // If res is not an array, it might be an error message or something else.
+          // Log it and don't proceed.
+          // console.log("list_coco_servers did not return an array:", res);
+          setServerList([]); // Clear the list or handle as appropriate
+          return;
+        }
+        const enabledServers = (res as IServer[])?.filter(
+          (server) => server.enabled && server.available
+        );
+
+        setServerList(enabledServers);
+
+        if (resetSelection && enabledServers.length > 0) {
+          const currentServiceExists = enabledServers.find(
+            (server) => server.id === currentService?.id
           );
-          //console.log("list_coco_servers", enabledServers);
-          setServerList(enabledServers);
 
-          if (resetSelection && enabledServers.length > 0) {
-            const currentServiceExists = enabledServers.find(
-              (server) => server.id === currentService?.id
-            );
-
-            if (currentServiceExists) {
-              switchServer(currentServiceExists);
-            } else {
-              switchServer(enabledServers[enabledServers.length - 1]);
-            }
+          if (currentServiceExists) {
+            switchServer(currentServiceExists);
+          } else {
+            switchServer(enabledServers[enabledServers.length - 1]);
           }
-        })
-        .catch((err: any) => {
-          console.error(err);
-        });
+        }
+      });
     },
     [currentService?.id]
   );
 
   useEffect(() => {
     if (!isTauri) return;
-    
+
     fetchServers(true);
   }, [currentService?.enabled]);
 
@@ -147,38 +150,44 @@ export function ServerList({ clearChat }: ServerListProps) {
     }
   };
 
-  useKeyPress(["uparrow", "downarrow", "enter"], (event, key) => {
-    const isClose = isNil(serverListButtonRef.current?.dataset["open"]);
-    const length = serverList.length;
+  useKeyPress(
+    ["uparrow", "downarrow", "enter"],
+    (event, key) => {
+      const isClose = isNil(serverListButtonRef.current?.dataset["open"]);
+      const length = serverList.length;
 
-    if (isClose || length <= 1) return;
+      if (isClose || length <= 1) return;
 
-    event.stopPropagation();
-    event.preventDefault();
+      event.stopPropagation();
+      event.preventDefault();
 
-    const currentIndex = serverList.findIndex((server) => {
-      return server.id === (highlightId === '' ? currentService?.id : highlightId);
-    });
+      const currentIndex = serverList.findIndex((server) => {
+        return (
+          server.id === (highlightId === "" ? currentService?.id : highlightId)
+        );
+      });
 
-    let nextIndex = currentIndex;
+      let nextIndex = currentIndex;
 
-    if (key === "uparrow") {
-      nextIndex = currentIndex > 0 ? currentIndex - 1 : length - 1;
-      setHighlightId(serverList[nextIndex].id);
-    } else if (key === "downarrow") {
-      nextIndex = currentIndex < serverList.length - 1 ? currentIndex + 1 : 0;
-      setHighlightId(serverList[nextIndex].id);
-    } else if (key === "enter" && currentIndex >= 0) {
-      if (document.activeElement instanceof HTMLTextAreaElement) return;
-      const selectedServer = serverList[currentIndex];
-      if (selectedServer) {
-        switchServer(selectedServer);
-        serverListButtonRef.current?.click();
+      if (key === "uparrow") {
+        nextIndex = currentIndex > 0 ? currentIndex - 1 : length - 1;
+        setHighlightId(serverList[nextIndex].id);
+      } else if (key === "downarrow") {
+        nextIndex = currentIndex < serverList.length - 1 ? currentIndex + 1 : 0;
+        setHighlightId(serverList[nextIndex].id);
+      } else if (key === "enter" && currentIndex >= 0) {
+        if (document.activeElement instanceof HTMLTextAreaElement) return;
+        const selectedServer = serverList[currentIndex];
+        if (selectedServer) {
+          switchServer(selectedServer);
+          serverListButtonRef.current?.click();
+        }
       }
+    },
+    {
+      target: popoverRef,
     }
-  }, {
-    target: popoverRef,
-  });
+  );
 
   const handleMouseMove = useCallback(() => {
     setHighlightId("");
@@ -199,7 +208,8 @@ export function ServerList({ clearChat }: ServerListProps) {
 
       <PopoverPanel
         onMouseMove={handleMouseMove}
-        className="absolute right-0 z-10 mt-2 min-w-[240px] bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+        className="absolute right-0 z-10 mt-2 min-w-[240px] bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+      >
         <div className="p-3">
           <div className="flex items-center justify-between mb-3 whitespace-nowrap">
             <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -221,8 +231,9 @@ export function ServerList({ clearChat }: ServerListProps) {
               >
                 <VisibleKey shortcut="R" onKeyPress={handleRefresh}>
                   <RefreshCw
-                    className={`h-4 w-4 text-[#0287FF] transition-transform duration-1000 ${isRefreshing ? "animate-spin" : ""
-                      }`}
+                    className={`h-4 w-4 text-[#0287FF] transition-transform duration-1000 ${
+                      isRefreshing ? "animate-spin" : ""
+                    }`}
                   />
                 </VisibleKey>
               </button>
@@ -235,9 +246,11 @@ export function ServerList({ clearChat }: ServerListProps) {
                   key={server.id}
                   onClick={() => switchServer(server)}
                   className={`w-full flex items-center justify-between gap-1 p-2 rounded-lg transition-colors whitespace-nowrap 
-                    ${currentService?.id === server.id || highlightId === server.id
-                      ? "bg-gray-100 dark:bg-gray-800"
-                      : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                    ${
+                      currentService?.id === server.id ||
+                      highlightId === server.id
+                        ? "bg-gray-100 dark:bg-gray-800"
+                        : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
                     }`}
                 >
                   <div className="flex items-center gap-2 overflow-hidden min-w-0">

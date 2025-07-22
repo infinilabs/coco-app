@@ -1,4 +1,4 @@
-name: Rust Code Compile Check
+name: Rust Code Check
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
       - 'src-tauri/**'
 
 jobs:
-  compile-check:
+  check:
     strategy:
       matrix:
         platform: [ubuntu-latest, windows-latest, macos-latest]
@@ -36,6 +36,13 @@ jobs:
       working-directory: src-tauri
       shell: bash
       run: cargo add --path ../pizza/lib/engine --features query_string_parser,persistence
+
+    - name: Format check
+      working-directory: src-tauri
+      shell: bash
+      run: |
+        rustup component add rustfmt
+        cargo fmt --all --check
 
     - name: Check compilation (Without Pizza engine enabled)
       working-directory: ./src-tauri

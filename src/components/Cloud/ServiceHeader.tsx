@@ -7,7 +7,7 @@ import Tooltip from "@/components/Common/Tooltip";
 import SettingsToggle from "@/components/Settings/SettingsToggle";
 import { OpenURLWithBrowser } from "@/utils";
 import { useConnectStore } from "@/stores/connectStore";
-import { enable_server, disable_server, remove_coco_server } from "@/commands";
+import platformAdapter from "@/utils/platformAdapter";
 
 interface ServiceHeaderProps {
   refreshLoading?: boolean;
@@ -27,9 +27,9 @@ const ServiceHeader = memo(
     const enable_coco_server = useCallback(
       async (enabled: boolean) => {
         if (enabled) {
-          await enable_server(currentService?.id);
+          await platformAdapter.commands("enable_server", currentService?.id);
         } else {
-          await disable_server(currentService?.id);
+          await platformAdapter.commands("disable_server", currentService?.id);
         }
 
         setCurrentService({ ...currentService, enabled });
@@ -40,7 +40,7 @@ const ServiceHeader = memo(
     );
 
     const removeServer = (id: string) => {
-      remove_coco_server(id).then((res: any) => {
+      platformAdapter.commands("remove_coco_server", id).then((res: any) => {
         console.log("remove_coco_server", id, JSON.stringify(res));
         fetchServers(true).then((r) => {
           console.log("fetchServers", r);

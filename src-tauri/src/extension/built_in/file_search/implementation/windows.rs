@@ -1,27 +1,27 @@
 //! # Credits
-//! 
+//!
 //! https://github.com/IRONAGE-Park/rag-sample/blob/3f0ad8c8012026cd3a7e453d08f041609426cb91/src/native/windows.rs
 //! is the starting point of this implementation.
 
+use super::super::EXTENSION_ID;
 use super::super::config::FileSearchConfig;
 use super::super::config::SearchBy;
-use super::super::EXTENSION_ID;
 use crate::common::document::{DataSourceReference, Document};
-use crate::extension::OnOpened;
 use crate::extension::LOCAL_QUERY_SOURCE_TYPE;
+use crate::extension::OnOpened;
 use crate::util::file::get_file_icon;
 use windows::{
-    core::{w, IUnknown, Interface, GUID, PWSTR},
     Win32::System::{
-        Com::{CoCreateInstance, CLSCTX_INPROC_SERVER},
+        Com::{CLSCTX_INPROC_SERVER, CoCreateInstance},
         Ole::{OleInitialize, OleUninitialize},
         Search::{
-            IAccessor, ICommand, ICommandText, IDBCreateCommand, IDBCreateSession, IDBInitialize,
-            IDataInitialize, IRowset, DBACCESSOR_ROWDATA, DBBINDING, DBMEMOWNER_CLIENTOWNED,
-            DBPARAMIO_NOTPARAM, DBPART_VALUE, DBTYPE_WSTR, DB_NULL_HCHAPTER, HACCESSOR,
-            MSDAINITIALIZE,
+            DB_NULL_HCHAPTER, DBACCESSOR_ROWDATA, DBBINDING, DBMEMOWNER_CLIENTOWNED,
+            DBPARAMIO_NOTPARAM, DBPART_VALUE, DBTYPE_WSTR, HACCESSOR, IAccessor, ICommand,
+            ICommandText, IDBCreateCommand, IDBCreateSession, IDBInitialize, IDataInitialize,
+            IRowset, MSDAINITIALIZE,
         },
     },
+    core::{GUID, IUnknown, Interface, PWSTR, w},
 };
 
 /// Owned version of `PWSTR` that holds the heap memory.
@@ -389,7 +389,7 @@ pub(crate) async fn hits(
     let result = execute_windows_search_sql(&sql)?;
     unsafe { OleUninitialize() };
     // .take(size) is not needed as `result` will contain `from+size` files at most
-    let result_with_paging = result.into_iter().skip(from); 
+    let result_with_paging = result.into_iter().skip(from);
     // result_with_paging won't contain more than `size` entries
     let mut hits = Vec::with_capacity(size);
 
@@ -449,9 +449,9 @@ pub(crate) async fn hits(
     Ok(hits)
 }
 
-// Skip these tests in our CI, they fail with the following error 
+// Skip these tests in our CI, they fail with the following error
 // "SQL is invalid: "0x80041820""
-// 
+//
 // I have no idea about the underlying root cause
 #[cfg(all(test, not(ci)))]
 mod test {
@@ -491,7 +491,10 @@ mod test {
         };
         let sql = query_sql("coco", 0, 10, &config);
 
-        assert_eq!(sql, "SELECT TOP 10 System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE ((System.FileName LIKE '%coco%') OR CONTAINS('coco'))");
+        assert_eq!(
+            sql,
+            "SELECT TOP 10 System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE ((System.FileName LIKE '%coco%') OR CONTAINS('coco'))"
+        );
         ensure_it_is_valid_sql(&sql);
     }
 
@@ -505,7 +508,10 @@ mod test {
         };
         let sql = query_sql("coco", 0, 10, &config);
 
-        assert_eq!(sql, "SELECT TOP 10 System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE (System.FileName LIKE '%coco%') AND (SCOPE = 'file:C:/Users/')");
+        assert_eq!(
+            sql,
+            "SELECT TOP 10 System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE (System.FileName LIKE '%coco%') AND (SCOPE = 'file:C:/Users/')"
+        );
         ensure_it_is_valid_sql(&sql);
     }
 
@@ -523,7 +529,10 @@ mod test {
         };
         let sql = query_sql("test", 0, 5, &config);
 
-        assert_eq!(sql, "SELECT TOP 5 System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE (System.FileName LIKE '%test%') AND (SCOPE = 'file:C:/Users/' OR SCOPE = 'file:D:/Projects/' OR SCOPE = 'file:E:/Documents/')");
+        assert_eq!(
+            sql,
+            "SELECT TOP 5 System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE (System.FileName LIKE '%test%') AND (SCOPE = 'file:C:/Users/' OR SCOPE = 'file:D:/Projects/' OR SCOPE = 'file:E:/Documents/')"
+        );
         ensure_it_is_valid_sql(&sql);
     }
 
@@ -537,7 +546,10 @@ mod test {
         };
         let sql = query_sql("file", 0, 20, &config);
 
-        assert_eq!(sql, "SELECT TOP 20 System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE (System.FileName LIKE '%file%') AND ((NOT SCOPE = 'file:C:/Windows/'))");
+        assert_eq!(
+            sql,
+            "SELECT TOP 20 System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE (System.FileName LIKE '%file%') AND ((NOT SCOPE = 'file:C:/Windows/'))"
+        );
         ensure_it_is_valid_sql(&sql);
     }
 
@@ -551,7 +563,10 @@ mod test {
         };
         let sql = query_sql("data", 5, 15, &config);
 
-        assert_eq!(sql, "SELECT TOP 20 System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE (System.FileName LIKE '%data%') AND ((NOT SCOPE = 'file:C:/Windows/') AND (NOT SCOPE = 'file:C:/System/') AND (NOT SCOPE = 'file:C:/Temp/'))");
+        assert_eq!(
+            sql,
+            "SELECT TOP 20 System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE (System.FileName LIKE '%data%') AND ((NOT SCOPE = 'file:C:/Windows/') AND (NOT SCOPE = 'file:C:/System/') AND (NOT SCOPE = 'file:C:/Temp/'))"
+        );
         ensure_it_is_valid_sql(&sql);
     }
 
@@ -565,7 +580,10 @@ mod test {
         };
         let sql = query_sql("readme", 0, 10, &config);
 
-        assert_eq!(sql, "SELECT TOP 10 System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE (System.FileName LIKE '%readme%') AND (System.FileExtension = '.txt')");
+        assert_eq!(
+            sql,
+            "SELECT TOP 10 System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE (System.FileName LIKE '%readme%') AND (System.FileExtension = '.txt')"
+        );
         ensure_it_is_valid_sql(&sql);
     }
 
@@ -579,7 +597,10 @@ mod test {
         };
         let sql = query_sql("config", 0, 50, &config);
 
-        assert_eq!(sql, "SELECT TOP 50 System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE (System.FileName LIKE '%config%') AND (System.FileExtension = '.rs' OR System.FileExtension = '.toml' OR System.FileExtension = '.md' OR System.FileExtension = '.json')");
+        assert_eq!(
+            sql,
+            "SELECT TOP 50 System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE (System.FileName LIKE '%config%') AND (System.FileExtension = '.rs' OR System.FileExtension = '.toml' OR System.FileExtension = '.md' OR System.FileExtension = '.json')"
+        );
         ensure_it_is_valid_sql(&sql);
     }
 
@@ -593,7 +614,10 @@ mod test {
         };
         let sql = query_sql("main", 10, 25, &config);
 
-        assert_eq!(sql, "SELECT TOP 35 System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE (System.FileName LIKE '%main%') AND (SCOPE = 'file:C:/Projects/' OR SCOPE = 'file:D:/Code/') AND ((NOT SCOPE = 'file:C:/Projects/temp/')) AND (System.FileExtension = '.rs' OR System.FileExtension = '.ts')");
+        assert_eq!(
+            sql,
+            "SELECT TOP 35 System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE (System.FileName LIKE '%main%') AND (SCOPE = 'file:C:/Projects/' OR SCOPE = 'file:D:/Code/') AND ((NOT SCOPE = 'file:C:/Projects/temp/')) AND (System.FileExtension = '.rs' OR System.FileExtension = '.ts')"
+        );
         ensure_it_is_valid_sql(&sql);
     }
 
@@ -607,7 +631,10 @@ mod test {
         };
         let sql = query_sql("hello-world", 0, 10, &config);
 
-        assert_eq!(sql, "SELECT TOP 10 System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE (System.FileName LIKE '%hello-world%') AND (SCOPE = 'file:C:/Users/John Doe/') AND (System.FileExtension = '.c++')");
+        assert_eq!(
+            sql,
+            "SELECT TOP 10 System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE (System.FileName LIKE '%hello-world%') AND (SCOPE = 'file:C:/Users/John Doe/') AND (System.FileExtension = '.c++')"
+        );
         ensure_it_is_valid_sql(&sql);
     }
 

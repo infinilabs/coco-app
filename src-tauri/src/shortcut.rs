@@ -1,5 +1,5 @@
-use crate::{hide_coco, show_coco, COCO_TAURI_STORE};
-use tauri::{async_runtime, App, AppHandle, Manager, Runtime};
+use crate::{COCO_TAURI_STORE, hide_coco, show_coco};
+use tauri::{App, AppHandle, Manager, Runtime, async_runtime};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 use tauri_plugin_store::{JsonValue, StoreExt};
 

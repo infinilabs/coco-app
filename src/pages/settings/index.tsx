@@ -7,7 +7,7 @@ import { listen } from "@tauri-apps/api/event";
 import SettingsPanel from "@/components/Settings/SettingsPanel";
 import GeneralSettings from "@/components/Settings/GeneralSettings";
 import AboutView from "@/components/Settings/AboutView";
-import Cloud from "@/components/Cloud/Cloud.tsx";
+import Cloud from "@/components/Cloud/Cloud";
 import Footer from "@/components/Common/UI/SettingsFooter";
 import { useTray } from "@/hooks/useTray";
 import Advanced from "@/components/Settings/Advanced";
@@ -83,10 +83,6 @@ function SettingsPage() {
     <div>
       <div className="min-h-screen pb-8 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
         <div className="max-w-6xl mx-auto p-4">
-          {/* <div className="flex items-center justify-center mb-2">
-              <h1 className="text-xl font-bold">Coco Settings</h1>
-            </div> */}
-
           <TabGroup
             selectedIndex={defaultIndex}
             onChange={(index) => {

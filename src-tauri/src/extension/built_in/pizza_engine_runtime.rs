@@ -8,8 +8,8 @@
 //! which forces us to create a dedicated thread/runtime to execute them.
 
 use std::any::Any;
-use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::collections::hash_map::Entry;
 use std::sync::OnceLock;
 
 pub(crate) trait SearchSourceState {

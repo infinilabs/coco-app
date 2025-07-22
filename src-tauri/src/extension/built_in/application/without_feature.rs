@@ -32,7 +32,11 @@ impl SearchSource for ApplicationSearchSource {
         }
     }
 
-    async fn search(&self, _query: SearchQuery) -> Result<QueryResponse, SearchError> {
+    async fn search(
+        &self,
+        _tauri_app_handle: AppHandle,
+        _query: SearchQuery,
+    ) -> Result<QueryResponse, SearchError> {
         Ok(QueryResponse {
             source: self.get_type(),
             hits: Vec::new(),

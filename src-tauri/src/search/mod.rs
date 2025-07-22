@@ -15,7 +15,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::future::Future;
 use std::sync::Arc;
-use tauri::{AppHandle, Manager, Runtime};
+use tauri::{AppHandle, Manager};
 use tokio::time::error::Elapsed;
 use tokio::time::{Duration, timeout};
 
@@ -34,6 +34,7 @@ fn same_type_futures(
     query_source_trait_object: Arc<dyn SearchSource>,
     timeout_duration: Duration,
     search_query: SearchQuery,
+    tauri_app_handle: AppHandle,
 ) -> impl Future<
     Output = (
         QuerySource,
@@ -45,7 +46,9 @@ fn same_type_futures(
             // Store `query_source` as part of future for debugging purposes.
             query_source,
             timeout(timeout_duration, async {
-                query_source_trait_object.search(search_query).await
+                query_source_trait_object
+                    .search(tauri_app_handle.clone(), search_query)
+                    .await
             })
             .await,
         )
@@ -54,8 +57,8 @@ fn same_type_futures(
 
 #[named]
 #[tauri::command]
-pub async fn query_coco_fusion<R: Runtime>(
-    app_handle: AppHandle<R>,
+pub async fn query_coco_fusion(
+    app_handle: AppHandle,
     from: u64,
     size: u64,
     query_strings: HashMap<String, String>,
@@ -127,6 +130,7 @@ pub async fn query_coco_fusion<R: Runtime>(
             query_source_trait_object,
             timeout_duration,
             search_query,
+            app_handle.clone(),
         ));
     } else {
         for query_source_trait_object in sources_list {
@@ -137,6 +141,7 @@ pub async fn query_coco_fusion<R: Runtime>(
                 query_source_trait_object,
                 timeout_duration,
                 search_query.clone(),
+                app_handle.clone(),
             ));
         }
     }

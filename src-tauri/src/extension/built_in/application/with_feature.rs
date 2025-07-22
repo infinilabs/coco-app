@@ -1,8 +1,9 @@
+use super::super::Extension;
+use super::super::pizza_engine_runtime::RUNTIME_TX;
 use super::super::pizza_engine_runtime::SearchSourceState;
 use super::super::pizza_engine_runtime::Task;
-use super::super::pizza_engine_runtime::RUNTIME_TX;
-use super::super::Extension;
 use super::AppMetadata;
+use crate::GLOBAL_TAURI_APP_HANDLE;
 use crate::common::document::{DataSourceReference, Document, OnOpened};
 use crate::common::error::SearchError;
 use crate::common::search::{QueryResponse, QuerySource, SearchQuery};
@@ -10,7 +11,6 @@ use crate::common::traits::SearchSource;
 use crate::extension::ExtensionType;
 use crate::extension::LOCAL_QUERY_SOURCE_TYPE;
 use crate::util::open;
-use crate::GLOBAL_TAURI_APP_HANDLE;
 use applications::{App, AppTrait};
 use async_trait::async_trait;
 use log::{error, warn};
@@ -23,12 +23,12 @@ use pizza_engine::error::PizzaEngineError;
 use pizza_engine::search::{OriginalQuery, QueryContext, SearchResult, Searcher};
 use pizza_engine::store::{DiskStore, DiskStoreSnapshot};
 use pizza_engine::writer::Writer;
-use pizza_engine::{doc, Engine, EngineBuilder};
+use pizza_engine::{Engine, EngineBuilder, doc};
 use serde_json::Value as Json;
 use std::path::Path;
 use std::path::PathBuf;
-use tauri::{async_runtime, AppHandle, Manager, Runtime};
-use tauri_plugin_fs_pro::{icon, metadata, name, IconOptions};
+use tauri::{AppHandle, Manager, Runtime, async_runtime};
+use tauri_plugin_fs_pro::{IconOptions, icon, metadata, name};
 use tauri_plugin_global_shortcut::GlobalShortcutExt;
 use tauri_plugin_global_shortcut::Shortcut;
 use tauri_plugin_global_shortcut::ShortcutEvent;
@@ -246,8 +246,8 @@ async fn index_applications_if_not_indexed<R: Runtime>(
 
     if !index_exists {
         let search_path = {
-            let disabled_app_list_and_search_path_store = tauri_app_handle
-                .store(TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH)?;
+            let disabled_app_list_and_search_path_store =
+                tauri_app_handle.store(TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH)?;
             let search_path_json = disabled_app_list_and_search_path_store
               .get(TAURI_STORE_KEY_SEARCH_PATH)
               .unwrap_or_else(|| {
@@ -255,14 +255,14 @@ async fn index_applications_if_not_indexed<R: Runtime>(
               });
 
             let search_path: Vec<String> = match search_path_json {
-              Json::Array(array) => array
-                .into_iter()
-                .map(|json| match json {
-                  Json::String(str) => str,
-                  _ => unreachable!("search path is stored in a string"),
-                })
-                .collect(),
-              _ => unreachable!("search path is stored in an array"),
+                Json::Array(array) => array
+                    .into_iter()
+                    .map(|json| match json {
+                        Json::String(str) => str,
+                        _ => unreachable!("search path is stored in a string"),
+                    })
+                    .collect(),
+                _ => unreachable!("search path is stored in an array"),
             };
 
             search_path
@@ -294,8 +294,9 @@ async fn index_applications_if_not_indexed<R: Runtime>(
             // We don't error out because one failure won't break the whole thing
             if let Err(e) = writer.create_document(document).await {
                 warn!(
-                      "failed to index application [app name: '{}', app path: '{}'] due to error [{}]", app_name, app_path, e
-                    )
+                    "failed to index application [app name: '{}', app path: '{}'] due to error [{}]",
+                    app_name, app_path, e
+                )
             }
         }
 
@@ -401,7 +402,9 @@ impl<R: Runtime> Task for SearchApplicationsTask<R> {
 
             let rx_dropped_error = callback.send(Ok(empty_hits)).is_err();
             if rx_dropped_error {
-                warn!("failed to send local app search result back because the corresponding channel receiver end has been unexpected dropped, which could happen due to a low query timeout")
+                warn!(
+                    "failed to send local app search result back because the corresponding channel receiver end has been unexpected dropped, which could happen due to a low query timeout"
+                )
             }
 
             return;
@@ -422,7 +425,9 @@ impl<R: Runtime> Task for SearchApplicationsTask<R> {
         // It will be passed to Pizza like "Google\nChrome". Using Display impl would result
         // in an invalid query DSL and serde will complain.
         let dsl = format!(
-            "{{ \"query\": {{ \"bool\": {{ \"should\": [ {{ \"match\": {{ \"{FIELD_APP_NAME}\": {:?} }} }}, {{ \"prefix\": {{ \"{FIELD_APP_NAME}\": {:?} }} }} ] }} }} }}", self.query_string, self.query_string);
+            "{{ \"query\": {{ \"bool\": {{ \"should\": [ {{ \"match\": {{ \"{FIELD_APP_NAME}\": {:?} }} }}, {{ \"prefix\": {{ \"{FIELD_APP_NAME}\": {:?} }} }} ] }} }} }}",
+            self.query_string, self.query_string
+        );
 
         let state = state
             .as_mut_any()
@@ -453,7 +458,9 @@ impl<R: Runtime> Task for SearchApplicationsTask<R> {
 
         let rx_dropped_error = callback.send(Ok(search_result)).is_err();
         if rx_dropped_error {
-            warn!("failed to send local app search result back because the corresponding channel receiver end has been unexpected dropped, which could happen due to a low query timeout")
+            warn!(
+                "failed to send local app search result back because the corresponding channel receiver end has been unexpected dropped, which could happen due to a low query timeout"
+            )
         }
     }
 }
@@ -524,8 +531,8 @@ impl ApplicationSearchSource {
                 .set(TAURI_STORE_KEY_DISABLED_APP_LIST, Json::Array(Vec::new()));
         }
 
-        // IndexAllApplicationsTask will read the apps installed in search paths and 
-        // index them, so it depends on this configuration entry. Init this entry 
+        // IndexAllApplicationsTask will read the apps installed in search paths and
+        // index them, so it depends on this configuration entry. Init this entry
         // before indexing apps.
         if disabled_app_list_and_search_path_store
             .get(TAURI_STORE_KEY_SEARCH_PATH)
@@ -535,7 +542,6 @@ impl ApplicationSearchSource {
             disabled_app_list_and_search_path_store
                 .set(TAURI_STORE_KEY_SEARCH_PATH, default_search_path);
         }
-
 
         let (tx, rx) = tokio::sync::oneshot::channel();
         let index_applications_task = IndexAllApplicationsTask {
@@ -557,7 +563,6 @@ impl ApplicationSearchSource {
             )
         }
 
-
         Ok(())
     }
 }
@@ -575,7 +580,11 @@ impl SearchSource for ApplicationSearchSource {
         }
     }
 
-    async fn search(&self, query: SearchQuery) -> Result<QueryResponse, SearchError> {
+    async fn search(
+        &self,
+        _tauri_app_handle: AppHandle,
+        query: SearchQuery,
+    ) -> Result<QueryResponse, SearchError> {
         let query_string = query
             .query_strings
             .get("query")
@@ -833,7 +842,9 @@ pub fn unregister_app_hotkey<R: Runtime>(
         .global_shortcut()
         .is_registered(hotkey.as_str())
     {
-        panic!("inconsistent state, tauri store a hotkey is stored in the tauri store but it is not registered");
+        panic!(
+            "inconsistent state, tauri store a hotkey is stored in the tauri store but it is not registered"
+        );
     }
 
     tauri_app_handle

@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use tauri::AppHandle;
+use tauri::Runtime;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RichLabel {
@@ -62,23 +64,21 @@ impl OnOpened {
 }
 
 #[tauri::command]
-pub(crate) async fn open(on_opened: OnOpened) -> Result<(), String> {
+pub(crate) async fn open<R: Runtime>(
+    tauri_app_handle: AppHandle<R>,
+    on_opened: OnOpened,
+) -> Result<(), String> {
     log::debug!("open({})", on_opened.url());
 
     use crate::util::open as homemade_tauri_shell_open;
-    use crate::GLOBAL_TAURI_APP_HANDLE;
     use std::process::Command;
-
-    let global_tauri_app_handle = GLOBAL_TAURI_APP_HANDLE
-        .get()
-        .expect("global tauri app handle not set");
 
     match on_opened {
         OnOpened::Application { app_path } => {
-            homemade_tauri_shell_open(global_tauri_app_handle.clone(), app_path).await?
+            homemade_tauri_shell_open(tauri_app_handle.clone(), app_path).await?
         }
         OnOpened::Document { url } => {
-            homemade_tauri_shell_open(global_tauri_app_handle.clone(), url).await?
+            homemade_tauri_shell_open(tauri_app_handle.clone(), url).await?
         }
         OnOpened::Command { action } => {
             let mut cmd = Command::new(action.exec);

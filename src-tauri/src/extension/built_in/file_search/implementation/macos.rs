@@ -1,11 +1,9 @@
+use super::super::EXTENSION_ID;
 use super::super::config::FileSearchConfig;
 use super::super::config::SearchBy;
-use super::super::EXTENSION_ID;
-use crate::common::{
-    document::{DataSourceReference, Document},
-};
-use crate::extension::OnOpened;
+use crate::common::document::{DataSourceReference, Document};
 use crate::extension::LOCAL_QUERY_SOURCE_TYPE;
+use crate::extension::OnOpened;
 use crate::util::file::get_file_icon;
 use futures::stream::Stream;
 use futures::stream::StreamExt;
@@ -32,8 +30,7 @@ pub(crate) async fn hits(
     // Convert results to documents
     let mut hits: Vec<(Document, f64)> = Vec::new();
     while let Some(res_file_path) = iter.next().await {
-        let file_path =
-            res_file_path.map_err(|io_err| io_err.to_string())?;
+        let file_path = res_file_path.map_err(|io_err| io_err.to_string())?;
 
         let icon = get_file_icon(file_path.clone()).await;
         let file_path_of_type_path = camino::Utf8Path::new(&file_path);
@@ -75,7 +72,7 @@ pub(crate) async fn hits(
 
         hits.push((doc, SCORE));
     }
-    // Kill the mdfind process once we get the needed results to prevent zombie 
+    // Kill the mdfind process once we get the needed results to prevent zombie
     // processes.
     mdfind_child_process
         .kill()

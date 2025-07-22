@@ -32,6 +32,7 @@ Information about release notes of Coco Server is provided here.
 - fix: fix data inconsistency issue on secondary pages #784
 - fix: incorrect status when installing extension #789
 - fix: increase read_timeout for HTTP streaming stability #798
+- fix: enter key problem #794
 
 ### ✈️ Improvements
 
@@ -51,6 +52,7 @@ Information about release notes of Coco Server is provided here.
 - refactor: do status code check before deserializing response #767
 - style: splash adapts to the width of mobile phones #768
 - chore: search-chat add language and formatUrl parameters #775
+- chore: not request the interface if not logged in #795
 
 ## 0.6.0 (2025-06-29)
 
