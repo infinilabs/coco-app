@@ -21,11 +21,8 @@ export default function Cloud() {
 
   const [isConnect, setIsConnect] = useState(true);
 
-  const currentService = useConnectStore((state) => state.currentService);
-  const setCurrentService = useConnectStore((state) => state.setCurrentService);
-
-  const serverList = useConnectStore((state) => state.serverList);
-  const setServerList = useConnectStore((state) => state.setServerList);
+  const { currentService, setCurrentService, serverList, setServerList } =
+    useConnectStore();
 
   const [refreshLoading, setRefreshLoading] = useState(false);
 

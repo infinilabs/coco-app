@@ -35,21 +35,10 @@ export function ChatHeader({
   showChatHistory = true,
   assistantIDs,
 }: ChatHeaderProps) {
-  const isPinned = useAppStore((state) => state.isPinned);
-  const setIsPinned = useAppStore((state) => state.setIsPinned);
+  const { isPinned, setIsPinned, isTauri } = useAppStore();
 
-  const isTauri = useAppStore((state) => state.isTauri);
-  const historicalRecords = useShortcutsStore((state) => {
-    return state.historicalRecords;
-  });
-  const newSession = useShortcutsStore((state) => {
-    return state.newSession;
-  });
-  const fixedWindow = useShortcutsStore((state) => {
-    return state.fixedWindow;
-  });
-
-  const external = useShortcutsStore((state) => state.external);
+  const { historicalRecords, newSession, fixedWindow, external } =
+    useShortcutsStore();
 
   const togglePin = async () => {
     try {

@@ -42,6 +42,9 @@ async function invokeWithErrorHandler<T>(
   const serverList = useConnectStore.getState().serverList;
   const setServerList = useConnectStore.getState().setServerList;
 
+  // Not logged in
+  if(!currentService?.profile) return {} as T;
+
   if (!WHITELIST_SERVERS.includes(command) && !isCurrentLogin) {
     console.error("This command requires authentication");
     throw new Error("This command requires authentication");

@@ -437,7 +437,7 @@ export function useChatActions(
       response = await platformAdapter.commands("chat_history", {
         serverId: currentService?.id,
         from: 0,
-        size: 1000,
+        size: 100,
         query: keyword,
       });
 
@@ -445,7 +445,7 @@ export function useChatActions(
     } else {
       const [_error, res] = await Get(`/chat/_history`, {
         from: 0,
-        size: 1000,
+        size: 100,
       });
       response = res;
     }
