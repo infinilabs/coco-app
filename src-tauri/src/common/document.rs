@@ -40,6 +40,15 @@ pub(crate) enum OnOpened {
     Command {
         action: crate::extension::CommandAction,
     },
+    // NOTE that this variant has the same definition as `struct Quicklink`, but we
+    // cannot use it directly, its `link` field should be deserialized from a string,
+    // we need a JSON object here.
+    //
+    // See also the comments in `struct Quicklink`.
+    Quicklink {
+        link: crate::extension::QuicklinkLink,
+        open_with: String,
+    },
 }
 
 impl OnOpened {
@@ -57,13 +66,17 @@ impl OnOpened {
 
                 ret
             }
+            Self::Quicklink { .. } => String::from("todo"),
         }
     }
 }
 
 #[tauri::command]
-pub(crate) async fn open(on_opened: OnOpened) -> Result<(), String> {
-    log::debug!("open({})", on_opened.url());
+pub(crate) async fn open(
+    on_opened: OnOpened,
+    extra_args: Option<HashMap<String, String>>,
+) -> Result<(), String> {
+    log::debug!("open({}, {:?})", on_opened.url(), extra_args);
 
     use crate::util::open as homemade_tauri_shell_open;
     use crate::GLOBAL_TAURI_APP_HANDLE;
@@ -105,6 +118,28 @@ pub(crate) async fn open(on_opened: OnOpened) -> Result<(), String> {
                     "Command failed, stderr [{}]",
                     String::from_utf8_lossy(&output.stderr)
                 ));
+            }
+        }
+        OnOpened::Quicklink { link, open_with } => {
+            let url = link.concatenate_url(&extra_args);
+
+            cfg_if::cfg_if! {
+                if #[cfg(target_os = "macos")] {
+                    let open_with = open_with.as_str();
+                    let mut cmd = Command::new("open");
+                    cmd.arg("-a").arg(open_with).arg(&url);
+                    let output = cmd.output().map_err(|e| format!("failed to spawn open due to error [{}]", e))?;
+
+                    if !output.status.success() {
+                      return Err(format!(
+                        "failed to open with app {}: {}",
+                        open_with,
+                        String::from_utf8_lossy(&output.stderr)
+                      ));
+                    }
+                } else {
+                    homemade_tauri_shell_open(global_tauri_app_handle.clone(), url).await?
+                }
             }
         }
     }

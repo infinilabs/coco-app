@@ -201,7 +201,15 @@ fn validate_extension(
     // Extension is incompatible
     if let Some(ref platforms) = extension.platforms {
         if !platforms.contains(&current_platform) {
-            log::warn!("extension [{}] is not compatible with the current platform [{}], it is available to {:?}", extension.id, current_platform, platforms.iter().map(|os|os.to_string()).collect::<Vec<_>>());
+            log::warn!(
+                "extension [{}] is not compatible with the current platform [{}], it is available to {:?}",
+                extension.id,
+                current_platform,
+                platforms
+                    .iter()
+                    .map(|os| os.to_string())
+                    .collect::<Vec<_>>()
+            );
             return false;
         }
     }
@@ -320,7 +328,8 @@ fn validate_sub_items(extension_id: &str, sub_items: &[Extension]) -> bool {
         if sub_item.r#type == ExtensionType::Group || sub_item.r#type == ExtensionType::Extension {
             log::warn!(
                 "invalid extension sub-item [{}-{}]: sub-item should not be of type [Group] or [Extension]",
-                extension_id, sub_item.id
+                extension_id,
+                sub_item.id
             );
             return false;
         }
@@ -411,7 +420,7 @@ impl ThirdPartyExtensionsSearchSource {
                         let extension_id_clone = extension_id_clone.clone();
                         if event.state() == ShortcutState::Pressed {
                             async_runtime::spawn(async move {
-                                let result = open(on_opened_clone).await;
+                                let result = open(on_opened_clone, None).await;
                                 if let Err(msg) = result {
                                     log::warn!(
                                         "failed to open extension [{}], error [{}]",
@@ -669,7 +678,7 @@ impl ThirdPartyExtensionsSearchSource {
                 let bundle_id_clone = bundle_id_owned.clone();
                 if event.state() == ShortcutState::Pressed {
                     async_runtime::spawn(async move {
-                        let result = open(on_opened_clone).await;
+                        let result = open(on_opened_clone, None).await;
                         if let Err(msg) = result {
                             log::warn!(
                                 "failed to open extension [{:?}], error [{}]",

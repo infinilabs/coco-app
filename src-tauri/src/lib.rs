@@ -150,6 +150,7 @@ pub fn run() {
             extension::built_in::application::add_app_search_path,
             extension::built_in::application::remove_app_search_path,
             extension::built_in::application::reindex_applications,
+            extension::quicklink_placeholder_argument_names,
             extension::list_extensions,
             extension::enable_extension,
             extension::disable_extension,
