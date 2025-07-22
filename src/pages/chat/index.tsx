@@ -18,18 +18,11 @@ import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
 import type { Chat as typeChat } from "@/types/chat";
 import { useConnectStore } from "@/stores/connectStore";
 import InputBox from "@/components/Search/InputBox";
-import {
-  chat_history,
-  session_chat_history,
-  close_session_chat,
-  open_session_chat,
-  delete_session_chat,
-  update_session_chat,
-} from "@/commands";
 import HistoryList from "@/components/Common/HistoryList";
 import { useSyncStore } from "@/hooks/useSyncStore";
 import { useAppStore } from "@/stores/appStore";
 import { unrequitable } from "@/utils";
+import platformAdapter from "@/utils/platformAdapter";
 
 interface StandaloneChatProps {}
 
@@ -74,10 +67,10 @@ export default function StandaloneChat({}: StandaloneChatProps) {
         return setChats([]);
       }
 
-      let response: any = await chat_history({
+      let response: any = await platformAdapter.commands("chat_history", {
         serverId: currentService?.id,
         from: 0,
-        size: 1000,
+        size: 100,
         query: keyword,
       });
       response = response ? JSON.parse(response) : null;
@@ -118,12 +111,15 @@ export default function StandaloneChat({}: StandaloneChatProps) {
 
   const chatHistory = async (chat: typeChat) => {
     try {
-      let response: any = await session_chat_history({
-        serverId: currentService?.id,
-        sessionId: chat?._id || "",
-        from: 0,
-        size: 1000,
-      });
+      let response: any = await platformAdapter.commands(
+        "session_chat_history",
+        {
+          serverId: currentService?.id,
+          sessionId: chat?._id || "",
+          from: 0,
+          size: 500,
+        }
+      );
       response = response ? JSON.parse(response) : null;
       console.log("id_history", response);
       const hits = response?.hits?.hits || [];
@@ -149,7 +145,7 @@ export default function StandaloneChat({}: StandaloneChatProps) {
   const chatClose = async () => {
     if (!activeChat?._id) return;
     try {
-      let response: any = await close_session_chat({
+      let response: any = await platformAdapter.commands("close_session_chat", {
         serverId: currentService?.id,
         sessionId: activeChat?._id,
       });
@@ -163,7 +159,7 @@ export default function StandaloneChat({}: StandaloneChatProps) {
   const onSelectChat = async (chat: any) => {
     chatClose();
     try {
-      let response: any = await open_session_chat({
+      let response: any = await platformAdapter.commands("open_session_chat", {
         serverId: currentService?.id,
         sessionId: chat?._id,
       });
@@ -262,7 +258,7 @@ export default function StandaloneChat({}: StandaloneChatProps) {
       });
     }
 
-    update_session_chat({
+    platformAdapter.commands("update_session_chat", {
       serverId: currentService.id,
       sessionId: chatId,
       title,
@@ -272,7 +268,7 @@ export default function StandaloneChat({}: StandaloneChatProps) {
   const handleDelete = async (id: string) => {
     if (!currentService?.id) return;
 
-    await delete_session_chat(currentService.id, id);
+    await platformAdapter.commands("delete_session_chat", currentService.id, id);
   };
 
   return (
