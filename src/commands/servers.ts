@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { emit } from '@tauri-apps/api/event';
 
 import {
   Server,
@@ -17,6 +18,22 @@ import {
 import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useConnectStore } from "@/stores/connectStore";
+
+export function handleLogout(serverId?: string) {
+  const setIsCurrentLogin = useAuthStore.getState().setIsCurrentLogin;
+  const { currentService, setCurrentService, serverList, setServerList } = useConnectStore.getState();
+  const id = serverId || currentService?.id;
+  if (!id) return;
+  setIsCurrentLogin(false);
+  emit("login_or_logout", false);
+  if (currentService?.id === id) {
+    setCurrentService({ ...currentService, profile: null });
+  }
+  const updatedServerList = serverList.map((server) =>
+    server.id === id ? { ...server, profile: null } : server
+  );
+  setServerList(updatedServerList);
+}
 
 // Endpoints that don't require authentication
 const WHITELIST_SERVERS = [
@@ -37,13 +54,10 @@ async function invokeWithErrorHandler<T>(
   args?: Record<string, any>
 ): Promise<T> {
   const isCurrentLogin = useAuthStore.getState().isCurrentLogin;
-  const setIsCurrentLogin = useAuthStore.getState().setIsCurrentLogin;
   const currentService = useConnectStore.getState().currentService;
-  const setCurrentService = useConnectStore.getState().setCurrentService;
-  const serverList = useConnectStore.getState().serverList;
-  const setServerList = useConnectStore.getState().setServerList;
 
   // Not logged in
+  console.log(111111, command, isCurrentLogin, currentService?.profile)
   if (
     !WHITELIST_SERVERS.includes(command) &&
     (!isCurrentLogin || !currentService?.profile)
@@ -79,12 +93,8 @@ async function invokeWithErrorHandler<T>(
     const errorMessage = error || "Command execution failed";
     // 401 Unauthorized
     if (errorMessage.includes("Unauthorized")) {
-      setIsCurrentLogin(false);
-      setCurrentService({ ...currentService, profile: null });
-      const updatedServerList = serverList.map((server) =>
-        server.id === currentService.id ? { ...server, profile: null } : server
-      );
-      setServerList(updatedServerList);
+
+      handleLogout();
     } else {
       addError(command + ":" + errorMessage, "error");
     }

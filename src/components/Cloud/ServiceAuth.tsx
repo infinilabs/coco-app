@@ -2,7 +2,6 @@ import { FC, memo, useCallback, useEffect, useState } from "react";
 import { Copy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { v4 as uuidv4 } from "uuid";
-import { emit } from "@tauri-apps/api/event";
 import {
   getCurrent as getCurrentDeepLinkUrls,
   onOpenUrl,
@@ -15,6 +14,7 @@ import { useConnectStore } from "@/stores/connectStore";
 import { useAppStore } from "@/stores/appStore";
 import { copyToClipboard } from "@/utils";
 import platformAdapter from "@/utils/platformAdapter";
+import { handleLogout } from "@/commands/servers";
 
 interface ServiceAuthProps {
   setRefreshLoading: (loading: boolean) => void;
@@ -31,11 +31,6 @@ const ServiceAuth = memo(
     const addError = useAppStore((state) => state.addError);
 
     const currentService = useConnectStore((state) => state.currentService);
-    const setCurrentService = useConnectStore(
-      (state) => state.setCurrentService
-    );
-    const serverList = useConnectStore((state) => state.serverList);
-    const setServerList = useConnectStore((state) => state.setServerList);
 
     const [loading, setLoading] = useState(false);
 
@@ -57,28 +52,18 @@ const ServiceAuth = memo(
       setLoading(true);
     }, [ssoRequestID, loading, currentService]);
 
-    const onLogout = useCallback(
-      (id: string) => {
-        setRefreshLoading(true);
-        platformAdapter
-          .commands("logout_coco_server", id)
-          .then((res: any) => {
-            console.log("logout_coco_server", id, JSON.stringify(res));
-            emit("login_or_logout", false);
-            // update server profile
-            setCurrentService({ ...currentService, profile: null });
-            const updatedServerList = serverList.map((server) =>
-              server.id === id ? { ...server, profile: null } : server
-            );
-            console.log("updatedServerList", updatedServerList);
-            setServerList(updatedServerList);
-          })
-          .finally(() => {
-            setRefreshLoading(false);
-          });
-      },
-      [currentService, serverList]
-    );
+    const onLogout = useCallback((id: string) => {
+      setRefreshLoading(true);
+      platformAdapter
+        .commands("logout_coco_server", id)
+        .then((res: any) => {
+          console.log("logout_coco_server", id, JSON.stringify(res));
+          handleLogout(id);
+        })
+        .finally(() => {
+          setRefreshLoading(false);
+        });
+    }, []);
 
     const handleOAuthCallback = useCallback(
       async (code: string | null, serverId: string | null) => {

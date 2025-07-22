@@ -64,7 +64,7 @@ export function ServerList({ clearChat }: ServerListProps) {
           const enabledServers = (res as IServer[])?.filter(
             (server) => server.enabled && server.available
           );
-          //console.log("list_coco_servers", enabledServers);
+          console.log("list_coco_servers", enabledServers);
           setServerList(enabledServers);
 
           if (resetSelection && enabledServers.length > 0) {
@@ -79,9 +79,6 @@ export function ServerList({ clearChat }: ServerListProps) {
             }
           }
         })
-        .catch((err: any) => {
-          console.error(err);
-        });
     },
     [currentService?.id]
   );

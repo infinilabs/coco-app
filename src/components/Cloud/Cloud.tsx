@@ -63,9 +63,6 @@ export default function Cloud() {
           }
         }
       })
-      .catch((err: any) => {
-        console.error(err);
-      });
   };
 
   const addServer = (endpointLink: string) => {
