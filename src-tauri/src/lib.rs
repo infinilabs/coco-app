@@ -30,7 +30,7 @@ lazy_static! {
 }
 /// To allow us to access tauri's `AppHandle` when its context is inaccessible,
 /// store it globally. It will be set in `init()`.
-/// 
+///
 /// # WARNING
 ///
 /// You may find this work, but the usage is discouraged and should be generally

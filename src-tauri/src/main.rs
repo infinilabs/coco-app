@@ -42,7 +42,11 @@ fn app_log_dir() -> PathBuf {
 fn setup_panic_hook() {
     std::panic::set_hook(Box::new(|panic_info| {
         let timestamp = chrono::Local::now();
-        let datetime_str = timestamp.format("%Y-%m-%d %H:%M:%S%.3f").to_string();
+        // "%Y-%m-%d %H:%M:%S"
+        //
+        // I would like to use the above format, but Windows does not allow that
+        // and complains with OS error 123.
+        let datetime_str = timestamp.format("%Y-%m-%d-%H-%M-%S").to_string();
 
         let log_dir = app_log_dir();
 
@@ -52,7 +56,7 @@ fn setup_panic_hook() {
             return;
         }
 
-        let panic_file = log_dir.join(format!("{}_panic.log", datetime_str));
+        let panic_file = log_dir.join(format!("{}_rust_panic.log", datetime_str));
 
         // Prepare panic information
         let panic_message = if let Some(s) = panic_info.payload().downcast_ref::<&str>() {
@@ -75,8 +79,8 @@ fn setup_panic_hook() {
         };
 
         let panic_log = format!(
-            "[{}] PANIC: {} at {}\n",
-            datetime_str, panic_message, location
+            "Time: [{}]\nLocation: [{}]\nMessage: [{}]",
+            datetime_str, location, panic_message
         );
 
         // Write to panic file
@@ -98,7 +102,7 @@ fn setup_panic_hook() {
 }
 
 fn main() {
-    // Panic hook should be the first thing to do, everything could panic!
+    // Panic hook setup should be the first thing to do, everything could panic!
     setup_panic_hook();
     coco_lib::run();
 }
