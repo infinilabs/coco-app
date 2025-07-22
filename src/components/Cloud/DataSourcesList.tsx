@@ -4,7 +4,7 @@ import { RefreshCcw } from "lucide-react";
 
 import { DataSourceItem } from "./DataSourceItem";
 import { useConnectStore } from "@/stores/connectStore";
-import { get_connectors_by_server, datasource_search } from "@/commands";
+import platformAdapter from "@/utils/platformAdapter";
 
 export function DataSourcesList({ server }: { server: string }) {
   const { t } = useTranslation();
@@ -17,7 +17,8 @@ export function DataSourcesList({ server }: { server: string }) {
   function initServerAppData() {
     setRefreshLoading(true);
     // fetch connectors data
-    get_connectors_by_server(server)
+    platformAdapter
+      .commands("get_connectors_by_server", server)
       .then((res: any) => {
         // console.log("get_connectors_by_server", res);
         setConnectorData(res, server);
@@ -25,7 +26,8 @@ export function DataSourcesList({ server }: { server: string }) {
       .finally(() => {});
 
     // fetch datasource data
-    datasource_search({ id: server })
+    platformAdapter
+      .commands("datasource_search", { id: server })
       .then((res: any) => {
         // console.log("datasource_search", res);
         setDatasourceData(res, server);

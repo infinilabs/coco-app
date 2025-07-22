@@ -57,7 +57,7 @@ export function ServerList({ clearChat }: ServerListProps) {
           if (!Array.isArray(res)) {
             // If res is not an array, it might be an error message or something else.
             // Log it and don't proceed.
-            console.error("list_coco_servers did not return an array:", res);
+            // console.log("list_coco_servers did not return an array:", res);
             setServerList([]); // Clear the list or handle as appropriate
             return;
           }

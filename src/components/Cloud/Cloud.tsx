@@ -6,13 +6,9 @@ import { Sidebar } from "./Sidebar";
 import { Connect } from "./Connect";
 import { useAppStore } from "@/stores/appStore";
 import { useConnectStore } from "@/stores/connectStore";
-import {
-  list_coco_servers,
-  add_coco_server,
-  refresh_coco_server_info,
-} from "@/commands";
 import ServiceInfo from "./ServiceInfo";
 import ServiceAuth from "./ServiceAuth";
+import platformAdapter from "@/utils/platformAdapter";
 
 export default function Cloud() {
   const SidebarRef = useRef<{ refreshData: () => void }>(null);
@@ -38,7 +34,8 @@ export default function Cloud() {
   }, [JSON.stringify(currentService)]);
 
   const fetchServers = async (resetSelection: boolean) => {
-    list_coco_servers()
+    platformAdapter
+      .commands("list_coco_servers")
       .then((res: any) => {
         if (errors.length > 0) {
           res = (res || []).map((item: any) => {
@@ -84,7 +81,8 @@ export default function Cloud() {
 
     setRefreshLoading(true);
 
-    return add_coco_server(endpointLink)
+    return platformAdapter
+      .commands("add_coco_server", endpointLink)
       .then((res: any) => {
         // console.log("add_coco_server", res);
         fetchServers(false).then((r) => {
@@ -100,7 +98,8 @@ export default function Cloud() {
   const refreshClick = useCallback(
     (id: string) => {
       setRefreshLoading(true);
-      refresh_coco_server_info(id)
+      platformAdapter
+        .commands("refresh_coco_server_info", id)
         .then((res: any) => {
           console.log("refresh_coco_server_info", id, res);
           fetchServers(false).then((r) => {

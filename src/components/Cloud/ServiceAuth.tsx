@@ -13,8 +13,8 @@ import { UserProfile } from "./UserProfile";
 import { OpenURLWithBrowser } from "@/utils";
 import { useConnectStore } from "@/stores/connectStore";
 import { useAppStore } from "@/stores/appStore";
-import { logout_coco_server, handle_sso_callback } from "@/commands";
 import { copyToClipboard } from "@/utils";
+import platformAdapter from "@/utils/platformAdapter";
 
 interface ServiceAuthProps {
   setRefreshLoading: (loading: boolean) => void;
@@ -60,7 +60,8 @@ const ServiceAuth = memo(
     const onLogout = useCallback(
       (id: string) => {
         setRefreshLoading(true);
-        logout_coco_server(id)
+        platformAdapter
+          .commands("logout_coco_server", id)
           .then((res: any) => {
             console.log("logout_coco_server", id, JSON.stringify(res));
             emit("login_or_logout", false);
@@ -88,7 +89,7 @@ const ServiceAuth = memo(
 
         try {
           console.log("Handling OAuth callback:", { code, serverId });
-          await handle_sso_callback({
+          await platformAdapter.commands("handle_sso_callback", {
             serverId: serverId, // Make sure 'server_id' is the correct argument
             requestId: ssoRequestID, // Make sure 'request_id' is the correct argument
             code: code,
