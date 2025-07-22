@@ -48,7 +48,7 @@ export default function Cloud() {
             return item;
           });
         }
-        // console.log("list_coco_servers", res);
+        console.log("list_coco_servers", res);
         setServerList(res);
 
         if (resetSelection && res.length > 0) {
