@@ -37,13 +37,17 @@ async function invokeWithErrorHandler<T>(
   args?: Record<string, any>
 ): Promise<T> {
   const isCurrentLogin = useAuthStore.getState().isCurrentLogin;
+  const setIsCurrentLogin = useAuthStore.getState().setIsCurrentLogin;
   const currentService = useConnectStore.getState().currentService;
   const setCurrentService = useConnectStore.getState().setCurrentService;
   const serverList = useConnectStore.getState().serverList;
   const setServerList = useConnectStore.getState().setServerList;
 
   // Not logged in
-  if (!WHITELIST_SERVERS.includes(command) && (!isCurrentLogin || !currentService?.profile)) {
+  if (
+    !WHITELIST_SERVERS.includes(command) &&
+    (!isCurrentLogin || !currentService?.profile)
+  ) {
     console.error("This command requires authentication");
     throw new Error("This command requires authentication");
   }
@@ -75,13 +79,15 @@ async function invokeWithErrorHandler<T>(
     const errorMessage = error || "Command execution failed";
     // 401 Unauthorized
     if (errorMessage.includes("Unauthorized")) {
+      setIsCurrentLogin(false);
       setCurrentService({ ...currentService, profile: null });
       const updatedServerList = serverList.map((server) =>
         server.id === currentService.id ? { ...server, profile: null } : server
       );
       setServerList(updatedServerList);
+    } else {
+      addError(command + ":" + errorMessage, "error");
     }
-    addError(command + ":" + errorMessage, "error");
     throw error;
   }
 }
