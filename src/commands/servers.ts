@@ -43,9 +43,7 @@ async function invokeWithErrorHandler<T>(
   const setServerList = useConnectStore.getState().setServerList;
 
   // Not logged in
-  if(!currentService?.profile) return {} as T;
-
-  if (!WHITELIST_SERVERS.includes(command) && !isCurrentLogin) {
+  if (!WHITELIST_SERVERS.includes(command) && (!isCurrentLogin || !currentService?.profile)) {
     console.error("This command requires authentication");
     throw new Error("This command requires authentication");
   }
@@ -399,4 +397,8 @@ export const query_coco_fusion = (payload: {
   return invokeWithErrorHandler<MultiSourceQueryResponse>("query_coco_fusion", {
     ...payload,
   });
+};
+
+export const get_app_search_source = () => {
+  return invokeWithErrorHandler<void>("get_app_search_source");
 };
