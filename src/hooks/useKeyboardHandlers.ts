@@ -3,9 +3,7 @@ import { useCallback, useEffect } from "react";
 import { useSearchStore } from "@/stores/searchStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 
-interface KeyboardHandlersProps {}
-
-export function useKeyboardHandlers({}: KeyboardHandlersProps) {
+export function useKeyboardHandlers() {
   const {
     setSourceData,
     visibleExtensionStore,

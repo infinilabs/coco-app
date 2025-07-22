@@ -128,11 +128,7 @@ export default function ChatInput({
     }
   }, [inputValue, disabled, onSend]);
 
-  useKeyboardHandlers({
-    isChatMode,
-    handleSubmit,
-    curChatEnd,
-  });
+  useKeyboardHandlers();
 
   useKeyPress(`${modifierKey}.${returnToInput}`, handleToggleFocus);
 
