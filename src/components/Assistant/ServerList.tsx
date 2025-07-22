@@ -54,6 +54,13 @@ export function ServerList({ clearChat }: ServerListProps) {
       platformAdapter
         .commands("list_coco_servers")
         .then((res: any) => {
+          if (!Array.isArray(res)) {
+            // If res is not an array, it might be an error message or something else.
+            // Log it and don't proceed.
+            console.error("list_coco_servers did not return an array:", res);
+            setServerList([]); // Clear the list or handle as appropriate
+            return;
+          }
           const enabledServers = (res as IServer[])?.filter(
             (server) => server.enabled && server.available
           );
