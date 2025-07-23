@@ -204,7 +204,9 @@ pub fn run() {
                     Ok((_found_invalid_extensions, extensions)) => {
                         // Initializing extension relies on SearchSourceRegistry, so this should
                         // be executed after `app.manage(registry)`
-                        if let Err(e) = extension::init_extensions(app_handle.clone(), extensions).await {
+                        if let Err(e) =
+                            extension::init_extensions(app_handle.clone(), extensions).await
+                        {
                             log::error!("initializing extensions failed with error [{}]", e);
                         }
                     }
