@@ -267,6 +267,11 @@ pub async fn chat_create<R: Runtime>(
             );
             let expected_session_id = expected_session_id.as_ref().expect("variable [expected_session_id] should be set to Some when we receive the first log");
 
+            log::info!("reply_to_message: {}", reply_to_message);
+            log::info!("expected_reply_id: {}", expected_reply_id);
+            log::info!("session_id: {}", session_id);
+            log::info!("expected_session_id: {}", expected_session_id);
+
             if reply_to_message != expected_reply_id || session_id != expected_session_id {
                 log::info!("Skipping message due to ID mismatch");
                 continue;
@@ -439,6 +444,11 @@ pub async fn chat_chat<R: Runtime>(
                 "variable [expected_reply_id] should be set to Some when we receive the first log",
             );
             let expected_session_id = expected_session_id.as_ref().expect("variable [expected_session_id] should be set to Some when we receive the first log");
+
+            log::info!("reply_to_message: {}", reply_to_message);
+            log::info!("expected_reply_id: {}", expected_reply_id);
+            log::info!("session_id: {}", session_id);
+            log::info!("expected_session_id: {}", expected_session_id);
 
             if reply_to_message != expected_reply_id || session_id != expected_session_id {
                 log::info!("Skipping message due to ID mismatch");

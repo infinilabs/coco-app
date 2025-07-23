@@ -28,6 +28,7 @@ interface ChatContentProps {
   getFileUrl: (path: string) => string;
   formatUrl?: (data: any) => string;
   curSessionIdRef: React.MutableRefObject<string>;
+  curIdRef: React.MutableRefObject<string>;
 }
 
 export const ChatContent = ({
@@ -46,6 +47,7 @@ export const ChatContent = ({
   handleSendMessage,
   formatUrl,
   curSessionIdRef,
+  curIdRef,
 }: ChatContentProps) => {
   console.log("curSessionIdRef", curSessionIdRef.current === activeChat?._id);
   // const sessionId = useConnectStore((state) => state.currentSessionId);
@@ -117,6 +119,11 @@ export const ChatContent = ({
           />
         ))}
 
+        {/* <div>activeChat:{activeChat?._source?.id}</div>
+        <div>curIdRef:{curIdRef.current}</div>
+        <div>session_id: {activeChat?._source?.session_id}</div>
+        <div>curSessionIdRef:{curSessionIdRef.current}</div> */}
+
         {(!curChatEnd ||
           query_intent ||
           tools ||
@@ -125,7 +132,7 @@ export const ChatContent = ({
           deep_read ||
           think ||
           response) &&
-        activeChat?._id === curSessionIdRef.current ? (
+        activeChat?._source?.id ? (
           <ChatMessage
             key={"current"}
             message={{

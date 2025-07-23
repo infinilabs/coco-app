@@ -181,6 +181,7 @@ const ChatAI = memo(
         curSessionIdRef,
         setChats,
         dealMsgRef,
+        setLoadingStep,
         isChatPage,
         isSearchActive,
         isDeepThinkActive,
@@ -261,6 +262,7 @@ const ChatAI = memo(
         async (chat: Chat) => {
           setTimedoutShow(false);
           clearAllChunkData();
+          
           await cancelChat(activeChat);
           await chatClose(activeChat);
           const response = await openSessionChat(chat);
@@ -400,6 +402,7 @@ const ChatAI = memo(
                   getFileUrl={getFileUrl}
                   formatUrl={formatUrl}
                   curSessionIdRef={curSessionIdRef}
+                  curIdRef={curIdRef}
                 />
                 <Splash assistantIDs={assistantIDs} startPage={startPage} />
               </>

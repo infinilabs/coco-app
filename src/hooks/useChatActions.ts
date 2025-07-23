@@ -20,12 +20,13 @@ export function useChatActions(
   curSessionIdRef: React.MutableRefObject<string>,
   setChats: (chats: Chat[]) => void,
   dealMsgRef: React.MutableRefObject<((msg: string) => void) | null>,
+  setLoadingStep: (loading: Record<string, boolean>) => void,
   isChatPage?: boolean,
   isSearchActive?: boolean,
   isDeepThinkActive?: boolean,
   isMCPActive?: boolean,
   changeInput?: (val: string) => void,
-  showChatHistory?: boolean
+  showChatHistory?: boolean,
 ) {
   const isCurrentLogin = useAuthStore((state) => state.isCurrentLogin);
 
@@ -79,6 +80,16 @@ export function useChatActions(
 
       // Stop listening for streaming data.
       cleanupListeners();
+
+      setLoadingStep({
+        query_intent: false,
+        tools: false,
+        fetch_source: false,
+        pick_source: false,
+        deep_read: false,
+        think: false,
+        response: false,
+      })
 
       if (!activeChat?._id) return;
       let response: any;
@@ -170,12 +181,12 @@ export function useChatActions(
       setCurChatEnd(false);
       setVisibleStartPage(false);
       setTimedoutShow(false);
-
-      // 3. Cleaning and preparation
-      await chatClose(activeChat);
       clearAllChunkData();
       setQuestion(value);
 
+      // 3. Cleaning and preparation
+      await chatClose(activeChat);
+      
       // 4. request API
       const queryParams = {
         search: isSearchActive,
@@ -235,8 +246,6 @@ export function useChatActions(
       setCurChatEnd(false);
       setVisibleStartPage(false);
       setTimedoutShow(false);
-
-      // 3.
       clearAllChunkData();
       setQuestion(content);
 
