@@ -212,40 +212,64 @@ pub async fn chat_create<R: Runtime>(
     while let Ok(Some(line)) = lines.next_line().await {
         // log::info!("Received chat stream line: {}", &line);
 
+        let chunk_data =
+            serde_json::from_str::<serde_json::Value>(&line).unwrap_or_else(|_e| {
+                panic!(
+                    "invalid stream response: received a line from the stream that is not valid JSON {:?}",
+                    line
+                )
+            });
+
         if first_log {
-            if let Ok(chunk_data) = serde_json::from_str::<serde_json::Value>(&line) {
-                if let Some(payload) = chunk_data.get("payload") {
-                    if let Some(id) = payload.get("id").and_then(|v| v.as_str()) {
-                        expected_reply_id = Some(id.to_string());
-                    }
-                    if let Some(session_id) = payload.get("session_id").and_then(|v| v.as_str()) {
-                        expected_session_id = Some(session_id.to_string());
-                    }
-                }
-            }
+            let field_payload = chunk_data.get("payload").unwrap_or_else(|| {
+                panic!("invalid stream response: the first line from the stream should include a [payload] field")
+            });
+            let reply_id = field_payload
+                .get("id")
+                .unwrap_or_else(|| {
+                    panic!(
+                        "invalid stream response: the first JSON should contain field [payload.id]"
+                    );
+                })
+                .as_str()
+                .unwrap_or_else(|| {
+                    panic!("invalid stream response: field [payload.id] should be a string")
+                });
+            expected_reply_id = Some(reply_id.to_string());
+            let session_id = field_payload
+                .get("session_id")
+                .unwrap_or_else(|| {
+                    panic!("invalid stream response: the first JSON should contain field [payload.session_id]");
+                })
+                .as_str()
+                .unwrap_or_else(|| panic!("invalid stream response: field [payload.session_id] should be a string"));
+            expected_session_id = Some(session_id.to_string());
+
             log::info!("first stream line: {}", &line);
-            log::info!(
-                "expected_reply_id: {}",
-                &expected_reply_id.as_ref().unwrap_or(&"None".to_string())
-            );
-            log::info!(
-                "expected_session_id: {}",
-                &expected_session_id.as_ref().unwrap_or(&"None".to_string())
-            );
+            log::info!("expected_reply_id: {}", reply_id);
+            log::info!("expected_session_id: {}", session_id);
 
             first_log = false;
         } else {
-            if let Ok(chunk_data) = serde_json::from_str::<serde_json::Value>(&line) {
-                let reply_to_message = chunk_data.get("reply_to_message").and_then(|v| v.as_str());
-                let session_id = chunk_data.get("session_id").and_then(|v| v.as_str());
+            let reply_to_message = chunk_data
+                .get("reply_to_message")
+                .unwrap_or_else(|| panic!("invalid stream response: All log entries except the first one should include the field [reply_to_message]")).as_str().unwrap_or_else(|| {
+                  panic!("invalid stream response: field [reply_to_message] should be a string")
+                });
+            let session_id = chunk_data
+                .get("session_id")
+                .unwrap_or_else(|| panic!("invalid stream response: All log entries except the first one should include the field [session_id]")).as_str().unwrap_or_else(|| {
+                  panic!("invalid stream response: field [session_id] should be a string")
+                });
 
-                if (expected_reply_id.is_some() && reply_to_message != expected_reply_id.as_deref())
-                    || (expected_session_id.is_some()
-                        && session_id != expected_session_id.as_deref())
-                {
-                    log::info!("Skipping message due to ID mismatch");
-                    continue;
-                }
+            let expected_reply_id = expected_reply_id.as_ref().expect(
+                "variable [expected_reply_id] should be set to Some when we receive the first log",
+            );
+            let expected_session_id = expected_session_id.as_ref().expect("variable [expected_session_id] should be set to Some when we receive the first log");
+
+            if reply_to_message != expected_reply_id || session_id != expected_session_id {
+                log::info!("Skipping message due to ID mismatch");
+                continue;
             }
         }
 
@@ -349,44 +373,76 @@ pub async fn chat_chat<R: Runtime>(
 
     while let Ok(Some(line)) = lines.next_line().await {
         // log::info!("Received chat stream line: {}", &line);
-        if first_log {
-            if let Ok(array_data) = serde_json::from_str::<Vec<serde_json::Value>>(&line) {
-                if let Some(first_item) = array_data.get(0) {
-                    if let Some(id) = first_item.get("_id").and_then(|v| v.as_str()) {
-                        expected_reply_id = Some(id.to_string());
-                    }
 
-                    if let Some(source) = first_item.get("_source") {
-                        if let Some(session_id) = source.get("session_id").and_then(|v| v.as_str())
-                        {
-                            expected_session_id = Some(session_id.to_string());
-                        }
-                    }
-                }
-            }
+        let chunk_data =
+            serde_json::from_str::<serde_json::Value>(&line).unwrap_or_else(|_e| {
+                panic!(
+                    "invalid stream response: received a line from the stream that is not valid JSON {:?}",
+                    line
+                )
+            });
+
+        if first_log {
+            // the first line should be an array
+            let chunk_data = match chunk_data {
+                Value::Array(a) => a,
+                _ => panic!("invalid stream response: the first line should be an array"),
+            };
+            let first_element = chunk_data
+                .get(0)
+                .expect("the first line should be a non-empty array");
+            let reply_id = first_element
+                .get("_id")
+                .unwrap_or_else(|| {
+                    panic!(
+                        "invalid stream response: the first element in the array should contain field [id]"
+                    );
+                })
+                .as_str()
+                .unwrap_or_else(|| {
+                    panic!("invalid stream response: field [id] should be a string")
+                });
+            expected_reply_id = Some(reply_id.to_string());
+
+            let source = first_element.get("_source").unwrap_or_else(|| {
+                panic!("invalid stream response: the first element should contain field [_source]")
+            });
+            let session_id = source
+                .get("session_id")
+                .unwrap_or_else(|| {
+                    panic!("invalid stream response: field [_source.session_id] should exist")
+                })
+                .as_str()
+                .unwrap_or_else(|| {
+                    panic!("invalid stream response: field [_source.session_id] should be a string")
+                });
+            expected_session_id = Some(session_id.to_string());
 
             log::info!("first stream line: {}", &line);
-            log::info!(
-                "expected_reply_id: {}",
-                &expected_reply_id.as_ref().unwrap_or(&"None".to_string())
-            );
-            log::info!(
-                "expected_session_id: {}",
-                &expected_session_id.as_ref().unwrap_or(&"None".to_string())
-            );
+            log::info!("expected_reply_id: {}", reply_id);
+            log::info!("expected_session_id: {}", session_id);
+
             first_log = false;
         } else {
-            if let Ok(chunk_data) = serde_json::from_str::<serde_json::Value>(&line) {
-                let reply_to_message = chunk_data.get("reply_to_message").and_then(|v| v.as_str());
-                let session_id = chunk_data.get("session_id").and_then(|v| v.as_str());
+            let reply_to_message = chunk_data
+                .get("reply_to_message")
+                .unwrap_or_else(|| panic!("invalid stream response: All log entries except the first one should include the field [reply_to_message]")).as_str().unwrap_or_else(|| {
+                  panic!("invalid stream response: field [reply_to_message] should be a string")
+                });
+            let session_id = chunk_data
+                .get("session_id")
+                .unwrap_or_else(|| panic!("invalid stream response: All log entries except the first one should include the field [session_id]")).as_str().unwrap_or_else(|| {
+                  panic!("invalid stream response: field [session_id] should be a string")
+                });
 
-                if (expected_reply_id.is_some() && reply_to_message != expected_reply_id.as_deref())
-                    || (expected_session_id.is_some()
-                        && session_id != expected_session_id.as_deref())
-                {
-                    log::info!("Skipping message due to ID mismatch");
-                    continue;
-                }
+            let expected_reply_id = expected_reply_id.as_ref().expect(
+                "variable [expected_reply_id] should be set to Some when we receive the first log",
+            );
+            let expected_session_id = expected_session_id.as_ref().expect("variable [expected_session_id] should be set to Some when we receive the first log");
+
+            if reply_to_message != expected_reply_id || session_id != expected_session_id {
+                log::info!("Skipping message due to ID mismatch");
+                continue;
             }
         }
 
