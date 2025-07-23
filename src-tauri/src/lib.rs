@@ -196,6 +196,11 @@ pub fn run() {
             app.manage(registry); // Store registry in Tauri's app state
             app.manage(server::websocket::WebSocketManager::default());
 
+            // This has to be called before initializing extensions as doing that
+            // requires access to the shortcut store, which will be set by this
+            // function.
+            shortcut::enable_shortcut(app);
+
             block_on(async {
                 init(app.handle()).await;
 
@@ -215,8 +220,6 @@ pub fn run() {
                     }
                 }
             });
-
-            shortcut::enable_shortcut(app);
 
             ensure_autostart_state_consistent(app)?;
 
