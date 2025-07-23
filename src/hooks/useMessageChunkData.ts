@@ -78,17 +78,28 @@ export default function useMessageChunkData() {
   };
 
   const clearAllChunkData = () => {
-    setQuery_intent(undefined);
-    setTools(undefined);
-    setFetch_source(undefined);
-    setPick_source(undefined);
-    setDeep_read(undefined);
-    setThink(undefined);
-    setResponse(undefined);
+    return new Promise<void>((resolve) => {
+      setQuery_intent(undefined);
+      setTools(undefined);
+      setFetch_source(undefined);
+      setPick_source(undefined);
+      setDeep_read(undefined);
+      setThink(undefined);
+      setResponse(undefined);
+      setTimeout(resolve, 0);
+    });
   };
 
   return {
-    data: { query_intent, tools, fetch_source, pick_source, deep_read, think, response },
+    data: {
+      query_intent,
+      tools,
+      fetch_source,
+      pick_source,
+      deep_read,
+      think,
+      response,
+    },
     handlers,
     clearAllChunkData,
   };

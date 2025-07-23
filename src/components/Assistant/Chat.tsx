@@ -236,7 +236,7 @@ const ChatAI = memo(
               return;
             }
             if (!activeChat?._id) {
-              await createNewChat(value, activeChat);
+              await createNewChat(value);
             } else {
               await handleSendMessage(value, activeChat);
             }
@@ -261,8 +261,8 @@ const ChatAI = memo(
       const onSelectChat = useCallback(
         async (chat: Chat) => {
           setTimedoutShow(false);
-          clearAllChunkData();
-          
+
+          await clearAllChunkData();
           await cancelChat(activeChat);
           await chatClose(activeChat);
           const response = await openSessionChat(chat);

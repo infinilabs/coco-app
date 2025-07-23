@@ -26,7 +26,7 @@ export function useChatActions(
   isDeepThinkActive?: boolean,
   isMCPActive?: boolean,
   changeInput?: (val: string) => void,
-  showChatHistory?: boolean,
+  showChatHistory?: boolean
 ) {
   const isCurrentLogin = useAuthStore((state) => state.isCurrentLogin);
 
@@ -50,6 +50,16 @@ export function useChatActions(
     error?: () => void;
   }>({});
 
+  const cleanupListeners = useCallback(() => {
+    if (unlistenersRef.current.chatMessage) {
+      unlistenersRef.current.chatMessage();
+    }
+    if (unlistenersRef.current.error) {
+      unlistenersRef.current.error();
+    }
+    unlistenersRef.current = {};
+  }, []);
+
   const chatClose = useCallback(
     async (activeChat?: Chat) => {
       if (!activeChat?._id) return;
@@ -71,25 +81,29 @@ export function useChatActions(
     [currentService?.id, isTauri]
   );
 
+  const resetChatState = useCallback(() => {
+    setCurChatEnd(true);
+
+    // Stop listening for streaming data.
+    cleanupListeners();
+
+    setLoadingStep({
+      query_intent: false,
+      tools: false,
+      fetch_source: false,
+      pick_source: false,
+      deep_read: false,
+      think: false,
+      response: false,
+    });
+  }, [cleanupListeners]);
+
   // 1. onSelectChat
   // 2. dealMsg setTimedoutShow
   // 3. disabledChange Manual shutdown
   const cancelChat = useCallback(
     async (activeChat?: Chat) => {
-      setCurChatEnd(true);
-
-      // Stop listening for streaming data.
-      cleanupListeners();
-
-      setLoadingStep({
-        query_intent: false,
-        tools: false,
-        fetch_source: false,
-        pick_source: false,
-        deep_read: false,
-        think: false,
-        response: false,
-      })
+      resetChatState();
 
       if (!activeChat?._id) return;
       let response: any;
@@ -170,23 +184,22 @@ export function useChatActions(
   }, [isChatPage]);
 
   const createNewChat = useCallback(
-    async (value: string = "", activeChat?: Chat) => {
+    async (value: string = "") => {
       if (!value) return;
 
-      // 1. Set up the listener first
+      // 1. Cleaning and preparation
+      await clearAllChunkData();
+
+      // 2. Set up the listener first
       await setupListeners();
 
-      // 2. Update the status again
+      // 3. Update the status again
       changeInput && changeInput("");
       setCurChatEnd(false);
       setVisibleStartPage(false);
       setTimedoutShow(false);
-      clearAllChunkData();
       setQuestion(value);
 
-      // 3. Cleaning and preparation
-      await chatClose(activeChat);
-      
       // 4. request API
       const queryParams = {
         search: isSearchActive,
@@ -206,7 +219,7 @@ export function useChatActions(
           clientId: `chat-stream-${clientId}`,
         });
         console.log("_create end", value);
-        setCurChatEnd(true);
+        resetChatState();
       } else {
         await streamPost({
           url: "/chat/_create",
@@ -239,14 +252,16 @@ export function useChatActions(
       if (!newChat?._id || !content) return;
 
       // 1.
-      await setupListeners();
+      await clearAllChunkData();
 
       // 2.
+      await setupListeners();
+
+      // 3.
       changeInput && changeInput("");
       setCurChatEnd(false);
       setVisibleStartPage(false);
       setTimedoutShow(false);
-      clearAllChunkData();
       setQuestion(content);
 
       const queryParams = {
@@ -268,7 +283,7 @@ export function useChatActions(
           clientId: `chat-stream-${clientId}`,
         });
         console.log("chat_chat end", content);
-        setCurChatEnd(true);
+        resetChatState();
       } else {
         await streamPost({
           url: `/chat/${newChat?._id}/_chat`,
@@ -320,7 +335,11 @@ export function useChatActions(
           if (Array.isArray(response)) {
             curIdRef.current = response[0]?._id;
             curSessionIdRef.current = response[0]?._source?.session_id;
-            console.log("curIdRef-curSessionIdRef-Array", curIdRef.current, curSessionIdRef.current);
+            console.log(
+              "curIdRef-curSessionIdRef-Array",
+              curIdRef.current,
+              curSessionIdRef.current
+            );
             updatedChat = {
               ...updatedChatRef.current,
               messages: [
@@ -333,7 +352,11 @@ export function useChatActions(
             const newChat: Chat = response;
             curIdRef.current = response?.payload?.id;
             curSessionIdRef.current = response?.payload?.session_id;
-            console.log("curIdRef-curSessionIdRef", curIdRef.current, curSessionIdRef.current);
+            console.log(
+              "curIdRef-curSessionIdRef",
+              curIdRef.current,
+              curSessionIdRef.current
+            );
 
             newChat._source = {
               ...response?.payload,
@@ -356,16 +379,6 @@ export function useChatActions(
     },
     [changeInput, setActiveChat, setCurChatEnd, setVisibleStartPage]
   );
-
-  const cleanupListeners = useCallback(() => {
-    if (unlistenersRef.current.chatMessage) {
-      unlistenersRef.current.chatMessage();
-    }
-    if (unlistenersRef.current.error) {
-      unlistenersRef.current.error();
-    }
-    unlistenersRef.current = {};
-  }, []);
 
   const setupListeners = useCallback(async () => {
     cleanupListeners();
