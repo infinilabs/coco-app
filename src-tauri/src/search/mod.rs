@@ -83,10 +83,20 @@ pub async fn query_coco_fusion(
     let timeout_duration = Duration::from_millis(query_timeout);
 
     log::debug!(
-        "{}(): {:?}, timeout: {:?}",
+        "{}() invoked with parameters: from: [{}], size: [{}], query_strings: [{:?}], timeout: [{:?}]",
         function_name!(),
+        from,
+        size,
         query_strings,
         timeout_duration
+    );
+
+    log::debug!(
+        "will query querysources {:?}",
+        sources_list
+            .iter()
+            .map(|search_source| search_source.get_type().id.clone())
+            .collect::<Vec<String>>()
     );
 
     let search_query = SearchQuery::new(from, size, query_strings.clone());
@@ -135,7 +145,6 @@ pub async fn query_coco_fusion(
     } else {
         for query_source_trait_object in sources_list {
             let query_source = query_source_trait_object.get_type().clone();
-            log::debug!("will query querysource [{}]", query_source.id);
             futures.push(same_type_futures(
                 query_source,
                 query_source_trait_object,
