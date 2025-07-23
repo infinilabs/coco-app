@@ -107,6 +107,8 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
             onKeyDown={(event) => {
               if (event.key !== "Enter") return;
 
+              event.stopPropagation();
+
               const value = event.currentTarget.value;
 
               onRename(item._id || "", value);
