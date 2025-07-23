@@ -54,6 +54,7 @@ Information about release notes of Coco Server is provided here.
 - style: splash adapts to the width of mobile phones #768
 - chore: search-chat add language and formatUrl parameters #775
 - chore: not request the interface if not logged in #795
+- chore: display backtrace in panic log #805
 
 ## 0.6.0 (2025-06-29)
 
