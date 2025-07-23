@@ -35,6 +35,7 @@ Information about release notes of Coco Server is provided here.
 - fix: enter key problem #794
 - fix: fix selection issue after renaming #800
 - fix: fix shortcut issue in windows context menu #804
+- fix: panic caused by "state() called before manage()" #806
 
 ### ✈️ Improvements
 
