@@ -16,6 +16,7 @@ export function useChatActions(
   setTimedoutShow: (value: boolean) => void,
   clearAllChunkData: () => void,
   setQuestion: (value: string) => void,
+  curIdRef: React.MutableRefObject<string>,
   curSessionIdRef: React.MutableRefObject<string>,
   setChats: (chats: Chat[]) => void,
   dealMsgRef: React.MutableRefObject<((msg: string) => void) | null>,
@@ -308,8 +309,9 @@ export function useChatActions(
 
           let updatedChat: Chat;
           if (Array.isArray(response)) {
+            curIdRef.current = response[0]?._id;
             curSessionIdRef.current = response[0]?._source?.session_id;
-            console.log("first-curSessionIdRef-Array", curSessionIdRef.current);
+            console.log("curIdRef-curSessionIdRef-Array", curSessionIdRef.current);
             updatedChat = {
               ...updatedChatRef.current,
               messages: [
@@ -320,8 +322,9 @@ export function useChatActions(
             console.log("array", updatedChat, updatedChatRef.current?.messages);
           } else {
             const newChat: Chat = response;
+            curIdRef.current = response?.payload?.id;
             curSessionIdRef.current = response?.payload?.session_id;
-            console.log("first-curSessionIdRef", curSessionIdRef.current);
+            console.log("curIdRef-curSessionIdRef", curIdRef.current, curSessionIdRef.current);
 
             newChat._source = {
               ...response?.payload,

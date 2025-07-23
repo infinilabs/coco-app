@@ -93,6 +93,7 @@ const ChatAI = memo(
       const [activeChat, setActiveChat] = useState<Chat>();
       const [timedoutShow, setTimedoutShow] = useState(false);
 
+      const curIdRef = useRef("");
       const curSessionIdRef = useRef("");
 
       const [isSidebarOpenChat, setIsSidebarOpenChat] = useState(isSidebarOpen);
@@ -176,6 +177,7 @@ const ChatAI = memo(
         setTimedoutShow,
         clearAllChunkData,
         setQuestion,
+        curIdRef,
         curSessionIdRef,
         setChats,
         dealMsgRef,
@@ -188,6 +190,7 @@ const ChatAI = memo(
       );
 
       const { dealMsg } = useMessageHandler(
+        curIdRef,
         curSessionIdRef,
         setCurChatEnd,
         setTimedoutShow,
