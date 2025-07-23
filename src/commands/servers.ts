@@ -414,7 +414,3 @@ export const query_coco_fusion = (payload: {
     ...payload,
   });
 };
-
-export const get_app_search_source = () => {
-  return invokeWithErrorHandler<void>("get_app_search_source");
-};

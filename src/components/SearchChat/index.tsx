@@ -125,7 +125,7 @@ function SearchChat({
   useEffect(() => {
     const init = async () => {
       await initializeListeners_auth();
-      await platformAdapter.commands("get_app_search_source");
+      await platformAdapter.invokeBackend("get_app_search_source");
     };
 
     init();
