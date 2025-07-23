@@ -48,7 +48,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [isKeyboardMode, setIsKeyboardMode] = useState(false);
   const taskIdRef = useRef(nanoid());
-  const [data, setData] = useState<Data>();
+  const [data, setData] = useState<Data>({ list: [] });
 
   const querySourceTimeoutRef = useRef(querySourceTimeout);
   useEffect(() => {
@@ -108,12 +108,15 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     }
 
     console.log("_docs", from, queryStrings, response);
-    const list = response?.hits || [];
-    const total = response?.total_hits || 0;
+    const list = response?.hits ?? [];
+    const total = response?.total_hits ?? 0;
     setTotal(total);
 
     if (taskId === taskIdRef.current) {
-      setData({ list });
+      setData((prev) => ({
+        ...prev,
+        list: prev.list.concat(list),
+      }));
     }
 
     return {
