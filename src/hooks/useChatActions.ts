@@ -311,7 +311,7 @@ export function useChatActions(
           if (Array.isArray(response)) {
             curIdRef.current = response[0]?._id;
             curSessionIdRef.current = response[0]?._source?.session_id;
-            console.log("curIdRef-curSessionIdRef-Array", curSessionIdRef.current);
+            console.log("curIdRef-curSessionIdRef-Array", curIdRef.current, curSessionIdRef.current);
             updatedChat = {
               ...updatedChatRef.current,
               messages: [
