@@ -202,7 +202,7 @@ pub async fn chat_create<R: Runtime>(
         stream.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)),
     );
     let mut lines = tokio::io::BufReader::new(reader).lines();
-    let mut first_log = true;
+    let mut first_line = true;
 
     let mut expected_reply_id: Option<String> = None;
     let mut expected_session_id: Option<String> = None;
@@ -220,7 +220,7 @@ pub async fn chat_create<R: Runtime>(
                 )
             });
 
-        if first_log {
+        if first_line {
             let field_payload = chunk_data.get("payload").unwrap_or_else(|| {
                 panic!("invalid stream response: the first line from the stream should include a [payload] field")
             });
@@ -249,7 +249,7 @@ pub async fn chat_create<R: Runtime>(
             log::info!("expected_reply_id: {}", reply_id);
             log::info!("expected_session_id: {}", session_id);
 
-            first_log = false;
+            first_line = false;
         } else {
             let reply_to_message = chunk_data
                 .get("reply_to_message")
@@ -364,7 +364,7 @@ pub async fn chat_chat<R: Runtime>(
         stream.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)),
     );
     let mut lines = tokio::io::BufReader::new(reader).lines();
-    let mut first_log = true;
+    let mut first_line = true;
 
     let mut expected_reply_id: Option<String> = None;
     let mut expected_session_id: Option<String> = None;
@@ -382,7 +382,7 @@ pub async fn chat_chat<R: Runtime>(
                 )
             });
 
-        if first_log {
+        if first_line {
             // the first line should be an array
             let chunk_data = match chunk_data {
                 Value::Array(a) => a,
@@ -422,7 +422,7 @@ pub async fn chat_chat<R: Runtime>(
             log::info!("expected_reply_id: {}", reply_id);
             log::info!("expected_session_id: {}", session_id);
 
-            first_log = false;
+            first_line = false;
         } else {
             let reply_to_message = chunk_data
                 .get("reply_to_message")
