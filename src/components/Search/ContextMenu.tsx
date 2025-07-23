@@ -142,7 +142,9 @@ const ContextMenu = ({ formatUrl }: ContextMenuProps) => {
           type === "AI Assistant" ||
           id === "Extension Store",
         clickEvent() {
-          copyToClipboard(formatUrl && formatUrl(selectedSearchContent) || url);
+          copyToClipboard(
+            (formatUrl && formatUrl(selectedSearchContent)) || url
+          );
         },
       },
       {
@@ -169,7 +171,7 @@ const ContextMenu = ({ formatUrl }: ContextMenuProps) => {
         name: t("search.contextMenu.copyQuestionAndAnswer"),
         icon: <Copy />,
         keys: isMac ? ["⌘", "L"] : ["Ctrl", "L"],
-        shortcut: isMac ? "meta.l" : "ctrl+l",
+        shortcut: isMac ? "meta.l" : "ctrl.l",
         hide: category !== "Calculator",
         clickEvent() {
           copyToClipboard(`${query.value} = ${result.value}`);

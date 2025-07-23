@@ -34,6 +34,7 @@ Information about release notes of Coco Server is provided here.
 - fix: increase read_timeout for HTTP streaming stability #798
 - fix: enter key problem #794
 - fix: fix selection issue after renaming #800
+- fix: fix shortcut issue in windows context menu #804
 
 ### ✈️ Improvements
 
@@ -54,7 +55,9 @@ Information about release notes of Coco Server is provided here.
 - style: splash adapts to the width of mobile phones #768
 - chore: search-chat add language and formatUrl parameters #775
 - chore: not request the interface if not logged in #795
+- refactor: clean up unsupported characters from query string in Win Search #802
 - chore: display backtrace in panic log #805
+
 
 ## 0.6.0 (2025-06-29)
 

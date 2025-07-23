@@ -50,6 +50,28 @@ impl<S: AsRef<str> + ?Sized> From<&S> for PwStrOwned {
     }
 }
 
+/// Helper function to replace unsupported characters with whitespace.
+///
+/// Windows search will error out if it encounters these characters.
+///
+/// The complete list of unsupported characters is unknown and we don't know how
+/// to escape them, so let's replace them.
+fn query_string_cleanup(old: &str) -> String {
+    const UNSUPPORTED_CHAR: [char; 2] = ['\'', '\n'];
+
+    // Using len in bytes is ok
+    let mut chars = Vec::with_capacity(old.len());
+    for char in old.chars() {
+        if UNSUPPORTED_CHAR.contains(&char) {
+            chars.push(' ');
+        } else {
+            chars.push(char);
+        }
+    }
+
+    chars.into_iter().collect()
+}
+
 /// Helper function to construct the Windows Search SQL.
 ///
 /// Paging is not natively supported by windows Search SQL, it only supports `size`
@@ -69,11 +91,8 @@ fn query_sql(query_string: &str, from: usize, size: usize, config: &FileSearchCo
         "SELECT TOP {} System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE",
         top_n
     );
-    // Use debug print to escape the newline character, which cannot be handled by Windows Search.
-    let query_string_debug_print = format!("{:?}", query_string);
-    // Debug print will be double quoted, we need to trim them.
-    let query_string_debug_print_len = query_string_debug_print.len();
-    let query_string = &query_string_debug_print[1..(query_string_debug_print_len - 1)];
+
+    let query_string = query_string_cleanup(query_string);
 
     let search_by_predicate = match config.search_by {
         SearchBy::Name => {
@@ -454,7 +473,7 @@ pub(crate) async fn hits(
 //
 // I have no idea about the underlying root cause
 #[cfg(all(test, not(ci)))]
-mod test {
+mod test_windows_search {
     use super::*;
 
     /// Helper function for ensuring `sql` is valid SQL by actually executing it.
@@ -653,5 +672,80 @@ mod test {
             "SELECT TOP 150 System.ItemUrl, System.Search.Rank FROM SystemIndex WHERE (System.FileName LIKE '%test%')"
         );
         ensure_it_is_valid_sql(&sql);
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_query_string_cleanup_no_unsupported_chars() {
+        let input = "hello world";
+        let result = query_string_cleanup(input);
+        assert_eq!(result, input);
+    }
+
+    #[test]
+    fn test_query_string_cleanup_single_quote() {
+        let input = "don't worry";
+        let result = query_string_cleanup(input);
+        assert_eq!(result, "don t worry");
+    }
+
+    #[test]
+    fn test_query_string_cleanup_newline() {
+        let input = "line1\nline2";
+        let result = query_string_cleanup(input);
+        assert_eq!(result, "line1 line2");
+    }
+
+    #[test]
+    fn test_query_string_cleanup_both_unsupported_chars() {
+        let input = "don't\nworry";
+        let result = query_string_cleanup(input);
+        assert_eq!(result, "don t worry");
+    }
+
+    #[test]
+    fn test_query_string_cleanup_multiple_single_quotes() {
+        let input = "it's a 'test' string";
+        let result = query_string_cleanup(input);
+        assert_eq!(result, "it s a  test  string");
+    }
+
+    #[test]
+    fn test_query_string_cleanup_multiple_newlines() {
+        let input = "line1\n\nline2\nline3";
+        let result = query_string_cleanup(input);
+        assert_eq!(result, "line1  line2 line3");
+    }
+
+    #[test]
+    fn test_query_string_cleanup_empty_string() {
+        let input = "";
+        let result = query_string_cleanup(input);
+        assert_eq!(result, input);
+    }
+
+    #[test]
+    fn test_query_string_cleanup_only_unsupported_chars() {
+        let input = "'\n'";
+        let result = query_string_cleanup(input);
+        assert_eq!(result, "   ");
+    }
+
+    #[test]
+    fn test_query_string_cleanup_unicode_characters() {
+        let input = "héllo wörld's\nfile";
+        let result = query_string_cleanup(input);
+        assert_eq!(result, "héllo wörld s file");
+    }
+
+    #[test]
+    fn test_query_string_cleanup_special_chars_preserved() {
+        let input = "test@file#name$with%symbols";
+        let result = query_string_cleanup(input);
+        assert_eq!(result, input);
     }
 }
