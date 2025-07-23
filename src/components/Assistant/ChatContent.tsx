@@ -100,6 +100,8 @@ export const ChatContent = ({
     setIsAtBottom(isAtBottom);
   };
 
+  console.log("curIdRef", curIdRef.current);
+
   return (
     <div className="flex-1 overflow-hidden flex flex-col justify-between relative user-select-text">
       <div
