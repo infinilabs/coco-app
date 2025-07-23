@@ -198,6 +198,20 @@ pub fn run() {
 
             block_on(async {
                 init(app.handle()).await;
+
+                // We want all the extensions here, so no filter condition specified.
+                match extension::list_extensions(app_handle.clone(), None, None, false).await {
+                    Ok((_found_invalid_extensions, extensions)) => {
+                        // Initializing extension relies on SearchSourceRegistry, so this should
+                        // be executed after `app.manage(registry)`
+                        if let Err(e) = extension::init_extensions(app_handle.clone(), extensions).await {
+                            log::error!("initializing extensions failed with error [{}]", e);
+                        }
+                    }
+                    Err(e) => {
+                        log::error!("listing extensions failed with error [{}]", e);
+                    }
+                }
             });
 
             shortcut::enable_shortcut(app);
@@ -412,13 +426,6 @@ fn move_window_to_active_monitor<R: Runtime>(window: &WebviewWindow<R>) {
 
 #[tauri::command]
 async fn get_app_search_source(app_handle: AppHandle) -> Result<(), String> {
-    // We want all the extensions here, so no filter condition specified.
-    let (_found_invalid_extensions, extensions) =
-        extension::list_extensions(app_handle.clone(), None, None, false)
-            .await
-            .map_err(|e| e.to_string())?;
-    extension::init_extensions(app_handle.clone(), extensions).await?;
-
     let _ = server::connector::refresh_all_connectors(&app_handle).await;
     let _ = server::datasource::refresh_all_datasources(&app_handle).await;
 
