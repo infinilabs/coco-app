@@ -33,6 +33,7 @@ Information about release notes of Coco Server is provided here.
 - fix: incorrect status when installing extension #789
 - fix: increase read_timeout for HTTP streaming stability #798
 - fix: enter key problem #794
+- fix: fix selection issue after renaming #800
 
 ### ✈️ Improvements
 
