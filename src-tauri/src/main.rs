@@ -78,9 +78,13 @@ fn setup_panic_hook() {
             "Unknown location".to_string()
         };
 
+        // Use `force_capture()` instead of `capture()` as we want backtrace
+        // regardless of whether the corresponding env vars are set or not.
+        let backtrace = std::backtrace::Backtrace::force_capture();
+
         let panic_log = format!(
-            "Time: [{}]\nLocation: [{}]\nMessage: [{}]",
-            datetime_str, location, panic_message
+            "Time: [{}]\nLocation: [{}]\nMessage: [{}]\nBacktrace: \n{}",
+            datetime_str, location, panic_message, backtrace
         );
 
         // Write to panic file

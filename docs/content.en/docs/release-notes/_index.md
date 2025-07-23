@@ -56,6 +56,8 @@ Information about release notes of Coco Server is provided here.
 - chore: search-chat add language and formatUrl parameters #775
 - chore: not request the interface if not logged in #795
 - refactor: clean up unsupported characters from query string in Win Search #802
+- chore: display backtrace in panic log #805
+
 
 ## 0.6.0 (2025-06-29)
 
