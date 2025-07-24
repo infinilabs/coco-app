@@ -61,8 +61,8 @@ export const useSyncStore = () => {
   const setFixedWindow = useShortcutsStore((state) => {
     return state.setFixedWindow;
   });
-  const setServiceList = useShortcutsStore((state) => {
-    return state.setServiceList;
+  const setServiceListShortcut = useShortcutsStore((state) => {
+    return state.setServiceListShortcut;
   });
   const setExternal = useShortcutsStore((state) => {
     return state.setExternal;
@@ -144,7 +144,7 @@ export const useSyncStore = () => {
           aiAssistant,
           newSession,
           fixedWindow,
-          serviceList,
+          serviceListShortcut,
           external,
           aiOverview,
         } = payload;
@@ -163,7 +163,7 @@ export const useSyncStore = () => {
         setAiAssistant(aiAssistant);
         setNewSession(newSession);
         setFixedWindow(fixedWindow);
-        setServiceList(serviceList);
+        setServiceListShortcut(serviceListShortcut);
         setExternal(external);
         setAiOverview(aiOverview);
       }),

@@ -20,6 +20,7 @@ import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 import { useIconfontScript } from "@/hooks/useScript";
 import { Extension } from "@/components/Settings/Extensions";
 import { useExtensionsStore } from "@/stores/extensionsStore";
+import { useConnectStore } from "@/stores/connectStore";
 
 export default function Layout() {
   const location = useLocation();
@@ -27,7 +28,27 @@ export default function Layout() {
   const { language } = useAppStore();
   const { i18n } = useTranslation();
   const { activeTheme, isDark, setIsDark, setTheme } = useThemeStore();
+
   const [langUpdated, setLangUpdated] = useState(false);
+
+  const setServerList = useConnectStore((state) => state.setServerList);
+  const currentService = useConnectStore((state) => state.currentService);
+  const getAllServerList = async () => {
+    platformAdapter.commands("list_coco_servers").then((res: any) => {
+        console.log("list_coco_servers", res);
+        if (!Array.isArray(res)) {
+          // If res is not an array, it might be an error message or something else.
+          // Log it and don't proceed.
+          setServerList([]); // Clear the list or handle as appropriate
+          return;
+        }
+
+        setServerList(res);
+      });
+  };
+  useEffect(() => {
+    getAllServerList();
+  }, [currentService?.enabled]);
 
   useAsyncEffect(async () => {
     i18n.changeLanguage(language);

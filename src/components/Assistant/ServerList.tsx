@@ -17,7 +17,6 @@ import { Server as IServer } from "@/types/server";
 import StatusIndicator from "@/components/Cloud/StatusIndicator";
 import { useAuthStore } from "@/stores/authStore";
 import { useSearchStore } from "@/stores/searchStore";
-
 interface ServerListProps {
   clearChat: () => void;
 }
@@ -27,7 +26,9 @@ export function ServerList({ clearChat }: ServerListProps) {
 
   const isCurrentLogin = useAuthStore((state) => state.isCurrentLogin);
   const setIsCurrentLogin = useAuthStore((state) => state.setIsCurrentLogin);
-  const serviceList = useShortcutsStore((state) => state.serviceList);
+  const serviceListShortcut = useShortcutsStore(
+    (state) => state.serviceListShortcut
+  );
   const setEndpoint = useAppStore((state) => state.setEndpoint);
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
   const isTauri = useAppStore((state) => state.isTauri);
@@ -35,7 +36,7 @@ export function ServerList({ clearChat }: ServerListProps) {
 
   const { setMessages } = useChatStore();
 
-  const [serverList, setServerList] = useState<IServer[]>([]);
+  const [list, setList] = useState<IServer[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [highlightId, setHighlightId] = useState<string>("");
 
@@ -49,35 +50,26 @@ export function ServerList({ clearChat }: ServerListProps) {
   const popoverRef = useRef<HTMLDivElement>(null);
   const serverListButtonRef = useRef<HTMLButtonElement>(null);
 
+  const serverList = useConnectStore((state) => state.serverList);
   const fetchServers = useCallback(
     async (resetSelection: boolean) => {
-      platformAdapter.commands("list_coco_servers").then((res: any) => {
-        console.log("list_coco_servers", res);
-        if (!Array.isArray(res)) {
-          // If res is not an array, it might be an error message or something else.
-          // Log it and don't proceed.
-          // console.log("list_coco_servers did not return an array:", res);
-          setServerList([]); // Clear the list or handle as appropriate
-          return;
-        }
-        const enabledServers = (res as IServer[])?.filter(
-          (server) => server.enabled && server.available
+      const enabledServers = serverList.filter(
+        (server) => server.enabled && server.available
+      );
+
+      setList(enabledServers);
+
+      if (resetSelection && enabledServers.length > 0) {
+        const currentServiceExists = enabledServers.find(
+          (server) => server.id === currentService?.id
         );
 
-        setServerList(enabledServers);
-
-        if (resetSelection && enabledServers.length > 0) {
-          const currentServiceExists = enabledServers.find(
-            (server) => server.id === currentService?.id
-          );
-
-          if (currentServiceExists) {
-            switchServer(currentServiceExists);
-          } else {
-            switchServer(enabledServers[enabledServers.length - 1]);
-          }
+        if (currentServiceExists) {
+          switchServer(currentServiceExists);
+        } else {
+          switchServer(enabledServers[enabledServers.length - 1]);
         }
-      });
+      }
     },
     [currentService?.id]
   );
@@ -86,7 +78,7 @@ export function ServerList({ clearChat }: ServerListProps) {
     if (!isTauri) return;
 
     fetchServers(true);
-  }, [currentService?.enabled]);
+  }, [serverList]);
 
   useEffect(() => {
     if (!askAiServerId || serverList.length === 0) return;
@@ -197,7 +189,7 @@ export function ServerList({ clearChat }: ServerListProps) {
     <Popover ref={popoverRef} className="relative">
       <PopoverButton ref={serverListButtonRef} className="flex items-center">
         <VisibleKey
-          shortcut={serviceList}
+          shortcut={serviceListShortcut}
           onKeyPress={() => {
             serverListButtonRef.current?.click();
           }}
@@ -240,8 +232,8 @@ export function ServerList({ clearChat }: ServerListProps) {
             </div>
           </div>
           <div className="space-y-1">
-            {serverList.length > 0 ? (
-              serverList.map((server) => (
+            {list.length > 0 ? (
+              list.map((server) => (
                 <div
                   key={server.id}
                   onClick={() => switchServer(server)}

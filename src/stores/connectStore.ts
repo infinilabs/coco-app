@@ -3,7 +3,7 @@ import { persist, subscribeWithSelector } from "zustand/middleware";
 import { produce } from "immer";
 
 import platformAdapter from "@/utils/platformAdapter";
-import { Server } from "@/types/server";
+import type { Server } from "@/types/server";
 
 const CONNECTOR_CHANGE_EVENT = "connector_data_change";
 const DATASOURCE_CHANGE_EVENT = "datasourceData_change";
@@ -130,6 +130,7 @@ export const useConnectStore = create<IConnectStore>()(
       {
         name: "connect-store",
         partialize: (state) => ({
+          serverList: state.serverList,
           currentService: state.currentService,
           connector_data: state.connector_data,
           datasourceData: state.datasourceData,

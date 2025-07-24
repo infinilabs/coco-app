@@ -37,8 +37,8 @@ export type IShortcutsStore = {
   setNewSession: (newSession: string) => void;
   fixedWindow: string;
   setFixedWindow: (fixedWindow: string) => void;
-  serviceList: string;
-  setServiceList: (serviceList: string) => void;
+  serviceListShortcut: string;
+  setServiceListShortcut: (serviceListShortcut: string) => void;
   external: string;
   setExternal: (external: string) => void;
   resetFixedWindow: boolean;
@@ -109,8 +109,8 @@ export const useShortcutsStore = create<IShortcutsStore>()(
       setNewSession: (newSession) => set({ newSession }),
       fixedWindow: INITIAL_FIXED_WINDOW,
       setFixedWindow: (fixedWindow) => set({ fixedWindow }),
-      serviceList: INITIAL_SERVICE_LIST,
-      setServiceList: (serviceList) => set({ serviceList }),
+      serviceListShortcut: INITIAL_SERVICE_LIST,
+      setServiceListShortcut: (serviceListShortcut) => set({ serviceListShortcut }),
       external: INITIAL_EXTERNAL,
       setExternal: (external) => set({ external }),
       resetFixedWindow: false,
@@ -137,7 +137,7 @@ export const useShortcutsStore = create<IShortcutsStore>()(
         aiAssistant: state.aiAssistant,
         newSession: state.newSession,
         fixedWindow: state.fixedWindow,
-        serviceList: state.serviceList,
+        serviceListShortcut: state.serviceListShortcut,
         external: state.external,
         resetFixedWindow: state.resetFixedWindow,
       }),
