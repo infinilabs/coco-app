@@ -91,14 +91,6 @@ pub async fn query_coco_fusion(
         timeout_duration
     );
 
-    log::debug!(
-        "will query querysources {:?}",
-        sources_list
-            .iter()
-            .map(|search_source| search_source.get_type().id.clone())
-            .collect::<Vec<String>>()
-    );
-
     let search_query = SearchQuery::new(from, size, query_strings.clone());
 
     if let Some(query_source_id) = opt_query_source_id {
@@ -143,6 +135,14 @@ pub async fn query_coco_fusion(
             app_handle.clone(),
         ));
     } else {
+        log::debug!(
+            "will query querysources {:?}",
+            sources_list
+                .iter()
+                .map(|search_source| search_source.get_type().id.clone())
+                .collect::<Vec<String>>()
+        );
+
         for query_source_trait_object in sources_list {
             let query_source = query_source_trait_object.get_type().clone();
             futures.push(same_type_futures(
