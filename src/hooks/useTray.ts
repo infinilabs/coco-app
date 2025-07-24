@@ -7,7 +7,6 @@ import { exit } from "@tauri-apps/plugin-process";
 
 import { isMac } from "@/utils/platform";
 import { useAppStore } from "@/stores/appStore";
-import { useUpdateStore } from "@/stores/updateStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { show_coco, show_settings, show_check } from "@/commands";
 
@@ -53,7 +52,7 @@ export const useTray = () => {
         text: t("tray.showCoco"),
         accelerator: showCocoShortcuts.join("+"),
         action: () => {
-          show_coco()
+          show_coco();
         },
       }),
       PredefinedMenuItem.new({ item: "Separator" }),
@@ -61,18 +60,15 @@ export const useTray = () => {
         text: t("tray.settings"),
         // accelerator: "CommandOrControl+,",
         action: () => {
-          show_settings()
+          show_settings();
         },
       }),
       MenuItem.new({
         text: t("tray.checkUpdate"),
         action: async () => {
-          const update = await platformAdapter.checkUpdate();
-          if (update) {
-            useUpdateStore.getState().setUpdateInfo(update);
-            useUpdateStore.getState().setVisible(true);
-          }
-          show_check();
+          await show_check();
+
+          platformAdapter.emitEvent("check-update");
         },
       }),
       PredefinedMenuItem.new({ item: "Separator" }),
