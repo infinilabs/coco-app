@@ -127,6 +127,8 @@ strip = true # Ensures debug symbols are removed.
 tauri-plugin-autostart = "^2.2"
 tauri-plugin-global-shortcut = "2"
 tauri-plugin-updater = { git = "https://github.com/infinilabs/plugins-workspace", branch = "v2" }
+# This should be compatible with the semver used by `tauri-plugin-updater`
+semver = { version = "1", features = ["serde"] }
 
 [target."cfg(target_os = \"windows\")".dependencies]
 enigo="0.3"
