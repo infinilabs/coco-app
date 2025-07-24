@@ -121,11 +121,6 @@ export const ChatContent = ({
           />
         ))}
 
-        {/* <div>activeChat:{activeChat?._source?.id}</div>
-        <div>curIdRef:{curIdRef.current}</div>
-        <div>session_id: {activeChat?._source?.session_id}</div>
-        <div>curSessionIdRef:{curSessionIdRef.current}</div> */}
-
         {(!curChatEnd ||
           query_intent ||
           tools ||
