@@ -99,10 +99,12 @@ pub async fn cancel_session_chat<R: Runtime>(
     _app_handle: AppHandle<R>,
     server_id: String,
     session_id: String,
+    query_params: Option<HashMap<String, Value>>,
 ) -> Result<String, String> {
     let path = format!("/chat/{}/_cancel", session_id);
+    let query_params = convert_query_params_to_strings(query_params);
 
-    let response = HttpClient::post(&server_id, path.as_str(), None, None)
+    let response = HttpClient::post(&server_id, path.as_str(), query_params, None)
         .await
         .map_err(|e| format!("Error cancel session: {}", e))?;
 

@@ -162,7 +162,7 @@ const AskAi = () => {
   useAsyncEffect(async () => {
     if (!askAiMessage || !state.serverId || !state.assistantId) return;
 
-    clearAllChunkData();
+    await clearAllChunkData();
 
     const { serverId, assistantId } = state;
 
