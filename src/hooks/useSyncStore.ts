@@ -1,3 +1,6 @@
+import { isNumber } from "lodash-es";
+import { useEffect } from "react";
+
 import { useAppearanceStore } from "@/stores/appearanceStore";
 import { useAppStore } from "@/stores/appStore";
 import { useConnectStore } from "@/stores/connectStore";
@@ -5,8 +8,6 @@ import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useStartupStore } from "@/stores/startupStore";
 import platformAdapter from "@/utils/platformAdapter";
-import { isNumber } from "lodash-es";
-import { useEffect } from "react";
 
 export const useSyncStore = () => {
   const setModifierKey = useShortcutsStore((state) => {
