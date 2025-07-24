@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { emit } from '@tauri-apps/api/event';
+import { emit } from "@tauri-apps/api/event";
 
 import {
   Server,
@@ -21,7 +21,8 @@ import { useConnectStore } from "@/stores/connectStore";
 
 export function handleLogout(serverId?: string) {
   const setIsCurrentLogin = useAuthStore.getState().setIsCurrentLogin;
-  const { currentService, setCurrentService, serverList, setServerList } = useConnectStore.getState();
+  const { currentService, setCurrentService, serverList, setServerList } =
+    useConnectStore.getState();
   const id = serverId || currentService?.id;
   if (!id) return;
   setIsCurrentLogin(false);
@@ -57,7 +58,7 @@ async function invokeWithErrorHandler<T>(
   const currentService = useConnectStore.getState().currentService;
 
   // Not logged in
-  console.log(command, isCurrentLogin, currentService?.profile)
+  console.log(command, isCurrentLogin, currentService?.profile);
   if (
     !WHITELIST_SERVERS.includes(command) &&
     (!isCurrentLogin || !currentService?.profile)
@@ -93,7 +94,6 @@ async function invokeWithErrorHandler<T>(
     const errorMessage = error || "Command execution failed";
     // 401 Unauthorized
     if (errorMessage.includes("Unauthorized")) {
-
       handleLogout();
     } else {
       addError(command + ":" + errorMessage, "error");
@@ -247,13 +247,16 @@ export function open_session_chat({
 export function cancel_session_chat({
   serverId,
   sessionId,
+  queryParams,
 }: {
   serverId: string;
   sessionId: string;
+  queryParams?: Record<string, any>;
 }): Promise<string> {
   return invokeWithErrorHandler(`cancel_session_chat`, {
     serverId,
     sessionId,
+    queryParams,
   });
 }
 

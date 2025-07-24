@@ -112,12 +112,19 @@ export function useChatActions(
         response = await platformAdapter.commands("cancel_session_chat", {
           serverId: currentService?.id,
           sessionId: activeChat?._id,
+          queryParams: {
+            message_id: curIdRef.current
+          }
         });
         response = response ? JSON.parse(response) : null;
       } else {
         const [_error, res] = await Post(
           `/chat/${activeChat?._id}/_cancel`,
-          {}
+          {
+            queryParams: {
+              message_id: curIdRef.current
+            }
+          }
         );
         response = res;
       }
