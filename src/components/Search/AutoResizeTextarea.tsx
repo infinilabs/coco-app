@@ -95,7 +95,7 @@ const AutoResizeTextarea = forwardRef<
       (event: ChangeEvent<HTMLTextAreaElement>) => {
         setInput(event.currentTarget.value);
       },
-      [setInput, firstLineMaxWidth]
+      [setInput]
     );
 
     return (
