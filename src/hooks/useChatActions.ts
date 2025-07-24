@@ -190,24 +190,27 @@ export function useChatActions(
     return `${pageType}-${timestamp}`;
   }, [isChatPage]);
 
+  const prepareChatSession = (async (value: string) => {
+    // 1. Cleaning and preparation
+    await clearAllChunkData();
+
+    // 2. Update the status again
+    changeInput && changeInput("");
+    setCurChatEnd(false);
+    setVisibleStartPage(false);
+    setTimedoutShow(false);
+    setQuestion(value);
+
+    // 3. Set up the listener first
+    await setupListeners();
+  });
+
   const createNewChat = useCallback(
     async (value: string = "") => {
       if (!value) return;
 
-      // 1. Cleaning and preparation
-      await clearAllChunkData();
-
-      // 2. Set up the listener first
-      await setupListeners();
-
-      // 3. Update the status again
-      changeInput && changeInput("");
-      setCurChatEnd(false);
-      setVisibleStartPage(false);
-      setTimedoutShow(false);
-      setQuestion(value);
-
-      // 4. request API
+      await prepareChatSession(value);
+      
       const queryParams = {
         search: isSearchActive,
         deep_thinking: isDeepThinkActive,
@@ -258,18 +261,7 @@ export function useChatActions(
     async (content: string, newChat: Chat) => {
       if (!newChat?._id || !content) return;
 
-      // 1.
-      await clearAllChunkData();
-
-      // 2.
-      await setupListeners();
-
-      // 3.
-      changeInput && changeInput("");
-      setCurChatEnd(false);
-      setVisibleStartPage(false);
-      setTimedoutShow(false);
-      setQuestion(content);
+      await prepareChatSession(content);
 
       const queryParams = {
         search: isSearchActive,
