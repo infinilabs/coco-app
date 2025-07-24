@@ -51,6 +51,7 @@ export interface EventPayloads {
   [key: `chat-stream-${string}`]: string;
   "chat-create-error": string;
   [key: `synthesize-${string}`]: any;
+  "check-update": any;
 }
 
 // Window operation interface
@@ -118,9 +119,15 @@ export interface SystemOperations {
   commands: <T>(commandName: string, ...args: any[]) => Promise<T>;
   isWindows10: () => Promise<boolean>;
   revealItemInDir: (path: string) => Promise<unknown>;
-  openSearchItem: (data: SearchDocument, formatUrl?: (item: SearchDocument) => string) => Promise<unknown>;
+  openSearchItem: (
+    data: SearchDocument,
+    formatUrl?: (item: SearchDocument) => string
+  ) => Promise<unknown>;
   searchMCPServers: (serverId: string, queryParams: string[]) => Promise<any[]>;
-  searchDataSources: (serverId: string, queryParams: string[]) => Promise<any[]>;
+  searchDataSources: (
+    serverId: string,
+    queryParams: string[]
+  ) => Promise<any[]>;
   fetchAssistant: (serverId: string, queryParams: string[]) => Promise<any>;
 }
 
