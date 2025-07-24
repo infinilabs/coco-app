@@ -396,15 +396,15 @@ export function useChatActions(
       (event) => {
         const msg = event.payload as string;
         try {
-          console.log("msg:", JSON.parse(msg));
-          console.log("user:", msg.includes(`"user"`));
-          console.log("_source:", msg.includes("_source"));
-          console.log("result:", msg.includes("result"));
-          console.log("");
-          console.log("");
-          console.log("");
-          console.log("");
-          console.log("");
+          // console.log("msg:", JSON.parse(msg));
+          // console.log("user:", msg.includes(`"user"`));
+          // console.log("_source:", msg.includes("_source"));
+          // console.log("result:", msg.includes("result"));
+          // console.log("");
+          // console.log("");
+          // console.log("");
+          // console.log("");
+          // console.log("");
         } catch (error) {
           console.error("Failed to parse JSON in listener:", error);
         }

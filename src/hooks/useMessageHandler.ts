@@ -44,16 +44,16 @@ export function useMessageHandler(
         const chunkData = JSON.parse(msg);
         // console.log("chunkData", chunkData);
 
-        console.log(
-          "reply_to_message",
-          chunkData.reply_to_message,
-          curIdRef.current
-        );
-        console.log(
-          "session_id",
-          chunkData.session_id,
-          curSessionIdRef.current
-        );
+        // console.log(
+        //   "reply_to_message",
+        //   chunkData.reply_to_message,
+        //   curIdRef.current
+        // );
+        // console.log(
+        //   "session_id",
+        //   chunkData.session_id,
+        //   curSessionIdRef.current
+        // );
         if (chunkData.reply_to_message !== curIdRef.current) return;
         if (chunkData.session_id !== curSessionIdRef.current) return;
 
