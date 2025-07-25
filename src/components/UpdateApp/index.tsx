@@ -58,10 +58,11 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
   }, [snapshotUpdate]);
 
   useEffect(() => {
-    const unlisten = platformAdapter.listenEvent(
-      "check-update",
-      checkUpdateStatus
-    );
+    const unlisten = platformAdapter.listenEvent("check-update", () => {
+      if (!isCheckPage) return;
+
+      checkUpdateStatus();
+    });
 
     return () => {
       unlisten.then((fn) => fn());
