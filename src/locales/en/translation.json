@@ -489,7 +489,7 @@
   },
   "tray": {
     "showCoco": "Show Coco",
-    "settings": "Settings...",
+    "settings": "Settings",
     "quitCoco": "Quit Coco",
     "checkUpdate": "Check for Updates"
   },

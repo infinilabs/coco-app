@@ -14,7 +14,7 @@ export function useChatActions(
   setActiveChat: (chat: Chat | undefined) => void,
   setCurChatEnd: (value: boolean) => void,
   setTimedoutShow: (value: boolean) => void,
-  clearAllChunkData: () => void,
+  clearAllChunkData: () => Promise<void>,
   setQuestion: (value: string) => void,
   curIdRef: React.MutableRefObject<string>,
   curSessionIdRef: React.MutableRefObject<string>,
@@ -113,19 +113,16 @@ export function useChatActions(
           serverId: currentService?.id,
           sessionId: activeChat?._id,
           queryParams: {
-            message_id: curIdRef.current
-          }
+            message_id: curIdRef.current,
+          },
         });
         response = response ? JSON.parse(response) : null;
       } else {
-        const [_error, res] = await Post(
-          `/chat/${activeChat?._id}/_cancel`,
-          {
-            queryParams: {
-              message_id: curIdRef.current
-            }
-          }
-        );
+        const [_error, res] = await Post(`/chat/${activeChat?._id}/_cancel`, {
+          queryParams: {
+            message_id: curIdRef.current,
+          },
+        });
         response = res;
       }
       console.log("_cancel", response);
@@ -185,139 +182,9 @@ export function useChatActions(
 
   // Modify the clientId generation logic to include the instance ID.
   const clientId = useMemo(() => {
-    const timestamp = Date.now();
     const pageType = isChatPage ? "standalone-chat" : "search-chat";
-    return `${pageType}-${timestamp}`;
+    return `${pageType}`;
   }, [isChatPage]);
-
-  const prepareChatSession = (async (value: string) => {
-    // 1. Cleaning and preparation
-    await clearAllChunkData();
-
-    // 2. Update the status again
-    changeInput && changeInput("");
-    setCurChatEnd(false);
-    setVisibleStartPage(false);
-    setTimedoutShow(false);
-    setQuestion(value);
-
-    // 3. Set up the listener first
-    await setupListeners();
-  });
-
-  const createNewChat = useCallback(
-    async (value: string = "") => {
-      if (!value) return;
-
-      await prepareChatSession(value);
-      
-      const queryParams = {
-        search: isSearchActive,
-        deep_thinking: isDeepThinkActive,
-        mcp: isMCPActive,
-        datasource: sourceDataIds?.join(",") || "",
-        mcp_servers: MCPIds?.join(",") || "",
-        assistant_id: currentAssistant?._id || "",
-      };
-
-      if (isTauri) {
-        if (!currentService?.id) return;
-        await platformAdapter.commands("chat_create", {
-          serverId: currentService?.id,
-          message: value,
-          queryParams,
-          clientId: `chat-stream-${clientId}`,
-        });
-        console.log("_create end", value);
-        resetChatState();
-      } else {
-        await streamPost({
-          url: "/chat/_create",
-          body: { message: value },
-          queryParams,
-          onMessage: (line) => {
-            console.log("⏳", line);
-            handleChatCreateStreamMessage(line);
-            // append to chat box
-          },
-        });
-      }
-    },
-    [
-      isTauri,
-      currentService?.id,
-      sourceDataIds,
-      MCPIds,
-      isSearchActive,
-      isDeepThinkActive,
-      isMCPActive,
-      currentAssistant,
-      chatClose,
-      clientId,
-    ]
-  );
-
-  const sendMessage = useCallback(
-    async (content: string, newChat: Chat) => {
-      if (!newChat?._id || !content) return;
-
-      await prepareChatSession(content);
-
-      const queryParams = {
-        search: isSearchActive,
-        deep_thinking: isDeepThinkActive,
-        mcp: isMCPActive,
-        datasource: sourceDataIds?.join(",") || "",
-        mcp_servers: MCPIds?.join(",") || "",
-        assistant_id: currentAssistant?._id || "",
-      };
-
-      if (isTauri) {
-        if (!currentService?.id) return;
-        await platformAdapter.commands("chat_chat", {
-          serverId: currentService?.id,
-          sessionId: newChat?._id,
-          queryParams,
-          message: content,
-          clientId: `chat-stream-${clientId}`,
-        });
-        console.log("chat_chat end", content);
-        resetChatState();
-      } else {
-        await streamPost({
-          url: `/chat/${newChat?._id}/_chat`,
-          body: { message: content },
-          queryParams,
-          onMessage: (line) => {
-            console.log("line", line);
-            handleChatCreateStreamMessage(line);
-            // append to chat box
-          },
-        });
-      }
-    },
-    [
-      isTauri,
-      currentService?.id,
-      sourceDataIds,
-      MCPIds,
-      isSearchActive,
-      isDeepThinkActive,
-      isMCPActive,
-      changeInput,
-      currentAssistant,
-      clientId,
-    ]
-  );
-
-  const handleSendMessage = useCallback(
-    async (content: string, activeChat?: Chat) => {
-      if (!activeChat?._id || !content) return;
-
-      await chatHistory(activeChat, (chat) => sendMessage(content, chat));
-    },
-    [chatHistory, sendMessage]
-  );
 
   const handleChatCreateStreamMessage = useCallback(
     (msg: string) => {
@@ -379,12 +246,12 @@ export function useChatActions(
     [changeInput, setActiveChat, setCurChatEnd, setVisibleStartPage]
   );
 
-  const setupListeners = useCallback(async () => {
+  const setupListeners = useCallback(async (timestamp: number) => {
     cleanupListeners();
 
-    console.log("setupListeners", clientId);
+    console.log("setupListeners", clientId, timestamp);
     const unlisten_chat_message = await platformAdapter.listenEvent(
-      `chat-stream-${clientId}`,
+      `chat-stream-${clientId}-${timestamp}`,
       (event) => {
         const msg = event.payload as string;
         try {
@@ -418,6 +285,147 @@ export function useChatActions(
       error: unlisten_error,
     };
   }, [currentService?.id, clientId, handleChatCreateStreamMessage]);
+
+  const prepareChatSession = useCallback(
+    async (value: string, timestamp: number) => {
+      // 1. Cleaning and preparation
+      await clearAllChunkData();
+
+      // 2. Update the status again
+      await new Promise<void>((resolve) => {
+        changeInput && changeInput("");
+        setVisibleStartPage(false);
+        setTimedoutShow(false);
+        setQuestion(value);
+        setCurChatEnd(false);
+        setTimeout(resolve, 0);
+      });
+
+      // 4. Set up the listener first
+      await setupListeners(timestamp);
+    },
+    [setupListeners]
+  );
+
+  const createNewChat = useCallback(
+    async (value: string = "") => {
+      if (!value) return;
+
+      const timestamp = Date.now();
+
+      await prepareChatSession(value, timestamp);
+
+      const queryParams = {
+        search: isSearchActive,
+        deep_thinking: isDeepThinkActive,
+        mcp: isMCPActive,
+        datasource: sourceDataIds?.join(",") || "",
+        mcp_servers: MCPIds?.join(",") || "",
+        assistant_id: currentAssistant?._id || "",
+      };
+
+      if (isTauri) {
+        if (!currentService?.id) return;
+        console.log("chat_create", clientId, timestamp);
+        await platformAdapter.commands("chat_create", {
+          serverId: currentService?.id,
+          message: value,
+          queryParams,
+          clientId: `chat-stream-${clientId}-${timestamp}`,
+        });
+        console.log("_create end", value);
+        resetChatState();
+      } else {
+        await streamPost({
+          url: "/chat/_create",
+          body: { message: value },
+          queryParams,
+          onMessage: (line) => {
+            console.log("⏳", line);
+            handleChatCreateStreamMessage(line);
+            // append to chat box
+          },
+        });
+      }
+    },
+    [
+      isTauri,
+      currentService?.id,
+      sourceDataIds,
+      MCPIds,
+      isSearchActive,
+      isDeepThinkActive,
+      isMCPActive,
+      currentAssistant,
+      chatClose,
+      clientId,
+    ]
+  );
+
+  const sendMessage = useCallback(
+    async (content: string, newChat: Chat) => {
+      if (!newChat?._id || !content) return;
+
+      const timestamp = Date.now();
+
+      await prepareChatSession(content, timestamp);
+
+      const queryParams = {
+        search: isSearchActive,
+        deep_thinking: isDeepThinkActive,
+        mcp: isMCPActive,
+        datasource: sourceDataIds?.join(",") || "",
+        mcp_servers: MCPIds?.join(",") || "",
+        assistant_id: currentAssistant?._id || "",
+      };
+
+      if (isTauri) {
+        if (!currentService?.id) return;
+        console.log("chat_chat", clientId, timestamp);
+        await platformAdapter.commands("chat_chat", {
+          serverId: currentService?.id,
+          sessionId: newChat?._id,
+          queryParams,
+          message: content,
+          clientId: `chat-stream-${clientId}-${timestamp}`,
+        });
+        console.log("chat_chat end", content, clientId);
+        resetChatState();
+      } else {
+        await streamPost({
+          url: `/chat/${newChat?._id}/_chat`,
+          body: { message: content },
+          queryParams,
+          onMessage: (line) => {
+            console.log("line", line);
+            handleChatCreateStreamMessage(line);
+            // append to chat box
+          },
+        });
+      }
+    },
+    [
+      isTauri,
+      currentService?.id,
+      sourceDataIds,
+      MCPIds,
+      isSearchActive,
+      isDeepThinkActive,
+      isMCPActive,
+      changeInput,
+      currentAssistant,
+      clientId,
+    ]
+  );
+
+  const handleSendMessage = useCallback(
+    async (content: string, activeChat?: Chat) => {
+      if (!activeChat?._id || !content) return;
+
+      await chatHistory(activeChat, (chat) => sendMessage(content, chat));
+    },
+    [chatHistory, sendMessage]
+  );
 
   useEffect(() => {
     if (!isTauri || !currentService?.id) return;

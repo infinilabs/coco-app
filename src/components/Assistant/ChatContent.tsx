@@ -5,7 +5,7 @@ import { ChatMessage } from "@/components/ChatMessage";
 import { Greetings } from "./Greetings";
 // import FileList from "@/components/Assistant/FileList";
 import { useChatScroll } from "@/hooks/useChatScroll";
-// import { useChatStore } from "@/stores/chatStore";
+import { useChatStore } from "@/stores/chatStore";
 import type { Chat, IChunkData } from "@/types/chat";
 import { useConnectStore } from "@/stores/connectStore";
 // import SessionFile from "./SessionFile";
@@ -13,7 +13,6 @@ import ScrollToBottom from "@/components/Common/ScrollToBottom";
 
 interface ChatContentProps {
   activeChat?: Chat;
-  curChatEnd: boolean;
   query_intent?: IChunkData;
   tools?: IChunkData;
   fetch_source?: IChunkData;
@@ -27,13 +26,11 @@ interface ChatContentProps {
   handleSendMessage: (content: string, newChat?: Chat) => void;
   getFileUrl: (path: string) => string;
   formatUrl?: (data: any) => string;
-  curSessionIdRef: React.MutableRefObject<string>;
   curIdRef: React.MutableRefObject<string>;
 }
 
 export const ChatContent = ({
   activeChat,
-  curChatEnd,
   query_intent,
   tools,
   fetch_source,
@@ -46,10 +43,7 @@ export const ChatContent = ({
   Question,
   handleSendMessage,
   formatUrl,
-  curSessionIdRef,
-  curIdRef,
 }: ChatContentProps) => {
-  console.log("curSessionIdRef", curSessionIdRef.current === activeChat?._id);
   // const sessionId = useConnectStore((state) => state.currentSessionId);
   const setCurrentSessionId = useConnectStore((state) => {
     return state.setCurrentSessionId;
@@ -64,6 +58,8 @@ export const ChatContent = ({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const visibleStartPage = useConnectStore((state) => state.visibleStartPage);
+
+  const curChatEnd = useChatStore((state) => state.curChatEnd);
 
   useEffect(() => {
     setIsAtBottom(true);
@@ -99,8 +95,6 @@ export const ChatContent = ({
 
     setIsAtBottom(isAtBottom);
   };
-
-  console.log("curIdRef", curIdRef.current);
 
   return (
     <div className="flex-1 overflow-hidden flex flex-col justify-between relative user-select-text">
