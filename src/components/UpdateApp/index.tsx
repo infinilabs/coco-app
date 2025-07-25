@@ -76,14 +76,18 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
   });
 
   const checkUpdateStatus = useCallback(async () => {
-    const update = await checkUpdate();
+    try {
+      const update = await checkUpdate();
 
-    if (update) {
-      setUpdateInfo(update);
+      if (update) {
+        setUpdateInfo(update);
 
-      if (skipVersion === update.version) return;
+        if (skipVersion === update.version) return;
 
-      setVisible(true);
+        setVisible(true);
+      }
+    } catch (error) {
+      addError(String(error));
     }
   }, [skipVersion]);
 
