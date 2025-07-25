@@ -65,8 +65,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   useEffect(() => {
     if (isNil(selectedItem)) return;
 
-    console.log("要去改了");
-
     const item = data.list[selectedItem]?.document;
 
     setSelectedSearchContent(item);
