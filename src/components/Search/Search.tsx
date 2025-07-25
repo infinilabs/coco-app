@@ -78,7 +78,7 @@ const SearchResultsPanel = memo<{
   }, [visibleExtensionStore, visibleExtensionDetail]);
 
   if (visibleExtensionStore) return <ExtensionStore />;
-  if (goAskAi) return <AskAi />;
+  if (goAskAi) return <AskAi isChatMode={isChatMode} />;
   if (suggests.length === 0) return <NoResults />;
 
   return sourceData ? (
@@ -127,7 +127,7 @@ function Search({
 
       <Footer setIsPinnedWeb={setIsPinned} />
 
-      <ContextMenu formatUrl={formatUrl}/>
+      <ContextMenu formatUrl={formatUrl} />
     </div>
   );
 }
