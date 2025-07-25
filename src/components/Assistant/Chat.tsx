@@ -24,7 +24,6 @@ import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useAuthStore } from "@/stores/authStore";
 import Splash from "./Splash";
-import { state } from "mermaid/dist/rendering-util/rendering-elements/shapes/state.js";
 
 interface ChatAIProps {
   isSearchActive?: boolean;
@@ -402,7 +401,6 @@ const ChatAI = memo(
                   }
                   getFileUrl={getFileUrl}
                   formatUrl={formatUrl}
-                  curSessionIdRef={curSessionIdRef}
                   curIdRef={curIdRef}
                 />
                 <Splash assistantIDs={assistantIDs} startPage={startPage} />

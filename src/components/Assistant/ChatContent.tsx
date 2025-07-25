@@ -26,7 +26,6 @@ interface ChatContentProps {
   handleSendMessage: (content: string, newChat?: Chat) => void;
   getFileUrl: (path: string) => string;
   formatUrl?: (data: any) => string;
-  curSessionIdRef: React.MutableRefObject<string>;
   curIdRef: React.MutableRefObject<string>;
 }
 
@@ -44,10 +43,7 @@ export const ChatContent = ({
   Question,
   handleSendMessage,
   formatUrl,
-  curSessionIdRef,
-  curIdRef,
 }: ChatContentProps) => {
-  console.log("curSessionIdRef", curSessionIdRef.current === activeChat?._id);
   // const sessionId = useConnectStore((state) => state.currentSessionId);
   const setCurrentSessionId = useConnectStore((state) => {
     return state.setCurrentSessionId;
@@ -99,8 +95,6 @@ export const ChatContent = ({
 
     setIsAtBottom(isAtBottom);
   };
-
-  console.log("curIdRef", curIdRef.current);
 
   return (
     <div className="flex-1 overflow-hidden flex flex-col justify-between relative user-select-text">
