@@ -24,6 +24,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useAuthStore } from "@/stores/authStore";
 import Splash from "./Splash";
+import { state } from "mermaid/dist/rendering-util/rendering-elements/shapes/state.js";
 
 interface ChatAIProps {
   isSearchActive?: boolean;
@@ -77,7 +78,8 @@ const ChatAI = memo(
         clearChat: clearChat,
       }));
 
-      const { curChatEnd, setCurChatEnd } = useChatStore();
+      const curChatEnd = useChatStore((state) => state.curChatEnd);
+      const setCurChatEnd = useChatStore((state) => state.setCurChatEnd);
 
       const isTauri = useAppStore((state) => state.isTauri);
 
@@ -385,7 +387,6 @@ const ChatAI = memo(
               <>
                 <ChatContent
                   activeChat={activeChat}
-                  curChatEnd={curChatEnd}
                   query_intent={query_intent}
                   tools={tools}
                   fetch_source={fetch_source}

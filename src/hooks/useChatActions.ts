@@ -14,7 +14,7 @@ export function useChatActions(
   setActiveChat: (chat: Chat | undefined) => void,
   setCurChatEnd: (value: boolean) => void,
   setTimedoutShow: (value: boolean) => void,
-  clearAllChunkData: () => void,
+  clearAllChunkData: () => Promise<void>,
   setQuestion: (value: string) => void,
   curIdRef: React.MutableRefObject<string>,
   curSessionIdRef: React.MutableRefObject<string>,
@@ -113,19 +113,16 @@ export function useChatActions(
           serverId: currentService?.id,
           sessionId: activeChat?._id,
           queryParams: {
-            message_id: curIdRef.current
-          }
+            message_id: curIdRef.current,
+          },
         });
         response = response ? JSON.parse(response) : null;
       } else {
-        const [_error, res] = await Post(
-          `/chat/${activeChat?._id}/_cancel`,
-          {
-            queryParams: {
-              message_id: curIdRef.current
-            }
-          }
-        );
+        const [_error, res] = await Post(`/chat/${activeChat?._id}/_cancel`, {
+          queryParams: {
+            message_id: curIdRef.current,
+          },
+        });
         response = res;
       }
       console.log("_cancel", response);
@@ -190,27 +187,30 @@ export function useChatActions(
     return `${pageType}-${timestamp}`;
   }, [isChatPage]);
 
-  const prepareChatSession = (async (value: string) => {
+  const prepareChatSession = async (value: string) => {
     // 1. Cleaning and preparation
     await clearAllChunkData();
 
     // 2. Update the status again
-    changeInput && changeInput("");
-    setCurChatEnd(false);
-    setVisibleStartPage(false);
-    setTimedoutShow(false);
-    setQuestion(value);
+    await new Promise<void>((resolve) => {
+      changeInput && changeInput("");
+      setVisibleStartPage(false);
+      setTimedoutShow(false);
+      setQuestion(value);
+      setCurChatEnd(false);
+      setTimeout(resolve, 0);
+    });
 
-    // 3. Set up the listener first
-    await setupListeners();
-  });
+    // 4. Set up the listener first
+    return setupListeners();
+  };
 
   const createNewChat = useCallback(
     async (value: string = "") => {
       if (!value) return;
 
       await prepareChatSession(value);
-      
+
       const queryParams = {
         search: isSearchActive,
         deep_thinking: isDeepThinkActive,

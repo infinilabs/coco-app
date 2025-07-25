@@ -5,7 +5,7 @@ import { ChatMessage } from "@/components/ChatMessage";
 import { Greetings } from "./Greetings";
 // import FileList from "@/components/Assistant/FileList";
 import { useChatScroll } from "@/hooks/useChatScroll";
-// import { useChatStore } from "@/stores/chatStore";
+import { useChatStore } from "@/stores/chatStore";
 import type { Chat, IChunkData } from "@/types/chat";
 import { useConnectStore } from "@/stores/connectStore";
 // import SessionFile from "./SessionFile";
@@ -13,7 +13,6 @@ import ScrollToBottom from "@/components/Common/ScrollToBottom";
 
 interface ChatContentProps {
   activeChat?: Chat;
-  curChatEnd: boolean;
   query_intent?: IChunkData;
   tools?: IChunkData;
   fetch_source?: IChunkData;
@@ -33,7 +32,6 @@ interface ChatContentProps {
 
 export const ChatContent = ({
   activeChat,
-  curChatEnd,
   query_intent,
   tools,
   fetch_source,
@@ -64,6 +62,8 @@ export const ChatContent = ({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const visibleStartPage = useConnectStore((state) => state.visibleStartPage);
+
+  const curChatEnd = useChatStore((state) => state.curChatEnd);
 
   useEffect(() => {
     setIsAtBottom(true);
