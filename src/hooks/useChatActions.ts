@@ -118,11 +118,10 @@ export function useChatActions(
         });
         response = response ? JSON.parse(response) : null;
       } else {
-        const [_error, res] = await Post(`/chat/${activeChat?._id}/_cancel`, {
-          queryParams: {
-            message_id: curIdRef.current,
-          },
-        });
+        const [_error, res] = await Post(
+          `/chat/${activeChat?._id}/_cancel?message_id=${curIdRef.current}`,
+          undefined
+        );
         response = res;
       }
       console.log("_cancel", response);
@@ -246,45 +245,48 @@ export function useChatActions(
     [changeInput, setActiveChat, setCurChatEnd, setVisibleStartPage]
   );
 
-  const setupListeners = useCallback(async (timestamp: number) => {
-    cleanupListeners();
+  const setupListeners = useCallback(
+    async (timestamp: number) => {
+      cleanupListeners();
 
-    console.log("setupListeners", clientId, timestamp);
-    const unlisten_chat_message = await platformAdapter.listenEvent(
-      `chat-stream-${clientId}-${timestamp}`,
-      (event) => {
-        const msg = event.payload as string;
-        try {
-          // console.log("msg:", JSON.parse(msg));
-          // console.log("user:", msg.includes(`"user"`));
-          // console.log("_source:", msg.includes("_source"));
-          // console.log("result:", msg.includes("result"));
-          // console.log("");
-          // console.log("");
-          // console.log("");
-          // console.log("");
-          // console.log("");
-        } catch (error) {
-          console.error("Failed to parse JSON in listener:", error);
+      console.log("setupListeners", clientId, timestamp);
+      const unlisten_chat_message = await platformAdapter.listenEvent(
+        `chat-stream-${clientId}-${timestamp}`,
+        (event) => {
+          const msg = event.payload as string;
+          try {
+            // console.log("msg:", JSON.parse(msg));
+            // console.log("user:", msg.includes(`"user"`));
+            // console.log("_source:", msg.includes("_source"));
+            // console.log("result:", msg.includes("result"));
+            // console.log("");
+            // console.log("");
+            // console.log("");
+            // console.log("");
+            // console.log("");
+          } catch (error) {
+            console.error("Failed to parse JSON in listener:", error);
+          }
+
+          handleChatCreateStreamMessage(msg);
         }
+      );
 
-        handleChatCreateStreamMessage(msg);
-      }
-    );
+      const unlisten_error = await platformAdapter.listenEvent(
+        `chat-create-error`,
+        (event) => {
+          console.error("chat-create-error", event.payload);
+        }
+      );
 
-    const unlisten_error = await platformAdapter.listenEvent(
-      `chat-create-error`,
-      (event) => {
-        console.error("chat-create-error", event.payload);
-      }
-    );
-
-    // Store the listener references.
-    unlistenersRef.current = {
-      chatMessage: unlisten_chat_message,
-      error: unlisten_error,
-    };
-  }, [currentService?.id, clientId, handleChatCreateStreamMessage]);
+      // Store the listener references.
+      unlistenersRef.current = {
+        chatMessage: unlisten_chat_message,
+        error: unlisten_error,
+      };
+    },
+    [currentService?.id, clientId, handleChatCreateStreamMessage]
+  );
 
   const prepareChatSession = useCallback(
     async (value: string, timestamp: number) => {

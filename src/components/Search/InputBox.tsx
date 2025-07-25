@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useKeyPress, useSize } from "ahooks";
+import clsx from "clsx";
 
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import { useChatStore } from "@/stores/chatStore";
@@ -19,7 +20,6 @@ import { useExtensionsStore } from "@/stores/extensionsStore";
 import AudioRecording from "../AudioRecording";
 import { isDefaultServer } from "@/utils";
 import { useTauriFocus } from "@/hooks/useTauriFocus";
-import clsx from "clsx";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
