@@ -200,7 +200,7 @@ const ContextMenu = ({ formatUrl }: ContextMenuProps) => {
     }
   }, [selectedSearchContent]);
 
-  useOSKeyPress(["meta.k", "ctrlƒk"], () => {
+  useOSKeyPress(["meta.k", "ctrl.k"], () => {
     if (isNil(selectedSearchContent) && isNil(selectedExtension)) return;
 
     setVisibleContextMenu(!visibleContextMenu);
