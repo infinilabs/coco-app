@@ -39,6 +39,7 @@ Information about release notes of Coco Server is provided here.
 - fix: fix multiline input issue #808
 - fix: fix ctrl+k not working #815
 - fix: fix update window config sync #818
+- fix: fix enter key on subpages #819
 
 ### ✈️ Improvements
 
