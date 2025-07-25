@@ -13,6 +13,7 @@ import { useConnectStore } from "@/stores/connectStore";
 import SearchEmpty from "../Common/SearchEmpty";
 import { Data } from "ahooks/lib/useInfiniteScroll/types";
 import { nanoid } from "nanoid";
+import { isNil } from "lodash-es";
 
 interface DocumentListProps {
   onSelectDocument: (id: string) => void;
@@ -56,6 +57,20 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   useEffect(() => {
     querySourceTimeoutRef.current = querySourceTimeout;
   }, [querySourceTimeout]);
+
+  const setSelectedSearchContent = useSearchStore((state) => {
+    return state.setSelectedSearchContent;
+  });
+
+  useEffect(() => {
+    if (isNil(selectedItem)) return;
+
+    const hit = data.list[selectedItem];
+
+    const item = { ...hit?.document, querySource: hit?.source };
+
+    setSelectedSearchContent(item);
+  }, [selectedItem, data]);
 
   const getData = async (taskId: string, data?: Data) => {
     const from = data?.list?.length || 0;
@@ -109,15 +124,14 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       }
     }
 
-    
     console.log("_docs", from, queryStrings, response);
     const list = response?.hits ?? [];
     const allTotal = response?.total_hits ?? 0;
     // set first select hover
     if (from === 0 && list.length > 0) {
-      setSelectedItem(0)
+      setSelectedItem(0);
       getDocDetail(list[0]?.document);
-    } 
+    }
 
     if (taskId === taskIdRef.current) {
       // Prevent the last data from being 0
