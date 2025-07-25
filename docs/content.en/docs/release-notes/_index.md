@@ -37,6 +37,7 @@ Information about release notes of Coco Server is provided here.
 - fix: fix shortcut issue in windows context menu #804
 - fix: panic caused by "state() called before manage()" #806
 - fix: fix multiline input issue #808
+- fix: fix ctrl+k not working #815
 
 ### ✈️ Improvements
 
