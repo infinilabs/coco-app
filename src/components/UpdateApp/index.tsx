@@ -28,7 +28,7 @@ interface UpdateAppProps {
 
 const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
   const { t } = useTranslation();
-  const isDark = useThemeStore((state) => state.isDark);
+  const { isDark } = useThemeStore();
   const {
     visible,
     setVisible,
@@ -38,14 +38,14 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
     updateInfo,
     setUpdateInfo,
   } = useUpdateStore();
-  const addError = useAppStore((state) => state.addError);
-  const snapshotUpdate = useAppearanceStore((state) => state.snapshotUpdate);
+  const { addError } = useAppStore();
+  const { snapshotUpdate } = useAppearanceStore();
 
-  const checkUpdate = useCallback(async () => {
+  const checkUpdate = useCallback(() => {
     return platformAdapter.checkUpdate();
   }, []);
 
-  const relaunchApp = useCallback(async () => {
+  const relaunchApp = useCallback(() => {
     return platformAdapter.relaunchApp();
   }, []);
 
@@ -56,6 +56,17 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
       addError("Update failed:" + error, "error");
     });
   }, [snapshotUpdate]);
+
+  useEffect(() => {
+    const unlisten = platformAdapter.listenEvent(
+      "check-update",
+      checkUpdateStatus
+    );
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
 
   const state = useReactive<State>({ download: 0 });
 
@@ -198,7 +209,9 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
             ) : (
               <div className={clsx("text-xs text-[#999]", cursorClassName)}>
                 {t("update.latest", {
-                  replace: [updateInfo?.version || process.env.VERSION || "N/A"],
+                  replace: [
+                    updateInfo?.version || process.env.VERSION || "N/A",
+                  ],
                 })}
               </div>
             )}

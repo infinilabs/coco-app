@@ -4,17 +4,13 @@ import { useUpdateStore } from "@/stores/updateStore";
 import UpdateApp from "@/components/UpdateApp";
 
 const CheckApp = () => {
-  const setVisible = useUpdateStore((state) => state.setVisible);
+  const { setVisible } = useUpdateStore();
 
   useEffect(() => {
-    setVisible(true)
-  }, [])
+    setVisible(true);
+  }, []);
 
-  return (
-    <div>
-      <UpdateApp isCheckPage={true} />
-    </div>
-  );
+  return <UpdateApp isCheckPage />;
 };
 
 export default CheckApp;

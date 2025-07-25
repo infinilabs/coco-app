@@ -113,7 +113,7 @@ export const useStreamChat = (options: Options) => {
   useAsyncEffect(async () => {
     if (!message || !server || !assistant) return;
 
-    clearAllChunkData();
+    await clearAllChunkData();
 
     state.messageId = nanoid();
 

@@ -90,7 +90,11 @@ pub fn run() {
         .plugin(tauri_plugin_macos_permissions::init())
         .plugin(tauri_plugin_screenshots::init())
         .plugin(tauri_plugin_process::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(
+            tauri_plugin_updater::Builder::new()
+                .default_version_comparator(crate::util::updater::custom_version_comparator)
+                .build(),
+        )
         .plugin(tauri_plugin_windows_version::init())
         .plugin(tauri_plugin_opener::init());
 
