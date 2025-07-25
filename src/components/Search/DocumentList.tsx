@@ -114,7 +114,10 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     const list = response?.hits ?? [];
     const allTotal = response?.total_hits ?? 0;
     // set first select hover
-    from === 0 && list.length > 0 && setSelectedItem(0)
+    if (from === 0 && list.length > 0) {
+      setSelectedItem(0)
+      getDocDetail(list[0]?.document);
+    } 
 
     if (taskId === taskIdRef.current) {
       // Prevent the last data from being 0
