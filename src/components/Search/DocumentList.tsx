@@ -65,7 +65,9 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   useEffect(() => {
     if (isNil(selectedItem)) return;
 
-    const item = data.list[selectedItem]?.document;
+    const hit = data.list[selectedItem];
+
+    const item = { ...hit?.document, querySource: hit?.source };
 
     setSelectedSearchContent(item);
   }, [selectedItem, data]);
