@@ -11,6 +11,21 @@ Information about release notes of Coco Server is provided here.
 
 ### ❌ Breaking changes
 
+
+### 🚀 Features
+
+
+### 🐛 Bug fix
+
+
+### ✈️ Improvements
+
+- chore: web component add notification component #825
+
+## 0.7.0 (2025-07-25)
+
+### ❌ Breaking changes
+
 ### 🚀 Features
 
 - feat: file search using spotlight #705

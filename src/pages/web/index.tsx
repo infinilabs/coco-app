@@ -10,6 +10,7 @@ import useEscape from "@/hooks/useEscape";
 import { useViewportHeight } from "@/hooks/useViewportHeight";
 import { useIconfontScript } from "@/hooks/useScript";
 import type { StartPage } from "@/types/chat";
+import ErrorNotification from "@/components/Common/ErrorNotification";
 
 import "@/i18n";
 import "@/web.css";
@@ -87,7 +88,7 @@ function WebApp({
   return (
     <div
       id="searchChat-container"
-      className={`coco-container ${theme}`}
+      className={`coco-container relative ${theme}`}
       data-theme={theme}
       style={{
         maxWidth: `${width}px`,
@@ -127,6 +128,7 @@ function WebApp({
         startPage={startPage}
         formatUrl={formatUrl}
       />
+      <ErrorNotification isTauri={false}/>
     </div>
   );
 }
