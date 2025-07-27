@@ -11,12 +11,11 @@ Information about release notes of Coco Server is provided here.
 
 ### ❌ Breaking changes
 
-
 ### 🚀 Features
-
 
 ### 🐛 Bug fix
 
+- fix: correct enter key behavior #828
 
 ### ✈️ Improvements
 
