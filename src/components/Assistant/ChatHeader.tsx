@@ -13,6 +13,7 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { HISTORY_PANEL_ID } from "@/constants";
 import { AssistantList } from "./AssistantList";
 import { ServerList } from "./ServerList";
+import { toggle_move_to_active_space_attribute } from "@/commands/system";
 
 interface ChatHeaderProps {
   clearChat: () => void;
@@ -45,9 +46,9 @@ export function ChatHeader({
       const newPinned = !isPinned;
       await platformAdapter.setAlwaysOnTop(newPinned);
       setIsPinned(newPinned);
+      toggle_move_to_active_space_attribute();
     } catch (err) {
       console.error("Failed to toggle window pin state:", err);
-      setIsPinned(isPinned);
     }
   };
 

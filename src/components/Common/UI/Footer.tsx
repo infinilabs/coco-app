@@ -19,6 +19,7 @@ import source_default_dark_img from "@/assets/images/source_default_dark.png";
 import { useThemeStore } from "@/stores/themeStore";
 import platformAdapter from "@/utils/platformAdapter";
 import FontIcon from "../Icons/FontIcon";
+import { toggle_move_to_active_space_attribute } from "@/commands/system";
 
 interface FooterProps {
   setIsPinnedWeb?: (value: boolean) => void;
@@ -53,9 +54,9 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
       const newPinned = !isPinned;
       await setWindowAlwaysOnTop(newPinned);
       setIsPinned(newPinned);
+      toggle_move_to_active_space_attribute();
     } catch (err) {
       console.error("Failed to toggle window pin state:", err);
-      setIsPinned(isPinned);
     }
   };
 

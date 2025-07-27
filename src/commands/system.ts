@@ -35,3 +35,7 @@ export function show_check(): Promise<void> {
 export function hide_check(): Promise<void> {
   return invoke('hide_check');
 }
+
+export function toggle_move_to_active_space_attribute(): Promise<void> {
+  return invoke('toggle_move_to_active_space_attribute');
+}
