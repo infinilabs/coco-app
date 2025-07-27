@@ -138,6 +138,10 @@ export function useAssistantManager({
         e.preventDefault();
 
         if (isTauri && !isChatMode && goAskAi) {
+          if (!isEmpty(value)) {
+            e.stopPropagation();
+          }
+
           return handleAskAi();
         }
 

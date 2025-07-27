@@ -55,7 +55,7 @@ export default function MCPPopover({
         query: debouncedKeyword,
       });
 
-      console.log("getMCPByServer", res);
+      // console.log("getMCPByServer", res);
 
       if (res?.length === 0) {
         setDataList([]);

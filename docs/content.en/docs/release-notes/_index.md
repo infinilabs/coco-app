@@ -13,6 +13,20 @@ Information about release notes of Coco Server is provided here.
 
 ### 🚀 Features
 
+### 🐛 Bug fix
+
+- fix: correct enter key behavior #828
+
+### ✈️ Improvements
+
+- chore: web component add notification component #825
+
+## 0.7.0 (2025-07-25)
+
+### ❌ Breaking changes
+
+### 🚀 Features
+
 - feat: file search using spotlight #705
 - feat: voice input support in both search and chat modes #732
 - feat: text to speech now powered by LLM #750
@@ -37,6 +51,10 @@ Information about release notes of Coco Server is provided here.
 - fix: fix shortcut issue in windows context menu #804
 - fix: panic caused by "state() called before manage()" #806
 - fix: fix multiline input issue #808
+- fix: fix ctrl+k not working #815
+- fix: fix update window config sync #818
+- fix: fix enter key on subpages #819
+- fix: panic on Ubuntu (GNOME) when opening apps #821
 
 ### ✈️ Improvements
 

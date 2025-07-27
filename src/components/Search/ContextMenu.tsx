@@ -200,7 +200,7 @@ const ContextMenu = ({ formatUrl }: ContextMenuProps) => {
     }
   }, [selectedSearchContent]);
 
-  useOSKeyPress(["meta.k", "ctrl+k"], () => {
+  useOSKeyPress(["meta.k", "ctrl.k"], () => {
     if (isNil(selectedSearchContent) && isNil(selectedExtension)) return;
 
     setVisibleContextMenu(!visibleContextMenu);
@@ -226,19 +226,29 @@ const ContextMenu = ({ formatUrl }: ContextMenuProps) => {
     }
   });
 
-  useOSKeyPress(shortcuts, (_, key) => {
-    if (!visibleContextMenu) return;
+  useOSKeyPress(
+    shortcuts,
+    (event, key) => {
+      if (!visibleContextMenu) return;
 
-    let matched;
+      event.stopPropagation();
 
-    if (key === "enter") {
-      matched = searchMenus.find((_, index) => index === state.activeMenuIndex);
-    } else {
-      matched = searchMenus.find((item) => item.shortcut === key);
+      let matched;
+
+      if (key === "enter") {
+        matched = searchMenus.find((_, index) => {
+          return index === state.activeMenuIndex;
+        });
+      } else {
+        matched = searchMenus.find((item) => item.shortcut === key);
+      }
+
+      handleClick(matched?.clickEvent);
+    },
+    {
+      target: document.body,
     }
-
-    handleClick(matched?.clickEvent);
-  });
+  );
 
   useEffect(() => {
     setOpenPopover(visibleContextMenu);

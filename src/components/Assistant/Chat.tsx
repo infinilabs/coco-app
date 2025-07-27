@@ -77,7 +77,8 @@ const ChatAI = memo(
         clearChat: clearChat,
       }));
 
-      const { curChatEnd, setCurChatEnd } = useChatStore();
+      const curChatEnd = useChatStore((state) => state.curChatEnd);
+      const setCurChatEnd = useChatStore((state) => state.setCurChatEnd);
 
       const isTauri = useAppStore((state) => state.isTauri);
 
@@ -385,7 +386,6 @@ const ChatAI = memo(
               <>
                 <ChatContent
                   activeChat={activeChat}
-                  curChatEnd={curChatEnd}
                   query_intent={query_intent}
                   tools={tools}
                   fetch_source={fetch_source}
@@ -401,7 +401,6 @@ const ChatAI = memo(
                   }
                   getFileUrl={getFileUrl}
                   formatUrl={formatUrl}
-                  curSessionIdRef={curSessionIdRef}
                   curIdRef={curIdRef}
                 />
                 <Splash assistantIDs={assistantIDs} startPage={startPage} />

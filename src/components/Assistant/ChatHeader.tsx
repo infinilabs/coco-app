@@ -7,12 +7,12 @@ import PinIcon from "@/icons/Pin";
 import WindowsFullIcon from "@/icons/WindowsFull";
 import { useAppStore } from "@/stores/appStore";
 import type { Chat } from "@/types/chat";
-import platformAdapter from "@/utils/platformAdapter";
 import VisibleKey from "../Common/VisibleKey";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { HISTORY_PANEL_ID } from "@/constants";
 import { AssistantList } from "./AssistantList";
 import { ServerList } from "./ServerList";
+import { useTogglePin } from "@/hooks/useTogglePin";
 
 interface ChatHeaderProps {
   clearChat: () => void;
@@ -35,21 +35,11 @@ export function ChatHeader({
   showChatHistory = true,
   assistantIDs,
 }: ChatHeaderProps) {
-  const { isPinned, setIsPinned, isTauri } = useAppStore();
+  const { isTauri } = useAppStore();
+  const { isPinned, togglePin } = useTogglePin();
 
   const { historicalRecords, newSession, fixedWindow, external } =
     useShortcutsStore();
-
-  const togglePin = async () => {
-    try {
-      const newPinned = !isPinned;
-      await platformAdapter.setAlwaysOnTop(newPinned);
-      setIsPinned(newPinned);
-    } catch (err) {
-      console.error("Failed to toggle window pin state:", err);
-      setIsPinned(isPinned);
-    }
-  };
 
   return (
     <header
