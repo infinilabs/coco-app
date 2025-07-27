@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { useAppStore } from "@/stores/appStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { toggle_move_to_active_space_attribute } from "@/commands/system";
+import { isMac } from "@/utils/platform";
 
 interface UseTogglePinOptions {
   onPinChange?: (isPinned: boolean) => void;
@@ -21,7 +22,7 @@ export const useTogglePin = (options?: UseTogglePinOptions) => {
 
       await platformAdapter.setAlwaysOnTop(newPinned);
       setIsPinned(newPinned);
-      toggle_move_to_active_space_attribute();
+      isMac && toggle_move_to_active_space_attribute();
     } catch (err) {
       console.error("Failed to toggle window pin state:", err);
     }
