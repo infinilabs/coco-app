@@ -135,12 +135,13 @@ export function useAssistantManager({
       }
 
       if (key === "Enter" && !shiftKey) {
-        if (!isEmpty(value)) {
-          e.stopPropagation();
-        }
         e.preventDefault();
 
         if (isTauri && !isChatMode && goAskAi) {
+          if (!isEmpty(value)) {
+            e.stopPropagation();
+          }
+
           return handleAskAi();
         }
 
