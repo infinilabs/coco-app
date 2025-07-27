@@ -180,6 +180,8 @@ pub fn run() {
             server::synthesize::synthesize,
             util::file::get_file_icon,
             util::app_lang::update_app_lang,
+            #[cfg(target_os = "macos")]
+            setup::toggle_move_to_active_space_attribute,
         ])
         .setup(|app| {
             let app_handle = app.handle().clone();
