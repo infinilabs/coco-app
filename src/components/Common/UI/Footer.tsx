@@ -44,7 +44,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
     onPinChange: setIsPinnedWeb,
   });
 
-  const { setVisible, updateInfo, skipVersion } = useUpdateStore();
+  const { setVisible, updateInfo, skipVersions } = useUpdateStore();
 
   const { fixedWindow, modifierKey } = useShortcutsStore();
 
@@ -53,8 +53,8 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
   }, []);
 
   const hasUpdate = useMemo(() => {
-    return updateInfo && skipVersion !== updateInfo.version;
-  }, [updateInfo, skipVersion]);
+    return updateInfo && !skipVersions.includes(updateInfo.version);
+  }, [updateInfo, skipVersions]);
 
   const renderLeft = () => {
     if (sourceData?.source?.name) {

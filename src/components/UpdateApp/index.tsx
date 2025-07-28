@@ -32,8 +32,8 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
   const {
     visible,
     setVisible,
-    skipVersion,
-    setSkipVersion,
+    skipVersions,
+    setSkipVersions,
     isOptional,
     updateInfo,
     setUpdateInfo,
@@ -75,11 +75,13 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
     const update = await checkUpdate();
 
     if (update) {
-      setVisible(skipVersion !== update.version);
+      const { skipVersions } = useUpdateStore.getState();
+
+      setVisible(!skipVersions.includes(update.version));
 
       setUpdateInfo(update);
     }
-  }, [skipVersion]);
+  }, [skipVersions]);
 
   const cursorClassName = useMemo(() => {
     return state.loading ? "cursor-not-allowed" : "cursor-pointer";
@@ -127,7 +129,9 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
   const handleSkip = () => {
     if (state.loading) return;
 
-    setSkipVersion(updateInfo?.version);
+    const { skipVersions } = useUpdateStore.getState();
+
+    setSkipVersions([...skipVersions, updateInfo?.version]);
 
     isCheckPage ? hide_check() : setVisible(false);
   };
