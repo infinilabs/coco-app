@@ -32,8 +32,8 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
   const {
     visible,
     setVisible,
-    skipVersion,
-    setSkipVersion,
+    skipVersions,
+    setSkipVersions,
     isOptional,
     updateInfo,
     setUpdateInfo,
@@ -75,13 +75,13 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
     const update = await checkUpdate();
 
     if (update) {
+      const { skipVersions } = useUpdateStore.getState();
+
+      setVisible(!skipVersions.includes(update.version));
+
       setUpdateInfo(update);
-
-      if (skipVersion === update.version) return;
-
-      setVisible(true);
     }
-  }, [skipVersion]);
+  }, [skipVersions]);
 
   const cursorClassName = useMemo(() => {
     return state.loading ? "cursor-not-allowed" : "cursor-pointer";
@@ -129,7 +129,9 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
   const handleSkip = () => {
     if (state.loading) return;
 
-    setSkipVersion(updateInfo?.version);
+    const { skipVersions, updateInfo } = useUpdateStore.getState();
+
+    setSkipVersions([...skipVersions, updateInfo.version]);
 
     isCheckPage ? hide_check() : setVisible(false);
   };
@@ -178,7 +180,7 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
             <img src={isDark ? darkIcon : lightIcon} className="h-6" />
 
             <div className="text-[#333] text-sm leading-5 py-2 dark:text-[#D8D8D8] text-center">
-              {updateInfo?.available ? (
+              {updateInfo ? (
                 isOptional ? (
                   t("update.optional_description")
                 ) : (
@@ -192,7 +194,7 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
               )}
             </div>
 
-            {updateInfo?.available ? (
+            {updateInfo ? (
               <div
                 className="text-xs text-[#0072FF] cursor-pointer"
                 onClick={() =>
@@ -219,21 +221,21 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
                 cursorClassName,
                 state.loading && "opacity-50"
               )}
-              onClick={updateInfo?.available ? handleDownload : handleSkip}
+              onClick={updateInfo ? handleDownload : handleSkip}
             >
               {state.loading ? (
                 <div className="flex justify-center items-center gap-2">
                   <LoaderCircle className="animate-spin size-5" />
                   {percent}%
                 </div>
-              ) : updateInfo?.available ? (
+              ) : updateInfo ? (
                 t("update.button.install")
               ) : (
                 t("update.button.ok")
               )}
             </Button>
 
-            {updateInfo?.available && isOptional && (
+            {!isCheckPage && updateInfo && isOptional && (
               <div
                 className={clsx("text-xs text-[#999]", cursorClassName)}
                 onClick={handleSkip}
