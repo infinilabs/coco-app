@@ -5,6 +5,7 @@ import { useConnectStore } from "@/stores/connectStore";
 
 export function useMessageHandler(
   curIdRef: React.MutableRefObject<string>,
+  curSessionIdRef: React.MutableRefObject<string>,
   setCurChatEnd: (value: boolean) => void,
   setTimedoutShow: (value: boolean) => void,
   onCancel: (chat?: Chat) => void,
@@ -43,8 +44,20 @@ export function useMessageHandler(
 
       try {
         const chunkData = JSON.parse(msg);
+        // console.log("chunkData", chunkData);
 
+        // console.log(
+        //   "reply_to_message",
+        //   chunkData.reply_to_message,
+        //   curIdRef.current
+        // );
+        // console.log(
+        //   "session_id",
+        //   chunkData.session_id,
+        //   curSessionIdRef.current
+        // );
         if (chunkData.reply_to_message !== curIdRef.current) return;
+        if (chunkData.session_id !== curSessionIdRef.current) return;
 
         setLoadingStep(() => ({
           query_intent: false,
@@ -105,13 +118,7 @@ export function useMessageHandler(
         console.error("parse error:", error);
       }
     },
-    [
-      onCancel,
-      setCurChatEnd,
-      setTimedoutShow,
-      curIdRef.current,
-      connectionTimeout,
-    ]
+    [onCancel, setCurChatEnd, setTimedoutShow, connectionTimeout]
   );
 
   return {

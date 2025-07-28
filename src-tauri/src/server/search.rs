@@ -6,10 +6,10 @@ use crate::common::server::Server;
 use crate::common::traits::SearchSource;
 use crate::server::http_client::HttpClient;
 use async_trait::async_trait;
-// use futures::stream::StreamExt;
 use ordered_float::OrderedFloat;
+use reqwest::StatusCode;
 use std::collections::HashMap;
-// use std::hash::Hash;
+use tauri::AppHandle;
 
 #[allow(dead_code)]
 pub(crate) struct DocumentsSizedCollector {
@@ -44,7 +44,7 @@ impl DocumentsSizedCollector {
         }
     }
 
-    fn documents(self) -> impl ExactSizeIterator<Item=Document> {
+    fn documents(self) -> impl ExactSizeIterator<Item = Document> {
         self.docs.into_iter().map(|(_, doc, _)| doc)
     }
 
@@ -90,7 +90,11 @@ impl SearchSource for CocoSearchSource {
         }
     }
 
-    async fn search(&self, query: SearchQuery) -> Result<QueryResponse, SearchError> {
+    async fn search(
+        &self,
+        _tauri_app_handle: AppHandle,
+        query: SearchQuery,
+    ) -> Result<QueryResponse, SearchError> {
         let url = "/query/_search";
         let mut total_hits = 0;
         let mut hits: Vec<(Document, f64)> = Vec::new();
@@ -108,7 +112,18 @@ impl SearchSource for CocoSearchSource {
 
         let response = HttpClient::get(&self.server.id, &url, Some(query_params))
             .await
-            .map_err(|e| SearchError::HttpError(format!("{}", e)))?;
+            .map_err(|e| SearchError::HttpError {
+                status_code: None,
+                msg: format!("{}", e),
+            })?;
+        let status_code = response.status();
+
+        if ![StatusCode::OK, StatusCode::CREATED].contains(&status_code) {
+            return Err(SearchError::HttpError {
+                status_code: Some(status_code),
+                msg: format!("Request failed with status code [{}]", status_code),
+            });
+        }
 
         // Use the helper function to parse the response body
         let response_body = get_response_body_text(response)
@@ -122,7 +137,6 @@ impl SearchSource for CocoSearchSource {
             // Parse the search response from the body text
             let parsed: SearchResponse<Document> = serde_json::from_str(&response_body)
                 .map_err(|e| SearchError::ParseError(format!("{}", e)))?;
-
 
             // Process the parsed response
             total_hits = parsed.hits.total.value as usize;

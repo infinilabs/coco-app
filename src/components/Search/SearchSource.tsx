@@ -8,6 +8,7 @@ import VisibleKey from "@/components/Common/VisibleKey";
 import source_default_img from "@/assets/images/source_default.png";
 import source_default_dark_img from "@/assets/images/source_default_dark.png";
 import type { QueryHits } from "@/types/search";
+import { useAppStore } from "@/stores/appStore";
 
 interface SearchSourceProps {
   sourceName: string;
@@ -29,6 +30,8 @@ export const SearchSource: React.FC<SearchSourceProps> = ({
     items[0]?.document.category === "Calculator" ||
     items[0]?.document.category === "AI Overview";
 
+  const isTauri = useAppStore((state) => state.isTauri);
+
   return (
     <div className="p-2 text-xs text-[#999] dark:text-[#666] flex items-center gap-2.5 relative">
       <CommonIcon
@@ -38,7 +41,7 @@ export const SearchSource: React.FC<SearchSourceProps> = ({
         defaultIcon={isDark ? source_default_dark_img : source_default_img}
         className="w-4 h-4"
       />
-      {sourceName} {items[0]?.source?.name && `- ${items[0].source.name}`}
+      {sourceName} {isTauri && items[0]?.source?.name && `- ${items[0].source.name}`}
       <div className="flex-1 border-b border-b-[#e6e6e6] dark:border-b-[#272626]"></div>
       {!hideArrow && (
         <>

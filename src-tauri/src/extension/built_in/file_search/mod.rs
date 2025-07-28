@@ -10,6 +10,7 @@ use crate::common::{
 use async_trait::async_trait;
 use config::FileSearchConfig;
 use hostname;
+use tauri::AppHandle;
 
 pub(crate) const EXTENSION_ID: &str = "File Search";
 
@@ -40,7 +41,11 @@ impl SearchSource for FileSearchExtensionSearchSource {
         }
     }
 
-    async fn search(&self, query: SearchQuery) -> Result<QueryResponse, SearchError> {
+    async fn search(
+        &self,
+        tauri_app_handle: AppHandle,
+        query: SearchQuery,
+    ) -> Result<QueryResponse, SearchError> {
         let Some(query_string) = query.query_strings.get("query") else {
             return Ok(QueryResponse {
                 source: self.get_type(),
@@ -61,7 +66,7 @@ impl SearchSource for FileSearchExtensionSearchSource {
         }
 
         // Get configuration from tauri store
-        let config = FileSearchConfig::get();
+        let config = FileSearchConfig::get(&tauri_app_handle);
 
         // If search paths are empty, then the hit should be empty.
         //
@@ -78,7 +83,9 @@ impl SearchSource for FileSearchExtensionSearchSource {
         // Execute search in a blocking task
         let query_source = self.get_type();
 
-        let hits = implementation::hits(&query_string, from, size, &config).await.map_err(SearchError::InternalError)?;
+        let hits = implementation::hits(&query_string, from, size, &config)
+            .await
+            .map_err(SearchError::InternalError)?;
 
         let total_hits = hits.len();
         Ok(QueryResponse {

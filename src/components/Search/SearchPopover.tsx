@@ -61,7 +61,7 @@ export default function SearchPopover({
         }
       );
 
-      console.log("getDataSourcesByServer", res);
+      //console.log("getDataSourcesByServer", res);
 
       if (res?.length === 0) {
         setDataSourceList([]);

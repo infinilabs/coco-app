@@ -40,6 +40,7 @@ interface ChatAIProps {
   assistantIDs?: string[];
   startPage?: StartPage;
   formatUrl?: (data: any) => string;
+  instanceId?: string;
 }
 
 export interface SendMessageParams {
@@ -71,6 +72,7 @@ const ChatAI = memo(
         assistantIDs,
         startPage,
         formatUrl,
+        instanceId,
       },
       ref
     ) => {
@@ -80,7 +82,8 @@ const ChatAI = memo(
         clearChat: clearChat,
       }));
 
-      const { curChatEnd, setCurChatEnd } = useChatStore();
+      const curChatEnd = useChatStore((state) => state.curChatEnd);
+      const setCurChatEnd = useChatStore((state) => state.setCurChatEnd);
 
       const isTauri = useAppStore((state) => state.isTauri);
 
@@ -97,6 +100,7 @@ const ChatAI = memo(
       const [timedoutShow, setTimedoutShow] = useState(false);
 
       const curIdRef = useRef("");
+      const curSessionIdRef = useRef("");
 
       const [isSidebarOpenChat, setIsSidebarOpenChat] = useState(isSidebarOpen);
       const [chats, setChats] = useState<Chat[]>([]);
@@ -180,17 +184,21 @@ const ChatAI = memo(
         clearAllChunkData,
         setQuestion,
         curIdRef,
+        curSessionIdRef,
         setChats,
         dealMsgRef,
+        setLoadingStep,
+        isChatPage,
         isSearchActive,
         isDeepThinkActive,
         isMCPActive,
         changeInput,
-        showChatHistory
+        showChatHistory,
       );
 
       const { dealMsg } = useMessageHandler(
         curIdRef,
+        curSessionIdRef,
         setCurChatEnd,
         setTimedoutShow,
         (chat) => cancelChat(chat || activeChat),
@@ -259,7 +267,8 @@ const ChatAI = memo(
       const onSelectChat = useCallback(
         async (chat: Chat) => {
           setTimedoutShow(false);
-          clearAllChunkData();
+
+          await clearAllChunkData();
           await cancelChat(activeChat);
           await chatClose(activeChat);
           const response = await openSessionChat(chat);
@@ -366,6 +375,7 @@ const ChatAI = memo(
           )}
           <div
             data-tauri-drag-region
+            data-chat-instance={instanceId}
             className={`flex flex-col rounded-md h-full overflow-hidden relative`}
           >
             <ChatHeader
@@ -383,7 +393,6 @@ const ChatAI = memo(
               <>
                 <ChatContent
                   activeChat={activeChat}
-                  curChatEnd={curChatEnd}
                   query_intent={query_intent}
                   tools={tools}
                   fetch_source={fetch_source}
@@ -399,6 +408,7 @@ const ChatAI = memo(
                   }
                   getFileUrl={getFileUrl}
                   formatUrl={formatUrl}
+                  curIdRef={curIdRef}
                 />
                 <Splash assistantIDs={assistantIDs} startPage={startPage} />
               </>

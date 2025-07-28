@@ -34,7 +34,7 @@ pub fn get_datasources_from_cache(server_id: &str) -> Option<HashMap<String, Dat
 pub async fn refresh_all_datasources<R: Runtime>(_app_handle: &AppHandle<R>) -> Result<(), String> {
     // dbg!("Attempting to refresh all datasources");
 
-    let servers = get_all_servers();
+    let servers = get_all_servers().await;
 
     let mut server_map = HashMap::new();
 

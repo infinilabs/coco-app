@@ -2,19 +2,18 @@ import { useEffect } from "react";
 
 import { useUpdateStore } from "@/stores/updateStore";
 import UpdateApp from "@/components/UpdateApp";
+import { useSyncStore } from "@/hooks/useSyncStore";
 
 const CheckApp = () => {
-  const setVisible = useUpdateStore((state) => state.setVisible);
+  const { setVisible } = useUpdateStore();
+
+  useSyncStore();
 
   useEffect(() => {
-    setVisible(true)
-  }, [])
+    setVisible(true);
+  }, []);
 
-  return (
-    <div>
-      <UpdateApp isCheckPage={true} />
-    </div>
-  );
+  return <UpdateApp isCheckPage />;
 };
 
 export default CheckApp;

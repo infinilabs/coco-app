@@ -80,7 +80,6 @@ const ExtensionStore = () => {
     setSelectedExtension,
     installingExtensions,
     setInstallingExtensions,
-    uninstallingExtensions,
     setUninstallingExtensions,
     visibleExtensionDetail,
     setVisibleExtensionDetail,
@@ -149,11 +148,7 @@ const ExtensionStore = () => {
   useKeyPress(
     `${modifierKey}.enter`,
     () => {
-      if (
-        visibleContextMenu ||
-        visibleExtensionDetail ||
-        selectedExtension?.installed
-      ) {
+      if (visibleContextMenu || visibleExtensionDetail) {
         return;
       }
 
@@ -181,42 +176,49 @@ const ExtensionStore = () => {
     setSelectedExtension(list[nextIndex]);
   });
 
-  const toggleInstall = (installed = true) => {
-    if (!selectedExtension) return;
+  const toggleInstall = (extension: SearchExtensionItem) => {
+    if (!extension) return;
 
-    const { id } = selectedExtension;
+    const { id, installed } = extension;
 
     setList((prev) => {
       return prev.map((item) => {
         if (item.id === id) {
-          return { ...item, installed };
+          return { ...item, installed: !installed };
         }
 
         return item;
       });
     });
 
+    const { selectedExtension } = useSearchStore.getState();
+
     if (selectedExtension?.id === id) {
       setSelectedExtension({
         ...selectedExtension,
-        installed,
+        installed: !installed,
       });
     }
   };
 
   const handleInstall = async () => {
+    const { selectedExtension, installingExtensions } =
+      useSearchStore.getState();
+
     if (!selectedExtension) return;
 
     const { id, name, installed } = selectedExtension;
 
-    try {
-      if (installed || installingExtensions.includes(id)) return;
+    if (installed || installingExtensions.includes(id)) return;
 
+    try {
       setInstallingExtensions(installingExtensions.concat(id));
 
-      await platformAdapter.invokeBackend("install_extension_from_store", { id });
+      await platformAdapter.invokeBackend("install_extension_from_store", {
+        id,
+      });
 
-      toggleInstall();
+      toggleInstall(selectedExtension);
 
       addError(
         `${name} ${t("extensionStore.hints.installationCompleted")}`,
@@ -225,6 +227,8 @@ const ExtensionStore = () => {
     } catch (error) {
       addError(String(error), "error");
     } finally {
+      const { installingExtensions } = useSearchStore.getState();
+
       setInstallingExtensions(
         installingExtensions.filter((item) => item !== id)
       );
@@ -232,13 +236,16 @@ const ExtensionStore = () => {
   };
 
   const handleUnInstall = async () => {
+    const { selectedExtension, uninstallingExtensions } =
+      useSearchStore.getState();
+
     if (!selectedExtension) return;
 
     const { id, name, installed, developer } = selectedExtension;
 
-    try {
-      if (!installed || uninstallingExtensions.includes(id)) return;
+    if (!installed || uninstallingExtensions.includes(id)) return;
 
+    try {
       setUninstallingExtensions(uninstallingExtensions.concat(id));
 
       await platformAdapter.invokeBackend("uninstall_extension", {
@@ -246,7 +253,7 @@ const ExtensionStore = () => {
         extensionId: id,
       });
 
-      toggleInstall(false);
+      toggleInstall(selectedExtension);
 
       addError(
         `${name} ${t("extensionStore.hints.uninstallationCompleted")}`,
@@ -255,6 +262,8 @@ const ExtensionStore = () => {
     } catch (error) {
       addError(String(error), "error");
     } finally {
+      const { uninstallingExtensions } = useSearchStore.getState();
+
       setUninstallingExtensions(
         uninstallingExtensions.filter((item) => item !== id)
       );

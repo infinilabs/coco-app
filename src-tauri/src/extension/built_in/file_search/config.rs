@@ -4,6 +4,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde_json::Value;
 use std::sync::LazyLock;
+use tauri::AppHandle;
+use tauri::Runtime;
 use tauri_plugin_store::StoreExt;
 
 // Tauri store keys for file system configuration
@@ -52,11 +54,7 @@ impl Default for FileSearchConfig {
 }
 
 impl FileSearchConfig {
-    pub(crate) fn get() -> Self {
-        let tauri_app_handle = crate::GLOBAL_TAURI_APP_HANDLE
-            .get()
-            .expect("global tauri app handle not set");
-
+    pub(crate) fn get<R: Runtime>(tauri_app_handle: &AppHandle<R>) -> Self {
         let store = tauri_app_handle
             .store(TAURI_STORE_FILE_SYSTEM_CONFIG)
             .unwrap_or_else(|e| {
@@ -187,16 +185,17 @@ impl FileSearchConfig {
 
 // Tauri commands for managing file system configuration
 #[tauri::command]
-pub async fn get_file_system_config() -> FileSearchConfig {
-    FileSearchConfig::get()
+pub async fn get_file_system_config<R: Runtime>(
+    tauri_app_handle: AppHandle<R>,
+) -> FileSearchConfig {
+    FileSearchConfig::get(&tauri_app_handle)
 }
 
 #[tauri::command]
-pub async fn set_file_system_config(config: FileSearchConfig) -> Result<(), String> {
-    let tauri_app_handle = crate::GLOBAL_TAURI_APP_HANDLE
-        .get()
-        .expect("global tauri app handle not set");
-
+pub async fn set_file_system_config<R: Runtime>(
+    tauri_app_handle: AppHandle<R>,
+    config: FileSearchConfig,
+) -> Result<(), String> {
     let store = tauri_app_handle
         .store(TAURI_STORE_FILE_SYSTEM_CONFIG)
         .map_err(|e| e.to_string())?;

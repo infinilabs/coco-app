@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
+import { emit } from "@tauri-apps/api/event";
 
 import {
-  ServerTokenResponse,
   Server,
   Connector,
   DataSource,
@@ -17,6 +17,24 @@ import {
 } from "@/types/commands";
 import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
+import { useConnectStore } from "@/stores/connectStore";
+
+export function handleLogout(serverId?: string) {
+  const setIsCurrentLogin = useAuthStore.getState().setIsCurrentLogin;
+  const { currentService, setCurrentService, serverList, setServerList } =
+    useConnectStore.getState();
+  const id = serverId || currentService?.id;
+  if (!id) return;
+  setIsCurrentLogin(false);
+  emit("login_or_logout", false);
+  if (currentService?.id === id) {
+    setCurrentService({ ...currentService, profile: null });
+  }
+  const updatedServerList = serverList.map((server) =>
+    server.id === id ? { ...server, profile: null } : server
+  );
+  setServerList(updatedServerList);
+}
 
 // Endpoints that don't require authentication
 const WHITELIST_SERVERS = [
@@ -37,7 +55,14 @@ async function invokeWithErrorHandler<T>(
   args?: Record<string, any>
 ): Promise<T> {
   const isCurrentLogin = useAuthStore.getState().isCurrentLogin;
-  if (!WHITELIST_SERVERS.includes(command) && !isCurrentLogin) {
+  const currentService = useConnectStore.getState().currentService;
+
+  // Not logged in
+  console.log(command, isCurrentLogin, currentService?.profile);
+  if (
+    !WHITELIST_SERVERS.includes(command) &&
+    (!isCurrentLogin || !currentService?.profile)
+  ) {
     console.error("This command requires authentication");
     throw new Error("This command requires authentication");
   }
@@ -67,13 +92,14 @@ async function invokeWithErrorHandler<T>(
     return result;
   } catch (error: any) {
     const errorMessage = error || "Command execution failed";
-    addError(command + ":" + errorMessage, "error");
+    // 401 Unauthorized
+    if (errorMessage.includes("Unauthorized")) {
+      handleLogout();
+    } else {
+      addError(command + ":" + errorMessage, "error");
+    }
     throw error;
   }
-}
-
-export function get_server_token(id: string): Promise<ServerTokenResponse> {
-  return invokeWithErrorHandler(`get_server_token`, { id });
 }
 
 export function list_coco_servers(): Promise<Server[]> {
@@ -221,13 +247,16 @@ export function open_session_chat({
 export function cancel_session_chat({
   serverId,
   sessionId,
+  queryParams,
 }: {
   serverId: string;
   sessionId: string;
+  queryParams?: Record<string, any>;
 }): Promise<string> {
   return invokeWithErrorHandler(`cancel_session_chat`, {
     serverId,
     sessionId,
+    queryParams,
   });
 }
 
@@ -255,17 +284,20 @@ export function chat_create({
   message,
   attachments,
   queryParams,
+  clientId,
 }: {
   serverId: string;
   message: string;
   attachments: string[];
   queryParams?: Record<string, any>;
+  clientId: string;
 }): Promise<GetResponse> {
   return invokeWithErrorHandler(`chat_create`, {
     serverId,
     message,
     attachments,
     queryParams,
+    clientId,
   });
 }
 
@@ -300,12 +332,14 @@ export function chat_chat({
   message,
   attachments,
   queryParams,
+  clientId,
 }: {
   serverId: string;
   sessionId: string;
   message: string;
   attachments: string[];
   queryParams?: Record<string, any>;
+  clientId: string;
 }): Promise<string> {
   return invokeWithErrorHandler(`chat_chat`, {
     serverId,
@@ -313,6 +347,7 @@ export function chat_chat({
     message,
     attachments,
     queryParams,
+    clientId,
   });
 }
 
@@ -393,4 +428,8 @@ export const query_coco_fusion = (payload: {
   return invokeWithErrorHandler<MultiSourceQueryResponse>("query_coco_fusion", {
     ...payload,
   });
+};
+
+export const get_app_search_source = () => {
+  return invokeWithErrorHandler<void>("get_app_search_source");
 };

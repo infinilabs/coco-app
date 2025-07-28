@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef, useMemo } from "react";
 
 import type { Chat } from "@/types/chat";
 import { useAppStore } from "@/stores/appStore";
@@ -16,11 +16,14 @@ export function useChatActions(
   setActiveChat: (chat: Chat | undefined) => void,
   setCurChatEnd: (value: boolean) => void,
   setTimedoutShow: (value: boolean) => void,
-  clearAllChunkData: () => void,
+  clearAllChunkData: () => Promise<void>,
   setQuestion: (value: string) => void,
   curIdRef: React.MutableRefObject<string>,
+  curSessionIdRef: React.MutableRefObject<string>,
   setChats: (chats: Chat[]) => void,
   dealMsgRef: React.MutableRefObject<((msg: string) => void) | null>,
+  setLoadingStep: (loading: Record<string, boolean>) => void,
+  isChatPage?: boolean,
   isSearchActive?: boolean,
   isDeepThinkActive?: boolean,
   isMCPActive?: boolean,
@@ -41,6 +44,23 @@ export function useChatActions(
   const MCPIds = useSearchStore((state) => state.MCPIds);
 
   const [keyword, setKeyword] = useState("");
+
+  // Add a ref at the beginning of the useChatActions function to store the listener.
+  const unlistenersRef = useRef<{
+    message?: () => void;
+    chatMessage?: () => void;
+    error?: () => void;
+  }>({});
+
+  const cleanupListeners = useCallback(() => {
+    if (unlistenersRef.current.chatMessage) {
+      unlistenersRef.current.chatMessage();
+    }
+    if (unlistenersRef.current.error) {
+      unlistenersRef.current.error();
+    }
+    unlistenersRef.current = {};
+  }, []);
 
   const chatClose = useCallback(
     async (activeChat?: Chat) => {
@@ -63,9 +83,30 @@ export function useChatActions(
     [currentService?.id, isTauri]
   );
 
+  const resetChatState = useCallback(() => {
+    setCurChatEnd(true);
+
+    // Stop listening for streaming data.
+    cleanupListeners();
+
+    setLoadingStep({
+      query_intent: false,
+      tools: false,
+      fetch_source: false,
+      pick_source: false,
+      deep_read: false,
+      think: false,
+      response: false,
+    });
+  }, [cleanupListeners]);
+
+  // 1. onSelectChat
+  // 2. dealMsg setTimedoutShow
+  // 3. disabledChange Manual shutdown
   const cancelChat = useCallback(
     async (activeChat?: Chat) => {
-      setCurChatEnd(true);
+      resetChatState();
+
       if (!activeChat?._id) return;
       let response: any;
       if (isTauri) {
@@ -73,12 +114,15 @@ export function useChatActions(
         response = await platformAdapter.commands("cancel_session_chat", {
           serverId: currentService?.id,
           sessionId: activeChat?._id,
+          queryParams: {
+            message_id: curIdRef.current,
+          },
         });
         response = response ? JSON.parse(response) : null;
       } else {
         const [_error, res] = await Post(
-          `/chat/${activeChat?._id}/_cancel`,
-          {}
+          `/chat/${activeChat?._id}/_cancel?message_id=${curIdRef.current}`,
+          undefined
         );
         response = res;
       }
@@ -95,6 +139,7 @@ export function useChatActions(
     async (chat: Chat, callback?: (chat: Chat) => void) => {
       if (!chat?._id) return;
 
+      curSessionIdRef.current = chat?._id;
       let response: any;
       if (isTauri) {
         if (!currentService?.id) return;
@@ -102,13 +147,13 @@ export function useChatActions(
           serverId: currentService?.id,
           sessionId: chat?._id,
           from: 0,
-          size: 100,
+          size: 1000,
         });
         response = response ? JSON.parse(response) : null;
       } else {
         const [_error, res] = await Get(`/chat/${chat?._id}/_history`, {
           from: 0,
-          size: 100,
+          size: 1000,
         });
         response = res;
       }
@@ -136,6 +181,136 @@ export function useChatActions(
     [currentService?.id, isTauri, assistantList]
   );
 
+  // Modify the clientId generation logic to include the instance ID.
+  const clientId = useMemo(() => {
+    const pageType = isChatPage ? "standalone-chat" : "search-chat";
+    return `${pageType}`;
+  }, [isChatPage]);
+
+  const handleChatCreateStreamMessage = useCallback(
+    (msg: string) => {
+      if (
+        msg.includes(`"user"`) &&
+        msg.includes("_source") &&
+        msg.includes("result")
+      ) {
+        try {
+          const response = JSON.parse(msg);
+          console.log("first", response);
+
+          let updatedChat: Chat;
+          if (Array.isArray(response)) {
+            curIdRef.current = response[0]?._id;
+            curSessionIdRef.current = response[0]?._source?.session_id;
+            console.log(
+              "curIdRef-curSessionIdRef-Array",
+              curIdRef.current,
+              curSessionIdRef.current
+            );
+            updatedChat = {
+              ...updatedChatRef.current,
+              messages: [
+                ...(updatedChatRef.current?.messages || []),
+                ...(response || []),
+              ],
+            };
+            console.log("array", updatedChat, updatedChatRef.current?.messages);
+          } else {
+            const newChat: Chat = response;
+            curIdRef.current = response?.payload?.id;
+            curSessionIdRef.current = response?.payload?.session_id;
+            console.log(
+              "curIdRef-curSessionIdRef",
+              curIdRef.current,
+              curSessionIdRef.current
+            );
+
+            newChat._source = {
+              ...response?.payload,
+            };
+            updatedChat = {
+              ...newChat,
+              messages: [newChat],
+            };
+          }
+
+          setActiveChat(updatedChat);
+          return;
+        } catch (error) {
+          console.error("Failed to parse JSON:", error, "Raw message:", msg);
+          return;
+        }
+      }
+
+      dealMsgRef.current?.(msg);
+    },
+    [changeInput, setActiveChat, setCurChatEnd, setVisibleStartPage]
+  );
+
+  const setupListeners = useCallback(
+    async (timestamp: number) => {
+      cleanupListeners();
+
+      console.log("setupListeners", clientId, timestamp);
+      const unlisten_chat_message = await platformAdapter.listenEvent(
+        `chat-stream-${clientId}-${timestamp}`,
+        (event) => {
+          const msg = event.payload as string;
+          try {
+            // console.log("msg:", JSON.parse(msg));
+            // console.log("user:", msg.includes(`"user"`));
+            // console.log("_source:", msg.includes("_source"));
+            // console.log("result:", msg.includes("result"));
+            // console.log("");
+            // console.log("");
+            // console.log("");
+            // console.log("");
+            // console.log("");
+          } catch (error) {
+            console.error("Failed to parse JSON in listener:", error);
+          }
+
+          handleChatCreateStreamMessage(msg);
+        }
+      );
+
+      const unlisten_error = await platformAdapter.listenEvent(
+        `chat-create-error`,
+        (event) => {
+          console.error("chat-create-error", event.payload);
+        }
+      );
+
+      // Store the listener references.
+      unlistenersRef.current = {
+        chatMessage: unlisten_chat_message,
+        error: unlisten_error,
+      };
+    },
+    [currentService?.id, clientId, handleChatCreateStreamMessage]
+  );
+
+  const prepareChatSession = useCallback(
+    async (value: string, timestamp: number) => {
+      // 1. Cleaning and preparation
+      await clearAllChunkData();
+
+      // 2. Update the status again
+      await new Promise<void>((resolve) => {
+        changeInput && changeInput("");
+        setVisibleStartPage(false);
+        setTimedoutShow(false);
+        setQuestion(value);
+        setCurChatEnd(false);
+        setTimeout(resolve, 0);
+      });
+
+      // 4. Set up the listener first
+      await setupListeners(timestamp);
+    },
+    [setupListeners]
+  );
+
   const createNewChat = useCallback(
     async (activeChat?: Chat, params?: SendMessageParams) => {
       const { message, attachments } = params || {};
@@ -153,7 +328,11 @@ export function useChatActions(
         setQuestion(message);
       }
 
-      //console.log("sourceDataIds", sourceDataIds, MCPIds, id);
+      const timestamp = Date.now();
+
+      await prepareChatSession(value, timestamp);
+
+
       const queryParams = {
         search: isSearchActive,
         deep_thinking: isDeepThinkActive,
@@ -162,15 +341,21 @@ export function useChatActions(
         mcp_servers: MCPIds?.join(",") || "",
         assistant_id: currentAssistant?._id || "",
       };
+
       if (isTauri) {
         if (!currentService?.id) return;
+        
+        console.log("chat_create", clientId, timestamp);
 
         await platformAdapter.commands("chat_create", {
           serverId: currentService?.id,
           message,
           attachments,
           queryParams,
+          clientId: `chat-stream-${clientId}-${timestamp}`,
         });
+        console.log("_create end", value);
+        resetChatState();
       } else {
         await streamPost({
           url: "/chat/_create",
@@ -183,13 +368,6 @@ export function useChatActions(
           },
         });
       }
-      console.log(
-        "_create",
-        currentService?.id,
-        message,
-        attachments,
-        queryParams
-      );
     },
     [
       isTauri,
@@ -199,9 +377,9 @@ export function useChatActions(
       isSearchActive,
       isDeepThinkActive,
       isMCPActive,
-      curIdRef,
       currentAssistant,
       chatClose,
+      clientId,
     ]
   );
 
@@ -213,7 +391,9 @@ export function useChatActions(
 
       if (!message && isEmpty(attachments)) return;
 
-      clearAllChunkData();
+      const timestamp = Date.now();
+
+      await prepareChatSession(content, timestamp);
 
       const queryParams = {
         search: isSearchActive,
@@ -223,15 +403,21 @@ export function useChatActions(
         mcp_servers: MCPIds?.join(",") || "",
         assistant_id: currentAssistant?._id || "",
       };
+
       if (isTauri) {
         if (!currentService?.id) return;
+        console.log("chat_chat", clientId, timestamp);
         await platformAdapter.commands("chat_chat", {
           serverId: currentService?.id,
           sessionId: newChat?._id,
           queryParams,
           message,
           attachments,
+          clientId: `chat-stream-${clientId}-${timestamp}`,
+
         });
+        console.log("chat_chat end", content, clientId);
+        resetChatState();
       } else {
         await streamPost({
           url: `/chat/${newChat?._id}/_chat`,
@@ -244,15 +430,6 @@ export function useChatActions(
           },
         });
       }
-
-      console.log(
-        "chat_chat",
-        currentService?.id,
-        newChat?._id,
-        queryParams,
-        message,
-        attachments
-      );
     },
     [
       isTauri,
@@ -262,9 +439,9 @@ export function useChatActions(
       isSearchActive,
       isDeepThinkActive,
       isMCPActive,
-      curIdRef,
       changeInput,
       currentAssistant,
+      clientId,
     ]
   );
 
@@ -287,83 +464,13 @@ export function useChatActions(
     [chatHistory, sendMessage]
   );
 
-  const handleChatCreateStreamMessage = useCallback(
-    (msg: string) => {
-      if (
-        msg.includes("_id") &&
-        msg.includes("_source") &&
-        msg.includes("result")
-      ) {
-        const response = JSON.parse(msg);
-        console.log("first", response);
-        let updatedChat: Chat;
-        if (Array.isArray(response)) {
-          curIdRef.current = response[0]?._id;
-          updatedChat = {
-            ...updatedChatRef.current,
-            messages: [
-              ...(updatedChatRef.current?.messages || []),
-              ...(response || []),
-            ],
-          };
-          console.log("array", updatedChat, updatedChatRef.current?.messages);
-        } else {
-          const newChat: Chat = response;
-          curIdRef.current = response?.payload?.id;
-
-          newChat._source = {
-            ...response?.payload,
-          };
-          updatedChat = {
-            ...newChat,
-            messages: [newChat],
-          };
-        }
-
-        changeInput && changeInput("");
-        setActiveChat(updatedChat);
-        setCurChatEnd(false);
-        setVisibleStartPage(false);
-        return;
-      }
-
-      dealMsgRef.current?.(msg);
-    },
-    [
-      curIdRef,
-      updatedChatRef,
-      changeInput,
-      setActiveChat,
-      setCurChatEnd,
-      setVisibleStartPage,
-      dealMsgRef,
-    ]
-  );
-
   useEffect(() => {
     if (!isTauri || !currentService?.id) return;
 
-    const unlisten_message = platformAdapter.listenEvent(
-      `chat-create-stream`,
-      (event) => {
-        const msg = event.payload as string;
-        //console.log("chat-create-stream", msg);
-        handleChatCreateStreamMessage(msg);
-      }
-    );
-
-    const unlisten_error = platformAdapter.listenEvent(
-      `chat-create-error`,
-      (event) => {
-        console.error("chat-create-error", event.payload);
-      }
-    );
-
     return () => {
-      unlisten_message.then((fn) => fn());
-      unlisten_error.then((fn) => fn());
+      cleanupListeners();
     };
-  }, [currentService?.id, dealMsgRef, updatedChatRef.current]);
+  }, [currentService?.id]);
 
   const openSessionChat = useCallback(
     async (chat: Chat) => {

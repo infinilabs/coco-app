@@ -5,9 +5,38 @@ title: "Release Notes"
 
 # Release Notes
 
-Information about release notes of Coco Server is provided here.
+Information about release notes of Coco App is provided here.
 
 ## Latest (In development)
+
+### ❌ Breaking changes
+
+### 🚀 Features
+
+- feat: enhance ui for skipped version #834
+
+### 🐛 Bug fix
+
+- fix: fix issue with update check failure #833
+
+### ✈️ Improvements
+
+## 0.7.1 (2025-07-27)
+
+### ❌ Breaking changes
+
+### 🚀 Features
+
+### 🐛 Bug fix
+
+- fix: correct enter key behavior #828
+
+### ✈️ Improvements
+
+- chore: web component add notification component #825
+- refactor: collection behavior defaults to `MoveToActiveSpace`, and only use `CanJoinAllSpaces` when window is pinned #829
+
+## 0.7.0 (2025-07-25)
 
 ### ❌ Breaking changes
 
@@ -28,6 +57,19 @@ Information about release notes of Coco Server is provided here.
 - fix: restore missing category titles on subpages #772
 - fix: correct incorrect assistant display when quick ai access #779
 - fix: resolved minor issues with voice playback #780
+- fix: fixed incorrect taskbar icon display on linux #783
+- fix: fix data inconsistency issue on secondary pages #784
+- fix: incorrect status when installing extension #789
+- fix: increase read_timeout for HTTP streaming stability #798
+- fix: enter key problem #794
+- fix: fix selection issue after renaming #800
+- fix: fix shortcut issue in windows context menu #804
+- fix: panic caused by "state() called before manage()" #806
+- fix: fix multiline input issue #808
+- fix: fix ctrl+k not working #815
+- fix: fix update window config sync #818
+- fix: fix enter key on subpages #819
+- fix: panic on Ubuntu (GNOME) when opening apps #821
 
 ### ✈️ Improvements
 
@@ -47,6 +89,9 @@ Information about release notes of Coco Server is provided here.
 - refactor: do status code check before deserializing response #767
 - style: splash adapts to the width of mobile phones #768
 - chore: search-chat add language and formatUrl parameters #775
+- chore: not request the interface if not logged in #795
+- refactor: clean up unsupported characters from query string in Win Search #802
+- chore: display backtrace in panic log #805
 
 ## 0.6.0 (2025-06-29)
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useKeyPress } from "ahooks";
+import { useKeyPress, useSize } from "ahooks";
+import clsx from "clsx";
 
 import AutoResizeTextarea from "./AutoResizeTextarea";
 import { useChatStore } from "@/stores/chatStore";
@@ -137,11 +138,7 @@ export default function ChatInput({
     }
   }, [inputValue, disabled, onSend, uploadAttachments]);
 
-  useKeyboardHandlers({
-    isChatMode,
-    handleSubmit,
-    curChatEnd,
-  });
+  useKeyboardHandlers();
 
   useKeyPress(`${modifierKey}.${returnToInput}`, handleToggleFocus);
 
@@ -212,29 +209,39 @@ export default function ChatInput({
 
   const { currentService } = useConnectStore();
   const [visibleAudioInput, setVisibleAudioInput] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const containerSize = useSize(containerRef);
+  const searchIconRef = useRef<HTMLDivElement>(null);
+  const searchIconSize = useSize(searchIconRef);
+  const extraIconRef = useRef<HTMLDivElement>(null);
+  const extraIconSize = useSize(extraIconRef);
 
   useEffect(() => {
     setVisibleAudioInput(isDefaultServer());
   }, [currentService]);
 
   const renderSearchIcon = () => (
-    <SearchIcons
-      lineCount={lineCount}
-      isChatMode={isChatMode}
-      assistant={askAIRef.current}
-    />
+    <div ref={searchIconRef} className="w-fit">
+      <SearchIcons
+        lineCount={lineCount}
+        isChatMode={isChatMode}
+        assistant={askAIRef.current}
+      />
+    </div>
   );
 
   const renderExtraIcon = () => (
-    <div className="flex items-center gap-2">
-      <ChatIcons
-        lineCount={lineCount}
-        isChatMode={isChatMode}
-        curChatEnd={curChatEnd}
-        inputValue={inputValue}
-        onSend={onSend}
-        disabledChange={disabledChange}
-      />
+    <div ref={extraIconRef} className="flex items-center gap-2 w-fit">
+      {isChatMode && (
+        <ChatIcons
+          lineCount={lineCount}
+          isChatMode={isChatMode}
+          curChatEnd={curChatEnd}
+          inputValue={inputValue}
+          onSend={onSend}
+          disabledChange={disabledChange}
+        />
+      )}
 
       {!isChatMode &&
         (sourceData || visibleExtensionStore || selectedExtension) && (
@@ -304,55 +311,63 @@ export default function ChatInput({
     </div>
   );
 
-  const renderTextarea = () => (
-    <VisibleKey
-      shortcut={returnToInput}
-      rootClassName="flex-1 flex items-center justify-center"
-      shortcutClassName="!left-0 !translate-x-0"
-    >
-      <AutoResizeTextarea
-        ref={textareaRef}
-        isChatMode={isChatMode}
-        input={inputValue}
-        setInput={handleInputChange}
-        handleKeyDown={handleKeyDownAutoResizeTextarea}
-        chatPlaceholder={
-          isChatMode
-            ? assistantConfig.placeholder || chatPlaceholder
-            : goAskAi
-            ? assistantDetail?._source?.chat_settings?.placeholder
-            : searchPlaceholder || t("search.input.searchPlaceholder")
-        }
-        lineCount={lineCount}
-        onLineCountChange={setLineCount}
-      />
-    </VisibleKey>
-  );
+  const renderTextarea = () => {
+    return (
+      <VisibleKey
+        shortcut={returnToInput}
+        rootClassName="flex-1 flex items-center justify-center"
+        shortcutClassName="!left-0 !translate-x-0"
+      >
+        <AutoResizeTextarea
+          ref={textareaRef}
+          isChatMode={isChatMode}
+          input={inputValue}
+          setInput={handleInputChange}
+          handleKeyDown={handleKeyDownAutoResizeTextarea}
+          chatPlaceholder={
+            isChatMode
+              ? assistantConfig.placeholder || chatPlaceholder
+              : goAskAi
+              ? assistantDetail?._source?.chat_settings?.placeholder
+              : searchPlaceholder || t("search.input.searchPlaceholder")
+          }
+          lineCount={lineCount}
+          onLineCountChange={setLineCount}
+          firstLineMaxWidth={
+            (containerSize?.width ?? 0) -
+            (searchIconSize?.width ?? 0) -
+            (extraIconSize?.width ?? 0)
+          }
+        />
+      </VisibleKey>
+    );
+  };
 
   return (
     <div className={`w-full relative`}>
       <div
         className={`p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded-md transition-all relative overflow-hidden`}
       >
-        {lineCount === 1 ? (
-          <div className="relative flex items-center gap-2 w-full">
-            {renderSearchIcon()}
+        <div
+          ref={containerRef}
+          className={clsx("relative w-full", {
+            "flex items-center gap-2": lineCount === 1,
+          })}
+        >
+          {lineCount === 1 && renderSearchIcon()}
 
-            {renderTextarea()}
+          {renderTextarea()}
 
-            {renderExtraIcon()}
-          </div>
-        ) : (
-          <div className="relative w-full">
-            {renderTextarea()}
+          {lineCount === 1 && renderExtraIcon()}
 
+          {lineCount > 1 && (
             <div className="flex items-center mt-2">
               <div className="flex-1">{renderSearchIcon()}</div>
 
               <div className="self-end">{renderExtraIcon()}</div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <InputControls

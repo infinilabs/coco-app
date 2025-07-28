@@ -28,9 +28,14 @@ pub(crate) const COCO_TAURI_STORE: &str = "coco_tauri_store";
 lazy_static! {
     static ref PREVIOUS_MONITOR_NAME: Mutex<Option<String>> = Mutex::new(None);
 }
-
 /// To allow us to access tauri's `AppHandle` when its context is inaccessible,
 /// store it globally. It will be set in `init()`.
+///
+/// # WARNING
+///
+/// You may find this work, but the usage is discouraged and should be generally
+/// avoided. If you do need it, always be careful that it may not be set() when
+/// you access it.
 pub(crate) static GLOBAL_TAURI_APP_HANDLE: OnceLock<AppHandle> = OnceLock::new();
 
 #[tauri::command]
@@ -85,7 +90,11 @@ pub fn run() {
         .plugin(tauri_plugin_macos_permissions::init())
         .plugin(tauri_plugin_screenshots::init())
         .plugin(tauri_plugin_process::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(
+            tauri_plugin_updater::Builder::new()
+                .default_version_comparator(crate::util::updater::custom_version_comparator)
+                .build(),
+        )
         .plugin(tauri_plugin_windows_version::init())
         .plugin(tauri_plugin_opener::init());
 
@@ -107,7 +116,6 @@ pub fn run() {
             show_settings,
             show_check,
             hide_check,
-            server::servers::get_server_token,
             server::servers::add_coco_server,
             server::servers::remove_coco_server,
             server::servers::list_coco_servers,
@@ -170,11 +178,18 @@ pub fn run() {
             #[cfg(any(target_os = "macos", target_os = "windows"))]
             extension::built_in::file_search::config::set_file_system_config,
             server::synthesize::synthesize,
-            util::file::get_file_icon, 
+            util::file::get_file_icon,
             util::app_lang::update_app_lang,
-
+            #[cfg(target_os = "macos")]
+            setup::toggle_move_to_active_space_attribute,
         ])
         .setup(|app| {
+            let app_handle = app.handle().clone();
+            GLOBAL_TAURI_APP_HANDLE
+                .set(app_handle.clone())
+                .expect("global tauri AppHandle already initialized");
+            log::trace!("global Tauri AppHandle set");
+
             #[cfg(target_os = "macos")]
             {
                 log::trace!("hiding Dock icon on macOS");
@@ -182,22 +197,35 @@ pub fn run() {
                 log::trace!("Dock icon should be hidden now");
             }
 
-            let app_handle = app.handle().clone();
-            GLOBAL_TAURI_APP_HANDLE
-                .set(app_handle.clone())
-                .expect("variable already initialized");
-            log::trace!("global Tauri app handle set");
-
             let registry = SearchSourceRegistry::default();
 
             app.manage(registry); // Store registry in Tauri's app state
             app.manage(server::websocket::WebSocketManager::default());
 
+            // This has to be called before initializing extensions as doing that
+            // requires access to the shortcut store, which will be set by this
+            // function.
+            shortcut::enable_shortcut(app);
+
             block_on(async {
                 init(app.handle()).await;
-            });
 
-            shortcut::enable_shortcut(app);
+                // We want all the extensions here, so no filter condition specified.
+                match extension::list_extensions(app_handle.clone(), None, None, false).await {
+                    Ok((_found_invalid_extensions, extensions)) => {
+                        // Initializing extension relies on SearchSourceRegistry, so this should
+                        // be executed after `app.manage(registry)`
+                        if let Err(e) =
+                            extension::init_extensions(app_handle.clone(), extensions).await
+                        {
+                            log::error!("initializing extensions failed with error [{}]", e);
+                        }
+                    }
+                    Err(e) => {
+                        log::error!("listing extensions failed with error [{}]", e);
+                    }
+                }
+            });
 
             ensure_autostart_state_consistent(app)?;
 
@@ -275,7 +303,7 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
         log::error!("Failed to load server tokens: {}", err);
     }
 
-    let coco_servers = server::servers::get_all_servers();
+    let coco_servers = server::servers::get_all_servers().await;
 
     // Get the registry from Tauri's state
     // let registry: State<SearchSourceRegistry> = app_handle.state::<SearchSourceRegistry>();
@@ -408,13 +436,7 @@ fn move_window_to_active_monitor<R: Runtime>(window: &WebviewWindow<R>) {
 }
 
 #[tauri::command]
-async fn get_app_search_source<R: Runtime>(app_handle: AppHandle<R>) -> Result<(), String> {
-    // We want all the extensions here, so no filter condition specified.
-    let (_found_invalid_extensions, extensions) = extension::list_extensions(None, None, false)
-        .await
-        .map_err(|e| e.to_string())?;
-    extension::init_extensions(extensions).await?;
-
+async fn get_app_search_source(app_handle: AppHandle) -> Result<(), String> {
     let _ = server::connector::refresh_all_connectors(&app_handle).await;
     let _ = server::datasource::refresh_all_datasources(&app_handle).await;
 

@@ -2,7 +2,8 @@ pub(crate) mod built_in;
 pub(crate) mod third_party;
 
 use crate::common::document::OnOpened;
-use crate::{common::register::SearchSourceRegistry, GLOBAL_TAURI_APP_HANDLE};
+use crate::common::register::SearchSourceRegistry;
+use crate::util::platform::Platform;
 use anyhow::Context;
 use borrowme::{Borrow, ToOwned};
 use derive_more::Display;
@@ -11,9 +12,8 @@ use serde::Serialize;
 use serde_json::Value as Json;
 use std::collections::HashSet;
 use std::path::Path;
-use tauri::Manager;
+use tauri::{AppHandle, Manager, Runtime};
 use third_party::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE;
-use crate::util::platform::Platform;
 
 pub const LOCAL_QUERY_SOURCE_TYPE: &str = "local";
 const PLUGIN_JSON_FILE_NAME: &str = "plugin.json";
@@ -45,8 +45,8 @@ pub struct Extension {
     platforms: Option<HashSet<Platform>>,
     /// Extension description.
     description: String,
-    //// Specify the icon for this extension, 
-    /// 
+    //// Specify the icon for this extension,
+    ///
     /// For the `plugin.json` file, this field can be specified in multi options:
     ///
     /// 1. It can be a path to the icon file, the path can be
@@ -59,9 +59,9 @@ pub struct Extension {
     /// In cases where your icon file is named similarly to a font class code, Coco
     /// will treat it as an icon file if it exists, i.e., if file `<extension>/assets/font_coco`
     /// exists, then Coco will use this file rather than the built-in 'font_coco' icon.
-    /// 
+    ///
     /// For the `struct Extension` loaded into memory, this field should be:
-    /// 
+    ///
     /// 1. An absolute path
     /// 2. A font code
     icon: String,
@@ -413,23 +413,24 @@ fn filter_out_extensions(
 /// * boolean: indicates if we found any invalid extensions
 /// * Vec<Extension>: loaded extensions
 #[tauri::command]
-pub(crate) async fn list_extensions(
+pub(crate) async fn list_extensions<R: Runtime>(
+    tauri_app_handle: AppHandle<R>,
     query: Option<String>,
     extension_type: Option<ExtensionType>,
     list_enabled: bool,
 ) -> Result<(bool, Vec<Extension>), String> {
     log::trace!("loading extensions");
 
-    let third_party_dir = third_party::THIRD_PARTY_EXTENSIONS_DIRECTORY.as_path();
+    let third_party_dir = third_party::get_third_party_extension_directory(&tauri_app_handle);
     if !third_party_dir.try_exists().map_err(|e| e.to_string())? {
-        tokio::fs::create_dir_all(third_party_dir)
+        tokio::fs::create_dir_all(&third_party_dir)
             .await
             .map_err(|e| e.to_string())?;
     }
     let (third_party_found_invalid_extension, mut third_party_extensions) =
-        third_party::list_third_party_extensions(third_party_dir).await?;
+        third_party::list_third_party_extensions(&third_party_dir).await?;
 
-    let built_in_extensions = built_in::list_built_in_extensions().await?;
+    let built_in_extensions = built_in::list_built_in_extensions(&tauri_app_handle).await?;
 
     let found_invalid_extension = third_party_found_invalid_extension;
     let mut extensions = {
@@ -482,12 +483,12 @@ pub(crate) async fn list_extensions(
     Ok((found_invalid_extension, extensions))
 }
 
-pub(crate) async fn init_extensions(mut extensions: Vec<Extension>) -> Result<(), String> {
+pub(crate) async fn init_extensions(
+    tauri_app_handle: AppHandle,
+    mut extensions: Vec<Extension>,
+) -> Result<(), String> {
     log::trace!("initializing extensions");
 
-    let tauri_app_handle = GLOBAL_TAURI_APP_HANDLE
-        .get()
-        .expect("global tauri app handle not set");
     let search_source_registry_tauri_state = tauri_app_handle.state::<SearchSourceRegistry>();
 
     built_in::application::ApplicationSearchSource::prepare_index_and_store(
@@ -508,7 +509,7 @@ pub(crate) async fn init_extensions(mut extensions: Vec<Extension>) -> Result<()
         .filter(|ext| ext.enabled)
     {
         built_in::init_built_in_extension(
-            tauri_app_handle,
+            &tauri_app_handle,
             &built_in_extension,
             &search_source_registry_tauri_state,
         )
@@ -517,7 +518,7 @@ pub(crate) async fn init_extensions(mut extensions: Vec<Extension>) -> Result<()
 
     // Now the third-party extensions
     let third_party_search_source = third_party::ThirdPartyExtensionsSearchSource::new(extensions);
-    third_party_search_source.init().await?;
+    third_party_search_source.init(&tauri_app_handle).await?;
     let third_party_search_source_clone = third_party_search_source.clone();
     // Set the global search source so that we can access it in `#[tauri::command]`s
     // ignore the result because this function will be invoked twice, which
@@ -531,79 +532,96 @@ pub(crate) async fn init_extensions(mut extensions: Vec<Extension>) -> Result<()
 }
 
 #[tauri::command]
-pub(crate) async fn enable_extension(bundle_id: ExtensionBundleId) -> Result<(), String> {
+pub(crate) async fn enable_extension(
+    tauri_app_handle: AppHandle,
+    bundle_id: ExtensionBundleId,
+) -> Result<(), String> {
     let bundle_id_borrowed = bundle_id.borrow();
 
     if built_in::is_extension_built_in(&bundle_id_borrowed) {
-        built_in::enable_built_in_extension(&bundle_id_borrowed).await?;
+        built_in::enable_built_in_extension(&tauri_app_handle, &bundle_id_borrowed).await?;
         return Ok(());
     }
 
-    third_party::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE.get().expect("global third party search source not set, looks like init_extensions() has not been executed").enable_extension(&bundle_id_borrowed).await
+    third_party::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE.get().expect("global third party search source not set, looks like init_extensions() has not been executed").enable_extension(&tauri_app_handle, &bundle_id_borrowed).await
 }
 
 #[tauri::command]
-pub(crate) async fn disable_extension(bundle_id: ExtensionBundleId) -> Result<(), String> {
+pub(crate) async fn disable_extension(
+    tauri_app_handle: AppHandle,
+    bundle_id: ExtensionBundleId,
+) -> Result<(), String> {
     let bundle_id_borrowed = bundle_id.borrow();
 
     if built_in::is_extension_built_in(&bundle_id_borrowed) {
-        built_in::disable_built_in_extension(&bundle_id_borrowed).await?;
+        built_in::disable_built_in_extension(&tauri_app_handle, &bundle_id_borrowed).await?;
         return Ok(());
     }
-    third_party::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE.get().expect("global third party search source not set, looks like init_extensions() has not been executed").disable_extension(&bundle_id_borrowed).await
+    third_party::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE.get().expect("global third party search source not set, looks like init_extensions() has not been executed").disable_extension(&tauri_app_handle, &bundle_id_borrowed).await
 }
 
 #[tauri::command]
 pub(crate) async fn set_extension_alias(
+    tauri_app_handle: AppHandle,
     bundle_id: ExtensionBundleId,
     alias: String,
 ) -> Result<(), String> {
     let bundle_id_borrowed = bundle_id.borrow();
 
     if built_in::is_extension_built_in(&bundle_id_borrowed) {
-        built_in::set_built_in_extension_alias(&bundle_id_borrowed, &alias);
+        built_in::set_built_in_extension_alias(&tauri_app_handle, &bundle_id_borrowed, &alias);
         return Ok(());
     }
-    third_party::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE.get().expect("global third party search source not set, looks like init_extensions() has not been executed").set_extension_alias(&bundle_id_borrowed, &alias).await
+    third_party::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE.get().expect("global third party search source not set, looks like init_extensions() has not been executed").set_extension_alias(&tauri_app_handle, &bundle_id_borrowed, &alias).await
 }
 
 #[tauri::command]
 pub(crate) async fn register_extension_hotkey(
+    tauri_app_handle: AppHandle,
     bundle_id: ExtensionBundleId,
     hotkey: String,
 ) -> Result<(), String> {
     let bundle_id_borrowed = bundle_id.borrow();
 
     if built_in::is_extension_built_in(&bundle_id_borrowed) {
-        built_in::register_built_in_extension_hotkey(&bundle_id_borrowed, &hotkey)?;
+        built_in::register_built_in_extension_hotkey(
+            &tauri_app_handle,
+            &bundle_id_borrowed,
+            &hotkey,
+        )?;
         return Ok(());
     }
-    third_party::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE.get().expect("global third party search source not set, looks like init_extensions() has not been executed").register_extension_hotkey(&bundle_id_borrowed, &hotkey).await
+    third_party::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE.get().expect("global third party search source not set, looks like init_extensions() has not been executed").register_extension_hotkey(&tauri_app_handle, &bundle_id_borrowed, &hotkey).await
 }
 
 /// NOTE: this function won't error out if the extension specified by `extension_id`
 /// has no hotkey set because we need it to behave like this.
 #[tauri::command]
 pub(crate) async fn unregister_extension_hotkey(
+    tauri_app_handle: AppHandle,
     bundle_id: ExtensionBundleId,
 ) -> Result<(), String> {
     let bundle_id_borrowed = bundle_id.borrow();
 
     if built_in::is_extension_built_in(&bundle_id_borrowed) {
-        built_in::unregister_built_in_extension_hotkey(&bundle_id_borrowed)?;
+        built_in::unregister_built_in_extension_hotkey(&tauri_app_handle, &bundle_id_borrowed)?;
         return Ok(());
     }
-    third_party::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE.get().expect("global third party search source not set, looks like init_extensions() has not been executed").unregister_extension_hotkey(&bundle_id_borrowed).await?;
+    third_party::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE.get().expect("global third party search source not set, looks like init_extensions() has not been executed").unregister_extension_hotkey(&tauri_app_handle, &bundle_id_borrowed).await?;
 
     Ok(())
 }
 
 #[tauri::command]
-pub(crate) async fn is_extension_enabled(bundle_id: ExtensionBundleId) -> Result<bool, String> {
+pub(crate) async fn is_extension_enabled(
+    tauri_app_handle: AppHandle,
+    bundle_id: ExtensionBundleId,
+) -> Result<bool, String> {
     let bundle_id_borrowed = bundle_id.borrow();
 
     if built_in::is_extension_built_in(&bundle_id_borrowed) {
-        return built_in::is_built_in_extension_enabled(&bundle_id_borrowed).await;
+        return built_in::is_built_in_extension_enabled(&tauri_app_handle, &bundle_id_borrowed)
+            .await;
     }
     third_party::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE.get().expect("global third party search source not set, looks like init_extensions() has not been executed").is_extension_enabled(&bundle_id_borrowed).await
 }
@@ -704,10 +722,7 @@ fn alter_extension_json_file(
 
         // Search in quicklinks
         if let Some(ref mut quicklinks) = root_extension.quicklinks {
-            if let Some(link) = quicklinks
-                .iter_mut()
-                .find(|lnk| lnk.id == sub_extension_id)
-            {
+            if let Some(link) = quicklinks.iter_mut().find(|lnk| lnk.id == sub_extension_id) {
                 how(link)?;
                 return Ok(());
             }

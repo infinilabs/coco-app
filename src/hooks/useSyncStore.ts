@@ -113,7 +113,6 @@ export const useSyncStore = () => {
   const setAiOverviewMinQuantity = useExtensionsStore((state) => {
     return state.setAiOverviewMinQuantity;
   });
-  const setCurrentService = useConnectStore((state) => state.setCurrentService);
   const setShowTooltip = useAppStore((state) => state.setShowTooltip);
   const setEndpoint = useAppStore((state) => state.setEndpoint);
   const setLanguage = useAppStore((state) => state.setLanguage);
@@ -180,12 +179,8 @@ export const useSyncStore = () => {
       }),
 
       platformAdapter.listenEvent("change-connect-store", ({ payload }) => {
-        const {
-          connectionTimeout,
-          querySourceTimeout,
-          allowSelfSignature,
-          currentService,
-        } = payload;
+        const { connectionTimeout, querySourceTimeout, allowSelfSignature } =
+          payload;
         if (isNumber(connectionTimeout)) {
           setConnectionTimeout(connectionTimeout);
         }
@@ -193,8 +188,6 @@ export const useSyncStore = () => {
           setQueryTimeout(querySourceTimeout);
         }
         setAllowSelfSignature(allowSelfSignature);
-
-        setCurrentService(currentService);
       }),
 
       platformAdapter.listenEvent("change-appearance-store", ({ payload }) => {

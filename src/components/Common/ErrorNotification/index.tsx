@@ -6,12 +6,14 @@ import { useAppStore } from "@/stores/appStore";
 interface ErrorNotificationProps {
   duration?: number;
   autoClose?: boolean;
+  isTauri?: boolean;
 }
 
 const ErrorNotification = ({
   duration = 3000,
-  autoClose = true
- }: ErrorNotificationProps) => {
+  autoClose = true,
+  isTauri = true,
+}: ErrorNotificationProps) => {
   const errors = useAppStore((state) => state.errors);
   const removeError = useAppStore((state) => state.removeError);
 
@@ -33,7 +35,11 @@ const ErrorNotification = ({
   if (errors.length === 0) return null;
 
   return (
-    <div className="fixed bottom-10 right-4 z-50 max-w-[calc(100%-32px)] space-y-2">
+    <div
+      className={`${
+        isTauri ? "fixed" : "absolute"
+      } bottom-10 right-4 z-50 max-w-[calc(100%-32px)] space-y-2`}
+    >
       {errors.map((error) => (
         <div
           key={error.id}

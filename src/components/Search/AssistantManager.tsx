@@ -134,10 +134,18 @@ export function useAssistantManager({
         return handleAskAi();
       }
 
-      if (key === "Enter" && !shiftKey && !isChatMode && isTauri) {
+      if (key === "Enter" && !shiftKey) {
         e.preventDefault();
 
-        goAskAi ? handleAskAi() : handleSubmit();
+        if (isTauri && !isChatMode && goAskAi) {
+          if (!isEmpty(value)) {
+            e.stopPropagation();
+          }
+
+          return handleAskAi();
+        }
+
+        handleSubmit();
       }
     },
     [

@@ -128,7 +128,7 @@ function SearchChat({
   useEffect(() => {
     const init = async () => {
       await initializeListeners_auth();
-      await platformAdapter.invokeBackend("get_app_search_source");
+      await platformAdapter.commands("get_app_search_source");
     };
 
     init();
@@ -274,6 +274,7 @@ function SearchChat({
           <ChatAI
             ref={chatAIRef}
             key="ChatAI"
+            instanceId="search-chat"
             changeInput={setInput}
             isSearchActive={isSearchActive}
             isDeepThinkActive={isDeepThinkActive}

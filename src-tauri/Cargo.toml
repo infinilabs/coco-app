@@ -1,6 +1,6 @@
 [package]
 name = "coco"
-version = "0.6.0"
+version = "0.7.1"
 description = "Search, connect, collaborate – all in one place."
 authors = ["INFINI Labs"]
 edition = "2024"
@@ -109,6 +109,7 @@ sysinfo = "0.35.2"
 
 [target."cfg(target_os = \"macos\")".dependencies]
 tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }
+cocoa = "0.24"
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\"))".dependencies]
 tauri-plugin-single-instance = { version = "2.0.0", features = ["deep-link"] }
@@ -127,6 +128,8 @@ strip = true # Ensures debug symbols are removed.
 tauri-plugin-autostart = "^2.2"
 tauri-plugin-global-shortcut = "2"
 tauri-plugin-updater = { git = "https://github.com/infinilabs/plugins-workspace", branch = "v2" }
+# This should be compatible with the semver used by `tauri-plugin-updater`
+semver = { version = "1", features = ["serde"] }
 
 [target."cfg(target_os = \"windows\")".dependencies]
 enigo="0.3"

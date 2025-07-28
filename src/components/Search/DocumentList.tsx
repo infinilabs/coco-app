@@ -11,6 +11,9 @@ import { Get } from "@/api/axiosRequest";
 import { useAppStore } from "@/stores/appStore";
 import { useConnectStore } from "@/stores/connectStore";
 import SearchEmpty from "../Common/SearchEmpty";
+import { Data } from "ahooks/lib/useInfiniteScroll/types";
+import { nanoid } from "nanoid";
+import { isNil } from "lodash-es";
 
 interface DocumentListProps {
   onSelectDocument: (id: string) => void;
@@ -45,72 +48,133 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [isKeyboardMode, setIsKeyboardMode] = useState(false);
+  const taskIdRef = useRef(nanoid());
+  const [data, setData] = useState<Data>({ list: [] });
+
+  const loadingFromRef = useRef<number>(-1);
 
   const querySourceTimeoutRef = useRef(querySourceTimeout);
   useEffect(() => {
     querySourceTimeoutRef.current = querySourceTimeout;
   }, [querySourceTimeout]);
 
-  const { data, loading } = useInfiniteScroll(
-    async (d) => {
-      const from = d?.list?.length || 0;
-      let queryStrings: any = {
-        query: input,
-        datasource: sourceData?.source?.id,
-        querysource: sourceData?.querySource?.id,
-      };
+  const setSelectedSearchContent = useSearchStore((state) => {
+    return state.setSelectedSearchContent;
+  });
 
-      if (sourceData?.rich_categories) {
-        queryStrings = {
-          query: input,
-          rich_category: sourceData?.rich_categories[0]?.key,
+  useEffect(() => {
+    if (isNil(selectedItem)) return;
+
+    const hit = data.list[selectedItem];
+
+    const item = { ...hit?.document, querySource: hit?.source };
+
+    setSelectedSearchContent(item);
+  }, [selectedItem, data]);
+
+  const getData = async (taskId: string, data?: Data) => {
+    const from = data?.list?.length || 0;
+
+    let queryStrings: any = {
+      query: input,
+      datasource: sourceData?.source?.id,
+      querysource: sourceData?.querySource?.id,
+    };
+
+    if (sourceData?.rich_categories) {
+      queryStrings = {
+        query: input,
+        rich_category: sourceData?.rich_categories[0]?.key,
+      };
+    }
+
+    let response: any;
+    if (isTauri) {
+      response = await platformAdapter.commands("query_coco_fusion", {
+        from: from,
+        size: PAGE_SIZE,
+        queryStrings: queryStrings,
+        queryTimeout: querySourceTimeoutRef.current,
+      });
+    } else {
+      let url = `/query/_search?query=${queryStrings.query}&datasource=${queryStrings.datasource}&from=${from}&size=${PAGE_SIZE}`;
+      if (queryStrings?.rich_categories) {
+        url = `/query/_search?query=${queryStrings.query}&rich_category=${queryStrings.rich_category}&from=${from}&size=${PAGE_SIZE}`;
+      }
+      const [error, res]: any = await Get(url);
+
+      if (error) {
+        console.error("_search", error);
+        response = { hits: [], total: 0 };
+      } else {
+        const hits =
+          res?.hits?.hits?.map((hit: any) => ({
+            document: {
+              ...hit._source,
+            },
+            score: hit._score || 0,
+            source: hit._source.source || null,
+          })) || [];
+        const total = res?.hits?.total?.value || 0;
+
+        response = {
+          hits: hits,
+          total_hits: total,
         };
       }
+    }
 
-      let response: any;
-      if (isTauri) {
-        response = await platformAdapter.commands("query_coco_fusion", {
-          from: from,
-          size: PAGE_SIZE,
-          queryStrings: queryStrings,
-          queryTimeout: querySourceTimeoutRef.current,
-        });
-      } else {
-        let url = `/query/_search?query=${queryStrings.query}&datasource=${queryStrings.datasource}&from=${from}&size=${PAGE_SIZE}`;
-        if (queryStrings?.rich_categories) {
-          url = `/query/_search?query=${queryStrings.query}&rich_category=${queryStrings.rich_category}&from=${from}&size=${PAGE_SIZE}`;
+    console.log("_docs", from, queryStrings, response);
+    const list = response?.hits ?? [];
+    const allTotal = response?.total_hits ?? 0;
+    // set first select hover
+    if (from === 0 && list.length > 0) {
+      setSelectedItem(0);
+      getDocDetail(list[0]?.document);
+    }
+
+    if (taskId === taskIdRef.current) {
+      // Prevent the last data from being 0
+      setTotal((prevTotal) => {
+        if (list.length === 0) {
+          return data?.list?.length === 0 ? 0 : prevTotal;
         }
-        const [error, res]: any = await Get(url);
+        return allTotal;
+      });
+      setData((prev) => ({
+        ...prev,
+        list: prev.list.concat(list),
+      }));
+    }
 
-        if (error) {
-          console.error("_search", error);
-          response = { hits: [], total: 0 };
-        } else {
-          const hits =
-            res?.hits?.hits?.map((hit: any) => ({
-              document: {
-                ...hit._source,
-              },
-              score: hit._score || 0,
-              source: hit._source.source || null,
-            })) || [];
-          const total = res?.hits?.total?.value || 0;
+    return {
+      list: list,
+      hasMore: list.length === PAGE_SIZE && from + list.length < allTotal,
+    };
+  };
 
-          response = {
-            hits: hits,
-            total_hits: total,
-          };
-        }
+  const { loading } = useInfiniteScroll(
+    (data) => {
+      // Prevent repeated requests for the same from value
+      const currentFrom = data?.list?.length || 0;
+
+      // If it starts from 0, it means it is a new search, reset the anti-duplicate flag
+      if (currentFrom === 0) {
+        loadingFromRef.current = -1;
       }
-      console.log("_docs", from, queryStrings, response);
-      const list = response?.hits || [];
-      const total = response?.total_hits || 0;
-      setTotal(total);
 
-      return {
-        list: list,
-        hasMore: list.length === PAGE_SIZE && from + list.length < total,
-      };
+      if (loadingFromRef.current === currentFrom) {
+        return Promise.resolve({ list: [], hasMore: false });
+      }
+
+      loadingFromRef.current = currentFrom;
+
+      const taskId = nanoid();
+      taskIdRef.current = taskId;
+
+      return getData(taskId, data).finally(() => {
+        loadingFromRef.current = -1; // reset
+      });
     },
     {
       target: containerRef,
@@ -141,6 +205,15 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     setSelectedItem(null);
     setIsKeyboardMode(false);
   }, [isChatMode, input]);
+
+  useEffect(() => {
+    setTotal(0);
+    setData((prev) => ({
+      ...prev,
+      list: [],
+    }));
+    loadingFromRef.current = -1;
+  }, [input]);
 
   const { visibleContextMenu } = useSearchStore();
 

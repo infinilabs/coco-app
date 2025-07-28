@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { ArrowDown01, CornerDownLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
@@ -19,6 +19,7 @@ import source_default_dark_img from "@/assets/images/source_default_dark.png";
 import { useThemeStore } from "@/stores/themeStore";
 import platformAdapter from "@/utils/platformAdapter";
 import FontIcon from "../Icons/FontIcon";
+import { useTogglePin } from "@/hooks/useTogglePin";
 
 interface FooterProps {
   setIsPinnedWeb?: (value: boolean) => void;
@@ -37,31 +38,23 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
 
   const isDark = useThemeStore((state) => state.isDark);
 
-  const { isTauri, isPinned, setIsPinned } = useAppStore();
+  const { isTauri } = useAppStore();
 
-  const { setVisible, updateInfo } = useUpdateStore();
+  const { isPinned, togglePin } = useTogglePin({
+    onPinChange: setIsPinnedWeb,
+  });
+
+  const { setVisible, updateInfo, skipVersions } = useUpdateStore();
 
   const { fixedWindow, modifierKey } = useShortcutsStore();
-
-  const setWindowAlwaysOnTop = useCallback(async (isPinned: boolean) => {
-    setIsPinnedWeb?.(isPinned);
-    return platformAdapter.setAlwaysOnTop(isPinned);
-  }, []);
-
-  const togglePin = async () => {
-    try {
-      const newPinned = !isPinned;
-      await setWindowAlwaysOnTop(newPinned);
-      setIsPinned(newPinned);
-    } catch (err) {
-      console.error("Failed to toggle window pin state:", err);
-      setIsPinned(isPinned);
-    }
-  };
 
   const openSetting = useCallback(() => {
     return platformAdapter.emitEvent("open_settings", "");
   }, []);
+
+  const hasUpdate = useMemo(() => {
+    return updateInfo && !skipVersions.includes(updateInfo.version);
+  }, [updateInfo, skipVersions]);
 
   const renderLeft = () => {
     if (sourceData?.source?.name) {
@@ -108,7 +101,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
         />
 
         <div className="relative text-xs text-gray-500 dark:text-gray-400">
-          {updateInfo?.available ? (
+          {hasUpdate ? (
             <div className="cursor-pointer" onClick={() => setVisible(true)}>
               <span>{t("search.footer.updateAvailable")}</span>
               <span className="absolute top-0 -right-2 size-1.5 bg-[#FF3434] rounded-full"></span>
@@ -138,7 +131,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
               onClick={togglePin}
               className={clsx({
                 "text-blue-500": isPinned,
-                "pl-2": updateInfo?.available,
+                "pl-2": hasUpdate,
               })}
             >
               <VisibleKey shortcut={fixedWindow} onKeyPress={togglePin}>

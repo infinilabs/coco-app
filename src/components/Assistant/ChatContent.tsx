@@ -5,6 +5,7 @@ import { ChatMessage } from "@/components/ChatMessage";
 import { Greetings } from "./Greetings";
 import AttachmentList from "@/components/Assistant/AttachmentList";
 import { useChatScroll } from "@/hooks/useChatScroll";
+
 import type { Chat, IChunkData } from "@/types/chat";
 import { useConnectStore } from "@/stores/connectStore";
 // import SessionFile from "./SessionFile";
@@ -13,7 +14,6 @@ import { useChatStore } from "@/stores/chatStore";
 
 interface ChatContentProps {
   activeChat?: Chat;
-  curChatEnd: boolean;
   query_intent?: IChunkData;
   tools?: IChunkData;
   fetch_source?: IChunkData;
@@ -27,11 +27,11 @@ interface ChatContentProps {
   handleSendMessage: (content: string, newChat?: Chat) => void;
   getFileUrl: (path: string) => string;
   formatUrl?: (data: any) => string;
+  curIdRef: React.MutableRefObject<string>;
 }
 
 export const ChatContent = ({
   activeChat,
-  curChatEnd,
   query_intent,
   tools,
   fetch_source,
@@ -58,6 +58,8 @@ export const ChatContent = ({
   const [isAtBottom, setIsAtBottom] = useState(true);
   const visibleStartPage = useConnectStore((state) => state.visibleStartPage);
 
+  const curChatEnd = useChatStore((state) => state.curChatEnd);
+
   useEffect(() => {
     setIsAtBottom(true);
     setCurrentSessionId(activeChat?._id);
@@ -66,7 +68,7 @@ export const ChatContent = ({
   useEffect(() => {
     scrollToBottom();
   }, [
-    activeChat?.id,
+    activeChat?._id,
     query_intent?.message_chunk,
     fetch_source?.message_chunk,
     pick_source?.message_chunk,
@@ -120,7 +122,7 @@ export const ChatContent = ({
           deep_read ||
           think ||
           response) &&
-        activeChat?._id ? (
+        activeChat?._source?.id ? (
           <ChatMessage
             key={"current"}
             message={{

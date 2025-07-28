@@ -7,12 +7,12 @@ import PinIcon from "@/icons/Pin";
 import WindowsFullIcon from "@/icons/WindowsFull";
 import { useAppStore } from "@/stores/appStore";
 import type { Chat } from "@/types/chat";
-import platformAdapter from "@/utils/platformAdapter";
 import VisibleKey from "../Common/VisibleKey";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { HISTORY_PANEL_ID } from "@/constants";
 import { AssistantList } from "./AssistantList";
 import { ServerList } from "./ServerList";
+import { useTogglePin } from "@/hooks/useTogglePin";
 
 interface ChatHeaderProps {
   clearChat: () => void;
@@ -35,32 +35,11 @@ export function ChatHeader({
   showChatHistory = true,
   assistantIDs,
 }: ChatHeaderProps) {
-  const isPinned = useAppStore((state) => state.isPinned);
-  const setIsPinned = useAppStore((state) => state.setIsPinned);
+  const { isTauri } = useAppStore();
+  const { isPinned, togglePin } = useTogglePin();
 
-  const isTauri = useAppStore((state) => state.isTauri);
-  const historicalRecords = useShortcutsStore((state) => {
-    return state.historicalRecords;
-  });
-  const newSession = useShortcutsStore((state) => {
-    return state.newSession;
-  });
-  const fixedWindow = useShortcutsStore((state) => {
-    return state.fixedWindow;
-  });
-
-  const external = useShortcutsStore((state) => state.external);
-
-  const togglePin = async () => {
-    try {
-      const newPinned = !isPinned;
-      await platformAdapter.setAlwaysOnTop(newPinned);
-      setIsPinned(newPinned);
-    } catch (err) {
-      console.error("Failed to toggle window pin state:", err);
-      setIsPinned(isPinned);
-    }
-  };
+  const { historicalRecords, newSession, fixedWindow, external } =
+    useShortcutsStore();
 
   return (
     <header

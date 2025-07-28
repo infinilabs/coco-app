@@ -5,7 +5,7 @@ import {
   useReactive,
   useUnmount,
 } from "ahooks";
-import { useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { noop } from "lodash-es";
 import { nanoid } from "nanoid";
 
@@ -17,6 +17,10 @@ import { useAppStore } from "@/stores/appStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 
+interface AskAiProps {
+  isChatMode: boolean;
+}
+
 interface State {
   serverId?: string;
   assistantId?: string;
@@ -24,7 +28,9 @@ interface State {
   copyButtonId: string;
 }
 
-const AskAi = () => {
+const AskAi: FC<AskAiProps> = (props) => {
+  const { isChatMode } = props;
+
   const {
     askAiMessage,
     setGoAskAi,
@@ -162,7 +168,7 @@ const AskAi = () => {
   useAsyncEffect(async () => {
     if (!askAiMessage || !state.serverId || !state.assistantId) return;
 
-    clearAllChunkData();
+    await clearAllChunkData();
 
     const { serverId, assistantId } = state;
 
@@ -186,7 +192,7 @@ const AskAi = () => {
   useKeyPress(
     `${modifierKey}.enter`,
     async () => {
-      if (isTyping) return;
+      if (isChatMode || isTyping) return;
 
       const { serverId, assistantId } = state;
 
@@ -204,7 +210,7 @@ const AskAi = () => {
   useKeyPress(
     "enter",
     () => {
-      if (isTyping || !state.copyButtonId) return;
+      if (isChatMode || isTyping || !state.copyButtonId) return;
 
       const copyButton = document.getElementById(state.copyButtonId);
 

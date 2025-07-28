@@ -1,4 +1,3 @@
-
 #[derive(Debug, Clone, PartialEq, Copy)]
 pub(crate) enum FileType {
     Folder,
@@ -50,7 +49,6 @@ pub(crate) enum FileType {
     Epub,
     Unknown,
 }
-
 
 async fn get_file_type(path: &str) -> FileType {
     let path = camino::Utf8Path::new(path);
@@ -116,7 +114,6 @@ async fn get_file_type(path: &str) -> FileType {
     }
 }
 
-
 fn type_to_icon(ty: FileType) -> &'static str {
     match ty {
         FileType::Folder => "font_file_folder",
@@ -169,7 +166,6 @@ fn type_to_icon(ty: FileType) -> &'static str {
         FileType::Unknown => "font_file_unknown",
     }
 }
-
 
 #[tauri::command]
 pub(crate) async fn get_file_icon(path: String) -> &'static str {

@@ -15,9 +15,10 @@ export interface ISource {
   attachments?: string[];
   title?: string;
   question?: string;
-  details?: any[];
+  details?: any[] | null;
   assistant_id?: string;
   assistant_item?: any;
+  [key: string]: any;
 }
 export interface Chat {
   _id?: string;

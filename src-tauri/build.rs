@@ -8,7 +8,7 @@ fn main() {
     }
 
     // Notify `rustc` of this `cfg` attribute to suppress unknown attribute warnings.
-    // 
+    //
     // unexpected condition name: `ci`
     println!("cargo::rustc-check-cfg=cfg(ci)");
 }
