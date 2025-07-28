@@ -50,11 +50,7 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
   }, []);
 
   useEffect(() => {
-    if (!snapshotUpdate) return;
-
-    checkUpdate().catch((error) => {
-      addError("Update failed:" + error, "error");
-    });
+    checkUpdateStatus();
   }, [snapshotUpdate]);
 
   useEffect(() => {
