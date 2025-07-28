@@ -21,6 +21,8 @@ Information about release notes of Coco App is provided here.
 
 ### ✈️ Improvements
 
+- chore: web component loading font icon #838
+
 ## 0.7.1 (2025-07-27)
 
 ### ❌ Breaking changes
