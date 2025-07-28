@@ -5,9 +5,17 @@ title: "Release Notes"
 
 # Release Notes
 
-Information about release notes of Coco Server is provided here.
+Information about release notes of Coco App is provided here.
+
 
 ## Latest (In development)
+### ❌ Breaking changes
+### 🚀 Features
+### 🐛 Bug fix
+### ✈️ Improvements
+
+
+## 0.7.1 (2025-07-27)
 
 ### ❌ Breaking changes
 
@@ -20,6 +28,7 @@ Information about release notes of Coco Server is provided here.
 ### ✈️ Improvements
 
 - chore: web component add notification component #825
+- refactor: collection behavior defaults to `MoveToActiveSpace`, and only use `CanJoinAllSpaces` when window is pinned #829
 
 ## 0.7.0 (2025-07-25)
 
