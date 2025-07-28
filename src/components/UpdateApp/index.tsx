@@ -75,11 +75,9 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
     const update = await checkUpdate();
 
     if (update) {
+      setVisible(skipVersion !== update.version);
+
       setUpdateInfo(update);
-
-      if (skipVersion === update.version) return;
-
-      setVisible(true);
     }
   }, [skipVersion]);
 
