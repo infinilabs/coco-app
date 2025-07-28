@@ -5,7 +5,7 @@ use tauri_plugin_updater::RemoteRelease;
 ///
 /// If the version string is in the `x.y.z` format and does not include a build
 /// number, we assume a build number of 0.
-fn extract_version_number(version: &Version) -> u32 {
+fn extract_build_number(version: &Version) -> u32 {
     let pre = &version.pre;
 
     if pre.is_empty() {
@@ -52,8 +52,8 @@ fn extract_version_number(version: &Version) -> u32 {
 pub(crate) fn custom_version_comparator(local: Version, remote_release: RemoteRelease) -> bool {
     let remote = remote_release.version;
 
-    let local_build_number = extract_version_number(&local);
-    let remote_build_number = extract_version_number(&remote);
+    let local_build_number = extract_build_number(&local);
+    let remote_build_number = extract_build_number(&remote);
 
     let should_update = remote_build_number > local_build_number;
     log::debug!(
@@ -64,4 +64,24 @@ pub(crate) fn custom_version_comparator(local: Version, remote_release: RemoteRe
     );
 
     should_update
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_extract_build_number() {
+        // 0.6.0 => 0
+        let version = Version::parse("0.6.0").unwrap();
+        assert_eq!(extract_build_number(&version), 0);
+
+        // 0.6.0-2371 => 2371
+        let version = Version::parse("0.6.0-2371").unwrap();
+        assert_eq!(extract_build_number(&version), 2371);
+
+        // 0.6.0-SNAPSHOT-2371 => 2371
+        let version = Version::parse("0.6.0-SNAPSHOT-2371").unwrap();
+        assert_eq!(extract_build_number(&version), 2371);
+    }
 }
