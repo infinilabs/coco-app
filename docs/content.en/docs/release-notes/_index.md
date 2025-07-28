@@ -21,6 +21,9 @@ Information about release notes of Coco App is provided here.
 
 ### ✈️ Improvements
 
+- refactor: split query_coco_fusion() #836
+
+
 ## 0.7.1 (2025-07-27)
 
 ### ❌ Breaking changes
