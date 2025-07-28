@@ -174,6 +174,7 @@ export function useSearch() {
         const [error, res]: any = await Get(
           `/query/_search?query=${searchInput}`
         );
+
         if (error) {
           console.error("_search", error);
           response = { failed: [], hits: [], total_hits: 0 };
