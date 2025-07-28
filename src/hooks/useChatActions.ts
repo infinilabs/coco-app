@@ -11,6 +11,7 @@ import { unrequitable } from "@/utils";
 import { streamPost } from "@/api/streamFetch";
 import { SendMessageParams } from "@/components/Assistant/Chat";
 import { isEmpty } from "lodash-es";
+import { useChatStore } from "@/stores/chatStore";
 
 export function useChatActions(
   setActiveChat: (chat: Chat | undefined) => void,
@@ -42,6 +43,9 @@ export function useChatActions(
   } = useConnectStore();
   const sourceDataIds = useSearchStore((state) => state.sourceDataIds);
   const MCPIds = useSearchStore((state) => state.MCPIds);
+  const setUploadAttachments = useChatStore((state) => {
+    return state.setUploadAttachments;
+  });
 
   const [keyword, setKeyword] = useState("");
 
@@ -294,6 +298,8 @@ export function useChatActions(
     async (timestamp: number, value: string) => {
       // 1. Cleaning and preparation
       await clearAllChunkData();
+
+      setUploadAttachments([]);
 
       // 2. Update the status again
       await new Promise<void>((resolve) => {
