@@ -320,18 +320,13 @@ export function useChatActions(
 
       if (!message && isEmpty(attachments)) return;
 
-      setTimedoutShow(false);
       await chatClose(activeChat);
-      clearAllChunkData();
-
-      if (message) {
-        setQuestion(message);
-      }
 
       const timestamp = Date.now();
 
-      await prepareChatSession(value, timestamp);
-
+      if (message) {
+        await prepareChatSession(message, timestamp);
+      }
 
       const queryParams = {
         search: isSearchActive,
@@ -344,7 +339,7 @@ export function useChatActions(
 
       if (isTauri) {
         if (!currentService?.id) return;
-        
+
         console.log("chat_create", clientId, timestamp);
 
         await platformAdapter.commands("chat_create", {
@@ -354,7 +349,7 @@ export function useChatActions(
           queryParams,
           clientId: `chat-stream-${clientId}-${timestamp}`,
         });
-        console.log("_create end", value);
+        console.log("_create end", message);
         resetChatState();
       } else {
         await streamPost({
@@ -393,7 +388,9 @@ export function useChatActions(
 
       const timestamp = Date.now();
 
-      await prepareChatSession(content, timestamp);
+      if (message) {
+        await prepareChatSession(message, timestamp);
+      }
 
       const queryParams = {
         search: isSearchActive,
@@ -414,9 +411,8 @@ export function useChatActions(
           message,
           attachments,
           clientId: `chat-stream-${clientId}-${timestamp}`,
-
         });
-        console.log("chat_chat end", content, clientId);
+        console.log("chat_chat end", message, clientId);
         resetChatState();
       } else {
         await streamPost({
