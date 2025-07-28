@@ -69,6 +69,9 @@ const InputUpload: FC<InputUploadProps> = (props) => {
   const { currentAssistant } = useConnectStore();
   const uploadMaxSizeRef = useRef(1024 * 1024);
   const uploadMaxCountRef = useRef(6);
+  const setVisibleStartPage = useConnectStore((state) => {
+    return state.setVisibleStartPage;
+  });
 
   useEffect(() => {
     if (!currentAssistant?._source?.upload) return;
@@ -98,6 +101,8 @@ const InputUpload: FC<InputUploadProps> = (props) => {
     });
 
     if (isNil(selectedFiles)) return;
+
+    setVisibleStartPage(false);
 
     handleUploadFiles(selectedFiles);
   };
