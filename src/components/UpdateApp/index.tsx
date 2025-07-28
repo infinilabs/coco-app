@@ -129,9 +129,9 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
   const handleSkip = () => {
     if (state.loading) return;
 
-    const { skipVersions } = useUpdateStore.getState();
+    const { skipVersions, updateInfo } = useUpdateStore.getState();
 
-    setSkipVersions([...skipVersions, updateInfo?.version]);
+    setSkipVersions([...skipVersions, updateInfo.version]);
 
     isCheckPage ? hide_check() : setVisible(false);
   };

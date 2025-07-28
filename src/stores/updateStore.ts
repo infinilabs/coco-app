@@ -34,7 +34,7 @@ export const useUpdateStore = create<IUpdateStore>()(
     {
       name: "update-store",
       partialize: (state) => ({
-        skipVersion: state.skipVersions,
+        skipVersions: state.skipVersions,
       }),
     }
   )
