@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { ArrowDown01, CornerDownLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
@@ -44,13 +44,17 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
     onPinChange: setIsPinnedWeb,
   });
 
-  const { setVisible, updateInfo } = useUpdateStore();
+  const { setVisible, updateInfo, skipVersion } = useUpdateStore();
 
   const { fixedWindow, modifierKey } = useShortcutsStore();
 
   const openSetting = useCallback(() => {
     return platformAdapter.emitEvent("open_settings", "");
   }, []);
+
+  const hasUpdate = useMemo(() => {
+    return updateInfo && skipVersion !== updateInfo.version;
+  }, [updateInfo, skipVersion]);
 
   const renderLeft = () => {
     if (sourceData?.source?.name) {
@@ -97,7 +101,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
         />
 
         <div className="relative text-xs text-gray-500 dark:text-gray-400">
-          {updateInfo?.available ? (
+          {hasUpdate ? (
             <div className="cursor-pointer" onClick={() => setVisible(true)}>
               <span>{t("search.footer.updateAvailable")}</span>
               <span className="absolute top-0 -right-2 size-1.5 bg-[#FF3434] rounded-full"></span>
@@ -127,7 +131,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
               onClick={togglePin}
               className={clsx({
                 "text-blue-500": isPinned,
-                "pl-2": updateInfo?.available,
+                "pl-2": hasUpdate,
               })}
             >
               <VisibleKey shortcut={fixedWindow} onKeyPress={togglePin}>
