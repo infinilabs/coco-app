@@ -30,8 +30,6 @@ export function useMessageHandler(
 
   const dealMsg = useCallback(
     (msg: string) => {
-      console.log("msg", msg);
-
       if (messageTimeoutRef.current) {
         clearTimeout(messageTimeoutRef.current);
       }

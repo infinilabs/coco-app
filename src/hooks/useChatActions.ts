@@ -291,7 +291,7 @@ export function useChatActions(
   );
 
   const prepareChatSession = useCallback(
-    async (value: string, timestamp: number) => {
+    async (timestamp: number, value: string) => {
       // 1. Cleaning and preparation
       await clearAllChunkData();
 
@@ -312,7 +312,7 @@ export function useChatActions(
   );
 
   const createNewChat = useCallback(
-    async (activeChat?: Chat, params?: SendMessageParams) => {
+    async (params?: SendMessageParams) => {
       const { message, attachments } = params || {};
 
       console.log("message", message);
@@ -320,13 +320,9 @@ export function useChatActions(
 
       if (!message && isEmpty(attachments)) return;
 
-      await chatClose(activeChat);
-
       const timestamp = Date.now();
 
-      if (message) {
-        await prepareChatSession(message, timestamp);
-      }
+      await prepareChatSession(timestamp, message ?? "");
 
       const queryParams = {
         search: isSearchActive,
@@ -388,9 +384,7 @@ export function useChatActions(
 
       const timestamp = Date.now();
 
-      if (message) {
-        await prepareChatSession(message, timestamp);
-      }
+      await prepareChatSession(timestamp, message ?? "");
 
       const queryParams = {
         search: isSearchActive,
@@ -443,17 +437,11 @@ export function useChatActions(
 
   const handleSendMessage = useCallback(
     async (activeChat?: Chat, params?: SendMessageParams) => {
-      if (!activeChat?._id || !params) return;
+      if (!activeChat?._id) return;
 
-      const { message, attachments } = params;
+      const { message, attachments } = params ?? {};
 
       if (!message && isEmpty(attachments)) return;
-
-      if (message) {
-        setQuestion(message);
-      }
-
-      setTimedoutShow(false);
 
       await chatHistory(activeChat, (chat) => sendMessage(chat, params));
     },

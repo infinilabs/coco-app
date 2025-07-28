@@ -81,7 +81,11 @@ export const UserMessage: FC<UserMessageProps> = (props) => {
       )}
 
       {attachmentData && (
-        <div className="flex justify-end flex-wrap gap-y-2 w-screen mt-3 pl-14">
+        <div
+          className={clsx("flex justify-end flex-wrap gap-y-2 w-full", {
+            "mt-3": message,
+          })}
+        >
           {attachmentData.map((item) => {
             const { id, name, size, icon } = item._source;
 

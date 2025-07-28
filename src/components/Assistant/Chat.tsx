@@ -193,7 +193,7 @@ const ChatAI = memo(
         isDeepThinkActive,
         isMCPActive,
         changeInput,
-        showChatHistory,
+        showChatHistory
       );
 
       const { dealMsg } = useMessageHandler(
@@ -242,7 +242,7 @@ const ChatAI = memo(
               return;
             }
             if (!activeChat?._id) {
-              await createNewChat(activeChat, params);
+              await createNewChat(params);
             } else {
               await handleSendMessage(activeChat, params);
             }
@@ -292,6 +292,7 @@ const ChatAI = memo(
               } else {
                 init({
                   message: "",
+                  attachments: [],
                 });
               }
             }
