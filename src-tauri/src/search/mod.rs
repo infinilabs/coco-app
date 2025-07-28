@@ -1,7 +1,7 @@
 use crate::common::error::SearchError;
 use crate::common::register::SearchSourceRegistry;
 use crate::common::search::{
-    FailedRequest, MultiSourceQueryResponse, QueryHits, QueryResponse, QuerySource, SearchQuery,
+    FailedRequest, MultiSourceQueryResponse, QueryHits, QuerySource, SearchQuery,
 };
 use crate::common::traits::SearchSource;
 use crate::server::servers::logout_coco_server;
@@ -13,74 +13,24 @@ use reqwest::StatusCode;
 use std::cmp::Reverse;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::future::Future;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager};
-use tokio::time::error::Elapsed;
 use tokio::time::{Duration, timeout};
-
-/// Helper function to return the Future used for querying querysources.
-///
-/// It is a workaround for the limitations:
-///
-/// 1. 2 async blocks have different types in Rust's type system even though
-///    they are literally same
-/// 2. `futures::stream::FuturesUnordered` needs the `Futures` pushed to it to
-///    have only 1 type
-///
-/// Putting the async block in a function to unify the types.
-fn same_type_futures(
-    query_source: QuerySource,
-    query_source_trait_object: Arc<dyn SearchSource>,
-    timeout_duration: Duration,
-    search_query: SearchQuery,
-    tauri_app_handle: AppHandle,
-) -> impl Future<
-    Output = (
-        QuerySource,
-        Result<Result<QueryResponse, SearchError>, Elapsed>,
-    ),
-> + 'static {
-    async move {
-        (
-            // Store `query_source` as part of future for debugging purposes.
-            query_source,
-            timeout(timeout_duration, async {
-                query_source_trait_object
-                    .search(tauri_app_handle.clone(), search_query)
-                    .await
-            })
-            .await,
-        )
-    }
-}
 
 #[named]
 #[tauri::command]
 pub async fn query_coco_fusion(
-    app_handle: AppHandle,
+    tauri_app_handle: AppHandle,
     from: u64,
     size: u64,
     query_strings: HashMap<String, String>,
     query_timeout: u64,
 ) -> Result<MultiSourceQueryResponse, SearchError> {
-    let query_keyword = query_strings
-        .get("query")
-        .unwrap_or(&"".to_string())
-        .clone();
-
     let opt_query_source_id = query_strings.get("querysource");
-
-    let search_sources = app_handle.state::<SearchSourceRegistry>();
-
-    let sources_future = search_sources.get_sources();
-    let mut futures = FuturesUnordered::new();
-
-    let mut sources_list = sources_future.await;
-    let sources_list_len = sources_list.len();
-
-    // Time limit for each query
+    let search_sources = tauri_app_handle.state::<SearchSourceRegistry>();
+    let query_source_list = search_sources.get_sources().await;
     let timeout_duration = Duration::from_millis(query_timeout);
+    let search_query = SearchQuery::new(from, size, query_strings.clone());
 
     log::debug!(
         "{}() invoked with parameters: from: [{}], size: [{}], query_strings: [{:?}], timeout: [{:?}]",
@@ -91,68 +41,170 @@ pub async fn query_coco_fusion(
         timeout_duration
     );
 
-    let search_query = SearchQuery::new(from, size, query_strings.clone());
-
+    // Dispatch to different `query_coco_fusion_xxx()` functions.
     if let Some(query_source_id) = opt_query_source_id {
-        // If this query source ID is specified, we only query this query source.
-        log::debug!(
-            "parameter [querysource={}] specified, will only query this querysource",
-            query_source_id
-        );
-
-        let opt_query_source_trait_object_index = sources_list
-            .iter()
-            .position(|query_source| &query_source.get_type().id == query_source_id);
-
-        let Some(query_source_trait_object_index) = opt_query_source_trait_object_index else {
-            // It is possible (an edge case) that the frontend invokes `query_coco_fusion()` with a
-            // datasource that does not exist in the source list:
-            //
-            // 1. Search applications
-            // 2. Navigate to the application sub page
-            // 3. Disable the application extension in settings
-            // 4. hide the search window
-            // 5. Re-open the search window and search for something
-            //
-            // The application search source is not in the source list because the extension
-            // has been disabled, but the last search is indeed invoked with parameter
-            // `datasource=application`.
-            return Ok(MultiSourceQueryResponse {
-                failed: Vec::new(),
-                hits: Vec::new(),
-                total_hits: 0,
-            });
-        };
-
-        let query_source_trait_object = sources_list.remove(query_source_trait_object_index);
-        let query_source = query_source_trait_object.get_type();
-
-        futures.push(same_type_futures(
-            query_source,
-            query_source_trait_object,
+        query_coco_fusion_single_query_source(
+            tauri_app_handle,
+            query_source_list,
+            query_source_id.clone(),
             timeout_duration,
             search_query,
-            app_handle.clone(),
-        ));
+        )
+        .await
     } else {
-        log::debug!(
-            "will query querysources {:?}",
-            sources_list
-                .iter()
-                .map(|search_source| search_source.get_type().id.clone())
-                .collect::<Vec<String>>()
-        );
+        query_coco_fusion_multi_query_sources(
+            tauri_app_handle,
+            query_source_list,
+            timeout_duration,
+            search_query,
+        )
+        .await
+    }
+}
 
-        for query_source_trait_object in sources_list {
-            let query_source = query_source_trait_object.get_type().clone();
-            futures.push(same_type_futures(
-                query_source,
-                query_source_trait_object,
-                timeout_duration,
-                search_query.clone(),
-                app_handle.clone(),
-            ));
+/// Query only 1 query source.
+///
+/// The logic here is much simpler than `query_coco_fusion_multi_query_sources()`
+/// as we don't need to re-rank due to fact that this does not involve multiple
+/// query sources.
+async fn query_coco_fusion_single_query_source(
+    tauri_app_handle: AppHandle,
+    mut query_source_list: Vec<Arc<dyn SearchSource>>,
+    id_of_query_source_to_query: String,
+    timeout_duration: Duration,
+    search_query: SearchQuery,
+) -> Result<MultiSourceQueryResponse, SearchError> {
+    // If this query source ID is specified, we only query this query source.
+    log::debug!(
+        "parameter [querysource={}] specified, will only query this query source",
+        id_of_query_source_to_query
+    );
+
+    let opt_query_source_trait_object_index = query_source_list
+        .iter()
+        .position(|query_source| query_source.get_type().id == id_of_query_source_to_query);
+
+    let Some(query_source_trait_object_index) = opt_query_source_trait_object_index else {
+        // It is possible (an edge case) that the frontend invokes `query_coco_fusion()`
+        // with a querysource that does not exist in the source list:
+        //
+        // 1. Search applications
+        // 2. Navigate to the application sub page
+        // 3. Disable the application extension in settings, which removes this
+        //    query source from the list
+        // 4. hide the search window
+        // 5. Re-open the search window, you will still be in the sub page, type to search
+        //    something
+        //
+        // The application query source is not in the source list because the extension
+        // was disabled and thus removed from the query sources, but the last
+        // search is indeed invoked with parameter `querysource=application`.
+        return Ok(MultiSourceQueryResponse {
+            failed: Vec::new(),
+            hits: Vec::new(),
+            total_hits: 0,
+        });
+    };
+
+    let query_source_trait_object = query_source_list.remove(query_source_trait_object_index);
+    let query_source = query_source_trait_object.get_type();
+    let search_fut = query_source_trait_object.search(tauri_app_handle.clone(), search_query);
+    let timeout_result = timeout(timeout_duration, search_fut).await;
+
+    let mut failed_requests: Vec<FailedRequest> = Vec::new();
+    let mut hits = Vec::new();
+    let mut total_hits = 0;
+
+    match timeout_result {
+        // Ignore the `_timeout` variable as it won't provide any useful debugging information.
+        Err(_timeout) => {
+            log::warn!(
+                "searching query source [{}] timed out, skip this request",
+                query_source.id
+            );
         }
+        Ok(query_result) => match query_result {
+            Ok(response) => {
+                total_hits = response.total_hits;
+
+                for (document, score) in response.hits {
+                    log::debug!(
+                        "document from query source [{}]: ID [{}], title [{:?}], score [{}]",
+                        response.source.id,
+                        document.id,
+                        document.title,
+                        score
+                    );
+
+                    let query_hit = QueryHits {
+                        source: Some(response.source.clone()),
+                        score,
+                        document,
+                    };
+
+                    hits.push(query_hit);
+                }
+            }
+            Err(search_error) => {
+                query_coco_fusion_handle_failed_request(
+                    tauri_app_handle.clone(),
+                    &mut failed_requests,
+                    query_source,
+                    search_error,
+                )
+                .await;
+            }
+        },
+    }
+
+    Ok(MultiSourceQueryResponse {
+        failed: failed_requests,
+        hits,
+        total_hits,
+    })
+}
+
+async fn query_coco_fusion_multi_query_sources(
+    tauri_app_handle: AppHandle,
+    query_source_trait_object_list: Vec<Arc<dyn SearchSource>>,
+    timeout_duration: Duration,
+    search_query: SearchQuery,
+) -> Result<MultiSourceQueryResponse, SearchError> {
+    log::debug!(
+        "will query query sources {:?}",
+        query_source_trait_object_list
+            .iter()
+            .map(|search_source| search_source.get_type().id.clone())
+            .collect::<Vec<String>>()
+    );
+
+    let query_keyword = search_query
+        .query_strings
+        .get("query")
+        .unwrap_or(&"".to_string())
+        .clone();
+    let size = search_query.size;
+
+    let mut futures = FuturesUnordered::new();
+
+    let query_source_list_len = query_source_trait_object_list.len();
+    for query_source_trait_object in query_source_trait_object_list {
+        let query_source = query_source_trait_object.get_type().clone();
+        let tauri_app_handle_clone = tauri_app_handle.clone();
+        let search_query_clone = search_query.clone();
+
+        futures.push(async move {
+            (
+                // Store `query_source` as part of future for debugging purposes.
+                query_source,
+                timeout(timeout_duration, async {
+                    query_source_trait_object
+                        .search(tauri_app_handle_clone, search_query_clone)
+                        .await
+                })
+                .await,
+            )
+        });
     }
 
     let mut total_hits = 0;
@@ -161,7 +213,7 @@ pub async fn query_coco_fusion(
     let mut all_hits: Vec<(String, QueryHits, f64)> = Vec::new();
     let mut hits_per_source: HashMap<String, Vec<(QueryHits, f64)>> = HashMap::new();
 
-    if sources_list_len > 1 {
+    if query_source_list_len > 1 {
         need_rerank = true; // If we have more than one source, we need to rerank the hits
     }
 
@@ -173,25 +225,25 @@ pub async fn query_coco_fusion(
                     "searching query source [{}] timed out, skip this request",
                     query_source.id
                 );
-                // failed_requests.push(FailedRequest {
-                //     source: query_source,
-                //     status: 0,
-                //     error: Some("querying timed out".into()),
-                //     reason: None,
-                // });
             }
             Ok(query_result) => match query_result {
                 Ok(response) => {
                     total_hits += response.total_hits;
                     let source_id = response.source.id.clone();
 
-                    for (doc, score) in response.hits {
-                        log::debug!("doc: {}, {:?}, {}", doc.id, doc.title, score);
+                    for (document, score) in response.hits {
+                        log::debug!(
+                            "document from query source [{}]: ID [{}], title [{:?}], score [{}]",
+                            response.source.id,
+                            document.id,
+                            document.title,
+                            score
+                        );
 
                         let query_hit = QueryHits {
                             source: Some(response.source.clone()),
                             score,
-                            document: doc,
+                            document,
                         };
 
                         all_hits.push((source_id.clone(), query_hit.clone(), score));
@@ -203,46 +255,13 @@ pub async fn query_coco_fusion(
                     }
                 }
                 Err(search_error) => {
-                    log::error!(
-                        "searching query source [{}] failed, error [{}]",
-                        query_source.id,
-                        search_error
-                    );
-
-                    let mut status_code_num: u16 = 0;
-
-                    if let SearchError::HttpError {
-                        status_code: opt_status_code,
-                        msg: _,
-                    } = search_error
-                    {
-                        if let Some(status_code) = opt_status_code {
-                            status_code_num = status_code.as_u16();
-                            if status_code != StatusCode::OK {
-                                if status_code == StatusCode::UNAUTHORIZED {
-                                    // This Coco server is unavailable. In addition to marking it as
-                                    // unavailable, we need to log out because the status code is 401.
-                                    logout_coco_server(app_handle.clone(), query_source.id.clone()).await.unwrap_or_else(|e| {
-                                        panic!(
-                                          "the search request to Coco server [id {}, name {}] failed with status code {}, the login token is invalid, we are trying to log out, but failed with error [{}]", 
-                                          query_source.id, query_source.name, StatusCode::UNAUTHORIZED, e
-                                        );
-                                    })
-                                } else {
-                                    // This Coco server is unavailable
-                                    mark_server_as_offline(app_handle.clone(), &query_source.id)
-                                        .await;
-                                }
-                            }
-                        }
-                    }
-
-                    failed_requests.push(FailedRequest {
-                        source: query_source,
-                        status: status_code_num,
-                        error: Some(search_error.to_string()),
-                        reason: None,
-                    });
+                    query_coco_fusion_handle_failed_request(
+                        tauri_app_handle.clone(),
+                        &mut failed_requests,
+                        query_source,
+                        search_error,
+                    )
+                    .await;
                 }
             },
         }
@@ -401,4 +420,55 @@ fn boosted_levenshtein_rerank(query: &str, titles: Vec<(usize, &str)>) -> Vec<(u
             (idx, score.min(1.0) as f64)
         })
         .collect()
+}
+
+/// Helper function to handle a failed request.
+///
+/// Extracted as a function because `query_coco_fusion_single_query_source()` and
+/// `query_coco_fusion_multi_query_sources()` share the same error handling logic.
+async fn query_coco_fusion_handle_failed_request(
+    tauri_app_handle: AppHandle,
+    failed_requests: &mut Vec<FailedRequest>,
+    query_source: QuerySource,
+    search_error: SearchError,
+) {
+    log::error!(
+        "searching query source [{}] failed, error [{}]",
+        query_source.id,
+        search_error
+    );
+
+    let mut status_code_num: u16 = 0;
+
+    if let SearchError::HttpError {
+        status_code: opt_status_code,
+        msg: _,
+    } = search_error
+    {
+        if let Some(status_code) = opt_status_code {
+            status_code_num = status_code.as_u16();
+            if status_code != StatusCode::OK {
+                if status_code == StatusCode::UNAUTHORIZED {
+                    // This Coco server is unavailable. In addition to marking it as
+                    // unavailable, we need to log out because the status code is 401.
+                    logout_coco_server(tauri_app_handle.clone(), query_source.id.to_string()).await.unwrap_or_else(|e| {
+                        panic!(
+                          "the search request to Coco server [id {}, name {}] failed with status code {}, the login token is invalid, we are trying to log out, but failed with error [{}]", 
+                          query_source.id, query_source.name, StatusCode::UNAUTHORIZED, e
+                        );
+                    })
+                } else {
+                    // This Coco server is unavailable
+                    mark_server_as_offline(tauri_app_handle.clone(), &query_source.id).await;
+                }
+            }
+        }
+    }
+
+    failed_requests.push(FailedRequest {
+        source: query_source,
+        status: status_code_num,
+        error: Some(search_error.to_string()),
+        reason: None,
+    });
 }
