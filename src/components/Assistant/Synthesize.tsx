@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import dayjs from "dayjs";
 import durationPlugin from "dayjs/plugin/duration";
+import { nanoid } from "nanoid";
 
 import { useThemeStore } from "@/stores/themeStore";
 import loadingLight from "@/assets/images/ReadAloud/loading-light.png";
@@ -18,7 +19,6 @@ import closeDark from "@/assets/images/ReadAloud/close-dark.png";
 import { useConnectStore } from "@/stores/connectStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { useStreamAudio } from "@/hooks/useStreamAudio";
-import { nanoid } from "nanoid";
 import { useChatStore } from "@/stores/chatStore";
 
 dayjs.extend(durationPlugin);
