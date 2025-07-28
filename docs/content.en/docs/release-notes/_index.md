@@ -7,13 +7,19 @@ title: "Release Notes"
 
 Information about release notes of Coco App is provided here.
 
-
 ## Latest (In development)
-### ❌ Breaking changes
-### 🚀 Features
-### 🐛 Bug fix
-### ✈️ Improvements
 
+### ❌ Breaking changes
+
+### 🚀 Features
+
+- feat: enhance ui for skipped version #834
+
+### 🐛 Bug fix
+
+- fix: fix issue with update check failure #833
+
+### ✈️ Improvements
 
 ## 0.7.1 (2025-07-27)
 
@@ -24,7 +30,6 @@ Information about release notes of Coco App is provided here.
 ### 🐛 Bug fix
 
 - fix: correct enter key behavior #828
-- fix: fix issue with update check failure #833
 
 ### ✈️ Improvements
 
