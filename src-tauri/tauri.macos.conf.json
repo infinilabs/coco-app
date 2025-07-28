@@ -1,0 +1,8 @@
+{
+  "identifier": "rs.coco.app",
+  "bundle": {
+    "macOS": {
+      "entitlements": "./Entitlements.plist"
+    }
+  }
+}
