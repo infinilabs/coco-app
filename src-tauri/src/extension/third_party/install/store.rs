@@ -1,6 +1,7 @@
 //! Extension store related stuff.
 
-use super::LOCAL_QUERY_SOURCE_TYPE;
+use super::super::LOCAL_QUERY_SOURCE_TYPE;
+use super::is_extension_installed;
 use crate::common::document::DataSourceReference;
 use crate::common::document::Document;
 use crate::common::error::SearchError;
@@ -152,14 +153,12 @@ pub(crate) async fn search_extension(
             .get("developer")
             .and_then(|dev| dev.get("id"))
             .and_then(|id| id.as_str())
-            .expect("developer.id should exist")
-            .to_string();
+            .expect("developer.id should exist");
 
         let extension_id = source_obj
             .get("id")
             .and_then(|id| id.as_str())
-            .expect("extension id should exist")
-            .to_string();
+            .expect("extension id should exist");
 
         let installed = is_extension_installed(developer_id, extension_id).await;
         source_obj.insert("installed".to_string(), Json::Bool(installed));
@@ -168,14 +167,6 @@ pub(crate) async fn search_extension(
     }
 
     Ok(extensions)
-}
-
-async fn is_extension_installed(developer: String, extension_id: String) -> bool {
-    THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE
-        .get()
-        .unwrap()
-        .extension_exists(&developer, &extension_id)
-        .await
 }
 
 #[tauri::command]

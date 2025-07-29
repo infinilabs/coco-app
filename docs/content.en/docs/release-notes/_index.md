@@ -14,6 +14,7 @@ Information about release notes of Coco App is provided here.
 ### 🚀 Features
 
 - feat: enhance ui for skipped version #834
+- feat: support installing local extensions #749
 
 ### 🐛 Bug fix
 
