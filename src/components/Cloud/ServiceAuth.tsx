@@ -14,7 +14,7 @@ import { useConnectStore } from "@/stores/connectStore";
 import { useAppStore } from "@/stores/appStore";
 import { copyToClipboard } from "@/utils";
 import platformAdapter from "@/utils/platformAdapter";
-import { handleLogout } from "@/commands/servers";
+import { useServers } from "@/hooks/useServers";
 
 interface ServiceAuthProps {
   setRefreshLoading: (loading: boolean) => void;
@@ -31,6 +31,8 @@ const ServiceAuth = memo(
     const addError = useAppStore((state) => state.addError);
 
     const currentService = useConnectStore((state) => state.currentService);
+
+    const { logoutServer } = useServers();
 
     const [loading, setLoading] = useState(false);
 
@@ -52,18 +54,15 @@ const ServiceAuth = memo(
       setLoading(true);
     }, [ssoRequestID, loading, currentService]);
 
-    const onLogout = useCallback((id: string) => {
-      setRefreshLoading(true);
-      platformAdapter
-        .commands("logout_coco_server", id)
-        .then((res: any) => {
-          console.log("logout_coco_server", id, JSON.stringify(res));
-          handleLogout(id);
-        })
-        .finally(() => {
+    const onLogout = useCallback(
+      (id: string) => {
+        setRefreshLoading(true);
+        logoutServer(id).finally(() => {
           setRefreshLoading(false);
         });
-    }, []);
+      },
+      [logoutServer]
+    );
 
     const handleOAuthCallback = useCallback(
       async (code: string | null, serverId: string | null) => {

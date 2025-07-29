@@ -124,7 +124,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       }
     }
 
-    console.log("_docs", from, queryStrings, response);
     const list = response?.hits ?? [];
     const allTotal = response?.total_hits ?? 0;
     // set first select hover

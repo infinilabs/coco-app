@@ -76,7 +76,6 @@ export function useChatActions(
         const [_error, res] = await Post(`/chat/${activeChat?._id}/_close`, {});
         response = res;
       }
-      console.log("_close", response);
     },
     [currentService?.id, isTauri]
   );
@@ -124,7 +123,6 @@ export function useChatActions(
         );
         response = res;
       }
-      console.log("_cancel", response);
     },
     [currentService?.id, isTauri]
   );
@@ -170,7 +168,6 @@ export function useChatActions(
         ...chat,
         messages: hits,
       };
-      console.log("id_history", updatedChat);
       updatedChatRef.current = updatedChat;
       setActiveChat(updatedChat);
       callback && callback(updatedChat);
@@ -254,20 +251,6 @@ export function useChatActions(
         `chat-stream-${clientId}-${timestamp}`,
         (event) => {
           const msg = event.payload as string;
-          try {
-            // console.log("msg:", JSON.parse(msg));
-            // console.log("user:", msg.includes(`"user"`));
-            // console.log("_source:", msg.includes("_source"));
-            // console.log("result:", msg.includes("result"));
-            // console.log("");
-            // console.log("");
-            // console.log("");
-            // console.log("");
-            // console.log("");
-          } catch (error) {
-            console.error("Failed to parse JSON in listener:", error);
-          }
-
           handleChatCreateStreamMessage(msg);
         }
       );
@@ -455,7 +438,6 @@ export function useChatActions(
         response = res;
       }
 
-      console.log("_open", response);
       return response;
     },
     [currentService?.id, isTauri]
@@ -484,7 +466,6 @@ export function useChatActions(
       response = res;
     }
 
-    console.log("_history", response);
     const hits = response?.hits?.hits || [];
     setChats(hits);
   }, [

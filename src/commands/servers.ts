@@ -58,7 +58,7 @@ async function invokeWithErrorHandler<T>(
   const currentService = useConnectStore.getState().currentService;
 
   // Not logged in
-  console.log(command, isCurrentLogin, currentService?.profile);
+  // console.log("isCurrentLogin", command, isCurrentLogin);
   if (
     !WHITELIST_SERVERS.includes(command) &&
     (!isCurrentLogin || !currentService?.profile)
@@ -88,6 +88,18 @@ async function invokeWithErrorHandler<T>(
         throw new Error(result);
       }
     }
+
+    // Server Data log
+    let parsedResult = result;
+    let logData = result;
+    if (typeof result === "string") {
+      parsedResult = JSON.parse(result);
+      logData = parsedResult;
+    }
+    infoLog({
+      username: "@/commands/servers.ts",
+      logName: command,
+    })(logData);
 
     return result;
   } catch (error: any) {

@@ -99,7 +99,6 @@ export function ServerList({ clearChat }: ServerListProps) {
     fetchServers(true);
 
     const unlisten = platformAdapter.listenEvent("login_or_logout", (event) => {
-      //console.log("Login or Logout:", currentService, event.payload);
       if (event.payload !== isCurrentLogin) {
         setIsCurrentLogin(!!event.payload);
       }

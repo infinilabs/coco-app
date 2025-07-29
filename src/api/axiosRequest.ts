@@ -86,6 +86,12 @@ export const Get = <T>(
         } else {
           res = result?.data as FcResponse<T>;
         }
+        // web component log
+        infoLog({
+          username: "@/api/axiosRequest.ts",
+          logName: url,
+        })(res);
+
         resolve([null, res as FcResponse<T>]);
       })
       .catch((err) => {
@@ -103,7 +109,7 @@ export const Post = <T>(
   return new Promise((resolve) => {
     const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
 
-    let baseURL = appStore.state?.endpoint_http
+    let baseURL = appStore.state?.endpoint_http;
     if (!baseURL || baseURL === "undefined") {
       baseURL = "";
     }

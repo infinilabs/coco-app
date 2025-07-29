@@ -24,7 +24,7 @@ interface MinimalClientVersion {
 export type Status = 'green' | 'yellow' | 'red';
 
 interface Health {
-  services?: Record<string, Status>;
+  services?: Record<string, any>;
   status: Status;
 }
 

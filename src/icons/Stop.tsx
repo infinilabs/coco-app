@@ -1,3 +1,4 @@
+import type { I } from '../index.d';
 import SVGWrap from "./SVGWrap";
 
 export default function Stop(props: I.SVG) {

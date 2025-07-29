@@ -1,137 +1,164 @@
+import { FC, useMemo, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import { isArray } from "lodash-es";
+import { useAsyncEffect, useMount } from "ahooks";
+
 import { AssistantFetcher } from "@/components/Assistant/AssistantFetcher";
 import SettingsSelectPro from "@/components/Settings/SettingsSelectPro";
 import { useAppStore } from "@/stores/appStore";
-import platformAdapter from "@/utils/platformAdapter";
-import { useAsyncEffect, useMount } from "ahooks";
-import { FC, useMemo, useState } from "react";
-import { ExtensionId } from "../../..";
-import { useTranslation } from "react-i18next";
-import { isArray } from "lodash-es";
+import { ExtensionId } from "@/components/Settings/Extensions/index";
+import { useConnectStore } from "@/stores/connectStore";
+import type { Server } from "@/types/server";
+
+interface Assistant {
+  id: string;
+  name?: string;
+  icon?: string;
+  description?: string;
+}
 
 interface SharedAiProps {
   id: ExtensionId;
-  server?: any;
-  setServer: (server: any) => void;
-  assistant?: any;
-  setAssistant: (assistant: any) => void;
+  server?: Server;
+  setServer: (server: Server | undefined) => void;
+  assistant?: Assistant;
+  setAssistant: (assistant: Assistant | undefined) => void;
 }
 
 const SharedAi: FC<SharedAiProps> = (props) => {
   const { id, server, setServer, assistant, setAssistant } = props;
 
-  const [serverList, setServerList] = useState<any[]>([server]);
-  const [assistantList, setAssistantList] = useState<any[]>([assistant]);
+  const serverList = useConnectStore((state) => state.serverList);
+
+  const [list, setList] = useState<Server[]>([]);
+  const [assistantList, setAssistantList] = useState<Assistant[]>([]);
   const addError = useAppStore((state) => state.addError);
   const { fetchAssistant } = AssistantFetcher({});
   const { t } = useTranslation();
   const [assistantSearchValue, setAssistantSearchValue] = useState("");
+  const [isLoadingAssistants, setIsLoadingAssistants] = useState(false);
+
+  const getEnabledServers = useCallback((servers: Server[]): Server[] => {
+    if (!isArray(servers)) return [];
+    return servers.filter(
+      (s) => s.enabled && s.available && (s.public || s.profile)
+    );
+  }, []);
 
   useMount(async () => {
     try {
-      const data = await platformAdapter.invokeBackend<any[]>(
-        "list_coco_servers"
-      );
+      const enabledServers = getEnabledServers(serverList);
+      setList(enabledServers);
 
-      if (isArray(data)) {
-        const enabledServers = data.filter(
-          (s) => s.enabled && s.available && (s.public || s.profile)
-        );
-
-        setServerList(enabledServers);
-
-        if (server) {
-          const matchServer = enabledServers.find((item) => {
-            return item.id === server.id;
-          });
-
-          if (matchServer) {
-            return setServer(matchServer);
-          }
-        }
-
-        setServer(enabledServers[0]);
+      if (enabledServers.length === 0) {
+        setServer(undefined);
+        return;
       }
+
+      if (server) {
+        const matchServer = enabledServers.find((item) => item.id === server.id);
+        if (matchServer) {
+          setServer(matchServer);
+          return;
+        }
+      }
+
+      setServer(enabledServers[0]);
     } catch (error) {
-      addError(String(error));
+      console.error('Failed to load servers:', error);
+      addError(`Failed to load servers: ${String(error)}`);
     }
   });
 
   useAsyncEffect(async () => {
-    try {
-      if (!server) return;
+    if (!server) {
+      setAssistantList([]);
+      setAssistant(undefined);
+      return;
+    }
 
+    setIsLoadingAssistants(true);
+    try {
       const data = await fetchAssistant({
         current: 1,
-        pageSize: 1000,
+        pageSize: 100,
         serverId: server.id,
         query: assistantSearchValue,
       });
 
-      const list = data.list.map((item: any) => item._source);
+      const assistants: Assistant[] = data.list.map((item: any) => item._source);
+      setAssistantList(assistants);
 
-      setAssistantList(list);
+      if (assistants.length === 0) {
+        setAssistant(undefined);
+        return;
+      }
 
       if (assistant) {
-        const matched = list.find((item: any) => {
-          return item.id === assistant.id;
-        });
-
+        const matched = assistants.find((item) => item.id === assistant.id);
         if (matched) {
-          return setAssistant(matched);
+          setAssistant(matched);
+          return;
         }
       }
 
-      setAssistant(list[0]);
+      setAssistant(assistants[0]);
     } catch (error) {
-      addError(String(error));
+      console.error('Failed to fetch assistants:', error);
+      addError(`Failed to fetch assistants: ${String(error)}`);
+      setAssistantList([]);
+      setAssistant(undefined);
+    } finally {
+      setIsLoadingAssistants(false);
     }
-  }, [server, assistantSearchValue]);
+  }, [server?.id, assistantSearchValue]);
 
   const selectList = useMemo(() => {
-    return [
-      {
-        label: t(
-          "settings.extensions.shardAi.details.linkedAssistant.label.cocoServer"
-        ),
-        value: server?.id,
-        icon: server?.provider?.icon,
-        data: serverList,
-        searchable: false,
-        onChange: (value: string) => {
-          const matched = serverList.find((item) => item.id === value);
-
-          setServer(matched);
-        },
+    const serverSelectConfig = {
+      label: t(
+        "settings.extensions.shardAi.details.linkedAssistant.label.cocoServer"
+      ),
+      value: server?.id,
+      icon: server?.provider?.icon,
+      data: list,
+      searchable: false,
+      onChange: (value: string) => {
+        const matched = list.find((item) => item.id === value);
+        setServer(matched);
       },
-      {
-        label: t(
-          "settings.extensions.shardAi.details.linkedAssistant.label.aiAssistant"
-        ),
-        value: assistant?.id,
-        icon: assistant?.icon,
-        data: assistantList,
-        searchable: true,
-        onChange: (value: string) => {
-          const matched = assistantList.find((item) => item.id === value);
+      onSearch: undefined,
+    };
 
-          setAssistant(matched);
-        },
-        onSearch: (value: string) => {
-          setAssistantSearchValue(value);
-        },
+    const assistantSelectConfig = {
+      label: t(
+        "settings.extensions.shardAi.details.linkedAssistant.label.aiAssistant"
+      ),
+      value: assistant?.id,
+      icon: assistant?.icon,
+      data: assistantList,
+      searchable: true,
+      onChange: (value: string) => {
+        const matched = assistantList.find((item) => item.id === value);
+        setAssistant(matched);
       },
-    ];
-  }, [serverList, assistantList, server, assistant]);
+      onSearch: (value: string) => {
+        setAssistantSearchValue(value);
+      },
+    };
 
-  const renderDescription = () => {
-    if (id === "QuickAIAccess") {
-      return t("settings.extensions.quickAiAccess.description");
-    }
+    return [serverSelectConfig, assistantSelectConfig];
+  }, [list, assistantList, server?.id, assistant?.id, t]);
 
-    if (id === "AIOverview") {
-      return t("settings.extensions.aiOverview.description");
+  const renderDescription = useCallback(() => {
+    switch (id) {
+      case "QuickAIAccess":
+        return t("settings.extensions.quickAiAccess.description");
+      case "AIOverview":
+        return t("settings.extensions.aiOverview.description");
+      default:
+        return null;
     }
-  };
+  }, [id, t]);
 
   return (
     <>
@@ -154,6 +181,7 @@ const SharedAi: FC<SharedAiProps> = (props) => {
               searchable={searchable}
               onChange={onChange}
               onSearch={onSearch}
+              placeholder={isLoadingAssistants && searchable ? "Loading..." : undefined}
             />
           </div>
         );
