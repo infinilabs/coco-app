@@ -26,7 +26,6 @@ use std::sync::Arc;
 use std::sync::OnceLock;
 use tauri::AppHandle;
 use tauri::Manager;
-use tauri::Runtime;
 use tauri::async_runtime;
 use tauri_plugin_global_shortcut::GlobalShortcutExt;
 use tauri_plugin_global_shortcut::ShortcutState;
@@ -34,9 +33,7 @@ use tokio::fs::read_dir;
 use tokio::sync::RwLock;
 use tokio::sync::RwLockWriteGuard;
 
-pub(crate) fn get_third_party_extension_directory<R: Runtime>(
-    tauri_app_handle: &AppHandle<R>,
-) -> PathBuf {
+pub(crate) fn get_third_party_extension_directory(tauri_app_handle: &AppHandle) -> PathBuf {
     let mut app_data_dir = tauri_app_handle.path().app_data_dir().expect(
         "User home directory not found, which should be impossible on desktop environments",
     );

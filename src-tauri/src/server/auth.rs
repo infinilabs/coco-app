@@ -4,7 +4,7 @@ use crate::server::servers::{
     get_server_by_id, persist_servers, persist_servers_token, save_access_token, save_server,
     try_register_server_to_search_source,
 };
-use tauri::{AppHandle, Runtime};
+use tauri::AppHandle;
 
 #[allow(dead_code)]
 fn request_access_token_url(request_id: &str) -> String {
@@ -13,8 +13,8 @@ fn request_access_token_url(request_id: &str) -> String {
 }
 
 #[tauri::command]
-pub async fn handle_sso_callback<R: Runtime>(
-    app_handle: AppHandle<R>,
+pub async fn handle_sso_callback(
+    app_handle: AppHandle,
     server_id: String,
     request_id: String,
     code: String,

@@ -14,7 +14,7 @@ use serde_json::Value as Json;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::Path;
-use tauri::{AppHandle, Manager, Runtime};
+use tauri::{AppHandle, Manager};
 use third_party::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE;
 
 pub const LOCAL_QUERY_SOURCE_TYPE: &str = "local";
@@ -592,8 +592,8 @@ fn filter_out_extensions(
 /// * boolean: indicates if we found any invalid extensions
 /// * Vec<Extension>: loaded extensions
 #[tauri::command]
-pub(crate) async fn list_extensions<R: Runtime>(
-    tauri_app_handle: AppHandle<R>,
+pub(crate) async fn list_extensions(
+    tauri_app_handle: AppHandle,
     query: Option<String>,
     extension_type: Option<ExtensionType>,
     list_enabled: bool,

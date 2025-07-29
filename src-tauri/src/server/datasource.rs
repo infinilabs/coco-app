@@ -7,7 +7,7 @@ use http::StatusCode;
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
-use tauri::{AppHandle, Runtime};
+use tauri::AppHandle;
 
 lazy_static! {
     static ref DATASOURCE_CACHE: Arc<RwLock<HashMap<String, HashMap<String, DataSource>>>> =
@@ -31,7 +31,7 @@ pub fn get_datasources_from_cache(server_id: &str) -> Option<HashMap<String, Dat
     Some(server_cache.clone())
 }
 
-pub async fn refresh_all_datasources<R: Runtime>(_app_handle: &AppHandle<R>) -> Result<(), String> {
+pub async fn refresh_all_datasources(_app_handle: &AppHandle) -> Result<(), String> {
     // dbg!("Attempting to refresh all datasources");
 
     let servers = get_all_servers().await;

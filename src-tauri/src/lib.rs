@@ -19,7 +19,7 @@ use std::sync::Mutex;
 use std::sync::OnceLock;
 use tauri::async_runtime::block_on;
 use tauri::plugin::TauriPlugin;
-use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, Runtime, WebviewWindow, WindowEvent};
+use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, WebviewWindow, WindowEvent};
 use tauri_plugin_autostart::MacosLauncher;
 
 /// Tauri store name
@@ -290,7 +290,7 @@ pub fn run() {
     });
 }
 
-pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
+pub async fn init(app_handle: &AppHandle) {
     // Await the async functions to load the servers and tokens
     if let Err(err) = load_or_insert_default_server(app_handle).await {
         log::error!("Failed to load servers: {}", err);
@@ -314,7 +314,7 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
 }
 
 #[tauri::command]
-async fn show_coco<R: Runtime>(app_handle: AppHandle<R>) {
+async fn show_coco(app_handle: AppHandle) {
     if let Some(window) = app_handle.get_webview_window(MAIN_WINDOW_LABEL) {
         move_window_to_active_monitor(&window);
 
@@ -327,7 +327,7 @@ async fn show_coco<R: Runtime>(app_handle: AppHandle<R>) {
 }
 
 #[tauri::command]
-async fn hide_coco<R: Runtime>(app: AppHandle<R>) {
+async fn hide_coco(app: AppHandle) {
     if let Some(window) = app.get_webview_window(MAIN_WINDOW_LABEL) {
         if let Err(err) = window.hide() {
             log::error!("Failed to hide the window: {}", err);
@@ -339,7 +339,7 @@ async fn hide_coco<R: Runtime>(app: AppHandle<R>) {
     }
 }
 
-fn move_window_to_active_monitor<R: Runtime>(window: &WebviewWindow<R>) {
+fn move_window_to_active_monitor(window: &WebviewWindow) {
     //dbg!("Moving window to active monitor");
     // Try to get the available monitors, handle failure gracefully
     let available_monitors = match window.available_monitors() {

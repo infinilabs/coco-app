@@ -9,12 +9,12 @@ use futures_util::TryStreamExt;
 use http::Method;
 use serde_json::Value;
 use std::collections::HashMap;
-use tauri::{AppHandle, Emitter, Manager, Runtime};
+use tauri::{AppHandle, Emitter, Manager};
 use tokio::io::AsyncBufReadExt;
 
 #[tauri::command]
-pub async fn chat_history<R: Runtime>(
-    _app_handle: AppHandle<R>,
+pub async fn chat_history(
+    _app_handle: AppHandle,
     server_id: String,
     from: u32,
     size: u32,
@@ -43,8 +43,8 @@ pub async fn chat_history<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn session_chat_history<R: Runtime>(
-    _app_handle: AppHandle<R>,
+pub async fn session_chat_history(
+    _app_handle: AppHandle,
     server_id: String,
     session_id: String,
     from: u32,
@@ -66,8 +66,8 @@ pub async fn session_chat_history<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn open_session_chat<R: Runtime>(
-    _app_handle: AppHandle<R>,
+pub async fn open_session_chat(
+    _app_handle: AppHandle,
     server_id: String,
     session_id: String,
 ) -> Result<String, String> {
@@ -81,8 +81,8 @@ pub async fn open_session_chat<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn close_session_chat<R: Runtime>(
-    _app_handle: AppHandle<R>,
+pub async fn close_session_chat(
+    _app_handle: AppHandle,
     server_id: String,
     session_id: String,
 ) -> Result<String, String> {
@@ -95,8 +95,8 @@ pub async fn close_session_chat<R: Runtime>(
     common::http::get_response_body_text(response).await
 }
 #[tauri::command]
-pub async fn cancel_session_chat<R: Runtime>(
-    _app_handle: AppHandle<R>,
+pub async fn cancel_session_chat(
+    _app_handle: AppHandle,
     server_id: String,
     session_id: String,
     query_params: Option<HashMap<String, Value>>,
@@ -112,8 +112,8 @@ pub async fn cancel_session_chat<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn chat_create<R: Runtime>(
-    app_handle: AppHandle<R>,
+pub async fn chat_create(
+    app_handle: AppHandle,
     server_id: String,
     message: String,
     query_params: Option<HashMap<String, Value>>,
@@ -175,8 +175,8 @@ pub async fn chat_create<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn chat_chat<R: Runtime>(
-    app_handle: AppHandle<R>,
+pub async fn chat_chat(
+    app_handle: AppHandle,
     server_id: String,
     session_id: String,
     message: String,
@@ -286,8 +286,8 @@ pub async fn update_session_chat(
 }
 
 #[tauri::command]
-pub async fn assistant_search<R: Runtime>(
-    _app_handle: AppHandle<R>,
+pub async fn assistant_search(
+    _app_handle: AppHandle,
     server_id: String,
     query_params: Option<Vec<String>>,
 ) -> Result<Value, String> {
@@ -302,8 +302,8 @@ pub async fn assistant_search<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn assistant_get<R: Runtime>(
-    _app_handle: AppHandle<R>,
+pub async fn assistant_get(
+    _app_handle: AppHandle,
     server_id: String,
     assistant_id: String,
 ) -> Result<Value, String> {
@@ -326,8 +326,8 @@ pub async fn assistant_get<R: Runtime>(
 ///
 /// Returns as soon as the assistant is found on any Coco server.
 #[tauri::command]
-pub async fn assistant_get_multi<R: Runtime>(
-    app_handle: AppHandle<R>,
+pub async fn assistant_get_multi(
+    app_handle: AppHandle,
     assistant_id: String,
 ) -> Result<Value, String> {
     let search_sources = app_handle.state::<SearchSourceRegistry>();
@@ -420,8 +420,8 @@ pub fn remove_icon_fields(json: &str) -> String {
 }
 
 #[tauri::command]
-pub async fn ask_ai<R: Runtime>(
-    app_handle: AppHandle<R>,
+pub async fn ask_ai(
+    app_handle: AppHandle,
     message: String,
     server_id: String,
     assistant_id: String,

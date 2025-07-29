@@ -13,7 +13,6 @@ use serde_json::Value as JsonValue;
 use serde_json::from_value;
 use std::collections::HashMap;
 use std::sync::LazyLock;
-use tauri::Runtime;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_store::StoreExt;
 use tokio::sync::RwLock;
@@ -70,7 +69,7 @@ async fn remove_server_by_id(id: &str) -> Option<Server> {
     cache.remove(id)
 }
 
-pub async fn persist_servers<R: Runtime>(app_handle: &AppHandle<R>) -> Result<(), String> {
+pub async fn persist_servers(app_handle: &AppHandle) -> Result<(), String> {
     let cache = SERVER_LIST_CACHE.read().await;
 
     // Convert HashMap to Vec for serialization (iterating over values of HashMap)
@@ -99,7 +98,7 @@ pub async fn remove_server_token(id: &str) -> bool {
     cache.remove(id).is_some()
 }
 
-pub async fn persist_servers_token<R: Runtime>(app_handle: &AppHandle<R>) -> Result<(), String> {
+pub async fn persist_servers_token(app_handle: &AppHandle) -> Result<(), String> {
     let cache = SERVER_TOKEN_LIST_CACHE.read().await;
 
     // Convert HashMap to Vec for serialization (iterating over values of HashMap)
@@ -158,9 +157,7 @@ fn get_default_server() -> Server {
     }
 }
 
-pub async fn load_servers_token<R: Runtime>(
-    app_handle: &AppHandle<R>,
-) -> Result<Vec<ServerAccessToken>, String> {
+pub async fn load_servers_token(app_handle: &AppHandle) -> Result<Vec<ServerAccessToken>, String> {
     log::debug!("Attempting to load servers token");
 
     let store = app_handle
@@ -219,7 +216,7 @@ pub async fn load_servers_token<R: Runtime>(
     }
 }
 
-pub async fn load_servers<R: Runtime>(app_handle: &AppHandle<R>) -> Result<Vec<Server>, String> {
+pub async fn load_servers(app_handle: &AppHandle) -> Result<Vec<Server>, String> {
     let store = app_handle
         .store(COCO_TAURI_STORE)
         .expect("create or load a store should not fail");
@@ -276,9 +273,7 @@ pub async fn load_servers<R: Runtime>(app_handle: &AppHandle<R>) -> Result<Vec<S
 }
 
 /// Function to load servers or insert a default one if none exist
-pub async fn load_or_insert_default_server<R: Runtime>(
-    app_handle: &AppHandle<R>,
-) -> Result<Vec<Server>, String> {
+pub async fn load_or_insert_default_server(app_handle: &AppHandle) -> Result<Vec<Server>, String> {
     log::debug!("Attempting to load or insert default server");
 
     let exists_servers = load_servers(&app_handle).await;
@@ -296,9 +291,7 @@ pub async fn load_or_insert_default_server<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn list_coco_servers<R: Runtime>(
-    app_handle: AppHandle<R>,
-) -> Result<Vec<Server>, String> {
+pub async fn list_coco_servers(app_handle: AppHandle) -> Result<Vec<Server>, String> {
     //hard fresh all server's info, in order to get the actual health
     refresh_all_coco_server_info(app_handle.clone()).await;
 
@@ -312,7 +305,7 @@ pub async fn get_all_servers() -> Vec<Server> {
     cache.values().cloned().collect()
 }
 
-pub async fn refresh_all_coco_server_info<R: Runtime>(app_handle: AppHandle<R>) {
+pub async fn refresh_all_coco_server_info(app_handle: AppHandle) {
     let servers = get_all_servers().await;
     for server in servers {
         let _ = refresh_coco_server_info(app_handle.clone(), server.id.clone()).await;
@@ -320,10 +313,7 @@ pub async fn refresh_all_coco_server_info<R: Runtime>(app_handle: AppHandle<R>) 
 }
 
 #[tauri::command]
-pub async fn refresh_coco_server_info<R: Runtime>(
-    app_handle: AppHandle<R>,
-    id: String,
-) -> Result<Server, String> {
+pub async fn refresh_coco_server_info(app_handle: AppHandle, id: String) -> Result<Server, String> {
     // Retrieve the server from the cache
     let cached_server = {
         let cache = SERVER_LIST_CACHE.read().await;
@@ -393,10 +383,7 @@ pub async fn refresh_coco_server_info<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn add_coco_server<R: Runtime>(
-    app_handle: AppHandle<R>,
-    endpoint: String,
-) -> Result<Server, String> {
+pub async fn add_coco_server(app_handle: AppHandle, endpoint: String) -> Result<Server, String> {
     load_or_insert_default_server(&app_handle)
         .await
         .map_err(|e| format!("Failed to load default servers: {}", e))?;
@@ -472,10 +459,7 @@ pub async fn add_coco_server<R: Runtime>(
 
 #[tauri::command]
 #[function_name::named]
-pub async fn remove_coco_server<R: Runtime>(
-    app_handle: AppHandle<R>,
-    id: String,
-) -> Result<(), ()> {
+pub async fn remove_coco_server(app_handle: AppHandle, id: String) -> Result<(), ()> {
     let registry = app_handle.state::<SearchSourceRegistry>();
     registry.remove_source(id.as_str()).await;
 
@@ -507,7 +491,7 @@ pub async fn remove_coco_server<R: Runtime>(
 
 #[tauri::command]
 #[function_name::named]
-pub async fn enable_server<R: Runtime>(app_handle: AppHandle<R>, id: String) -> Result<(), ()> {
+pub async fn enable_server(app_handle: AppHandle, id: String) -> Result<(), ()> {
     let opt_server = get_server_by_id(id.as_str()).await;
 
     let Some(mut server) = opt_server else {
@@ -532,7 +516,7 @@ pub async fn enable_server<R: Runtime>(app_handle: AppHandle<R>, id: String) -> 
 
 #[tauri::command]
 #[function_name::named]
-pub async fn disable_server<R: Runtime>(app_handle: AppHandle<R>, id: String) -> Result<(), ()> {
+pub async fn disable_server(app_handle: AppHandle, id: String) -> Result<(), ()> {
     let opt_server = get_server_by_id(id.as_str()).await;
 
     let Some(mut server) = opt_server else {
@@ -560,10 +544,7 @@ pub async fn disable_server<R: Runtime>(app_handle: AppHandle<R>, id: String) ->
 /// enabled.
 ///
 /// For public Coco server, an extra token is required.
-pub async fn try_register_server_to_search_source(
-    app_handle: AppHandle<impl Runtime>,
-    server: &Server,
-) {
+pub async fn try_register_server_to_search_source(app_handle: AppHandle, server: &Server) {
     if server.enabled {
         log::trace!(
             "Server [name: {}, id: {}] is public: {} and available: {}",
@@ -590,7 +571,7 @@ pub async fn try_register_server_to_search_source(
 
 #[function_name::named]
 #[allow(unused)]
-async fn mark_server_as_online<R: Runtime>(app_handle: AppHandle<R>, id: &str) {
+async fn mark_server_as_online(app_handle: AppHandle, id: &str) {
     let server = get_server_by_id(id).await;
     if let Some(mut server) = server {
         server.available = true;
@@ -608,7 +589,7 @@ async fn mark_server_as_online<R: Runtime>(app_handle: AppHandle<R>, id: &str) {
 }
 
 #[function_name::named]
-pub(crate) async fn mark_server_as_offline<R: Runtime>(app_handle: AppHandle<R>, id: &str) {
+pub(crate) async fn mark_server_as_offline(app_handle: AppHandle, id: &str) {
     let server = get_server_by_id(id).await;
     if let Some(mut server) = server {
         server.available = false;
@@ -628,10 +609,7 @@ pub(crate) async fn mark_server_as_offline<R: Runtime>(app_handle: AppHandle<R>,
 
 #[tauri::command]
 #[function_name::named]
-pub async fn logout_coco_server<R: Runtime>(
-    app_handle: AppHandle<R>,
-    id: String,
-) -> Result<(), String> {
+pub async fn logout_coco_server(app_handle: AppHandle, id: String) -> Result<(), String> {
     log::debug!("Attempting to log out server by id: {}", &id);
 
     // Check if the server exists

@@ -2,11 +2,11 @@ use crate::server::http_client::HttpClient;
 use futures_util::StreamExt;
 use http::Method;
 use serde_json::json;
-use tauri::{AppHandle, Emitter, Runtime, command};
+use tauri::{AppHandle, Emitter, command};
 
 #[command]
-pub async fn synthesize<R: Runtime>(
-    app_handle: AppHandle<R>,
+pub async fn synthesize(
+    app_handle: AppHandle,
     client_id: String,
     server_id: String,
     voice: String,

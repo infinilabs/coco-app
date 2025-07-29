@@ -27,7 +27,7 @@ use pizza_engine::{Engine, EngineBuilder, doc};
 use serde_json::Value as Json;
 use std::path::Path;
 use std::path::PathBuf;
-use tauri::{AppHandle, Manager, Runtime, async_runtime};
+use tauri::{AppHandle, Manager, async_runtime};
 use tauri_plugin_fs_pro::{IconOptions, icon, metadata, name};
 use tauri_plugin_global_shortcut::GlobalShortcutExt;
 use tauri_plugin_global_shortcut::Shortcut;
@@ -131,10 +131,7 @@ async fn get_app_name(app: &App) -> String {
 /// Helper function to return an absolute path to `app`'s icon.
 ///
 /// On macOS/Windows, we cache icons in our data directory using the `icon()` function.
-async fn get_app_icon_path<R: Runtime>(
-    tauri_app_handle: &AppHandle<R>,
-    app: &App,
-) -> Result<String, String> {
+async fn get_app_icon_path(tauri_app_handle: &AppHandle, app: &App) -> Result<String, String> {
     let res_path = if cfg!(target_os = "linux") {
         let icon_path = app
             .icon_path
@@ -213,8 +210,8 @@ impl SearchSourceState for ApplicationSearchSourceState {
 }
 
 /// Index applications if they have not been indexed (by checking if `app_index_dir` exists).
-async fn index_applications_if_not_indexed<R: Runtime>(
-    tauri_app_handle: &AppHandle<R>,
+async fn index_applications_if_not_indexed(
+    tauri_app_handle: &AppHandle,
     app_index_dir: &Path,
 ) -> anyhow::Result<ApplicationSearchSourceState> {
     let index_exists = app_index_dir.exists();
@@ -315,13 +312,13 @@ async fn index_applications_if_not_indexed<R: Runtime>(
 }
 
 /// Upon application start, index all the applications found in the `get_default_search_paths()`.
-struct IndexAllApplicationsTask<R: Runtime> {
-    tauri_app_handle: AppHandle<R>,
+struct IndexAllApplicationsTask {
+    tauri_app_handle: AppHandle,
     callback: Option<tokio::sync::oneshot::Sender<Result<(), String>>>,
 }
 
 #[async_trait::async_trait(?Send)]
-impl<R: Runtime> Task for IndexAllApplicationsTask<R> {
+impl Task for IndexAllApplicationsTask {
     fn search_source_id(&self) -> &'static str {
         APPLICATION_SEARCH_SOURCE_ID
     }
@@ -343,13 +340,13 @@ impl<R: Runtime> Task for IndexAllApplicationsTask<R> {
     }
 }
 
-struct ReindexAllApplicationsTask<R: Runtime> {
-    tauri_app_handle: AppHandle<R>,
+struct ReindexAllApplicationsTask {
+    tauri_app_handle: AppHandle,
     callback: Option<tokio::sync::oneshot::Sender<Result<(), String>>>,
 }
 
 #[async_trait::async_trait(?Send)]
-impl<R: Runtime> Task for ReindexAllApplicationsTask<R> {
+impl Task for ReindexAllApplicationsTask {
     fn search_source_id(&self) -> &'static str {
         APPLICATION_SEARCH_SOURCE_ID
     }
@@ -377,14 +374,14 @@ impl<R: Runtime> Task for ReindexAllApplicationsTask<R> {
     }
 }
 
-struct SearchApplicationsTask<R: Runtime> {
-    tauri_app_handle: AppHandle<R>,
+struct SearchApplicationsTask {
+    tauri_app_handle: AppHandle,
     query_string: String,
     callback: Option<OneshotSender<Result<SearchResult, PizzaEngineError>>>,
 }
 
 #[async_trait::async_trait(?Send)]
-impl<R: Runtime> Task for SearchApplicationsTask<R> {
+impl Task for SearchApplicationsTask {
     fn search_source_id(&self) -> &'static str {
         APPLICATION_SEARCH_SOURCE_ID
     }
@@ -514,9 +511,7 @@ impl Task for IndexNewApplicationsTask {
 pub struct ApplicationSearchSource;
 
 impl ApplicationSearchSource {
-    pub async fn prepare_index_and_store<R: Runtime>(
-        app_handle: AppHandle<R>,
-    ) -> Result<(), String> {
+    pub async fn prepare_index_and_store(app_handle: AppHandle) -> Result<(), String> {
         app_handle
             .store(TAURI_STORE_APP_HOTKEY)
             .map_err(|e| e.to_string())?;
@@ -683,7 +678,7 @@ fn pizza_engine_hits_to_coco_hits(
     coco_hits
 }
 
-pub fn set_app_alias<R: Runtime>(tauri_app_handle: &AppHandle<R>, app_path: &str, alias: &str) {
+pub fn set_app_alias(tauri_app_handle: &AppHandle, app_path: &str, alias: &str) {
     let store = tauri_app_handle
         .store(TAURI_STORE_APP_ALIAS)
         .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_ALIAS));
@@ -696,7 +691,7 @@ pub fn set_app_alias<R: Runtime>(tauri_app_handle: &AppHandle<R>, app_path: &str
     // deleted while updating it.
 }
 
-fn get_app_alias<R: Runtime>(tauri_app_handle: &AppHandle<R>, app_path: &str) -> Option<String> {
+fn get_app_alias(tauri_app_handle: &AppHandle, app_path: &str) -> Option<String> {
     let store = tauri_app_handle
         .store(TAURI_STORE_APP_ALIAS)
         .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_ALIAS));
@@ -714,9 +709,9 @@ fn get_app_alias<R: Runtime>(tauri_app_handle: &AppHandle<R>, app_path: &str) ->
 /// The handler that will be invoked when an application hotkey is pressed.
 ///
 /// The `app_path` argument is for logging-only.
-fn app_hotkey_handler<R: Runtime>(
+fn app_hotkey_handler(
     app_path: String,
-) -> impl Fn(&AppHandle<R>, &Shortcut, ShortcutEvent) + Send + Sync + 'static {
+) -> impl Fn(&AppHandle, &Shortcut, ShortcutEvent) + Send + Sync + 'static {
     move |tauri_app_handle, _hot_key, event| {
         if event.state() == ShortcutState::Pressed {
             let app_path_clone = app_path.clone();
@@ -732,7 +727,7 @@ fn app_hotkey_handler<R: Runtime>(
 }
 
 /// For all the applications, if it is enabled & has hotkey set, then set it up.
-pub(crate) fn set_apps_hotkey<R: Runtime>(tauri_app_handle: &AppHandle<R>) -> Result<(), String> {
+pub(crate) fn set_apps_hotkey(tauri_app_handle: &AppHandle) -> Result<(), String> {
     let app_hotkey_store = tauri_app_handle
         .store(TAURI_STORE_APP_HOTKEY)
         .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_HOTKEY));
@@ -756,7 +751,7 @@ pub(crate) fn set_apps_hotkey<R: Runtime>(tauri_app_handle: &AppHandle<R>) -> Re
 }
 
 /// For all the applications, if it is enabled & has hotkey set, then unset it.
-pub(crate) fn unset_apps_hotkey<R: Runtime>(tauri_app_handle: &AppHandle<R>) -> Result<(), String> {
+pub(crate) fn unset_apps_hotkey(tauri_app_handle: &AppHandle) -> Result<(), String> {
     let app_hotkey_store = tauri_app_handle
         .store(TAURI_STORE_APP_HOTKEY)
         .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_HOTKEY));
@@ -783,8 +778,8 @@ pub(crate) fn unset_apps_hotkey<R: Runtime>(tauri_app_handle: &AppHandle<R>) -> 
 }
 
 /// Set the hotkey but won't persist this settings change.
-pub(crate) fn set_app_hotkey<R: Runtime>(
-    tauri_app_handle: &AppHandle<R>,
+pub(crate) fn set_app_hotkey(
+    tauri_app_handle: &AppHandle,
     app_path: &str,
     hotkey: &str,
 ) -> Result<(), String> {
@@ -794,8 +789,8 @@ pub(crate) fn set_app_hotkey<R: Runtime>(
         .map_err(|e| e.to_string())
 }
 
-pub fn register_app_hotkey<R: Runtime>(
-    tauri_app_handle: &AppHandle<R>,
+pub fn register_app_hotkey(
+    tauri_app_handle: &AppHandle,
     app_path: &str,
     hotkey: &str,
 ) -> Result<(), String> {
@@ -812,10 +807,7 @@ pub fn register_app_hotkey<R: Runtime>(
     Ok(())
 }
 
-pub fn unregister_app_hotkey<R: Runtime>(
-    tauri_app_handle: &AppHandle<R>,
-    app_path: &str,
-) -> Result<(), String> {
+pub fn unregister_app_hotkey(tauri_app_handle: &AppHandle, app_path: &str) -> Result<(), String> {
     let app_hotkey_store = tauri_app_handle
         .store(TAURI_STORE_APP_HOTKEY)
         .unwrap_or_else(|_| panic!("store [{}] not found/loaded", TAURI_STORE_APP_HOTKEY));
@@ -855,7 +847,7 @@ pub fn unregister_app_hotkey<R: Runtime>(
     Ok(())
 }
 
-fn get_disabled_app_list<R: Runtime>(tauri_app_handle: &AppHandle<R>) -> Vec<String> {
+fn get_disabled_app_list(tauri_app_handle: &AppHandle) -> Vec<String> {
     let store = tauri_app_handle
         .store(TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH)
         .unwrap_or_else(|_| {
@@ -892,10 +884,7 @@ pub fn is_app_search_enabled(app_path: &str) -> bool {
     disabled_app_list.iter().all(|path| path != app_path)
 }
 
-pub fn disable_app_search<R: Runtime>(
-    tauri_app_handle: &AppHandle<R>,
-    app_path: &str,
-) -> Result<(), String> {
+pub fn disable_app_search(tauri_app_handle: &AppHandle, app_path: &str) -> Result<(), String> {
     let store = tauri_app_handle
         .store(TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH)
         .unwrap_or_else(|_| {
@@ -939,10 +928,7 @@ pub fn disable_app_search<R: Runtime>(
     Ok(())
 }
 
-pub fn enable_app_search<R: Runtime>(
-    tauri_app_handle: &AppHandle<R>,
-    app_path: &str,
-) -> Result<(), String> {
+pub fn enable_app_search(tauri_app_handle: &AppHandle, app_path: &str) -> Result<(), String> {
     let store = tauri_app_handle
         .store(TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH)
         .unwrap_or_else(|_| {
@@ -984,8 +970,8 @@ pub fn enable_app_search<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn add_app_search_path<R: Runtime>(
-    tauri_app_handle: AppHandle<R>,
+pub async fn add_app_search_path(
+    tauri_app_handle: AppHandle,
     search_path: String,
 ) -> Result<(), String> {
     let mut search_paths = get_app_search_path(tauri_app_handle.clone()).await;
@@ -1010,8 +996,8 @@ pub async fn add_app_search_path<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn remove_app_search_path<R: Runtime>(
-    tauri_app_handle: AppHandle<R>,
+pub async fn remove_app_search_path(
+    tauri_app_handle: AppHandle,
     search_path: String,
 ) -> Result<(), String> {
     let mut search_paths = get_app_search_path(tauri_app_handle.clone()).await;
@@ -1036,7 +1022,7 @@ pub async fn remove_app_search_path<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn get_app_search_path<R: Runtime>(tauri_app_handle: AppHandle<R>) -> Vec<String> {
+pub async fn get_app_search_path(tauri_app_handle: AppHandle) -> Vec<String> {
     let store = tauri_app_handle
         .store(TAURI_STORE_DISABLED_APP_LIST_AND_SEARCH_PATH)
         .unwrap_or_else(|_| {
@@ -1065,9 +1051,7 @@ pub async fn get_app_search_path<R: Runtime>(tauri_app_handle: AppHandle<R>) -> 
 }
 
 #[tauri::command]
-pub async fn get_app_list<R: Runtime>(
-    tauri_app_handle: AppHandle<R>,
-) -> Result<Vec<Extension>, String> {
+pub async fn get_app_list(tauri_app_handle: AppHandle) -> Result<Vec<Extension>, String> {
     let search_paths = get_app_search_path(tauri_app_handle.clone()).await;
     let apps = list_app_in(search_paths)?;
 
@@ -1202,9 +1186,7 @@ pub async fn get_app_metadata(app_name: String, app_path: String) -> Result<AppM
 }
 
 #[tauri::command]
-pub async fn reindex_applications<R: Runtime>(
-    tauri_app_handle: AppHandle<R>,
-) -> Result<(), String> {
+pub async fn reindex_applications(tauri_app_handle: AppHandle) -> Result<(), String> {
     let (tx, rx) = tokio::sync::oneshot::channel();
     let reindex_applications_task = ReindexAllApplicationsTask {
         tauri_app_handle: tauri_app_handle.clone(),

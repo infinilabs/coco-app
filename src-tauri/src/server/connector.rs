@@ -6,7 +6,7 @@ use http::StatusCode;
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
-use tauri::{AppHandle, Runtime};
+use tauri::AppHandle;
 
 lazy_static! {
     static ref CONNECTOR_CACHE: Arc<RwLock<HashMap<String, HashMap<String, Connector>>>> =
@@ -29,7 +29,7 @@ pub fn get_connector_by_id(server_id: &str, connector_id: &str) -> Option<Connec
     Some(connector.clone())
 }
 
-pub async fn refresh_all_connectors<R: Runtime>(app_handle: &AppHandle<R>) -> Result<(), String> {
+pub async fn refresh_all_connectors(app_handle: &AppHandle) -> Result<(), String> {
     let servers = get_all_servers().await;
 
     // Collect all the tasks for fetching and refreshing connectors
@@ -122,8 +122,8 @@ pub async fn fetch_connectors_by_server(id: &str) -> Result<Vec<Connector>, Stri
 }
 
 #[tauri::command]
-pub async fn get_connectors_by_server<R: Runtime>(
-    _app_handle: AppHandle<R>,
+pub async fn get_connectors_by_server(
+    _app_handle: AppHandle,
     id: String,
 ) -> Result<Vec<Connector>, String> {
     let connectors = fetch_connectors_by_server(&id).await?;
