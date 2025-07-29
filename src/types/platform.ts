@@ -13,7 +13,6 @@ export interface EventPayloads {
   "endpoint-changed": {
     endpoint: string;
     endpoint_http: string;
-    endpoint_websocket: string;
   };
   "showTooltip-changed": {
     showTooltip: boolean;
@@ -60,6 +59,7 @@ export interface WindowOperations {
   hideWindow: () => Promise<void>;
   showWindow: () => Promise<void>;
   setAlwaysOnTop: (isPinned: boolean) => Promise<void>;
+  toggleMoveToActiveSpaceAttribute: () => Promise<void>;
   setShadow(enable: boolean): Promise<void>;
   getWebviewWindow: () => Promise<any>;
   getWindowByLabel: (label: string) => Promise<{

@@ -498,7 +498,7 @@ pub(crate) async fn init_extensions(
 
     // extension store
     search_source_registry_tauri_state
-        .register_source(third_party::store::ExtensionStore)
+        .register_source(third_party::install::store::ExtensionStore)
         .await;
 
     // Init the built-in enabled extensions

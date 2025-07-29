@@ -8,7 +8,6 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 import useEscape from "@/hooks/useEscape";
 import { useViewportHeight } from "@/hooks/useViewportHeight";
-import { useIconfontScript } from "@/hooks/useScript";
 import type { StartPage } from "@/types/chat";
 import ErrorNotification from "@/components/Common/ErrorNotification";
 
@@ -83,7 +82,6 @@ function WebApp({
   useEscape();
   useModifierKeyPress();
   useViewportHeight();
-  useIconfontScript('web', serverUrl);
 
   return (
     <div

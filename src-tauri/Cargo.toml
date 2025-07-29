@@ -1,6 +1,6 @@
 [package]
 name = "coco"
-version = "0.7.0"
+version = "0.7.1"
 description = "Search, connect, collaborate – all in one place."
 authors = ["INFINI Labs"]
 edition = "2024"
@@ -51,7 +51,6 @@ serde = { version = "1", features = ["derive"] }
 # see: https://docs.rs/serde_json/latest/serde_json/struct.Number.html#method.from_u128
 serde_json = { version = "1", features = ["arbitrary_precision", "preserve_order"] }
 tauri-plugin-http = "2"
-tauri-plugin-websocket = "2"
 tauri-plugin-deep-link = "2.0.0"
 tauri-plugin-store = "2.2.0"
 tauri-plugin-os = "2"

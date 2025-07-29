@@ -133,7 +133,7 @@ export default function Layout() {
     platformAdapter.error(message);
   });
 
-  useIconfontScript("app");
+  useIconfontScript();
 
   const setDisabledExtensions = useExtensionsStore((state) => {
     return state.setDisabledExtensions;

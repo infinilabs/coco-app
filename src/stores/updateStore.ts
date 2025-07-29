@@ -4,8 +4,8 @@ import { persist } from "zustand/middleware";
 export type IUpdateStore = {
   visible: boolean;
   setVisible: (visible: boolean) => void;
-  skipVersion?: string;
-  setSkipVersion: (skipVersion?: string) => void;
+  skipVersions: string[];
+  setSkipVersions: (skipVersions: string[]) => void;
   isOptional: boolean;
   setIsOptional: (isOptional: boolean) => void;
   updateInfo?: any;
@@ -19,8 +19,9 @@ export const useUpdateStore = create<IUpdateStore>()(
       setVisible: (visible: boolean) => {
         return set({ visible });
       },
-      setSkipVersion: (skipVersion?: string) => {
-        return set({ skipVersion });
+      skipVersions: [],
+      setSkipVersions: (skipVersions: string[]) => {
+        return set({ skipVersions });
       },
       isOptional: true,
       setIsOptional: (isOptional: boolean) => {
@@ -33,7 +34,7 @@ export const useUpdateStore = create<IUpdateStore>()(
     {
       name: "update-store",
       partialize: (state) => ({
-        skipVersion: state.skipVersion,
+        skipVersions: state.skipVersions,
       }),
     }
   )

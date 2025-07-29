@@ -1,4 +1,4 @@
-pub(crate) mod store;
+pub(crate) mod install;
 
 use super::Extension;
 use super::ExtensionType;

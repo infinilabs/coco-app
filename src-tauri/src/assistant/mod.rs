@@ -1,5 +1,5 @@
 use crate::common::assistant::ChatRequestMessage;
-use crate::common::http::{GetResponse, convert_query_params_to_strings};
+use crate::common::http::convert_query_params_to_strings;
 use crate::common::register::SearchSourceRegistry;
 use crate::server::http_client::HttpClient;
 use crate::{common, server::servers::COCO_SERVERS};
@@ -112,54 +112,6 @@ pub async fn cancel_session_chat<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn new_chat<R: Runtime>(
-    _app_handle: AppHandle<R>,
-    server_id: String,
-    websocket_id: String,
-    message: String,
-    query_params: Option<HashMap<String, Value>>,
-) -> Result<GetResponse, String> {
-    let body = if !message.is_empty() {
-        let message = ChatRequestMessage {
-            message: Some(message),
-        };
-        Some(
-            serde_json::to_string(&message)
-                .map_err(|e| format!("Failed to serialize message: {}", e))?
-                .into(),
-        )
-    } else {
-        None
-    };
-
-    let mut headers = HashMap::new();
-    headers.insert("WEBSOCKET-SESSION-ID".to_string(), websocket_id.into());
-
-    let response = HttpClient::advanced_post(
-        &server_id,
-        "/chat/_new",
-        Some(headers),
-        convert_query_params_to_strings(query_params),
-        body,
-    )
-    .await
-    .map_err(|e| format!("Error sending message: {}", e))?;
-
-    let body_text = common::http::get_response_body_text(response).await?;
-
-    log::debug!("New chat response: {}", &body_text);
-
-    let chat_response: GetResponse = serde_json::from_str(&body_text)
-        .map_err(|e| format!("Failed to parse response JSON: {}", e))?;
-
-    if chat_response.result != "created" {
-        return Err(format!("Unexpected result: {}", chat_response.result));
-    }
-
-    Ok(chat_response)
-}
-
-#[tauri::command]
 pub async fn chat_create<R: Runtime>(
     app_handle: AppHandle<R>,
     server_id: String,
@@ -220,37 +172,6 @@ pub async fn chat_create<R: Runtime>(
     }
 
     Ok(())
-}
-
-#[tauri::command]
-pub async fn send_message<R: Runtime>(
-    _app_handle: AppHandle<R>,
-    server_id: String,
-    websocket_id: String,
-    session_id: String,
-    message: String,
-    query_params: Option<HashMap<String, Value>>, //search,deep_thinking
-) -> Result<String, String> {
-    let path = format!("/chat/{}/_send", session_id);
-    let msg = ChatRequestMessage {
-        message: Some(message),
-    };
-
-    let mut headers = HashMap::new();
-    headers.insert("WEBSOCKET-SESSION-ID".to_string(), websocket_id.into());
-
-    let body = reqwest::Body::from(serde_json::to_string(&msg).unwrap());
-    let response = HttpClient::advanced_post(
-        &server_id,
-        path.as_str(),
-        Some(headers),
-        convert_query_params_to_strings(query_params),
-        Some(body),
-    )
-    .await
-    .map_err(|e| format!("Error cancel session: {}", e))?;
-
-    common::http::get_response_body_text(response).await
 }
 
 #[tauri::command]

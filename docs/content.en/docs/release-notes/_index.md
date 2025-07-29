@@ -5,9 +5,28 @@ title: "Release Notes"
 
 # Release Notes
 
-Information about release notes of Coco Server is provided here.
+Information about release notes of Coco App is provided here.
 
 ## Latest (In development)
+
+### ❌ Breaking changes
+
+### 🚀 Features
+
+- feat: enhance ui for skipped version #834
+- feat: support installing local extensions #749
+
+### 🐛 Bug fix
+
+- fix: fix issue with update check failure #833
+
+### ✈️ Improvements
+
+- refactor: split query_coco_fusion() #836
+- chore: web component loading font icon #838
+- chore: delete unused code files and dependencies #841
+
+## 0.7.1 (2025-07-27)
 
 ### ❌ Breaking changes
 
@@ -20,6 +39,7 @@ Information about release notes of Coco Server is provided here.
 ### ✈️ Improvements
 
 - chore: web component add notification component #825
+- refactor: collection behavior defaults to `MoveToActiveSpace`, and only use `CanJoinAllSpaces` when window is pinned #829
 
 ## 0.7.0 (2025-07-25)
 
