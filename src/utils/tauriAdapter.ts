@@ -293,6 +293,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       if (data?.on_opened) {
         await invoke("open", {
           onOpened: data.on_opened,
+          extraArgs: null,
         });
 
         return hideCoco();

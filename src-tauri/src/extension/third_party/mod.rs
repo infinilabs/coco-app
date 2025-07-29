@@ -419,7 +419,7 @@ impl ThirdPartyExtensionsSearchSource {
 
                         if event.state() == ShortcutState::Pressed {
                             async_runtime::spawn(async move {
-                                let result = open(app_handle_clone, on_opened_clone).await;
+                                let result = open(app_handle_clone, on_opened_clone, None).await;
                                 if let Err(msg) = result {
                                     log::warn!(
                                         "failed to open extension [{}], error [{}]",
@@ -680,7 +680,7 @@ impl ThirdPartyExtensionsSearchSource {
 
                 if event.state() == ShortcutState::Pressed {
                     async_runtime::spawn(async move {
-                        let result = open(app_handle_clone, on_opened_clone).await;
+                        let result = open(app_handle_clone, on_opened_clone, None).await;
                         if let Err(msg) = result {
                             log::warn!(
                                 "failed to open extension [{:?}], error [{}]",
