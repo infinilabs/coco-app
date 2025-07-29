@@ -5,13 +5,14 @@ import type { LiteralUnion } from "type-fest";
 import { cloneDeep, sortBy } from "lodash-es";
 import clsx from "clsx";
 import { Plus } from "lucide-react";
-import { Button } from "@headlessui/react";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 
 import platformAdapter from "@/utils/platformAdapter";
 import Content from "./components/Content";
 import Details from "./components/Details";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import SettingsInput from "../SettingsInput";
+import { useAppStore } from "@/stores/appStore";
 
 export type ExtensionId = LiteralUnion<
   | "Applications"
@@ -90,6 +91,7 @@ export const Extensions = () => {
   const { t } = useTranslation();
   const state = useReactive<State>(cloneDeep(INITIAL_STATE));
   const { configId, setConfigId } = useExtensionsStore();
+  const { addError } = useAppStore();
 
   useEffect(() => {
     getExtensions();
@@ -160,14 +162,63 @@ export const Extensions = () => {
               {t("settings.extensions.title")}
             </h2>
 
-            <Button
-              className="flex items-center justify-center size-6 border rounded-md dark:border-gray-700 hover:!border-[#0096FB] transition"
-              onClick={() => {
-                platformAdapter.emitEvent("open-extension-store");
-              }}
-            >
-              <Plus className="size-4 text-[#0096FB]" />
-            </Button>
+            <Menu>
+              <MenuButton className="flex items-center justify-center size-6 border rounded-md dark:border-gray-700 hover:!border-[#0096FB] transition">
+                <Plus className="size-4 text-[#0096FB]" />
+              </MenuButton>
+
+              <MenuItems
+                anchor={{ gap: 4 }}
+                className="p-1 text-sm bg-white dark:bg-[#202126] rounded-lg shadow-xs border border-gray-200 dark:border-gray-700"
+              >
+                <MenuItem>
+                  <div
+                    className="px-3 py-2 hover:bg-black/5 hover:dark:bg-white/5 rounded-lg cursor-pointer"
+                    onClick={() => {
+                      platformAdapter.emitEvent("open-extension-store");
+                    }}
+                  >
+                    {t("settings.extensions.menuItem.extensionStore")}
+                  </div>
+                </MenuItem>
+                <MenuItem>
+                  <div
+                    className="px-3 py-2 hover:bg-black/5 hover:dark:bg-white/5 rounded-lg cursor-pointer"
+                    onClick={async () => {
+                      try {
+                        const path = await platformAdapter.openFileDialog({
+                          directory: true,
+                        });
+
+                        if (!path) return;
+
+                        await platformAdapter.invokeBackend(
+                          "install_local_extension",
+                          { path }
+                        );
+
+                        await getExtensions();
+
+                        addError(
+                          t("settings.extensions.hints.importSuccess"),
+                          "info"
+                        );
+                      } catch (error) {
+                        const errorMessage = String(error);
+
+                        if (errorMessage === "already imported") {
+                          addError(t("settings.extensions.hints.extensionAlreadyImported"));
+                        } else {
+                          addError(t("settings.extensions.hints.importFailed"));
+                        }
+                      }
+                    }}
+                  >
+                    {t("settings.extensions.menuItem.localExtensionImport")}
+                  </div>
+                </MenuItem>
+              </MenuItems>
+            </Menu>
           </div>
 
           <div className="flex justify-between gap-6 my-4">
