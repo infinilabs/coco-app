@@ -13,7 +13,6 @@ export interface EventPayloads {
   "endpoint-changed": {
     endpoint: string;
     endpoint_http: string;
-    endpoint_websocket: string;
   };
   "showTooltip-changed": {
     showTooltip: boolean;

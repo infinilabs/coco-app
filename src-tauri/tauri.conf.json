@@ -126,7 +126,6 @@
         "https://release.infinilabs.com/coco/app/.latest.json?target={{target}}&arch={{arch}}&current_version={{current_version}}"
       ]
     },
-    "websocket": {},
     "shell": {},
     "globalShortcut": {},
     "deep-link": {

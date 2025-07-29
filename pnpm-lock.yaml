@@ -47,9 +47,6 @@ importers:
       '@tauri-apps/plugin-updater':
         specifier: github:infinilabs/tauri-plugin-updater#v2
         version: https://codeload.github.com/infinilabs/tauri-plugin-updater/tar.gz/358e689c65e9943b53eff50bcb9dfd5b1cfc4072
-      '@tauri-apps/plugin-websocket':
-        specifier: ~2.3.0
-        version: 2.3.0
       '@tauri-apps/plugin-window':
         specifier: 2.0.0-alpha.1
         version: 2.0.0-alpha.1
@@ -1260,9 +1257,6 @@ packages:
   '@tauri-apps/plugin-updater@https://codeload.github.com/infinilabs/tauri-plugin-updater/tar.gz/358e689c65e9943b53eff50bcb9dfd5b1cfc4072':
     resolution: {tarball: https://codeload.github.com/infinilabs/tauri-plugin-updater/tar.gz/358e689c65e9943b53eff50bcb9dfd5b1cfc4072}
     version: 2.7.1
-
-  '@tauri-apps/plugin-websocket@2.3.0':
-    resolution: {integrity: sha512-eAwRGe3tnqDeQYE0wq4g1PUKbam9tYvlC4uP/au12Y/z7MP4lrS4ylv+aoZ5Ly+hTlBdi7hDkhHomwF/UeBesA==}
 
   '@tauri-apps/plugin-window@2.0.0-alpha.1':
     resolution: {integrity: sha512-dFOAgal/3Txz3SQ+LNQq0AK1EPC+acdaFlwPVB/6KXUZYmaFleIlzgxDVoJCQ+/xOhxvYrdQaFLefh0I/Kldbg==}
@@ -4640,10 +4634,6 @@ snapshots:
       '@tauri-apps/api': 2.5.0
 
   '@tauri-apps/plugin-updater@https://codeload.github.com/infinilabs/tauri-plugin-updater/tar.gz/358e689c65e9943b53eff50bcb9dfd5b1cfc4072':
-    dependencies:
-      '@tauri-apps/api': 2.5.0
-
-  '@tauri-apps/plugin-websocket@2.3.0':
     dependencies:
       '@tauri-apps/api': 2.5.0
 

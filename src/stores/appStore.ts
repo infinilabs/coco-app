@@ -24,7 +24,6 @@ export type IAppStore = {
 
   endpoint: AppEndpoint;
   endpoint_http: string;
-  endpoint_websocket: string;
   setEndpoint: (endpoint: AppEndpoint) => void;
   language: string;
   setLanguage: (language: string) => void;
@@ -78,20 +77,12 @@ export const useAppStore = create<IAppStore>()(
 
         endpoint: "https://coco.infini.cloud/",
         endpoint_http: "https://coco.infini.cloud",
-        endpoint_websocket: "wss://coco.infini.cloud/ws",
         setEndpoint: async (endpoint: AppEndpoint) => {
           const endpoint_http = endpoint;
-
-          const withoutProtocol = endpoint.split("//")[1];
-
-          const endpoint_websocket = endpoint?.includes("https")
-            ? `wss://${withoutProtocol}/ws`
-            : `ws://${withoutProtocol}/ws`;
 
           return set({
             endpoint,
             endpoint_http,
-            endpoint_websocket,
           });
         },
         language: "en",
@@ -128,7 +119,6 @@ export const useAppStore = create<IAppStore>()(
           ssoRequestID: state.ssoRequestID,
           endpoint: state.endpoint,
           endpoint_http: state.endpoint_http,
-          endpoint_websocket: state.endpoint_websocket,
           language: state.language,
         }),
       }

@@ -130,9 +130,7 @@ pub fn run() {
             server::connector::get_connectors_by_server,
             search::query_coco_fusion,
             assistant::chat_history,
-            assistant::new_chat,
             assistant::chat_create,
-            assistant::send_message,
             assistant::chat_chat,
             assistant::session_chat_history,
             assistant::open_session_chat,
@@ -145,8 +143,6 @@ pub fn run() {
             assistant::assistant_get_multi,
             // server::get_coco_server_datasources,
             // server::get_coco_server_connectors,
-            server::websocket::connect_to_server,
-            server::websocket::disconnect,
             get_app_search_source,
             server::attachment::upload_attachment,
             server::attachment::get_attachment,
@@ -200,7 +196,6 @@ pub fn run() {
             let registry = SearchSourceRegistry::default();
 
             app.manage(registry); // Store registry in Tauri's app state
-            app.manage(server::websocket::WebSocketManager::default());
 
             // This has to be called before initializing extensions as doing that
             // requires access to the shortcut store, which will be set by this
