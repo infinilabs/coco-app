@@ -42,11 +42,6 @@
       "copyright": "©{{year}} INFINI Labs, All Rights Reserved."
     },
     "advanced": {
-      "title": "Advanced Settings",
-      "endpoint": {
-        "title": "API Endpoint",
-        "description": "Domain name for interface and websocket"
-      },
       "startup": {
         "title": "Startup Settings",
         "defaultStartupWindow": {

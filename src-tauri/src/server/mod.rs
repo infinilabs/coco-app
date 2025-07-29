@@ -11,4 +11,3 @@ pub mod servers;
 pub mod synthesize;
 pub mod system_settings;
 pub mod transcription;
-pub mod websocket;

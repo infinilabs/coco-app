@@ -24,6 +24,7 @@ Information about release notes of Coco App is provided here.
 
 - refactor: split query_coco_fusion() #836
 - chore: web component loading font icon #838
+- chore: delete unused code files and dependencies #841
 
 ## 0.7.1 (2025-07-27)
 

@@ -172,14 +172,6 @@ export function mcp_server_search({
   return invokeWithErrorHandler(`mcp_server_search`, { id, queryParams });
 }
 
-export function connect_to_server(id: string, clientId: string): Promise<void> {
-  return invokeWithErrorHandler(`connect_to_server`, { id, clientId });
-}
-
-export function disconnect(clientId: string): Promise<void> {
-  return invokeWithErrorHandler(`disconnect`, { clientId });
-}
-
 export function chat_history({
   serverId,
   from = 0,
@@ -260,25 +252,6 @@ export function cancel_session_chat({
   });
 }
 
-export function new_chat({
-  serverId,
-  websocketId,
-  message,
-  queryParams,
-}: {
-  serverId: string;
-  websocketId: string;
-  message: string;
-  queryParams?: Record<string, any>;
-}): Promise<GetResponse> {
-  return invokeWithErrorHandler(`new_chat`, {
-    serverId,
-    websocketId,
-    message,
-    queryParams,
-  });
-}
-
 export function chat_create({
   serverId,
   message,
@@ -295,28 +268,6 @@ export function chat_create({
     message,
     queryParams,
     clientId,
-  });
-}
-
-export function send_message({
-  serverId,
-  websocketId,
-  sessionId,
-  message,
-  queryParams,
-}: {
-  serverId: string;
-  websocketId: string;
-  sessionId: string;
-  message: string;
-  queryParams?: Record<string, any>;
-}): Promise<string> {
-  return invokeWithErrorHandler(`send_message`, {
-    serverId,
-    websocketId,
-    sessionId,
-    message,
-    queryParams,
   });
 }
 

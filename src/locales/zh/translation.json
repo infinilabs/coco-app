@@ -42,11 +42,6 @@
       "copyright": "©{{year}} INFINI Labs，保留所有权利。"
     },
     "advanced": {
-      "title": "高级设置",
-      "endpoint": {
-        "title": "API 接口",
-        "description": "接口和 WebSocket 的域名"
-      },
       "startup": {
         "title": "启动设置",
         "defaultStartupWindow": {
