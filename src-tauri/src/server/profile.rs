@@ -1,11 +1,11 @@
 use crate::common::http::get_response_body_text;
 use crate::common::profile::UserProfile;
 use crate::server::http_client::HttpClient;
-use tauri::{AppHandle, Runtime};
+use tauri::AppHandle;
 
 #[tauri::command]
-pub async fn get_user_profiles<R: Runtime>(
-    _app_handle: AppHandle<R>,
+pub async fn get_user_profiles(
+    _app_handle: AppHandle,
     server_id: String,
 ) -> Result<UserProfile, String> {
     // Use the generic GET method from HttpClient

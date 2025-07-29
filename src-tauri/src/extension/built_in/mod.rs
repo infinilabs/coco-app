@@ -16,11 +16,9 @@ use crate::extension::{
 };
 use anyhow::Context;
 use std::path::{Path, PathBuf};
-use tauri::{AppHandle, Manager, Runtime};
+use tauri::{AppHandle, Manager};
 
-pub(crate) fn get_built_in_extension_directory<R: Runtime>(
-    tauri_app_handle: &AppHandle<R>,
-) -> PathBuf {
+pub(crate) fn get_built_in_extension_directory(tauri_app_handle: &AppHandle) -> PathBuf {
     let mut resource_dir = tauri_app_handle.path().app_data_dir().expect(
         "User home directory not found, which should be impossible on desktop environments",
     );
@@ -136,8 +134,8 @@ async fn load_built_in_extension(
 /// We only read alias/hotkey/enabled from the JSON file, we have ensured that if
 /// alias/hotkey is not supported, then it will be `None`. Besides that, no further
 /// validation is needed because nothing could go wrong.
-pub(crate) async fn list_built_in_extensions<R: Runtime>(
-    tauri_app_handle: &AppHandle<R>,
+pub(crate) async fn list_built_in_extensions(
+    tauri_app_handle: &AppHandle,
 ) -> Result<Vec<Extension>, String> {
     let dir = get_built_in_extension_directory(tauri_app_handle);
 
@@ -191,8 +189,8 @@ pub(crate) async fn list_built_in_extensions<R: Runtime>(
     Ok(built_in_extensions)
 }
 
-pub(super) async fn init_built_in_extension<R: Runtime>(
-    tauri_app_handle: &AppHandle<R>,
+pub(super) async fn init_built_in_extension(
+    tauri_app_handle: &AppHandle,
     extension: &Extension,
     search_source_registry: &SearchSourceRegistry,
 ) -> Result<(), String> {
@@ -233,8 +231,8 @@ pub(crate) fn is_extension_built_in(bundle_id: &ExtensionBundleIdBorrowed<'_>) -
     bundle_id.developer.is_none()
 }
 
-pub(crate) async fn enable_built_in_extension<R: Runtime>(
-    tauri_app_handle: &AppHandle<R>,
+pub(crate) async fn enable_built_in_extension(
+    tauri_app_handle: &AppHandle,
     bundle_id: &ExtensionBundleIdBorrowed<'_>,
 ) -> Result<(), String> {
     let search_source_registry_tauri_state = tauri_app_handle.state::<SearchSourceRegistry>();
@@ -321,8 +319,8 @@ pub(crate) async fn enable_built_in_extension<R: Runtime>(
     Ok(())
 }
 
-pub(crate) async fn disable_built_in_extension<R: Runtime>(
-    tauri_app_handle: &AppHandle<R>,
+pub(crate) async fn disable_built_in_extension(
+    tauri_app_handle: &AppHandle,
     bundle_id: &ExtensionBundleIdBorrowed<'_>,
 ) -> Result<(), String> {
     let search_source_registry_tauri_state = tauri_app_handle.state::<SearchSourceRegistry>();
@@ -408,8 +406,8 @@ pub(crate) async fn disable_built_in_extension<R: Runtime>(
     Ok(())
 }
 
-pub(crate) fn set_built_in_extension_alias<R: Runtime>(
-    tauri_app_handle: &AppHandle<R>,
+pub(crate) fn set_built_in_extension_alias(
+    tauri_app_handle: &AppHandle,
     bundle_id: &ExtensionBundleIdBorrowed<'_>,
     alias: &str,
 ) {
@@ -420,8 +418,8 @@ pub(crate) fn set_built_in_extension_alias<R: Runtime>(
     }
 }
 
-pub(crate) fn register_built_in_extension_hotkey<R: Runtime>(
-    tauri_app_handle: &AppHandle<R>,
+pub(crate) fn register_built_in_extension_hotkey(
+    tauri_app_handle: &AppHandle,
     bundle_id: &ExtensionBundleIdBorrowed<'_>,
     hotkey: &str,
 ) -> Result<(), String> {
@@ -433,8 +431,8 @@ pub(crate) fn register_built_in_extension_hotkey<R: Runtime>(
     Ok(())
 }
 
-pub(crate) fn unregister_built_in_extension_hotkey<R: Runtime>(
-    tauri_app_handle: &AppHandle<R>,
+pub(crate) fn unregister_built_in_extension_hotkey(
+    tauri_app_handle: &AppHandle,
     bundle_id: &ExtensionBundleIdBorrowed<'_>,
 ) -> Result<(), String> {
     if bundle_id.extension_id == application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME {
@@ -481,8 +479,8 @@ fn load_extension_from_json_file(
     Ok(extension)
 }
 
-pub(crate) async fn is_built_in_extension_enabled<R: Runtime>(
-    tauri_app_handle: &AppHandle<R>,
+pub(crate) async fn is_built_in_extension_enabled(
+    tauri_app_handle: &AppHandle,
     bundle_id: &ExtensionBundleIdBorrowed<'_>,
 ) -> Result<bool, String> {
     let search_source_registry_tauri_state = tauri_app_handle.state::<SearchSourceRegistry>();

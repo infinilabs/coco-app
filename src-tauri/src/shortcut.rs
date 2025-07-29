@@ -1,5 +1,5 @@
 use crate::{COCO_TAURI_STORE, hide_coco, show_coco};
-use tauri::{App, AppHandle, Manager, Runtime, async_runtime};
+use tauri::{App, AppHandle, Manager, async_runtime};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 use tauri_plugin_store::{JsonValue, StoreExt};
 
@@ -50,14 +50,14 @@ pub fn enable_shortcut(app: &App) {
 /// Get the stored shortcut as a string, same as [`_get_shortcut()`], except that
 /// this is a `tauri::command` interface.
 #[tauri::command]
-pub async fn get_current_shortcut<R: Runtime>(app: AppHandle<R>) -> Result<String, String> {
+pub async fn get_current_shortcut(app: AppHandle) -> Result<String, String> {
     let shortcut = _get_shortcut(&app);
     Ok(shortcut)
 }
 
 /// Get the current shortcut and unregister it on the tauri side.
 #[tauri::command]
-pub async fn unregister_shortcut<R: Runtime>(app: AppHandle<R>) {
+pub async fn unregister_shortcut(app: AppHandle) {
     let shortcut_str = _get_shortcut(&app);
     let shortcut = shortcut_str
         .parse::<Shortcut>()
@@ -70,9 +70,9 @@ pub async fn unregister_shortcut<R: Runtime>(app: AppHandle<R>) {
 
 /// Change the global shortcut to `key`.
 #[tauri::command]
-pub async fn change_shortcut<R: Runtime>(
-    app: AppHandle<R>,
-    _window: tauri::Window<R>,
+pub async fn change_shortcut(
+    app: AppHandle,
+    _window: tauri::Window,
     key: String,
 ) -> Result<(), String> {
     println!("key {}:", key);
@@ -94,7 +94,7 @@ pub async fn change_shortcut<R: Runtime>(
 }
 
 /// Helper function to register a shortcut, used for shortcut updates.
-fn _register_shortcut<R: Runtime>(app: &AppHandle<R>, shortcut: Shortcut) {
+fn _register_shortcut(app: &AppHandle, shortcut: Shortcut) {
     app.global_shortcut()
         .on_shortcut(shortcut, move |app, scut, event| {
             if scut == &shortcut {
@@ -151,7 +151,7 @@ fn _register_shortcut_upon_start(app: &App, shortcut: Shortcut) {
 }
 
 /// Helper function to get the stored global shortcut, as a string.
-pub fn _get_shortcut<R: Runtime>(app: &AppHandle<R>) -> String {
+pub fn _get_shortcut(app: &AppHandle) -> String {
     let store = app
         .get_store(COCO_TAURI_STORE)
         .expect("store should be loaded or created");

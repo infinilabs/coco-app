@@ -7,7 +7,7 @@ use crate::extension::{Extension, canonicalize_relative_icon_path};
 use serde_json::Value as Json;
 use std::path::Path;
 use std::path::PathBuf;
-use tauri::{AppHandle, Runtime};
+use tauri::AppHandle;
 use tokio::fs;
 
 /// All the extensions installed from local file will belong to a special developer
@@ -26,8 +26,8 @@ const DEVELOPER_ID_LOCAL: &str = "__local__";
 /// └── plugin.json
 /// ```
 #[tauri::command]
-pub(crate) async fn install_local_extension<R: Runtime>(
-    tauri_app_handle: AppHandle<R>,
+pub(crate) async fn install_local_extension(
+    tauri_app_handle: AppHandle,
     path: PathBuf,
 ) -> Result<(), String> {
     let extension_dir_name = path

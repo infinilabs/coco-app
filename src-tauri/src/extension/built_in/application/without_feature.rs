@@ -5,16 +5,14 @@ use crate::common::search::{QueryResponse, QuerySource, SearchQuery};
 use crate::common::traits::SearchSource;
 use crate::extension::LOCAL_QUERY_SOURCE_TYPE;
 use async_trait::async_trait;
-use tauri::{AppHandle, Runtime};
+use tauri::AppHandle;
 
 pub(crate) const QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME: &str = "Applications";
 
 pub struct ApplicationSearchSource;
 
 impl ApplicationSearchSource {
-    pub async fn prepare_index_and_store<R: Runtime>(
-        _app_handle: AppHandle<R>,
-    ) -> Result<(), String> {
+    pub async fn prepare_index_and_store(_app_handle: AppHandle) -> Result<(), String> {
         Ok(())
     }
 }
@@ -45,37 +43,28 @@ impl SearchSource for ApplicationSearchSource {
     }
 }
 
-pub fn set_app_alias<R: Runtime>(_tauri_app_handle: &AppHandle<R>, _app_path: &str, _alias: &str) {
+pub fn set_app_alias(_tauri_app_handle: &AppHandle, _app_path: &str, _alias: &str) {
     unreachable!("app list should be empty, there is no way this can be invoked")
 }
 
-pub fn register_app_hotkey<R: Runtime>(
-    _tauri_app_handle: &AppHandle<R>,
+pub fn register_app_hotkey(
+    _tauri_app_handle: &AppHandle,
     _app_path: &str,
     _hotkey: &str,
 ) -> Result<(), String> {
     unreachable!("app list should be empty, there is no way this can be invoked")
 }
 
-pub fn unregister_app_hotkey<R: Runtime>(
-    _tauri_app_handle: &AppHandle<R>,
-    _app_path: &str,
-) -> Result<(), String> {
+pub fn unregister_app_hotkey(_tauri_app_handle: &AppHandle, _app_path: &str) -> Result<(), String> {
     unreachable!("app list should be empty, there is no way this can be invoked")
 }
 
-pub fn disable_app_search<R: Runtime>(
-    _tauri_app_handle: &AppHandle<R>,
-    _app_path: &str,
-) -> Result<(), String> {
+pub fn disable_app_search(_tauri_app_handle: &AppHandle, _app_path: &str) -> Result<(), String> {
     // no-op
     Ok(())
 }
 
-pub fn enable_app_search<R: Runtime>(
-    _tauri_app_handle: &AppHandle<R>,
-    _app_path: &str,
-) -> Result<(), String> {
+pub fn enable_app_search(_tauri_app_handle: &AppHandle, _app_path: &str) -> Result<(), String> {
     // no-op
     Ok(())
 }
@@ -85,8 +74,8 @@ pub fn is_app_search_enabled(_app_path: &str) -> bool {
 }
 
 #[tauri::command]
-pub async fn add_app_search_path<R: Runtime>(
-    _tauri_app_handle: AppHandle<R>,
+pub async fn add_app_search_path(
+    _tauri_app_handle: AppHandle,
     _search_path: String,
 ) -> Result<(), String> {
     // no-op
@@ -94,8 +83,8 @@ pub async fn add_app_search_path<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn remove_app_search_path<R: Runtime>(
-    _tauri_app_handle: AppHandle<R>,
+pub async fn remove_app_search_path(
+    _tauri_app_handle: AppHandle,
     _search_path: String,
 ) -> Result<(), String> {
     // no-op
@@ -103,43 +92,37 @@ pub async fn remove_app_search_path<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn get_app_search_path<R: Runtime>(_tauri_app_handle: AppHandle<R>) -> Vec<String> {
+pub async fn get_app_search_path(_tauri_app_handle: AppHandle) -> Vec<String> {
     // Return an empty list
     Vec::new()
 }
 
 #[tauri::command]
-pub async fn get_app_list<R: Runtime>(
-    _tauri_app_handle: AppHandle<R>,
-) -> Result<Vec<Extension>, String> {
+pub async fn get_app_list(_tauri_app_handle: AppHandle) -> Result<Vec<Extension>, String> {
     // Return an empty list
     Ok(Vec::new())
 }
 
 #[tauri::command]
-pub async fn get_app_metadata<R: Runtime>(
-    _tauri_app_handle: AppHandle<R>,
+pub async fn get_app_metadata(
+    _tauri_app_handle: AppHandle,
     _app_path: String,
 ) -> Result<AppMetadata, String> {
     unreachable!("app list should be empty, there is no way this can be invoked")
 }
 
-pub(crate) fn set_apps_hotkey<R: Runtime>(_tauri_app_handle: &AppHandle<R>) -> Result<(), String> {
+pub(crate) fn set_apps_hotkey(_tauri_app_handle: &AppHandle) -> Result<(), String> {
     // no-op
     Ok(())
 }
 
-pub(crate) fn unset_apps_hotkey<R: Runtime>(
-    _tauri_app_handle: &AppHandle<R>,
-) -> Result<(), String> {
+pub(crate) fn unset_apps_hotkey(_tauri_app_handle: &AppHandle) -> Result<(), String> {
     // no-op
     Ok(())
 }
 
 #[tauri::command]
-pub async fn reindex_applications<R: Runtime>(
-    _tauri_app_handle: AppHandle<R>,
-) -> Result<(), String> {
+pub async fn reindex_applications(_tauri_app_handle: AppHandle) -> Result<(), String> {
     // no-op
     Ok(())
 }
