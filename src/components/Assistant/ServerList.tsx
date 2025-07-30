@@ -17,6 +17,8 @@ import { Server as IServer } from "@/types/server";
 import StatusIndicator from "@/components/Cloud/StatusIndicator";
 import { useAuthStore } from "@/stores/authStore";
 import { useSearchStore } from "@/stores/searchStore";
+import { useServers } from "@/hooks/useServers"; 
+
 interface ServerListProps {
   clearChat: () => void;
 }
@@ -50,6 +52,7 @@ export function ServerList({ clearChat }: ServerListProps) {
   const popoverRef = useRef<HTMLDivElement>(null);
   const serverListButtonRef = useRef<HTMLButtonElement>(null);
 
+  const { refreshServerList } = useServers();
   const serverList = useConnectStore((state) => state.serverList);
   const fetchServers = useCallback(
     async (resetSelection: boolean) => {
@@ -113,7 +116,8 @@ export function ServerList({ clearChat }: ServerListProps) {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await fetchServers(false);
+    //await fetchServers(false);
+    await refreshServerList();
     setTimeout(() => setIsRefreshing(false), 1000);
   };
 

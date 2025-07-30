@@ -43,7 +43,6 @@ export const useConnectStore = create<IConnectStore>()(
       (set) => ({
         serverList: [],
         setServerList: (serverList: Server[]) => {
-          console.log("set serverList:", serverList);
           set(
             produce((draft) => {
               draft.serverList = serverList;
@@ -52,7 +51,6 @@ export const useConnectStore = create<IConnectStore>()(
         },
         currentService: {} as Server,
         setCurrentService: (server: any) => {
-          console.log("set default server:", server);
           set(
             produce((draft) => {
               draft.currentService = server;
