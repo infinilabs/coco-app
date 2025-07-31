@@ -18,7 +18,9 @@ const FileIcon: FC<FileIconProps> = (props) => {
       .then(setIconName);
   });
 
-  return <FontIcon name={iconName} className={twMerge("size-8", className)} />;
+  return (
+    <FontIcon name={iconName} className={twMerge("min-w-8 h-8", className)} />
+  );
 };
 
 export default FileIcon;
