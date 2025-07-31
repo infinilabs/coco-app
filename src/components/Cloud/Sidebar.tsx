@@ -20,13 +20,14 @@ interface ServerGroups {
 export const Sidebar = forwardRef<{ refreshData: () => void }, SidebarProps>(
   ({ setIsConnect, serverList }, _ref) => {
     const { t } = useTranslation();
-    const cloudSelectService = useConnectStore((state) => state.cloudSelectService);
-    const setCloudSelectService = useConnectStore(
-      (state) => state.setCloudSelectService
-    );
+    const cloudSelectService = useConnectStore((state) => {
+      return state.cloudSelectService;
+    });
+    const setCloudSelectService = useConnectStore((state) => {
+      return state.setCloudSelectService;
+    });
 
     const selectService = (item: Server) => {
-      console.log(111111, item)
       setCloudSelectService(item);
       setIsConnect(true);
     };

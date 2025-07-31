@@ -39,7 +39,7 @@ function SettingsPage() {
     { name: t("settings.tabs.about"), icon: Info },
   ];
 
-  const [defaultIndex, setDefaultIndex] = useState<number>(0);
+  const [defaultIndex, setDefaultIndex] = useState<number>(2);
 
   useEffect(() => {
     const unlisten = listen("tab_index", (event) => {

@@ -3,12 +3,18 @@ import { useEffect, useCallback } from "react";
 import { useConnectStore } from "@/stores/connectStore";
 import platformAdapter from "@/utils/platformAdapter";
 import type { Server } from "@/types/server";
-import { handleLogout } from "@/commands/servers";
+import {
+  getCurrentWindowService,
+  setCurrentWindowService,
+  handleLogout,
+} from "@/commands/servers";
 
 export const useServers = () => {
   const setServerList = useConnectStore((state) => state.setServerList);
-  const setCurrentService = useConnectStore((state) => state.setCurrentService);
   const currentService = useConnectStore((state) => state.currentService);
+  const cloudSelectService = useConnectStore((state) => {
+    return state.cloudSelectService;
+  });
 
   const getAllServerList = async () => {
     try {
@@ -44,7 +50,7 @@ export const useServers = () => {
         endpointLink
       );
       await getAllServerList();
-      setCurrentService(res);
+      await setCurrentWindowService(res);
       return res;
     },
     []
@@ -52,20 +58,22 @@ export const useServers = () => {
 
   const enableServer = useCallback(
     async (enabled: boolean) => {
-      if (!currentService?.id) {
+      const service = await getCurrentWindowService();
+
+      if (!service?.id) {
         throw new Error("No current service selected");
       }
 
       if (enabled) {
-        await platformAdapter.commands("enable_server", currentService.id);
+        await platformAdapter.commands("enable_server", service.id);
       } else {
-        await platformAdapter.commands("disable_server", currentService.id);
+        await platformAdapter.commands("disable_server", service.id);
       }
 
-      setCurrentService({ ...currentService, enabled });
+      await setCurrentWindowService({ ...service, enabled });
       await getAllServerList();
     },
-    [currentService]
+    [currentService, cloudSelectService]
   );
 
   const removeServer = useCallback(
@@ -73,21 +81,18 @@ export const useServers = () => {
       await platformAdapter.commands("remove_coco_server", id);
       await getAllServerList();
     },
-    [currentService?.id]
+    [currentService?.id, cloudSelectService?.id]
   );
 
-  const logoutServer = useCallback(
-    async (id: string) => {
-      await platformAdapter.commands("logout_coco_server", id);
-      handleLogout(id);
-      await getAllServerList();
-    },
-    []
-  );
+  const logoutServer = useCallback(async (id: string) => {
+    await platformAdapter.commands("logout_coco_server", id);
+    handleLogout(id);
+    await getAllServerList();
+  }, []);
 
   useEffect(() => {
     getAllServerList();
-  }, [currentService?.enabled]);
+  }, [currentService?.enabled, cloudSelectService?.enabled]);
 
   return {
     getAllServerList,

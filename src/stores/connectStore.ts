@@ -51,7 +51,7 @@ export const useConnectStore = create<IConnectStore>()(
             })
           );
         },
-        currentService: {} as Server, 
+        currentService: {} as Server,
         setCurrentService: (server: any) => {
           set(
             produce((draft) => {
@@ -63,7 +63,6 @@ export const useConnectStore = create<IConnectStore>()(
         setCloudSelectService: (server: any) => {
           set(
             produce((draft) => {
-              console.log(55555555, server)
               draft.cloudSelectService = server;
             })
           );

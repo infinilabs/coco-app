@@ -18,8 +18,12 @@ export default function Cloud() {
 
   const [isConnect, setIsConnect] = useState(true);
 
-  const { cloudSelectService, setCloudSelectService, serverList, setServerList } =
-    useConnectStore();
+  const {
+    cloudSelectService,
+    setCloudSelectService,
+    serverList,
+    setServerList,
+  } = useConnectStore();
 
   const [refreshLoading, setRefreshLoading] = useState(false);
 
@@ -35,36 +39,33 @@ export default function Cloud() {
     setIsConnect(true);
   }, [cloudSelectService?.id]);
 
-  const fetchServers = useCallback(
-    async () => {
-      let res = serverList;
-      if (errors.length > 0) {
-        res = res.map((item: Server) => {
-          if (item.id === cloudSelectService?.id) {
-            item.health = {
-              services: item.health?.services || {},
-              status: item.health?.status || "red",
-            };
-          }
-          return item;
-        });
-      }
-      setServerList(res);
-
-      if (res.length > 0) {
-        const matched = res.find((server: any) => {
-          return server.id === cloudSelectService?.id;
-        });
-
-        if (matched) {
-          setCloudSelectService(matched);
-        } else {
-          setCloudSelectService(res[res.length - 1]);
+  const fetchServers = useCallback(async () => {
+    let res = serverList;
+    if (errors.length > 0) {
+      res = res.map((item: Server) => {
+        if (item.id === cloudSelectService?.id) {
+          item.health = {
+            services: item.health?.services || {},
+            status: item.health?.status || "red",
+          };
         }
+        return item;
+      });
+    }
+    setServerList(res);
+
+    if (res.length > 0) {
+      const matched = res.find((server: any) => {
+        return server.id === cloudSelectService?.id;
+      });
+
+      if (matched) {
+        setCloudSelectService(matched);
+      } else {
+        setCloudSelectService(res[res.length - 1]);
       }
-    },
-    [serverList, errors, cloudSelectService]
-  );
+    }
+  }, [serverList, errors, cloudSelectService]);
 
   const refreshClick = useCallback(
     async (id: string) => {

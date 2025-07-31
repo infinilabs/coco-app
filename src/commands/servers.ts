@@ -30,10 +30,19 @@ export async function getCurrentWindowService() {
     : currentService;
 }
 
+export async function setCurrentWindowService(service: any) {
+  const windowLabel = await platformAdapter.getCurrentWindowLabel();
+  const { setCurrentService, setCloudSelectService } =
+    useConnectStore.getState();
+
+  return windowLabel === SETTINGS_WINDOW_LABEL
+    ? setCloudSelectService(service)
+    : setCurrentService(service);
+}
+
 export async function handleLogout(serverId?: string) {
   const setIsCurrentLogin = useAuthStore.getState().setIsCurrentLogin;
-  const { setCurrentService, serverList, setServerList } =
-    useConnectStore.getState();
+  const { serverList, setServerList } = useConnectStore.getState();
 
   const service = await getCurrentWindowService();
 
@@ -43,7 +52,7 @@ export async function handleLogout(serverId?: string) {
   // Update the status first
   setIsCurrentLogin(false);
   if (service?.id === id) {
-    setCurrentService({ ...service, profile: null });
+    await setCurrentWindowService({ ...service, profile: null });
   }
   const updatedServerList = serverList.map((server) =>
     server.id === id ? { ...server, profile: null } : server
