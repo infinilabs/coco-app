@@ -26,6 +26,7 @@ export const Sidebar = forwardRef<{ refreshData: () => void }, SidebarProps>(
     );
 
     const selectService = (item: Server) => {
+      console.log(111111, item)
       setCloudSelectService(item);
       setIsConnect(true);
     };

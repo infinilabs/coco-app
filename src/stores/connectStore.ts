@@ -51,7 +51,7 @@ export const useConnectStore = create<IConnectStore>()(
             })
           );
         },
-        currentService: {} as Server,
+        currentService: {} as Server, 
         setCurrentService: (server: any) => {
           set(
             produce((draft) => {
@@ -63,6 +63,7 @@ export const useConnectStore = create<IConnectStore>()(
         setCloudSelectService: (server: any) => {
           set(
             produce((draft) => {
+              console.log(55555555, server)
               draft.cloudSelectService = server;
             })
           );
@@ -140,6 +141,7 @@ export const useConnectStore = create<IConnectStore>()(
         partialize: (state) => ({
           serverList: state.serverList,
           currentService: state.currentService,
+          cloudSelectService: state.cloudSelectService,
           connector_data: state.connector_data,
           datasourceData: state.datasourceData,
           connectionTimeout: state.connectionTimeout,

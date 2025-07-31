@@ -17,18 +17,33 @@ import {
 import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useConnectStore } from "@/stores/connectStore";
+import { SETTINGS_WINDOW_LABEL } from "@/constants";
+import platformAdapter from "@/utils/platformAdapter";
 
-export function handleLogout(serverId?: string) {
+export async function getCurrentWindowService() {
+  const currentService = useConnectStore.getState().currentService;
+  const cloudSelectService = useConnectStore.getState().cloudSelectService;
+  const windowLabel = await platformAdapter.getCurrentWindowLabel();
+
+  return windowLabel === SETTINGS_WINDOW_LABEL
+    ? cloudSelectService
+    : currentService;
+}
+
+export async function handleLogout(serverId?: string) {
   const setIsCurrentLogin = useAuthStore.getState().setIsCurrentLogin;
-  const { currentService, setCurrentService, serverList, setServerList } =
+  const { setCurrentService, serverList, setServerList } =
     useConnectStore.getState();
-  const id = serverId || currentService?.id;
+
+  const service = await getCurrentWindowService();
+
+  const id = serverId || service?.id;
   if (!id) return;
 
   // Update the status first
   setIsCurrentLogin(false);
-  if (currentService?.id === id) {
-    setCurrentService({ ...currentService, profile: null });
+  if (service?.id === id) {
+    setCurrentService({ ...service, profile: null });
   }
   const updatedServerList = serverList.map((server) =>
     server.id === id ? { ...server, profile: null } : server
@@ -57,13 +72,14 @@ async function invokeWithErrorHandler<T>(
   args?: Record<string, any>
 ): Promise<T> {
   const isCurrentLogin = useAuthStore.getState().isCurrentLogin;
-  const currentService = useConnectStore.getState().currentService;
+
+  const service = await getCurrentWindowService();
 
   // Not logged in
   // console.log("isCurrentLogin", command, isCurrentLogin);
   if (
     !WHITELIST_SERVERS.includes(command) &&
-    (!isCurrentLogin || !currentService?.profile)
+    (!isCurrentLogin || !service?.profile)
   ) {
     console.error("This command requires authentication");
     throw new Error("This command requires authentication");
