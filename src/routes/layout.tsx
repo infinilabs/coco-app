@@ -119,16 +119,16 @@ export default function Layout() {
   });
 
   useMount(async () => {
-    const result = await platformAdapter.invokeBackend<[boolean, Extension[]]>(
+    const result = await platformAdapter.invokeBackend<Extension[]>(
       "list_extensions",
       {
-        listEnabled: false,
+      listEnabled: false,
       }
     );
 
     if (!isArray(result)) return;
 
-    const disabledExtensions = result[1].filter((item) => !item.enabled);
+    const disabledExtensions = result.filter((item) => !item.enabled);
 
     setDisabledExtensions(disabledExtensions.map((item) => item.id));
   });

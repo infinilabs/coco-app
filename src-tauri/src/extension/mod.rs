@@ -597,7 +597,7 @@ pub(crate) async fn list_extensions(
     query: Option<String>,
     extension_type: Option<ExtensionType>,
     list_enabled: bool,
-) -> Result<(bool, Vec<Extension>), String> {
+) -> Result<Vec<Extension>, String> {
     log::trace!("loading extensions");
 
     let third_party_dir = third_party::get_third_party_extension_directory(&tauri_app_handle);
@@ -606,12 +606,11 @@ pub(crate) async fn list_extensions(
             .await
             .map_err(|e| e.to_string())?;
     }
-    let (third_party_found_invalid_extension, mut third_party_extensions) =
+    let mut third_party_extensions =
         third_party::list_third_party_extensions(&third_party_dir).await?;
 
     let built_in_extensions = built_in::list_built_in_extensions(&tauri_app_handle).await?;
 
-    let found_invalid_extension = third_party_found_invalid_extension;
     let mut extensions = {
         third_party_extensions.extend(built_in_extensions);
 
@@ -659,7 +658,7 @@ pub(crate) async fn list_extensions(
         });
     }
 
-    Ok((found_invalid_extension, extensions))
+    Ok(extensions)
 }
 
 pub(crate) async fn init_extensions(
