@@ -58,8 +58,6 @@ export async function handleLogout(serverId?: string) {
     server.id === id ? { ...server, profile: null } : server
   );
   setServerList(updatedServerList);
-
-  // TODO: getAllServerList
 }
 
 // Endpoints that don't require authentication

@@ -20,7 +20,6 @@ export function DataSourcesList({ server }: { server: string }) {
     platformAdapter
       .commands("get_connectors_by_server", server)
       .then((res: any) => {
-        console.log("222222", res);
         setConnectorData(res, server);
       })
       .finally(() => {});
@@ -29,7 +28,6 @@ export function DataSourcesList({ server }: { server: string }) {
     platformAdapter
       .commands("datasource_search", { id: server })
       .then((res: any) => {
-        console.log("333333", res);
         setDatasourceData(res, server);
       })
       .finally(() => {
@@ -38,7 +36,6 @@ export function DataSourcesList({ server }: { server: string }) {
   }
 
   useEffect(() => {
-    console.log("11111111", server);
     initServerAppData();
   }, [server]);
 
