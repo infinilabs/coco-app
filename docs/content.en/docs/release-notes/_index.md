@@ -22,6 +22,7 @@ Information about release notes of Coco App is provided here.
 
 ### ✈️ Improvements
 
+- refactor: calling service related interfaces #831
 - refactor: split query_coco_fusion() #836
 - chore: web component loading font icon #838
 - chore: delete unused code files and dependencies #841
