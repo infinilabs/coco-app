@@ -112,8 +112,8 @@ pub async fn cancel_session_chat(
 }
 
 #[tauri::command]
-pub async fn chat_create<R: Runtime>(
-    app_handle: AppHandle<R>,
+pub async fn chat_create(
+    app_handle: AppHandle,
     server_id: String,
     message: Option<String>,
     attachments: Option<Vec<String>>,
@@ -186,8 +186,8 @@ pub async fn chat_create<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn chat_chat<R: Runtime>(
-    app_handle: AppHandle<R>,
+pub async fn chat_chat(
+    app_handle: AppHandle,
     server_id: String,
     session_id: String,
     message: Option<String>,
