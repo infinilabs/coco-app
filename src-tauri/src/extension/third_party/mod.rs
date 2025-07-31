@@ -1,7 +1,7 @@
+pub(crate) mod check;
 pub(crate) mod install;
 
 use super::Extension;
-use super::ExtensionType;
 use super::LOCAL_QUERY_SOURCE_TYPE;
 use super::PLUGIN_JSON_FILE_NAME;
 use super::alter_extension_json_file;
@@ -18,8 +18,8 @@ use crate::extension::ExtensionBundleIdBorrowed;
 use crate::util::platform::Platform;
 use async_trait::async_trait;
 use borrowme::ToOwned;
+use check::general_check;
 use function_name::named;
-use std::ffi::OsStr;
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -44,9 +44,7 @@ pub(crate) fn get_third_party_extension_directory(tauri_app_handle: &AppHandle) 
 
 pub(crate) async fn list_third_party_extensions(
     directory: &Path,
-) -> Result<(bool, Vec<Extension>), String> {
-    let mut found_invalid_extensions = false;
-
+) -> Result<Vec<Extension>, String> {
     let mut extensions_dir_iter = read_dir(&directory).await.map_err(|e| e.to_string())?;
     let current_platform = Platform::current();
 
@@ -62,7 +60,6 @@ pub(crate) async fn list_third_party_extensions(
         };
         let developer_dir_file_type = developer_dir.file_type().await.map_err(|e| e.to_string())?;
         if !developer_dir_file_type.is_dir() {
-            found_invalid_extensions = true;
             log::warn!(
                 "file [{}] under the third party extension directory should be a directory, but it is not",
                 developer_dir.file_name().display()
@@ -84,14 +81,17 @@ pub(crate) async fn list_third_party_extensions(
             let Some(extension_dir) = opt_extension_dir else {
                 break 'extension;
             };
+            let extension_dir_file_name = extension_dir
+                .file_name()
+                .into_string()
+                .expect("extension directory name should be UTF-8 encoded");
 
             let extension_dir_file_type =
                 extension_dir.file_type().await.map_err(|e| e.to_string())?;
             if !extension_dir_file_type.is_dir() {
-                found_invalid_extensions = true;
                 log::warn!(
                     "invalid extension [{}]: a valid extension should be a directory, but it is not",
-                    extension_dir.file_name().display()
+                    extension_dir_file_name
                 );
 
                 // Skip invalid extension
@@ -106,7 +106,6 @@ pub(crate) async fn list_third_party_extensions(
             };
 
             if !plugin_json_file_path.is_file() {
-                found_invalid_extensions = true;
                 log::warn!(
                     "invalid extension: [{}]: extension file [{}] should be a JSON file, but it is not",
                     extension_dir.file_name().display(),
@@ -123,10 +122,9 @@ pub(crate) async fn list_third_party_extensions(
             let mut extension = match serde_json::from_str::<Extension>(&plugin_json_file_content) {
                 Ok(extension) => extension,
                 Err(e) => {
-                    found_invalid_extensions = true;
                     log::warn!(
-                        "invalid extension: [{}]: extension file [{}] is invalid, error: '{}'",
-                        extension_dir.file_name().display(),
+                        "invalid extension: [{}]: cannot parse file [{}] as a [struct Extension], error: '{}'",
+                        extension_dir_file_name,
                         plugin_json_file_path.display(),
                         e
                     );
@@ -134,19 +132,55 @@ pub(crate) async fn list_third_party_extensions(
                 }
             };
 
-            // Turn it into an absolute path if it is a valid relative path because frontend code need this.
-            canonicalize_relative_icon_path(&extension_dir.path(), &mut extension)?;
+            /* Check starts here */
+            if extension.id != extension_dir_file_name {
+                log::warn!(
+                    "extension under [{}:{}] has an ID that is not same as the [{}]",
+                    developer_dir.file_name().display(),
+                    extension_dir_file_name,
+                    extension.id,
+                );
 
-            if !validate_extension(
-                &extension,
-                &extension_dir.file_name(),
-                &extensions,
-                current_platform,
-            ) {
-                found_invalid_extensions = true;
+                continue;
+            }
+
+            // Extension should be unique
+            if extensions.iter().any(|ext: &Extension| {
+                ext.id == extension.id && ext.developer == extension.developer
+            }) {
+                log::warn!(
+                    "an extension with the same bundle ID [ID {}, developer {:?}] already exists, skip this one",
+                    extension.id,
+                    extension.developer
+                );
+
+                continue;
+            }
+
+            if let Err(error_msg) = general_check(&extension) {
+                log::warn!("{}", error_msg);
+
                 // Skip invalid extension
                 continue;
             }
+
+            if let Some(ref platforms) = extension.platforms {
+                if !platforms.contains(&current_platform) {
+                    log::warn!(
+                        "installed third-party extension [developer {}, ID {}] is not compatible with current platform, either user messes our directory or something wrong with our extension check",
+                        extension
+                            .developer
+                            .as_ref()
+                            .expect("third party extension should have [developer] set"),
+                        extension.id
+                    );
+                    continue;
+                }
+            }
+            /* Check ends here */
+
+            // Turn it into an absolute path if it is a valid relative path because frontend code needs this.
+            canonicalize_relative_icon_path(&extension_dir.path(), &mut extension)?;
 
             extensions.push(extension);
         }
@@ -160,203 +194,7 @@ pub(crate) async fn list_third_party_extensions(
             .collect::<Vec<_>>()
     );
 
-    Ok((found_invalid_extensions, extensions))
-}
-
-/// Helper function to validate `extension`, return `true` if it is valid.
-fn validate_extension(
-    extension: &Extension,
-    extension_dir_name: &OsStr,
-    listed_extensions: &[Extension],
-    current_platform: Platform,
-) -> bool {
-    if OsStr::new(&extension.id) != extension_dir_name {
-        log::warn!(
-            "invalid extension []: id [{}] and extension directory name [{}] do not match",
-            extension.id,
-            extension_dir_name.display()
-        );
-        return false;
-    }
-
-    // Extension ID should be unique
-    if listed_extensions.iter().any(|ext| ext.id == extension.id) {
-        log::warn!(
-            "invalid extension []: extension with id [{}] already exists",
-            extension.id,
-        );
-        return false;
-    }
-
-    if !validate_extension_or_sub_item(extension) {
-        return false;
-    }
-
-    // Extension is incompatible
-    if let Some(ref platforms) = extension.platforms {
-        if !platforms.contains(&current_platform) {
-            log::warn!(
-                "extension [{}] is not compatible with the current platform [{}], it is available to {:?}",
-                extension.id,
-                current_platform,
-                platforms
-                    .iter()
-                    .map(|os| os.to_string())
-                    .collect::<Vec<_>>()
-            );
-            return false;
-        }
-    }
-
-    if let Some(ref commands) = extension.commands {
-        if !validate_sub_items(&extension.id, commands) {
-            return false;
-        }
-    }
-
-    if let Some(ref scripts) = extension.scripts {
-        if !validate_sub_items(&extension.id, scripts) {
-            return false;
-        }
-    }
-
-    if let Some(ref quicklinks) = extension.quicklinks {
-        if !validate_sub_items(&extension.id, quicklinks) {
-            return false;
-        }
-    }
-
-    true
-}
-
-/// Checks that can be performed against an extension or a sub item.
-fn validate_extension_or_sub_item(extension: &Extension) -> bool {
-    // If field `action` is Some, then it should be a Command
-    if extension.action.is_some() && extension.r#type != ExtensionType::Command {
-        log::warn!(
-            "invalid extension [{}], [action] is set for a non-Command extension",
-            extension.id
-        );
-        return false;
-    }
-
-    if extension.r#type == ExtensionType::Command && extension.action.is_none() {
-        log::warn!(
-            "invalid extension [{}], [action] should be set for a Command extension",
-            extension.id
-        );
-        return false;
-    }
-
-    // If field `quicklink` is Some, then it should be a Quicklink
-    if extension.quicklink.is_some() && extension.r#type != ExtensionType::Quicklink {
-        log::warn!(
-            "invalid extension [{}], [quicklink] is set for a non-Quicklink extension",
-            extension.id
-        );
-        return false;
-    }
-
-    if extension.r#type == ExtensionType::Quicklink && extension.quicklink.is_none() {
-        log::warn!(
-            "invalid extension [{}], [quicklink] should be set for a Quicklink extension",
-            extension.id
-        );
-        return false;
-    }
-
-    // Group and Extension cannot have alias
-    if extension.alias.is_some() {
-        if extension.r#type == ExtensionType::Group || extension.r#type == ExtensionType::Extension
-        {
-            log::warn!(
-                "invalid extension [{}], extension of type [{:?}] cannot have alias",
-                extension.id,
-                extension.r#type
-            );
-            return false;
-        }
-    }
-
-    // Group and Extension cannot have hotkey
-    if extension.hotkey.is_some() {
-        if extension.r#type == ExtensionType::Group || extension.r#type == ExtensionType::Extension
-        {
-            log::warn!(
-                "invalid extension [{}], extension of type [{:?}] cannot have hotkey",
-                extension.id,
-                extension.r#type
-            );
-            return false;
-        }
-    }
-
-    if extension.commands.is_some() || extension.scripts.is_some() || extension.quicklinks.is_some()
-    {
-        if extension.r#type != ExtensionType::Group && extension.r#type != ExtensionType::Extension
-        {
-            log::warn!(
-                "invalid extension [{}], only extension of type [Group] and [Extension] can have sub-items",
-                extension.id,
-            );
-            return false;
-        }
-    }
-
-    true
-}
-
-/// Helper function to check sub-items.
-fn validate_sub_items(extension_id: &str, sub_items: &[Extension]) -> bool {
-    for (sub_item_index, sub_item) in sub_items.iter().enumerate() {
-        // If field `action` is Some, then it should be a Command
-        if sub_item.action.is_some() && sub_item.r#type != ExtensionType::Command {
-            log::warn!(
-                "invalid extension sub-item [{}-{}]: [action] is set for a non-Command extension",
-                extension_id,
-                sub_item.id
-            );
-            return false;
-        }
-
-        if sub_item.r#type == ExtensionType::Group || sub_item.r#type == ExtensionType::Extension {
-            log::warn!(
-                "invalid extension sub-item [{}-{}]: sub-item should not be of type [Group] or [Extension]",
-                extension_id,
-                sub_item.id
-            );
-            return false;
-        }
-
-        let sub_item_with_same_id_count = sub_items
-            .iter()
-            .enumerate()
-            .filter(|(_idx, ext)| ext.id == sub_item.id)
-            .filter(|(idx, _ext)| *idx != sub_item_index)
-            .count();
-        if sub_item_with_same_id_count != 0 {
-            log::warn!(
-                "invalid extension [{}]: found more than one sub-items with the same ID [{}]",
-                extension_id,
-                sub_item.id
-            );
-            return false;
-        }
-
-        if !validate_extension_or_sub_item(sub_item) {
-            return false;
-        }
-
-        if sub_item.platforms.is_some() {
-            log::warn!(
-                "invalid extension [{}]: key [platforms] should not be set in sub-items",
-                extension_id,
-            );
-            return false;
-        }
-    }
-
-    true
+    Ok(extensions)
 }
 
 /// All the third-party extensions will be registered as one search source.

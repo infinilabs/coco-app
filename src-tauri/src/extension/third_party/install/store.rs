@@ -13,6 +13,7 @@ use crate::extension::Extension;
 use crate::extension::PLUGIN_JSON_FILE_NAME;
 use crate::extension::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE;
 use crate::extension::canonicalize_relative_icon_path;
+use crate::extension::third_party::check::general_check;
 use crate::extension::third_party::get_third_party_extension_directory;
 use crate::server::http_client::HttpClient;
 use async_trait::async_trait;
@@ -249,6 +250,8 @@ pub(crate) async fn install_extension_from_store(
     });
 
     drop(plugin_json);
+
+    general_check(&extension)?;
 
     // Write extension files to the extension directory
     let developer = extension.developer.clone().unwrap_or_default();

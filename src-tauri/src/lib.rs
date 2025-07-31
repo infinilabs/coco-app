@@ -209,7 +209,7 @@ pub fn run() {
 
                 // We want all the extensions here, so no filter condition specified.
                 match extension::list_extensions(app_handle.clone(), None, None, false).await {
-                    Ok((_found_invalid_extensions, extensions)) => {
+                    Ok(extensions) => {
                         // Initializing extension relies on SearchSourceRegistry, so this should
                         // be executed after `app.manage(registry)`
                         if let Err(e) =

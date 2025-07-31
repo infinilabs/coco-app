@@ -108,7 +108,7 @@ export const Extensions = () => {
   });
 
   const getExtensions = async () => {
-    const result = await platformAdapter.invokeBackend<[boolean, Extension[]]>(
+    const extensions = await platformAdapter.invokeBackend<Extension[]>(
       "list_extensions",
       {
         query: state.searchValue,
@@ -116,8 +116,6 @@ export const Extensions = () => {
         listEnabled: false,
       }
     );
-
-    const extensions = result[1];
 
     state.extensions = sortBy(extensions, ["name"]);
 
@@ -208,6 +206,8 @@ export const Extensions = () => {
 
                         if (errorMessage === "already imported") {
                           addError(t("settings.extensions.hints.extensionAlreadyImported"));
+                        } else if (errorMessage === "incompatible") {
+                          addError(t("settings.extensions.hints.incompatibleExtension"));
                         } else {
                           addError(t("settings.extensions.hints.importFailed"));
                         }

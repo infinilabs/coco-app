@@ -1,9 +1,11 @@
 use crate::extension::PLUGIN_JSON_FILE_NAME;
+use crate::extension::third_party::check::general_check;
 use crate::extension::third_party::install::is_extension_installed;
 use crate::extension::third_party::{
     THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE, get_third_party_extension_directory,
 };
 use crate::extension::{Extension, canonicalize_relative_icon_path};
+use crate::util::platform::Platform;
 use serde_json::Value as Json;
 use std::path::Path;
 use std::path::PathBuf;
@@ -42,13 +44,16 @@ pub(crate) async fn install_local_extension(
         // The frontend code uses this string to distinguish between 2 error cases:
         //
         // 1. This extension is already imported
-        // 2. The selected directory does not contain a valid extension
+        // 2. This extension is incompatible with the current platform
+        // 3. The selected directory does not contain a valid extension
         //
         // do NOT edit this without updating the frontend code.
         //
         // ```ts
         // if (errorMessage === "already imported") {
-        //   addError(t("extensionAlreadyImported"));
+        //   addError(t("settings.extensions.hints.extensionAlreadyImported"));
+        // } else if (errorMessage === "incompatible") {
+        //   addError(t("settings.extensions.hints.incompatibleExtension"));
         // } else {
         //   addError(t("settings.extensions.hints.importFailed"));
         // }
@@ -122,6 +127,36 @@ pub(crate) async fn install_local_extension(
     // Now we can convert JSON to `struct Extension`
     let mut extension: Extension =
         serde_json::from_value(extension_json).map_err(|e| e.to_string())?;
+
+    /* Check begins here */
+    general_check(&extension)?;
+
+    if let Some(ref platforms) = extension.platforms {
+        if !platforms.contains(&Platform::current()) {
+            // The frontend code uses this string to distinguish between 3 error cases:
+            //
+            // 1. This extension is already imported
+            // 2. This extension is incompatible with the current platform
+            // 3. The selected directory does not contain a valid extension
+            //
+            // do NOT edit this without updating the frontend code.
+            //
+            // ```ts
+            // if (errorMessage === "already imported") {
+            //   addError(t("settings.extensions.hints.extensionAlreadyImported"));
+            // } else if (errorMessage === "incompatible") {
+            //   addError(t("settings.extensions.hints.incompatibleExtension"));
+            // } else {
+            //   addError(t("settings.extensions.hints.importFailed"));
+            // }
+            // ```
+            //
+            // This is definitely error-prone, but we have to do this until we have
+            // structured error type
+            return Err("incompatible".into());
+        }
+    }
+    /* Check ends here */
 
     // Create destination directory
     let dest_dir = get_third_party_extension_directory(&tauri_app_handle)
