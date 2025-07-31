@@ -1,6 +1,6 @@
 use std::{fs::create_dir, io::Read};
 
-use tauri::{Manager, Runtime};
+use tauri::Manager;
 use tauri_plugin_autostart::ManagerExt;
 
 /// If the state reported from the OS and the state stored by us differ, our state is
@@ -42,7 +42,7 @@ pub fn ensure_autostart_state_consistent(app: &mut tauri::App) -> Result<(), Str
     Ok(())
 }
 
-fn current_autostart<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<bool, String> {
+fn current_autostart(app: &tauri::AppHandle) -> Result<bool, String> {
     use std::fs::File;
 
     let path = app.path().app_config_dir().unwrap();
@@ -65,10 +65,7 @@ fn current_autostart<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<bool, Stri
 }
 
 #[tauri::command]
-pub async fn change_autostart<R: Runtime>(
-    app: tauri::AppHandle<R>,
-    open: bool,
-) -> Result<(), String> {
+pub async fn change_autostart(app: tauri::AppHandle, open: bool) -> Result<(), String> {
     use std::fs::File;
     use std::io::Write;
 

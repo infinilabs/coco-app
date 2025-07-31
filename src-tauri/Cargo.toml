@@ -51,7 +51,6 @@ serde = { version = "1", features = ["derive"] }
 # see: https://docs.rs/serde_json/latest/serde_json/struct.Number.html#method.from_u128
 serde_json = { version = "1", features = ["arbitrary_precision", "preserve_order"] }
 tauri-plugin-http = "2"
-tauri-plugin-websocket = "2"
 tauri-plugin-deep-link = "2.0.0"
 tauri-plugin-store = "2.2.0"
 tauri-plugin-os = "2"
@@ -106,6 +105,7 @@ camino = "1.1.10"
 tokio-stream = { version = "0.1.17", features = ["io-util"] }
 cfg-if = "1.0.1"
 sysinfo = "0.35.2"
+indexmap = { version = "2.10.0", features = ["serde"] }
 
 [target."cfg(target_os = \"macos\")".dependencies]
 tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }

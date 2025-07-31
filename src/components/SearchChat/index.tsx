@@ -129,7 +129,9 @@ function SearchChat({
   useEffect(() => {
     const init = async () => {
       await initializeListeners_auth();
-      await platformAdapter.commands("get_app_search_source");
+      if (isTauri) {
+        await platformAdapter.commands("get_app_search_source");
+      }
     };
 
     init();

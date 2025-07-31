@@ -19,7 +19,7 @@ use std::sync::Mutex;
 use std::sync::OnceLock;
 use tauri::async_runtime::block_on;
 use tauri::plugin::TauriPlugin;
-use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, Runtime, WebviewWindow, WindowEvent};
+use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, WebviewWindow, WindowEvent};
 use tauri_plugin_autostart::MacosLauncher;
 
 /// Tauri store name
@@ -130,9 +130,7 @@ pub fn run() {
             server::connector::get_connectors_by_server,
             search::query_coco_fusion,
             assistant::chat_history,
-            assistant::new_chat,
             assistant::chat_create,
-            assistant::send_message,
             assistant::chat_chat,
             assistant::session_chat_history,
             assistant::open_session_chat,
@@ -145,8 +143,6 @@ pub fn run() {
             assistant::assistant_get_multi,
             // server::get_coco_server_datasources,
             // server::get_coco_server_connectors,
-            server::websocket::connect_to_server,
-            server::websocket::disconnect,
             get_app_search_source,
             server::attachment::upload_attachment,
             server::attachment::get_attachment_by_ids,
@@ -159,6 +155,7 @@ pub fn run() {
             extension::built_in::application::add_app_search_path,
             extension::built_in::application::remove_app_search_path,
             extension::built_in::application::reindex_applications,
+            extension::quicklink_link_arguments,
             extension::list_extensions,
             extension::enable_extension,
             extension::disable_extension,
@@ -166,8 +163,9 @@ pub fn run() {
             extension::register_extension_hotkey,
             extension::unregister_extension_hotkey,
             extension::is_extension_enabled,
-            extension::third_party::store::search_extension,
-            extension::third_party::store::install_extension_from_store,
+            extension::third_party::install::store::search_extension,
+            extension::third_party::install::store::install_extension_from_store,
+            extension::third_party::install::local_extension::install_local_extension,
             extension::third_party::uninstall_extension,
             settings::set_allow_self_signature,
             settings::get_allow_self_signature,
@@ -200,7 +198,6 @@ pub fn run() {
             let registry = SearchSourceRegistry::default();
 
             app.manage(registry); // Store registry in Tauri's app state
-            app.manage(server::websocket::WebSocketManager::default());
 
             // This has to be called before initializing extensions as doing that
             // requires access to the shortcut store, which will be set by this
@@ -293,7 +290,7 @@ pub fn run() {
     });
 }
 
-pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
+pub async fn init(app_handle: &AppHandle) {
     // Await the async functions to load the servers and tokens
     if let Err(err) = load_or_insert_default_server(app_handle).await {
         log::error!("Failed to load servers: {}", err);
@@ -317,7 +314,7 @@ pub async fn init<R: Runtime>(app_handle: &AppHandle<R>) {
 }
 
 #[tauri::command]
-async fn show_coco<R: Runtime>(app_handle: AppHandle<R>) {
+async fn show_coco(app_handle: AppHandle) {
     if let Some(window) = app_handle.get_webview_window(MAIN_WINDOW_LABEL) {
         move_window_to_active_monitor(&window);
 
@@ -330,7 +327,7 @@ async fn show_coco<R: Runtime>(app_handle: AppHandle<R>) {
 }
 
 #[tauri::command]
-async fn hide_coco<R: Runtime>(app: AppHandle<R>) {
+async fn hide_coco(app: AppHandle) {
     if let Some(window) = app.get_webview_window(MAIN_WINDOW_LABEL) {
         if let Err(err) = window.hide() {
             log::error!("Failed to hide the window: {}", err);
@@ -342,7 +339,7 @@ async fn hide_coco<R: Runtime>(app: AppHandle<R>) {
     }
 }
 
-fn move_window_to_active_monitor<R: Runtime>(window: &WebviewWindow<R>) {
+fn move_window_to_active_monitor(window: &WebviewWindow) {
     //dbg!("Moving window to active monitor");
     // Try to get the available monitors, handle failure gracefully
     let available_monitors = match window.available_monitors() {

@@ -1,4 +1,4 @@
-pub(crate) mod store;
+pub(crate) mod install;
 
 use super::Extension;
 use super::ExtensionType;
@@ -26,7 +26,6 @@ use std::sync::Arc;
 use std::sync::OnceLock;
 use tauri::AppHandle;
 use tauri::Manager;
-use tauri::Runtime;
 use tauri::async_runtime;
 use tauri_plugin_global_shortcut::GlobalShortcutExt;
 use tauri_plugin_global_shortcut::ShortcutState;
@@ -34,9 +33,7 @@ use tokio::fs::read_dir;
 use tokio::sync::RwLock;
 use tokio::sync::RwLockWriteGuard;
 
-pub(crate) fn get_third_party_extension_directory<R: Runtime>(
-    tauri_app_handle: &AppHandle<R>,
-) -> PathBuf {
+pub(crate) fn get_third_party_extension_directory(tauri_app_handle: &AppHandle) -> PathBuf {
     let mut app_data_dir = tauri_app_handle.path().app_data_dir().expect(
         "User home directory not found, which should be impossible on desktop environments",
     );
@@ -419,7 +416,7 @@ impl ThirdPartyExtensionsSearchSource {
 
                         if event.state() == ShortcutState::Pressed {
                             async_runtime::spawn(async move {
-                                let result = open(app_handle_clone, on_opened_clone).await;
+                                let result = open(app_handle_clone, on_opened_clone, None).await;
                                 if let Err(msg) = result {
                                     log::warn!(
                                         "failed to open extension [{}], error [{}]",
@@ -680,7 +677,7 @@ impl ThirdPartyExtensionsSearchSource {
 
                 if event.state() == ShortcutState::Pressed {
                     async_runtime::spawn(async move {
-                        let result = open(app_handle_clone, on_opened_clone).await;
+                        let result = open(app_handle_clone, on_opened_clone, None).await;
                         if let Err(msg) = result {
                             log::warn!(
                                 "failed to open extension [{:?}], error [{}]",

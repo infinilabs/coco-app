@@ -1,12 +1,12 @@
 use crate::COCO_TAURI_STORE;
 use serde_json::Value as Json;
-use tauri::{AppHandle, Runtime};
+use tauri::AppHandle;
 use tauri_plugin_store::StoreExt;
 
 const SETTINGS_ALLOW_SELF_SIGNATURE: &str = "settings_allow_self_signature";
 
 #[tauri::command]
-pub async fn set_allow_self_signature<R: Runtime>(tauri_app_handle: AppHandle<R>, value: bool) {
+pub async fn set_allow_self_signature(tauri_app_handle: AppHandle, value: bool) {
     use crate::server::http_client;
 
     let store = tauri_app_handle
@@ -40,7 +40,7 @@ pub async fn set_allow_self_signature<R: Runtime>(tauri_app_handle: AppHandle<R>
 }
 
 /// Synchronous version of `async get_allow_self_signature()`.
-pub fn _get_allow_self_signature<R: Runtime>(tauri_app_handle: AppHandle<R>) -> bool {
+pub fn _get_allow_self_signature(tauri_app_handle: AppHandle) -> bool {
     let store = tauri_app_handle
         .store(COCO_TAURI_STORE)
         .unwrap_or_else(|e| {
@@ -67,6 +67,6 @@ pub fn _get_allow_self_signature<R: Runtime>(tauri_app_handle: AppHandle<R>) -> 
 }
 
 #[tauri::command]
-pub async fn get_allow_self_signature<R: Runtime>(tauri_app_handle: AppHandle<R>) -> bool {
+pub async fn get_allow_self_signature(tauri_app_handle: AppHandle) -> bool {
     _get_allow_self_signature(tauri_app_handle)
 }

@@ -1,5 +1,5 @@
 use crate::common::assistant::ChatRequestMessage;
-use crate::common::http::{GetResponse, convert_query_params_to_strings};
+use crate::common::http::convert_query_params_to_strings;
 use crate::common::register::SearchSourceRegistry;
 use crate::server::http_client::HttpClient;
 use crate::{common, server::servers::COCO_SERVERS};
@@ -9,12 +9,12 @@ use futures_util::TryStreamExt;
 use http::Method;
 use serde_json::Value;
 use std::collections::HashMap;
-use tauri::{AppHandle, Emitter, Manager, Runtime};
+use tauri::{AppHandle, Emitter, Manager};
 use tokio::io::AsyncBufReadExt;
 
 #[tauri::command]
-pub async fn chat_history<R: Runtime>(
-    _app_handle: AppHandle<R>,
+pub async fn chat_history(
+    _app_handle: AppHandle,
     server_id: String,
     from: u32,
     size: u32,
@@ -43,8 +43,8 @@ pub async fn chat_history<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn session_chat_history<R: Runtime>(
-    _app_handle: AppHandle<R>,
+pub async fn session_chat_history(
+    _app_handle: AppHandle,
     server_id: String,
     session_id: String,
     from: u32,
@@ -66,8 +66,8 @@ pub async fn session_chat_history<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn open_session_chat<R: Runtime>(
-    _app_handle: AppHandle<R>,
+pub async fn open_session_chat(
+    _app_handle: AppHandle,
     server_id: String,
     session_id: String,
 ) -> Result<String, String> {
@@ -81,8 +81,8 @@ pub async fn open_session_chat<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn close_session_chat<R: Runtime>(
-    _app_handle: AppHandle<R>,
+pub async fn close_session_chat(
+    _app_handle: AppHandle,
     server_id: String,
     session_id: String,
 ) -> Result<String, String> {
@@ -95,8 +95,8 @@ pub async fn close_session_chat<R: Runtime>(
     common::http::get_response_body_text(response).await
 }
 #[tauri::command]
-pub async fn cancel_session_chat<R: Runtime>(
-    _app_handle: AppHandle<R>,
+pub async fn cancel_session_chat(
+    _app_handle: AppHandle,
     server_id: String,
     session_id: String,
     query_params: Option<HashMap<String, Value>>,
@@ -109,61 +109,6 @@ pub async fn cancel_session_chat<R: Runtime>(
         .map_err(|e| format!("Error cancel session: {}", e))?;
 
     common::http::get_response_body_text(response).await
-}
-
-#[tauri::command]
-pub async fn new_chat<R: Runtime>(
-    _app_handle: AppHandle<R>,
-    server_id: String,
-    websocket_id: String,
-    message: Option<String>,
-    attachments: Option<Vec<String>>,
-    query_params: Option<HashMap<String, Value>>,
-) -> Result<GetResponse, String> {
-    let message_empty = message.as_ref().map_or(true, |m| m.is_empty());
-    let attachments_empty = attachments.as_ref().map_or(true, |a| a.is_empty());
-
-    if message_empty && attachments_empty {
-        return Err("Both message and attachments are empty".to_string());
-    }
-
-    let body = {
-        let request_message = ChatRequestMessage {
-            message: if message_empty { None } else { message },
-            attachments: if attachments_empty { None } else { attachments },
-        };
-        Some(
-            serde_json::to_string(&request_message)
-                .map_err(|e| format!("Failed to serialize message: {}", e))?
-                .into(),
-        )
-    };
-
-    let mut headers = HashMap::new();
-    headers.insert("WEBSOCKET-SESSION-ID".to_string(), websocket_id.into());
-
-    let response = HttpClient::advanced_post(
-        &server_id,
-        "/chat/_new",
-        Some(headers),
-        convert_query_params_to_strings(query_params),
-        body,
-    )
-    .await
-    .map_err(|e| format!("Error sending message: {}", e))?;
-
-    let body_text = common::http::get_response_body_text(response).await?;
-
-    log::debug!("New chat response: {}", &body_text);
-
-    let chat_response: GetResponse = serde_json::from_str(&body_text)
-        .map_err(|e| format!("Failed to parse response JSON: {}", e))?;
-
-    if chat_response.result != "created" {
-        return Err(format!("Unexpected result: {}", chat_response.result));
-    }
-
-    Ok(chat_response)
 }
 
 #[tauri::command]
@@ -238,46 +183,6 @@ pub async fn chat_create<R: Runtime>(
     }
 
     Ok(())
-}
-
-#[tauri::command]
-pub async fn send_message<R: Runtime>(
-    _app_handle: AppHandle<R>,
-    server_id: String,
-    websocket_id: String,
-    session_id: String,
-    message: Option<String>,
-    attachments: Option<Vec<String>>,
-    query_params: Option<HashMap<String, Value>>, //search,deep_thinking
-) -> Result<String, String> {
-    let message_empty = message.as_ref().map_or(true, |m| m.is_empty());
-    let attachments_empty = attachments.as_ref().map_or(true, |a| a.is_empty());
-
-    if message_empty && attachments_empty {
-        return Err("Both message and attachments are empty".to_string());
-    }
-
-    let path = format!("/chat/{}/_send", session_id);
-    let msg = ChatRequestMessage {
-        message: if message_empty { None } else { message },
-        attachments: if attachments_empty { None } else { attachments },
-    };
-
-    let mut headers = HashMap::new();
-    headers.insert("WEBSOCKET-SESSION-ID".to_string(), websocket_id.into());
-
-    let body = reqwest::Body::from(serde_json::to_string(&msg).unwrap());
-    let response = HttpClient::advanced_post(
-        &server_id,
-        path.as_str(),
-        Some(headers),
-        convert_query_params_to_strings(query_params),
-        Some(body),
-    )
-    .await
-    .map_err(|e| format!("Error cancel session: {}", e))?;
-
-    common::http::get_response_body_text(response).await
 }
 
 #[tauri::command]
@@ -408,8 +313,8 @@ pub async fn update_session_chat(
 }
 
 #[tauri::command]
-pub async fn assistant_search<R: Runtime>(
-    _app_handle: AppHandle<R>,
+pub async fn assistant_search(
+    _app_handle: AppHandle,
     server_id: String,
     query_params: Option<Vec<String>>,
 ) -> Result<Value, String> {
@@ -424,8 +329,8 @@ pub async fn assistant_search<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn assistant_get<R: Runtime>(
-    _app_handle: AppHandle<R>,
+pub async fn assistant_get(
+    _app_handle: AppHandle,
     server_id: String,
     assistant_id: String,
 ) -> Result<Value, String> {
@@ -448,8 +353,8 @@ pub async fn assistant_get<R: Runtime>(
 ///
 /// Returns as soon as the assistant is found on any Coco server.
 #[tauri::command]
-pub async fn assistant_get_multi<R: Runtime>(
-    app_handle: AppHandle<R>,
+pub async fn assistant_get_multi(
+    app_handle: AppHandle,
     assistant_id: String,
 ) -> Result<Value, String> {
     let search_sources = app_handle.state::<SearchSourceRegistry>();
@@ -542,8 +447,8 @@ pub fn remove_icon_fields(json: &str) -> String {
 }
 
 #[tauri::command]
-pub async fn ask_ai<R: Runtime>(
-    app_handle: AppHandle<R>,
+pub async fn ask_ai(
+    app_handle: AppHandle,
     message: String,
     server_id: String,
     assistant_id: String,

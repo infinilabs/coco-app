@@ -2,7 +2,6 @@
 
 interface ImportMetaEnv {
   readonly COCO_SERVER_URL: string;
-  readonly COCO_WEBSOCKET_URL: string;
   // more env variables...
 }
 

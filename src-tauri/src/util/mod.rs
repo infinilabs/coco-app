@@ -4,7 +4,7 @@ pub(crate) mod platform;
 pub(crate) mod updater;
 
 use std::{path::Path, process::Command};
-use tauri::{AppHandle, Runtime};
+use tauri::AppHandle;
 use tauri_plugin_shell::ShellExt;
 
 /// We use this env variable to determine the DE on Linux.
@@ -88,7 +88,7 @@ fn get_linux_desktop_environment() -> Option<LinuxDesktopEnvironment> {
 //
 // tauri_plugin_shell::open() is deprecated, but we still use it.
 #[allow(deprecated)]
-pub async fn open<R: Runtime>(app_handle: AppHandle<R>, path: String) -> Result<(), String> {
+pub async fn open(app_handle: AppHandle, path: String) -> Result<(), String> {
     if cfg!(target_os = "linux") {
         let borrowed_path = Path::new(&path);
         if let Some(file_extension) = borrowed_path.extension() {

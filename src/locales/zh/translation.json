@@ -42,11 +42,6 @@
       "copyright": "©{{year}} INFINI Labs，保留所有权利。"
     },
     "advanced": {
-      "title": "高级设置",
-      "endpoint": {
-        "title": "API 接口",
-        "description": "接口和 WebSocket 的域名"
-      },
       "startup": {
         "title": "启动设置",
         "defaultStartupWindow": {
@@ -204,9 +199,16 @@
         "hotkey": "热键",
         "enabled": "启用状态"
       },
+      "menuItem": {
+        "extensionStore": "插件商店",
+        "localExtensionImport": "本地插件导入"
+      },
       "hints": {
         "addAlias": "添加别名",
-        "recordHotkey": "录制热键"
+        "recordHotkey": "录制热键",
+        "importSuccess": "插件导入成功。",
+        "importFailed": "未在该目录中找到有效的插件，请检查目录结构是否正确。",
+        "extensionAlreadyImported": "插件已存在，无法重复导入。请先将其删除后再尝试。"
       },
       "application": {
         "title": "应用程序",

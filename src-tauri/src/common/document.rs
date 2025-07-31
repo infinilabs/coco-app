@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tauri::AppHandle;
-use tauri::Runtime;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RichLabel {
@@ -42,6 +41,15 @@ pub(crate) enum OnOpened {
     Command {
         action: crate::extension::CommandAction,
     },
+    // NOTE that this variant has the same definition as `struct Quicklink`, but we
+    // cannot use it directly, its `link` field should be deserialized/serialized
+    // from/to a string, but we need a JSON object here.
+    //
+    // See also the comments in `struct Quicklink`.
+    Quicklink {
+        link: crate::extension::QuicklinkLink,
+        open_with: Option<String>,
+    },
 }
 
 impl OnOpened {
@@ -59,28 +67,37 @@ impl OnOpened {
 
                 ret
             }
+            // Currently, our URL is static and does not support dynamic parameters.
+            // The URL of a quicklink is nearly useless without such dynamic user
+            // inputs, so until we have dynamic URL support, we just use "N/A".
+            Self::Quicklink { .. } => String::from("N/A"),
         }
     }
 }
 
 #[tauri::command]
-pub(crate) async fn open<R: Runtime>(
-    tauri_app_handle: AppHandle<R>,
+pub(crate) async fn open(
+    tauri_app_handle: AppHandle,
     on_opened: OnOpened,
+    extra_args: Option<HashMap<String, String>>,
 ) -> Result<(), String> {
-    log::debug!("open({})", on_opened.url());
-
     use crate::util::open as homemade_tauri_shell_open;
     use std::process::Command;
 
     match on_opened {
         OnOpened::Application { app_path } => {
+            log::debug!("open application [{}]", app_path);
+
             homemade_tauri_shell_open(tauri_app_handle.clone(), app_path).await?
         }
         OnOpened::Document { url } => {
+            log::debug!("open document [{}]", url);
+
             homemade_tauri_shell_open(tauri_app_handle.clone(), url).await?
         }
         OnOpened::Command { action } => {
+            log::debug!("open (execute) command [{:?}]", action);
+
             let mut cmd = Command::new(action.exec);
             if let Some(args) = action.args {
                 cmd.args(args);
@@ -105,6 +122,39 @@ pub(crate) async fn open<R: Runtime>(
                     "Command failed, stderr [{}]",
                     String::from_utf8_lossy(&output.stderr)
                 ));
+            }
+        }
+        OnOpened::Quicklink {
+            link,
+            open_with: opt_open_with,
+        } => {
+            let url = link.concatenate_url(&extra_args);
+
+            log::debug!("open quicklink [{}] with [{:?}]", url, opt_open_with);
+
+            cfg_if::cfg_if! {
+                // The `open_with` functionality is only supported on macOS, provided
+                // by the `open -a` command.
+                if #[cfg(target_os = "macos")] {
+                    let mut cmd = Command::new("open");
+                    if let Some(ref open_with) = opt_open_with {
+                        cmd.arg("-a");
+                        cmd.arg(open_with.as_str());
+                    }
+                    cmd.arg(&url);
+
+                    let output = cmd.output().map_err(|e| format!("failed to spawn [open] due to error [{}]", e))?;
+
+                    if !output.status.success() {
+                      return Err(format!(
+                        "failed to open with app {:?}: {}",
+                        opt_open_with,
+                        String::from_utf8_lossy(&output.stderr)
+                      ));
+                    }
+                } else {
+                    homemade_tauri_shell_open(tauri_app_handle.clone(), url).await?
+                }
             }
         }
     }

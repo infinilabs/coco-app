@@ -58,6 +58,10 @@ export const createWebAdapter = (): WebPlatformAdapter => {
       console.log("Web mode simulated set always on top", isPinned);
     },
 
+    async toggleMoveToActiveSpaceAttribute() {
+      console.log("Web mode simulated toggle move to active space attribute");
+    },
+
     async checkScreenRecordingPermission() {
       console.log("Web mode simulated check screen recording permission");
       return false;
