@@ -3,7 +3,7 @@ import { persist, subscribeWithSelector } from "zustand/middleware";
 import { produce } from "immer";
 
 import platformAdapter from "@/utils/platformAdapter";
-import { Server } from "@/types/server";
+import type { Server } from "@/types/server";
 
 const CONNECTOR_CHANGE_EVENT = "connector_data_change";
 const DATASOURCE_CHANGE_EVENT = "datasourceData_change";
@@ -17,6 +17,8 @@ export type IConnectStore = {
   setServerList: (servers: Server[]) => void;
   currentService: Server;
   setCurrentService: (service: Server) => void;
+  cloudSelectService: Server;
+  setCloudSelectService: (service: Server) => void;
   connector_data: keyArrayObject;
   setConnectorData: (connector_data: any[], key: string) => void;
   datasourceData: keyArrayObject;
@@ -43,7 +45,6 @@ export const useConnectStore = create<IConnectStore>()(
       (set) => ({
         serverList: [],
         setServerList: (serverList: Server[]) => {
-          console.log("set serverList:", serverList);
           set(
             produce((draft) => {
               draft.serverList = serverList;
@@ -52,10 +53,17 @@ export const useConnectStore = create<IConnectStore>()(
         },
         currentService: {} as Server,
         setCurrentService: (server: any) => {
-          console.log("set default server:", server);
           set(
             produce((draft) => {
               draft.currentService = server;
+            })
+          );
+        },
+        cloudSelectService: {} as Server,
+        setCloudSelectService: (server: any) => {
+          set(
+            produce((draft) => {
+              draft.cloudSelectService = server;
             })
           );
         },
@@ -130,7 +138,9 @@ export const useConnectStore = create<IConnectStore>()(
       {
         name: "connect-store",
         partialize: (state) => ({
+          serverList: state.serverList,
           currentService: state.currentService,
+          cloudSelectService: state.cloudSelectService,
           connector_data: state.connector_data,
           datasourceData: state.datasourceData,
           connectionTimeout: state.connectionTimeout,

@@ -57,8 +57,6 @@ export const AssistantFetcher = ({
 
       let assistantList = response?.hits?.hits ?? [];
 
-      console.log("assistantList", assistantList);
-
       if (
         !currentAssistant?._id ||
         currentService?.id !== lastServerId.current

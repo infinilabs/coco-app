@@ -3,6 +3,7 @@ import { RouterProvider } from "react-router-dom";
 
 import { router } from "./routes/index";
 import "./i18n";
+import '@/utils/global-logger';
 
 import "./main.css";
 

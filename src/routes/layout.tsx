@@ -20,6 +20,7 @@ import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 import { useIconfontScript } from "@/hooks/useScript";
 import { Extension } from "@/components/Settings/Extensions";
 import { useExtensionsStore } from "@/stores/extensionsStore";
+import { useServers } from "@/hooks/useServers";
 
 export default function Layout() {
   const location = useLocation();
@@ -27,6 +28,10 @@ export default function Layout() {
   const { language } = useAppStore();
   const { i18n } = useTranslation();
   const { activeTheme, isDark, setIsDark, setTheme } = useThemeStore();
+
+  // init servers isTauri
+  useServers();
+
   const [langUpdated, setLangUpdated] = useState(false);
 
   useAsyncEffect(async () => {

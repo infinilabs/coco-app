@@ -1,5 +1,4 @@
 import { invoke } from "@tauri-apps/api/core";
-import { emit } from "@tauri-apps/api/event";
 
 import {
   Server,
@@ -18,17 +17,42 @@ import {
 import { useAppStore } from "@/stores/appStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useConnectStore } from "@/stores/connectStore";
+import { SETTINGS_WINDOW_LABEL } from "@/constants";
+import platformAdapter from "@/utils/platformAdapter";
 
-export function handleLogout(serverId?: string) {
-  const setIsCurrentLogin = useAuthStore.getState().setIsCurrentLogin;
-  const { currentService, setCurrentService, serverList, setServerList } =
+export async function getCurrentWindowService() {
+  const currentService = useConnectStore.getState().currentService;
+  const cloudSelectService = useConnectStore.getState().cloudSelectService;
+  const windowLabel = await platformAdapter.getCurrentWindowLabel();
+
+  return windowLabel === SETTINGS_WINDOW_LABEL
+    ? cloudSelectService
+    : currentService;
+}
+
+export async function setCurrentWindowService(service: any) {
+  const windowLabel = await platformAdapter.getCurrentWindowLabel();
+  const { setCurrentService, setCloudSelectService } =
     useConnectStore.getState();
-  const id = serverId || currentService?.id;
+
+  return windowLabel === SETTINGS_WINDOW_LABEL
+    ? setCloudSelectService(service)
+    : setCurrentService(service);
+}
+
+export async function handleLogout(serverId?: string) {
+  const setIsCurrentLogin = useAuthStore.getState().setIsCurrentLogin;
+  const { serverList, setServerList } = useConnectStore.getState();
+
+  const service = await getCurrentWindowService();
+
+  const id = serverId || service?.id;
   if (!id) return;
+
+  // Update the status first
   setIsCurrentLogin(false);
-  emit("login_or_logout", false);
-  if (currentService?.id === id) {
-    setCurrentService({ ...currentService, profile: null });
+  if (service?.id === id) {
+    await setCurrentWindowService({ ...service, profile: null });
   }
   const updatedServerList = serverList.map((server) =>
     server.id === id ? { ...server, profile: null } : server
@@ -55,13 +79,14 @@ async function invokeWithErrorHandler<T>(
   args?: Record<string, any>
 ): Promise<T> {
   const isCurrentLogin = useAuthStore.getState().isCurrentLogin;
-  const currentService = useConnectStore.getState().currentService;
+
+  const service = await getCurrentWindowService();
 
   // Not logged in
-  console.log(command, isCurrentLogin, currentService?.profile);
+  // console.log("isCurrentLogin", command, isCurrentLogin);
   if (
     !WHITELIST_SERVERS.includes(command) &&
-    (!isCurrentLogin || !currentService?.profile)
+    (!isCurrentLogin || !service?.profile)
   ) {
     console.error("This command requires authentication");
     throw new Error("This command requires authentication");
@@ -88,6 +113,18 @@ async function invokeWithErrorHandler<T>(
         throw new Error(result);
       }
     }
+
+    // Server Data log
+    let parsedResult = result;
+    let logData = result;
+    if (typeof result === "string") {
+      parsedResult = JSON.parse(result);
+      logData = parsedResult;
+    }
+    infoLog({
+      username: "@/commands/servers.ts",
+      logName: command,
+    })(logData);
 
     return result;
   } catch (error: any) {

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { emit } from "@tauri-apps/api/event";
 
 import { DataSourcesList } from "./DataSourcesList";
 import { Sidebar } from "./Sidebar";
@@ -9,6 +8,8 @@ import { useConnectStore } from "@/stores/connectStore";
 import ServiceInfo from "./ServiceInfo";
 import ServiceAuth from "./ServiceAuth";
 import platformAdapter from "@/utils/platformAdapter";
+import type { Server } from "@/types/server";
+import { useServers } from "@/hooks/useServers";
 
 export default function Cloud() {
   const SidebarRef = useRef<{ refreshData: () => void }>(null);
@@ -17,100 +18,63 @@ export default function Cloud() {
 
   const [isConnect, setIsConnect] = useState(true);
 
-  const { currentService, setCurrentService, serverList, setServerList } =
-    useConnectStore();
+  const {
+    cloudSelectService,
+    setCloudSelectService,
+    serverList,
+    setServerList,
+  } = useConnectStore();
 
   const [refreshLoading, setRefreshLoading] = useState(false);
 
+  const { addServer, refreshServerList } = useServers();
+
   // fetch the servers
   useEffect(() => {
-    fetchServers(true);
-  }, []);
+    fetchServers();
+  }, [serverList]);
 
   useEffect(() => {
-    // console.log("currentService", currentService);
     setRefreshLoading(false);
     setIsConnect(true);
-  }, [JSON.stringify(currentService)]);
+  }, [cloudSelectService?.id]);
 
-  const fetchServers = async (resetSelection: boolean) => {
-    platformAdapter
-      .commands("list_coco_servers")
-      .then((res: any) => {
-        if (errors.length > 0) {
-          res = (res || []).map((item: any) => {
-            if (item.id === currentService?.id) {
-              item.health = {
-                services: null,
-                status: null,
-              };
-            }
-            return item;
-          });
+  const fetchServers = useCallback(async () => {
+    let res = serverList;
+    if (errors.length > 0) {
+      res = res.map((item: Server) => {
+        if (item.id === cloudSelectService?.id) {
+          item.health = {
+            services: item.health?.services || {},
+            status: item.health?.status || "red",
+          };
         }
-        console.log("list_coco_servers", res);
-        setServerList(res);
-
-        if (resetSelection && res.length > 0) {
-          const matched = res.find((server: any) => {
-            return server.id === currentService?.id;
-          });
-
-          if (matched) {
-            setCurrentService(matched);
-          } else {
-            setCurrentService(res[res.length - 1]);
-          }
-        }
-      })
-  };
-
-  const addServer = (endpointLink: string) => {
-    if (!endpointLink) {
-      throw new Error("Endpoint is required");
-    }
-    if (
-      !endpointLink.startsWith("http://") &&
-      !endpointLink.startsWith("https://")
-    ) {
-      throw new Error("Invalid Endpoint");
-    }
-
-    setRefreshLoading(true);
-
-    return platformAdapter
-      .commands("add_coco_server", endpointLink)
-      .then((res: any) => {
-        // console.log("add_coco_server", res);
-        fetchServers(false).then((r) => {
-          console.log("fetchServers", r);
-          setCurrentService(res);
-        });
-      })
-      .finally(() => {
-        setRefreshLoading(false);
+        return item;
       });
-  };
+    }
+    setServerList(res);
+
+    if (res.length > 0) {
+      const matched = res.find((server: any) => {
+        return server.id === cloudSelectService?.id;
+      });
+
+      if (matched) {
+        setCloudSelectService(matched);
+      } else {
+        setCloudSelectService(res[res.length - 1]);
+      }
+    }
+  }, [serverList, errors, cloudSelectService]);
 
   const refreshClick = useCallback(
-    (id: string) => {
+    async (id: string) => {
       setRefreshLoading(true);
-      platformAdapter
-        .commands("refresh_coco_server_info", id)
-        .then((res: any) => {
-          console.log("refresh_coco_server_info", id, res);
-          fetchServers(false).then((r) => {
-            console.log("fetchServers", r);
-          });
-          // update currentService
-          setCurrentService(res);
-          emit("login_or_logout", true);
-        })
-        .finally(() => {
-          setRefreshLoading(false);
-        });
+      await platformAdapter.commands("refresh_coco_server_info", id);
+      await refreshServerList();
+      setRefreshLoading(false);
     },
-    [fetchServers]
+    [refreshServerList]
   );
 
   return (
@@ -127,7 +91,6 @@ export default function Cloud() {
             <ServiceInfo
               refreshLoading={refreshLoading}
               refreshClick={refreshClick}
-              fetchServers={fetchServers}
             />
 
             <ServiceAuth
@@ -135,8 +98,8 @@ export default function Cloud() {
               refreshClick={refreshClick}
             />
 
-            {currentService?.profile && currentService?.available ? (
-              <DataSourcesList server={currentService?.id} />
+            {cloudSelectService?.profile && cloudSelectService?.available ? (
+              <DataSourcesList server={cloudSelectService?.id} />
             ) : null}
           </div>
         ) : (

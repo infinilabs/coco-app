@@ -14,7 +14,7 @@ import { useConnectStore } from "@/stores/connectStore";
 import { useAppStore } from "@/stores/appStore";
 import { copyToClipboard } from "@/utils";
 import platformAdapter from "@/utils/platformAdapter";
-import { handleLogout } from "@/commands/servers";
+import { useServers } from "@/hooks/useServers";
 
 interface ServiceAuthProps {
   setRefreshLoading: (loading: boolean) => void;
@@ -30,7 +30,9 @@ const ServiceAuth = memo(
 
     const addError = useAppStore((state) => state.addError);
 
-    const currentService = useConnectStore((state) => state.currentService);
+    const cloudSelectService = useConnectStore((state) => state.cloudSelectService);
+
+    const { logoutServer } = useServers();
 
     const [loading, setLoading] = useState(false);
 
@@ -41,7 +43,7 @@ const ServiceAuth = memo(
       setSSORequestID(requestID);
 
       // Generate the login URL with the current appUid
-      const url = `${currentService?.auth_provider?.sso?.url}/?provider=${currentService?.id}&product=coco&request_id=${requestID}`;
+      const url = `${cloudSelectService?.auth_provider?.sso?.url}/?provider=${cloudSelectService?.id}&product=coco&request_id=${requestID}`;
 
       console.log("Open SSO link, requestID:", ssoRequestID, url);
 
@@ -50,20 +52,17 @@ const ServiceAuth = memo(
 
       // Start loading state
       setLoading(true);
-    }, [ssoRequestID, loading, currentService]);
+    }, [ssoRequestID, loading, cloudSelectService]);
 
-    const onLogout = useCallback((id: string) => {
-      setRefreshLoading(true);
-      platformAdapter
-        .commands("logout_coco_server", id)
-        .then((res: any) => {
-          console.log("logout_coco_server", id, JSON.stringify(res));
-          handleLogout(id);
-        })
-        .finally(() => {
+    const onLogout = useCallback(
+      (id: string) => {
+        setRefreshLoading(true);
+        logoutServer(id).finally(() => {
           setRefreshLoading(false);
         });
-    }, []);
+      },
+      [logoutServer]
+    );
 
     const handleOAuthCallback = useCallback(
       async (code: string | null, serverId: string | null) => {
@@ -109,7 +108,7 @@ const ServiceAuth = memo(
           return;
         }
 
-        const serverId = currentService?.id;
+        const serverId = cloudSelectService?.id;
         handleOAuthCallback(code, serverId);
       } catch (err) {
         console.error("Failed to parse URL:", err);
@@ -162,9 +161,9 @@ const ServiceAuth = memo(
 
     useEffect(() => {
       setLoading(false);
-    }, [currentService]);
+    }, [cloudSelectService]);
 
-    if (!currentService?.auth_provider?.sso?.url) {
+    if (!cloudSelectService?.auth_provider?.sso?.url) {
       return null;
     }
 
@@ -173,10 +172,10 @@ const ServiceAuth = memo(
         <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
           {t("cloud.accountInfo")}
         </h2>
-        {currentService?.profile ? (
+        {cloudSelectService?.profile ? (
           <UserProfile
-            server={currentService?.id}
-            userInfo={currentService?.profile}
+            server={cloudSelectService?.id}
+            userInfo={cloudSelectService?.profile}
             onLogout={onLogout}
           />
         ) : (
@@ -190,7 +189,7 @@ const ServiceAuth = memo(
                 onCancel={() => setLoading(false)}
                 onCopy={() => {
                   copyToClipboard(
-                    `${currentService?.auth_provider?.sso?.url}/?provider=${currentService?.id}&product=coco&request_id=${ssoRequestID}`
+                    `${cloudSelectService?.auth_provider?.sso?.url}/?provider=${cloudSelectService?.id}&product=coco&request_id=${ssoRequestID}`
                   );
                 }}
               />
@@ -201,7 +200,7 @@ const ServiceAuth = memo(
               <button
                 className="text-xs text-[#0096FB] dark:text-blue-400 block"
                 onClick={() =>
-                  OpenURLWithBrowser(currentService?.provider?.eula)
+                  OpenURLWithBrowser(cloudSelectService?.provider?.eula)
                 }
               >
                 {t("cloud.eula")}
@@ -215,7 +214,7 @@ const ServiceAuth = memo(
               <button
                 className="text-xs text-[#0096FB] dark:text-blue-400 block"
                 onClick={() =>
-                  OpenURLWithBrowser(currentService?.provider?.privacy_policy)
+                  OpenURLWithBrowser(cloudSelectService?.provider?.privacy_policy)
                 }
               >
                 {t("cloud.privacyPolicy")}

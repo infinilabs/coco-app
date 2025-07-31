@@ -12,7 +12,6 @@ interface UserProfileProps {
 export function UserProfile({ server, userInfo, onLogout }: UserProfileProps) {
   const handleLogout = () => {
     onLogout(server);
-    console.log("Logout", server);
   };
 
   const [imageLoadError, setImageLoadError] = useState(false);

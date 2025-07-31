@@ -1,3 +1,6 @@
+import { isNumber } from "lodash-es";
+import { useEffect } from "react";
+
 import { useAppearanceStore } from "@/stores/appearanceStore";
 import { useAppStore } from "@/stores/appStore";
 import { useConnectStore } from "@/stores/connectStore";
@@ -5,8 +8,6 @@ import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useStartupStore } from "@/stores/startupStore";
 import platformAdapter from "@/utils/platformAdapter";
-import { isNumber } from "lodash-es";
-import { useEffect } from "react";
 
 export const useSyncStore = () => {
   const setModifierKey = useShortcutsStore((state) => {
@@ -60,8 +61,8 @@ export const useSyncStore = () => {
   const setFixedWindow = useShortcutsStore((state) => {
     return state.setFixedWindow;
   });
-  const setServiceList = useShortcutsStore((state) => {
-    return state.setServiceList;
+  const setServiceListShortcut = useShortcutsStore((state) => {
+    return state.setServiceListShortcut;
   });
   const setExternal = useShortcutsStore((state) => {
     return state.setExternal;
@@ -143,7 +144,7 @@ export const useSyncStore = () => {
           aiAssistant,
           newSession,
           fixedWindow,
-          serviceList,
+          serviceListShortcut,
           external,
           aiOverview,
         } = payload;
@@ -162,7 +163,7 @@ export const useSyncStore = () => {
         setAiAssistant(aiAssistant);
         setNewSession(newSession);
         setFixedWindow(fixedWindow);
-        setServiceList(serviceList);
+        setServiceListShortcut(serviceListShortcut);
         setExternal(external);
         setAiOverview(aiOverview);
       }),

@@ -25,6 +25,7 @@ export interface TauriPlatformAdapter extends BasePlatformAdapter {
   ) => Promise<string | string[] | null>;
   metadata: typeof metadata;
   error: typeof error;
+  getCurrentWindowLabel: () => Promise<string>;
 }
 
 // Create Tauri adapter functions
@@ -79,8 +80,8 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       const { getCurrentWindow } = await import("@tauri-apps/api/window");
       const window = getCurrentWindow();
       return window.setAlwaysOnTop(isPinned);
-    }, 
-    
+    },
+
     async toggleMoveToActiveSpaceAttribute() {
       if (isMac) {
         return toggle_move_to_active_space_attribute();
@@ -339,6 +340,11 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
         serverId,
         queryParams,
       });
+    },
+
+    async getCurrentWindowLabel() {
+      const window = await windowWrapper.getWebviewWindow();
+      return window.label;
     },
   };
 };

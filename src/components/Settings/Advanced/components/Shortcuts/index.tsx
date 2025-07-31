@@ -1,6 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { Command, RotateCcw } from "lucide-react";
 import { useEffect } from "react";
+import { Button } from "@headlessui/react";
+import clsx from "clsx";
 
 import { formatKey } from "@/utils/keyboardUtils";
 import SettingsItem from "@/components/Settings/SettingsItem";
@@ -28,8 +30,6 @@ import { ModifierKey } from "@/types/index";
 import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore } from "@/stores/appStore";
 import SettingsInput from "@/components/Settings/SettingsInput";
-import { Button } from "@headlessui/react";
-import clsx from "clsx";
 
 export const modifierKeys: ModifierKey[] = isMac
   ? ["meta", "ctrl"]
@@ -66,8 +66,8 @@ const Shortcuts = () => {
     setNewSession,
     fixedWindow,
     setFixedWindow,
-    serviceList,
-    setServiceList,
+    serviceListShortcut,
+    setServiceListShortcut,
     external,
     setExternal,
     aiOverview,
@@ -181,8 +181,8 @@ const Shortcuts = () => {
       title: "settings.advanced.shortcuts.serviceList.title",
       description: "settings.advanced.shortcuts.serviceList.description",
       initialValue: INITIAL_SERVICE_LIST,
-      value: serviceList,
-      setValue: setServiceList,
+      value: serviceListShortcut,
+      setValue: setServiceListShortcut,
     },
     {
       title: "settings.advanced.shortcuts.external.title",

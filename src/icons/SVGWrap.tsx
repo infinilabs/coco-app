@@ -1,6 +1,8 @@
 import React from "react";
 import clsx from "clsx";
 
+import type { I } from '../index.d';
+
 export default function SVGWrap({
   size = 18,
   children,

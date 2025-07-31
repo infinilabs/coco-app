@@ -21,7 +21,7 @@ export function Connect({ setIsConnect, onAddServer }: ConnectServiceProps) {
   };
 
   const onAddServerClick = async (endpoint: string) => {
-    console.log("onAddServer", endpoint);
+    //console.log("onAddServer", endpoint);
     await onAddServer(endpoint);
     setIsConnect(true);
   };

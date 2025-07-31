@@ -20,13 +20,15 @@ interface ServerGroups {
 export const Sidebar = forwardRef<{ refreshData: () => void }, SidebarProps>(
   ({ setIsConnect, serverList }, _ref) => {
     const { t } = useTranslation();
-    const currentService = useConnectStore((state) => state.currentService);
-    const setCurrentService = useConnectStore(
-      (state) => state.setCurrentService
-    );
+    const cloudSelectService = useConnectStore((state) => {
+      return state.cloudSelectService;
+    });
+    const setCloudSelectService = useConnectStore((state) => {
+      return state.setCloudSelectService;
+    });
 
     const selectService = (item: Server) => {
-      setCurrentService(item);
+      setCloudSelectService(item);
       setIsConnect(true);
     };
 
@@ -41,7 +43,7 @@ export const Sidebar = forwardRef<{ refreshData: () => void }, SidebarProps>(
     // Extracted server item rendering
     const renderServerItem = useCallback(
       (item: Server) => {
-        const isSelected = currentService?.id === item.id;
+        const isSelected = cloudSelectService?.id === item.id;
         return (
           <div
             key={item.id}
@@ -72,7 +74,7 @@ export const Sidebar = forwardRef<{ refreshData: () => void }, SidebarProps>(
           </div>
         );
       },
-      [currentService]
+      [cloudSelectService]
     );
 
     const { builtinServers, customServers } = useMemo(() => {

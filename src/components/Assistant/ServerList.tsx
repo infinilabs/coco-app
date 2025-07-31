@@ -17,6 +17,8 @@ import { Server as IServer } from "@/types/server";
 import StatusIndicator from "@/components/Cloud/StatusIndicator";
 import { useAuthStore } from "@/stores/authStore";
 import { useSearchStore } from "@/stores/searchStore";
+import { useServers } from "@/hooks/useServers";
+import { getCurrentWindowService, setCurrentWindowService } from "@/commands";
 
 interface ServerListProps {
   clearChat: () => void;
@@ -25,17 +27,20 @@ interface ServerListProps {
 export function ServerList({ clearChat }: ServerListProps) {
   const { t } = useTranslation();
 
-  const isCurrentLogin = useAuthStore((state) => state.isCurrentLogin);
   const setIsCurrentLogin = useAuthStore((state) => state.setIsCurrentLogin);
-  const serviceList = useShortcutsStore((state) => state.serviceList);
+  const serviceListShortcut = useShortcutsStore(
+    (state) => state.serviceListShortcut
+  );
   const setEndpoint = useAppStore((state) => state.setEndpoint);
-  const setCurrentService = useConnectStore((state) => state.setCurrentService);
   const isTauri = useAppStore((state) => state.isTauri);
   const currentService = useConnectStore((state) => state.currentService);
+  const cloudSelectService = useConnectStore((state) => {
+    return state.cloudSelectService;
+  });
 
   const { setMessages } = useChatStore();
 
-  const [serverList, setServerList] = useState<IServer[]>([]);
+  const [list, setList] = useState<IServer[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [highlightId, setHighlightId] = useState<string>("");
 
@@ -49,44 +54,49 @@ export function ServerList({ clearChat }: ServerListProps) {
   const popoverRef = useRef<HTMLDivElement>(null);
   const serverListButtonRef = useRef<HTMLButtonElement>(null);
 
-  const fetchServers = useCallback(
-    async (resetSelection: boolean) => {
-      platformAdapter.commands("list_coco_servers").then((res: any) => {
-        console.log("list_coco_servers", res);
-        if (!Array.isArray(res)) {
-          // If res is not an array, it might be an error message or something else.
-          // Log it and don't proceed.
-          // console.log("list_coco_servers did not return an array:", res);
-          setServerList([]); // Clear the list or handle as appropriate
-          return;
-        }
-        const enabledServers = (res as IServer[])?.filter(
-          (server) => server.enabled && server.available
-        );
+  const { refreshServerList } = useServers();
+  const serverList = useConnectStore((state) => state.serverList);
 
-        setServerList(enabledServers);
+  const switchServer = async (server: IServer) => {
+    if (!server) return;
+    try {
+      // Switch UI first, then switch server connection
+      await setCurrentWindowService(server);
+      setEndpoint(server.endpoint);
+      setMessages(""); // Clear previous messages
+      clearChat();
+      //
+      if (!server.public && !server.profile) {
+        setIsCurrentLogin(false);
+        return;
+      }
+      //
+      setIsCurrentLogin(true);
+    } catch (error) {
+      console.error("switchServer:", error);
+    }
+  };
 
-        if (resetSelection && enabledServers.length > 0) {
-          const currentServiceExists = enabledServers.find(
-            (server) => server.id === currentService?.id
-          );
+  const fetchServers = useCallback(async () => {
+    const service = await getCurrentWindowService();
 
-          if (currentServiceExists) {
-            switchServer(currentServiceExists);
-          } else {
-            switchServer(enabledServers[enabledServers.length - 1]);
-          }
-        }
+    const enabledServers = serverList.filter(
+      (server) => server.enabled && server.available
+    );
+    setList(enabledServers);
+
+    if (enabledServers.length > 0) {
+      const serviceExists = enabledServers.find((server) => {
+        return server.id === service?.id;
       });
-    },
-    [currentService?.id]
-  );
 
-  useEffect(() => {
-    if (!isTauri) return;
-
-    fetchServers(true);
-  }, [currentService?.enabled]);
+      if (serviceExists) {
+        switchServer(serviceExists);
+      } else {
+        switchServer(enabledServers[enabledServers.length - 1]);
+      }
+    }
+  }, [currentService?.id, cloudSelectService?.id, serverList]);
 
   useEffect(() => {
     if (!askAiServerId || serverList.length === 0) return;
@@ -104,25 +114,12 @@ export function ServerList({ clearChat }: ServerListProps) {
   useEffect(() => {
     if (!isTauri) return;
 
-    fetchServers(true);
-
-    const unlisten = platformAdapter.listenEvent("login_or_logout", (event) => {
-      //console.log("Login or Logout:", currentService, event.payload);
-      if (event.payload !== isCurrentLogin) {
-        setIsCurrentLogin(!!event.payload);
-      }
-      fetchServers(true);
-    });
-
-    return () => {
-      // Cleanup logic if needed
-      unlisten.then((fn) => fn());
-    };
-  }, []);
+    fetchServers();
+  }, [serverList]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await fetchServers(false);
+    await refreshServerList();
     setTimeout(() => setIsRefreshing(false), 1000);
   };
 
@@ -130,29 +127,10 @@ export function ServerList({ clearChat }: ServerListProps) {
     platformAdapter.emitEvent("open_settings", "connect");
   };
 
-  const switchServer = async (server: IServer) => {
-    if (!server) return;
-    try {
-      // Switch UI first, then switch server connection
-      setCurrentService(server);
-      setEndpoint(server.endpoint);
-      setMessages(""); // Clear previous messages
-      clearChat();
-      //
-      if (!server.public && !server.profile) {
-        setIsCurrentLogin(false);
-        return;
-      }
-      //
-      setIsCurrentLogin(true);
-    } catch (error) {
-      console.error("switchServer:", error);
-    }
-  };
-
   useKeyPress(
     ["uparrow", "downarrow", "enter"],
-    (event, key) => {
+    async (event, key) => {
+      const service = await getCurrentWindowService();
       const isClose = isNil(serverListButtonRef.current?.dataset["open"]);
       const length = serverList.length;
 
@@ -162,9 +140,7 @@ export function ServerList({ clearChat }: ServerListProps) {
       event.preventDefault();
 
       const currentIndex = serverList.findIndex((server) => {
-        return (
-          server.id === (highlightId === "" ? currentService?.id : highlightId)
-        );
+        return server.id === (highlightId === "" ? service?.id : highlightId);
       });
 
       let nextIndex = currentIndex;
@@ -197,7 +173,7 @@ export function ServerList({ clearChat }: ServerListProps) {
     <Popover ref={popoverRef} className="relative">
       <PopoverButton ref={serverListButtonRef} className="flex items-center">
         <VisibleKey
-          shortcut={serviceList}
+          shortcut={serviceListShortcut}
           onKeyPress={() => {
             serverListButtonRef.current?.click();
           }}
@@ -240,8 +216,8 @@ export function ServerList({ clearChat }: ServerListProps) {
             </div>
           </div>
           <div className="space-y-1">
-            {serverList.length > 0 ? (
-              serverList.map((server) => (
+            {list.length > 0 ? (
+              list.map((server) => (
                 <div
                   key={server.id}
                   onClick={() => switchServer(server)}
