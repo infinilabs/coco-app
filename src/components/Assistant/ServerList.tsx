@@ -17,7 +17,7 @@ import { Server as IServer } from "@/types/server";
 import StatusIndicator from "@/components/Cloud/StatusIndicator";
 import { useAuthStore } from "@/stores/authStore";
 import { useSearchStore } from "@/stores/searchStore";
-import { useServers } from "@/hooks/useServers"; 
+import { useServers } from "@/hooks/useServers";
 
 interface ServerListProps {
   clearChat: () => void;
@@ -26,7 +26,6 @@ interface ServerListProps {
 export function ServerList({ clearChat }: ServerListProps) {
   const { t } = useTranslation();
 
-  const isCurrentLogin = useAuthStore((state) => state.isCurrentLogin);
   const setIsCurrentLogin = useAuthStore((state) => state.setIsCurrentLogin);
   const serviceListShortcut = useShortcutsStore(
     (state) => state.serviceListShortcut
@@ -54,76 +53,6 @@ export function ServerList({ clearChat }: ServerListProps) {
 
   const { refreshServerList } = useServers();
   const serverList = useConnectStore((state) => state.serverList);
-  const fetchServers = useCallback(
-    async (resetSelection: boolean) => {
-      const enabledServers = serverList.filter(
-        (server) => server.enabled && server.available
-      );
-
-      setList(enabledServers);
-
-      if (resetSelection && enabledServers.length > 0) {
-        const currentServiceExists = enabledServers.find(
-          (server) => server.id === currentService?.id
-        );
-
-        if (currentServiceExists) {
-          switchServer(currentServiceExists);
-        } else {
-          switchServer(enabledServers[enabledServers.length - 1]);
-        }
-      }
-    },
-    [currentService?.id]
-  );
-
-  useEffect(() => {
-    if (!isTauri) return;
-
-    fetchServers(true);
-  }, [serverList]);
-
-  useEffect(() => {
-    if (!askAiServerId || serverList.length === 0) return;
-
-    const matched = serverList.find((server) => {
-      return server.id === askAiServerId;
-    });
-
-    if (!matched) return;
-
-    switchServer(matched);
-    setAskAiServerId(void 0);
-  }, [serverList, askAiServerId]);
-
-  useEffect(() => {
-    if (!isTauri) return;
-
-    fetchServers(true);
-
-    const unlisten = platformAdapter.listenEvent("login_or_logout", (event) => {
-      if (event.payload !== isCurrentLogin) {
-        setIsCurrentLogin(!!event.payload);
-      }
-      fetchServers(true);
-    });
-
-    return () => {
-      // Cleanup logic if needed
-      unlisten.then((fn) => fn());
-    };
-  }, []);
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    //await fetchServers(false);
-    await refreshServerList();
-    setTimeout(() => setIsRefreshing(false), 1000);
-  };
-
-  const openSettings = async () => {
-    platformAdapter.emitEvent("open_settings", "connect");
-  };
 
   const switchServer = async (server: IServer) => {
     if (!server) return;
@@ -143,6 +72,57 @@ export function ServerList({ clearChat }: ServerListProps) {
     } catch (error) {
       console.error("switchServer:", error);
     }
+  };
+
+  const fetchServers = useCallback(
+    async () => {
+      const enabledServers = serverList.filter(
+        (server) => server.enabled && server.available
+      );
+      setList(enabledServers);
+
+      if (enabledServers.length > 0) {
+        const currentServiceExists = enabledServers.find(
+          (server) => server.id === currentService?.id
+        );
+
+        if (currentServiceExists) {
+          switchServer(currentServiceExists);
+        } else {
+          switchServer(enabledServers[enabledServers.length - 1]);
+        }
+      }
+    },
+    [currentService?.id, serverList]
+  );
+
+  useEffect(() => {
+    if (!askAiServerId || serverList.length === 0) return;
+
+    const matched = serverList.find((server) => {
+      return server.id === askAiServerId;
+    });
+
+    if (!matched) return;
+
+    switchServer(matched);
+    setAskAiServerId(void 0);
+  }, [serverList, askAiServerId]);
+
+  useEffect(() => {
+    if (!isTauri) return;
+
+    fetchServers();
+  }, [serverList]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshServerList();
+    setTimeout(() => setIsRefreshing(false), 1000);
+  };
+
+  const openSettings = async () => {
+    platformAdapter.emitEvent("open_settings", "connect");
   };
 
   useKeyPress(

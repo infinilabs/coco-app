@@ -29,7 +29,7 @@ export default function Layout() {
   const { i18n } = useTranslation();
   const { activeTheme, isDark, setIsDark, setTheme } = useThemeStore();
 
-  // init servers
+  // init servers isTauri
   useServers();
 
   const [langUpdated, setLangUpdated] = useState(false);

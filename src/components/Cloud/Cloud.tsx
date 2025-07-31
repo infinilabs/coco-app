@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { emit } from "@tauri-apps/api/event";
 
 import { DataSourcesList } from "./DataSourcesList";
 import { Sidebar } from "./Sidebar";
@@ -19,70 +18,62 @@ export default function Cloud() {
 
   const [isConnect, setIsConnect] = useState(true);
 
-  const { currentService, setCurrentService, serverList, setServerList } =
+  const { cloudSelectService, setCloudSelectService, serverList, setServerList } =
     useConnectStore();
 
   const [refreshLoading, setRefreshLoading] = useState(false);
 
-  const { addServer } = useServers();
+  const { addServer, refreshServerList } = useServers();
 
   // fetch the servers
   useEffect(() => {
-    fetchServers(true);
+    fetchServers();
   }, [serverList]);
 
   useEffect(() => {
-    // console.log("currentService", currentService);
     setRefreshLoading(false);
     setIsConnect(true);
-  }, [currentService?.id]);
+  }, [cloudSelectService?.id]);
 
-  const fetchServers = useCallback(async (resetSelection: boolean) => {
-    let res = serverList;
-    if (errors.length > 0) {
-      res = res.map((item: Server) => {
-        if (item.id === currentService?.id) {
-          item.health = {
-            services: item.health?.services || {},
-            status: item.health?.status || 'red',
-          };
-        }
-        return item;
-      });
-    }
-    setServerList(res);
-
-    if (resetSelection && res.length > 0) {
-      const matched = res.find((server: any) => {
-        return server.id === currentService?.id;
-      });
-
-      if (matched) {
-        setCurrentService(matched);
-      } else {
-        setCurrentService(res[res.length - 1]);
+  const fetchServers = useCallback(
+    async () => {
+      let res = serverList;
+      if (errors.length > 0) {
+        res = res.map((item: Server) => {
+          if (item.id === cloudSelectService?.id) {
+            item.health = {
+              services: item.health?.services || {},
+              status: item.health?.status || "red",
+            };
+          }
+          return item;
+        });
       }
-    }
-  }, [serverList, errors, currentService]);
+      setServerList(res);
+
+      if (res.length > 0) {
+        const matched = res.find((server: any) => {
+          return server.id === cloudSelectService?.id;
+        });
+
+        if (matched) {
+          setCloudSelectService(matched);
+        } else {
+          setCloudSelectService(res[res.length - 1]);
+        }
+      }
+    },
+    [serverList, errors, cloudSelectService]
+  );
 
   const refreshClick = useCallback(
-    (id: string) => {
+    async (id: string) => {
       setRefreshLoading(true);
-      platformAdapter
-        .commands("refresh_coco_server_info", id)
-        .then((res: any) => {
-          // Todo: update list
-          fetchServers(false).then(() => {
-          });
-          // update currentService
-          setCurrentService(res);
-          emit("login_or_logout", true);
-        })
-        .finally(() => {
-          setRefreshLoading(false);
-        });
+      await platformAdapter.commands("refresh_coco_server_info", id);
+      await refreshServerList();
+      setRefreshLoading(false);
     },
-    [fetchServers]
+    [refreshServerList]
   );
 
   return (
@@ -106,8 +97,8 @@ export default function Cloud() {
               refreshClick={refreshClick}
             />
 
-            {currentService?.profile && currentService?.available ? (
-              <DataSourcesList server={currentService?.id} />
+            {cloudSelectService?.profile && cloudSelectService?.available ? (
+              <DataSourcesList server={cloudSelectService?.id} />
             ) : null}
           </div>
         ) : (

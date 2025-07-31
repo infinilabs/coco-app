@@ -9,7 +9,6 @@ export const useServers = () => {
   const setServerList = useConnectStore((state) => state.setServerList);
   const setCurrentService = useConnectStore((state) => state.setCurrentService);
   const currentService = useConnectStore((state) => state.currentService);
-  const serverList = useConnectStore((state) => state.serverList);
 
   const getAllServerList = async () => {
     try {
@@ -27,29 +26,6 @@ export const useServers = () => {
       setServerList([]);
     }
   };
-
-  const fetchServers = useCallback(
-    async (resetSelection: boolean, switchServer?: (server: Server) => void) => {
-      const enabledServers = serverList.filter(
-        (server) => server.enabled && server.available
-      );
-
-      if (resetSelection && enabledServers.length > 0 && switchServer) {
-        const currentServiceExists = enabledServers.find(
-          (server) => server.id === currentService?.id
-        );
-
-        if (currentServiceExists) {
-          switchServer(currentServiceExists);
-        } else {
-          switchServer(enabledServers[enabledServers.length - 1]);
-        }
-      }
-
-      return enabledServers;
-    },
-    [serverList, currentService?.id]
-  );
 
   const addServer = useCallback(
     async (endpointLink: string): Promise<Server> => {
@@ -116,7 +92,6 @@ export const useServers = () => {
   return {
     getAllServerList,
     refreshServerList: getAllServerList,
-    fetchServers,
     addServer,
     enableServer,
     removeServer,

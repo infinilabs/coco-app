@@ -18,27 +18,27 @@ const ServiceHeader = memo(
   ({ refreshLoading, refreshClick }: ServiceHeaderProps) => {
     const { t } = useTranslation();
 
-    const currentService = useConnectStore((state) => state.currentService);
+    const cloudSelectService = useConnectStore((state) => state.cloudSelectService);
 
     const { enableServer, removeServer } = useServers();
 
     return (
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <Tooltip content={currentService?.endpoint}>
+          <Tooltip content={cloudSelectService?.endpoint}>
             <div className="flex items-center text-gray-900 dark:text-white font-medium cursor-pointer">
-              {currentService?.name}
+              {cloudSelectService?.name}
             </div>
           </Tooltip>
         </div>
         <div className="flex items-center gap-2">
           <SettingsToggle
-            checked={currentService?.enabled}
+            checked={cloudSelectService?.enabled}
             className={clsx({
-              "bg-red-600 focus:ring-red-500": !currentService?.enabled,
+              "bg-red-600 focus:ring-red-500": !cloudSelectService?.enabled,
             })}
             label={
-              currentService?.enabled
+              cloudSelectService?.enabled
                 ? t("cloud.enable_server")
                 : t("cloud.disable_server")
             }
@@ -48,23 +48,23 @@ const ServiceHeader = memo(
           <button
             className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-[6px] bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
             onClick={() =>
-              OpenURLWithBrowser(currentService?.provider?.website)
+              OpenURLWithBrowser(cloudSelectService?.provider?.website)
             }
           >
             <Globe className="w-3.5 h-3.5" />
           </button>
           <button
             className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-[6px] bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
-            onClick={() => refreshClick(currentService?.id)}
+            onClick={() => refreshClick(cloudSelectService?.id)}
           >
             <RefreshCcw
               className={`w-3.5 h-3.5 ${refreshLoading ? "animate-spin" : ""}`}
             />
           </button>
-          {!currentService?.builtin && (
+          {!cloudSelectService?.builtin && (
             <button
               className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-[6px] bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
-              onClick={() => removeServer(currentService?.id)}
+              onClick={() => removeServer(cloudSelectService?.id)}
             >
               <Trash2 className="w-3.5 h-3.5 text-[#ff4747]" />
             </button>

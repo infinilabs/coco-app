@@ -1,5 +1,4 @@
 import { invoke } from "@tauri-apps/api/core";
-import { emit } from "@tauri-apps/api/event";
 
 import {
   Server,
@@ -25,8 +24,9 @@ export function handleLogout(serverId?: string) {
     useConnectStore.getState();
   const id = serverId || currentService?.id;
   if (!id) return;
+
+  // Update the status first
   setIsCurrentLogin(false);
-  emit("login_or_logout", false);
   if (currentService?.id === id) {
     setCurrentService({ ...currentService, profile: null });
   }
@@ -34,6 +34,8 @@ export function handleLogout(serverId?: string) {
     server.id === id ? { ...server, profile: null } : server
   );
   setServerList(updatedServerList);
+
+  // TODO: getAllServerList
 }
 
 // Endpoints that don't require authentication

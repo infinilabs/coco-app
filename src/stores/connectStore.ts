@@ -17,6 +17,8 @@ export type IConnectStore = {
   setServerList: (servers: Server[]) => void;
   currentService: Server;
   setCurrentService: (service: Server) => void;
+  cloudSelectService: Server;
+  setCloudSelectService: (service: Server) => void;
   connector_data: keyArrayObject;
   setConnectorData: (connector_data: any[], key: string) => void;
   datasourceData: keyArrayObject;
@@ -54,6 +56,14 @@ export const useConnectStore = create<IConnectStore>()(
           set(
             produce((draft) => {
               draft.currentService = server;
+            })
+          );
+        },
+        cloudSelectService: {} as Server,
+        setCloudSelectService: (server: any) => {
+          set(
+            produce((draft) => {
+              draft.cloudSelectService = server;
             })
           );
         },
