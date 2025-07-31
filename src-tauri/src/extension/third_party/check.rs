@@ -14,12 +14,25 @@
 
 use crate::extension::Extension;
 use crate::extension::ExtensionType;
+use crate::util::platform::Platform;
 use std::collections::HashSet;
 
 pub(crate) fn general_check(extension: &Extension) -> Result<(), String> {
     // Check main extension
     check_main_extension_only(extension)?;
     check_main_extension_or_sub_extension(extension, &format!("extension [{}]", extension.id))?;
+
+    // `None` if `extension` is compatible with all the platforms. Otherwise `Some(limited_platforms)`
+    let limited_supported_platforms = match extension.platforms.as_ref() {
+        Some(platforms) => {
+            if platforms.len() == Platform::num_of_supported_platforms() {
+                None
+            } else {
+                Some(platforms)
+            }
+        }
+        None => None,
+    };
 
     // Check sub extensions
     let commands = match extension.commands {
@@ -38,7 +51,7 @@ pub(crate) fn general_check(extension: &Extension) -> Result<(), String> {
     let mut sub_extension_ids = HashSet::new();
 
     for sub_extension in sub_extensions.iter() {
-        check_sub_extension_only(&extension.id, sub_extension)?;
+        check_sub_extension_only(&extension.id, sub_extension, limited_supported_platforms)?;
         check_main_extension_or_sub_extension(
             extension,
             &format!("sub-extension [{}-{}]", extension.id, sub_extension.id),
@@ -94,19 +107,16 @@ fn check_main_extension_only(extension: &Extension) -> Result<(), String> {
     Ok(())
 }
 
-fn check_sub_extension_only(extension_id: &str, sub_extension: &Extension) -> Result<(), String> {
+fn check_sub_extension_only(
+    extension_id: &str,
+    sub_extension: &Extension,
+    limited_platforms: Option<&HashSet<Platform>>,
+) -> Result<(), String> {
     if sub_extension.r#type == ExtensionType::Group
         || sub_extension.r#type == ExtensionType::Extension
     {
         return Err(format!(
             "invalid sub-extension [{}-{}]: sub-extensions should not be of type [Group] or [Extension]",
-            extension_id, sub_extension.id
-        ));
-    }
-
-    if sub_extension.platforms.is_some() {
-        return Err(format!(
-            "invalid sub-extension [{}-{}]: field [platforms] should not be set in sub-extensions",
             extension_id, sub_extension.id
         ));
     }
@@ -126,6 +136,29 @@ fn check_sub_extension_only(extension_id: &str, sub_extension: &Extension) -> Re
             "invalid sub-extension [{}-{}]: field [developer] should not be set in sub-extensions",
             extension_id, sub_extension.id
         ));
+    }
+
+    if let Some(platforms_supported_by_main_extension) = limited_platforms {
+        match sub_extension.platforms {
+            Some(ref platforms_supported_by_sub_extension) => {
+                let diff = platforms_supported_by_sub_extension
+                    .difference(&platforms_supported_by_main_extension)
+                    .into_iter()
+                    .map(|p| p.to_string())
+                    .collect::<Vec<String>>();
+
+                if !diff.is_empty() {
+                    return Err(format!(
+                        "invalid sub-extension [{}-{}]: it supports platforms {:?} that are not supported by the main extension",
+                        extension_id, sub_extension.id, diff
+                    ));
+                }
+            }
+            None => {
+                // if `sub_extension.platform` is None, it means it has the same value
+                // as main extension's `platforms` field, so we don't need to check it.
+            }
+        }
     }
 
     Ok(())
@@ -172,8 +205,6 @@ fn check_main_extension_or_sub_extension(
 mod tests {
     use super::*;
     use crate::extension::{CommandAction, Quicklink, QuicklinkLink, QuicklinkLinkComponent};
-    use crate::util::platform::Platform;
-    use std::collections::HashSet;
 
     /// Helper function to create a basic valid extension
     fn create_basic_extension(id: &str, extension_type: ExtensionType) -> Extension {
@@ -369,27 +400,6 @@ mod tests {
     }
 
     #[test]
-    fn test_sub_extension_cannot_have_platforms() {
-        let mut extension = create_basic_extension("test-group", ExtensionType::Group);
-        let mut sub_cmd = create_basic_extension("sub-cmd", ExtensionType::Command);
-        sub_cmd.action = Some(create_command_action());
-
-        let mut platforms = HashSet::new();
-        platforms.insert(Platform::Macos);
-        sub_cmd.platforms = Some(platforms);
-
-        extension.commands = Some(vec![sub_cmd]);
-
-        let result = general_check(&extension);
-        assert!(result.is_err());
-        assert!(
-            result
-                .unwrap_err()
-                .contains("field [platforms] should not be set in sub-extensions")
-        );
-    }
-
-    #[test]
     fn test_sub_extension_cannot_have_developer() {
         let mut extension = create_basic_extension("test-group", ExtensionType::Group);
         let mut sub_cmd = create_basic_extension("sub-cmd", ExtensionType::Command);
@@ -542,4 +552,143 @@ mod tests {
 
         assert!(general_check(&extension).is_ok());
     }
+
+    /*
+     * Tests for check that sub extension cannot support extensions that are not
+     * supported by the main extension
+     *
+     * Start here
+     */
+    #[test]
+    fn test_platform_validation_both_none() {
+        // Case 1: main extension's platforms = None, sub extension's platforms = None
+        // Should return Ok(())
+        let mut main_extension = create_basic_extension("main-ext", ExtensionType::Group);
+        main_extension.platforms = None;
+
+        let mut sub_cmd = create_basic_extension("sub-cmd", ExtensionType::Command);
+        sub_cmd.action = Some(create_command_action());
+        sub_cmd.platforms = None;
+
+        main_extension.commands = Some(vec![sub_cmd]);
+
+        let result = general_check(&main_extension);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_platform_validation_main_all_sub_none() {
+        // Case 2: main extension's platforms = Some(all platforms), sub extension's platforms = None
+        // Should return Ok(())
+        let mut main_extension = create_basic_extension("main-ext", ExtensionType::Group);
+        main_extension.platforms = Some(Platform::all());
+
+        let mut sub_cmd = create_basic_extension("sub-cmd", ExtensionType::Command);
+        sub_cmd.action = Some(create_command_action());
+        sub_cmd.platforms = None;
+
+        main_extension.commands = Some(vec![sub_cmd]);
+
+        let result = general_check(&main_extension);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_platform_validation_main_none_sub_some() {
+        // Case 3: main extension's platforms = None, sub extension's platforms = Some([Platform::Macos])
+        // Should return Ok(()) because None means supports all platforms
+        let mut main_extension = create_basic_extension("main-ext", ExtensionType::Group);
+        main_extension.platforms = None;
+
+        let mut sub_cmd = create_basic_extension("sub-cmd", ExtensionType::Command);
+        sub_cmd.action = Some(create_command_action());
+        sub_cmd.platforms = Some(HashSet::from([Platform::Macos]));
+
+        main_extension.commands = Some(vec![sub_cmd]);
+
+        let result = general_check(&main_extension);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_platform_validation_main_all_sub_subset() {
+        // Case 4: main extension's platforms = Some(all platforms), sub extension's platforms = Some([Platform::Macos])
+        // Should return Ok(()) because sub extension supports a subset of main extension's platforms
+        let mut main_extension = create_basic_extension("main-ext", ExtensionType::Group);
+        main_extension.platforms = Some(Platform::all());
+
+        let mut sub_cmd = create_basic_extension("sub-cmd", ExtensionType::Command);
+        sub_cmd.action = Some(create_command_action());
+        sub_cmd.platforms = Some(HashSet::from([Platform::Macos]));
+
+        main_extension.commands = Some(vec![sub_cmd]);
+
+        let result = general_check(&main_extension);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_platform_validation_main_limited_sub_unsupported() {
+        // Case 5: main extension's platforms = Some([Platform::Macos]), sub extension's platforms = Some([Platform::Linux])
+        // Should return Err because sub extension supports a platform not supported by main extension
+        let mut main_extension = create_basic_extension("main-ext", ExtensionType::Group);
+        main_extension.platforms = Some(HashSet::from([Platform::Macos]));
+
+        let mut sub_cmd = create_basic_extension("sub-cmd", ExtensionType::Command);
+        sub_cmd.action = Some(create_command_action());
+        sub_cmd.platforms = Some(HashSet::from([Platform::Linux]));
+
+        main_extension.commands = Some(vec![sub_cmd]);
+
+        let result = general_check(&main_extension);
+        assert!(result.is_err());
+        let error_msg = result.unwrap_err();
+        assert!(error_msg.contains("it supports platforms"));
+        assert!(error_msg.contains("that are not supported by the main extension"));
+        assert!(error_msg.contains("Linux")); // Should mention the unsupported platform
+    }
+
+    #[test]
+    fn test_platform_validation_main_partial_sub_unsupported() {
+        // Case 6: main extension's platforms = Some([Platform::Macos, Platform::Windows]), sub extension's platforms = Some([Platform::Linux])
+        // Should return Err because sub extension supports a platform not supported by main extension
+        let mut main_extension = create_basic_extension("main-ext", ExtensionType::Group);
+        main_extension.platforms = Some(HashSet::from([Platform::Macos, Platform::Windows]));
+
+        let mut sub_cmd = create_basic_extension("sub-cmd", ExtensionType::Command);
+        sub_cmd.action = Some(create_command_action());
+        sub_cmd.platforms = Some(HashSet::from([Platform::Linux]));
+
+        main_extension.commands = Some(vec![sub_cmd]);
+
+        let result = general_check(&main_extension);
+        assert!(result.is_err());
+        let error_msg = result.unwrap_err();
+        assert!(error_msg.contains("it supports platforms"));
+        assert!(error_msg.contains("that are not supported by the main extension"));
+        assert!(error_msg.contains("Linux")); // Should mention the unsupported platform
+    }
+
+    #[test]
+    fn test_platform_validation_main_limited_sub_none() {
+        // Case 7: main extension's platforms = Some([Platform::Macos]), sub extension's platforms = None
+        // Should return Ok(()) because when sub extension's platforms is None, it inherits main extension's platforms
+        let mut main_extension = create_basic_extension("main-ext", ExtensionType::Group);
+        main_extension.platforms = Some(HashSet::from([Platform::Macos]));
+
+        let mut sub_cmd = create_basic_extension("sub-cmd", ExtensionType::Command);
+        sub_cmd.action = Some(create_command_action());
+        sub_cmd.platforms = None;
+
+        main_extension.commands = Some(vec![sub_cmd]);
+
+        let result = general_check(&main_extension);
+        assert!(result.is_ok());
+    }
+    /*
+     * Tests for check that sub extension cannot support extensions that are not
+     * supported by the main extension
+     *
+     * End here
+     */
 }

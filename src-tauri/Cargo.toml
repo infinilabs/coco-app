@@ -106,6 +106,7 @@ tokio-stream = { version = "0.1.17", features = ["io-util"] }
 cfg-if = "1.0.1"
 sysinfo = "0.35.2"
 indexmap = { version = "2.10.0", features = ["serde"] }
+strum = { version = "0.27.2", features = ["derive"] }
 
 [target."cfg(target_os = \"macos\")".dependencies]
 tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }
