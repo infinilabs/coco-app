@@ -115,21 +115,34 @@ pub async fn cancel_session_chat(
 pub async fn chat_create(
     app_handle: AppHandle,
     server_id: String,
-    message: String,
+    message: Option<String>,
+    attachments: Option<Vec<String>>,
     query_params: Option<HashMap<String, Value>>,
     client_id: String,
 ) -> Result<(), String> {
-    let body = if !message.is_empty() {
-        let message = ChatRequestMessage {
-            message: Some(message),
+    println!("chat_create message: {:?}", message);
+    println!("chat_create attachments: {:?}", attachments);
+
+    let message_empty = message.as_ref().map_or(true, |m| m.is_empty());
+    let attachments_empty = attachments.as_ref().map_or(true, |a| a.is_empty());
+
+    if message_empty && attachments_empty {
+        return Err("Message and attachments are empty".to_string());
+    }
+
+    let body = {
+        let request_message: ChatRequestMessage = ChatRequestMessage {
+            message,
+            attachments,
         };
+
+        println!("chat_create body: {:?}", request_message);
+
         Some(
-            serde_json::to_string(&message)
+            serde_json::to_string(&request_message)
                 .map_err(|e| format!("Failed to serialize message: {}", e))?
                 .into(),
         )
-    } else {
-        None
     };
 
     let response = HttpClient::advanced_post(
@@ -165,8 +178,6 @@ pub async fn chat_create(
         if let Err(err) = app_handle.emit(&client_id, line) {
             log::error!("Emit failed: {:?}", err);
 
-            print!("Error sending message: {:?}", err);
-
             let _ = app_handle.emit("chat-create-error", format!("Emit failed: {:?}", err));
         }
     }
@@ -179,21 +190,34 @@ pub async fn chat_chat(
     app_handle: AppHandle,
     server_id: String,
     session_id: String,
-    message: String,
+    message: Option<String>,
+    attachments: Option<Vec<String>>,
     query_params: Option<HashMap<String, Value>>, //search,deep_thinking
     client_id: String,
 ) -> Result<(), String> {
-    let body = if !message.is_empty() {
-        let message = ChatRequestMessage {
-            message: Some(message),
+    println!("chat_chat message: {:?}", message);
+    println!("chat_chat attachments: {:?}", attachments);
+
+    let message_empty = message.as_ref().map_or(true, |m| m.is_empty());
+    let attachments_empty = attachments.as_ref().map_or(true, |a| a.is_empty());
+
+    if message_empty && attachments_empty {
+        return Err("Message and attachments are empty".to_string());
+    }
+
+    let body = {
+        let request_message = ChatRequestMessage {
+            message,
+            attachments,
         };
+
+        println!("chat_chat body: {:?}", request_message);
+
         Some(
-            serde_json::to_string(&message)
+            serde_json::to_string(&request_message)
                 .map_err(|e| format!("Failed to serialize message: {}", e))?
                 .into(),
         )
-    } else {
-        None
     };
 
     let path = format!("/chat/{}/_chat", session_id);
@@ -235,6 +259,9 @@ pub async fn chat_chat(
 
         if let Err(err) = app_handle.emit(&client_id, line) {
             log::error!("Emit failed: {:?}", err);
+
+            print!("Error sending message: {:?}", err);
+
             let _ = app_handle.emit("chat-create-error", format!("Emit failed: {:?}", err));
         }
     }

@@ -8,7 +8,7 @@ import {
   GetResponse,
   UploadAttachmentPayload,
   UploadAttachmentResponse,
-  GetAttachmentPayload,
+  GetAttachmentByIdsPayload,
   GetAttachmentResponse,
   DeleteAttachmentPayload,
   TranscriptionPayload,
@@ -255,17 +255,20 @@ export function cancel_session_chat({
 export function chat_create({
   serverId,
   message,
+  attachments,
   queryParams,
   clientId,
 }: {
   serverId: string;
   message: string;
+  attachments: string[];
   queryParams?: Record<string, any>;
   clientId: string;
 }): Promise<GetResponse> {
   return invokeWithErrorHandler(`chat_create`, {
     serverId,
     message,
+    attachments,
     queryParams,
     clientId,
   });
@@ -275,12 +278,14 @@ export function chat_chat({
   serverId,
   sessionId,
   message,
+  attachments,
   queryParams,
   clientId,
 }: {
   serverId: string;
   sessionId: string;
   message: string;
+  attachments: string[];
   queryParams?: Record<string, any>;
   clientId: string;
 }): Promise<string> {
@@ -288,6 +293,7 @@ export function chat_chat({
     serverId,
     sessionId,
     message,
+    attachments,
     queryParams,
     clientId,
   });
@@ -342,10 +348,13 @@ export const upload_attachment = async (payload: UploadAttachmentPayload) => {
   }
 };
 
-export const get_attachment = (payload: GetAttachmentPayload) => {
-  return invokeWithErrorHandler<GetAttachmentResponse>("get_attachment", {
-    ...payload,
-  });
+export const get_attachment_by_ids = (payload: GetAttachmentByIdsPayload) => {
+  return invokeWithErrorHandler<GetAttachmentResponse>(
+    "get_attachment_by_ids",
+    {
+      ...payload,
+    }
+  );
 };
 
 export const delete_attachment = (payload: DeleteAttachmentPayload) => {

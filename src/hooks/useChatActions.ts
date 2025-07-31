@@ -9,6 +9,9 @@ import { useSearchStore } from "@/stores/searchStore";
 import { useAuthStore } from "@/stores/authStore";
 import { unrequitable } from "@/utils";
 import { streamPost } from "@/api/streamFetch";
+import { SendMessageParams } from "@/components/Assistant/Chat";
+import { isEmpty } from "lodash-es";
+import { useChatStore } from "@/stores/chatStore";
 
 export function useChatActions(
   setActiveChat: (chat: Chat | undefined) => void,
@@ -40,6 +43,9 @@ export function useChatActions(
   } = useConnectStore();
   const sourceDataIds = useSearchStore((state) => state.sourceDataIds);
   const MCPIds = useSearchStore((state) => state.MCPIds);
+  const setUploadAttachments = useChatStore((state) => {
+    return state.setUploadAttachments;
+  });
 
   const [keyword, setKeyword] = useState("");
 
@@ -289,9 +295,11 @@ export function useChatActions(
   );
 
   const prepareChatSession = useCallback(
-    async (value: string, timestamp: number) => {
+    async (timestamp: number, value: string) => {
       // 1. Cleaning and preparation
       await clearAllChunkData();
+
+      setUploadAttachments([]);
 
       // 2. Update the status again
       await new Promise<void>((resolve) => {
@@ -310,12 +318,17 @@ export function useChatActions(
   );
 
   const createNewChat = useCallback(
-    async (value: string = "") => {
-      if (!value) return;
+    async (params?: SendMessageParams) => {
+      const { message, attachments } = params || {};
+
+      console.log("message", message);
+      console.log("attachments", attachments);
+
+      if (!message && isEmpty(attachments)) return;
 
       const timestamp = Date.now();
 
-      await prepareChatSession(value, timestamp);
+      await prepareChatSession(timestamp, message ?? "");
 
       const queryParams = {
         search: isSearchActive,
@@ -328,19 +341,22 @@ export function useChatActions(
 
       if (isTauri) {
         if (!currentService?.id) return;
+
         console.log("chat_create", clientId, timestamp);
+
         await platformAdapter.commands("chat_create", {
           serverId: currentService?.id,
-          message: value,
+          message,
+          attachments,
           queryParams,
           clientId: `chat-stream-${clientId}-${timestamp}`,
         });
-        console.log("_create end", value);
+        console.log("_create end", message);
         resetChatState();
       } else {
         await streamPost({
           url: "/chat/_create",
-          body: { message: value },
+          body: { message },
           queryParams,
           onMessage: (line) => {
             console.log("⏳", line);
@@ -365,12 +381,16 @@ export function useChatActions(
   );
 
   const sendMessage = useCallback(
-    async (content: string, newChat: Chat) => {
-      if (!newChat?._id || !content) return;
+    async (newChat: Chat, params?: SendMessageParams) => {
+      if (!newChat?._id || !params) return;
+
+      const { message, attachments } = params;
+
+      if (!message && isEmpty(attachments)) return;
 
       const timestamp = Date.now();
 
-      await prepareChatSession(content, timestamp);
+      await prepareChatSession(timestamp, message ?? "");
 
       const queryParams = {
         search: isSearchActive,
@@ -388,15 +408,16 @@ export function useChatActions(
           serverId: currentService?.id,
           sessionId: newChat?._id,
           queryParams,
-          message: content,
+          message,
+          attachments,
           clientId: `chat-stream-${clientId}-${timestamp}`,
         });
-        console.log("chat_chat end", content, clientId);
+        console.log("chat_chat end", message, clientId);
         resetChatState();
       } else {
         await streamPost({
           url: `/chat/${newChat?._id}/_chat`,
-          body: { message: content },
+          body: { message },
           queryParams,
           onMessage: (line) => {
             console.log("line", line);
@@ -421,10 +442,14 @@ export function useChatActions(
   );
 
   const handleSendMessage = useCallback(
-    async (content: string, activeChat?: Chat) => {
-      if (!activeChat?._id || !content) return;
+    async (activeChat?: Chat, params?: SendMessageParams) => {
+      if (!activeChat?._id) return;
 
-      await chatHistory(activeChat, (chat) => sendMessage(content, chat));
+      const { message, attachments } = params ?? {};
+
+      if (!message && isEmpty(attachments)) return;
+
+      await chatHistory(activeChat, (chat) => sendMessage(chat, params));
     },
     [chatHistory, sendMessage]
   );

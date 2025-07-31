@@ -145,7 +145,7 @@ pub fn run() {
             // server::get_coco_server_connectors,
             get_app_search_source,
             server::attachment::upload_attachment,
-            server::attachment::get_attachment,
+            server::attachment::get_attachment_by_ids,
             server::attachment::delete_attachment,
             server::transcription::transcription,
             server::system_settings::get_system_settings,

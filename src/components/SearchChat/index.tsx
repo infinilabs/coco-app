@@ -13,7 +13,10 @@ import { useMount } from "ahooks";
 
 import Search from "@/components/Search/Search";
 import InputBox from "@/components/Search/InputBox";
-import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
+import ChatAI, {
+  ChatAIRef,
+  SendMessageParams,
+} from "@/components/Assistant/Chat";
 import { isLinux, isWin } from "@/utils/platform";
 import { appReducer, initialAppState } from "@/reducers/appReducer";
 import { useWindowEvents } from "@/hooks/useWindowEvents";
@@ -25,6 +28,7 @@ import { useThemeStore } from "@/stores/themeStore";
 import { useConnectStore } from "@/stores/connectStore";
 import { useAppearanceStore } from "@/stores/appearanceStore";
 import type { StartPage } from "@/types/chat";
+import { isAttachmentsUploaded } from "@/utils";
 
 interface SearchChatProps {
   isTauri?: boolean;
@@ -148,10 +152,12 @@ function SearchChat({
   }, []);
 
   const handleSendMessage = useCallback(
-    async (value: string) => {
-      dispatch({ type: "SET_INPUT", payload: value });
+    async (params: SendMessageParams) => {
+      if (!isAttachmentsUploaded()) return;
+
+      dispatch({ type: "SET_INPUT", payload: params?.message ?? "" });
       if (isChatMode) {
-        chatAIRef.current?.init(value);
+        chatAIRef.current?.init(params);
       }
     },
     [isChatMode]

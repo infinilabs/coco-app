@@ -72,11 +72,19 @@ pub async fn upload_attachment(
 }
 
 #[command]
-pub async fn get_attachment(server_id: String, session_id: String) -> Result<Value, String> {
-    let mut query_params = Vec::new();
-    query_params.push(format!("session={}", session_id));
+pub async fn get_attachment_by_ids(
+    server_id: String,
+    attachments: Vec<String>,
+) -> Result<Value, String> {
+    println!("get_attachment_by_ids server_id: {}", server_id);
+    println!("get_attachment_by_ids attachments: {:?}", attachments);
 
-    let response = HttpClient::get(&server_id, "/attachment/_search", Some(query_params))
+    let request_body = serde_json::json!({
+        "attachments": attachments
+    });
+    let body = reqwest::Body::from(serde_json::to_string(&request_body).unwrap());
+
+    let response = HttpClient::post(&server_id, "/attachment/_search", None, Some(body))
         .await
         .map_err(|e| format!("Request error: {}", e))?;
 

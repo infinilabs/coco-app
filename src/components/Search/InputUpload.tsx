@@ -1,4 +1,4 @@
-import { FC, Fragment, MouseEvent } from "react";
+import { FC, Fragment, MouseEvent, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronRight, Plus } from "lucide-react";
 import {
@@ -19,6 +19,8 @@ import { useAppStore } from "@/stores/appStore";
 import Tooltip from "@/components/Common/Tooltip";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import clsx from "clsx";
+import { useConnectStore } from "@/stores/connectStore";
+import { filesize } from "@/utils";
 
 interface State {
   screenRecordingPermission?: boolean;
@@ -61,9 +63,26 @@ const InputUpload: FC<InputUploadProps> = (props) => {
     getFileMetadata,
   } = props;
   const { t, i18n } = useTranslation();
-  const { uploadFiles, setUploadFiles } = useChatStore();
+  const { uploadAttachments, setUploadAttachments } = useChatStore();
   const { withVisibility, addError } = useAppStore();
   const { modifierKey, addFile, modifierKeyPressed } = useShortcutsStore();
+  const { currentAssistant } = useConnectStore();
+  const uploadMaxSizeRef = useRef(1024 * 1024);
+  const uploadMaxCountRef = useRef(6);
+  const setVisibleStartPage = useConnectStore((state) => {
+    return state.setVisibleStartPage;
+  });
+
+  useEffect(() => {
+    if (!currentAssistant?._source?.upload) return;
+
+    const { max_file_size_in_bytes, max_file_count } =
+      currentAssistant._source.upload;
+
+    uploadMaxSizeRef.current = max_file_size_in_bytes;
+
+    uploadMaxCountRef.current = max_file_count;
+  }, [currentAssistant]);
 
   const state = useReactive<State>({
     screenshotableMonitors: [],
@@ -83,19 +102,25 @@ const InputUpload: FC<InputUploadProps> = (props) => {
 
     if (isNil(selectedFiles)) return;
 
+    setVisibleStartPage(false);
+
     handleUploadFiles(selectedFiles);
   };
 
   const handleUploadFiles = async (paths: string | string[]) => {
-    const files: typeof uploadFiles = [];
+    const files: typeof uploadAttachments = [];
 
     for await (const path of castArray(paths)) {
-      if (find(uploadFiles, { path })) continue;
+      if (find(uploadAttachments, { path })) continue;
 
       const stat = await getFileMetadata(path);
 
-      if (stat.size / 1024 / 1024 > 100) {
-        addError(t("search.input.uploadFileHints.maxSize"));
+      if (stat.size > uploadMaxSizeRef.current) {
+        addError(
+          t("search.input.uploadFileHints.maxSize", {
+            replace: [filesize(uploadMaxSizeRef.current)],
+          })
+        );
 
         continue;
       }
@@ -107,7 +132,7 @@ const InputUpload: FC<InputUploadProps> = (props) => {
       });
     }
 
-    setUploadFiles([...uploadFiles, ...files]);
+    setUploadAttachments([...uploadAttachments, ...files]);
   };
 
   const menuItems = useCreation<MenuItem[]>(() => {
@@ -176,8 +201,15 @@ const InputUpload: FC<InputUploadProps> = (props) => {
 
   return (
     <Menu>
-      <MenuButton className="flex p-1 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]">
-        <Tooltip content={t("search.input.uploadFileHints.tooltip")}>
+      <MenuButton className="flex items-center justify-center h-[20px] px-1 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]">
+        <Tooltip
+          content={t("search.input.uploadFileHints.tooltip", {
+            replace: [
+              uploadMaxCountRef.current,
+              filesize(uploadMaxSizeRef.current),
+            ],
+          })}
+        >
           <Plus
             className={clsx("size-3 scale-[1.3]", {
               hidden: modifierKeyPressed,

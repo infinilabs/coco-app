@@ -9,7 +9,7 @@ import {
   INITIAL_MODE_SWITCH,
   INITIAL_RETURN_TO_INPUT,
   // INITIAL_VOICE_INPUT,
-  // INITIAL_ADD_FILE,
+  INITIAL_ADD_FILE,
   INITIAL_DEEP_THINKING,
   INITIAL_INTERNET_SEARCH,
   INITIAL_INTERNET_SEARCH_SCOPE,
@@ -46,8 +46,8 @@ const Shortcuts = () => {
     setReturnToInput,
     // voiceInput,
     // setVoiceInput,
-    // addFile,
-    // setAddFile,
+    addFile,
+    setAddFile,
     deepThinking,
     setDeepThinking,
     internetSearch,
@@ -106,15 +106,13 @@ const Shortcuts = () => {
     //   value: voiceInput,
     //   setValue: setVoiceInput,
     // },
-    // {
-    //   title: "settings.advanced.shortcuts.addFile.title",
-    //   description: "settings.advanced.shortcuts.addFile.description",
-    //   value: addFile,
-    //   setValue: setAddFile,
-    //   reset: () => {
-    //     handleChange(INITIAL_ADD_FILE, setAddFile);
-    //   },
-    // },
+    {
+      title: "settings.advanced.shortcuts.addFile.title",
+      description: "settings.advanced.shortcuts.addFile.description",
+      initialValue: INITIAL_ADD_FILE,
+      value: addFile,
+      setValue: setAddFile,
+    },
     {
       title: "settings.advanced.shortcuts.deepThinking.title",
       description: "settings.advanced.shortcuts.deepThinking.description",

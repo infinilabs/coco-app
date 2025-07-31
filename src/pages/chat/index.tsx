@@ -14,7 +14,10 @@ import {
 import { open } from "@tauri-apps/plugin-dialog";
 import { metadata, icon } from "tauri-plugin-fs-pro-api";
 
-import ChatAI, { ChatAIRef } from "@/components/Assistant/Chat";
+import ChatAI, {
+  ChatAIRef,
+  SendMessageParams,
+} from "@/components/Assistant/Chat";
 import type { Chat as typeChat } from "@/types/chat";
 import { useConnectStore } from "@/stores/connectStore";
 import InputBox from "@/components/Search/InputBox";
@@ -99,14 +102,14 @@ export default function StandaloneChat({}: StandaloneChatProps) {
       if (remainingChats.length > 0) {
         setActiveChat(remainingChats[0]);
       } else {
-        chatAIRef.current?.init("");
+        chatAIRef.current?.init({ message: "" });
       }
     }
   };
 
-  const handleSendMessage = async (content: string) => {
-    setInput(content);
-    chatAIRef.current?.init(content);
+  const handleSendMessage = async (params: SendMessageParams) => {
+    setInput(params?.message ?? "");
+    chatAIRef.current?.init(params);
   };
 
   const chatHistory = async (chat: typeChat) => {

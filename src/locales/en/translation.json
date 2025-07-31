@@ -351,8 +351,8 @@
         "allScope": "All Scope"
       },
       "uploadFileHints": {
-        "tooltip": "Support screenshots, upload files, up to 50, single file up to 100 MB.",
-        "maxSize": "The file size cannot exceed 100 MB."
+        "tooltip": "Support screenshots, upload files, up to {{0}}, single file up to {{1}}.",
+        "maxSize": "The file size cannot exceed {{0}}."
       }
     },
     "main": {

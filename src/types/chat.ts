@@ -12,6 +12,7 @@ export interface ISource {
   session_id?: string;
   type?: string;
   message?: any;
+  attachments?: string[];
   title?: string;
   question?: string;
   details?: any[] | null;
