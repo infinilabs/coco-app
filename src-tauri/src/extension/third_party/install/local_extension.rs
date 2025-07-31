@@ -1,6 +1,8 @@
 use crate::extension::PLUGIN_JSON_FILE_NAME;
 use crate::extension::third_party::check::general_check;
-use crate::extension::third_party::install::is_extension_installed;
+use crate::extension::third_party::install::{
+    filter_out_incompatible_sub_extensions, is_extension_installed,
+};
 use crate::extension::third_party::{
     THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE, get_third_party_extension_directory,
 };
@@ -128,11 +130,12 @@ pub(crate) async fn install_local_extension(
     let mut extension: Extension =
         serde_json::from_value(extension_json).map_err(|e| e.to_string())?;
 
+    let current_platform = Platform::current();
     /* Check begins here */
     general_check(&extension)?;
 
     if let Some(ref platforms) = extension.platforms {
-        if !platforms.contains(&Platform::current()) {
+        if !platforms.contains(&current_platform) {
             // The frontend code uses this string to distinguish between 3 error cases:
             //
             // 1. This extension is already imported
@@ -157,6 +160,10 @@ pub(crate) async fn install_local_extension(
         }
     }
     /* Check ends here */
+
+    // Extension is compatible with current platform, but it could contain sub
+    // extensions that are not, filter them out.
+    filter_out_incompatible_sub_extensions(&mut extension, current_platform);
 
     // Create destination directory
     let dest_dir = get_third_party_extension_directory(&tauri_app_handle)

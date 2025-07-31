@@ -25,7 +25,7 @@ fn default_true() -> bool {
     true
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub struct Extension {
     /// Extension ID.
     ///
@@ -275,13 +275,13 @@ impl Extension {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct CommandAction {
     pub(crate) exec: String,
     pub(crate) args: Option<Vec<String>>,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub struct Quicklink {
     // NOTE that `struct QuicklinkLink` (not `struct Quicklink`) has its own
     // derived `Deserialize/Serialize` impl, which deserializes/serializes
@@ -328,7 +328,7 @@ pub(crate) fn quicklink_link_arguments(
 }
 
 /// A quicklink consists of a sequence of components.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub(crate) struct QuicklinkLink {
     components: Vec<QuicklinkLinkComponent>,
 }
@@ -440,7 +440,7 @@ where
 /// The above link can be split into the following components:
 ///
 /// [StaticStr("https://www.google.com/search?q="), DynamicPlaceholder { argument_name: "query", default: None }]
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub(crate) enum QuicklinkLinkComponent {
     StaticStr(String),
     /// For the valid formats of dynamic placeholder, see the doc comments of `fn parse_dynamic_placeholder()`
