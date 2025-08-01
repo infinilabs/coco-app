@@ -58,7 +58,7 @@ tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
 tauri-plugin-process = "2"
 tauri-plugin-drag = "2"
-tauri-plugin-macos-permissions = "2"
+tauri-plugin-macos-permissions = { git = "https://github.com/ayangweb/tauri-plugin-macos-permissions", branch = "fix-microphone-permission" }
 tauri-plugin-fs-pro = "2"
 tauri-plugin-screenshots = "2"
 applications = { git = "https://github.com/infinilabs/applications-rs", rev = "31b0c030a0f3bc82275fe12debe526153978671d" }
