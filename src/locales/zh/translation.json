@@ -209,7 +209,9 @@
         "importSuccess": "插件导入成功。",
         "importFailed": "未在该目录中找到有效的插件，请检查目录结构是否正确。",
         "extensionAlreadyImported": "插件已存在，无法重复导入。请先将其删除后再尝试。",
-        "incompatibleExtension": "此插件与当前操作系统不兼容。"
+        "incompatibleExtension": "此插件与当前操作系统不兼容。",
+        "uninstall": "卸载",
+        "uninstallSuccess": "卸载成功"
       },
       "application": {
         "title": "应用程序",
