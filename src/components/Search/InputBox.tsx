@@ -18,11 +18,7 @@ import { useAssistantManager } from "./AssistantManager";
 import InputControls from "./InputControls";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import AudioRecording from "../AudioRecording";
-import {
-  getUploadedAttachmentsId,
-  isAttachmentsUploaded,
-  isDefaultServer,
-} from "@/utils";
+import { getUploadedAttachmentsId, isDefaultServer } from "@/utils";
 import { useTauriFocus } from "@/hooks/useTauriFocus";
 import { SendMessageParams } from "../Assistant/Chat";
 import { isEmpty } from "lodash-es";
@@ -124,8 +120,6 @@ export default function ChatInput({
 
   const handleSubmit = useCallback(() => {
     const trimmedValue = inputValue.trim();
-
-    if (!isAttachmentsUploaded()) return;
 
     console.log("handleSubmit", trimmedValue, disabled);
 
