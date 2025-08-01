@@ -16,8 +16,6 @@ import { useAppearanceStore } from "@/stores/appearanceStore";
 import { copyToClipboard, OpenURLWithBrowser } from ".";
 import { useAppStore } from "@/stores/appStore";
 import { unrequitable } from "@/utils";
-import { toggle_move_to_active_space_attribute } from "@/commands/system";
-import { isMac } from "@/utils/platform";
 
 export interface TauriPlatformAdapter extends BasePlatformAdapter {
   openFileDialog: (
@@ -80,13 +78,6 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       const { getCurrentWindow } = await import("@tauri-apps/api/window");
       const window = getCurrentWindow();
       return window.setAlwaysOnTop(isPinned);
-    },
-
-    async toggleMoveToActiveSpaceAttribute() {
-      if (isMac) {
-        return toggle_move_to_active_space_attribute();
-      }
-      return Promise.resolve();
     },
 
     async requestScreenRecordingPermission() {

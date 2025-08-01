@@ -30,6 +30,7 @@ Information about release notes of Coco App is provided here.
 - chore: delete unused code files and dependencies #841
 - chore: ignore tauri::AppHandle's generic argument R #845
 - refactor: check Extension/plugin.json from all sources #846
+- refactor: pinning window won't set CanJoinAllSpaces on macOS #854
 
 ## 0.7.1 (2025-07-27)
 
