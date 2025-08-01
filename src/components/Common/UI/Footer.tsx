@@ -19,7 +19,6 @@ import source_default_dark_img from "@/assets/images/source_default_dark.png";
 import { useThemeStore } from "@/stores/themeStore";
 import platformAdapter from "@/utils/platformAdapter";
 import FontIcon from "../Icons/FontIcon";
-import { useTogglePin } from "@/hooks/useTogglePin";
 
 interface FooterProps {
   setIsPinnedWeb?: (value: boolean) => void;
@@ -38,15 +37,27 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
 
   const isDark = useThemeStore((state) => state.isDark);
 
-  const { isTauri } = useAppStore();
-
-  const { isPinned, togglePin } = useTogglePin({
-    onPinChange: setIsPinnedWeb,
-  });
+  const { isTauri, isPinned, setIsPinned } = useAppStore();
 
   const { setVisible, updateInfo, skipVersions } = useUpdateStore();
 
   const { fixedWindow, modifierKey } = useShortcutsStore();
+
+  const setWindowAlwaysOnTop = useCallback(async (isPinned: boolean) => {
+    setIsPinnedWeb?.(isPinned);
+    return platformAdapter.setAlwaysOnTop(isPinned);
+  }, []);
+
+  const togglePin = async () => {
+    try {
+      const newPinned = !isPinned;
+      await setWindowAlwaysOnTop(newPinned);
+      setIsPinned(newPinned);
+    } catch (err) {
+      console.error("Failed to toggle window pin state:", err);
+      setIsPinned(isPinned);
+    }
+  };
 
   const openSetting = useCallback(() => {
     return platformAdapter.emitEvent("open_settings", "");

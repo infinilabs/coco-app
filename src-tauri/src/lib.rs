@@ -177,9 +177,7 @@ pub fn run() {
             extension::built_in::file_search::config::set_file_system_config,
             server::synthesize::synthesize,
             util::file::get_file_icon,
-            util::app_lang::update_app_lang,
-            #[cfg(target_os = "macos")]
-            setup::toggle_move_to_active_space_attribute,
+            util::app_lang::update_app_lang
         ])
         .setup(|app| {
             let app_handle = app.handle().clone();
