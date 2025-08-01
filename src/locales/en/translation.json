@@ -209,7 +209,9 @@
         "importSuccess": "Extension imported successfully.",
         "importFailed": "No valid extension found in the selected folder. Please check the folder structure.",
         "extensionAlreadyImported": "Extension already imported. Please remove it first.",
-        "incompatibleExtension": "This extension is incompatible with your OS."
+        "incompatibleExtension": "This extension is incompatible with your OS.",
+        "uninstall": "Uninstall",
+        "uninstallSuccess": "Uninstall Success"
       },
       "application": {
         "title": "Applications",

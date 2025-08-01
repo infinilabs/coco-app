@@ -205,9 +205,15 @@ export const Extensions = () => {
                         const errorMessage = String(error);
 
                         if (errorMessage === "already imported") {
-                          addError(t("settings.extensions.hints.extensionAlreadyImported"));
+                          addError(
+                            t(
+                              "settings.extensions.hints.extensionAlreadyImported"
+                            )
+                          );
                         } else if (errorMessage === "incompatible") {
-                          addError(t("settings.extensions.hints.incompatibleExtension"));
+                          addError(
+                            t("settings.extensions.hints.incompatibleExtension")
+                          );
                         } else {
                           addError(t("settings.extensions.hints.importFailed"));
                         }
