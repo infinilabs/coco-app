@@ -78,6 +78,10 @@ const VisibleKey: FC<VisibleKeyProps> = (props) => {
       return "→";
     }
 
+    if (shortcut === "enter") {
+      return "↩︎";
+    }
+
     return shortcut;
   };
 
