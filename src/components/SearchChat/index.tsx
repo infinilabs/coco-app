@@ -28,7 +28,7 @@ import { useThemeStore } from "@/stores/themeStore";
 import { useConnectStore } from "@/stores/connectStore";
 import { useAppearanceStore } from "@/stores/appearanceStore";
 import type { StartPage } from "@/types/chat";
-import { isAttachmentsUploaded } from "@/utils";
+import { hasUploadingAttachment } from "@/utils";
 
 interface SearchChatProps {
   isTauri?: boolean;
@@ -153,7 +153,7 @@ function SearchChat({
 
   const handleSendMessage = useCallback(
     async (params: SendMessageParams) => {
-      if (!isAttachmentsUploaded()) return;
+      if (hasUploadingAttachment()) return;
 
       dispatch({ type: "SET_INPUT", payload: params?.message ?? "" });
       if (isChatMode) {

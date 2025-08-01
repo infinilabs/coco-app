@@ -202,9 +202,16 @@ export const filesize = (value: number, spacer?: string) => {
 export const isAttachmentsUploaded = () => {
   const { uploadAttachments } = useChatStore.getState();
 
-  if (uploadAttachments.length === 0) return false;
+  return (
+    uploadAttachments.length > 0 &&
+    uploadAttachments.every((item) => !item.uploading)
+  );
+};
 
-  return uploadAttachments.every((item) => !item.uploading);
+export const hasUploadingAttachment = () => {
+  const { uploadAttachments } = useChatStore.getState();
+
+  return uploadAttachments.some((item) => item.uploading);
 };
 
 export const getUploadedAttachmentsId = () => {
