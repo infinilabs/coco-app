@@ -6419,9 +6419,10 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-macos-permissions"
 version = "2.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5607e0707d37d7b20e287cf0ce396d1efebe7b833b8e9cbd2ea4257091d9c604"
+source = "git+https://github.com/ayangweb/tauri-plugin-macos-permissions?branch=fix-microphone-permission#77a9215df8f077e0ae7fe08cba00db9cd4284936"
 dependencies = [
+ "block2 0.6.1",
+ "log",
  "macos-accessibility-client",
  "objc2 0.6.1",
  "objc2-foundation 0.3.1",
