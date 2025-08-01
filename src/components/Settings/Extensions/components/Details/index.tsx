@@ -76,14 +76,14 @@ const Details = () => {
 
   return (
     <div className="flex-1 h-full pr-4 pb-4 overflow-auto">
-      <div className="flex items-center justify-between gap-4 mb-4">
+      <div className="flex items-start justify-between gap-4 mb-4">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
           {rootState.activeExtension?.name}
         </h2>
 
         {rootState.activeExtension?.developer && (
           <Menu>
-            <MenuButton>
+            <MenuButton className="h-7">
               <Ellipsis className="size-5" />
             </MenuButton>
 
