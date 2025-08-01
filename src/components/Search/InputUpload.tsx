@@ -12,15 +12,15 @@ import {
 } from "@headlessui/react";
 import { castArray, find, isNil } from "lodash-es";
 import { nanoid } from "nanoid";
-import { useCreation, useKeyPress, useMount, useReactive } from "ahooks";
+import { useCreation, useMount, useReactive } from "ahooks";
 
 import { useChatStore } from "@/stores/chatStore";
 import { useAppStore } from "@/stores/appStore";
 import Tooltip from "@/components/Common/Tooltip";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
-import clsx from "clsx";
 import { useConnectStore } from "@/stores/connectStore";
 import { filesize } from "@/utils";
+import VisibleKey from "../Common/VisibleKey";
 
 interface State {
   screenRecordingPermission?: boolean;
@@ -65,7 +65,7 @@ const InputUpload: FC<InputUploadProps> = (props) => {
   const { t, i18n } = useTranslation();
   const { uploadAttachments, setUploadAttachments } = useChatStore();
   const { withVisibility, addError } = useAppStore();
-  const { modifierKey, addFile, modifierKeyPressed } = useShortcutsStore();
+  const { addFile } = useShortcutsStore();
   const { currentAssistant } = useConnectStore();
   const uploadMaxSizeRef = useRef(1024 * 1024);
   const uploadMaxCountRef = useRef(6);
@@ -197,8 +197,6 @@ const InputUpload: FC<InputUploadProps> = (props) => {
     i18n.language,
   ]);
 
-  useKeyPress(`${modifierKey}.${addFile}`, handleSelectFile);
-
   return (
     <Menu>
       <MenuButton className="flex items-center justify-center h-[20px] px-1 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]">
@@ -210,22 +208,9 @@ const InputUpload: FC<InputUploadProps> = (props) => {
             ],
           })}
         >
-          <Plus
-            className={clsx("size-3 scale-[1.3]", {
-              hidden: modifierKeyPressed,
-            })}
-          />
-
-          <div
-            className={clsx(
-              "size-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000]",
-              {
-                hidden: !modifierKeyPressed,
-              }
-            )}
-          >
-            {addFile}
-          </div>
+          <VisibleKey shortcut={addFile} onKeyPress={handleSelectFile}>
+            <Plus className="size-3 scale-[1.3]" />
+          </VisibleKey>
         </Tooltip>
       </MenuButton>
 
