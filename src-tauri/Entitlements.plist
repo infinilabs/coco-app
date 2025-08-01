@@ -12,6 +12,8 @@
     <true/>
     <key>com.apple.security.automation.apple-events</key>
     <true/>
+    <key>com.apple.security.device.microphone</key>
+    <true/>
     <key>com.apple.security.device.audio-input</key>
     <true/>
     <key>com.apple.security.network.client</key>
@@ -24,6 +26,5 @@
     <string>6GVZT94974.rs.coco.app</string>
     <key>com.apple.developer.team-identifier</key>
     <string>6GVZT94974</string>
-
 </dict>
 </plist>
