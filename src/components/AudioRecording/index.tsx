@@ -159,7 +159,7 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
     <>
       <div
         className={clsx(
-          "size-6 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition cursor-pointer",
+          "min-w-6 h-6 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition cursor-pointer",
           {
             hidden: state.audioDevices.length === 0,
           }

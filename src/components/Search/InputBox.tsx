@@ -292,16 +292,6 @@ export default function ChatInput({
           }}
         />
       )}
-
-      {isChatMode && curChatEnd && (
-        <div
-          className={`absolute ${
-            lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-30px)]"
-          }  right-[12px]`}
-        >
-          <VisibleKey shortcut="↩︎" />
-        </div>
-      )}
     </div>
   );
 

@@ -5,6 +5,7 @@ import StopIcon from "@/icons/Stop";
 import clsx from "clsx";
 import { SendMessageParams } from "../Assistant/Chat";
 import { getUploadedAttachmentsId, isAttachmentsUploaded } from "@/utils";
+import VisibleKey from "../Common/VisibleKey";
 
 interface ChatIconsProps {
   lineCount: number;
@@ -16,7 +17,6 @@ interface ChatIconsProps {
 }
 
 const ChatIcons: React.FC<ChatIconsProps> = ({
-  lineCount,
   isChatMode,
   curChatEnd,
   inputValue,
@@ -24,13 +24,13 @@ const ChatIcons: React.FC<ChatIconsProps> = ({
   disabledChange,
 }) => {
   const renderSendButton = () => {
-    if (!isChatMode) return null;
+    if (!isChatMode) return;
 
     if (curChatEnd) {
       return (
         <button
           className={clsx(
-            "ml-1 p-1 rounded-full transition-colors h-6 bg-[#E4E5F0] dark:bg-[rgb(84,84,84)]",
+            "flex items-center justify-center rounded-full transition-colors min-w-6 h-6 bg-[#E4E5F0] dark:bg-[rgb(84,84,84)]",
             {
               "!bg-[#0072FF]": inputValue || isAttachmentsUploaded(),
             }
@@ -43,39 +43,29 @@ const ChatIcons: React.FC<ChatIconsProps> = ({
             });
           }}
         >
-          <Send className="w-4 h-4 text-white" />
+          <VisibleKey shortcut="enter">
+            <Send className="size-[14px] text-white" />
+          </VisibleKey>
         </button>
       );
     }
 
-    if (!curChatEnd) {
-      return (
-        <button
-          className={`ml-1 px-1 bg-[#0072FF] rounded-full transition-colors`}
-          type="submit"
-          onClick={() => disabledChange()}
-        >
-          <StopIcon
-            size={16}
-            className="w-4 h-4 text-white"
-            aria-label="Stop message"
-          />
-        </button>
-      );
-    }
-
-    return null;
+    return (
+      <button
+        className={`ml-1 px-1 bg-[#0072FF] rounded-full transition-colors`}
+        type="submit"
+        onClick={() => disabledChange()}
+      >
+        <StopIcon
+          size={16}
+          className="w-4 h-4 text-white"
+          aria-label="Stop message"
+        />
+      </button>
+    );
   };
 
-  return (
-    <>
-      {lineCount === 1 ? (
-        renderSendButton()
-      ) : (
-        <div className="w-full flex justify-end mt-1">{renderSendButton()}</div>
-      )}
-    </>
-  );
+  return renderSendButton();
 };
 
 export default ChatIcons;
