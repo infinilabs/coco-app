@@ -84,7 +84,7 @@ const Details = () => {
         {rootState.activeExtension?.developer && (
           <Menu>
             <MenuButton className="h-7">
-              <Ellipsis className="size-5" />
+              <Ellipsis className="size-5 text-[#999]" />
             </MenuButton>
 
             <MenuItems
