@@ -18,7 +18,7 @@ import StatusIndicator from "@/components/Cloud/StatusIndicator";
 import { useAuthStore } from "@/stores/authStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useServers } from "@/hooks/useServers";
-import { getCurrentWindowService, setCurrentWindowService } from "@/commands";
+import { getCurrentWindowService, setCurrentWindowService } from "@/commands/windowService";
 
 interface ServerListProps {
   clearChat: () => void;

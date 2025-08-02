@@ -7,7 +7,7 @@ import {
   getCurrentWindowService,
   setCurrentWindowService,
   handleLogout,
-} from "@/commands/servers";
+} from "@/commands/windowService";
 
 export const useServers = () => {
   const setServerList = useConnectStore((state) => state.setServerList);

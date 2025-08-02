@@ -23,7 +23,6 @@ export interface TauriPlatformAdapter extends BasePlatformAdapter {
   ) => Promise<string | string[] | null>;
   metadata: typeof metadata;
   error: typeof error;
-  getCurrentWindowLabel: () => Promise<string>;
 }
 
 // Create Tauri adapter functions
