@@ -69,6 +69,7 @@ export interface WindowOperations {
     event: string,
     callback: (event: any) => void
   ) => Promise<() => void>;
+  getCurrentWindowLabel: () => Promise<string>;
 }
 
 // Theme and event related interface

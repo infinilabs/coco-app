@@ -269,5 +269,9 @@ export const createWebAdapter = (): WebPlatformAdapter => {
 
       return res;
     },
+
+    async getCurrentWindowLabel() {
+      return "web";
+    },
   };
 };
