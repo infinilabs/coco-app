@@ -21,7 +21,6 @@ import { isLinux, isWin } from "@/utils/platform";
 import { appReducer, initialAppState } from "@/reducers/appReducer";
 import { useWindowEvents } from "@/hooks/useWindowEvents";
 import { useAppStore } from "@/stores/appStore";
-import { useAuthStore } from "@/stores/authStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { useStartupStore } from "@/stores/startupStore";
 import { useThemeStore } from "@/stores/themeStore";
@@ -108,10 +107,6 @@ function SearchChat({
 
   useWindowEvents();
 
-  const initializeListeners_auth = useAuthStore((state) => {
-    return state.initializeListeners;
-  });
-
   const setTheme = useThemeStore((state) => state.setTheme);
   const setIsDark = useThemeStore((state) => state.setIsDark);
 
@@ -128,7 +123,6 @@ function SearchChat({
 
   useEffect(() => {
     const init = async () => {
-      await initializeListeners_auth();
       if (isTauri) {
         await platformAdapter.commands("get_app_search_source");
       }
