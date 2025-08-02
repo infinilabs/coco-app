@@ -407,8 +407,8 @@
       "error": "Request error. Please try again later.",
       "logo_alt": "Login Logo",
       "welcome": "Welcome to Coco AI",
-      "connect_tip": "To start a conversation, please connect to the service and log in to your account.",
-      "connect": "Connect"
+      "connect_tip": "To start a conversation, please log in to your account.",
+      "connect": "Login"
     },
     "input": {
       "stopMessage": "Stop message",

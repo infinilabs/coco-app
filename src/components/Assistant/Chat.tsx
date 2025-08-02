@@ -390,7 +390,7 @@ const ChatAI = memo(
               assistantIDs={assistantIDs}
             />
 
-            {isCurrentLogin ? (
+            {isCurrentLogin || !isTauri ? (
               <>
                 <ChatContent
                   activeChat={activeChat}

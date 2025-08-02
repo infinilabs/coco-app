@@ -17,12 +17,6 @@ export interface EventPayloads {
   "showTooltip-changed": {
     showTooltip: boolean;
   };
-  "auth-changed": {
-    auth: Record<string, unknown>;
-  };
-  "userInfo-changed": {
-    userInfo: Record<string, unknown>;
-  };
   open_settings: string | "";
   tab_index: string | "";
   login_or_logout: unknown;

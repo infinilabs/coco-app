@@ -167,8 +167,6 @@ export default function GeneralSettings() {
   };
 
   // const clearAllCache = useCallback(() => {
-  //   setAuth(undefined, endpoint);
-  //   setUserInfo({}, endpoint);
 
   //   useConnectStore.persist.clearStorage();
 

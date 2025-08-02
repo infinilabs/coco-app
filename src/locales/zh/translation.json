@@ -407,8 +407,8 @@
       "error": "请求错误，请稍后再试。",
       "logo_alt": "登录图标",
       "welcome": "欢迎使用 Coco AI",
-      "connect_tip": "要开始对话，请连接服务并登录您的账户。",
-      "connect": "连接"
+      "connect_tip": "要开始对话，请登录您的账户。",
+      "connect": "登录"
     },
     "input": {
       "stopMessage": "停止生成",
