@@ -22,6 +22,7 @@ Information about release notes of Coco App is provided here.
 ### 🐛 Bug fix
 
 - fix: fix issue with update check failure #833
+- fix: web component login state #857
 
 ### ✈️ Improvements
 
