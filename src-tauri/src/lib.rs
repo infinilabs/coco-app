@@ -10,7 +10,6 @@ mod shortcut;
 mod util;
 
 use crate::common::register::SearchSourceRegistry;
-// use crate::common::traits::SearchSource;
 use crate::common::{CHECK_WINDOW_LABEL, MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL};
 use crate::server::servers::{load_or_insert_default_server, load_servers_token};
 use autostart::{change_autostart, ensure_autostart_state_consistent};
@@ -70,10 +69,8 @@ pub fn run() {
 
     #[cfg(desktop)]
     {
-        app_builder = app_builder.plugin(tauri_plugin_single_instance::init(|_app, argv, _cwd| {
-            log::debug!("a new app instance was opened with {argv:?} and the deep link event was already triggered");
-            // when defining deep link schemes at runtime, you must also check `argv` here
-        }));
+        app_builder =
+            app_builder.plugin(tauri_plugin_single_instance::init(|_app, _argv, _cwd| {}));
     }
 
     app_builder = app_builder
@@ -223,27 +220,6 @@ pub fn run() {
             });
 
             ensure_autostart_state_consistent(app)?;
-
-            // app.listen("theme-changed", move |event| {
-            //     if let Ok(payload) = serde_json::from_str::<ThemeChangedPayload>(event.payload()) {
-            //         // switch_tray_icon(app.app_handle(), payload.is_dark_mode);
-            //         log::debug!("Theme changed: is_dark_mode = {}", payload.is_dark_mode);
-            //     }
-            // });
-
-            #[cfg(desktop)]
-            {
-                #[cfg(any(windows, target_os = "linux"))]
-                {
-                    app.deep_link().register("coco")?;
-                    use tauri_plugin_deep_link::DeepLinkExt;
-                    app.deep_link().register_all()?;
-                }
-            }
-
-            // app.deep_link().on_open_url(|event| {
-            //     dbg!(event.urls());
-            // });
 
             let main_window = app.get_webview_window(MAIN_WINDOW_LABEL).unwrap();
             let settings_window = app.get_webview_window(SETTINGS_WINDOW_LABEL).unwrap();
