@@ -120,6 +120,9 @@ const ServiceAuth = memo(
     // Install extension deeplink handler
     //
     // Example URL: "coco://install_extension_from_store?id=<Extension ID>"
+    //
+    //
+    // TODO: move ths extension-related function to other files
     const handleDeeplinkInstallExtensionFromStore = useCallback(
       async (url: URL) => {
         const extension_id = url.searchParams.get("id");
@@ -139,6 +142,8 @@ const ServiceAuth = memo(
     );
 
     // Helper function to dispatch deeplink handling.
+    //
+    // TODO: move ths dispatcher to other files
     const handleUrl = useCallback(
       (url: string) => {
         console.debug("handling deeplink URL ", url);
