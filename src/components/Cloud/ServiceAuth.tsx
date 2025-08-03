@@ -147,8 +147,6 @@ const ServiceAuth = memo(
           const urlObject = new URL(url.trim());
           const deeplinkIdentifier = urlObject.hostname;
 
-          invoke("rust_println", { msg: String(deeplinkIdentifier) });
-
           switch (deeplinkIdentifier) {
             case "oauth_callback":
               handleDeeplinkOAuthCallback(urlObject);
