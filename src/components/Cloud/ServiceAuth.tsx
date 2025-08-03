@@ -7,6 +7,7 @@ import {
   onOpenUrl,
 } from "@tauri-apps/plugin-deep-link";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { invoke } from "@tauri-apps/api/core";
 
 import { UserProfile } from "./UserProfile";
 import { OpenURLWithBrowser } from "@/utils";
@@ -93,28 +94,79 @@ const ServiceAuth = memo(
       [ssoRequestID]
     );
 
-    const handleUrl = (url: string) => {
-      try {
-        const urlObject = new URL(url.trim());
-        console.log("handle urlObject:", urlObject);
+    // Coco server OAuthCallback deeplink handler.
+    const handleDeeplinkOAuthCallback = useCallback(
+      async (url: URL) => {
+        try {
+          const reqId = url.searchParams.get("request_id");
+          const code = url.searchParams.get("code");
 
-        // pass request_id and check with local, if the request_id are same, then continue
-        const reqId = urlObject.searchParams.get("request_id");
-        const code = urlObject.searchParams.get("code");
+          if (reqId != ssoRequestID) {
+            console.log("Request ID not matched, skip");
+            addError("Request ID not matched, skip");
+            return;
+          }
 
-        if (reqId != ssoRequestID) {
-          console.log("Request ID not matched, skip");
-          addError("Request ID not matched, skip");
+          const serverId = cloudSelectService?.id;
+          handleOAuthCallback(code, serverId);
+        } catch (err) {
+          console.error("Failed to parse OAuth callback URL:", err);
+          addError("Invalid OAuth callback URL format: " + err);
+        }
+      },
+      [ssoRequestID, cloudSelectService, handleOAuthCallback]
+    );
+
+    // Install extension deeplink handler
+    //
+    // Example URL: "coco://install_extension_from_store?id=<Extension ID>"
+    const handleDeeplinkInstallExtensionFromStore = useCallback(
+      async (url: URL) => {
+        const extension_id = url.searchParams.get("id");
+        if (extension_id == null) {
+          console.warn("received an invalid \"", url.hostname, "\" deeplink, missing argument \"id\"");
           return;
         }
 
-        const serverId = cloudSelectService?.id;
-        handleOAuthCallback(code, serverId);
-      } catch (err) {
-        console.error("Failed to parse URL:", err);
-        addError("Invalid URL format: " + err);
-      }
-    };
+        try {
+          // extension_id has been checked that it is NOT NULL
+          invoke("install_extension_from_store", { id: extension_id });
+        } catch (install_error) {
+          console.error("Failed to install extension \"", extension_id, "\, error: ", install_error);
+        }
+      },
+      []
+    );
+
+    // Helper function to dispatch deeplink handling.
+    const handleUrl = useCallback(
+      (url: string) => {
+        console.debug("handling deeplink URL ", url);
+
+        try {
+          const urlObject = new URL(url.trim());
+          const deeplinkIdentifier = urlObject.hostname;
+
+          invoke("rust_println", { msg: String(deeplinkIdentifier) });
+
+          switch (deeplinkIdentifier) {
+            case "oauth_callback":
+              handleDeeplinkOAuthCallback(urlObject);
+              break;
+            case "install_extension_from_store":
+              handleDeeplinkInstallExtensionFromStore(urlObject);
+              break;
+            default:
+              console.error("Unknown deep link: ", url);
+              addError("Unknown deep link: " + url);
+          }
+        } catch (err) {
+          console.error("Failed to parse URL:", err);
+          addError("Invalid URL format: " + err);
+        }
+      },
+      [handleDeeplinkOAuthCallback, handleDeeplinkInstallExtensionFromStore]
+    );
 
     // Fetch the initial deep link intent
     useEffect(() => {
@@ -122,15 +174,14 @@ const ServiceAuth = memo(
       const handlePaste = (event: any) => {
         const pastedText = event.clipboardData.getData("text").trim();
         console.log("handle paste text:", pastedText);
-        if (isValidCallbackUrl(pastedText)) {
+        if (isValidOAuthCallbackUrl(pastedText)) {
           // Handle the URL as if it's a deep link
           console.log("handle callback on paste:", pastedText);
           handleUrl(pastedText);
         }
       };
 
-      // Function to check if the pasted URL is valid for our deep link scheme
-      const isValidCallbackUrl = (url: string) => {
+      const isValidOAuthCallbackUrl = (url: string) => {
         return url && url.startsWith("coco://oauth_callback");
       };
 
@@ -141,9 +192,7 @@ const ServiceAuth = memo(
         .then((urls) => {
           console.log("URLs:", urls);
           if (urls && urls.length > 0) {
-            if (isValidCallbackUrl(urls[0].trim())) {
-              handleUrl(urls[0]);
-            }
+            handleUrl(urls[0]);
           }
         })
         .catch((err) => {
