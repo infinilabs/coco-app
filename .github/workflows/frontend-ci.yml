@@ -1,0 +1,34 @@
+name: Frontend Code Check
+
+on:
+  pull_request:
+    # Only run it when Frontend code changes
+    paths:
+      - 'src/**'
+
+jobs:
+  check:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, windows-latest, macos-latest]
+    
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    # No need to pass the version arg as it is specified by "packageManager" in package.json
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Build frontend
+      run: pnpm build
