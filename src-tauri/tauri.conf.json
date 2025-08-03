@@ -129,7 +129,6 @@
     "shell": {},
     "globalShortcut": {},
     "deep-link": {
-      "schema": "coco",
       "mobile": [
         {
           "host": "app.infini.cloud",
