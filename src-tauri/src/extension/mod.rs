@@ -1,6 +1,8 @@
 pub(crate) mod built_in;
 pub(crate) mod third_party;
 
+use crate::common::document::ExtensionOnOpened;
+use crate::common::document::ExtensionOnOpenedType;
 use crate::common::document::OnOpened;
 use crate::common::register::SearchSourceRegistry;
 use crate::util::platform::Platform;
@@ -99,7 +101,7 @@ pub struct Extension {
 
     /// Extension settings
     #[serde(skip_serializing_if = "Option::is_none")]
-    settings: Option<Json>,
+    settings: Option<ExtensionSettings>,
 
     // We do not care about these fields, just take it regardless of what it is.
     screenshots: Option<Json>,
@@ -178,23 +180,53 @@ impl Extension {
     pub(crate) fn searchable(&self) -> bool {
         self.on_opened().is_some()
     }
+
     /// Return what will happen when we open this extension.
     ///
     /// `None` if it cannot be opened.
     pub(crate) fn on_opened(&self) -> Option<OnOpened> {
+        let settings = self.settings.clone();
+
         match self.r#type {
-            ExtensionType::Group => None,
-            ExtensionType::Extension => None,
-            ExtensionType::Command => Some(OnOpened::Command {
-                action: self.action.clone().unwrap_or_else(|| {
-                  panic!(
-                    "Command extension [{}]'s [action] field is not set, something wrong with your extension validity check", self.id
-                  )
-                }),
-            }),
-            ExtensionType::Application => Some(OnOpened::Application {
-                app_path: self.id.clone(),
-            }),
+            // This function, at the time of writing this comment, is primarily
+            // used by third-party extensions.
+            //
+            // Built-in extensions don't use this as they are technically not
+            // "struct Extension"s.  Typically, they directly construct a
+            // "struct Document" from their own type.
+            ExtensionType::Calculator => unreachable!("this is handled by frontend"),
+            ExtensionType::AiExtension => unreachable!(
+                "currently, all AI extensions we have are non-searchable, so we won't open them"
+            ),
+            ExtensionType::Application => {
+                // We can have a impl like:
+                //
+                // Some(OnOpened::Application { app_path: self.id.clone() })
+                //
+                // but it won't be used.
+
+                unreachable!(
+                    "Applications are not \"struct Extension\" under the hood, they won't call this method"
+                )
+            }
+
+            // These 2 types of extensions cannot be opened
+            ExtensionType::Group => return None,
+            ExtensionType::Extension => return None,
+
+            ExtensionType::Command => {
+                let ty = ExtensionOnOpenedType::Command {
+                  action: self.action.clone().unwrap_or_else(|| {
+                    panic!(
+                      "Command extension [{}]'s [action] field is not set, something wrong with your extension validity check", self.id
+                    )
+                  }),
+              };
+
+                let extension_on_opened = ExtensionOnOpened { ty, settings };
+
+                Some(OnOpened::Extension(extension_on_opened))
+            }
             ExtensionType::Quicklink => {
                 let quicklink = self.quicklink.clone().unwrap_or_else(|| {
                   panic!(
@@ -202,15 +234,17 @@ impl Extension {
                   )
                 });
 
-                Some(OnOpened::Quicklink{
-                  link: quicklink.link,
-                  open_with: quicklink.open_with,
-                })
+                let ty = ExtensionOnOpenedType::Quicklink {
+                    link: quicklink.link,
+                    open_with: quicklink.open_with,
+                };
+
+                let extension_on_opened = ExtensionOnOpened { ty, settings };
+
+                Some(OnOpened::Extension(extension_on_opened))
             }
             ExtensionType::Script => todo!("not supported yet"),
             ExtensionType::Setting => todo!("not supported yet"),
-            ExtensionType::Calculator => None,
-            ExtensionType::AiExtension => None,
         }
     }
 
@@ -1076,6 +1110,13 @@ fn parse_dynamic_placeholder(content: &str) -> Result<QuicklinkLinkComponent, St
         argument_name,
         default: default_value,
     })
+}
+
+/// Built-in extension settings
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub(crate) struct ExtensionSettings {
+    /// If set, Coco main window would hide before opening this document/e
+    pub(crate) hide_before_open: Option<bool>,
 }
 
 #[cfg(test)]

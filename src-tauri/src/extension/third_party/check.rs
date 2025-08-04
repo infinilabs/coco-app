@@ -104,6 +104,16 @@ fn check_main_extension_only(extension: &Extension) -> Result<(), String> {
         }
     }
 
+    if extension.settings.is_some() {
+        // Sub-extensions are all searchable, so this check is only for main extensions.
+        if !extension.searchable() {
+            return Err(format!(
+                "invalid extension {}, field [settings] is currently only allowed in searchable extension, this type of extension is not searchable [{}]",
+                extension.id, extension.r#type
+            ));
+        }
+    }
+
     Ok(())
 }
 
@@ -204,7 +214,9 @@ fn check_main_extension_or_sub_extension(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::extension::{CommandAction, Quicklink, QuicklinkLink, QuicklinkLinkComponent};
+    use crate::extension::{
+        CommandAction, ExtensionSettings, Quicklink, QuicklinkLink, QuicklinkLinkComponent,
+    };
 
     /// Helper function to create a basic valid extension
     fn create_basic_extension(id: &str, extension_type: ExtensionType) -> Extension {
@@ -307,6 +319,29 @@ mod tests {
             result
                 .unwrap_err()
                 .contains("only extension of type [Group] and [Extension] can have sub-extensions")
+        );
+    }
+
+    #[test]
+    fn test_non_searchable_extension_set_field_settings() {
+        let mut extension = create_basic_extension("test-group", ExtensionType::Group);
+        extension.settings = Some(ExtensionSettings {
+            hide_before_open: None,
+        });
+        let error_msg = general_check(&extension).unwrap_err();
+        assert!(
+            error_msg
+                .contains("field [settings] is currently only allowed in searchable extension")
+        );
+
+        let mut extension = create_basic_extension("test-extension", ExtensionType::Extension);
+        extension.settings = Some(ExtensionSettings {
+            hide_before_open: None,
+        });
+        let error_msg = general_check(&extension).unwrap_err();
+        assert!(
+            error_msg
+                .contains("field [settings] is currently only allowed in searchable extension")
         );
     }
     /* test_check_main_extension_only */
