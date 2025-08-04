@@ -18,6 +18,7 @@ Information about release notes of Coco App is provided here.
 - feat: support sending files in chat messages #764
 - feat: sub extension can set 'platforms' now #847
 - feat: add extension uninstall option in settings #855
+- feat: impl extension settings 'hide_before_open' #862
 
 ### 🐛 Bug fix
 
