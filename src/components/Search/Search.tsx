@@ -103,10 +103,10 @@ const SearchResultsPanel = memo<{
   }, [handleOpenExtensionStore]);
 
   useEffect(() => {
-    if (visibleExtensionStore && visibleExtensionDetail) return;
+    if (visibleExtensionDetail) return;
 
     setExtensionId("");
-  }, [visibleExtensionStore, visibleExtensionDetail]);
+  }, [visibleExtensionDetail]);
 
   if (visibleExtensionStore) {
     return <ExtensionStore extensionId={extensionId} />;
