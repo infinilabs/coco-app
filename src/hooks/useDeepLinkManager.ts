@@ -136,7 +136,8 @@ export function useDeepLinkManager() {
       const pastedText = event.clipboardData?.getData("text")?.trim();
       console.log("handle paste text:", pastedText);
 
-      if (pastedText && pastedText.startsWith("coco://")) {
+      // coco://oauth_callback
+      if (pastedText && pastedText.startsWith("coco://oauth_callback")) {
         console.log("handle deeplink on paste:", pastedText);
         handleUrl(pastedText);
       }
