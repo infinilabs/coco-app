@@ -178,9 +178,13 @@ pub(crate) async fn extension_detail(id: String) -> Result<JsonObject<String, Js
     let url = format!("http://dev.infini.cloud:27200/store/extension/{}", id);
     let response =
         HttpClient::send_raw_request(Method::GET, url.as_str(), None, None, None).await?;
+    let response_dbg_str = format!("{:?}", response);
     // The response of an ES style GET request
-    let mut response: JsonObject<String, Json> = response.json().await.unwrap_or_else(|e| {
-        panic!("response body of [/store/extension/<ID>] is not a JSON object")
+    let mut response: JsonObject<String, Json> = response.json().await.unwrap_or_else(|_e| {
+        panic!(
+            "response body of [/store/extension/<ID>] is not a JSON object, response [{:?}]",
+            response_dbg_str
+        )
     });
     let source_json = response.remove("_source").unwrap_or_else(|| {
         panic!("field [_source] not found in the JSON returned from [/store/extension/<ID>]")
@@ -193,12 +197,12 @@ pub(crate) async fn extension_detail(id: String) -> Result<JsonObject<String, Js
         ),
     };
 
-    let developer_id = match &source_obj["developer"]["_id"] {
+    let developer_id = match &source_obj["developer"]["id"] {
         Json::String(dev) => dev,
         _ => {
             panic!(
-                "field [_source.developer._id] should be a string, but it is not, value: [{}]",
-                source_obj["developer"]["_id"]
+                "field [_source.developer.id] should be a string, but it is not, value: [{}]",
+                source_obj["developer"]["id"]
             )
         }
     };
