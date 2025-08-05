@@ -109,15 +109,12 @@ const ExtensionStore = ({ extensionId }: { extensionId: string }) => {
 
   const handleExtensionDetail = useCallback(async () => {
     try {
-      console.log(555555, extensionId);
-
       const detail = await platformAdapter.invokeBackend<SearchExtensionItem>(
         "extension_detail",
         {
           id: extensionId,
         }
       );
-      console.log(222222, detail);
       setSelectedExtension(detail);
       setVisibleExtensionDetail(true);
     } catch (error) {
@@ -126,9 +123,7 @@ const ExtensionStore = ({ extensionId }: { extensionId: string }) => {
   }, [extensionId, installingExtensions]);
 
   useAsyncEffect(async () => {
-    console.log(333333, extensionId);
     if (extensionId) {
-      console.log(444444, extensionId);
 
       return handleExtensionDetail();
     }

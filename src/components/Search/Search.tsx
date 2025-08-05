@@ -88,7 +88,6 @@ const SearchResultsPanel = memo<{
       (event) => {
         const { extensionId } = event.payload;
         setExtensionId(extensionId ?? "");
-        console.log(111111, extensionId);
         handleOpenExtensionStore();
       }
     );
