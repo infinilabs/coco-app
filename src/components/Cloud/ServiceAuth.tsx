@@ -2,11 +2,6 @@ import { FC, memo, useCallback, useEffect, useState } from "react";
 import { Copy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { v4 as uuidv4 } from "uuid";
-import {
-  getCurrent as getCurrentDeepLinkUrls,
-  onOpenUrl,
-} from "@tauri-apps/plugin-deep-link";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 
 import { UserProfile } from "./UserProfile";
 import { OpenURLWithBrowser } from "@/utils";
@@ -18,19 +13,21 @@ import { useServers } from "@/hooks/useServers";
 
 interface ServiceAuthProps {
   setRefreshLoading: (loading: boolean) => void;
-  refreshClick: (id: string) => void;
+  refreshClick: (id: string, callback?: () => void) => void;
 }
 
 const ServiceAuth = memo(
   ({ setRefreshLoading, refreshClick }: ServiceAuthProps) => {
     const { t } = useTranslation();
 
+    const language = useAppStore((state) => state.language);
+    const addError = useAppStore((state) => state.addError);
     const ssoRequestID = useAppStore((state) => state.ssoRequestID);
     const setSSORequestID = useAppStore((state) => state.setSSORequestID);
 
-    const addError = useAppStore((state) => state.addError);
-
-    const cloudSelectService = useConnectStore((state) => state.cloudSelectService);
+    const cloudSelectService = useConnectStore(
+      (state) => state.cloudSelectService
+    );
 
     const { logoutServer } = useServers();
 
@@ -64,100 +61,25 @@ const ServiceAuth = memo(
       [logoutServer]
     );
 
-    const handleOAuthCallback = useCallback(
-      async (code: string | null, serverId: string | null) => {
-        if (!code || !serverId) {
-          addError("No authorization code received");
-          return;
-        }
-
-        try {
-          console.log("Handling OAuth callback:", { code, serverId });
-          await platformAdapter.commands("handle_sso_callback", {
-            serverId: serverId, // Make sure 'server_id' is the correct argument
-            requestId: ssoRequestID, // Make sure 'request_id' is the correct argument
-            code: code,
-          });
-
-          if (serverId != null) {
-            refreshClick(serverId);
-          }
-
-          getCurrentWindow().setFocus();
-        } catch (e) {
-          console.error("Sign in failed:", e);
-        } finally {
-          setLoading(false);
-        }
-      },
-      [ssoRequestID]
-    );
-
-    const handleUrl = (url: string) => {
-      try {
-        const urlObject = new URL(url.trim());
-        console.log("handle urlObject:", urlObject);
-
-        // pass request_id and check with local, if the request_id are same, then continue
-        const reqId = urlObject.searchParams.get("request_id");
-        const code = urlObject.searchParams.get("code");
-
-        if (reqId != ssoRequestID) {
-          console.log("Request ID not matched, skip");
-          addError("Request ID not matched, skip");
-          return;
-        }
-
-        const serverId = cloudSelectService?.id;
-        handleOAuthCallback(code, serverId);
-      } catch (err) {
-        console.error("Failed to parse URL:", err);
-        addError("Invalid URL format: " + err);
-      }
-    };
-
-    // Fetch the initial deep link intent
+    // handle oauth success event
     useEffect(() => {
-      // Function to handle pasted URL
-      const handlePaste = (event: any) => {
-        const pastedText = event.clipboardData.getData("text").trim();
-        console.log("handle paste text:", pastedText);
-        if (isValidCallbackUrl(pastedText)) {
-          // Handle the URL as if it's a deep link
-          console.log("handle callback on paste:", pastedText);
-          handleUrl(pastedText);
-        }
-      };
-
-      // Function to check if the pasted URL is valid for our deep link scheme
-      const isValidCallbackUrl = (url: string) => {
-        return url && url.startsWith("coco://oauth_callback");
-      };
-
-      // Adding event listener for paste events
-      document.addEventListener("paste", handlePaste);
-
-      getCurrentDeepLinkUrls()
-        .then((urls) => {
-          console.log("URLs:", urls);
-          if (urls && urls.length > 0) {
-            if (isValidCallbackUrl(urls[0].trim())) {
-              handleUrl(urls[0]);
-            }
+      const unlistenOAuth = platformAdapter.listenEvent(
+        "oauth_success",
+        (event) => {
+          const { serverId } = event.payload;
+          if (serverId) {
+            refreshClick(serverId, () => {
+              setLoading(false);
+            });
+            addError(language === "zh" ? "登录成功" : "Login Success", "info");
           }
-        })
-        .catch((err) => {
-          console.error("Failed to get initial URLs:", err);
-          addError("Failed to get initial URLs: " + err);
-        });
-
-      const unlisten = onOpenUrl((urls) => handleUrl(urls[0]));
+        }
+      );
 
       return () => {
-        unlisten.then((fn) => fn());
-        document.removeEventListener("paste", handlePaste);
+        unlistenOAuth.then((fn) => fn());
       };
-    }, [ssoRequestID]);
+    }, [refreshClick]);
 
     useEffect(() => {
       setLoading(false);
@@ -214,7 +136,9 @@ const ServiceAuth = memo(
               <button
                 className="text-xs text-[#0096FB] dark:text-blue-400 block"
                 onClick={() =>
-                  OpenURLWithBrowser(cloudSelectService?.provider?.privacy_policy)
+                  OpenURLWithBrowser(
+                    cloudSelectService?.provider?.privacy_policy
+                  )
                 }
               >
                 {t("cloud.privacyPolicy")}

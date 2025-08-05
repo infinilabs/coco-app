@@ -39,7 +39,9 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
 
     async showWindow() {
       const window = await windowWrapper.getWebviewWindow();
-      return window?.show();
+      window?.show();
+      window?.unminimize();
+      return window?.setFocus();
     },
 
     async emitEvent(event, payload) {

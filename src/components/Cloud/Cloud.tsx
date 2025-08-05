@@ -68,11 +68,12 @@ export default function Cloud() {
   }, [serverList, errors, cloudSelectService]);
 
   const refreshClick = useCallback(
-    async (id: string) => {
+    async (id: string, callback?: () => void) => {
       setRefreshLoading(true);
       await platformAdapter.commands("refresh_coco_server_info", id);
       await refreshServerList();
       setRefreshLoading(false);
+      callback && callback();
     },
     [refreshServerList]
   );

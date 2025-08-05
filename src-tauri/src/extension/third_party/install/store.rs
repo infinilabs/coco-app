@@ -19,6 +19,7 @@ use crate::extension::third_party::install::filter_out_incompatible_sub_extensio
 use crate::server::http_client::HttpClient;
 use crate::util::platform::Platform;
 use async_trait::async_trait;
+use http::Method;
 use reqwest::StatusCode;
 use serde_json::Map as JsonObject;
 use serde_json::Value as Json;
@@ -173,6 +174,52 @@ pub(crate) async fn search_extension(
 }
 
 #[tauri::command]
+pub(crate) async fn extension_detail(
+    id: String,
+) -> Result<Option<JsonObject<String, Json>>, String> {
+    let url = format!("http://dev.infini.cloud:27200/store/extension/{}", id);
+    let response =
+        HttpClient::send_raw_request(Method::GET, url.as_str(), None, None, None).await?;
+
+    if response.status() == StatusCode::NOT_FOUND {
+        return Ok(None);
+    }
+
+    let response_dbg_str = format!("{:?}", response);
+    // The response of an ES style GET request
+    let mut response: JsonObject<String, Json> = response.json().await.unwrap_or_else(|_e| {
+        panic!(
+            "response body of [/store/extension/<ID>] is not a JSON object, response [{:?}]",
+            response_dbg_str
+        )
+    });
+    let source_json = response.remove("_source").unwrap_or_else(|| {
+        panic!("field [_source] not found in the JSON returned from [/store/extension/<ID>]")
+    });
+    let mut source_obj = match source_json {
+        Json::Object(obj) => obj,
+        _ => panic!(
+            "field [_source] should be a JSON object, but it is not, value: [{}]",
+            source_json
+        ),
+    };
+
+    let developer_id = match &source_obj["developer"]["id"] {
+        Json::String(dev) => dev,
+        _ => {
+            panic!(
+                "field [_source.developer.id] should be a string, but it is not, value: [{}]",
+                source_obj["developer"]["id"]
+            )
+        }
+    };
+    let installed = is_extension_installed(developer_id, &id).await;
+    source_obj.insert("installed".to_string(), Json::Bool(installed));
+
+    Ok(Some(source_obj))
+}
+
+#[tauri::command]
 pub(crate) async fn install_extension_from_store(
     tauri_app_handle: AppHandle,
     id: String,
@@ -250,21 +297,32 @@ pub(crate) async fn install_extension_from_store(
             e
         );
     });
+    let developer_id = extension.developer.clone().expect("developer has been set");
 
     drop(plugin_json);
 
     general_check(&extension)?;
 
+    let current_platform = Platform::current();
+    if let Some(ref platforms) = extension.platforms {
+        if !platforms.contains(&current_platform) {
+            return Err("this extension is not compatible with your OS".into());
+        }
+    }
+
+    if is_extension_installed(&developer_id, &id).await {
+        return Err("Extension already installed.".into());
+    }
+
     // Extension is compatible with current platform, but it could contain sub
     // extensions that are not, filter them out.
-    filter_out_incompatible_sub_extensions(&mut extension, Platform::current());
+    filter_out_incompatible_sub_extensions(&mut extension, current_platform);
 
     // Write extension files to the extension directory
-    let developer = extension.developer.clone().unwrap_or_default();
     let extension_id = extension.id.clone();
     let extension_directory = {
         let mut path = get_third_party_extension_directory(&tauri_app_handle);
-        path.push(developer);
+        path.push(developer_id);
         path.push(extension_id.as_str());
         path
     };

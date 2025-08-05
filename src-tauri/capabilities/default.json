@@ -69,6 +69,7 @@
     "updater:default",
     "windows-version:default",
     "log:default",
-    "opener:default"
+    "opener:default",
+    "core:window:allow-unminimize"
   ]
 }
