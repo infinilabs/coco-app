@@ -21,6 +21,7 @@ import { useIconfontScript } from "@/hooks/useScript";
 import { Extension } from "@/components/Settings/Extensions";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useServers } from "@/hooks/useServers";
+import { useDeepLinkManager } from '@/hooks/useDeepLinkManager';
 
 export default function Layout() {
   const location = useLocation();
@@ -31,6 +32,8 @@ export default function Layout() {
 
   // init servers isTauri
   useServers();
+  // init deep link manager
+  useDeepLinkManager();
 
   const [langUpdated, setLangUpdated] = useState(false);
 

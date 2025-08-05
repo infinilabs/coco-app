@@ -2,12 +2,6 @@ import { FC, memo, useCallback, useEffect, useState } from "react";
 import { Copy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { v4 as uuidv4 } from "uuid";
-import {
-  getCurrent as getCurrentDeepLinkUrls,
-  onOpenUrl,
-} from "@tauri-apps/plugin-deep-link";
-import { getCurrentWindow } from "@tauri-apps/api/window";
-import { invoke } from "@tauri-apps/api/core";
 
 import { UserProfile } from "./UserProfile";
 import { OpenURLWithBrowser } from "@/utils";
@@ -26,10 +20,10 @@ const ServiceAuth = memo(
   ({ setRefreshLoading, refreshClick }: ServiceAuthProps) => {
     const { t } = useTranslation();
 
+    const language = useAppStore((state) => state.language);
+    const addError = useAppStore((state) => state.addError);
     const ssoRequestID = useAppStore((state) => state.ssoRequestID);
     const setSSORequestID = useAppStore((state) => state.setSSORequestID);
-
-    const addError = useAppStore((state) => state.addError);
 
     const cloudSelectService = useConnectStore((state) => state.cloudSelectService);
 
@@ -65,151 +59,21 @@ const ServiceAuth = memo(
       [logoutServer]
     );
 
-    const handleOAuthCallback = useCallback(
-      async (code: string | null, serverId: string | null) => {
-        if (!code || !serverId) {
-          addError("No authorization code received");
-          return;
-        }
-
-        try {
-          console.log("Handling OAuth callback:", { code, serverId });
-          await platformAdapter.commands("handle_sso_callback", {
-            serverId: serverId, // Make sure 'server_id' is the correct argument
-            requestId: ssoRequestID, // Make sure 'request_id' is the correct argument
-            code: code,
-          });
-
-          if (serverId != null) {
-            refreshClick(serverId);
-          }
-
-          getCurrentWindow().setFocus();
-        } catch (e) {
-          console.error("Sign in failed:", e);
-        } finally {
-          setLoading(false);
-        }
-      },
-      [ssoRequestID]
-    );
-
-    // Coco server OAuthCallback deeplink handler.
-    const handleDeeplinkOAuthCallback = useCallback(
-      async (url: URL) => {
-        try {
-          const reqId = url.searchParams.get("request_id");
-          const code = url.searchParams.get("code");
-
-          if (reqId != ssoRequestID) {
-            console.log("Request ID not matched, skip");
-            addError("Request ID not matched, skip");
-            return;
-          }
-
-          const serverId = cloudSelectService?.id;
-          handleOAuthCallback(code, serverId);
-        } catch (err) {
-          console.error("Failed to parse OAuth callback URL:", err);
-          addError("Invalid OAuth callback URL format: " + err);
-        }
-      },
-      [ssoRequestID, cloudSelectService, handleOAuthCallback]
-    );
-
-    // Install extension deeplink handler
-    //
-    // Example URL: "coco://install_extension_from_store?id=<Extension ID>"
-    //
-    //
-    // TODO: move ths extension-related function to other files
-    const handleDeeplinkInstallExtensionFromStore = useCallback(
-      async (url: URL) => {
-        const extension_id = url.searchParams.get("id");
-        if (extension_id == null) {
-          console.warn("received an invalid \"", url.hostname, "\" deeplink, missing argument \"id\"");
-          return;
-        }
-
-        try {
-          // extension_id has been checked that it is NOT NULL
-          invoke("install_extension_from_store", { id: extension_id });
-        } catch (install_error) {
-          console.error("Failed to install extension \"", extension_id, "\, error: ", install_error);
-        }
-      },
-      []
-    );
-
-    // Helper function to dispatch deeplink handling.
-    //
-    // TODO: move ths dispatcher to other files
-    const handleUrl = useCallback(
-      (url: string) => {
-        console.debug("handling deeplink URL ", url);
-
-        try {
-          const urlObject = new URL(url.trim());
-          const deeplinkIdentifier = urlObject.hostname;
-
-          switch (deeplinkIdentifier) {
-            case "oauth_callback":
-              handleDeeplinkOAuthCallback(urlObject);
-              break;
-            case "install_extension_from_store":
-              handleDeeplinkInstallExtensionFromStore(urlObject);
-              break;
-            default:
-              console.error("Unknown deep link: ", url);
-              addError("Unknown deep link: " + url);
-          }
-        } catch (err) {
-          console.error("Failed to parse URL:", err);
-          addError("Invalid URL format: " + err);
-        }
-      },
-      [handleDeeplinkOAuthCallback, handleDeeplinkInstallExtensionFromStore]
-    );
-
-    // Fetch the initial deep link intent
+    // handle oauth success event
     useEffect(() => {
-      // Function to handle pasted URL
-      const handlePaste = (event: any) => {
-        const pastedText = event.clipboardData.getData("text").trim();
-        console.log("handle paste text:", pastedText);
-        if (isValidOAuthCallbackUrl(pastedText)) {
-          // Handle the URL as if it's a deep link
-          console.log("handle callback on paste:", pastedText);
-          handleUrl(pastedText);
+      const unlistenOAuth = platformAdapter.listenEvent('oauth_success', (event) => {
+        const { serverId } = event.payload;
+        if (serverId) {
+          refreshClick(serverId);
+          addError(language === "zh" ? "登录成功" : "Login Success", "info");
         }
-      };
-
-      const isValidOAuthCallbackUrl = (url: string) => {
-        return url && url.startsWith("coco://oauth_callback");
-      };
-
-      // Adding event listener for paste events
-      document.addEventListener("paste", handlePaste);
-
-      getCurrentDeepLinkUrls()
-        .then((urls) => {
-          console.log("URLs:", urls);
-          if (urls && urls.length > 0) {
-            handleUrl(urls[0]);
-          }
-        })
-        .catch((err) => {
-          console.error("Failed to get initial URLs:", err);
-          addError("Failed to get initial URLs: " + err);
-        });
-
-      const unlisten = onOpenUrl((urls) => handleUrl(urls[0]));
+        setLoading(false);
+      });
 
       return () => {
-        unlisten.then((fn) => fn());
-        document.removeEventListener("paste", handlePaste);
+        unlistenOAuth.then(fn => fn());
       };
-    }, [ssoRequestID]);
+    }, [refreshClick]);
 
     useEffect(() => {
       setLoading(false);

@@ -45,6 +45,8 @@ export interface EventPayloads {
   "chat-create-error": string;
   [key: `synthesize-${string}`]: any;
   "check-update": any;
+  "oauth_success": any;
+  "extension_install_success": any;
 }
 
 // Window operation interface
