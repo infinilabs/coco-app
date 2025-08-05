@@ -81,14 +81,8 @@ export function useDeepLinkManager() {
       platformAdapter.emitEvent("extension_install_success", { extensionId });
       addError(t("deepLink.extensionInstallSuccessfully"), "info");
       console.log("Extension installed successfully:", extensionId);
-    } catch (installError) {
-      console.error(
-        "Failed to install extension",
-        extensionId,
-        ", error: ",
-        installError
-      );
-      addError(`Failed to install extension: ${installError}`);
+    } catch (error) {
+      addError(String(error));
     }
   }, []);
 
