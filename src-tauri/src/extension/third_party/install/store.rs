@@ -19,6 +19,7 @@ use crate::extension::third_party::install::filter_out_incompatible_sub_extensio
 use crate::server::http_client::HttpClient;
 use crate::util::platform::Platform;
 use async_trait::async_trait;
+use http::Method;
 use reqwest::StatusCode;
 use serde_json::Map as JsonObject;
 use serde_json::Value as Json;
@@ -170,6 +171,41 @@ pub(crate) async fn search_extension(
     }
 
     Ok(extensions)
+}
+
+#[tauri::command]
+pub(crate) async fn extension_detail(id: String) -> Result<JsonObject<String, Json>, String> {
+    let url = format!("http://dev.infini.cloud:27200/store/extension/{}", id);
+    let response =
+        HttpClient::send_raw_request(Method::GET, url.as_str(), None, None, None).await?;
+    // The response of an ES style GET request
+    let mut response: JsonObject<String, Json> = response.json().await.unwrap_or_else(|e| {
+        panic!("response body of [/store/extension/<ID>] is not a JSON object")
+    });
+    let source_json = response.remove("_source").unwrap_or_else(|| {
+        panic!("field [_source] not found in the JSON returned from [/store/extension/<ID>]")
+    });
+    let mut source_obj = match source_json {
+        Json::Object(obj) => obj,
+        _ => panic!(
+            "field [_source] should be a JSON object, but it is not, value: [{}]",
+            source_json
+        ),
+    };
+
+    let developer_id = match &source_obj["developer"]["_id"] {
+        Json::String(dev) => dev,
+        _ => {
+            panic!(
+                "field [_source.developer._id] should be a string, but it is not, value: [{}]",
+                source_obj["developer"]["_id"]
+            )
+        }
+    };
+    let installed = is_extension_installed(developer_id, &id).await;
+    source_obj.insert("installed".to_string(), Json::Bool(installed));
+
+    Ok(source_obj)
 }
 
 #[tauri::command]

@@ -161,6 +161,7 @@ pub fn run() {
             extension::unregister_extension_hotkey,
             extension::is_extension_enabled,
             extension::third_party::install::store::search_extension,
+            extension::third_party::install::store::extension_detail,
             extension::third_party::install::store::install_extension_from_store,
             extension::third_party::install::local_extension::install_local_extension,
             extension::third_party::uninstall_extension,
