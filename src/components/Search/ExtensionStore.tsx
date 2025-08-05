@@ -1,5 +1,5 @@
 import { useAsyncEffect, useDebounce, useKeyPress, useUnmount } from "ahooks";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CircleCheck, FolderDown, Loader } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
@@ -60,7 +60,7 @@ export interface SearchExtensionItem {
     views: number;
   };
   checksum: string;
-  installed: boolean;
+  installed?: boolean;
   commands?: Array<{
     type: string;
     name: string;
@@ -73,7 +73,7 @@ export interface SearchExtensionItem {
   }>;
 }
 
-const ExtensionStore = () => {
+const ExtensionStore = ({ extensionId }: { extensionId: string }) => {
   const {
     searchValue,
     selectedExtension,
@@ -107,7 +107,34 @@ const ExtensionStore = () => {
     };
   }, [selectedExtension]);
 
+  const handleExtensionDetail = useCallback(async () => {
+    try {
+      console.log(555555, extensionId);
+
+      const detail = await platformAdapter.invokeBackend<SearchExtensionItem>(
+        "extension_detail",
+        {
+          id: extensionId,
+        }
+      );
+      console.log(222222, detail);
+      setSelectedExtension(detail);
+      setInstallingExtensions(installingExtensions.concat(extensionId));
+      setVisibleExtensionDetail(true);
+    } catch (error) {
+      console.error(error + "");
+    }
+  }, [extensionId, installingExtensions]);
+
   useAsyncEffect(async () => {
+    console.log(333333, extensionId);
+    if (extensionId) {
+      console.log(444444, extensionId);
+
+      handleExtensionDetail();
+      return;
+    }
+    //
     const result = await platformAdapter.invokeBackend<SearchExtensionItem[]>(
       "search_extension",
       {
@@ -125,7 +152,7 @@ const ExtensionStore = () => {
     setList(result ?? []);
 
     setSelectedExtension(result?.[0]);
-  }, [debouncedSearchValue]);
+  }, [debouncedSearchValue, extensionId]);
 
   useUnmount(() => {
     setSelectedExtension(void 0);

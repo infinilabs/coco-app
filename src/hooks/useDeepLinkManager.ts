@@ -67,6 +67,7 @@ export function useDeepLinkManager() {
       await invoke('install_extension_from_store', { id: extensionId });
       
       // trigger extension install success event
+      getCurrentWindow().setFocus();
       platformAdapter.emitEvent('extension_install_success', { extensionId });
       addError(language === "zh" ? "插件安装成功" : "Plugin Install Success", "info");
       console.log('Extension installed successfully:', extensionId);

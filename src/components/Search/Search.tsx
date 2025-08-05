@@ -1,4 +1,4 @@
-import { useEffect, memo, useRef } from "react";
+import { useEffect, memo, useRef, useCallback, useState } from "react";
 
 import DropdownList from "./DropdownList";
 import { SearchResults } from "@/components/Search/SearchResults";
@@ -36,6 +36,8 @@ const SearchResultsPanel = memo<{
     performSearch,
   } = searchState;
 
+  const [extensionId, setExtensionId] = useState<string>("");
+
   useEffect(() => {
     if (!isChatMode && input) {
       performSearch(input);
@@ -58,26 +60,37 @@ const SearchResultsPanel = memo<{
     }
   }, [selectedSearchContent]);
 
+  const handleOpenExtensionStore = useCallback(() => {
+    platformAdapter.showWindow();
+    changeMode && changeMode(false);
+
+    if (visibleExtensionStore || visibleExtensionDetail) return;
+
+    changeInput("");
+    setSearchValue("");
+    setVisibleExtensionStore(true);
+  }, [changeMode, visibleExtensionStore, visibleExtensionDetail, changeInput, setSearchValue, setVisibleExtensionStore]);
+
   useEffect(() => {
-    const unlisten = platformAdapter.listenEvent("open-extension-store", () => {
-      platformAdapter.showWindow();
-      changeMode && changeMode(false);
-
-      if (visibleExtensionStore || visibleExtensionDetail) return;
-
-      changeInput("");
-      setSearchValue("");
-      setVisibleExtensionStore(true);
+    const unlisten = platformAdapter.listenEvent("open-extension-store", handleOpenExtensionStore);
+    const unlisten_install = platformAdapter.listenEvent("extension_install_success", (event) => {
+      const { extensionId } = event.payload;
+      setExtensionId(extensionId || "")
+      console.log(111111, extensionId)
+      handleOpenExtensionStore()
     });
 
     return () => {
       unlisten.then((fn) => {
         fn();
       });
+      unlisten_install.then((fn) => {
+        fn();
+      });
     };
-  }, [visibleExtensionStore, visibleExtensionDetail]);
+  }, [handleOpenExtensionStore]);
 
-  if (visibleExtensionStore) return <ExtensionStore />;
+  if (visibleExtensionStore) return <ExtensionStore extensionId={extensionId} />;
   if (goAskAi) return <AskAi isChatMode={isChatMode} />;
   if (suggests.length === 0) return <NoResults />;
 
