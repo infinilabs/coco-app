@@ -174,10 +174,17 @@ pub(crate) async fn search_extension(
 }
 
 #[tauri::command]
-pub(crate) async fn extension_detail(id: String) -> Result<JsonObject<String, Json>, String> {
+pub(crate) async fn extension_detail(
+    id: String,
+) -> Result<Option<JsonObject<String, Json>>, String> {
     let url = format!("http://dev.infini.cloud:27200/store/extension/{}", id);
     let response =
         HttpClient::send_raw_request(Method::GET, url.as_str(), None, None, None).await?;
+
+    if response.status() == StatusCode::NOT_FOUND {
+        return Ok(None);
+    }
+
     let response_dbg_str = format!("{:?}", response);
     // The response of an ES style GET request
     let mut response: JsonObject<String, Json> = response.json().await.unwrap_or_else(|_e| {
@@ -209,7 +216,7 @@ pub(crate) async fn extension_detail(id: String) -> Result<JsonObject<String, Js
     let installed = is_extension_installed(developer_id, &id).await;
     source_obj.insert("installed".to_string(), Json::Bool(installed));
 
-    Ok(source_obj)
+    Ok(Some(source_obj))
 }
 
 #[tauri::command]
@@ -295,9 +302,16 @@ pub(crate) async fn install_extension_from_store(
 
     general_check(&extension)?;
 
+    let current_platform = Platform::current();
+    if let Some(ref platforms) = extension.platforms {
+        if !platforms.contains(&current_platform) {
+            return Err("this extension is not compatible with your OS".into());
+        }
+    }
+
     // Extension is compatible with current platform, but it could contain sub
     // extensions that are not, filter them out.
-    filter_out_incompatible_sub_extensions(&mut extension, Platform::current());
+    filter_out_incompatible_sub_extensions(&mut extension, current_platform);
 
     // Write extension files to the extension directory
     let developer = extension.developer.clone().unwrap_or_default();
