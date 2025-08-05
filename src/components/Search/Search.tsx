@@ -69,16 +69,29 @@ const SearchResultsPanel = memo<{
     changeInput("");
     setSearchValue("");
     setVisibleExtensionStore(true);
-  }, [changeMode, visibleExtensionStore, visibleExtensionDetail, changeInput, setSearchValue, setVisibleExtensionStore]);
+  }, [
+    changeMode,
+    visibleExtensionStore,
+    visibleExtensionDetail,
+    changeInput,
+    setSearchValue,
+    setVisibleExtensionStore,
+  ]);
 
   useEffect(() => {
-    const unlisten = platformAdapter.listenEvent("open-extension-store", handleOpenExtensionStore);
-    const unlisten_install = platformAdapter.listenEvent("extension_install_success", (event) => {
-      const { extensionId } = event.payload;
-      setExtensionId(extensionId || "")
-      console.log(111111, extensionId)
-      handleOpenExtensionStore()
-    });
+    const unlisten = platformAdapter.listenEvent(
+      "open-extension-store",
+      handleOpenExtensionStore
+    );
+    const unlisten_install = platformAdapter.listenEvent(
+      "extension_install_success",
+      (event) => {
+        const { extensionId } = event.payload;
+        setExtensionId(extensionId ?? "");
+        console.log(111111, extensionId);
+        handleOpenExtensionStore();
+      }
+    );
 
     return () => {
       unlisten.then((fn) => {
@@ -90,7 +103,9 @@ const SearchResultsPanel = memo<{
     };
   }, [handleOpenExtensionStore]);
 
-  if (visibleExtensionStore) return <ExtensionStore extensionId={extensionId} />;
+  if (visibleExtensionStore) {
+    return <ExtensionStore extensionId={extensionId} />;
+  }
   if (goAskAi) return <AskAi isChatMode={isChatMode} />;
   if (suggests.length === 0) return <NoResults />;
 

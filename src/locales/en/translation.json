@@ -573,5 +573,8 @@
       "cancel": "Cancel",
       "delete": "Delete"
     }
+  },
+  "deepLink": {
+    "extensionInstallSuccessfully": "Extension installed successfully."
   }
 }

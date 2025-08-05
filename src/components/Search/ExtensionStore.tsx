@@ -119,10 +119,9 @@ const ExtensionStore = ({ extensionId }: { extensionId: string }) => {
       );
       console.log(222222, detail);
       setSelectedExtension(detail);
-      setInstallingExtensions(installingExtensions.concat(extensionId));
       setVisibleExtensionDetail(true);
     } catch (error) {
-      console.error(error + "");
+      addError(String(error));
     }
   }, [extensionId, installingExtensions]);
 
@@ -131,10 +130,9 @@ const ExtensionStore = ({ extensionId }: { extensionId: string }) => {
     if (extensionId) {
       console.log(444444, extensionId);
 
-      handleExtensionDetail();
-      return;
+      return handleExtensionDetail();
     }
-    //
+
     const result = await platformAdapter.invokeBackend<SearchExtensionItem[]>(
       "search_extension",
       {
