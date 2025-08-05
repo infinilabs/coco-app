@@ -311,7 +311,7 @@ pub(crate) async fn install_extension_from_store(
     }
 
     if is_extension_installed(&developer_id, &id).await {
-        return Err("extension already installed".into());
+        return Err("Extension already installed.".into());
     }
 
     // Extension is compatible with current platform, but it could contain sub
