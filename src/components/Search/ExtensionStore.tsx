@@ -124,7 +124,6 @@ const ExtensionStore = ({ extensionId }: { extensionId: string }) => {
 
   useAsyncEffect(async () => {
     if (extensionId) {
-
       return handleExtensionDetail();
     }
 
@@ -143,6 +142,8 @@ const ExtensionStore = ({ extensionId }: { extensionId: string }) => {
     console.log("search_extension", result);
 
     setList(result ?? []);
+
+    if (extensionId) return;
 
     setSelectedExtension(result?.[0]);
   }, [debouncedSearchValue, extensionId]);
