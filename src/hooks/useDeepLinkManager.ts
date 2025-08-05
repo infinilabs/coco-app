@@ -73,10 +73,11 @@ export function useDeepLinkManager() {
     }
 
     try {
+      await platformAdapter.showWindow();
+
       await invoke("install_extension_from_store", { id: extensionId });
 
       // trigger extension install success event
-      platformAdapter.showWindow();
       platformAdapter.emitEvent("extension_install_success", { extensionId });
       addError(t("deepLink.extensionInstallSuccessfully"), "info");
       console.log("Extension installed successfully:", extensionId);
