@@ -13,7 +13,7 @@ import { useServers } from "@/hooks/useServers";
 
 interface ServiceAuthProps {
   setRefreshLoading: (loading: boolean) => void;
-  refreshClick: (id: string) => void;
+  refreshClick: (id: string, callback?: () => void) => void;
 }
 
 const ServiceAuth = memo(
@@ -25,7 +25,9 @@ const ServiceAuth = memo(
     const ssoRequestID = useAppStore((state) => state.ssoRequestID);
     const setSSORequestID = useAppStore((state) => state.setSSORequestID);
 
-    const cloudSelectService = useConnectStore((state) => state.cloudSelectService);
+    const cloudSelectService = useConnectStore(
+      (state) => state.cloudSelectService
+    );
 
     const { logoutServer } = useServers();
 
@@ -61,17 +63,21 @@ const ServiceAuth = memo(
 
     // handle oauth success event
     useEffect(() => {
-      const unlistenOAuth = platformAdapter.listenEvent('oauth_success', (event) => {
-        const { serverId } = event.payload;
-        if (serverId) {
-          refreshClick(serverId);
-          addError(language === "zh" ? "登录成功" : "Login Success", "info");
+      const unlistenOAuth = platformAdapter.listenEvent(
+        "oauth_success",
+        (event) => {
+          const { serverId } = event.payload;
+          if (serverId) {
+            refreshClick(serverId, () => {
+              setLoading(false);
+            });
+            addError(language === "zh" ? "登录成功" : "Login Success", "info");
+          }
         }
-        setLoading(false);
-      });
+      );
 
       return () => {
-        unlistenOAuth.then(fn => fn());
+        unlistenOAuth.then((fn) => fn());
       };
     }, [refreshClick]);
 
@@ -130,7 +136,9 @@ const ServiceAuth = memo(
               <button
                 className="text-xs text-[#0096FB] dark:text-blue-400 block"
                 onClick={() =>
-                  OpenURLWithBrowser(cloudSelectService?.provider?.privacy_policy)
+                  OpenURLWithBrowser(
+                    cloudSelectService?.provider?.privacy_policy
+                  )
                 }
               >
                 {t("cloud.privacyPolicy")}
