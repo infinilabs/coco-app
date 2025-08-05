@@ -36,7 +36,7 @@ const SearchResultsPanel = memo<{
     performSearch,
   } = searchState;
 
-  const [extensionId, setExtensionId] = useState("");
+  const [extensionId, setExtensionId] = useState<string>();
 
   useEffect(() => {
     if (!isChatMode && input) {
@@ -105,7 +105,7 @@ const SearchResultsPanel = memo<{
   useEffect(() => {
     if (visibleExtensionDetail) return;
 
-    setExtensionId("");
+    setExtensionId(void 0);
   }, [visibleExtensionDetail]);
 
   if (visibleExtensionStore) {

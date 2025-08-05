@@ -73,7 +73,7 @@ export interface SearchExtensionItem {
   }>;
 }
 
-const ExtensionStore = ({ extensionId }: { extensionId: string }) => {
+const ExtensionStore = ({ extensionId }: { extensionId?: string }) => {
   const {
     searchValue,
     selectedExtension,
