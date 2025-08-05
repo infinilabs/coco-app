@@ -297,6 +297,7 @@ pub(crate) async fn install_extension_from_store(
             e
         );
     });
+    let developer_id = extension.developer.clone().expect("developer has been set");
 
     drop(plugin_json);
 
@@ -309,16 +310,19 @@ pub(crate) async fn install_extension_from_store(
         }
     }
 
+    if is_extension_installed(&developer_id, &id).await {
+        return Err("extension already installed".into());
+    }
+
     // Extension is compatible with current platform, but it could contain sub
     // extensions that are not, filter them out.
     filter_out_incompatible_sub_extensions(&mut extension, current_platform);
 
     // Write extension files to the extension directory
-    let developer = extension.developer.clone().unwrap_or_default();
     let extension_id = extension.id.clone();
     let extension_directory = {
         let mut path = get_third_party_extension_directory(&tauri_app_handle);
-        path.push(developer);
+        path.push(developer_id);
         path.push(extension_id.as_str());
         path
     };
