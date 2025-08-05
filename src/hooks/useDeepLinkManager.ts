@@ -10,6 +10,8 @@ import { useAppStore } from "@/stores/appStore";
 import { useConnectStore } from "@/stores/connectStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { useTranslation } from "react-i18next";
+import { MAIN_WINDOW_LABEL } from "@/constants";
+import { useAsyncEffect, useEventListener } from "ahooks";
 
 export interface DeepLinkHandler {
   pattern: string;
@@ -62,35 +64,32 @@ export function useDeepLinkManager() {
   );
 
   // handle install extension from store
-  const handleInstallExtension = useCallback(
-    async (url: URL) => {
-      const extensionId = url.searchParams.get("id");
-      if (!extensionId) {
-        return console.warn(
-          'received an invalid install_extension_from_store deeplink, missing argument "id"'
-        );
-      }
+  const handleInstallExtension = useCallback(async (url: URL) => {
+    const extensionId = url.searchParams.get("id");
+    if (!extensionId) {
+      return console.warn(
+        'received an invalid install_extension_from_store deeplink, missing argument "id"'
+      );
+    }
 
-      try {
-        await invoke("install_extension_from_store", { id: extensionId });
+    try {
+      await invoke("install_extension_from_store", { id: extensionId });
 
-        // trigger extension install success event
-        platformAdapter.showWindow();
-        platformAdapter.emitEvent("extension_install_success", { extensionId });
-        addError(t("deepLink.extensionInstallSuccessfully"), "info");
-        console.log("Extension installed successfully:", extensionId);
-      } catch (installError) {
-        console.error(
-          "Failed to install extension",
-          extensionId,
-          ", error: ",
-          installError
-        );
-        addError(`Failed to install extension: ${installError}`);
-      }
-    },
-    [addError]
-  );
+      // trigger extension install success event
+      platformAdapter.showWindow();
+      platformAdapter.emitEvent("extension_install_success", { extensionId });
+      addError(t("deepLink.extensionInstallSuccessfully"), "info");
+      console.log("Extension installed successfully:", extensionId);
+    } catch (installError) {
+      console.error(
+        "Failed to install extension",
+        extensionId,
+        ", error: ",
+        installError
+      );
+      addError(`Failed to install extension: ${installError}`);
+    }
+  }, []);
 
   // handle deep link
   const handlers: DeepLinkHandler[] = [
@@ -100,7 +99,13 @@ export function useDeepLinkManager() {
     },
     {
       pattern: "install_extension_from_store",
-      handler: handleInstallExtension,
+      handler: async (url) => {
+        const windowLabel = await platformAdapter.getCurrentWindowLabel();
+
+        if (windowLabel !== MAIN_WINDOW_LABEL) return;
+
+        handleInstallExtension(url);
+      },
     },
   ];
 
@@ -127,7 +132,7 @@ export function useDeepLinkManager() {
         addError("Invalid URL format: " + err);
       }
     },
-    [handlers, addError]
+    [handlers]
   );
 
   // handle paste text
@@ -145,32 +150,37 @@ export function useDeepLinkManager() {
     [handleUrl]
   );
 
+  // get initial deep link
+  useAsyncEffect(async () => {
+    try {
+      const urls = await getCurrentDeepLinkUrls();
+
+      console.log("Initial DeepLinkUrls:", urls);
+
+      if (urls && urls.length > 0) {
+        handleUrl(urls[0]);
+      }
+    } catch (error) {
+      addError("Failed to get initial URLs: " + error);
+    }
+  }, []);
+
   // handle deep link on paste
   useEffect(() => {
-    // add paste event listener
-    document.addEventListener("paste", handlePaste);
-
-    // get initial deep link
-    getCurrentDeepLinkUrls()
-      .then((urls) => {
-        console.log("Initial URLs:", urls);
-        if (urls && urls.length > 0) {
-          handleUrl(urls[0]);
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to get initial URLs:", err);
-        addError("Failed to get initial URLs: " + err);
-      });
-
     // handle new deep link
-    const unlisten = onOpenUrl((urls) => handleUrl(urls[0]));
+    const unlisten = onOpenUrl((urls) => {
+      console.log("onOpenUrl urls", urls);
+
+      handleUrl(urls[0]);
+    });
 
     return () => {
       unlisten.then((fn) => fn());
-      document.removeEventListener("paste", handlePaste);
     };
-  }, [handleUrl, handlePaste, addError]);
+  }, []);
+
+  // add paste event listener
+  useEventListener("paste", handlePaste);
 
   return {
     handleUrl,
