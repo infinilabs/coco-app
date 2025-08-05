@@ -143,8 +143,6 @@ const ExtensionStore = ({ extensionId }: { extensionId?: string }) => {
 
     setList(result ?? []);
 
-    if (extensionId) return;
-
     setSelectedExtension(result?.[0]);
   }, [debouncedSearchValue, extensionId]);
 

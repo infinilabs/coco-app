@@ -87,8 +87,8 @@ const SearchResultsPanel = memo<{
       "extension_install_success",
       (event) => {
         const { extensionId } = event.payload;
-        setExtensionId(extensionId ?? "");
-        handleOpenExtensionStore();
+
+        setExtensionId(extensionId);
       }
     );
 
@@ -107,6 +107,12 @@ const SearchResultsPanel = memo<{
 
     setExtensionId(void 0);
   }, [visibleExtensionDetail]);
+
+  useEffect(() => {
+    if (!extensionId) return;
+
+    handleOpenExtensionStore();
+  }, [extensionId]);
 
   if (visibleExtensionStore) {
     return <ExtensionStore extensionId={extensionId} />;
