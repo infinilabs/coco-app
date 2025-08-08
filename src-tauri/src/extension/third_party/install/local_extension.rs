@@ -165,6 +165,14 @@ pub(crate) async fn install_local_extension(
     // extensions that are not, filter them out.
     filter_out_incompatible_sub_extensions(&mut extension, current_platform);
 
+    // We are going to modify our third-party extension list, grab the write lock
+    // to ensure exclusive access.
+    let mut third_party_ext_list_write_lock = THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE
+        .get()
+        .expect("global third party search source not set")
+        .write_lock()
+        .await;
+
     // Create destination directory
     let dest_dir = get_third_party_extension_directory(&tauri_app_handle)
         .join(DEVELOPER_ID_LOCAL)
@@ -215,11 +223,7 @@ pub(crate) async fn install_local_extension(
     canonicalize_relative_icon_path(&dest_dir, &mut extension)?;
 
     // Add extension to the search source
-    THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE
-        .get()
-        .unwrap()
-        .add_extension(extension)
-        .await;
+    third_party_ext_list_write_lock.push(extension);
 
     Ok(())
 }
