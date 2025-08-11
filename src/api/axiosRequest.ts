@@ -86,11 +86,6 @@ export const Get = <T>(
         } else {
           res = result?.data as FcResponse<T>;
         }
-        // web component log
-        infoLog({
-          username: "@/api/axiosRequest.ts",
-          logName: url,
-        })(res);
 
         resolve([null, res as FcResponse<T>]);
       })
