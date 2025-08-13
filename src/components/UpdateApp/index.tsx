@@ -138,7 +138,7 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
 
   return (
     <Dialog
-      open={visible}
+      open={isCheckPage ? true : visible}
       as="div"
       className="relative z-10 focus:outline-none"
       onClose={noop}

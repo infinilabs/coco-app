@@ -12,11 +12,10 @@ mod util;
 use crate::common::register::SearchSourceRegistry;
 use crate::common::{CHECK_WINDOW_LABEL, MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL};
 use crate::server::servers::{load_or_insert_default_server, load_servers_token};
-use autostart::{change_autostart, ensure_autostart_state_consistent};
+use autostart::change_autostart;
 use lazy_static::lazy_static;
 use std::sync::Mutex;
 use std::sync::OnceLock;
-use tauri::async_runtime::block_on;
 use tauri::plugin::TauriPlugin;
 use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, WebviewWindow, WindowEvent};
 use tauri_plugin_autostart::MacosLauncher;
@@ -175,15 +174,9 @@ pub fn run() {
             extension::built_in::file_search::config::set_file_system_config,
             server::synthesize::synthesize,
             util::file::get_file_icon,
-            util::app_lang::update_app_lang
+            setup::backend_setup
         ])
         .setup(|app| {
-            let app_handle = app.handle().clone();
-            GLOBAL_TAURI_APP_HANDLE
-                .set(app_handle.clone())
-                .expect("global tauri AppHandle already initialized");
-            log::trace!("global Tauri AppHandle set");
-
             #[cfg(target_os = "macos")]
             {
                 log::trace!("hiding Dock icon on macOS");
@@ -191,46 +184,20 @@ pub fn run() {
                 log::trace!("Dock icon should be hidden now");
             }
 
-            let registry = SearchSourceRegistry::default();
-
-            app.manage(registry); // Store registry in Tauri's app state
-
-            // This has to be called before initializing extensions as doing that
-            // requires access to the shortcut store, which will be set by this
-            // function.
-            shortcut::enable_shortcut(app);
-
-            block_on(async {
-                init(app.handle()).await;
-
-                // We want all the extensions here, so no filter condition specified.
-                match extension::list_extensions(app_handle.clone(), None, None, false).await {
-                    Ok(extensions) => {
-                        // Initializing extension relies on SearchSourceRegistry, so this should
-                        // be executed after `app.manage(registry)`
-                        if let Err(e) =
-                            extension::init_extensions(app_handle.clone(), extensions).await
-                        {
-                            log::error!("initializing extensions failed with error [{}]", e);
-                        }
-                    }
-                    Err(e) => {
-                        log::error!("listing extensions failed with error [{}]", e);
-                    }
-                }
-            });
-
-            ensure_autostart_state_consistent(app)?;
-
-            let main_window = app.get_webview_window(MAIN_WINDOW_LABEL).unwrap();
-            let settings_window = app.get_webview_window(SETTINGS_WINDOW_LABEL).unwrap();
-            let check_window = app.get_webview_window(CHECK_WINDOW_LABEL).unwrap();
+            /* ----------- This code must be executed on the main thread and must not be relocated. ----------- */
+            let app_handle = app.app_handle();
+            let main_window = app_handle.get_webview_window(MAIN_WINDOW_LABEL).unwrap();
+            let settings_window = app_handle
+                .get_webview_window(SETTINGS_WINDOW_LABEL)
+                .unwrap();
+            let check_window = app_handle.get_webview_window(CHECK_WINDOW_LABEL).unwrap();
             setup::default(
-                app,
+                app_handle,
                 main_window.clone(),
                 settings_window.clone(),
                 check_window.clone(),
             );
+            /* ----------- This code must be executed on the main thread and must not be relocated. ----------- */
 
             Ok(())
         })

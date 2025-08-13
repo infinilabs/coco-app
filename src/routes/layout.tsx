@@ -1,150 +1,46 @@
-import { useEffect, useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import {
-  useAsyncEffect,
-  useEventListener,
-  useMount,
-  useTextSelection,
-} from "ahooks";
-import { isArray, isString } from "lodash-es";
-
+import { useMount } from "ahooks";
+import LayoutOutlet from "./outlet";
 import { useAppStore } from "@/stores/appStore";
-import useEscape from "@/hooks/useEscape";
-import useSettingsWindow from "@/hooks/useSettingsWindow";
-import { useThemeStore } from "@/stores/themeStore";
+import { invoke } from "@tauri-apps/api/core";
 import platformAdapter from "@/utils/platformAdapter";
-import { AppTheme } from "@/types/index";
-import ErrorNotification from "@/components/Common/ErrorNotification";
-import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
-import { useIconfontScript } from "@/hooks/useScript";
-import { Extension } from "@/components/Settings/Extensions";
-import { useExtensionsStore } from "@/stores/extensionsStore";
-import { useServers } from "@/hooks/useServers";
-import { useDeepLinkManager } from '@/hooks/useDeepLinkManager';
+import { MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL } from "@/constants";
+import { useEffect, useState } from "react";
 
-export default function Layout() {
-  const location = useLocation();
-
+const Layout = () => {
   const { language } = useAppStore();
-  const { i18n } = useTranslation();
-  const { activeTheme, isDark, setIsDark, setTheme } = useThemeStore();
+  const [ready, setReady] = useState(false);
 
-  // init servers isTauri
-  useServers();
-  // init deep link manager
-  useDeepLinkManager();
-
-  const [langUpdated, setLangUpdated] = useState(false);
-
-  useAsyncEffect(async () => {
-    i18n.changeLanguage(language);
-
-    await platformAdapter.invokeBackend("update_app_lang", {
-      lang: language,
-    });
-
-    setLangUpdated(true);
-  }, [language]);
-
-  function updateBodyClass(path: string) {
-    const body = document.body;
-    body.classList.remove("input-body");
-
-    if (path === "/ui") {
-      body.classList.add("input-body");
-    }
-  }
-
-  useMount(async () => {
-    await platformAdapter.setShadow(true);
-
-    const unlistenTheme = await platformAdapter.listenThemeChanged(
-      (theme: AppTheme) => {
-        setTheme(theme);
-        setIsDark(theme === "dark");
-      }
-    );
-
-    platformAdapter.onThemeChanged(({ payload }) => {
-      if (activeTheme !== "auto") return;
-
-      setIsDark(payload === "dark");
+  useEffect(() => {
+    const unlisten = platformAdapter.listenEvent("rust_ready", () => {
+      setReady(true);
     });
 
     return () => {
-      unlistenTheme();
+      unlisten.then((fn) => fn());
     };
-  });
-
-  useAsyncEffect(async () => {
-    let nextTheme: any = activeTheme === "auto" ? null : activeTheme;
-
-    await platformAdapter.setWindowTheme(nextTheme);
-
-    nextTheme = nextTheme ?? (await platformAdapter.getWindowTheme());
-
-    setIsDark(nextTheme === "dark");
-  }, [activeTheme]);
-
-  useEffect(() => {
-    const theme = isDark ? "dark" : "light";
-    const root = window.document.documentElement;
-
-    root.className = theme;
-    root.dataset.theme = theme;
-  }, [isDark]);
-
-  useEffect(() => {
-    updateBodyClass(location.pathname);
-  }, [location.pathname]);
-
-  useEscape();
-
-  useSettingsWindow();
-
-  const { text: selectionText } = useTextSelection();
-
-  // Disable right-click for production environment
-  useEventListener("contextmenu", (event) => {
-    if (import.meta.env.DEV || selectionText) return;
-
-    event.preventDefault();
-  });
-
-  useModifierKeyPress();
-
-  useEventListener("unhandledrejection", ({ reason }) => {
-    const message = isString(reason) ? reason : JSON.stringify(reason);
-
-    platformAdapter.error(message);
-  });
-
-  useIconfontScript();
-
-  const setDisabledExtensions = useExtensionsStore((state) => {
-    return state.setDisabledExtensions;
-  });
+  }, []);
 
   useMount(async () => {
-    const result = await platformAdapter.invokeBackend<Extension[]>(
-      "list_extensions",
-      {
-      listEnabled: false,
-      }
-    );
+    const label = await platformAdapter.getCurrentWindowLabel();
 
-    if (!isArray(result)) return;
+    if (label === MAIN_WINDOW_LABEL) {
+      await invoke("backend_setup", {
+        appLang: language,
+      });
 
-    const disabledExtensions = result.filter((item) => !item.enabled);
+      setReady(true);
 
-    setDisabledExtensions(disabledExtensions.map((item) => item.id));
+      return platformAdapter.emitEvent("rust_ready", true);
+    }
+
+    if (label !== SETTINGS_WINDOW_LABEL) {
+      setReady(true);
+    }
   });
 
-  return (
-    <>
-      {langUpdated && <Outlet />}
-      <ErrorNotification />
-    </>
-  );
-}
+  console.log("ready", ready);
+
+  return ready && <LayoutOutlet />;
+};
+
+export default Layout;

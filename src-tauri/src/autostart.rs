@@ -1,15 +1,15 @@
 use std::{fs::create_dir, io::Read};
 
-use tauri::Manager;
+use tauri::{AppHandle, Manager};
 use tauri_plugin_autostart::ManagerExt;
 
 /// If the state reported from the OS and the state stored by us differ, our state is
 /// prioritized and seen as the correct one. Update the OS state to make them consistent.
-pub fn ensure_autostart_state_consistent(app: &mut tauri::App) -> Result<(), String> {
-    let autostart_manager = app.autolaunch();
+pub fn ensure_autostart_state_consistent(tauri_app_handle: &AppHandle) -> Result<(), String> {
+    let autostart_manager = tauri_app_handle.autolaunch();
 
     let os_state = autostart_manager.is_enabled().map_err(|e| e.to_string())?;
-    let coco_stored_state = current_autostart(app.app_handle()).map_err(|e| e.to_string())?;
+    let coco_stored_state = current_autostart(tauri_app_handle).map_err(|e| e.to_string())?;
 
     if os_state != coco_stored_state {
         log::warn!(
