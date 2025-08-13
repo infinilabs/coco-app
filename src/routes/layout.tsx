@@ -3,7 +3,7 @@ import LayoutOutlet from "./outlet";
 import { useAppStore } from "@/stores/appStore";
 import { invoke } from "@tauri-apps/api/core";
 import platformAdapter from "@/utils/platformAdapter";
-import { MAIN_WINDOW_LABEL } from "@/constants";
+import { MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL } from "@/constants";
 import { useEffect, useState } from "react";
 
 const Layout = () => {
@@ -23,16 +23,22 @@ const Layout = () => {
   useMount(async () => {
     const label = await platformAdapter.getCurrentWindowLabel();
 
-    if (label !== MAIN_WINDOW_LABEL) return;
+    if (label === MAIN_WINDOW_LABEL) {
+      await invoke("backend_setup", {
+        appLang: language,
+      });
 
-    await invoke("backend_setup", {
-      appLang: language,
-    });
+      setReady(true);
 
-    setReady(true);
+      return platformAdapter.emitEvent("rust_ready", true);
+    }
 
-    platformAdapter.emitEvent("rust_ready", true);
+    if (label !== SETTINGS_WINDOW_LABEL) {
+      setReady(true);
+    }
   });
+
+  console.log("ready", ready);
 
   return ready && <LayoutOutlet />;
 };
