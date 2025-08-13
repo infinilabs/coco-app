@@ -184,7 +184,6 @@ pub fn run() {
                 log::trace!("Dock icon should be hidden now");
             }
 
-
             /* ----------- This code must be executed on the main thread and must not be relocated. ----------- */
             let app_handle = app.app_handle();
             let main_window = app_handle.get_webview_window(MAIN_WINDOW_LABEL).unwrap();

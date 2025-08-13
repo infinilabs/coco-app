@@ -20,7 +20,6 @@ use async_trait::async_trait;
 use borrowme::ToOwned;
 use check::general_check;
 use function_name::named;
-use std::io::ErrorKind;
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -43,7 +42,7 @@ pub(crate) fn get_third_party_extension_directory(tauri_app_handle: &AppHandle) 
     app_data_dir
 }
 
-pub(crate) async fn load_third_party_extensions_from_directory(
+pub(crate) async fn list_third_party_extensions(
     directory: &Path,
 ) -> Result<Vec<Extension>, String> {
     let mut extensions_dir_iter = read_dir(&directory).await.map_err(|e| e.to_string())?;
@@ -203,7 +202,7 @@ pub(crate) async fn load_third_party_extensions_from_directory(
 /// Since some `#[tauri::command]`s need to access it, we store it in a global
 /// static variable as well.
 #[derive(Debug, Clone)]
-pub(crate) struct ThirdPartyExtensionsSearchSource {
+pub(super) struct ThirdPartyExtensionsSearchSource {
     inner: Arc<ThirdPartyExtensionsSearchSourceInner>,
 }
 
@@ -344,11 +343,6 @@ impl ThirdPartyExtensionsSearchSource {
         }
     }
 
-    /// Acquire the write lock to the extension list.
-    pub(crate) async fn write_lock(&self) -> RwLockWriteGuard<'_, Vec<Extension>> {
-        self.inner.extensions.write().await
-    }
-
     #[named]
     pub(super) async fn enable_extension(
         &self,
@@ -463,7 +457,7 @@ impl ThirdPartyExtensionsSearchSource {
 
     /// Initialize the third-party extensions, which literally means
     /// enabling/activating the enabled extensions.
-    pub(crate) async fn init(&self, tauri_app_handle: &AppHandle) -> Result<(), String> {
+    pub(super) async fn init(&self, tauri_app_handle: &AppHandle) -> Result<(), String> {
         let extensions_read_lock = self.inner.extensions.read().await;
 
         for extension in extensions_read_lock.iter().filter(|ext| ext.enabled) {
@@ -634,68 +628,48 @@ impl ThirdPartyExtensionsSearchSource {
             .any(|ext| ext.developer.as_deref() == Some(developer) && ext.id == extension_id)
     }
 
-    pub(crate) async fn uninstall_extension(
-        &self,
-        tauri_app_handle: &AppHandle,
-        developer: &str,
-        extension_id: &str,
-    ) -> Result<(), String> {
-        let mut write_lock = self.inner.extensions.write().await;
+    /// Add `extension` to the **in-memory** extension list.
+    pub(crate) async fn add_extension(&self, extension: Extension) {
+        assert!(
+            extension.developer.is_some(),
+            "loaded third party extension should have its developer set"
+        );
 
-        let Some(index) = write_lock
+        let mut write_lock_guard = self.inner.extensions.write().await;
+        if write_lock_guard
+            .iter()
+            .any(|ext| ext.developer == extension.developer && ext.id == extension.id)
+        {
+            panic!(
+                "extension [{}/{}] already installed",
+                extension
+                    .developer
+                    .as_ref()
+                    .expect("just checked it is Some"),
+                extension.id
+            );
+        }
+        write_lock_guard.push(extension);
+    }
+
+    /// Remove `extension` from the **in-memory** extension list.
+    pub(crate) async fn remove_extension(&self, developer: &str, extension_id: &str) -> Extension {
+        let mut write_lock_guard = self.inner.extensions.write().await;
+        let Some(index) = write_lock_guard
             .iter()
             .position(|ext| ext.developer.as_deref() == Some(developer) && ext.id == extension_id)
         else {
-            return Err(format!(
-                "The extension we are trying to uninstall [{}/{}] does not exist",
+            panic!(
+                "extension [{}/{}] not installed, but we are trying to remove it",
                 developer, extension_id
-            ));
-        };
-        let deleted_extension = write_lock.remove(index);
-
-        let extension_dir = {
-            let mut path = get_third_party_extension_directory(&tauri_app_handle);
-            path.push(developer);
-            path.push(extension_id);
-
-            path
+            );
         };
 
-        if let Err(e) = tokio::fs::remove_dir_all(extension_dir.as_path()).await {
-            let error_kind = e.kind();
-            if error_kind == ErrorKind::NotFound {
-                // We accept this error because we do want it to not exist.  But
-                // since it is not a state we expect, throw a warning.
-                log::warn!(
-                    "trying to uninstalling extension [developer {} id {}], but its directory does not exist",
-                    developer,
-                    extension_id
-                );
-            } else {
-                return Err(format!(
-                    "failed to uninstall extension [developer {} id {}] due to error {}",
-                    developer, extension_id, e
-                ));
-            }
-        }
-
-        // Unregister the extension hotkey, if set.
-        //
-        // Unregistering hotkey is the only thing that we will do when we disable
-        // an extension, so we directly use this function here even though "disabling"
-        // the extension that one is trying to uninstall does not make too much sense.
-        Self::_disable_extension(&tauri_app_handle, &deleted_extension).await?;
-
-        Ok(())
-    }
-
-    /// Take a point-in-time snapshot at the extension list and return it.
-    pub(crate) async fn extensions_snapshot(&self) -> Vec<Extension> {
-        self.inner.extensions.read().await.clone()
+        write_lock_guard.remove(index)
     }
 }
 
-pub(crate) static THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE: OnceLock<ThirdPartyExtensionsSearchSource> =
+pub(super) static THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE: OnceLock<ThirdPartyExtensionsSearchSource> =
     OnceLock::new();
 
 #[derive(Debug)]
@@ -923,11 +897,37 @@ pub(crate) async fn uninstall_extension(
     developer: String,
     extension_id: String,
 ) -> Result<(), String> {
-    THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE
-        .get()
-        .expect("global third party search source not set")
-        .uninstall_extension(&tauri_app_handle, &developer, &extension_id)
+    let extension_dir = {
+        let mut path = get_third_party_extension_directory(&tauri_app_handle);
+        path.push(developer.as_str());
+        path.push(extension_id.as_str());
+
+        path
+    };
+    if !extension_dir.try_exists().map_err(|e| e.to_string())? {
+        panic!(
+            "we are uninstalling extension [{}/{}], but there is no such extension files on disk",
+            developer, extension_id
+        )
+    }
+    tokio::fs::remove_dir_all(extension_dir.as_path())
         .await
+        .map_err(|e| e.to_string())?;
+
+    let extension = THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE
+        .get()
+        .unwrap()
+        .remove_extension(&developer, &extension_id)
+        .await;
+
+    // Unregister the extension hotkey, if set.
+    //
+    // Unregistering hotkey is the only thing that we will do when we disable
+    // an extension, so we directly use this function here even though "disabling"
+    // the extension that one is trying to uninstall does not make too much sense.
+    ThirdPartyExtensionsSearchSource::_disable_extension(&tauri_app_handle, &extension).await?;
+
+    Ok(())
 }
 
 #[cfg(test)]

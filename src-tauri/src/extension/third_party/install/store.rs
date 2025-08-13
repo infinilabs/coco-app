@@ -318,14 +318,6 @@ pub(crate) async fn install_extension_from_store(
     // extensions that are not, filter them out.
     filter_out_incompatible_sub_extensions(&mut extension, current_platform);
 
-    // We are going to modify our third-party extension list, grab the write lock
-    // to ensure exclusive access.
-    let mut third_party_ext_list_write_lock = THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE
-        .get()
-        .expect("global third party search source not set")
-        .write_lock()
-        .await;
-
     // Write extension files to the extension directory
     let extension_id = extension.id.clone();
     let extension_directory = {
@@ -397,7 +389,11 @@ pub(crate) async fn install_extension_from_store(
     // Turn it into an absolute path if it is a valid relative path because frontend code need this.
     canonicalize_relative_icon_path(&extension_directory, &mut extension)?;
 
-    third_party_ext_list_write_lock.push(extension);
+    THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE
+        .get()
+        .unwrap()
+        .add_extension(extension)
+        .await;
 
     Ok(())
 }
