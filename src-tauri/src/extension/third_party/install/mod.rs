@@ -34,7 +34,7 @@ use super::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE;
 pub(crate) async fn is_extension_installed(developer: &str, extension_id: &str) -> bool {
     THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE
         .get()
-        .unwrap()
+        .expect("global third party search source not set")
         .extension_exists(developer, extension_id)
         .await
 }

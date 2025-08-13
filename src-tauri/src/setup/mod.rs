@@ -1,7 +1,6 @@
 use crate::GLOBAL_TAURI_APP_HANDLE;
 use crate::autostart;
 use crate::common::register::SearchSourceRegistry;
-use crate::extension;
 use crate::util::app_lang::update_app_lang;
 use std::sync::OnceLock;
 use tauri::{AppHandle, Manager, WebviewWindow};
@@ -82,18 +81,11 @@ pub(crate) async fn backend_setup(tauri_app_handle: AppHandle, app_lang: String)
 
     crate::init(&tauri_app_handle).await;
 
-    // We want all the extensions here, so no filter condition specified.
-    match extension::list_extensions(tauri_app_handle.clone(), None, None, false).await {
-        Ok(extensions) => {
-            // Initializing extension relies on SearchSourceRegistry, so this should
-            // be executed after `app.manage(registry)`
-            if let Err(e) = extension::init_extensions(tauri_app_handle.clone(), extensions).await {
-                log::error!("initializing extensions failed with error [{}]", e);
-            }
-        }
-        Err(e) => {
-            log::error!("listing extensions failed with error [{}]", e);
-        }
+    if let Err(err) = crate::extension::init_extensions(&tauri_app_handle).await {
+        log::error!(
+            "failed to initialize extension-related stuff, error [{}]",
+            err
+        );
     }
 
     autostart::ensure_autostart_state_consistent(&tauri_app_handle).unwrap();
