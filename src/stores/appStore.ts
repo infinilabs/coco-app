@@ -41,6 +41,9 @@ export type IAppStore = {
 
   blurred: boolean;
   setBlurred: (blurred: boolean) => void;
+
+  rustReady: boolean;
+  setRustReady: (rustReady: boolean) => void;
 };
 
 export const useAppStore = create<IAppStore>()(
@@ -110,6 +113,9 @@ export const useAppStore = create<IAppStore>()(
 
         blurred: false,
         setBlurred: (blurred: boolean) => set({ blurred }),
+
+        rustReady: false,
+        setRustReady: (rustReady) => set({ rustReady }),
       }),
       {
         name: "app-store",

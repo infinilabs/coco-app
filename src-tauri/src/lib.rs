@@ -184,9 +184,20 @@ pub fn run() {
                 log::trace!("Dock icon should be hidden now");
             }
 
-            // We (backend code) wait here because we also need to ensure the
-            // setup job is complete until we proceed.
-            setup::BACKEND_SETUP_FUNC_INVOKED.wait();
+            /* ----------- This code must be executed on the main thread and must not be relocated. ----------- */
+            let app_handle = app.app_handle();
+            let main_window = app_handle.get_webview_window(MAIN_WINDOW_LABEL).unwrap();
+            let settings_window = app_handle
+                .get_webview_window(SETTINGS_WINDOW_LABEL)
+                .unwrap();
+            let check_window = app_handle.get_webview_window(CHECK_WINDOW_LABEL).unwrap();
+            setup::default(
+                app_handle,
+                main_window.clone(),
+                settings_window.clone(),
+                check_window.clone(),
+            );
+            /* ----------- This code must be executed on the main thread and must not be relocated. ----------- */
 
             Ok(())
         })

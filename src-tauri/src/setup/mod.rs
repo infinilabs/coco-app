@@ -1,7 +1,6 @@
 use crate::GLOBAL_TAURI_APP_HANDLE;
 use crate::autostart;
 use crate::common::register::SearchSourceRegistry;
-use crate::common::{CHECK_WINDOW_LABEL, MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL};
 use crate::extension;
 use crate::util::app_lang::update_app_lang;
 use std::sync::OnceLock;
@@ -64,7 +63,10 @@ pub(super) static BACKEND_SETUP_FUNC_INVOKED: OnceLock<()> = OnceLock::new();
 #[tauri::command]
 #[function_name::named]
 pub(crate) async fn backend_setup(tauri_app_handle: AppHandle, app_lang: String) {
-    println!("backend_setup start");
+    if BACKEND_SETUP_FUNC_INVOKED.get().is_some() {
+        return;
+    }
+
     GLOBAL_TAURI_APP_HANDLE
         .set(tauri_app_handle.clone())
         .expect("global tauri AppHandle already initialized");
@@ -72,22 +74,6 @@ pub(crate) async fn backend_setup(tauri_app_handle: AppHandle, app_lang: String)
 
     let registry = SearchSourceRegistry::default();
     tauri_app_handle.manage(registry); // Store registry in Tauri's app state
-
-    let main_window = tauri_app_handle
-        .get_webview_window(MAIN_WINDOW_LABEL)
-        .unwrap();
-    let settings_window = tauri_app_handle
-        .get_webview_window(SETTINGS_WINDOW_LABEL)
-        .unwrap();
-    let check_window = tauri_app_handle
-        .get_webview_window(CHECK_WINDOW_LABEL)
-        .unwrap();
-    default(
-        &tauri_app_handle,
-        main_window.clone(),
-        settings_window.clone(),
-        check_window.clone(),
-    );
 
     // This has to be called before initializing extensions as doing that
     // requires access to the shortcut store, which will be set by this
@@ -118,6 +104,4 @@ pub(crate) async fn backend_setup(tauri_app_handle: AppHandle, app_lang: String)
     BACKEND_SETUP_FUNC_INVOKED
         .set(())
         .unwrap_or_else(|_| panic!("tauri command {}() gets called twice!", function_name!()));
-
-    println!("backend_setup end");
 }

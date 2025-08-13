@@ -1,22 +1,27 @@
 import { useMount } from "ahooks";
 import LayoutOutlet from "./outlet";
-import { useState } from "react";
 import { useAppStore } from "@/stores/appStore";
 import { invoke } from "@tauri-apps/api/core";
+import platformAdapter from "@/utils/platformAdapter";
+import { MAIN_WINDOW_LABEL } from "@/constants";
 
 const Layout = () => {
   const { language } = useAppStore();
-  const [ready, setReady] = useState(false);
+  const { rustReady, setRustReady } = useAppStore();
 
   useMount(async () => {
+    const label = await platformAdapter.getCurrentWindowLabel();
+
+    if (label !== MAIN_WINDOW_LABEL) return;
+
     await invoke("backend_setup", {
-      app_lang: language,
+      appLang: language,
     });
 
-    setReady(true);
+    setRustReady(true);
   });
 
-  return ready && <LayoutOutlet />;
+  return rustReady && <LayoutOutlet />;
 };
 
 export default Layout;
