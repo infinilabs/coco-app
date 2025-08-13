@@ -4,7 +4,6 @@
 //! So we duplicate it here **in the MEMORY** and expose a setter method to the
 //! frontend so that the value can be updated and stay update-to-date.
 
-use function_name::named;
 use tokio::sync::RwLock;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -38,16 +37,12 @@ impl std::str::FromStr for Lang {
 /// Cache the language config in memory.
 static APP_LANG: RwLock<Option<Lang>> = RwLock::const_new(None);
 
-/// Frontend code uses this interface to update the in-memory cached `APP_LANG` config.
-#[named]
-#[tauri::command]
+/// Update the in-memory cached `APP_LANG` config.
 pub(crate) async fn update_app_lang(lang: String) {
     let app_lang = lang.parse::<Lang>().unwrap_or_else(|e| {
         panic!(
-            "frontend code passes an invalid argument [{}] to interface [{}], parsing error [{}]",
-            lang,
-            function_name!(),
-            e
+            "invalid argument [{}], could not parse it to [struct Lang], parsing error [{}]",
+            lang, e
         )
     });
 

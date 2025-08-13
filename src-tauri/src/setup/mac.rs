@@ -1,6 +1,6 @@
 //! credits to: https://github.com/ayangweb/ayangweb-EcoPaste/blob/169323dbe6365ffe4abb64d867439ed2ea84c6d1/src-tauri/src/core/setup/mac.rs
 
-use tauri::{App, Emitter, EventTarget, WebviewWindow};
+use tauri::{AppHandle, Emitter, EventTarget, WebviewWindow};
 use tauri_nspanel::{WebviewWindowExt, cocoa::appkit::NSWindowCollectionBehavior, panel_delegate};
 
 use crate::common::MAIN_WINDOW_LABEL;
@@ -14,7 +14,7 @@ const WINDOW_MOVED_EVENT: &str = "tauri://move";
 const WINDOW_RESIZED_EVENT: &str = "tauri://resize";
 
 pub fn platform(
-    _app: &mut App,
+    _tauri_app_handle: &AppHandle,
     main_window: WebviewWindow,
     _settings_window: WebviewWindow,
     _check_window: WebviewWindow,

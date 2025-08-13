@@ -1,5 +1,6 @@
+use crate::common::MAIN_WINDOW_LABEL;
 use crate::{COCO_TAURI_STORE, hide_coco, show_coco};
-use tauri::{App, AppHandle, Manager, async_runtime};
+use tauri::{AppHandle, Manager, async_runtime};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 use tauri_plugin_store::{JsonValue, StoreExt};
 
@@ -16,9 +17,9 @@ const DEFAULT_SHORTCUT: &str = "command+shift+space";
 const DEFAULT_SHORTCUT: &str = "ctrl+shift+space";
 
 /// Set up the shortcut upon app start.
-pub fn enable_shortcut(app: &App) {
+pub fn enable_shortcut(tauri_app_handle: &AppHandle) {
     log::trace!("setting up Coco hotkey");
-    let store = app
+    let store = tauri_app_handle
         .store(COCO_TAURI_STORE)
         .expect("creating a store should not fail");
 
@@ -33,7 +34,7 @@ pub fn enable_shortcut(app: &App) {
         let stored_shortcut = stored_shortcut_str
             .parse::<Shortcut>()
             .expect("stored shortcut string should be valid");
-        _register_shortcut_upon_start(app, stored_shortcut);
+        _register_shortcut_upon_start(tauri_app_handle, stored_shortcut);
     } else {
         store.set(
             COCO_GLOBAL_SHORTCUT,
@@ -42,7 +43,7 @@ pub fn enable_shortcut(app: &App) {
         let default_shortcut = DEFAULT_SHORTCUT
             .parse::<Shortcut>()
             .expect("default shortcut should never be invalid");
-        _register_shortcut_upon_start(app, default_shortcut);
+        _register_shortcut_upon_start(tauri_app_handle, default_shortcut);
     }
     log::trace!("Coco hotkey has been set");
 }
@@ -118,12 +119,9 @@ fn _register_shortcut(app: &AppHandle, shortcut: Shortcut) {
         .unwrap();
 }
 
-use crate::common::MAIN_WINDOW_LABEL;
-
 /// Helper function to register a shortcut, used to set up the shortcut up App's first start.
-fn _register_shortcut_upon_start(app: &App, shortcut: Shortcut) {
-    let handler = app.app_handle();
-    handler
+fn _register_shortcut_upon_start(tauri_app_handle: &AppHandle, shortcut: Shortcut) {
+    tauri_app_handle
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(move |app, scut, event| {
@@ -147,7 +145,10 @@ fn _register_shortcut_upon_start(app: &App, shortcut: Shortcut) {
                 .build(),
         )
         .unwrap();
-    app.global_shortcut().register(shortcut).unwrap();
+    tauri_app_handle
+        .global_shortcut()
+        .register(shortcut)
+        .unwrap();
 }
 
 /// Helper function to get the stored global shortcut, as a string.
