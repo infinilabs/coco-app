@@ -64,6 +64,7 @@ pub(super) static BACKEND_SETUP_FUNC_INVOKED: OnceLock<()> = OnceLock::new();
 #[tauri::command]
 #[function_name::named]
 pub(crate) async fn backend_setup(tauri_app_handle: AppHandle, app_lang: String) {
+    println!("backend_setup start");
     GLOBAL_TAURI_APP_HANDLE
         .set(tauri_app_handle.clone())
         .expect("global tauri AppHandle already initialized");
@@ -117,4 +118,6 @@ pub(crate) async fn backend_setup(tauri_app_handle: AppHandle, app_lang: String)
     BACKEND_SETUP_FUNC_INVOKED
         .set(())
         .unwrap_or_else(|_| panic!("tauri command {}() gets called twice!", function_name!()));
+
+    println!("backend_setup end");
 }
