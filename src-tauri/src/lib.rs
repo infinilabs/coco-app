@@ -37,15 +37,6 @@ lazy_static! {
 /// you access it.
 pub(crate) static GLOBAL_TAURI_APP_HANDLE: OnceLock<AppHandle> = OnceLock::new();
 
-#[tauri::command]
-async fn change_window_height(handle: AppHandle, height: u32) {
-    let window: WebviewWindow = handle.get_webview_window(MAIN_WINDOW_LABEL).unwrap();
-
-    let mut size = window.outer_size().unwrap();
-    size.height = height;
-    window.set_size(size).unwrap();
-}
-
 #[derive(serde::Deserialize)]
 struct ThemeChangedPayload {
     #[allow(dead_code)]
@@ -103,7 +94,6 @@ pub fn run() {
 
     let app = app_builder
         .invoke_handler(tauri::generate_handler![
-            change_window_height,
             shortcut::change_shortcut,
             shortcut::unregister_shortcut,
             shortcut::get_current_shortcut,
