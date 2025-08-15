@@ -58,37 +58,18 @@ const INDEX_DIR: &str = "local_application_index";
 pub(crate) const QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME: &str = "Applications";
 
 pub fn get_default_search_paths() -> Vec<String> {
-    #[cfg(target_os = "macos")]
-    {
-        let home_dir =
-            PathBuf::from(std::env::var_os("HOME").expect("environment variable $HOME not found"));
-        return vec![
-            "/Applications".into(),
-            "/System/Applications".into(),
-            "/System/Library/CoreServices".into(),
-            home_dir
-                .join("Applications")
-                .into_os_string()
-                .into_string()
-                .expect("this path should be UTF-8 encoded"),
-        ];
+    let paths = applications::get_default_search_paths();
+    let mut ret = Vec::with_capacity(paths.len());
+    for search_path in paths {
+        let path_string = search_path
+            .into_os_string()
+            .into_string()
+            .expect("path should be UTF-8 encoded");
+
+        ret.push(path_string);
     }
 
-    #[cfg(not(target_os = "macos"))]
-    {
-        let paths = applications::get_default_search_paths();
-        let mut ret = Vec::with_capacity(paths.len());
-        for search_path in paths {
-            let path_string = search_path
-                .into_os_string()
-                .into_string()
-                .expect("path should be UTF-8 encoded");
-
-            ret.push(path_string);
-        }
-
-        ret
-    }
+    ret
 }
 
 /// Helper function to return `app`'s path.

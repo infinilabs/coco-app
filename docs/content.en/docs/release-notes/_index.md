@@ -36,6 +36,7 @@ Information about release notes of Coco App is provided here.
 - refactor: pinning window won't set CanJoinAllSpaces on macOS #854
 - build: web component build error #858
 - refactor: coordinate third-party extension operations using lock #867
+- refactor: index iOS apps and macOS apps that store icon in Assets.car #872
 
 ## 0.7.1 (2025-07-27)
 
