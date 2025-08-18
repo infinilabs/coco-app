@@ -38,6 +38,7 @@ impl std::str::FromStr for Lang {
 static APP_LANG: RwLock<Option<Lang>> = RwLock::const_new(None);
 
 /// Update the in-memory cached `APP_LANG` config.
+#[tauri::command]
 pub(crate) async fn update_app_lang(lang: String) {
     let app_lang = lang.parse::<Lang>().unwrap_or_else(|e| {
         panic!(

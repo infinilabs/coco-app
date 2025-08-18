@@ -30,6 +30,7 @@ import {
   change_shortcut,
   unregister_shortcut,
 } from "@/commands";
+import platformAdapter from "@/utils/platformAdapter";
 
 export function ThemeOption({
   icon: Icon,
@@ -246,8 +247,12 @@ export default function GeneralSettings() {
             <div className="flex items-center gap-2">
               <select
                 value={currentLanguage}
-                onChange={(e) => {
-                  setLanguage(e.currentTarget.value);
+                onChange={(event) => {
+                  const lang = event.currentTarget.value;
+
+                  setLanguage(lang);
+
+                  platformAdapter.invokeBackend("update_app_lang", { lang });
                 }}
                 className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
