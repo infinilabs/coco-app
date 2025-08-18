@@ -28,7 +28,7 @@ use serde_json::Value as Json;
 use std::path::Path;
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager, async_runtime};
-use tauri_plugin_fs_pro::{IconOptions, icon, metadata, name};
+use tauri_plugin_fs_pro::{IconOptions, icon, metadata};
 use tauri_plugin_global_shortcut::GlobalShortcutExt;
 use tauri_plugin_global_shortcut::Shortcut;
 use tauri_plugin_global_shortcut::ShortcutEvent;
@@ -36,7 +36,12 @@ use tauri_plugin_global_shortcut::ShortcutState;
 use tauri_plugin_store::StoreExt;
 use tokio::sync::oneshot::Sender as OneshotSender;
 
+// Deprecated.  We no longer index this field, but to be backward-compatible, we
+// have to keep it.
 const FIELD_APP_NAME: &str = "app_name";
+
+const FIELD_APP_NAME_ZH: &str = "app_name_zh";
+const FIELD_APP_NAME_EN: &str = "app_name_en";
 const FIELD_ICON_PATH: &str = "icon_path";
 const FIELD_APP_ALIAS: &str = "app_alias";
 const APPLICATION_SEARCH_SOURCE_ID: &str = "application";
@@ -96,17 +101,34 @@ fn get_app_path(app: &App) -> String {
         .expect("should be UTF-8 encoded")
 }
 
-/// Helper function to return `app`'s path.
-///
-/// * macOS: extract `app_path`'s file name and remove the file extension
-/// * Windows/Linux: return the name specified in `.desktop` file
-async fn get_app_name(app: &App) -> String {
-    if cfg!(any(target_os = "linux", target_os = "windows")) {
-        app.name.clone()
-    } else {
-        let app_path = get_app_path(app);
-        name(app_path.into()).await
+/// Helper function to return `app`'s Chinese name.
+async fn get_app_name_zh(app: &App) -> String {
+    // First try zh_CN
+    if let Some(name) = app.localized_app_names.get("zh_CN") {
+        return name.clone();
     }
+    // Then try zh_Hans
+    if let Some(name) = app.localized_app_names.get("zh_Hans") {
+        return name.clone();
+    }
+
+    // Fall back to base name
+    app.name.clone()
+}
+
+/// Helper function to return `app`'s English name.
+async fn get_app_name_en(app: &App) -> String {
+    // First try en_US
+    if let Some(name) = app.localized_app_names.get("en_US") {
+        return name.clone();
+    }
+    // Then try en
+    if let Some(name) = app.localized_app_names.get("en") {
+        return name.clone();
+    }
+
+    // Fall back to base name
+    app.name.clone()
 }
 
 /// Helper function to return an absolute path to `app`'s icon.
@@ -202,9 +224,13 @@ async fn index_applications_if_not_indexed(
     pizza_engine_builder.set_data_store(disk_store);
 
     let mut schema = Schema::new();
-    let field_app_name = Property::builder(FieldType::Text).build();
+    let field_app_name_zh = Property::builder(FieldType::Text).build();
     schema
-        .add_property(FIELD_APP_NAME, field_app_name)
+        .add_property(FIELD_APP_NAME_ZH, field_app_name_zh)
+        .expect("no collision could happen");
+    let field_app_name_en = Property::builder(FieldType::Text).build();
+    schema
+        .add_property(FIELD_APP_NAME_EN, field_app_name_en)
         .expect("no collision could happen");
     let property_icon = Property::builder(FieldType::Text).index(false).build();
     schema
@@ -249,21 +275,33 @@ async fn index_applications_if_not_indexed(
 
         for app in apps.iter() {
             let app_path = get_app_path(app);
-            let app_name = get_app_name(app).await;
+            let app_name_zh = get_app_name_zh(app).await;
+            let app_name_en = get_app_name_en(app).await;
             let app_icon_path = get_app_icon_path(&tauri_app_handle, app)
                 .await
                 .map_err(|str| anyhow::anyhow!(str))?;
             let app_alias = get_app_alias(&tauri_app_handle, &app_path).unwrap_or(String::new());
 
-            if app_name.is_empty() || app_name.eq(&tauri_app_handle.package_info().name) {
+            // Skip if both names are empty
+            if app_name_zh.is_empty() && app_name_en.is_empty() {
+                continue;
+            }
+
+            // Skip if this is Coco itself
+            //
+            // Coco does not have localized app names, so app_name_en and app_name_zh
+            // should both have value "Coco-AI", so either should work.
+            if app_name_en == tauri_app_handle.package_info().name {
                 continue;
             }
 
             // You cannot write `app_name.clone()` within the `doc!()` macro, we should fix this.
-            let app_name_clone = app_name.clone();
+            let app_name_zh_clone = app_name_zh.clone();
+            let app_name_en_clone = app_name_en.clone();
             let app_path_clone = app_path.clone();
             let document = doc!( app_path_clone,  {
-                FIELD_APP_NAME => app_name_clone,
+                FIELD_APP_NAME_ZH => app_name_zh_clone,
+                FIELD_APP_NAME_EN => app_name_en_clone,
                 FIELD_ICON_PATH => app_icon_path,
                 FIELD_APP_ALIAS => app_alias,
               }
@@ -272,8 +310,8 @@ async fn index_applications_if_not_indexed(
             // We don't error out because one failure won't break the whole thing
             if let Err(e) = writer.create_document(document).await {
                 warn!(
-                    "failed to index application [app name: '{}', app path: '{}'] due to error [{}]",
-                    app_name, app_path, e
+                    "failed to index application [app name zh: '{}', app name en: '{}', app path: '{}'] due to error [{}]",
+                    app_name_zh, app_name_en, app_path, e
                 )
             }
         }
@@ -402,9 +440,17 @@ impl Task for SearchApplicationsTask {
         //
         // It will be passed to Pizza like "Google\nChrome". Using Display impl would result
         // in an invalid query DSL and serde will complain.
+        //
+        // In order to be backward compatible, we still do match and prefix queries to the
+        // app_name field.
         let dsl = format!(
-            "{{ \"query\": {{ \"bool\": {{ \"should\": [ {{ \"match\": {{ \"{FIELD_APP_NAME}\": {:?} }} }}, {{ \"prefix\": {{ \"{FIELD_APP_NAME}\": {:?} }} }} ] }} }} }}",
-            self.query_string, self.query_string
+            "{{ \"query\": {{ \"bool\": {{ \"should\": [ {{ \"match\": {{ \"{FIELD_APP_NAME_ZH}\": {:?} }} }}, {{ \"prefix\": {{ \"{FIELD_APP_NAME_ZH}\": {:?} }} }}, {{ \"match\": {{ \"{FIELD_APP_NAME_EN}\": {:?} }} }}, {{ \"prefix\": {{ \"{FIELD_APP_NAME_EN}\": {:?} }} }}, {{ \"match\": {{ \"{FIELD_APP_NAME}\": {:?} }} }}, {{ \"prefix\": {{ \"{FIELD_APP_NAME}\": {:?} }} }} ] }} }} }}",
+            self.query_string,
+            self.query_string,
+            self.query_string,
+            self.query_string,
+            self.query_string,
+            self.query_string
         );
 
         let state = state
@@ -601,7 +647,7 @@ impl SearchSource for ApplicationSearchSource {
 
         let total_hits = search_result.total_hits;
         let source = self.get_type();
-        let hits = pizza_engine_hits_to_coco_hits(search_result.hits);
+        let hits = pizza_engine_hits_to_coco_hits(search_result.hits).await;
 
         Ok(QueryResponse {
             source,
@@ -611,9 +657,11 @@ impl SearchSource for ApplicationSearchSource {
     }
 }
 
-fn pizza_engine_hits_to_coco_hits(
+async fn pizza_engine_hits_to_coco_hits(
     pizza_engine_hits: Option<Vec<PizzaEngineDocument>>,
 ) -> Vec<(Document, f64)> {
+    use crate::util::app_lang::{Lang, get_app_lang};
+
     let Some(engine_hits) = pizza_engine_hits else {
         return Vec::new();
     };
@@ -622,10 +670,43 @@ fn pizza_engine_hits_to_coco_hits(
     for engine_hit in engine_hits {
         let score = engine_hit.score.unwrap_or(0.0) as f64;
         let mut document_fields = engine_hit.fields;
-        let app_name = match document_fields.remove(FIELD_APP_NAME).unwrap() {
-            FieldValue::Text(string) => string,
-            _ => unreachable!("field name is of type Text"),
+
+        // Get both Chinese and English names
+        let opt_app_name_zh = match document_fields.remove(FIELD_APP_NAME_ZH) {
+            Some(FieldValue::Text(string)) => Some(string),
+            _ => None,
         };
+        let opt_app_name_en = match document_fields.remove(FIELD_APP_NAME_EN) {
+            Some(FieldValue::Text(string)) => Some(string),
+            _ => None,
+        };
+        let opt_app_name_deprecated = match document_fields.remove(FIELD_APP_NAME) {
+            Some(FieldValue::Text(string)) => Some(string),
+            _ => None,
+        };
+
+        let app_name: String = {
+            if let Some(legacy_app_name) = opt_app_name_deprecated {
+                // Old version of index, which only contains the field app_name.
+                legacy_app_name
+            } else {
+                // New version of index store the following 2 fields
+
+                let panic_msg = format!(
+                    "new version of index should contain field [{}] and [{}]",
+                    FIELD_APP_NAME_EN, FIELD_APP_NAME_ZH
+                );
+                let app_name_zh = opt_app_name_zh.expect(&panic_msg);
+                let app_name_en = opt_app_name_en.expect(&panic_msg);
+
+                // Choose the appropriate name based on current language
+                match get_app_lang().await {
+                    Lang::zh_CN => app_name_zh,
+                    Lang::en_US => app_name_en,
+                }
+            }
+        };
+
         let app_path = engine_hit.key.expect("key should be set to app path");
         let app_icon_path = match document_fields.remove(FIELD_ICON_PATH).unwrap() {
             FieldValue::Text(string) => string,
@@ -645,7 +726,7 @@ fn pizza_engine_hits_to_coco_hits(
             }),
             id: app_path.clone(),
             category: Some("Application".to_string()),
-            title: Some(app_name.clone()),
+            title: Some(app_name),
             icon: Some(app_icon_path),
             on_opened: Some(on_opened),
             url: Some(url),
@@ -1033,15 +1114,24 @@ pub async fn get_app_search_path(tauri_app_handle: AppHandle) -> Vec<String> {
 
 #[tauri::command]
 pub async fn get_app_list(tauri_app_handle: AppHandle) -> Result<Vec<Extension>, String> {
+    use crate::util::app_lang::{Lang, get_app_lang};
+
     let search_paths = get_app_search_path(tauri_app_handle.clone()).await;
     let apps = list_app_in(search_paths)?;
 
     let mut app_entries = Vec::with_capacity(apps.len());
+    let lang = get_app_lang().await;
 
     for app in apps {
-        let name = get_app_name(&app).await;
+        let name = match lang {
+            Lang::zh_CN => get_app_name_zh(&app).await,
+            Lang::en_US => get_app_name_en(&app).await,
+        };
 
         // filter out Coco-AI
+        //
+        // Coco does not have localized app names, so regardless the chosen language, name
+        // should have value "Coco-AI".
         if name.eq(&tauri_app_handle.package_info().name) {
             continue;
         }
