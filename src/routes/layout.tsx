@@ -1,9 +1,10 @@
 import { useMount, useSessionStorageState } from "ahooks";
+import { useEffect } from "react";
+import { invoke } from "@tauri-apps/api/core";
+
 import LayoutOutlet from "./outlet";
 import { useAppStore } from "@/stores/appStore";
-import { invoke } from "@tauri-apps/api/core";
 import platformAdapter from "@/utils/platformAdapter";
-import { useEffect } from "react";
 import { CHAT_WINDOW_LABEL, MAIN_WINDOW_LABEL } from "@/constants";
 
 const Layout = () => {
