@@ -40,8 +40,6 @@ static APP_LANG: RwLock<Option<Lang>> = RwLock::const_new(None);
 /// Update the in-memory cached `APP_LANG` config.
 #[tauri::command]
 pub(crate) async fn update_app_lang(lang: String) {
-    println!("update_app_lang: {}", lang);
-
     let app_lang = lang.parse::<Lang>().unwrap_or_else(|e| {
         panic!(
             "invalid argument [{}], could not parse it to [struct Lang], parsing error [{}]",
