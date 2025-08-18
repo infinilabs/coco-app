@@ -1,14 +1,34 @@
-import { useMount } from "ahooks";
+import { useMount, useSessionStorageState } from "ahooks";
 import LayoutOutlet from "./outlet";
 import { useAppStore } from "@/stores/appStore";
 import { invoke } from "@tauri-apps/api/core";
 import platformAdapter from "@/utils/platformAdapter";
-import { MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL } from "@/constants";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { CHAT_WINDOW_LABEL, MAIN_WINDOW_LABEL } from "@/constants";
 
 const Layout = () => {
   const { language } = useAppStore();
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useSessionStorageState("rust_ready", {
+    defaultValue: false,
+  });
+
+  useMount(async () => {
+    const label = await platformAdapter.getCurrentWindowLabel();
+
+    if (label === CHAT_WINDOW_LABEL) {
+      setReady(true);
+    }
+
+    if (ready || label !== MAIN_WINDOW_LABEL) return;
+
+    await invoke("backend_setup", {
+      appLang: language,
+    });
+
+    setReady(true);
+
+    platformAdapter.emitEvent("rust_ready");
+  });
 
   useEffect(() => {
     const unlisten = platformAdapter.listenEvent("rust_ready", () => {
@@ -19,26 +39,6 @@ const Layout = () => {
       unlisten.then((fn) => fn());
     };
   }, []);
-
-  useMount(async () => {
-    const label = await platformAdapter.getCurrentWindowLabel();
-
-    if (label === MAIN_WINDOW_LABEL) {
-      await invoke("backend_setup", {
-        appLang: language,
-      });
-
-      setReady(true);
-
-      return platformAdapter.emitEvent("rust_ready", true);
-    }
-
-    if (label !== SETTINGS_WINDOW_LABEL) {
-      setReady(true);
-    }
-  });
-
-  console.log("ready", ready);
 
   return ready && <LayoutOutlet />;
 };
