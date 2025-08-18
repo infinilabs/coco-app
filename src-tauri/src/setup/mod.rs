@@ -2,6 +2,7 @@ use crate::GLOBAL_TAURI_APP_HANDLE;
 use crate::autostart;
 use crate::common::register::SearchSourceRegistry;
 use crate::util::app_lang::update_app_lang;
+use std::sync::OnceLock;
 use tauri::{AppHandle, Manager, WebviewWindow};
 
 #[cfg(target_os = "macos")]
@@ -40,6 +41,10 @@ pub fn default(
     );
 }
 
+/// Use this variable to track if tauri command `backend_setup()` gets called
+/// by the frontend.
+pub(super) static BACKEND_SETUP_FUNC_INVOKED: OnceLock<()> = OnceLock::new();
+
 /// This function includes the setup job that has to be coordinated with the
 /// frontend, or the App will panic due to races[1].  The way we coordinate is to
 /// expose this function as a Tauri command, and let the frontend code invoke
@@ -55,7 +60,12 @@ pub fn default(
 /// called.  If the frontend code invokes `list_extensions()` before `init_extension()`
 /// gets executed, we get a panic.
 #[tauri::command]
+#[function_name::named]
 pub(crate) async fn backend_setup(tauri_app_handle: AppHandle, app_lang: String) {
+    if BACKEND_SETUP_FUNC_INVOKED.get().is_some() {
+        return;
+    }
+
     GLOBAL_TAURI_APP_HANDLE
         .set(tauri_app_handle.clone())
         .expect("global tauri AppHandle already initialized");
@@ -81,4 +91,9 @@ pub(crate) async fn backend_setup(tauri_app_handle: AppHandle, app_lang: String)
     autostart::ensure_autostart_state_consistent(&tauri_app_handle).unwrap();
 
     update_app_lang(app_lang).await;
+
+    // Invoked, now update the state
+    BACKEND_SETUP_FUNC_INVOKED
+        .set(())
+        .unwrap_or_else(|_| panic!("tauri command {}() gets called twice!", function_name!()));
 }
