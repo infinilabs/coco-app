@@ -22,6 +22,10 @@ impl std::fmt::Display for Lang {
     }
 }
 
+/// Frontend code uses "en" and "zh" to represent the Application language.
+///
+/// This impl is not meant to be used as a parser for locale strings such as
+/// "en_US" or "zh_CN".
 impl std::str::FromStr for Lang {
     type Err = String;
 

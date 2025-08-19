@@ -104,12 +104,19 @@ fn get_app_path(app: &App) -> String {
 
 /// Helper function to return `app`'s Chinese name.
 async fn get_app_name_zh(app: &App) -> String {
-    // First try zh_CN
+    // zh_CN or zh-CN
     if let Some(name) = app.localized_app_names.get("zh_CN") {
         return name.clone();
     }
-    // Then try zh_Hans
+    if let Some(name) = app.localized_app_names.get("zh-CN") {
+        return name.clone();
+    }
+
+    // zh_Hans or zh-Hans
     if let Some(name) = app.localized_app_names.get("zh_Hans") {
+        return name.clone();
+    }
+    if let Some(name) = app.localized_app_names.get("zh-Hans") {
         return name.clone();
     }
 
@@ -119,11 +126,15 @@ async fn get_app_name_zh(app: &App) -> String {
 
 /// Helper function to return `app`'s English name.
 async fn get_app_name_en(app: &App) -> String {
-    // First try en_US
+    // en_US or en-US
     if let Some(name) = app.localized_app_names.get("en_US") {
         return name.clone();
     }
-    // Then try en
+    if let Some(name) = app.localized_app_names.get("en-US") {
+        return name.clone();
+    }
+
+    // English (General)
     if let Some(name) = app.localized_app_names.get("en") {
         return name.clone();
     }
@@ -136,7 +147,6 @@ async fn get_app_name_en(app: &App) -> String {
 async fn get_app_name_in_system_lang(app: &App) -> String {
     let system_lang = crate::util::system_lang::get_system_lang();
 
-    // First try en_US
     if let Some(name) = app.localized_app_names.get(&system_lang) {
         name.clone()
     } else {
