@@ -40,6 +40,7 @@ use tokio::sync::oneshot::Sender as OneshotSender;
 // have to keep it.
 const FIELD_APP_NAME: &str = "app_name";
 
+const FIELD_APP_NAME_IN_SYSTEM_LANG: &str = "app_name_in_system_lang";
 const FIELD_APP_NAME_ZH: &str = "app_name_zh";
 const FIELD_APP_NAME_EN: &str = "app_name_en";
 const FIELD_ICON_PATH: &str = "icon_path";
@@ -129,6 +130,19 @@ async fn get_app_name_en(app: &App) -> String {
 
     // Fall back to base name
     app.name.clone()
+}
+
+/// Helper function to return `app`'s name in system language.
+async fn get_app_name_in_system_lang(app: &App) -> String {
+    let system_lang = crate::util::system_lang::get_system_lang();
+
+    // First try en_US
+    if let Some(name) = app.localized_app_names.get(&system_lang) {
+        name.clone()
+    } else {
+        // Fall back to base name
+        app.name.clone()
+    }
 }
 
 /// Helper function to return an absolute path to `app`'s icon.
@@ -232,6 +246,10 @@ async fn index_applications_if_not_indexed(
     schema
         .add_property(FIELD_APP_NAME_EN, field_app_name_en)
         .expect("no collision could happen");
+    let field_app_name_in_system_lang = Property::builder(FieldType::Text).build();
+    schema
+        .add_property(FIELD_APP_NAME_IN_SYSTEM_LANG, field_app_name_in_system_lang)
+        .expect("no collision could happen");
     let property_icon = Property::builder(FieldType::Text).index(false).build();
     schema
         .add_property(FIELD_ICON_PATH, property_icon)
@@ -277,13 +295,17 @@ async fn index_applications_if_not_indexed(
             let app_path = get_app_path(app);
             let app_name_zh = get_app_name_zh(app).await;
             let app_name_en = get_app_name_en(app).await;
+            let app_name_in_system_lang = get_app_name_in_system_lang(app).await;
             let app_icon_path = get_app_icon_path(&tauri_app_handle, app)
                 .await
                 .map_err(|str| anyhow::anyhow!(str))?;
             let app_alias = get_app_alias(&tauri_app_handle, &app_path).unwrap_or(String::new());
 
-            // Skip if both names are empty
-            if app_name_zh.is_empty() && app_name_en.is_empty() {
+            // Skip if all names are empty
+            if app_name_zh.is_empty()
+                && app_name_en.is_empty()
+                && app_name_in_system_lang.is_empty()
+            {
                 continue;
             }
 
@@ -298,10 +320,12 @@ async fn index_applications_if_not_indexed(
             // You cannot write `app_name.clone()` within the `doc!()` macro, we should fix this.
             let app_name_zh_clone = app_name_zh.clone();
             let app_name_en_clone = app_name_en.clone();
+            let app_name_in_system_lang = app_name_in_system_lang.clone();
             let app_path_clone = app_path.clone();
             let document = doc!( app_path_clone,  {
                 FIELD_APP_NAME_ZH => app_name_zh_clone,
                 FIELD_APP_NAME_EN => app_name_en_clone,
+                FIELD_APP_NAME_IN_SYSTEM_LANG => app_name_in_system_lang,
                 FIELD_ICON_PATH => app_icon_path,
                 FIELD_APP_ALIAS => app_alias,
               }
@@ -444,7 +468,9 @@ impl Task for SearchApplicationsTask {
         // In order to be backward compatible, we still do match and prefix queries to the
         // app_name field.
         let dsl = format!(
-            "{{ \"query\": {{ \"bool\": {{ \"should\": [ {{ \"match\": {{ \"{FIELD_APP_NAME_ZH}\": {:?} }} }}, {{ \"prefix\": {{ \"{FIELD_APP_NAME_ZH}\": {:?} }} }}, {{ \"match\": {{ \"{FIELD_APP_NAME_EN}\": {:?} }} }}, {{ \"prefix\": {{ \"{FIELD_APP_NAME_EN}\": {:?} }} }}, {{ \"match\": {{ \"{FIELD_APP_NAME}\": {:?} }} }}, {{ \"prefix\": {{ \"{FIELD_APP_NAME}\": {:?} }} }} ] }} }} }}",
+            "{{ \"query\": {{ \"bool\": {{ \"should\": [ {{ \"match\": {{ \"{FIELD_APP_NAME_ZH}\": {:?} }} }}, {{ \"prefix\": {{ \"{FIELD_APP_NAME_ZH}\": {:?} }} }}, {{ \"match\": {{ \"{FIELD_APP_NAME_EN}\": {:?} }} }}, {{ \"prefix\": {{ \"{FIELD_APP_NAME_EN}\": {:?} }} }}, {{ \"match\": {{ \"{FIELD_APP_NAME_IN_SYSTEM_LANG}\": {:?} }} }}, {{ \"prefix\": {{ \"{FIELD_APP_NAME_IN_SYSTEM_LANG}\": {:?} }} }}, {{ \"match\": {{ \"{FIELD_APP_NAME}\": {:?} }} }}, {{ \"prefix\": {{ \"{FIELD_APP_NAME}\": {:?} }} }} ] }} }} }}",
+            self.query_string,
+            self.query_string,
             self.query_string,
             self.query_string,
             self.query_string,
