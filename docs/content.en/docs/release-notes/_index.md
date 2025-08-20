@@ -25,8 +25,8 @@ Information about release notes of Coco App is provided here.
 
 - fix: fix issue with update check failure #833
 - fix: web component login state #857
+- fix: shortcut key not opening extension store #877
 - fix: set up hotkey on main thread or Windows will complain #879
-
 
 ### ✈️ Improvements
 
@@ -40,7 +40,7 @@ Information about release notes of Coco App is provided here.
 - build: web component build error #858
 - refactor: coordinate third-party extension operations using lock #867
 - refactor: index iOS apps and macOS apps that store icon in Assets.car #872
-- refactor: accept both '-' and '_' as locale str separator #876
+- refactor: accept both '-' and '\_' as locale str separator #876
 
 ## 0.7.1 (2025-07-27)
 
