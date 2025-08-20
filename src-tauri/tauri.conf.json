@@ -15,7 +15,7 @@
       {
         "label": "main",
         "title": "Coco AI",
-        "url": "/ui",
+        "url": "index.html/#/ui",
         "height": 590,
         "width": 680,
         "decorations": false,
@@ -39,7 +39,7 @@
       {
         "label": "settings",
         "title": "Coco AI Settings",
-        "url": "/ui/settings",
+        "url": "index.html/#/ui/settings",
         "width": 1000,
         "minWidth": 1000,
         "height": 700,
@@ -59,7 +59,7 @@
       {
         "label": "check",
         "title": "Coco AI Update",
-        "url": "/ui/check",
+        "url": "index.html/#/ui/check",
         "width": 340,
         "minWidth": 340,
         "height": 260,

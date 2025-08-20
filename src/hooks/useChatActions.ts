@@ -524,7 +524,7 @@ export function useChatActions(
             skipTaskbar: false,
             decorations: true,
             closable: true,
-            url: "/ui/chat",
+            url: "index.html/#/ui/chat",
           });
       }
     },

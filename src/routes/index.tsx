@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createHashRouter } from "react-router-dom";
 
 import Layout from "./layout";
 import ErrorPage from "@/pages/error/index";
@@ -16,7 +16,7 @@ const routerOptions = {
   },
 } as const;
 
-export const router = createBrowserRouter(
+export const router = createHashRouter(
   [
     {
       path: "/",
