@@ -25,6 +25,8 @@ Information about release notes of Coco App is provided here.
 
 - fix: fix issue with update check failure #833
 - fix: web component login state #857
+- fix: set up hotkey on main thread or Windows will complain #879
+
 
 ### ✈️ Improvements
 
