@@ -61,7 +61,7 @@ tauri-plugin-drag = "2"
 tauri-plugin-macos-permissions = "2"
 tauri-plugin-fs-pro = "2"
 tauri-plugin-screenshots = "2"
-applications = { git = "https://github.com/infinilabs/applications-rs", rev = "2f1f88d1880404c5f8d70ad950b859bd49922bee" }
+applications = { git = "https://github.com/infinilabs/applications-rs", rev = "e80a301e07f9a9a1a82ec038141232d22eba78be" }
 tokio-native-tls = "0.3"  # For wss connections
 tokio = { version = "1", features = ["full"] }
 tokio-tungstenite = { version = "0.20", features = ["native-tls"] }

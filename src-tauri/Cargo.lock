@@ -128,7 +128,7 @@ checksum = "e16d2d3311acee920a9eb8d33b8cbc1787ce4a264e85f964c2404b969bdcd487"
 [[package]]
 name = "applications"
 version = "0.3.1"
-source = "git+https://github.com/infinilabs/applications-rs?rev=2f1f88d1880404c5f8d70ad950b859bd49922bee#2f1f88d1880404c5f8d70ad950b859bd49922bee"
+source = "git+https://github.com/infinilabs/applications-rs?rev=e80a301e07f9a9a1a82ec038141232d22eba78be#e80a301e07f9a9a1a82ec038141232d22eba78be"
 dependencies = [
  "anyhow",
  "core-foundation 0.9.4",
