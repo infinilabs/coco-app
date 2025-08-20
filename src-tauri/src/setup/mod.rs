@@ -77,7 +77,16 @@ pub(crate) async fn backend_setup(tauri_app_handle: AppHandle, app_lang: String)
     // This has to be called before initializing extensions as doing that
     // requires access to the shortcut store, which will be set by this
     // function.
-    crate::shortcut::enable_shortcut(&tauri_app_handle);
+    //
+    //
+    // Windows requires that hotkey setup has to be done on the main thread, or
+    // we will get error "ERROR_WINDOW_OF_OTHER_THREAD 1408 (0x580)"
+    let tauri_app_handle_clone = tauri_app_handle.clone();
+    tauri_app_handle
+        .run_on_main_thread(move || {
+            crate::shortcut::enable_shortcut(&tauri_app_handle_clone);
+        })
+        .expect("failed to run this closure on the main thread");
 
     crate::init(&tauri_app_handle).await;
 
