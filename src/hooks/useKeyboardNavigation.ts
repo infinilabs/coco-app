@@ -37,6 +37,7 @@ export function useKeyboardNavigation({
   const modifierKey = useShortcutsStore((state) => {
     return state.modifierKey;
   });
+  const { setSelectedSearchContent } = useSearchStore();
 
   const getModifierKeyPressed = (event: KeyboardEvent) => {
     const metaKeyPressed = event.metaKey && modifierKey === "meta";
@@ -122,6 +123,8 @@ export function useKeyboardNavigation({
         index = index === 0 ? 9 : index - 1;
 
         const item = globalItemIndexMap[index];
+
+        setSelectedSearchContent(item);
 
         platformAdapter.openSearchItem(item, formatUrl);
       }
