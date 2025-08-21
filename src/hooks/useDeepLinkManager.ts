@@ -20,48 +20,44 @@ export interface DeepLinkHandler {
 
 export function useDeepLinkManager() {
   const addError = useAppStore((state) => state.addError);
-  const ssoRequestID = useAppStore((state) => state.ssoRequestID);
-  const cloudSelectService = useConnectStore(
-    (state) => state.cloudSelectService
-  );
   const { t } = useTranslation();
 
   // handle oauth callback
-  const handleOAuthCallback = useCallback(
-    async (url: URL) => {
-      try {
-        const reqId = url.searchParams.get("request_id");
-        const code = url.searchParams.get("code");
+  const handleOAuthCallback = useCallback(async (url: URL) => {
+    try {
+      const reqId = url.searchParams.get("request_id");
+      const code = url.searchParams.get("code");
 
-        if (reqId !== ssoRequestID) {
-          console.log("Request ID not matched, skip");
-          addError("Request ID not matched, skip");
-          return;
-        }
+      const { ssoRequestID } = useAppStore.getState();
+      const { cloudSelectService } = useConnectStore.getState();
 
-        const serverId = cloudSelectService?.id;
-        if (!code || !serverId) {
-          addError("No authorization code received");
-          return;
-        }
-
-        console.log("Handling OAuth callback:", { code, serverId });
-        await platformAdapter.commands("handle_sso_callback", {
-          serverId: serverId,
-          requestId: ssoRequestID,
-          code: code,
-        });
-
-        // trigger oauth success event
-        platformAdapter.emitEvent("oauth_success", { serverId });
-        getCurrentWindow().setFocus();
-      } catch (err) {
-        console.error("Failed to parse OAuth callback URL:", err);
-        addError("Invalid OAuth callback URL format: " + err);
+      if (reqId !== ssoRequestID) {
+        console.log("Request ID not matched, skip");
+        addError("Request ID not matched, skip");
+        return;
       }
-    },
-    [ssoRequestID, cloudSelectService, addError]
-  );
+
+      const serverId = cloudSelectService?.id;
+      if (!code || !serverId) {
+        addError("No authorization code received");
+        return;
+      }
+
+      console.log("Handling OAuth callback:", { code, serverId });
+      await platformAdapter.commands("handle_sso_callback", {
+        serverId: serverId,
+        requestId: ssoRequestID,
+        code: code,
+      });
+
+      // trigger oauth success event
+      platformAdapter.emitEvent("oauth_success", { serverId });
+      getCurrentWindow().setFocus();
+    } catch (err) {
+      console.error("Failed to parse OAuth callback URL:", err);
+      addError("Invalid OAuth callback URL format: " + err);
+    }
+  }, []);
 
   // handle install extension from store
   const handleInstallExtension = useCallback(async (url: URL) => {
