@@ -20,6 +20,7 @@ Information about release notes of Coco App is provided here.
 - feat: add extension uninstall option in settings #855
 - feat: impl extension settings 'hide_before_open' #862
 - feat: index both en/zh_CN app names and show app name in chosen language #875
+- feat: support context menu in debug mode #882
 
 ### 🐛 Bug fix
 
