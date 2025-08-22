@@ -1,12 +1,7 @@
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import {
-  useAsyncEffect,
-  useEventListener,
-  useMount,
-  useTextSelection,
-} from "ahooks";
+import { useAsyncEffect, useEventListener, useMount } from "ahooks";
 import { isArray, isString } from "lodash-es";
 
 import { useAppStore } from "@/stores/appStore";
@@ -94,15 +89,6 @@ export default function LayoutOutlet() {
   useEscape();
 
   useSettingsWindow();
-
-  const { text: selectionText } = useTextSelection();
-
-  // Disable right-click for production environment
-  useEventListener("contextmenu", (event) => {
-    if (import.meta.env.DEV || selectionText) return;
-
-    event.preventDefault();
-  });
 
   useModifierKeyPress();
 
