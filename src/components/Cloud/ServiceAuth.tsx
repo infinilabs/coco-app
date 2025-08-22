@@ -42,7 +42,7 @@ const ServiceAuth = memo(
       // Generate the login URL with the current appUid
       const url = `${cloudSelectService?.auth_provider?.sso?.url}/?provider=${cloudSelectService?.id}&product=coco&request_id=${requestID}`;
 
-      console.log("Open SSO link, requestID:", ssoRequestID, url);
+      console.log("Open SSO link, requestID:", url);
 
       // Open the URL in a browser
       OpenURLWithBrowser(url);

@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { isEqual } from "lodash-es";
+import { usePrevious } from "ahooks";
 
 import { DataSourcesList } from "./DataSourcesList";
 import { Sidebar } from "./Sidebar";
@@ -7,9 +9,9 @@ import { useAppStore } from "@/stores/appStore";
 import { useConnectStore } from "@/stores/connectStore";
 import ServiceInfo from "./ServiceInfo";
 import ServiceAuth from "./ServiceAuth";
-import platformAdapter from "@/utils/platformAdapter";
 import type { Server } from "@/types/server";
 import { useServers } from "@/hooks/useServers";
+import platformAdapter from "@/utils/platformAdapter";
 
 export default function Cloud() {
   const SidebarRef = useRef<{ refreshData: () => void }>(null);
@@ -24,6 +26,7 @@ export default function Cloud() {
     serverList,
     setServerList,
   } = useConnectStore();
+  const prevServerList = usePrevious(serverList);
 
   const [refreshLoading, setRefreshLoading] = useState(false);
 
@@ -31,6 +34,8 @@ export default function Cloud() {
 
   // fetch the servers
   useEffect(() => {
+    if (isEqual(prevServerList, serverList)) return;
+
     fetchServers();
   }, [serverList]);
 
@@ -40,32 +45,37 @@ export default function Cloud() {
   }, [cloudSelectService?.id]);
 
   const fetchServers = useCallback(async () => {
-    let res = serverList;
+    let { serverList } = useConnectStore.getState();
+
     if (errors.length > 0) {
-      res = res.map((item: Server) => {
+      serverList = serverList.map((item: Server) => {
         if (item.id === cloudSelectService?.id) {
-          item.health = {
-            services: item.health?.services || {},
-            status: item.health?.status || "red",
+          return {
+            ...item,
+            health: {
+              services: item.health?.services || {},
+              status: item.health?.status || "red",
+            },
           };
         }
         return item;
       });
     }
-    setServerList(res);
 
-    if (res.length > 0) {
-      const matched = res.find((server: any) => {
+    setServerList(serverList);
+
+    if (serverList.length > 0) {
+      const matched = serverList.find((server: any) => {
         return server.id === cloudSelectService?.id;
       });
 
       if (matched) {
         setCloudSelectService(matched);
       } else {
-        setCloudSelectService(res[res.length - 1]);
+        setCloudSelectService(serverList[serverList.length - 1]);
       }
     }
-  }, [serverList, errors, cloudSelectService]);
+  }, [errors, cloudSelectService]);
 
   const refreshClick = useCallback(
     async (id: string, callback?: () => void) => {

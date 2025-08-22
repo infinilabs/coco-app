@@ -28,6 +28,7 @@ Information about release notes of Coco App is provided here.
 - fix: web component login state #857
 - fix: shortcut key not opening extension store #877
 - fix: set up hotkey on main thread or Windows will complain #879
+- fix: resolve deeplink login issue #881
 
 ### ✈️ Improvements
 
