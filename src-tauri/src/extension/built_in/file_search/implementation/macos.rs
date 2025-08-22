@@ -100,7 +100,7 @@ fn build_mdfind_query(query_string: &str, config: &FileSearchConfig) -> Vec<Stri
         }
         SearchBy::NameAndContents => {
             // Do not specify any File System Metadata Attribute Keys to search
-            // all of them.
+            // all of them, it is case-insensitive by default.
             //
             // Previously, we use:
             //
