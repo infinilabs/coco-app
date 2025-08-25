@@ -89,13 +89,28 @@ fn build_mdfind_query(query_string: &str, config: &FileSearchConfig) -> Vec<Stri
 
     match config.search_by {
         SearchBy::Name => {
-            args.push(format!("kMDItemFSName == '*{}*'", query_string));
+            // The tailing char 'c' makes the search case-insensitive.
+            //
+            // According to [1], we should use this syntax "kMDItemFSName ==[c] '*{}*'",
+            // but it does not work on my machine (macOS 26 beta 7), and you
+            // can find similar complaints as well [2].
+            //
+            // [1]: https://developer.apple.com/library/archive/documentation/Carbon/Conceptual/SpotlightQuery/Concepts/QueryFormat.html
+            // [2]: https://apple.stackexchange.com/q/263671/394687
+            args.push(format!("kMDItemFSName == '*{}*'c", query_string));
         }
         SearchBy::NameAndContents => {
-            args.push(format!(
-                "kMDItemFSName == '*{}*' || kMDItemTextContent == '{}'",
-                query_string, query_string
-            ));
+            // Do not specify any File System Metadata Attribute Keys to search
+            // all of them, it is case-insensitive by default.
+            //
+            // Previously, we use:
+            //
+            //    "kMDItemFSName == '*{}*' || kMDItemTextContent == '{}'"
+            //
+            // But the kMDItemTextContent attribute does not work as expected.
+            // For example, if a PDF document contains both "Waterloo" and
+            // "waterloo", it is only matched by "Waterloo".
+            args.push(query_string.to_string());
         }
     }
 

@@ -12,6 +12,7 @@ mod util;
 use crate::common::register::SearchSourceRegistry;
 use crate::common::{CHECK_WINDOW_LABEL, MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL};
 use crate::server::servers::{load_or_insert_default_server, load_servers_token};
+use crate::util::prevent_default;
 use autostart::change_autostart;
 use lazy_static::lazy_static;
 use std::sync::Mutex;
@@ -92,7 +93,8 @@ pub fn run() {
                 .build(),
         )
         .plugin(tauri_plugin_windows_version::init())
-        .plugin(tauri_plugin_opener::init());
+        .plugin(tauri_plugin_opener::init())
+        .plugin(prevent_default::init());
 
     // Conditional compilation for macOS
     #[cfg(target_os = "macos")]
