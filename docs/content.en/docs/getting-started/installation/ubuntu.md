@@ -13,6 +13,12 @@ asciinema: true
 [x11_protocol]: https://en.wikipedia.org/wiki/X_Window_System 
 [if_x11]: https://unix.stackexchange.com/q/202891/498440
 
+## Install dependencies
+
+```sh
+$ sudo apt-get update
+$ sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils libtracker-sparql-3.0-dev
+```
 
 ## Go to the download page
 
