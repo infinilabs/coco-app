@@ -50,7 +50,7 @@ pub(crate) enum FileType {
     Unknown,
 }
 
-async fn get_file_type(path: &str) -> FileType {
+fn get_file_type(path: &str) -> FileType {
     let path = camino::Utf8Path::new(path);
 
     // stat() is more precise than file extension, use it if possible.
@@ -167,8 +167,13 @@ fn type_to_icon(ty: FileType) -> &'static str {
     }
 }
 
+/// Synchronous version of `get_file_icon()`.
+pub(crate) fn sync_get_file_icon(path: &str) -> &'static str {
+    let ty = get_file_type(path);
+    type_to_icon(ty)
+}
+
 #[tauri::command]
 pub(crate) async fn get_file_icon(path: String) -> &'static str {
-    let ty = get_file_type(path.as_str()).await;
-    type_to_icon(ty)
+    sync_get_file_icon(&path)
 }
