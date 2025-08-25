@@ -858,6 +858,7 @@ dependencies = [
  "function_name",
  "futures",
  "futures-util",
+ "gio 0.20.12",
  "hostname",
  "http 1.3.1",
  "hyper 0.14.32",
@@ -909,6 +910,7 @@ dependencies = [
  "tokio-stream",
  "tokio-tungstenite",
  "tokio-util",
+ "tracker-rs",
  "tungstenite 0.24.0",
  "url",
  "walkdir",
@@ -1729,7 +1731,7 @@ version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "adef9ff8c03b1c04bc2c743e0395588001b1c8f5669cab0b300abe873b9c9227"
 dependencies = [
- "gio 0.20.9",
+ "gio 0.20.12",
  "gtk",
  "objc2 0.5.2",
  "objc2-app-kit 0.2.2",
@@ -2193,9 +2195,9 @@ dependencies = [
 
 [[package]]
 name = "gio"
-version = "0.20.9"
+version = "0.20.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4f00c70f8029d84ea7572dd0e1aaa79e5329667b4c17f329d79ffb1e6277487"
+checksum = "8e27e276e7b6b8d50f6376ee7769a71133e80d093bdc363bd0af71664228b831"
 dependencies = [
  "futures-channel",
  "futures-core",
@@ -6990,6 +6992,33 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e672c95779cf947c5311f83787af4fa8fffd12fb27e4993211a84bdfd9610f9c"
 dependencies = [
  "once_cell",
+]
+
+[[package]]
+name = "tracker-rs"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cc48e3b6e7a94b6c90b6905f157f2a875dfb5866cf19429476fd803c9c84eafc"
+dependencies = [
+ "bitflags 2.9.0",
+ "gio 0.20.12",
+ "glib 0.20.9",
+ "glib-sys 0.20.9",
+ "libc",
+ "tracker-sys",
+]
+
+[[package]]
+name = "tracker-sys"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8814f2bd279c6fa3eb22921a5394df6109c6ec18f805e5973fa633a4e9a57785"
+dependencies = [
+ "gio-sys 0.20.9",
+ "glib-sys 0.20.9",
+ "gobject-sys 0.20.9",
+ "libc",
+ "system-deps 7.0.3",
 ]
 
 [[package]]

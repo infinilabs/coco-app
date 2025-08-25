@@ -9,7 +9,7 @@ use super::super::config::SearchBy;
 use crate::common::document::{DataSourceReference, Document};
 use crate::extension::LOCAL_QUERY_SOURCE_TYPE;
 use crate::extension::OnOpened;
-use crate::util::file::get_file_icon;
+use crate::util::file::sync_get_file_icon;
 use windows::{
     Win32::System::{
         Com::{CLSCTX_INPROC_SERVER, CoCreateInstance},
@@ -420,7 +420,7 @@ pub(crate) async fn hits(
         // "file:C:/Users/desktop.ini" => "C:/Users/desktop.ini"
         let file_path = &item_url[ITEM_URL_PREFIX_LEN..];
 
-        let icon = get_file_icon(file_path.to_string()).await;
+        let icon = sync_get_file_icon(file_path);
         let file_path_of_type_path = camino::Utf8Path::new(&file_path);
         let r#where = file_path_of_type_path
             .parent()

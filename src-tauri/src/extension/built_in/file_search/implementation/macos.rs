@@ -1,10 +1,11 @@
 use super::super::EXTENSION_ID;
 use super::super::config::FileSearchConfig;
 use super::super::config::SearchBy;
+use super::should_be_filtered_out;
 use crate::common::document::{DataSourceReference, Document};
 use crate::extension::LOCAL_QUERY_SOURCE_TYPE;
 use crate::extension::OnOpened;
-use crate::util::file::get_file_icon;
+use crate::util::file::sync_get_file_icon;
 use futures::stream::Stream;
 use futures::stream::StreamExt;
 use std::os::fd::OwnedFd;
@@ -32,7 +33,7 @@ pub(crate) async fn hits(
     while let Some(res_file_path) = iter.next().await {
         let file_path = res_file_path.map_err(|io_err| io_err.to_string())?;
 
-        let icon = get_file_icon(file_path.clone()).await;
+        let icon = sync_get_file_icon(&file_path);
         let file_path_of_type_path = camino::Utf8Path::new(&file_path);
         let r#where = file_path_of_type_path
             .parent()
@@ -140,7 +141,7 @@ fn execute_mdfind_query(
         .filter(move |res_path| {
             std::future::ready({
                 match res_path {
-                    Ok(path) => !should_be_filtered_out(&config_clone, path),
+                    Ok(path) => !should_be_filtered_out(&config_clone, path, false, true, true),
                     Err(_) => {
                         // Don't filter out Err() values
                         true
@@ -152,35 +153,4 @@ fn execute_mdfind_query(
         .take(size);
 
     Ok((iter, child))
-}
-
-/// If `file_path` should be removed from the search results given the filter
-/// conditions specified in `config`.
-fn should_be_filtered_out(config: &FileSearchConfig, file_path: &str) -> bool {
-    let is_excluded = config
-        .exclude_paths
-        .iter()
-        .any(|exclude_path| file_path.starts_with(exclude_path));
-
-    if is_excluded {
-        return true;
-    }
-
-    let matches_file_type = if config.file_types.is_empty() {
-        true
-    } else {
-        let path_obj = camino::Utf8Path::new(&file_path);
-        if let Some(extension) = path_obj.extension() {
-            config
-                .file_types
-                .iter()
-                .any(|file_type| file_type == extension)
-        } else {
-            // `config.file_types` is not empty, then the search results
-            // should have extensions.
-            false
-        }
-    };
-
-    !matches_file_type
 }

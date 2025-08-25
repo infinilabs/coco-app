@@ -19,7 +19,7 @@ pub(crate) const PLUGIN_JSON_FILE: &str = r#"
 {
   "id": "File Search",
   "name": "File Search",
-  "platforms": ["macos", "windows"],
+  "platforms": ["macos", "windows", "linux"],
   "description": "Search files on your system",
   "icon": "font_Filesearch",
   "type": "extension"
