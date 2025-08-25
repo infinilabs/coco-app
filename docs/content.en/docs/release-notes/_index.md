@@ -10,6 +10,7 @@ Information about release notes of Coco App is provided here.
 ## Latest (In development)
 
 ### ❌ Breaking changes
+- chore: update request accesstoken api #866
 
 ### 🚀 Features
 
