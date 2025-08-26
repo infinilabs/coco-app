@@ -25,7 +25,7 @@ pub(crate) async fn hits(
     size: usize,
     config: &FileSearchConfig,
 ) -> Result<Vec<(Document, f64)>, String> {
-    let (mut iter, mut mdfind_child_process) =
+    let (mut iter, _mdfind_child_process) =
         execute_mdfind_query(&query_string, from, size, &config)?;
 
     // Convert results to documents
@@ -73,12 +73,6 @@ pub(crate) async fn hits(
 
         hits.push((doc, SCORE));
     }
-    // Kill the mdfind process once we get the needed results to prevent zombie
-    // processes.
-    mdfind_child_process
-        .kill()
-        .await
-        .map_err(|e| format!("{:?}", e))?;
 
     Ok(hits)
 }
@@ -130,8 +124,9 @@ fn build_mdfind_query(query_string: &str, config: &FileSearchConfig) -> Vec<Stri
 /// # Return value:
 ///
 /// * impl Stream: an async iterator that will yield the matched files
-/// * Child: The handle to the mdfind process, we need to kill it once we
-///   collect all the results to avoid zombie processes.
+/// * Child: The handle to the mdfind process.  The child process will be killed
+///   when this handle gets dropped, we need to keep it alive until we exhaust
+///   all the query results.
 fn execute_mdfind_query(
     query_string: &str,
     from: usize,
@@ -149,6 +144,7 @@ fn execute_mdfind_query(
         .args(&args[1..])
         .stdout(tx)
         .stderr(std::process::Stdio::null())
+        .kill_on_drop(true)
         .spawn()
         .map_err(|e| format!("Failed to spawn mdfind: {}", e))?;
     let config_clone = config.clone();
