@@ -1,8 +1,8 @@
 //! File system powered by GNOME's Tracker engine.
 
-use super::super::EXTENSION_ID;
-use super::super::config::FileSearchConfig;
-use super::should_be_filtered_out;
+use super::super::super::EXTENSION_ID;
+use super::super::super::config::FileSearchConfig;
+use super::super::should_be_filtered_out;
 use crate::common::document::DataSourceReference;
 use crate::extension::LOCAL_QUERY_SOURCE_TYPE;
 use crate::util::file::sync_get_file_icon;

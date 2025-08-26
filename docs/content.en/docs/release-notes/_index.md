@@ -23,6 +23,7 @@ Information about release notes of Coco App is provided here.
 - feat: index both en/zh_CN app names and show app name in chosen language #875
 - feat: support context menu in debug mode #882
 - feat: file search for Linux/GNOME #884
+- feat: file search for Linux/KDE #886
 
 
 ### 🐛 Bug fix
