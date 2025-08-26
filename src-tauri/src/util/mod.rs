@@ -13,7 +13,7 @@ use tauri_plugin_shell::ShellExt;
 const XDG_CURRENT_DESKTOP: &str = "XDG_CURRENT_DESKTOP";
 
 #[derive(Debug, PartialEq)]
-enum LinuxDesktopEnvironment {
+pub(crate) enum LinuxDesktopEnvironment {
     Gnome,
     Kde,
     Unsupported { xdg_current_desktop: String },
@@ -65,7 +65,7 @@ impl LinuxDesktopEnvironment {
 }
 
 /// None means that it is likely that we do not have a desktop environment.
-fn get_linux_desktop_environment() -> Option<LinuxDesktopEnvironment> {
+pub(crate) fn get_linux_desktop_environment() -> Option<LinuxDesktopEnvironment> {
     let de_os_str = std::env::var_os(XDG_CURRENT_DESKTOP)?;
     let de_str = de_os_str.into_string().unwrap_or_else(|_os_string| {
         panic!("${} should be UTF-8 encoded", XDG_CURRENT_DESKTOP);
