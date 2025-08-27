@@ -54,7 +54,7 @@ const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
 
     let response: any;
     if (isTauri) {
-      if (unrequitable()) {
+      if (await unrequitable()) {
         return setVisibleStartPage(false);
       }
 

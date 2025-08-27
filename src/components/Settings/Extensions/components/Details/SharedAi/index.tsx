@@ -1,4 +1,4 @@
-import { FC, useMemo, useState, useCallback } from "react";
+import { FC, useMemo, useState, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { isArray } from "lodash-es";
 import { useAsyncEffect, useMount } from "ahooks";
@@ -37,6 +37,13 @@ const SharedAi: FC<SharedAiProps> = (props) => {
   const { t } = useTranslation();
   const [assistantSearchValue, setAssistantSearchValue] = useState("");
   const [isLoadingAssistants, setIsLoadingAssistants] = useState(false);
+  const { setCloudSelectService } = useConnectStore();
+
+  useEffect(() => {
+    if (!server) return;
+
+    setCloudSelectService(server);
+  }, [server]);
 
   const getEnabledServers = useCallback((servers: Server[]): Server[] => {
     if (!isArray(servers)) return [];
@@ -56,7 +63,9 @@ const SharedAi: FC<SharedAiProps> = (props) => {
       }
 
       if (server) {
-        const matchServer = enabledServers.find((item) => item.id === server.id);
+        const matchServer = enabledServers.find(
+          (item) => item.id === server.id
+        );
         if (matchServer) {
           setServer(matchServer);
           return;
@@ -65,7 +74,7 @@ const SharedAi: FC<SharedAiProps> = (props) => {
 
       setServer(enabledServers[0]);
     } catch (error) {
-      console.error('Failed to load servers:', error);
+      console.error("Failed to load servers:", error);
       addError(`Failed to load servers: ${String(error)}`);
     }
   });
@@ -86,7 +95,9 @@ const SharedAi: FC<SharedAiProps> = (props) => {
         query: assistantSearchValue,
       });
 
-      const assistants: Assistant[] = data.list.map((item: any) => item._source);
+      const assistants: Assistant[] = data.list.map(
+        (item: any) => item._source
+      );
       setAssistantList(assistants);
 
       if (assistants.length === 0) {
@@ -104,7 +115,7 @@ const SharedAi: FC<SharedAiProps> = (props) => {
 
       setAssistant(assistants[0]);
     } catch (error) {
-      console.error('Failed to fetch assistants:', error);
+      console.error("Failed to fetch assistants:", error);
       addError(`Failed to fetch assistants: ${String(error)}`);
       setAssistantList([]);
       setAssistant(undefined);
@@ -181,7 +192,9 @@ const SharedAi: FC<SharedAiProps> = (props) => {
               searchable={searchable}
               onChange={onChange}
               onSearch={onSearch}
-              placeholder={isLoadingAssistants && searchable ? "Loading..." : undefined}
+              placeholder={
+                isLoadingAssistants && searchable ? "Loading..." : undefined
+              }
             />
           </div>
         );

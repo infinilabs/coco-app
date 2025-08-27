@@ -15,7 +15,6 @@ import {
   MultiSourceQueryResponse,
 } from "@/types/commands";
 import { useAppStore } from "@/stores/appStore";
-import { useAuthStore } from "@/stores/authStore";
 import {
   getCurrentWindowService,
   handleLogout,
@@ -39,16 +38,9 @@ async function invokeWithErrorHandler<T>(
   command: string,
   args?: Record<string, any>
 ): Promise<T> {
-  const isCurrentLogin = useAuthStore.getState().isCurrentLogin;
-
   const service = await getCurrentWindowService();
 
-  // Not logged in
-  // console.log("isCurrentLogin", command, isCurrentLogin);
-  if (
-    !WHITELIST_SERVERS.includes(command) &&
-    (!isCurrentLogin || !service?.profile)
-  ) {
+  if (!WHITELIST_SERVERS.includes(command) && !service?.profile) {
     console.error("This command requires authentication");
     throw new Error("This command requires authentication");
   }

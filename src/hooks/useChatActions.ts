@@ -471,7 +471,7 @@ export function useChatActions(
   const getChatHistory = useCallback(async () => {
     let response: any;
     if (isTauri) {
-      if (unrequitable()) {
+      if (await unrequitable()) {
         return setChats([]);
       }
 
