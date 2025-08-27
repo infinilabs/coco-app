@@ -2,7 +2,8 @@ use crate::GLOBAL_TAURI_APP_HANDLE;
 use crate::autostart;
 use crate::common::register::SearchSourceRegistry;
 use crate::util::app_lang::update_app_lang;
-use std::sync::OnceLock;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering;
 use tauri::{AppHandle, Manager, WebviewWindow};
 
 #[cfg(target_os = "macos")]
@@ -41,9 +42,11 @@ pub fn default(
     );
 }
 
-/// Use this variable to track if tauri command `backend_setup()` gets called
-/// by the frontend.
-pub(super) static BACKEND_SETUP_FUNC_INVOKED: OnceLock<()> = OnceLock::new();
+/// Indicates if the setup job is completed.
+static BACKEND_SETUP_COMPLETED: AtomicBool = AtomicBool::new(false);
+/// The function `backup_setup()` may be called concurrently, use this lock to
+/// synchronize that only 1 async task can do the actual setup job.
+static MUTEX_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
 /// This function includes the setup job that has to be coordinated with the
 /// frontend, or the App will panic due to races[1].  The way we coordinate is to
@@ -60,9 +63,17 @@ pub(super) static BACKEND_SETUP_FUNC_INVOKED: OnceLock<()> = OnceLock::new();
 /// called.  If the frontend code invokes `list_extensions()` before `init_extension()`
 /// gets executed, we get a panic.
 #[tauri::command]
-#[function_name::named]
 pub(crate) async fn backend_setup(tauri_app_handle: AppHandle, app_lang: String) {
-    if BACKEND_SETUP_FUNC_INVOKED.get().is_some() {
+    if BACKEND_SETUP_COMPLETED.load(Ordering::Relaxed) {
+        return;
+    }
+
+    // Race to let one async task do the setup job
+    let _guard = MUTEX_LOCK.lock().await;
+
+    // Re-check in case the current async task is not the first one that acquires
+    // the lock
+    if BACKEND_SETUP_COMPLETED.load(Ordering::Relaxed) {
         return;
     }
 
@@ -102,7 +113,5 @@ pub(crate) async fn backend_setup(tauri_app_handle: AppHandle, app_lang: String)
     update_app_lang(app_lang).await;
 
     // Invoked, now update the state
-    BACKEND_SETUP_FUNC_INVOKED
-        .set(())
-        .unwrap_or_else(|_| panic!("tauri command {}() gets called twice!", function_name!()));
+    BACKEND_SETUP_COMPLETED.store(true, Ordering::Relaxed);
 }
