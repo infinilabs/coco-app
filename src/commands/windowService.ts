@@ -44,7 +44,7 @@ export async function setCurrentWindowService(service: any, isAll?: boolean) {
     return setCloudSelectService(service);
   }
 
-  setCurrentService(service);
+  return setCurrentService(service);
 }
 
 export async function handleLogout(serverId?: string) {
