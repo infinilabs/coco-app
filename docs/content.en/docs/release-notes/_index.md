@@ -34,6 +34,7 @@ Information about release notes of Coco App is provided here.
 - fix: set up hotkey on main thread or Windows will complain #879
 - fix: resolve deeplink login issue #881
 - fix: use kill_on_drop() to avoid zombie proc in error case #887
+- fix: settings window rendering/loading issue 889
 
 ### ✈️ Improvements
 

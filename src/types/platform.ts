@@ -47,7 +47,6 @@ export interface EventPayloads {
   "check-update": any;
   oauth_success: any;
   extension_install_success: any;
-  rust_ready: boolean;
 }
 
 // Window operation interface
