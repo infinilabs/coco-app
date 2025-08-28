@@ -26,12 +26,17 @@ export async function setCurrentWindowService(service: any, isAll?: boolean) {
   const windowLabel = await platformAdapter.getCurrentWindowLabel();
 
   if (windowLabel === SETTINGS_WINDOW_LABEL) {
+    const { currentService } = useConnectStore.getState();
     const {
       aiOverviewServer,
       setAiOverviewServer,
       quickAiAccessServer,
       setQuickAiAccessServer,
     } = useExtensionsStore.getState();
+
+    if (currentService?.id === service.id) {
+      setCurrentService(service);
+    }
 
     if (aiOverviewServer?.id === service.id) {
       setAiOverviewServer(service);

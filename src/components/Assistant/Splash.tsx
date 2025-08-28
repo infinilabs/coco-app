@@ -72,6 +72,8 @@ const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
     setSettings(response);
   };
 
+  console.log("currentService", currentService);
+
   useEffect(() => {
     getSettings();
     fetchData();
