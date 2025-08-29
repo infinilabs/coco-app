@@ -66,7 +66,7 @@ export default function StandaloneChat({}: StandaloneChatProps) {
 
   const getChatHistory = async () => {
     try {
-      if (unrequitable()) {
+      if (await unrequitable()) {
         return setChats([]);
       }
 
@@ -271,7 +271,11 @@ export default function StandaloneChat({}: StandaloneChatProps) {
   const handleDelete = async (id: string) => {
     if (!currentService?.id) return;
 
-    await platformAdapter.commands("delete_session_chat", currentService.id, id);
+    await platformAdapter.commands(
+      "delete_session_chat",
+      currentService.id,
+      id
+    );
   };
 
   return (

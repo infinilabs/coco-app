@@ -67,7 +67,7 @@ export const MessageActions = ({
   };
 
   const handleSpeak = async () => {
-    if (isDefaultServer()) {
+    if (await isDefaultServer()) {
       return setSynthesizeItem({ id, content });
     }
 

@@ -25,7 +25,7 @@ export const AssistantFetcher = ({
     query?: string;
   }) => {
     try {
-      if (unrequitable()) {
+      if (await unrequitable()) {
         return {
           total: 0,
           list: [],

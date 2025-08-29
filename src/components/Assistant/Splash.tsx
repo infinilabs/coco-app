@@ -54,7 +54,7 @@ const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
 
     let response: any;
     if (isTauri) {
-      if (unrequitable()) {
+      if (await unrequitable()) {
         return setVisibleStartPage(false);
       }
 
@@ -71,6 +71,8 @@ const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
     setVisibleStartPage(Boolean(response?.enabled));
     setSettings(response);
   };
+
+  console.log("currentService", currentService);
 
   useEffect(() => {
     getSettings();

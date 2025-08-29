@@ -306,7 +306,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     error,
 
     async searchMCPServers(serverId, queryParams) {
-      if (unrequitable()) {
+      if (await unrequitable()) {
         return [];
       }
 

@@ -5,9 +5,8 @@ import { filesize as filesizeLib } from "filesize";
 import platformAdapter from "./platformAdapter";
 import { useAppStore } from "@/stores/appStore";
 import { DEFAULT_COCO_SERVER_ID, HISTORY_PANEL_ID } from "@/constants";
-import { useConnectStore } from "@/stores/connectStore";
-import { useAuthStore } from "@/stores/authStore";
 import { useChatStore } from "@/stores/chatStore";
+import { getCurrentWindowService } from "@/commands/windowService";
 
 // 1
 export async function copyToClipboard(text: string) {
@@ -163,36 +162,28 @@ export const parseSearchQuery = (searchQuery: SearchQuery) => {
   return result;
 };
 
-export const unrequitable = () => {
+export const unrequitable = async () => {
   const { isTauri } = useAppStore.getState();
-  const { currentService } = useConnectStore.getState();
-  const { isCurrentLogin } = useAuthStore.getState();
-  const { id, available, enabled } = currentService ?? {};
+  const { id, available, enabled } = await getCurrentWindowService();
 
-  const serviceAvailable = Boolean(
-    id && enabled && available && isCurrentLogin
-  );
+  const serviceAvailable = Boolean(id && enabled && available);
 
   return isTauri && !serviceAvailable;
 };
 
-export const isDefaultServer = (checkAvailability = true) => {
+export const isDefaultServer = async (checkAvailability = true) => {
   const { isTauri } = useAppStore.getState();
-  const { currentService } = useConnectStore.getState();
-  const { isCurrentLogin } = useAuthStore.getState();
-  const { id, available, enabled } = currentService ?? {};
+  const { id, available, enabled } = await getCurrentWindowService();
 
-  const isDefaultServer = currentService.id === DEFAULT_COCO_SERVER_ID;
+  const isDefault = id === DEFAULT_COCO_SERVER_ID;
 
-  const serviceAvailable = Boolean(
-    id && enabled && available && isCurrentLogin
-  );
+  const serviceAvailable = Boolean(id && enabled && available);
 
   if (checkAvailability) {
-    return isTauri && isDefaultServer && serviceAvailable;
+    return isTauri && isDefault && serviceAvailable;
   }
 
-  return isTauri && isDefaultServer;
+  return isTauri && isDefault;
 };
 
 export const filesize = (value: number, spacer?: string) => {

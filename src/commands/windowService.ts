@@ -2,6 +2,7 @@ import { useConnectStore } from "@/stores/connectStore";
 import { SETTINGS_WINDOW_LABEL } from "@/constants";
 import platformAdapter from "@/utils/platformAdapter";
 import { useAuthStore } from "@/stores/authStore";
+import { useExtensionsStore } from "@/stores/extensionsStore";
 
 export async function getCurrentWindowService() {
   const currentService = useConnectStore.getState().currentService;
@@ -13,23 +14,42 @@ export async function getCurrentWindowService() {
     : currentService;
 }
 
-export async function setCurrentWindowService(
-  service: any,
-  isAll?: boolean
-) {
+export async function setCurrentWindowService(service: any, isAll?: boolean) {
   const { setCurrentService, setCloudSelectService } =
     useConnectStore.getState();
   // all refresh logout
   if (isAll) {
     setCloudSelectService(service);
-    setCurrentService(service);
-    return;
+    return setCurrentService(service);
   }
   // current refresh
   const windowLabel = await platformAdapter.getCurrentWindowLabel();
-  return windowLabel === SETTINGS_WINDOW_LABEL
-    ? setCloudSelectService(service)
-    : setCurrentService(service);
+
+  if (windowLabel === SETTINGS_WINDOW_LABEL) {
+    const { currentService } = useConnectStore.getState();
+    const {
+      aiOverviewServer,
+      setAiOverviewServer,
+      quickAiAccessServer,
+      setQuickAiAccessServer,
+    } = useExtensionsStore.getState();
+
+    if (currentService?.id === service.id) {
+      setCurrentService(service);
+    }
+
+    if (aiOverviewServer?.id === service.id) {
+      setAiOverviewServer(service);
+    }
+
+    if (quickAiAccessServer?.id === service.id) {
+      setQuickAiAccessServer(service);
+    }
+
+    return setCloudSelectService(service);
+  }
+
+  return setCurrentService(service);
 }
 
 export async function handleLogout(serverId?: string) {

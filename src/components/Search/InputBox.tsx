@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useKeyPress, useSize } from "ahooks";
+import { useAsyncEffect, useKeyPress, useSize } from "ahooks";
 import clsx from "clsx";
 
 import AutoResizeTextarea from "./AutoResizeTextarea";
@@ -210,8 +210,8 @@ export default function ChatInput({
   const extraIconRef = useRef<HTMLDivElement>(null);
   const extraIconSize = useSize(extraIconRef);
 
-  useEffect(() => {
-    setVisibleAudioInput(isDefaultServer());
+  useAsyncEffect(async () => {
+    setVisibleAudioInput(await isDefaultServer());
   }, [currentService]);
 
   const renderSearchIcon = () => (
