@@ -264,7 +264,6 @@ async fn show_coco(app_handle: AppHandle) {
 
         let _ = window.show();
         let _ = window.unminimize();
-        let _ = window.set_focus();
 
         let _ = app_handle.emit("show-coco", ());
     }

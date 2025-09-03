@@ -50,6 +50,7 @@ Information about release notes of Coco App is provided here.
 - refactor: index iOS apps and macOS apps that store icon in Assets.car #872
 - refactor: accept both '-' and '\_' as locale str separator #876
 - refactor: relax the file search conditions on macOS #883
+- refactor: ensure Coco won't take focus #891
 
 ## 0.7.1 (2025-07-27)
 
