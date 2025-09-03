@@ -25,6 +25,10 @@ pub fn platform(
     panel.set_style_mask(NSNonactivatingPanelMask.0 as i32);
     // Set its level to NSFloatingWindowLevel to ensure it appears in front of
     // all normal-level windows
+    //
+    // NOTE: some Chinese input methods use a level between NSDockWindowLevel (20)
+    // and NSMainMenuWindowLevel (24), setting our level above NSDockWindowLevel
+    // would block their window
     panel.set_floating_panel(true);
 
     // Open the window in the active workspace and full screen
