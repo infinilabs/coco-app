@@ -264,6 +264,16 @@ async fn show_coco(app_handle: AppHandle) {
 
         let _ = window.show();
         let _ = window.unminimize();
+
+        // The Window Management (WM) extension (macOS-only) controls the
+        // frontmost window.  Setting focus on macOS makes Coco the frontmost
+        // window, which means the WM extension would control Coco instead of other
+        // windows, which is not what we want.
+        //
+        // On Linux/Windows, however, setting focus is a necessity to ensure that
+        // users open Coco's window, then they can start typing, without needing
+        // to click on the window.
+        #[cfg(not(target_os = "macos"))]
         let _ = window.set_focus();
 
         let _ = app_handle.emit("show-coco", ());

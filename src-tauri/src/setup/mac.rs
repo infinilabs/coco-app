@@ -1,12 +1,9 @@
 //! credits to: https://github.com/ayangweb/ayangweb-EcoPaste/blob/169323dbe6365ffe4abb64d867439ed2ea84c6d1/src-tauri/src/core/setup/mac.rs
 
+use crate::common::MAIN_WINDOW_LABEL;
+use objc2_app_kit::NSNonactivatingPanelMask;
 use tauri::{AppHandle, Emitter, EventTarget, WebviewWindow};
 use tauri_nspanel::{WebviewWindowExt, cocoa::appkit::NSWindowCollectionBehavior, panel_delegate};
-
-use crate::common::MAIN_WINDOW_LABEL;
-
-#[allow(non_upper_case_globals)]
-const NSWindowStyleMaskNonActivatingPanel: i32 = 1 << 7;
 
 const WINDOW_FOCUS_EVENT: &str = "tauri://focus";
 const WINDOW_BLUR_EVENT: &str = "tauri://blur";
@@ -22,11 +19,17 @@ pub fn platform(
     // Convert ns_window to ns_panel
     let panel = main_window.to_panel().unwrap();
 
-    // Make the window above the dock
-    panel.set_level(20);
-
     // Do not steal focus from other windows
-    panel.set_style_mask(NSWindowStyleMaskNonActivatingPanel);
+    //
+    // Cast is safe
+    panel.set_style_mask(NSNonactivatingPanelMask.0 as i32);
+    // Set its level to NSFloatingWindowLevel to ensure it appears in front of
+    // all normal-level windows
+    //
+    // NOTE: some Chinese input methods use a level between NSDockWindowLevel (20)
+    // and NSMainMenuWindowLevel (24), setting our level above NSDockWindowLevel
+    // would block their window
+    panel.set_floating_panel(true);
 
     // Open the window in the active workspace and full screen
     panel.set_collection_behaviour(
