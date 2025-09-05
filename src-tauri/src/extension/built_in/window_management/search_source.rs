@@ -91,7 +91,7 @@ impl SearchSource for WindowManagementSearchSource {
                 let document = Document {
                     id: command.id.clone(),
                     title: Some(command.name.clone()),
-                    icon: Some("TODO".into()),
+                    icon: Some(command.icon.clone()),
                     on_opened: Some(on_opened),
                     url: Some(url),
                     category: Some(command_type_string.clone()),
