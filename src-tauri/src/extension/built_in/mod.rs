@@ -183,7 +183,7 @@ pub(crate) async fn list_built_in_extensions(
         .await?,
     );
 
-    cfg_if::cfg_if!{
+    cfg_if::cfg_if! {
       if #[cfg(target_os = "macos")] {
           built_in_extensions.push(
               load_built_in_extension(
@@ -230,7 +230,7 @@ pub(super) async fn init_built_in_extension(
         log::debug!("built-in extension [{}] initialized", extension.id);
     }
 
-    cfg_if::cfg_if!{
+    cfg_if::cfg_if! {
       if #[cfg(target_os = "macos")] {
           if extension.id == window_management::EXTENSION_ID {
               let file_system_search = window_management::search_source::WindowManagementSearchSource;
@@ -332,7 +332,7 @@ pub(crate) async fn enable_built_in_extension(
         return Ok(());
     }
 
-    cfg_if::cfg_if!{
+    cfg_if::cfg_if! {
         if #[cfg(target_os = "macos")] {
             if bundle_id.extension_id == window_management::EXTENSION_ID
                 && bundle_id.sub_extension_id.is_none()
@@ -365,7 +365,6 @@ pub(crate) async fn enable_built_in_extension(
             }
         }
     }
-
 
     Ok(())
 }
@@ -450,7 +449,7 @@ pub(crate) async fn disable_built_in_extension(
         return Ok(());
     }
 
-    cfg_if::cfg_if!{
+    cfg_if::cfg_if! {
         if #[cfg(target_os = "macos")] {
             if bundle_id.extension_id == window_management::EXTENSION_ID
                 && bundle_id.sub_extension_id.is_none()
@@ -480,7 +479,6 @@ pub(crate) async fn disable_built_in_extension(
         }
     }
 
-
     Ok(())
 }
 
@@ -495,8 +493,7 @@ pub(crate) fn set_built_in_extension_alias(
         }
     }
 
-
-    cfg_if::cfg_if!{
+    cfg_if::cfg_if! {
         if #[cfg(target_os = "macos")] {
             if bundle_id.extension_id == window_management::EXTENSION_ID
                 && bundle_id.sub_extension_id.is_some()
@@ -534,8 +531,7 @@ pub(crate) fn register_built_in_extension_hotkey(
         Ok(())
     };
 
-
-    cfg_if::cfg_if!{
+    cfg_if::cfg_if! {
         if #[cfg(target_os = "macos")] {
             if bundle_id.extension_id == window_management::EXTENSION_ID {
                 if let Some(command_id) = bundle_id.sub_extension_id {
@@ -550,7 +546,6 @@ pub(crate) fn register_built_in_extension_hotkey(
             }
         }
     }
-
 
     Ok(())
 }
@@ -571,8 +566,7 @@ pub(crate) fn unregister_built_in_extension_hotkey(
         Ok(())
     };
 
-
-    cfg_if::cfg_if!{
+    cfg_if::cfg_if! {
         if #[cfg(target_os = "macos")] {
             if bundle_id.extension_id == window_management::EXTENSION_ID {
                 if let Some(command_id) = bundle_id.sub_extension_id {
@@ -594,7 +588,6 @@ pub(crate) fn unregister_built_in_extension_hotkey(
             }
         }
     }
-
 
     Ok(())
 }
@@ -688,7 +681,7 @@ pub(crate) async fn is_built_in_extension_enabled(
             .is_some());
     }
 
-    cfg_if::cfg_if!{
+    cfg_if::cfg_if! {
         if #[cfg(target_os = "macos")] {
             // Window Management
             if bundle_id.extension_id == window_management::EXTENSION_ID
