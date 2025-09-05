@@ -1,4 +1,6 @@
-use crate::extension::{ExtensionSettings, built_in::window_management::actions::Action};
+use crate::extension::ExtensionSettings;
+#[cfg(target_os = "macos")]
+use crate::extension::built_in::window_management::actions::Action;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tauri::AppHandle;
@@ -44,6 +46,7 @@ pub(crate) enum OnOpened {
     /// Open the URL.
     Document { url: String },
     /// Perform this WM action.
+    #[cfg(target_os = "macos")]
     WindowManagementAction { action: Action },
     /// The document is an extension.
     Extension(ExtensionOnOpened),
@@ -83,6 +86,7 @@ impl OnOpened {
         match self {
             Self::Application { app_path } => app_path.clone(),
             Self::Document { url } => url.clone(),
+            #[cfg(target_os = "macos")]
             Self::WindowManagementAction { action: _ } => {
                 // We don't have URL for this
                 String::from("N/A")
@@ -129,6 +133,7 @@ pub(crate) async fn open(
 
             homemade_tauri_shell_open(tauri_app_handle.clone(), url).await?
         }
+        #[cfg(target_os = "macos")]
         OnOpened::WindowManagementAction { action } => {
             log::debug!("perform Window Management action [{:?}]", action);
 

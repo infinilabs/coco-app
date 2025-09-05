@@ -963,7 +963,6 @@ pub(crate) fn unregister_command_hotkey(
     let Some(ref hotkey) = command.hotkey else {
         return Ok(());
     };
-    println!("DBG: unregister {} {}", command_id, hotkey);
 
     tauri_app_handle
         .global_shortcut()

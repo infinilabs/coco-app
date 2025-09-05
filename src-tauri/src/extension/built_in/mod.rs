@@ -525,14 +525,14 @@ pub(crate) fn register_built_in_extension_hotkey(
         }
     }
 
-    let update_function = |ext: &mut Extension| {
-        ext.hotkey = Some(hotkey.into());
-
-        Ok(())
-    };
-
     cfg_if::cfg_if! {
         if #[cfg(target_os = "macos")] {
+            let update_function = |ext: &mut Extension| {
+                ext.hotkey = Some(hotkey.into());
+
+                Ok(())
+            };
+
             if bundle_id.extension_id == window_management::EXTENSION_ID {
                 if let Some(command_id) = bundle_id.sub_extension_id {
                     alter_extension_json_file(
@@ -560,17 +560,16 @@ pub(crate) fn unregister_built_in_extension_hotkey(
         }
     }
 
-    let update_function = |ext: &mut Extension| {
-        ext.hotkey = None;
-
-        Ok(())
-    };
-
     cfg_if::cfg_if! {
         if #[cfg(target_os = "macos")] {
+            let update_function = |ext: &mut Extension| {
+                ext.hotkey = None;
+
+                Ok(())
+            };
+
             if bundle_id.extension_id == window_management::EXTENSION_ID {
                 if let Some(command_id) = bundle_id.sub_extension_id {
-                    println!("DBG: unregister {}", command_id);
 
                     let extension = load_extension_from_json_file(
                         &get_built_in_extension_directory(tauri_app_handle),
@@ -628,6 +627,7 @@ fn load_extension_from_json_file(
     Ok(extension)
 }
 
+#[allow(unused_macros)] // #[function_name::named] only used on macOS
 #[function_name::named]
 pub(crate) async fn is_built_in_extension_enabled(
     tauri_app_handle: &AppHandle,
