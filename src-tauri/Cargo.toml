@@ -110,11 +110,15 @@ strum = { version = "0.27.2", features = ["derive"] }
 sys-locale = "0.3.2"
 tauri-plugin-prevent-default = "1"
 oneshot = "0.1.11"
+bitflags = "2.9.3"
 
 [target."cfg(target_os = \"macos\")".dependencies]
 tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }
 objc2-app-kit = { version = "0.3.1", features = ["NSWindow"] }
-
+objc2 = "0.6.2"
+objc2-core-foundation =  {version = "0.3.1", features = ["CFString", "CFCGTypes", "CFArray"] }
+objc2-application-services = { version = "0.3.1", features = ["HIServices"] }
+objc2-core-graphics = { version = "=0.3.1", features = ["CGEvent"] }
 
 [target."cfg(target_os = \"linux\")".dependencies]
 gio = "0.20.12"
@@ -123,13 +127,7 @@ which = "8.0.0"
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\"))".dependencies]
 tauri-plugin-single-instance = { version = "2.0.0", features = ["deep-link"] }
-objc2 = "0.6.2"
-objc2-app-kit = { version = "0.3.1", features = ["NSWindow"] }
-objc2-core-foundation =  {version = "0.3.1", features = ["CFString", "CFCGTypes", "CFArray"] }
-objc2-application-services = { version = "0.3.1", features = ["HIServices"] }
-objc2-core-graphics = { version = "=0.3.1", features = ["CGEvent"] }
 serde = { version = "1.0.219", features = ["derive"], optional = true }
-bitflags = "2.9.3"
 
 
 [profile.dev]
