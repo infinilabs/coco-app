@@ -6,6 +6,7 @@ pub mod calculator;
 pub mod file_search;
 pub mod pizza_engine_runtime;
 pub mod quick_ai_access;
+pub mod window_management;
 
 use super::Extension;
 use crate::SearchSourceRegistry;
@@ -181,6 +182,15 @@ pub(crate) async fn list_built_in_extensions(
         .await?,
     );
 
+    built_in_extensions.push(
+        load_built_in_extension(
+            &dir,
+            window_management::EXTENSION_ID,
+            window_management::PLUGIN_JSON_FILE,
+        )
+        .await?,
+    );
+
     Ok(built_in_extensions)
 }
 
@@ -212,6 +222,16 @@ pub(super) async fn init_built_in_extension(
         search_source_registry
             .register_source(file_system_search)
             .await;
+        log::debug!("built-in extension [{}] initialized", extension.id);
+    }
+
+    if extension.id == window_management::EXTENSION_ID {
+        let file_system_search = window_management::search_source::WindowManagementSearchSource;
+        search_source_registry
+            .register_source(file_system_search)
+            .await;
+
+        window_management::set_up_commands_hotkeys(tauri_app_handle, extension)?;
         log::debug!("built-in extension [{}] initialized", extension.id);
     }
 
@@ -303,6 +323,36 @@ pub(crate) async fn enable_built_in_extension(
         return Ok(());
     }
 
+    if bundle_id.extension_id == window_management::EXTENSION_ID
+        && bundle_id.sub_extension_id.is_none()
+    {
+        let built_in_extension_dir = get_built_in_extension_directory(tauri_app_handle);
+
+        let file_system_search = window_management::search_source::WindowManagementSearchSource;
+        search_source_registry_tauri_state
+            .register_source(file_system_search)
+            .await;
+
+        let extension =
+            load_extension_from_json_file(&built_in_extension_dir, bundle_id.extension_id)?;
+        window_management::set_up_commands_hotkeys(tauri_app_handle, &extension)?;
+
+        alter_extension_json_file(&built_in_extension_dir, bundle_id, update_extension)?;
+
+        return Ok(());
+    }
+
+    if bundle_id.extension_id == window_management::EXTENSION_ID {
+        if let Some(command_id) = bundle_id.sub_extension_id {
+            let built_in_extension_dir = get_built_in_extension_directory(tauri_app_handle);
+            alter_extension_json_file(&built_in_extension_dir, bundle_id, update_extension)?;
+
+            let extension =
+                load_extension_from_json_file(&built_in_extension_dir, bundle_id.extension_id)?;
+            window_management::set_up_command_hotkey(tauri_app_handle, &extension, command_id)?;
+        }
+    }
+
     Ok(())
 }
 
@@ -386,6 +436,32 @@ pub(crate) async fn disable_built_in_extension(
         return Ok(());
     }
 
+    if bundle_id.extension_id == window_management::EXTENSION_ID
+        && bundle_id.sub_extension_id.is_none()
+    {
+        let built_in_extension_dir = get_built_in_extension_directory(tauri_app_handle);
+
+        search_source_registry_tauri_state
+            .remove_source(bundle_id.extension_id)
+            .await;
+        alter_extension_json_file(&built_in_extension_dir, bundle_id, update_extension)?;
+
+        let extension =
+            load_extension_from_json_file(&built_in_extension_dir, bundle_id.extension_id)?;
+        window_management::unset_commands_hotkeys(tauri_app_handle, &extension)?;
+    }
+
+    if bundle_id.extension_id == window_management::EXTENSION_ID {
+        if let Some(command_id) = bundle_id.sub_extension_id {
+            let built_in_extension_dir = get_built_in_extension_directory(tauri_app_handle);
+            alter_extension_json_file(&built_in_extension_dir, bundle_id, update_extension)?;
+
+            let extension =
+                load_extension_from_json_file(&built_in_extension_dir, bundle_id.extension_id)?;
+            window_management::unset_command_hotkey(tauri_app_handle, &extension, command_id)?;
+        }
+    }
+
     Ok(())
 }
 
@@ -393,12 +469,28 @@ pub(crate) fn set_built_in_extension_alias(
     tauri_app_handle: &AppHandle,
     bundle_id: &ExtensionBundleIdBorrowed<'_>,
     alias: &str,
-) {
+) -> Result<(), String> {
     if bundle_id.extension_id == application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME {
         if let Some(app_path) = bundle_id.sub_extension_id {
             application::set_app_alias(tauri_app_handle, app_path, alias);
         }
     }
+
+    if bundle_id.extension_id == window_management::EXTENSION_ID
+        && bundle_id.sub_extension_id.is_some()
+    {
+        let update_function = |ext: &mut Extension| {
+            ext.alias = Some(alias.to_string());
+            Ok(())
+        };
+        alter_extension_json_file(
+            &get_built_in_extension_directory(tauri_app_handle),
+            bundle_id,
+            update_function,
+        )?;
+    }
+
+    Ok(())
 }
 
 pub(crate) fn register_built_in_extension_hotkey(
@@ -411,6 +503,25 @@ pub(crate) fn register_built_in_extension_hotkey(
             application::register_app_hotkey(&tauri_app_handle, app_path, hotkey)?;
         }
     }
+
+    let update_function = |ext: &mut Extension| {
+        ext.hotkey = Some(hotkey.into());
+
+        Ok(())
+    };
+
+    if bundle_id.extension_id == window_management::EXTENSION_ID {
+        if let Some(command_id) = bundle_id.sub_extension_id {
+            alter_extension_json_file(
+                &get_built_in_extension_directory(tauri_app_handle),
+                bundle_id,
+                update_function,
+            )?;
+
+            window_management::register_command_hotkey(tauri_app_handle, command_id, hotkey)?;
+        }
+    }
+
     Ok(())
 }
 
@@ -423,6 +534,32 @@ pub(crate) fn unregister_built_in_extension_hotkey(
             application::unregister_app_hotkey(&tauri_app_handle, app_path)?;
         }
     }
+
+    let update_function = |ext: &mut Extension| {
+        ext.hotkey = None;
+
+        Ok(())
+    };
+
+    if bundle_id.extension_id == window_management::EXTENSION_ID {
+        if let Some(command_id) = bundle_id.sub_extension_id {
+            println!("DBG: unregister {}", command_id);
+
+            let extension = load_extension_from_json_file(
+                &get_built_in_extension_directory(tauri_app_handle),
+                bundle_id.extension_id,
+            )
+            .unwrap();
+            window_management::unregister_command_hotkey(tauri_app_handle, &extension, command_id)?;
+            alter_extension_json_file(
+                &get_built_in_extension_directory(tauri_app_handle),
+                bundle_id,
+                update_function,
+            )
+            .unwrap();
+        }
+    }
+
     Ok(())
 }
 
@@ -462,6 +599,7 @@ fn load_extension_from_json_file(
     Ok(extension)
 }
 
+#[function_name::named]
 pub(crate) async fn is_built_in_extension_enabled(
     tauri_app_handle: &AppHandle,
     bundle_id: &ExtensionBundleIdBorrowed<'_>,
@@ -512,6 +650,35 @@ pub(crate) async fn is_built_in_extension_enabled(
             .get_source(bundle_id.extension_id)
             .await
             .is_some());
+    }
+
+    // Window Management
+    if bundle_id.extension_id == window_management::EXTENSION_ID
+        && bundle_id.sub_extension_id.is_none()
+    {
+        return Ok(search_source_registry_tauri_state
+            .get_source(bundle_id.extension_id)
+            .await
+            .is_some());
+    }
+
+    // Window Management commands
+    if bundle_id.extension_id == window_management::EXTENSION_ID
+        && let Some(command_id) = bundle_id.sub_extension_id
+    {
+        let extension = load_extension_from_json_file(
+            &get_built_in_extension_directory(tauri_app_handle),
+            bundle_id.extension_id,
+        )?;
+        let commands = extension
+            .commands
+            .expect("window management extension has commands");
+
+        let extension = commands.iter().find( |cmd| cmd.id == command_id).unwrap_or_else(|| {
+            panic!("function [{}()] invoked with a Window Management command that does not exist, extension ID [{}] ", function_name!(), command_id)
+        });
+
+        return Ok(extension.enabled);
     }
 
     unreachable!("extension [{:?}] is not a built-in extension", bundle_id)

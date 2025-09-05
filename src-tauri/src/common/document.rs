@@ -1,4 +1,4 @@
-use crate::extension::ExtensionSettings;
+use crate::extension::{ExtensionSettings, built_in::window_management::actions::Action};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tauri::AppHandle;
@@ -43,6 +43,8 @@ pub(crate) enum OnOpened {
     Application { app_path: String },
     /// Open the URL.
     Document { url: String },
+    /// Perform this WM action.
+    WindowManagementAction { action: Action },
     /// The document is an extension.
     Extension(ExtensionOnOpened),
 }
@@ -81,6 +83,10 @@ impl OnOpened {
         match self {
             Self::Application { app_path } => app_path.clone(),
             Self::Document { url } => url.clone(),
+            Self::WindowManagementAction { action: _ } => {
+                // We don't have URL for this
+                String::from("N/A")
+            }
             Self::Extension(ext_on_opened) => {
                 match &ext_on_opened.ty {
                     ExtensionOnOpenedType::Command { action } => {
@@ -122,6 +128,14 @@ pub(crate) async fn open(
             log::debug!("open document [{}]", url);
 
             homemade_tauri_shell_open(tauri_app_handle.clone(), url).await?
+        }
+        OnOpened::WindowManagementAction { action } => {
+            log::debug!("perform Window Management action [{:?}]", action);
+
+            crate::extension::built_in::window_management::perform_action_on_main_thread(
+                &tauri_app_handle,
+                action,
+            )?;
         }
         OnOpened::Extension(ext_on_opened) => {
             // Apply the settings that would affect open behavior
