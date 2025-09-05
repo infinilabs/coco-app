@@ -23,8 +23,6 @@ export function useDeepLinkManager() {
   const { t } = useTranslation();
 
   // handle oauth callback
-  //
-  // Deeplink URL format: coco://oauth_callback?code=<CODE>&request_id=<REQUEST_ID>&provider=<PROVIDER>
   const handleOAuthCallback = useCallback(async (url: URL) => {
     try {
       const reqId = url.searchParams.get("request_id");
@@ -62,8 +60,6 @@ export function useDeepLinkManager() {
   }, []);
 
   // handle install extension from store
-  //
-  // Deeplink URL format: coco://install_extension_from_store?id=<EXTENSION UUID>
   const handleInstallExtension = useCallback(async (url: URL) => {
     const extensionId = url.searchParams.get("id");
     if (!extensionId) {
@@ -86,56 +82,7 @@ export function useDeepLinkManager() {
     }
   }, []);
 
-
-  // Handler of opening an extension. (execute a command/open a quicklink)
-  //
-  // Deeplink URL format: coco://extensions/<EXTENSION DEVELOPER NAME>/<EXTENSION NAME>/<DYNAMIC PART>
-  // where "<DYNAMIC PART>" is specific to extensions.
-  const openExtensionHandler = useCallback(async (url: URL) => {
-    console.log("DBG: ", url);
-
-    // pathname format: "/<EXTENSION DEVELOPER NAME>/<EXTENSION NAME>/<DYNAMIC PART>"
-    const pathname = url.pathname;
-    const parts = pathname.split('/').filter(part => part.length > 0);
-    
-    console.log("DBG: parts", parts);
-
-    if (parts.length < 2) {
-      const msg = `Invalid extension deeplink URL format: ${url.toString()} missing "developer name" or "extension name"`;
-      console.warn(msg);
-      // TODO: i18n?
-      addError(msg);
-
-      return;
-    }
-
-    const developer = parts[0];
-    const extension = parts[1];
-
-    // Deeplink URL format: coco://extensions/coco/Window Management/<COMMAND NAME>
-    if (developer == 'coco' && extension == 'Window%20Management') {
-      // format check
-      if (parts.length != 3) {
-        const msg = 'Invalid extension deeplink URL for extension "coco/Window Management", missing the "command name"';
-        console.warn(msg);
-        // TODO: i18n?
-        addError(msg);
-        return;
-      }
-
-      const action = parts[2];
-
-      await platformAdapter.invokeBackend(
-        "wm_perform_action",
-        {
-          action: action
-        }
-      );
-    }
-  }, []);
-
-
-  // Dispatches to the actual handler according to deeplink URL pattern.
+  // handle deep link
   const handlers: DeepLinkHandler[] = [
     {
       pattern: "oauth_callback",
@@ -151,10 +98,6 @@ export function useDeepLinkManager() {
         handleInstallExtension(url);
       },
     },
-    {
-      pattern: "extensions",
-      handler: openExtensionHandler
-    }
   ];
 
   // handle deep link
