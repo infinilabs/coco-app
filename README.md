@@ -64,9 +64,9 @@ At Coco AI, we aim to streamline workplace collaboration by centralizing access 
 
 ### Prerequisites
 
-- Node.js >= 18.12
-- Rust (latest stable)
-- pnpm (package manager)
+- [Node.js >= 18.12](https://nodejs.org/en/download/)
+- [Rust (latest stable)](https://www.rust-lang.org/tools/install)
+- [pnpm (package manager)](https://pnpm.io/installation)
 
 ### Development Setup
 
