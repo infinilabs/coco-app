@@ -16,7 +16,7 @@ const ListDesktop: React.FC = () => {
   };
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full flex flex-col">
       {/* Header with back button */}
       <div className="flex items-center p-4 border-b border-gray-200 dark:border-gray-700">
         <button
@@ -29,17 +29,13 @@ const ListDesktop: React.FC = () => {
       </div>
 
       {/* Main content */}
-      <div className="flex items-center justify-center flex-1 p-8">
-        <div className="text-center">
-          <iframe
-            src="https://www.baidu.com"
-            title="iframe Example 1"
-            width="400"
-            height="300"
-            className="border border-gray-300 dark:border-gray-600 rounded-md"
-          >
-          </iframe>
-        </div>
+      <div className="flex-1">
+        <iframe
+          src="https://www.baidu.com"
+          title="iframe Example 1"
+          className="w-full h-full border-0"
+        >
+        </iframe>
       </div>
     </div>
   );
