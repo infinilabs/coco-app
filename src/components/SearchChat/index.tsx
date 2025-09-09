@@ -289,9 +289,8 @@ function SearchChat({
         </Suspense>
       </div>
 
-      // We don't want this inputbox when rendering view-mode extensions
-      //
-      // TODO: figure out a better way to disable this inputbox
+      {/* We don't want this inputbox when rendering view-mode extensions */}
+      {/* TODO: figure out a better way to disable this inputbox */}
       {!visibleListDesktop && (
         <div
           data-tauri-drag-region={isTauri}

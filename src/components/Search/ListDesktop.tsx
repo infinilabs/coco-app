@@ -31,12 +31,14 @@ const ListDesktop: React.FC = () => {
       {/* Main content */}
       <div className="flex items-center justify-center flex-1 p-8">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-4">
-            List Desktop view
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
-            This is the List Desktop view
-          </p>
+          <iframe
+            src="https://www.baidu.com"
+            title="iframe Example 1"
+            width="400"
+            height="300"
+            className="border border-gray-300 dark:border-gray-600 rounded-md"
+          >
+          </iframe>
         </div>
       </div>
     </div>
