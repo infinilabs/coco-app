@@ -8,17 +8,18 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useSearchStore } from "@/stores/searchStore";
-import { convertFileSrc } from "@tauri-apps/api/tauri"; 
+import { convertFileSrc } from "@tauri-apps/api/core"; 
 
 const ListDesktop: React.FC = () => {
   const { setVisibleListDesktop } = useSearchStore();
   const [fileUrl, setFileUrl] = useState<string>("");
 
+  // Tauri/webview is not allowed to access local files directly, 
+  // use convertFileSrc to work around the issue.
   useEffect(() => {
       const setupFileUrl = async () => {
         const filePath = `/Users/steve/Desktop/index.html`;
         
-        // 3. 将文件路径转换为 WebView 可用的 URL
         setFileUrl(convertFileSrc(filePath));
       };
 
