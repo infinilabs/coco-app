@@ -13,6 +13,7 @@
     }
   ],
   "dependencies": {
+    "coco-api": "file:/Users/steve/Documents/workspace/INFINI/coco-api",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
