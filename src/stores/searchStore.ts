@@ -41,6 +41,10 @@ export type ISearchStore = {
   setUninstallingExtensions: (uninstallingExtensions: string[]) => void;
   visibleExtensionDetail: boolean;
   setVisibleExtensionDetail: (visibleExtensionDetail: boolean) => void;
+
+  // A state controls whether to show the ListDesktop view
+  visibleListDesktop: boolean;
+  setVisibleListDesktop: (visibleListDesktop: boolean) => void;
 };
 
 export const useSearchStore = create<ISearchStore>()(
@@ -105,6 +109,10 @@ export const useSearchStore = create<ISearchStore>()(
       visibleExtensionDetail: false,
       setVisibleExtensionDetail: (visibleExtensionDetail) => {
         return set({ visibleExtensionDetail });
+      },
+      visibleListDesktop: false,
+      setVisibleListDesktop: (visibleListDesktop) => {
+        return set({ visibleListDesktop });
       },
     }),
     {

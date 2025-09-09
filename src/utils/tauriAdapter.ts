@@ -15,6 +15,7 @@ import type { AppTheme } from "@/types/index";
 import { useAppearanceStore } from "@/stores/appearanceStore";
 import { copyToClipboard, OpenURLWithBrowser } from ".";
 import { useAppStore } from "@/stores/appStore";
+import { useSearchStore } from "@/stores/searchStore";
 import { unrequitable } from "@/utils";
 
 export interface TauriPlatformAdapter extends BasePlatformAdapter {
@@ -276,10 +277,12 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
         return textarea.dispatchEvent(event);
       }
 
-      // list desktop TODO: remove this
+      // list desktop - show hello world content
       if (data?.id == "list_desktop") {
-          // Open a new page
-
+        // Trigger list desktop view
+        const { setVisibleListDesktop } = useSearchStore.getState();
+        setVisibleListDesktop(true);
+        return;
       }
 
       const hideCoco = () => {
