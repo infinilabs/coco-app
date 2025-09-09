@@ -5,11 +5,25 @@
  */
 
 import React from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useSearchStore } from "@/stores/searchStore";
+import { convertFileSrc } from "@tauri-apps/api/tauri"; 
 
 const ListDesktop: React.FC = () => {
   const { setVisibleListDesktop } = useSearchStore();
+  const [fileUrl, setFileUrl] = useState<string>("");
+
+  useEffect(() => {
+      const setupFileUrl = async () => {
+        const filePath = `/Users/steve/Desktop/index.html`;
+        
+        // 3. 将文件路径转换为 WebView 可用的 URL
+        setFileUrl(convertFileSrc(filePath));
+      };
+
+      setupFileUrl();
+    }, []); // 空依赖数组确保只运行一次
 
   const handleBack = () => {
     setVisibleListDesktop(false);
@@ -31,7 +45,7 @@ const ListDesktop: React.FC = () => {
       {/* Main content */}
       <div className="flex-1">
         <iframe
-          src="https://www.baidu.com"
+          src={fileUrl}
           title="iframe Example 1"
           className="w-full h-full border-0"
         >
