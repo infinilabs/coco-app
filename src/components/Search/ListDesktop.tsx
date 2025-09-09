@@ -18,13 +18,13 @@ const ListDesktop: React.FC = () => {
   // use convertFileSrc to work around the issue.
   useEffect(() => {
       const setupFileUrl = async () => {
-        const filePath = `/Users/steve/Desktop/index.html`;
+        const filePath = `/Users/steve/Documents/workspace/INFINI/coco-app/example_extensions/list_desktop/dist/index.html`;
         
         setFileUrl(convertFileSrc(filePath));
       };
 
       setupFileUrl();
-    }, []); // 空依赖数组确保只运行一次
+    }, []); 
 
   const handleBack = () => {
     setVisibleListDesktop(false);
