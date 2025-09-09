@@ -60,6 +60,7 @@ const SearchResultsPanel = memo<{
     }
   }, [selectedSearchContent]);
 
+  // update state
   const handleOpenExtensionStore = useCallback(() => {
     platformAdapter.showWindow();
     changeMode && changeMode(false);
@@ -114,6 +115,7 @@ const SearchResultsPanel = memo<{
     handleOpenExtensionStore();
   }, [extensionId]);
 
+  // If state gets updated, render the UI
   if (visibleExtensionStore) {
     return <ExtensionStore extensionId={extensionId} />;
   }

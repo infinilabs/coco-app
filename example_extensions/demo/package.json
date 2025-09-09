@@ -1,0 +1,16 @@
+{
+  "name": "raycast-extension-foo",
+  "title": "raycast-extension-foo",
+  "description": "",
+  "icon": "extension-icon.png",
+  "author": "steve_lau",
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "list_desktop",
+      "title": "List ~/Desktop",
+      "description": "",
+      "mode": "view"
+    }
+  ]
+}

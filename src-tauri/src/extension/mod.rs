@@ -1,5 +1,6 @@
 pub(crate) mod built_in;
 pub(crate) mod third_party;
+pub(crate) mod view_mode;
 
 use crate::common::document::ExtensionOnOpened;
 use crate::common::document::ExtensionOnOpenedType;
@@ -680,6 +681,11 @@ pub(crate) async fn list_extensions(
 pub(crate) async fn init_extensions(tauri_app_handle: &AppHandle) -> Result<(), String> {
     log::trace!("initializing extensions");
     let search_source_registry_tauri_state = tauri_app_handle.state::<SearchSourceRegistry>();
+
+    // TODO: remove this
+    search_source_registry_tauri_state
+        .register_source(view_mode::ViewModeExtensions)
+        .await;
 
     // Third-party extensions
     //

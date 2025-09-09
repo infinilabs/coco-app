@@ -256,6 +256,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
 
       console.log("openSearchItem", data);
 
+      // Extension store needs to be opened in a different way
       if (data?.type === "AI Assistant" || data?.id === "Extension Store") {
         const textarea = document.querySelector("#search-textarea");
 
@@ -273,6 +274,12 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
         });
 
         return textarea.dispatchEvent(event);
+      }
+
+      // list desktop TODO: remove this
+      if (data?.id == "list_desktop") {
+          // Open a new page
+
       }
 
       const hideCoco = () => {
