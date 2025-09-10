@@ -1,6 +1,7 @@
 pub(crate) mod built_in;
 pub(crate) mod third_party;
 pub(crate) mod view_mode;
+pub(crate) mod coco_api;
 
 use crate::common::document::ExtensionOnOpened;
 use crate::common::document::ExtensionOnOpenedType;

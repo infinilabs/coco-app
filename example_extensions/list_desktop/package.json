@@ -13,7 +13,7 @@
     }
   ],
   "dependencies": {
-    "coco-api": "file:/Users/steve/Documents/workspace/INFINI/coco-api",
+    "coco-api": "git+https://github.com/infinilabs/coco-api.git",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

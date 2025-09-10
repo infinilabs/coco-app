@@ -8,11 +8,11 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useSearchStore } from "@/stores/searchStore";
-import { convertFileSrc } from "@tauri-apps/api/core"; 
+import { convertFileSrc, invoke } from "@tauri-apps/api/core"; 
 
 const ListDesktop: React.FC = () => {
   const { setVisibleListDesktop } = useSearchStore();
-  const [fileUrl, setFileUrl] = useState<string>("");
+  const [extensionHtmlPath, setExtensionHtmlPath] = useState<string>("");
 
   // Tauri/webview is not allowed to access local files directly, 
   // use convertFileSrc to work around the issue.
@@ -23,7 +23,7 @@ const ListDesktop: React.FC = () => {
 
         console.log(filePath);
         
-        setFileUrl(convertFileSrc(filePath));
+        setExtensionHtmlPath(convertFileSrc(filePath));
       };
 
       setupFileUrl();
@@ -33,7 +33,40 @@ const ListDesktop: React.FC = () => {
     setVisibleListDesktop(false);
   };
 
+  // Watch for events from iframes
+  useEffect(() => {
+    const messageHandler = async (event: MessageEvent) => {
+        if (event.source != null && typeof (event.source as any).postMessage === 'function') {
+          const source = event.source as Window;
+          const {id, command} = event.data;
 
+          if (command === 'readDir') {
+              const { path } = event.data;
+              try {
+                  const fileNames: [String] = await invoke('read_dir', { path: path });
+                  source.postMessage({
+                      id,
+                      payload: fileNames,
+                      error: null
+                  }, event.origin);
+              } catch (e) {
+                  source.postMessage({
+                      id,
+                      payload: null,
+                      error: e
+                  }, event.origin);
+              }
+              
+          }
+        }
+    };
+    window.addEventListener('message', messageHandler);
+    console.log("DBG: Coco event listener set up");
+
+    return () => {
+        window.removeEventListener('message', messageHandler);
+    };
+  }, []);
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -51,7 +84,7 @@ const ListDesktop: React.FC = () => {
       {/* Main content */}
       <div className="flex-1">
         <iframe
-          src={fileUrl}
+          src={extensionHtmlPath}
           title="iframe Example 1"
           className="w-full h-full border-0"
         >
