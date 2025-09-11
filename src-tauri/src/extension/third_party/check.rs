@@ -267,7 +267,7 @@ mod tests {
             hotkey: None,
             enabled: true,
             page,
-            api_permissions: Vec::new(),
+            api_permissions: None,
             settings: None,
             screenshots: None,
             url: None,

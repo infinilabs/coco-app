@@ -130,7 +130,7 @@ mod tests {
             enabled: true,
             settings: None,
             page: None,
-            api_permissions: Vec::new(),
+            api_permissions: None,
             screenshots: None,
             url: None,
             version: None,

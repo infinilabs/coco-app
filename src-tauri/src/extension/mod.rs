@@ -111,7 +111,7 @@ pub struct Extension {
     page: Option<String>,
 
     /// Categories of the Coco extension APIs that this extension can use.
-    api_permissions: Vec<String>,
+    api_permissions: Option<Vec<String>>,
 
     // We do not care about these fields, just take it regardless of what it is.
     screenshots: Option<Json>,
@@ -249,7 +249,7 @@ impl Extension {
                 let page = self.page.as_ref().unwrap_or_else(|| {
                     panic!("View extension [{}]'s [page] field is not set, something wrong with your extension validity check", self.id);
                 }).clone();
-                let api_permissions = self.api_permissions.clone();
+                let api_permissions = self.api_permissions.clone().unwrap_or(Vec::new());
 
                 let extension_on_opened_type = ExtensionOnOpenedType::View {
                     page,
