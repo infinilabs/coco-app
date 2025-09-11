@@ -1,8 +1,6 @@
 //! File system APIs
 
 use tokio::fs::read_dir as tokio_read_dir;
-use std::ffi::os_str::OsString;
-
 
 #[tauri::command]
 pub(crate) async fn readDir(path: String) -> Result<Vec<String>, String> {
@@ -19,7 +17,6 @@ pub(crate) async fn readDir(path: String) -> Result<Vec<String>, String> {
         let file_name = entry.file_name().to_string_lossy().into_owned();
         file_names.push(file_name);
     }
-
 
     Ok(file_names)
 }

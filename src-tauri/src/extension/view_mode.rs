@@ -13,7 +13,6 @@ const DATA_SOURCE_ID: &str = "View Mode Extensions";
 
 pub(crate) struct ViewModeExtensions;
 
-
 #[async_trait]
 impl SearchSource for ViewModeExtensions {
     fn get_type(&self) -> QuerySource {
