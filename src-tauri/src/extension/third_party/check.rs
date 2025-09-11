@@ -216,6 +216,21 @@ fn check_main_extension_or_sub_extension(
         ));
     }
 
+    // If field `page` is Some, then it should be a View
+    if extension.page.is_some() && extension.r#type != ExtensionType::View {
+        return Err(format!(
+            "invalid {}, field [page] is set for a non-View extension",
+            identifier
+        ));
+    }
+
+    if extension.r#type == ExtensionType::View && extension.page.is_none() {
+        return Err(format!(
+            "invalid {}, field [page] should be set for a View extension",
+            identifier
+        ));
+    }
+
     Ok(())
 }
 
@@ -418,6 +433,36 @@ mod tests {
                 .contains("field [quicklink] is set for a non-Quicklink extension")
         );
     }
+
+    #[test]
+    fn test_view_must_have_page_field() {
+        let mut extension = create_basic_extension("test-view", ExtensionType::View);
+        // create_basic_extension() will set its page field if type is View, clear it
+        extension.page = None;
+
+        let result = general_check(&extension);
+        assert!(result.is_err());
+        assert!(
+            result
+                .unwrap_err()
+                .contains("field [page] should be set for a View extension")
+        );
+    }
+
+    #[test]
+    fn test_non_view_cannot_have_page_field() {
+        let mut extension = create_basic_extension("test-cmd", ExtensionType::Command);
+        extension.action = Some(create_command_action());
+        extension.page = Some("index.html".into());
+
+        let result = general_check(&extension);
+        assert!(result.is_err());
+        assert!(
+            result
+                .unwrap_err()
+                .contains("field [page] is set for a non-View extension")
+        );
+    }
     /* test check_main_extension_or_sub_extension */
 
     /* Test check_sub_extension_only */
@@ -483,11 +528,9 @@ mod tests {
 
         let result = general_check(&extension);
         assert!(result.is_err());
-        assert!(
-            result.unwrap_err().contains(
-                "fields [commands/scripts/quicklinks] should not be set in sub-extensions"
-            )
-        );
+        assert!(result.unwrap_err().contains(
+            "fields [commands/scripts/quicklinks/views] should not be set in sub-extensions"
+        ));
     }
     /* Test check_sub_extension_only */
 
