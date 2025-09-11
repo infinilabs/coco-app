@@ -79,6 +79,12 @@ pub(crate) enum ExtensionOnOpenedType {
         link: crate::extension::QuicklinkLink,
         open_with: Option<String>,
     },
+    View {
+        /// Path to the HTML file that coco will load and render.
+        page: String,
+        /// Categories of the Coco extension APIs that this extension can use.
+        api_permissions: Vec<String>,
+    },
 }
 
 impl OnOpened {
@@ -107,6 +113,13 @@ impl OnOpened {
                     // The URL of a quicklink is nearly useless without such dynamic user
                     // inputs, so until we have dynamic URL support, we just use "N/A".
                     ExtensionOnOpenedType::Quicklink { .. } => String::from("N/A"),
+                    ExtensionOnOpenedType::View {
+                        page: _,
+                        api_permissions: _,
+                    } => {
+                        // We currently don't have URL for this kind of extension.
+                        String::from("N/A")
+                    }
                 }
             }
         }
@@ -214,6 +227,14 @@ pub(crate) async fn open(
                             homemade_tauri_shell_open(tauri_app_handle.clone(), url).await?
                         }
                     }
+                }
+                ExtensionOnOpenedType::View {
+                    page: _,
+                    api_permissions: _,
+                } => {
+                    unreachable!(
+                        "the opening behavior of View extension should be controlled by the frontend"
+                    )
                 }
             }
         }

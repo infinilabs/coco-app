@@ -290,6 +290,11 @@ impl ThirdPartyExtensionsSearchSource {
                     Self::_enable_extension(&tauri_app_handle, quicklink).await?;
                 }
             }
+            if let Some(views) = &extension.views {
+                for view in views.iter().filter(|ext| ext.enabled) {
+                    Self::_enable_extension(&tauri_app_handle, view).await?;
+                }
+            }
         }
 
         Ok(())
@@ -330,6 +335,11 @@ impl ThirdPartyExtensionsSearchSource {
             if let Some(quicklinks) = &extension.quicklinks {
                 for quicklink in quicklinks.iter().filter(|ext| ext.enabled) {
                     Self::_disable_extension(tauri_app_handle, quicklink).await?;
+                }
+            }
+            if let Some(views) = &extension.views {
+                for view in views.iter().filter(|ext| ext.enabled) {
+                    Self::_disable_extension(tauri_app_handle, view).await?;
                 }
             }
         }
@@ -772,6 +782,16 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
                                 &query_lower,
                                 opt_data_source.as_deref(),
                             ) {
+                                hits.push(hit);
+                            }
+                        }
+                    }
+
+                    if let Some(ref views) = extension.views {
+                        for view in views.iter().filter(|link| link.enabled) {
+                            if let Some(hit) =
+                                extension_to_hit(view, &query_lower, opt_data_source.as_deref())
+                            {
                                 hits.push(hit);
                             }
                         }

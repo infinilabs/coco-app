@@ -1,0 +1,32 @@
+{
+  "name": "raycast-extension-foo",
+  "title": "raycast-extension-foo",
+  "description": "",
+  "icon": "extension-icon.png",
+  "author": "steve_lau",
+  "commands": [
+    {
+      "name": "list_desktop",
+      "title": "List ~/Desktop",
+      "description": "",
+      "mode": "view"
+    }
+  ],
+  "dependencies": {
+    "coco-api": "git+https://github.com/infinilabs/coco-api.git",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5",
+    "@vitejs/plugin-react": "^4.0.3"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  }
+}
