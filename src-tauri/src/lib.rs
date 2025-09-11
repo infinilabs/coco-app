@@ -167,7 +167,7 @@ pub fn run() {
             extension::third_party::install::local_extension::install_local_extension,
             extension::third_party::uninstall_extension,
 
-            extension::coco_api::fs::read_dir,
+            extension::api::fs::readDir,
 
             settings::set_allow_self_signature,
             settings::get_allow_self_signature,

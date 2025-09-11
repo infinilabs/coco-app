@@ -1,0 +1,5 @@
+# Full Coco extension APIs categorized by its categories.
+
+fs = [
+  "readDir"
+]

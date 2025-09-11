@@ -5,5 +5,10 @@
 //! 
 //! [ts_lib]: https://github.com/infinilabs/coco-api
 
+// For the public function names, we use Typescript naming convention, so that 
+// it aligns with the interfaces exposed by the coco-api library.
+//
+// function name: camelCase
+#[allow(non_snake_case)]
 
 pub(crate) mod fs;

@@ -5,7 +5,7 @@ use std::ffi::os_str::OsString;
 
 
 #[tauri::command]
-pub(crate) async fn read_dir(path: String) -> Result<Vec<String>, String> {
+pub(crate) async fn readDir(path: String) -> Result<Vec<String>, String> {
     let mut iter = tokio_read_dir(path).await.map_err(|e| e.to_string())?;
 
     let mut file_names = Vec::new();

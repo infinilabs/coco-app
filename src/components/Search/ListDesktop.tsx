@@ -2,6 +2,10 @@
  * ListDesktop.tsx
  *
  * View that will be rendered when users choose the "List ~/Desktop" entry.
+ * 
+ * arguments: 
+ *  1. path to the page to load
+ *  2. Allowed APIs, e.g., clipboard
  */
 
 import React from "react";
@@ -43,7 +47,7 @@ const ListDesktop: React.FC = () => {
           if (command === 'readDir') {
               const { path } = event.data;
               try {
-                  const fileNames: [String] = await invoke('read_dir', { path: path });
+                  const fileNames: [String] = await invoke('readDir', { path: path });
                   source.postMessage({
                       id,
                       payload: fileNames,
