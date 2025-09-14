@@ -15,6 +15,7 @@ use crate::common::search::QuerySource;
 use crate::common::search::SearchQuery;
 use crate::common::traits::SearchSource;
 use crate::extension::ExtensionBundleIdBorrowed;
+use crate::extension::calculate_text_similarity;
 use crate::extension::canonicalize_relative_page_path;
 use crate::util::platform::Platform;
 use async_trait::async_trait;
