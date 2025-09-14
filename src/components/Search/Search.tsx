@@ -10,7 +10,7 @@ import AskAi from "./AskAi";
 import { useSearch } from "@/hooks/useSearch";
 import ExtensionStore from "./ExtensionStore";
 import platformAdapter from "@/utils/platformAdapter";
-import ViewExtension from "./viewExtension"
+import ViewExtension from "./ViewExtension"
 
 const SearchResultsPanel = memo<{
   input: string;
