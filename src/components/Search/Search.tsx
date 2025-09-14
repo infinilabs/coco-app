@@ -10,6 +10,7 @@ import AskAi from "./AskAi";
 import { useSearch } from "@/hooks/useSearch";
 import ExtensionStore from "./ExtensionStore";
 import platformAdapter from "@/utils/platformAdapter";
+import ViewExtension from "./ViewExtension"
 
 const SearchResultsPanel = memo<{
   input: string;
@@ -46,7 +47,7 @@ const SearchResultsPanel = memo<{
     }
   }, [input, isChatMode, performSearch, sourceData]);
 
-  const { setSelectedAssistant, selectedSearchContent, visibleExtensionStore } =
+  const { setSelectedAssistant, selectedSearchContent, visibleExtensionStore, viewExtensionOpened } =
     useSearchStore();
 
   useEffect(() => {
@@ -60,6 +61,7 @@ const SearchResultsPanel = memo<{
     }
   }, [selectedSearchContent]);
 
+  // update state
   const handleOpenExtensionStore = useCallback(() => {
     platformAdapter.showWindow();
     changeMode && changeMode(false);
@@ -114,9 +116,16 @@ const SearchResultsPanel = memo<{
     handleOpenExtensionStore();
   }, [extensionId]);
 
+  // If state gets updated, render the UI
   if (visibleExtensionStore) {
     return <ExtensionStore extensionId={extensionId} />;
   }
+
+  // Render the view extension
+  if (viewExtensionOpened != null) {
+    return <ViewExtension />;
+  }
+
   if (goAskAi) return <AskAi isChatMode={isChatMode} />;
   if (suggests.length === 0) return <NoResults />;
 

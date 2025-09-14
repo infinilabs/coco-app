@@ -41,6 +41,14 @@ export type ISearchStore = {
   setUninstallingExtensions: (uninstallingExtensions: string[]) => void;
   visibleExtensionDetail: boolean;
   setVisibleExtensionDetail: (visibleExtensionDetail: boolean) => void;
+
+  // When we open a View extension, we set this to a non-null value.
+  //
+  // The first array element is the path to the page that we should load, the 
+  // second element contains the categories of APIs that this view extension 
+  // is allowed to use.
+  viewExtensionOpened: [string, [string] ] | null;
+  setViewExtensionOpened: (showViewExtension: [string, [string]] | null) => void;
 };
 
 export const useSearchStore = create<ISearchStore>()(
@@ -105,6 +113,10 @@ export const useSearchStore = create<ISearchStore>()(
       visibleExtensionDetail: false,
       setVisibleExtensionDetail: (visibleExtensionDetail) => {
         return set({ visibleExtensionDetail });
+      },
+      viewExtensionOpened: null,
+      setViewExtensionOpened: (viewExtensionOpened) => {
+        return set({ viewExtensionOpened });
       },
     }),
     {

@@ -16,6 +16,7 @@ use crate::common::search::SearchQuery;
 use crate::common::traits::SearchSource;
 use crate::extension::ExtensionBundleIdBorrowed;
 use crate::extension::calculate_text_similarity;
+use crate::extension::canonicalize_relative_page_path;
 use crate::util::platform::Platform;
 use async_trait::async_trait;
 use borrowme::ToOwned;
@@ -183,6 +184,7 @@ pub(crate) async fn load_third_party_extensions_from_directory(
 
             // Turn it into an absolute path if it is a valid relative path because frontend code needs this.
             canonicalize_relative_icon_path(&extension_dir.path(), &mut extension)?;
+            canonicalize_relative_page_path(&extension_dir.path(), &mut extension)?;
 
             extensions.push(extension);
         }
@@ -290,6 +292,11 @@ impl ThirdPartyExtensionsSearchSource {
                     Self::_enable_extension(&tauri_app_handle, quicklink).await?;
                 }
             }
+            if let Some(views) = &extension.views {
+                for view in views.iter().filter(|ext| ext.enabled) {
+                    Self::_enable_extension(&tauri_app_handle, view).await?;
+                }
+            }
         }
 
         Ok(())
@@ -330,6 +337,11 @@ impl ThirdPartyExtensionsSearchSource {
             if let Some(quicklinks) = &extension.quicklinks {
                 for quicklink in quicklinks.iter().filter(|ext| ext.enabled) {
                     Self::_disable_extension(tauri_app_handle, quicklink).await?;
+                }
+            }
+            if let Some(views) = &extension.views {
+                for view in views.iter().filter(|ext| ext.enabled) {
+                    Self::_disable_extension(tauri_app_handle, view).await?;
                 }
             }
         }
@@ -772,6 +784,16 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
                                 &query_lower,
                                 opt_data_source.as_deref(),
                             ) {
+                                hits.push(hit);
+                            }
+                        }
+                    }
+
+                    if let Some(ref views) = extension.views {
+                        for view in views.iter().filter(|link| link.enabled) {
+                            if let Some(hit) =
+                                extension_to_hit(view, &query_lower, opt_data_source.as_deref())
+                            {
                                 hits.push(hit);
                             }
                         }

@@ -111,6 +111,10 @@ sys-locale = "0.3.2"
 tauri-plugin-prevent-default = "1"
 oneshot = "0.1.11"
 bitflags = "2.9.3"
+dunce = "1.0.5"
+urlencoding = "2.1.3"
+scraper = "0.17"
+toml = "0.8"
 
 [target."cfg(target_os = \"macos\")".dependencies]
 tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }
