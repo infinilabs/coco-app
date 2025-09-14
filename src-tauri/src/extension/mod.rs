@@ -1,3 +1,4 @@
+pub(crate) mod api;
 pub(crate) mod built_in;
 pub(crate) mod third_party;
 
@@ -83,6 +84,7 @@ pub struct Extension {
     commands: Option<Vec<Extension>>,
     scripts: Option<Vec<Extension>>,
     quicklinks: Option<Vec<Extension>>,
+    views: Option<Vec<Extension>>,
 
     /// The alias of the extension.
     ///
@@ -102,6 +104,13 @@ pub struct Extension {
     /// Extension settings
     #[serde(skip_serializing_if = "Option::is_none")]
     settings: Option<ExtensionSettings>,
+
+    /// For View extensions, path to the HTML file/page that coco will load
+    /// and render. Otherwise, `None`.
+    page: Option<String>,
+
+    /// Categories of the Coco extension APIs that this extension can use.
+    api_permissions: Option<Vec<String>>,
 
     // We do not care about these fields, just take it regardless of what it is.
     screenshots: Option<Json>,
@@ -235,6 +244,24 @@ impl Extension {
             }
             ExtensionType::Script => todo!("not supported yet"),
             ExtensionType::Setting => todo!("not supported yet"),
+            ExtensionType::View => {
+                let page = self.page.as_ref().unwrap_or_else(|| {
+                    panic!("View extension [{}]'s [page] field is not set, something wrong with your extension validity check", self.id);
+                }).clone();
+                let api_permissions = self.api_permissions.clone().unwrap_or(Vec::new());
+
+                let extension_on_opened_type = ExtensionOnOpenedType::View {
+                    page,
+                    api_permissions,
+                };
+                let extension_on_opened = ExtensionOnOpened {
+                    ty: extension_on_opened_type,
+                    settings,
+                };
+                let on_opened = OnOpened::Extension(extension_on_opened);
+
+                Some(on_opened)
+            }
         }
     }
 
@@ -255,6 +282,11 @@ impl Extension {
         }
         if let Some(ref quicklinks) = self.quicklinks {
             if let Some(sub_ext) = quicklinks.iter().find(|link| link.id == sub_extension_id) {
+                return Some(sub_ext);
+            }
+        }
+        if let Some(ref views) = self.views {
+            if let Some(sub_ext) = views.iter().find(|view| view.id == sub_extension_id) {
                 return Some(sub_ext);
             }
         }
@@ -285,6 +317,11 @@ impl Extension {
                 .iter_mut()
                 .find(|link| link.id == sub_extension_id)
             {
+                return Some(sub_ext);
+            }
+        }
+        if let Some(ref mut views) = self.views {
+            if let Some(sub_ext) = views.iter_mut().find(|view| view.id == sub_extension_id) {
                 return Some(sub_ext);
             }
         }
@@ -497,6 +534,8 @@ pub enum ExtensionType {
     Calculator,
     #[display("AI Extension")]
     AiExtension,
+    #[display("View")]
+    View,
 }
 
 impl ExtensionType {
@@ -528,6 +567,9 @@ fn filter_out_extensions(
                 if let Some(ref mut quicklinks) = extension.quicklinks {
                     quicklinks.retain(|link| link.enabled);
                 }
+                if let Some(ref mut views) = extension.views {
+                    views.retain(|link| link.enabled);
+                }
             }
         }
     }
@@ -555,6 +597,9 @@ fn filter_out_extensions(
                 }
                 if let Some(ref mut quicklinks) = extension.quicklinks {
                     quicklinks.retain(|link| link.r#type == extension_type);
+                }
+                if let Some(ref mut views) = extension.views {
+                    views.retain(|link| link.r#type == extension_type);
                 }
             }
         }
@@ -605,6 +650,9 @@ fn filter_out_extensions(
                 }
                 if let Some(ref mut quicklinks) = extension.quicklinks {
                     quicklinks.retain(&match_closure);
+                }
+                if let Some(ref mut views) = extension.views {
+                    views.retain(&match_closure);
                 }
             }
         }
@@ -880,6 +928,55 @@ pub(crate) fn canonicalize_relative_icon_path(
         }
     }
 
+    if let Some(views) = &mut extension.views {
+        for view in views {
+            _canonicalize_relative_icon_path(extension_dir, view)?;
+        }
+    }
+
+    Ok(())
+}
+
+pub(crate) fn canonicalize_relative_page_path(
+    extension_dir: &Path,
+    extension: &mut Extension,
+) -> Result<(), String> {
+    fn _canonicalize_view_extension_page_path(
+        extension_dir: &Path,
+        extension: &mut Extension,
+    ) -> Result<(), String> {
+        let page = extension
+            .page
+            .as_ref()
+            .expect("this should be invoked on a View extension");
+        let page_path = Path::new(page);
+
+        if page_path.is_relative() {
+            let absolute_page_path = extension_dir.join(page_path);
+
+            if absolute_page_path.try_exists().map_err(|e| e.to_string())? {
+                extension.page = Some(
+                    absolute_page_path
+                        .into_os_string()
+                        .into_string()
+                        .expect("path should be UTF-8 encoded"),
+                );
+            }
+        }
+
+        Ok(())
+    }
+
+    if extension.r#type == ExtensionType::View {
+        _canonicalize_view_extension_page_path(extension_dir, extension)?;
+    } else if extension.r#type.contains_sub_items()
+        && let Some(ref mut views) = extension.views
+    {
+        for view in views {
+            _canonicalize_view_extension_page_path(extension_dir, view)?;
+        }
+    }
+
     Ok(())
 }
 
@@ -928,6 +1025,14 @@ fn alter_extension_json_file(
         if let Some(ref mut quicklinks) = root_extension.quicklinks {
             if let Some(link) = quicklinks.iter_mut().find(|lnk| lnk.id == sub_extension_id) {
                 how(link)?;
+                return Ok(());
+            }
+        }
+
+        // Search in views
+        if let Some(ref mut views) = root_extension.views {
+            if let Some(view) = views.iter_mut().find(|v| v.id == sub_extension_id) {
+                how(view)?;
                 return Ok(());
             }
         }

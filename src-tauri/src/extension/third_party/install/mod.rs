@@ -28,6 +28,7 @@ pub(crate) mod store;
 
 use crate::extension::Extension;
 use crate::util::platform::Platform;
+use std::path::Path;
 
 use super::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE;
 
@@ -51,14 +52,16 @@ pub(crate) fn filter_out_incompatible_sub_extensions(
         return;
     }
 
+    // For main extensions, None means all.
+    let main_extension_supported_platforms = extension.platforms.clone().unwrap_or(Platform::all());
+
     // Filter commands
     if let Some(ref mut commands) = extension.commands {
         commands.retain(|sub_ext| {
-            // If platforms is None, the sub-extension is compatible with all platforms
             if let Some(ref platforms) = sub_ext.platforms {
                 platforms.contains(&current_platform)
             } else {
-                true
+                main_extension_supported_platforms.contains(&current_platform)
             }
         });
     }
@@ -66,11 +69,10 @@ pub(crate) fn filter_out_incompatible_sub_extensions(
     // Filter scripts
     if let Some(ref mut scripts) = extension.scripts {
         scripts.retain(|sub_ext| {
-            // If platforms is None, the sub-extension is compatible with all platforms
             if let Some(ref platforms) = sub_ext.platforms {
                 platforms.contains(&current_platform)
             } else {
-                true
+                main_extension_supported_platforms.contains(&current_platform)
             }
         });
     }
@@ -78,14 +80,133 @@ pub(crate) fn filter_out_incompatible_sub_extensions(
     // Filter quicklinks
     if let Some(ref mut quicklinks) = extension.quicklinks {
         quicklinks.retain(|sub_ext| {
-            // If platforms is None, the sub-extension is compatible with all platforms
             if let Some(ref platforms) = sub_ext.platforms {
                 platforms.contains(&current_platform)
             } else {
-                true
+                main_extension_supported_platforms.contains(&current_platform)
             }
         });
     }
+
+    // Filter views
+    if let Some(ref mut views) = extension.views {
+        views.retain(|sub_ext| {
+            if let Some(ref platforms) = sub_ext.platforms {
+                platforms.contains(&current_platform)
+            } else {
+                main_extension_supported_platforms.contains(&current_platform)
+            }
+        });
+    }
+}
+
+/// Convert the page file to make it loadable by the Tauri/Webview.
+pub(crate) async fn convert_page(absolute_page_path: &Path) -> Result<(), String> {
+    assert!(absolute_page_path.is_absolute());
+
+    let page_content = tokio::fs::read_to_string(absolute_page_path)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let new_page_content = _convert_page(&page_content, absolute_page_path)?;
+
+    // overwrite it
+    tokio::fs::write(absolute_page_path, new_page_content)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+/// Tauri cannot directly access the file system, to make a file loadable, we
+/// have to `canonicalize()` and `convertFileSrc()` its path before passing it
+/// to Tauri.
+///
+/// View extension's page is a HTML file that Coco (Tauri) will load, we need
+/// to process all `<PATH>` tags:
+///
+/// 1. `<script type="xxx" crossorigin src="<PATH>"></script>`
+/// 2. `<a href="<PATH>">xxx</a>`
+///
+/// NOTE: There is no Rust implementation of `convertFileSrc()` in Tauri. Our
+/// impl here is based on [comment](https://github.com/tauri-apps/tauri/issues/12022#issuecomment-2572879115)
+fn _convert_page(page_content: &str, absolute_page_path: &Path) -> Result<String, String> {
+    use scraper::{Html, Selector};
+
+    fn convert_file_src(path: &Path) -> Result<String, String> {
+        #[cfg(any(windows, target_os = "android"))]
+        let base = "http://asset.localhost/";
+        #[cfg(not(any(windows, target_os = "android")))]
+        let base = "asset://localhost/";
+
+        let path =
+            dunce::canonicalize(path).map_err(|e| format!("Failed to canonicalize path: {}", e))?;
+        let path_str = path.to_string_lossy();
+        let encoded = urlencoding::encode(&path_str);
+
+        Ok(format!("{base}{encoded}"))
+    }
+
+    let base_dir = absolute_page_path
+        .parent()
+        .ok_or_else(|| format!("page path is invalid, it should have a parent path"))?;
+
+    // Parse the HTML
+    let document = Html::parse_document(page_content);
+    let mut modified_html = page_content.to_string();
+
+    // Process script tags with src attributes
+    let script_selector = Selector::parse("script[src]").unwrap();
+    for element in document.select(&script_selector) {
+        if let Some(src) = element.value().attr("src") {
+            if !src.starts_with("http://")
+                && !src.starts_with("https://")
+                && !src.starts_with("asset://")
+                && !src.starts_with("http://asset.localhost/")
+            {
+                // It could be a path like "/assets/index-41be3ec9.js", but it
+                // is still a relative path. We need to remove the starting /
+                // or path.join() will think it is an absolute path and does nothing
+                let corrected_src = if src.starts_with('/') { &src[1..] } else { src };
+
+                let full_path = base_dir.join(corrected_src);
+
+                let converted_path = convert_file_src(full_path.as_path())?;
+                modified_html = modified_html.replace(
+                    &format!("src=\"{}\"", src),
+                    &format!("src=\"{}\"", converted_path),
+                );
+            }
+        }
+    }
+
+    // Process a tags with href attributes
+    let a_selector = Selector::parse("a[href]").unwrap();
+    for element in document.select(&a_selector) {
+        if let Some(href) = element.value().attr("href") {
+            if !href.starts_with("http://")
+                && !href.starts_with("https://")
+                && !href.starts_with("asset://")
+                && !href.starts_with("http://asset.localhost/")
+            {
+                let corrected_href = if href.starts_with('/') {
+                    &href[1..]
+                } else {
+                    href
+                };
+
+                let full_path = base_dir.join(corrected_href);
+
+                let converted_path = convert_file_src(full_path.as_path())?;
+                modified_html = modified_html.replace(
+                    &format!("href=\"{}\"", href),
+                    &format!("href=\"{}\"", converted_path),
+                );
+            }
+        }
+    }
+
+    Ok(modified_html)
 }
 
 #[cfg(test)]
@@ -113,10 +234,13 @@ mod tests {
             commands: None,
             scripts: None,
             quicklinks: None,
+            views: None,
             alias: None,
             hotkey: None,
             enabled: true,
             settings: None,
+            page: None,
+            api_permissions: None,
             screenshots: None,
             url: None,
             version: None,
@@ -154,10 +278,15 @@ mod tests {
             ExtensionType::Script,
             Some(HashSet::from([Platform::Macos])),
         )];
+        let views = vec![create_test_extension(
+            ExtensionType::View,
+            Some(HashSet::from([Platform::Macos])),
+        )];
         // Set sub extensions
         main_extension.commands = Some(commands);
         main_extension.quicklinks = Some(quicklinks);
         main_extension.scripts = Some(scripts);
+        main_extension.views = Some(views);
 
         // Current platform is Linux, all the sub extensions should be filtered out.
         filter_out_incompatible_sub_extensions(&mut main_extension, Platform::Linux);
@@ -166,6 +295,7 @@ mod tests {
         assert!(main_extension.commands.unwrap().is_empty());
         assert!(main_extension.quicklinks.unwrap().is_empty());
         assert!(main_extension.scripts.unwrap().is_empty());
+        assert!(main_extension.views.unwrap().is_empty());
     }
 
     /// Sub extensions are compatible with all the platforms, nothing to filter out.
@@ -186,10 +316,15 @@ mod tests {
                 ExtensionType::Script,
                 Some(Platform::all()),
             )];
+            let views = vec![create_test_extension(
+                ExtensionType::View,
+                Some(Platform::all()),
+            )];
             // Set sub extensions
             main_extension.commands = Some(commands);
             main_extension.quicklinks = Some(quicklinks);
             main_extension.scripts = Some(scripts);
+            main_extension.views = Some(views);
 
             // Current platform is Linux, all the sub extensions should be filtered out.
             filter_out_incompatible_sub_extensions(&mut main_extension, Platform::Linux);
@@ -198,19 +333,23 @@ mod tests {
             assert_eq!(main_extension.commands.unwrap().len(), 1);
             assert_eq!(main_extension.quicklinks.unwrap().len(), 1);
             assert_eq!(main_extension.scripts.unwrap().len(), 1);
+            assert_eq!(main_extension.views.unwrap().len(), 1);
         }
 
-        // `platforms: None` means all platforms as well
+        // main extension is compatible with all platforms, sub extension's platforms
+        // is None, which means all platforms are supported
         {
             let mut main_extension = create_test_extension(ExtensionType::Group, None);
             // init sub extensions, which are compatible with all the platforms
             let commands = vec![create_test_extension(ExtensionType::Command, None)];
             let quicklinks = vec![create_test_extension(ExtensionType::Quicklink, None)];
             let scripts = vec![create_test_extension(ExtensionType::Script, None)];
+            let views = vec![create_test_extension(ExtensionType::View, None)];
             // Set sub extensions
             main_extension.commands = Some(commands);
             main_extension.quicklinks = Some(quicklinks);
             main_extension.scripts = Some(scripts);
+            main_extension.views = Some(views);
 
             // Current platform is Linux, all the sub extensions should be filtered out.
             filter_out_incompatible_sub_extensions(&mut main_extension, Platform::Linux);
@@ -219,6 +358,60 @@ mod tests {
             assert_eq!(main_extension.commands.unwrap().len(), 1);
             assert_eq!(main_extension.quicklinks.unwrap().len(), 1);
             assert_eq!(main_extension.scripts.unwrap().len(), 1);
+            assert_eq!(main_extension.views.unwrap().len(), 1);
         }
+    }
+
+    #[test]
+    fn test_main_extension_is_incompatible_sub_extension_platforms_none() {
+        {
+            let mut main_extension =
+                create_test_extension(ExtensionType::Group, Some(HashSet::from([Platform::Macos])));
+            let commands = vec![create_test_extension(ExtensionType::Command, None)];
+            main_extension.commands = Some(commands);
+            filter_out_incompatible_sub_extensions(&mut main_extension, Platform::Linux);
+            assert_eq!(main_extension.commands.unwrap().len(), 0);
+        }
+
+        {
+            let mut main_extension =
+                create_test_extension(ExtensionType::Group, Some(HashSet::from([Platform::Macos])));
+            let scripts = vec![create_test_extension(ExtensionType::Script, None)];
+            main_extension.scripts = Some(scripts);
+            filter_out_incompatible_sub_extensions(&mut main_extension, Platform::Linux);
+            assert_eq!(main_extension.scripts.unwrap().len(), 0);
+        }
+
+        {
+            let mut main_extension =
+                create_test_extension(ExtensionType::Group, Some(HashSet::from([Platform::Macos])));
+            let quicklinks = vec![create_test_extension(ExtensionType::Quicklink, None)];
+            main_extension.quicklinks = Some(quicklinks);
+            filter_out_incompatible_sub_extensions(&mut main_extension, Platform::Linux);
+            assert_eq!(main_extension.quicklinks.unwrap().len(), 0);
+        }
+        {
+            let mut main_extension =
+                create_test_extension(ExtensionType::Group, Some(HashSet::from([Platform::Macos])));
+            let views = vec![create_test_extension(ExtensionType::View, None)];
+            main_extension.views = Some(views);
+            filter_out_incompatible_sub_extensions(&mut main_extension, Platform::Linux);
+            assert_eq!(main_extension.views.unwrap().len(), 0);
+        }
+    }
+
+    #[test]
+    fn test_main_extension_compatible_sub_extension_platforms_none() {
+        let mut main_extension =
+            create_test_extension(ExtensionType::Group, Some(HashSet::from([Platform::Macos])));
+        let views = vec![create_test_extension(ExtensionType::View, None)];
+        main_extension.views = Some(views);
+        filter_out_incompatible_sub_extensions(&mut main_extension, Platform::Macos);
+        assert_eq!(main_extension.views.unwrap().len(), 1);
+    }
+
+    #[test]
+    fn test_convert_page_paths() {
+        todo!()
     }
 }
