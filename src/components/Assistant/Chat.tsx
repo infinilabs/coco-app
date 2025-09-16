@@ -233,7 +233,7 @@ const ChatAI = memo(
         async (params: SendMessageParams) => {
           try {
             //console.log("init", curChatEnd, activeChat?._id);
-            if (!isCurrentLogin) {
+            if (isTauri && !isCurrentLogin) {
               addError("Please login to continue chatting");
               return;
             }
@@ -390,7 +390,7 @@ const ChatAI = memo(
               assistantIDs={assistantIDs}
             />
 
-            {isCurrentLogin || !isTauri ? (
+            {!isTauri || (isTauri && isCurrentLogin) ? (
               <>
                 <ChatContent
                   activeChat={activeChat}

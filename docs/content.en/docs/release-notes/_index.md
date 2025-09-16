@@ -37,6 +37,7 @@ Information about release notes of Coco App is provided here.
 - fix: use kill_on_drop() to avoid zombie proc in error case #887
 - fix: settings window rendering/loading issue 889
 
+
 ### ✈️ Improvements
 
 - refactor: calling service related interfaces #831
@@ -52,6 +53,7 @@ Information about release notes of Coco App is provided here.
 - refactor: accept both '-' and '\_' as locale str separator #876
 - refactor: relax the file search conditions on macOS #883
 - refactor: ensure Coco won't take focus #891
+- chore: skip login check for web widget #895
 
 ## 0.7.1 (2025-07-27)
 
