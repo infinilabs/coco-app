@@ -27,3 +27,7 @@ pub(crate) async fn hits(
         }
     }
 }
+
+pub(crate) fn config_change_hook(_new_config: &FileSearchConfig) -> Result<(), String> {
+    Ok(())
+}
