@@ -177,9 +177,10 @@ pub(crate) async fn search_extension(
 pub(crate) async fn extension_detail(
     id: String,
 ) -> Result<Option<JsonObject<String, Json>>, String> {
-    let url = format!("http://dev.infini.cloud:27200/store/extension/{}", id);
-    let response =
-        HttpClient::send_raw_request(Method::GET, url.as_str(), None, None, None).await?;
+    let path = format!("store/extension/{}", id);
+    let response = HttpClient::get("default_coco_server", path.as_str(), None)
+        .await
+        .map_err(|e| format!("Failed to send request: {:?}", e))?;
 
     if response.status() == StatusCode::NOT_FOUND {
         return Ok(None);
