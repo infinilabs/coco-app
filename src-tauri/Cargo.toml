@@ -124,7 +124,7 @@ objc2-core-graphics = { version = "=0.3.1", features = ["CGEvent"] }
 [target."cfg(target_os = \"linux\")".dependencies]
 gio = "0.21.2"
 glib = "0.21.2"
-tracker-rs = "0.6.1"
+tracker-rs = "0.7"
 which = "8.0.0"
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\"))".dependencies]

@@ -7474,27 +7474,26 @@ dependencies = [
 
 [[package]]
 name = "tracker-rs"
-version = "0.6.1"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc48e3b6e7a94b6c90b6905f157f2a875dfb5866cf19429476fd803c9c84eafc"
+checksum = "4f6db4619caf27601f2ee31ce19fe9ddd6f7ebdedf6de3eef5399707f820b671"
 dependencies = [
- "bitflags 2.9.4",
- "gio 0.20.12",
- "glib 0.20.12",
- "glib-sys 0.20.10",
+ "gio 0.21.2",
+ "glib 0.21.2",
+ "glib-sys 0.21.2",
  "libc",
  "tracker-sys",
 ]
 
 [[package]]
 name = "tracker-sys"
-version = "0.6.1"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8814f2bd279c6fa3eb22921a5394df6109c6ec18f805e5973fa633a4e9a57785"
+checksum = "b57f6d0182a3d2a149ca85cdea826849f2c3f329f39a8870432c65c8949b0d4f"
 dependencies = [
- "gio-sys 0.20.10",
- "glib-sys 0.20.10",
- "gobject-sys 0.20.10",
+ "gio-sys 0.21.2",
+ "glib-sys 0.21.2",
+ "gobject-sys 0.21.2",
  "libc",
  "system-deps 7.0.5",
 ]

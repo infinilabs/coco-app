@@ -10,7 +10,7 @@ use crate::{
     common::document::{Document, OnOpened},
     extension::built_in::file_search::config::SearchBy,
 };
-use camino::Utf8PathBuf;
+use camino::Utf8Path;
 use gio::Cancellable;
 use gio::Settings;
 use gio::prelude::SettingsExtManual;
