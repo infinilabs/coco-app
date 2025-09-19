@@ -1,5 +1,6 @@
 //! File Search configuration entries definition and getter/setter functions.
 
+use crate::extension::built_in::file_search::implementation::config_change_hook;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::Value;
@@ -197,13 +198,19 @@ pub async fn set_file_system_config(
         .store(TAURI_STORE_FILE_SYSTEM_CONFIG)
         .map_err(|e| e.to_string())?;
 
-    store.set(TAURI_STORE_KEY_SEARCH_PATHS, config.search_paths);
-    store.set(TAURI_STORE_KEY_EXCLUDE_PATHS, config.exclude_paths);
-    store.set(TAURI_STORE_KEY_FILE_TYPES, config.file_types);
+    store.set(TAURI_STORE_KEY_SEARCH_PATHS, config.search_paths.as_slice());
+    store.set(
+        TAURI_STORE_KEY_EXCLUDE_PATHS,
+        config.exclude_paths.as_slice(),
+    );
+    store.set(TAURI_STORE_KEY_FILE_TYPES, config.file_types.as_slice());
     store.set(
         TAURI_STORE_KEY_SEARCH_BY,
         serde_json::to_value(config.search_by).unwrap(),
     );
+
+    // Invoke the hook when we know that this set operation won't fail
+    config_change_hook(&config)?;
 
     Ok(())
 }

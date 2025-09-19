@@ -1,23 +1,31 @@
-#[cfg(target_os = "linux")]
-mod linux;
-#[cfg(target_os = "macos")]
-mod macos;
-#[cfg(target_os = "windows")]
-mod windows;
+use cfg_if::cfg_if;
 
-// `hits()` function is platform-specific, export the corresponding impl.
-#[cfg(target_os = "linux")]
-pub(crate) use linux::hits;
-#[cfg(target_os = "macos")]
-pub(crate) use macos::hits;
-#[cfg(target_os = "windows")]
-pub(crate) use windows::hits;
+cfg_if! {
+  if #[cfg(target_os = "linux")] {
+    mod linux;
+    pub(crate) use linux::hits;
+    pub(crate) use linux::config_change_hook;
+  } else if #[cfg(target_os = "macos")] {
+    mod macos;
+    pub(crate) use macos::hits;
+    pub(crate) use macos::config_change_hook;
+  } else if #[cfg(target_os = "windows")] {
+    mod windows;
+    pub(crate) use windows::hits;
+    pub(crate) use windows::config_change_hook;
+  }
+}
 
-use super::config::FileSearchConfig;
-use camino::Utf8Path;
+cfg_if! {
+  if #[cfg(not(target_os = "windows"))] {
+    use super::config::FileSearchConfig;
+    use camino::Utf8Path;
+  }
+}
 
 /// If `file_path` should be removed from the search results given the filter
 /// conditions specified in `config`.
+#[cfg(not(target_os = "windows"))] // Not used on Windows
 pub(crate) fn should_be_filtered_out(
     config: &FileSearchConfig,
     file_path: &str,
@@ -74,7 +82,8 @@ pub(crate) fn should_be_filtered_out(
     false
 }
 
-#[cfg(test)]
+// should_be_filtered_out() is not defined for Windows
+#[cfg(all(test, not(target_os = "windows")))]
 mod tests {
     use super::super::config::SearchBy;
     use super::*;
