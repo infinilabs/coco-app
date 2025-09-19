@@ -36,8 +36,8 @@ pub(crate) async fn hits(
 pub(crate) fn config_change_hook(new_config: &FileSearchConfig) -> Result<(), String> {
     let de = DESKTOP_ENVIRONMENT.deref();
     match de {
-        Some(LinuxDesktopEnvironment::Gnome) => gnome::config_change_hook(new_config),
-        Some(LinuxDesktopEnvironment::Kde) => kde::config_change_hook(new_config),
+        Some(LinuxDesktopEnvironment::Gnome) => gnome::config_change_hook(new_config)?,
+        Some(LinuxDesktopEnvironment::Kde) => kde::config_change_hook(new_config)?,
         Some(LinuxDesktopEnvironment::Unsupported {
             xdg_current_desktop: _,
         }) => {
@@ -47,5 +47,4 @@ pub(crate) fn config_change_hook(new_config: &FileSearchConfig) -> Result<(), St
             return Err("could not determine Linux desktop environment".into());
         }
     }
-    Ok(())
 }

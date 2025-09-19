@@ -238,9 +238,8 @@ pub(crate) async fn hits(
     Ok(result_hits)
 }
 
-
 pub(crate) fn config_change_hook(_new_config: &FileSearchConfig) -> Result<(), String> {
-  Ok(())
+    Ok(())
 }
 
 #[cfg(test)]

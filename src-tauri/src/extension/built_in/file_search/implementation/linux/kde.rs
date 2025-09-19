@@ -176,7 +176,6 @@ fn execute_baloosearch_query(
     Ok((iter, child))
 }
 
-
 pub(crate) fn config_change_hook(_new_config: &FileSearchConfig) -> Result<(), String> {
-  Ok(())
+    Ok(())
 }
