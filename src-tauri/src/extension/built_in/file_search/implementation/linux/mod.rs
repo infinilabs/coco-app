@@ -36,8 +36,8 @@ pub(crate) async fn hits(
 pub(crate) fn config_change_hook(new_config: &FileSearchConfig) -> Result<(), String> {
     let de = DESKTOP_ENVIRONMENT.deref();
     match de {
-        Some(LinuxDesktopEnvironment::Gnome) => gnome::config_change_hook(new_config).await,
-        Some(LinuxDesktopEnvironment::Kde) => kde::config_change_hook(new_config).await,
+        Some(LinuxDesktopEnvironment::Gnome) => gnome::config_change_hook(new_config),
+        Some(LinuxDesktopEnvironment::Kde) => kde::config_change_hook(new_config),
         Some(LinuxDesktopEnvironment::Unsupported {
             xdg_current_desktop: _,
         }) => {
