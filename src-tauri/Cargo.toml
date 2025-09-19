@@ -122,7 +122,8 @@ objc2-application-services = { version = "0.3.1", features = ["HIServices"] }
 objc2-core-graphics = { version = "=0.3.1", features = ["CGEvent"] }
 
 [target."cfg(target_os = \"linux\")".dependencies]
-gio = "0.20.12"
+gio = "0.21.2"
+glib = "0.21.2"
 tracker-rs = "0.6.1"
 which = "8.0.0"
 

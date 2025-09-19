@@ -10,7 +10,11 @@ use crate::{
     common::document::{Document, OnOpened},
     extension::built_in::file_search::config::SearchBy,
 };
+use camino::Utf8PathBuf;
 use gio::Cancellable;
+use gio::Settings;
+use gio::prelude::SettingsExtManual;
+use glib::GString;
 use tracker::{SparqlConnection, SparqlCursor, prelude::SparqlCursorExtManual};
 
 /// The service that we will connect to.
@@ -238,7 +242,34 @@ pub(crate) async fn hits(
     Ok(result_hits)
 }
 
-pub(crate) fn config_change_hook(_new_config: &FileSearchConfig) -> Result<(), String> {
+pub(crate) fn config_change_hook(new_config: &FileSearchConfig) -> Result<(), String> {
+    const TRACKER_SETTINGS_SCHEMA: &str = "org.freedesktop.Tracker3.Miner.Files";
+    const KEY_INDEX_RECURSIVE_DIRECTORIES: &str = "index-recursive-directories";
+    const KEY_INDEX_SINGLE_DIRECTORIES: &str = "index-single-directories";
+
+    let search_paths = &new_config.search_paths;
+
+    let settings = Settings::new(TRACKER_SETTINGS_SCHEMA);
+    let mut index_recursive_directories = settings.strv(KEY_INDEX_RECURSIVE_DIRECTORIES);
+    let mut index_single_directories = settings.strv(KEY_INDEX_RECURSIVE_DIRECTORIES);
+
+    'search_path: for search_path_str in search_paths {
+        let search_path = Utf8Path::new(search_path_str.as_str());
+
+        for path in index_recursive_directories.iter() {
+            let path_str = path.as_str();
+            let path = Utf8Path::new(path_str);
+
+            if search_path.starts_with(path) {
+                continue 'search_path;
+            }
+        }
+
+        index_recursive_directories.push(GString::from_utf8_checked(
+            search_path_str.as_bytes().to_vec(),
+        ));
+    }
+
     Ok(())
 }
 
