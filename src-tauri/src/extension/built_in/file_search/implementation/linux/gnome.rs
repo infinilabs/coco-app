@@ -265,9 +265,10 @@ pub(crate) fn config_change_hook(new_config: &FileSearchConfig) -> Result<(), St
             }
         }
 
-        index_recursive_directories.push(GString::from_utf8_checked(
-            search_path_str.as_bytes().to_vec(),
-        ));
+        index_recursive_directories.push(
+            GString::from_utf8_checked(search_path_str.as_bytes().to_vec())
+                .expect("search_path_str contains an interior NUL"),
+        );
     }
 
     Ok(())
