@@ -8,6 +8,9 @@ use crate::common::document::{DataSourceReference, Document};
 use crate::extension::LOCAL_QUERY_SOURCE_TYPE;
 use crate::extension::OnOpened;
 use crate::util::file::sync_get_file_icon;
+use camino::Utf8Path;
+use configparser::ini::Ini;
+use configparser::ini::WriteOptions;
 use futures::stream::Stream;
 use futures::stream::StreamExt;
 use std::os::fd::OwnedFd;
@@ -174,4 +177,132 @@ fn execute_baloosearch_query(
         .take(size);
 
     Ok((iter, child))
+}
+
+pub(crate) fn apply_config(config: &FileSearchConfig) -> Result<(), String> {
+    // Users can tweak Baloo via its configuration file, below are the fields that
+    // we need to modify:
+    //
+    // * Indexing-Enabled: turn indexing on or off
+    // * only basic indexing: If true, Baloo only indexes file names
+    // * folders: directories to index
+    // * exclude folders: directories to skip
+    //
+    // ```ini
+    // [Basic Settings]
+    // Indexing-Enabled=true
+    //
+    // [General]
+    // only basic indexing=true
+    // folders[$e]=$HOME/
+    // exclude folders[$e]=$HOME/FolderA/,$HOME/FolderB/
+    // ```
+
+    const SECTION_GENERAL: &str = "General";
+    const KEY_INCLUDE_FOLDERS: &str = "folders[$e]";
+    const KEY_EXCLUDE_FOLDERS: &str = "exclude folders[$e]";
+    const FOLDERS_SEPARATOR: &str = ",";
+
+    let rc_file_path = {
+        let mut home = dirs::home_dir()
+            .expect("cannot find the home directory, Coco should never run in such a environment");
+        home.push(".config/baloofilerc");
+        home
+    };
+
+    // Parse and load the rc file, it is in format INI
+    //
+    // Use `new_cs()`, the case-sensitive version of constructor as the config
+    // file contains uppercase letters, so it is case-sensitive.
+    let mut baloo_config = Ini::new_cs();
+    if rc_file_path.try_exists().map_err(|e| e.to_string())? {
+        let _ = baloo_config.load(rc_file_path.as_path())?;
+    }
+
+    // Ensure indexing is enabled
+    let _ = baloo_config.setstr("Basic Settings", "Indexing-Enabled", Some("true"));
+
+    // Let baloo index file content if we need that
+    if config.search_by == SearchBy::NameAndContents {
+        let _ = baloo_config.setstr(SECTION_GENERAL, "only basic indexing", Some("false"));
+    }
+
+    let mut include_folders = {
+        match baloo_config.get(SECTION_GENERAL, KEY_INCLUDE_FOLDERS) {
+            Some(str) => str
+                .split(FOLDERS_SEPARATOR)
+                .map(|str| str.to_string())
+                .collect::<Vec<String>>(),
+            None => Vec::new(),
+        }
+    };
+
+    let mut exclude_folders = {
+        match baloo_config.get(SECTION_GENERAL, KEY_EXCLUDE_FOLDERS) {
+            Some(str) => str
+                .split(FOLDERS_SEPARATOR)
+                .map(|str| str.to_string())
+                .collect::<Vec<String>>(),
+            None => Vec::new(),
+        }
+    };
+
+    fn ensure_path_included_include_folders(
+        include_folders: &mut Vec<String>,
+        search_path: &Utf8Path,
+    ) {
+        for include_folder in include_folders.iter() {
+            let include_folder = Utf8Path::new(include_folder.as_str());
+            if search_path.starts_with(include_folder) {
+                return;
+            }
+        }
+
+        include_folders.push(search_path.as_str().to_string());
+    }
+
+    fn ensure_path_and_descendants_not_excluded(
+        exclude_folders: &mut Vec<String>,
+        search_path: &Utf8Path,
+    ) {
+        let mut items_to_remove = Vec::new();
+        for (idx, exclude_folder) in exclude_folders.iter().enumerate() {
+            let exclude_folder = Utf8Path::new(exclude_folder);
+
+            if exclude_folder.starts_with(search_path) {
+                items_to_remove.push(idx);
+            }
+        }
+
+        for idx in items_to_remove.into_iter().rev() {
+            exclude_folders.remove(idx);
+        }
+    }
+
+    for search_path in config.search_paths.iter() {
+        let search_path = Utf8Path::new(search_path.as_str());
+
+        ensure_path_included_include_folders(&mut include_folders, search_path);
+        ensure_path_and_descendants_not_excluded(&mut exclude_folders, search_path);
+    }
+
+    let include_folders_str: String = include_folders.as_slice().join(FOLDERS_SEPARATOR);
+    let exclude_folders_str: String = exclude_folders.as_slice().join(FOLDERS_SEPARATOR);
+
+    let _ = baloo_config.set(
+        SECTION_GENERAL,
+        KEY_INCLUDE_FOLDERS,
+        Some(include_folders_str),
+    );
+    let _ = baloo_config.set(
+        SECTION_GENERAL,
+        KEY_EXCLUDE_FOLDERS,
+        Some(exclude_folders_str),
+    );
+
+    baloo_config
+        .pretty_write(rc_file_path.as_path(), &WriteOptions::new())
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
 }

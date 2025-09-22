@@ -165,3 +165,26 @@ fn execute_mdfind_query(
 
     Ok((iter, child))
 }
+
+pub(crate) fn apply_config(_: &FileSearchConfig) -> Result<(), String> {
+    // By default, macOS indexes all the files within a volume if indexing is
+    // enabled. So, to ensure our search paths are indexed by Spotlight,
+    // theoretically, we can do the following things:
+    //
+    // 1. Ensure indexing is enabled on the volumes where our search paths reside.
+    //    However, we cannot do this as doing so requires `sudo`.
+    //
+    // 2. Ensure the search paths are not excluded from indexing scope. Users can
+    //    stop Spotlight from indexing a directory by:
+    //    1. adding it to the "Privacy" list in 'System Settings'. Coco cannot
+    //       modify this list, since the only way to change it is manually
+    //       through System Settings.
+    //    2. Renaming directory name, adding a `.noindex` file extension to it.
+    //       I don't want to use this trick, users won't feel comfortable and it
+    //       could break at any time.
+    //    3. Creating a `.metadata_never_index` file within the directory (no longer works
+    //       since macOS Mojave)
+    //
+    // There is nothing we can do.
+    Ok(())
+}

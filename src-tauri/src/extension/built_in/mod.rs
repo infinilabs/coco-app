@@ -16,6 +16,8 @@ use crate::extension::{
     ExtensionBundleIdBorrowed, PLUGIN_JSON_FILE_NAME, alter_extension_json_file,
 };
 use anyhow::Context;
+use file_search::config::FileSearchConfig;
+use file_search::implementation::apply_config as file_search_apply_config;
 use std::path::{Path, PathBuf};
 use tauri::{AppHandle, Manager};
 
@@ -227,6 +229,8 @@ pub(super) async fn init_built_in_extension(
         search_source_registry
             .register_source(file_system_search)
             .await;
+        let file_search_config = FileSearchConfig::get(tauri_app_handle);
+        file_search_apply_config(&file_search_config)?;
         log::debug!("built-in extension [{}] initialized", extension.id);
     }
 
@@ -329,6 +333,8 @@ pub(crate) async fn enable_built_in_extension(
             bundle_id,
             update_extension,
         )?;
+        let file_search_config = FileSearchConfig::get(tauri_app_handle);
+        file_search_apply_config(&file_search_config)?;
         return Ok(());
     }
 
