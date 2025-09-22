@@ -15,6 +15,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = ["default"] }
+cfg-if = "1.0.1"
 
 [features]
 default = ["desktop"]
@@ -103,7 +104,6 @@ zip = "4.0.0"
 url = "2.5.2"
 camino = "1.1.10"
 tokio-stream = { version = "0.1.17", features = ["io-util"] }
-cfg-if = "1.0.1"
 sysinfo = "0.35.2"
 indexmap = { version = "2.10.0", features = ["serde"] }
 strum = { version = "0.27.2", features = ["derive"] }
@@ -111,6 +111,7 @@ sys-locale = "0.3.2"
 tauri-plugin-prevent-default = "1"
 oneshot = "0.1.11"
 bitflags = "2.9.3"
+cfg-if = "1.0.1"
 
 [target."cfg(target_os = \"macos\")".dependencies]
 tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }
@@ -121,9 +122,11 @@ objc2-application-services = { version = "0.3.1", features = ["HIServices"] }
 objc2-core-graphics = { version = "=0.3.1", features = ["CGEvent"] }
 
 [target."cfg(target_os = \"linux\")".dependencies]
-gio = "0.20.12"
-tracker-rs = "0.6.1"
+gio = "0.21.2"
+glib = "0.21.2"
+tracker-rs = "0.7"
 which = "8.0.0"
+configparser = "3.1.0"
 
 [target."cfg(any(target_os = \"macos\", windows, target_os = \"linux\"))".dependencies]
 tauri-plugin-single-instance = { version = "2.0.0", features = ["deep-link"] }
@@ -149,4 +152,8 @@ semver = { version = "1", features = ["serde"] }
 
 [target."cfg(target_os = \"windows\")".dependencies]
 enigo="0.3"
-windows = { version = "0.61.3", features = ["Win32_Foundation", "Win32_System_Com", "Win32_System_Ole", "Win32_System_Search", "Win32_UI_Shell_PropertiesSystem", "Win32_Data"] }
+windows = { version = "0.61", features = ["Win32_Foundation", "Win32_System_Com", "Win32_System_Ole", "Win32_System_Search", "Win32_UI_Shell_PropertiesSystem", "Win32_Data"] }
+windows-sys = { version = "0.61", features = ["Win32", "Win32_System", "Win32_System_Com"] }
+
+[target."cfg(target_os = \"windows\")".build-dependencies]
+bindgen = "0.72.1"

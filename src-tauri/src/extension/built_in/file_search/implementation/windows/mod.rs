@@ -3,6 +3,8 @@
 //! https://github.com/IRONAGE-Park/rag-sample/blob/3f0ad8c8012026cd3a7e453d08f041609426cb91/src/native/windows.rs
 //! is the starting point of this implementation.
 
+mod crawl_scope_manager;
+
 use super::super::EXTENSION_ID;
 use super::super::config::FileSearchConfig;
 use super::super::config::SearchBy;
@@ -10,6 +12,8 @@ use crate::common::document::{DataSourceReference, Document};
 use crate::extension::LOCAL_QUERY_SOURCE_TYPE;
 use crate::extension::OnOpened;
 use crate::util::file::sync_get_file_icon;
+use std::borrow::Borrow;
+use std::path::PathBuf;
 use windows::{
     Win32::System::{
         Com::{CLSCTX_INPROC_SERVER, CoCreateInstance},
@@ -466,6 +470,85 @@ pub(crate) async fn hits(
     }
 
     Ok(hits)
+}
+
+pub(crate) fn apply_config(config: &FileSearchConfig) -> Result<(), String> {
+    // To ensure Windows Search indexer index the paths we specified in the
+    // config, we will:
+    //
+    // 1. Add an inclusion rule for every search path to ensure indexer index
+    //    them
+    // 2. For the exclude paths, we exclude them from the crawl scope if they
+    //    were not included in the scope before we update the scope. Otherwise,
+    //    we cannot exclude them as doing that could potentially break other
+    //    apps (by removing the indexes they rely on).
+    //
+    // Windows APIs are pretty smart. They won't blindly add an inclusion rule if
+    // the path you are trying to include is already included. The same applies
+    // to exclusion rules as well. Since Windows APIs handle these checks for us,
+    // we don't need to worry about them.
+
+    use crawl_scope_manager::CrawlScopeManager;
+    use crawl_scope_manager::Rule;
+    use crawl_scope_manager::RuleMode;
+    use std::borrow::Cow;
+
+    /// Windows APIs need the path to contain a tailing '\'
+    fn add_tailing_backslash(path: &str) -> Cow<'_, str> {
+        if path.ends_with(r#"\"#) {
+            Cow::Borrowed(path)
+        } else {
+            let mut owned = path.to_string();
+            owned.push_str(r#"\"#);
+
+            Cow::Owned(owned)
+        }
+    }
+
+    let mut manager = CrawlScopeManager::new().map_err(|e| e.to_string())?;
+
+    let search_paths = &config.search_paths;
+    let exclude_paths = &config.exclude_paths;
+
+    // indexes to `exclude_paths` of the paths we need to exclude
+    let mut paths_to_exclude: Vec<usize> = Vec::new();
+    for (idx, exclude_path) in exclude_paths.into_iter().enumerate() {
+        let exclude_path = add_tailing_backslash(&exclude_path);
+        let exclude_path: &str = exclude_path.borrow();
+
+        if !manager
+            .is_path_included(exclude_path)
+            .map_err(|e| e.to_string())?
+        {
+            paths_to_exclude.push(idx);
+        }
+    }
+
+    for search_path in search_paths {
+        let inclusion_rule = Rule {
+            paths: PathBuf::from(add_tailing_backslash(&search_path).into_owned()),
+            mode: RuleMode::Inclusion,
+        };
+
+        manager
+            .add_rule(inclusion_rule)
+            .map_err(|e| e.to_string())?;
+    }
+
+    for idx in paths_to_exclude {
+        let exclusion_rule = Rule {
+            paths: PathBuf::from(add_tailing_backslash(&exclude_paths[idx]).into_owned()),
+            mode: RuleMode::Exclusion,
+        };
+
+        manager
+            .add_rule(exclusion_rule)
+            .map_err(|e| e.to_string())?;
+    }
+
+    manager.commit().map_err(|e| e.to_string())?;
+
+    Ok(())
 }
 
 // Skip these tests in our CI, they fail with the following error

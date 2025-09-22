@@ -36,7 +36,7 @@ Information about release notes of Coco App is provided here.
 - fix: resolve deeplink login issue #881
 - fix: use kill_on_drop() to avoid zombie proc in error case #887
 - fix: settings window rendering/loading issue 889
-
+- fix: ensure search paths are indexed #896
 
 ### ✈️ Improvements
 

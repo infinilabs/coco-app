@@ -10,7 +10,12 @@ use crate::{
     common::document::{Document, OnOpened},
     extension::built_in::file_search::config::SearchBy,
 };
+use camino::Utf8Path;
 use gio::Cancellable;
+use gio::Settings;
+use gio::prelude::SettingsExtManual;
+use glib::GString;
+use glib::collections::strv::StrV;
 use tracker::{SparqlConnection, SparqlCursor, prelude::SparqlCursorExtManual};
 
 /// The service that we will connect to.
@@ -236,6 +241,103 @@ pub(crate) async fn hits(
     }
 
     Ok(result_hits)
+}
+
+fn ensure_path_in_recursive_indexing_scope(list: &mut StrV, path: &str) {
+    for item in list.iter() {
+        let item_path = Utf8Path::new(item.as_str());
+        let path = Utf8Path::new(path);
+
+        // It is already covered or listed
+        if path.starts_with(item_path) {
+            return;
+        }
+    }
+    list.push(
+        GString::from_utf8_checked(path.as_bytes().to_vec())
+            .expect("search_path_str contains an interior NUL"),
+    );
+}
+
+fn ensure_path_and_descendants_not_in_single_indexing_scope(list: &mut StrV, path: &str) {
+    // Indexes to the items that should be removed
+    let mut item_to_remove = Vec::new();
+    for (idx, item) in list.iter().enumerate() {
+        let item_path = Utf8Path::new(item.as_str());
+        let path = Utf8Path::new(path);
+
+        if item_path.starts_with(path) {
+            item_to_remove.push(idx);
+        }
+    }
+
+    // Reverse the indexes so that the remove operation won't invalidate them.
+    for idx in item_to_remove.into_iter().rev() {
+        list.remove(idx);
+    }
+}
+
+pub(crate) fn apply_config(config: &FileSearchConfig) -> Result<(), String> {
+    // Tracker provides the following configuration entries to allow users to
+    // tweak the indexing scope:
+    //
+    // 1. ignored-directories: A list of names, directories with such names will be ignored.
+    //    ['po', 'CVS', 'core-dumps', 'lost+found']
+    // 2. ignored-directories-with-content: Avoid any directory containing a file blocklisted here
+    //    ['.trackerignore', '.git', '.hg', '.nomedia']
+    // 3. ignored-files: List of file patterns to avoid
+    //    ['*~', '*.o', '*.la', '*.lo', '*.loT', '*.in', '*.m4', '*.rej', ...]
+    // 4. index-recursive-directories: List of directories to index recursively
+    //    ['&DESKTOP', '&DOCUMENTS', '&MUSIC', '&PICTURES', '&VIDEOS']
+    // 5. index-single-directories: List of directories to index without inspecting subfolders,
+    //    ['$HOME', '&DOWNLOAD']
+    //
+    // The first 3 entries specify patterns, in order to use them, we have to walk
+    // through the whole directory tree listed in search paths, which is impractical.
+    // So we only use the last 2 entries.
+    //
+    //
+    // Just want to mention that setting search path to "/home" could break Tracker:
+    //
+    // ```text
+    // Unknown target graph for uri:'file:///home' and mime:'inode/directory'
+    // ```
+    //
+    // See the related bug reports:
+    //
+    // https://gitlab.gnome.org/GNOME/localsearch/-/issues/313
+    // https://bugs.launchpad.net/bugs/2077181
+    //
+    //
+    // There is nothing we can do.
+
+    const TRACKER_SETTINGS_SCHEMA: &str = "org.freedesktop.Tracker3.Miner.Files";
+    const KEY_INDEX_RECURSIVE_DIRECTORIES: &str = "index-recursive-directories";
+    const KEY_INDEX_SINGLE_DIRECTORIES: &str = "index-single-directories";
+
+    let search_paths = &config.search_paths;
+
+    let settings = Settings::new(TRACKER_SETTINGS_SCHEMA);
+    let mut recursive_list: StrV = settings.strv(KEY_INDEX_RECURSIVE_DIRECTORIES);
+    let mut single_list: StrV = settings.strv(KEY_INDEX_SINGLE_DIRECTORIES);
+
+    for search_path in search_paths {
+        // We want our search path to be included in the recursive directories or
+        // any directory within the list covers it.
+        ensure_path_in_recursive_indexing_scope(&mut recursive_list, search_path);
+        // We want our search path and its any descendants are not listed in
+        // the index directories list.
+        ensure_path_and_descendants_not_in_single_indexing_scope(&mut single_list, search_path);
+    }
+
+    settings
+        .set_strv(KEY_INDEX_RECURSIVE_DIRECTORIES, recursive_list)
+        .expect("key is not read-only");
+    settings
+        .set_strv(KEY_INDEX_SINGLE_DIRECTORIES, single_list)
+        .expect("key is not be read-only");
+
+    Ok(())
 }
 
 #[cfg(test)]
