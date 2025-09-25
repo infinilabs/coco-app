@@ -6,6 +6,7 @@ import { IStartupStore } from "@/stores/startupStore";
 import { AppTheme } from "@/types/index";
 import { SearchDocument } from "./search";
 import { IAppStore } from "@/stores/appStore";
+import { ExtensionPermission } from "@/components/Settings/Extensions";
 
 export interface EventPayloads {
   "theme-changed": string;
@@ -47,6 +48,7 @@ export interface EventPayloads {
   "check-update": any;
   oauth_success: any;
   extension_install_success: any;
+  "open_view_extension": [string, ExtensionPermission];
 }
 
 // Window operation interface

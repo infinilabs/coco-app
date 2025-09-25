@@ -1,12 +1,14 @@
-use crate::extension::PLUGIN_JSON_FILE_NAME;
 use crate::extension::third_party::check::general_check;
 use crate::extension::third_party::install::{
-    filter_out_incompatible_sub_extensions, is_extension_installed,
+    convert_page, filter_out_incompatible_sub_extensions, is_extension_installed,
 };
 use crate::extension::third_party::{
     THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE, get_third_party_extension_directory,
 };
-use crate::extension::{Extension, canonicalize_relative_icon_path};
+use crate::extension::{
+    Extension, canonicalize_relative_icon_path, canonicalize_relative_page_path,
+};
+use crate::extension::{ExtensionType, PLUGIN_JSON_FILE_NAME};
 use crate::util::platform::Platform;
 use serde_json::Value as Json;
 use std::path::Path;
@@ -219,8 +221,56 @@ pub(crate) async fn install_local_extension(
         .await
         .map_err(|e| e.to_string())?;
 
-    // Canonicalize relative icon paths
+    /*
+     * Call convert_page() to update the page files.  This has to be done after
+     * writing the extension files
+     */
+    let absolute_page_paths: Vec<PathBuf> = {
+        fn canonicalize_page_path(page_path: &Path, extension_root: &Path) -> PathBuf {
+            if page_path.is_relative() {
+                // It is relative to the extension root directory
+                extension_root.join(page_path)
+            } else {
+                page_path.into()
+            }
+        }
+
+        if extension.r#type == ExtensionType::View {
+            let page = extension
+                .page
+                .as_ref()
+                .expect("View extension should set its page field");
+            let path = canonicalize_page_path(Path::new(page.as_str()), &dest_dir);
+
+            vec![path]
+        } else if extension.r#type.contains_sub_items()
+            && let Some(ref views) = extension.views
+        {
+            let mut paths = Vec::with_capacity(views.len());
+
+            for view in views.iter() {
+                let page = view
+                    .page
+                    .as_ref()
+                    .expect("View extension should set its page field");
+                let path = canonicalize_page_path(Path::new(page.as_str()), &dest_dir);
+
+                paths.push(path);
+            }
+
+            paths
+        } else {
+            // No pages in this extension
+            Vec::new()
+        }
+    };
+    for page_path in absolute_page_paths {
+        convert_page(&page_path).await?;
+    }
+
+    // Canonicalize relative icon and page paths
     canonicalize_relative_icon_path(&dest_dir, &mut extension)?;
+    canonicalize_relative_page_path(&dest_dir, &mut extension)?;
 
     // Add extension to the search source
     third_party_ext_list_write_lock.push(extension);

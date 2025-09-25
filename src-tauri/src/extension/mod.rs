@@ -1,3 +1,4 @@
+pub(crate) mod api;
 pub(crate) mod built_in;
 pub(crate) mod third_party;
 
@@ -7,6 +8,7 @@ use crate::common::document::OnOpened;
 use crate::common::register::SearchSourceRegistry;
 use crate::util::platform::Platform;
 use anyhow::Context;
+use bitflags::bitflags;
 use borrowme::{Borrow, ToOwned};
 use derive_more::Display;
 use indexmap::IndexMap;
@@ -78,11 +80,14 @@ pub struct Extension {
     #[serde(skip_serializing_if = "Option::is_none")]
     quicklink: Option<Quicklink>,
 
-    // If this extension is of type Group or Extension, then it behaves like a
-    // directory, i.e., it could contain sub items.
+    /*
+     * If this extension is of type Group or Extension, then it behaves like a
+     * directory, i.e., it could contain sub items.
+     */
     commands: Option<Vec<Extension>>,
     scripts: Option<Vec<Extension>>,
     quicklinks: Option<Vec<Extension>>,
+    views: Option<Vec<Extension>>,
 
     /// The alias of the extension.
     ///
@@ -103,7 +108,19 @@ pub struct Extension {
     #[serde(skip_serializing_if = "Option::is_none")]
     settings: Option<ExtensionSettings>,
 
-    // We do not care about these fields, just take it regardless of what it is.
+    /// For View extensions, path to the HTML file/page that coco will load
+    /// and render. Otherwise, `None`.
+    page: Option<String>,
+
+    /// Permission that this extension requires.
+    permission: Option<ExtensionPermission>,
+
+    /*
+     * The following fields are currently useless to us but are needed by our
+     * extension store.
+     *
+     * Since we do not use them, just accept them regardless of what they are.
+     */
     screenshots: Option<Json>,
     url: Option<Json>,
     version: Option<Json>,
@@ -176,6 +193,7 @@ impl Extension {
     /// `None` if it cannot be opened.
     pub(crate) fn on_opened(&self) -> Option<OnOpened> {
         let settings = self.settings.clone();
+        let permission = self.permission.clone();
 
         match self.r#type {
             // This function, at the time of writing this comment, is primarily
@@ -213,7 +231,11 @@ impl Extension {
                   }),
               };
 
-                let extension_on_opened = ExtensionOnOpened { ty, settings };
+                let extension_on_opened = ExtensionOnOpened {
+                    ty,
+                    settings,
+                    permission,
+                };
 
                 Some(OnOpened::Extension(extension_on_opened))
             }
@@ -229,12 +251,31 @@ impl Extension {
                     open_with: quicklink.open_with,
                 };
 
-                let extension_on_opened = ExtensionOnOpened { ty, settings };
+                let extension_on_opened = ExtensionOnOpened {
+                    ty,
+                    settings,
+                    permission,
+                };
 
                 Some(OnOpened::Extension(extension_on_opened))
             }
             ExtensionType::Script => todo!("not supported yet"),
             ExtensionType::Setting => todo!("not supported yet"),
+            ExtensionType::View => {
+                let page = self.page.as_ref().unwrap_or_else(|| {
+                    panic!("View extension [{}]'s [page] field is not set, something wrong with your extension validity check", self.id);
+                }).clone();
+
+                let extension_on_opened_type = ExtensionOnOpenedType::View { page };
+                let extension_on_opened = ExtensionOnOpened {
+                    ty: extension_on_opened_type,
+                    settings,
+                    permission,
+                };
+                let on_opened = OnOpened::Extension(extension_on_opened);
+
+                Some(on_opened)
+            }
         }
     }
 
@@ -255,6 +296,11 @@ impl Extension {
         }
         if let Some(ref quicklinks) = self.quicklinks {
             if let Some(sub_ext) = quicklinks.iter().find(|link| link.id == sub_extension_id) {
+                return Some(sub_ext);
+            }
+        }
+        if let Some(ref views) = self.views {
+            if let Some(sub_ext) = views.iter().find(|view| view.id == sub_extension_id) {
                 return Some(sub_ext);
             }
         }
@@ -285,6 +331,11 @@ impl Extension {
                 .iter_mut()
                 .find(|link| link.id == sub_extension_id)
             {
+                return Some(sub_ext);
+            }
+        }
+        if let Some(ref mut views) = self.views {
+            if let Some(sub_ext) = views.iter_mut().find(|view| view.id == sub_extension_id) {
                 return Some(sub_ext);
             }
         }
@@ -497,6 +548,8 @@ pub enum ExtensionType {
     Calculator,
     #[display("AI Extension")]
     AiExtension,
+    #[display("View")]
+    View,
 }
 
 impl ExtensionType {
@@ -528,6 +581,9 @@ fn filter_out_extensions(
                 if let Some(ref mut quicklinks) = extension.quicklinks {
                     quicklinks.retain(|link| link.enabled);
                 }
+                if let Some(ref mut views) = extension.views {
+                    views.retain(|link| link.enabled);
+                }
             }
         }
     }
@@ -555,6 +611,9 @@ fn filter_out_extensions(
                 }
                 if let Some(ref mut quicklinks) = extension.quicklinks {
                     quicklinks.retain(|link| link.r#type == extension_type);
+                }
+                if let Some(ref mut views) = extension.views {
+                    views.retain(|link| link.r#type == extension_type);
                 }
             }
         }
@@ -605,6 +664,9 @@ fn filter_out_extensions(
                 }
                 if let Some(ref mut quicklinks) = extension.quicklinks {
                     quicklinks.retain(&match_closure);
+                }
+                if let Some(ref mut views) = extension.views {
+                    views.retain(&match_closure);
                 }
             }
         }
@@ -880,6 +942,55 @@ pub(crate) fn canonicalize_relative_icon_path(
         }
     }
 
+    if let Some(views) = &mut extension.views {
+        for view in views {
+            _canonicalize_relative_icon_path(extension_dir, view)?;
+        }
+    }
+
+    Ok(())
+}
+
+pub(crate) fn canonicalize_relative_page_path(
+    extension_dir: &Path,
+    extension: &mut Extension,
+) -> Result<(), String> {
+    fn _canonicalize_view_extension_page_path(
+        extension_dir: &Path,
+        extension: &mut Extension,
+    ) -> Result<(), String> {
+        let page = extension
+            .page
+            .as_ref()
+            .expect("this should be invoked on a View extension");
+        let page_path = Path::new(page);
+
+        if page_path.is_relative() {
+            let absolute_page_path = extension_dir.join(page_path);
+
+            if absolute_page_path.try_exists().map_err(|e| e.to_string())? {
+                extension.page = Some(
+                    absolute_page_path
+                        .into_os_string()
+                        .into_string()
+                        .expect("path should be UTF-8 encoded"),
+                );
+            }
+        }
+
+        Ok(())
+    }
+
+    if extension.r#type == ExtensionType::View {
+        _canonicalize_view_extension_page_path(extension_dir, extension)?;
+    } else if extension.r#type.contains_sub_items()
+        && let Some(ref mut views) = extension.views
+    {
+        for view in views {
+            _canonicalize_view_extension_page_path(extension_dir, view)?;
+        }
+    }
+
     Ok(())
 }
 
@@ -928,6 +1039,14 @@ fn alter_extension_json_file(
         if let Some(ref mut quicklinks) = root_extension.quicklinks {
             if let Some(link) = quicklinks.iter_mut().find(|lnk| lnk.id == sub_extension_id) {
                 how(link)?;
+                return Ok(());
+            }
+        }
+
+        // Search in views
+        if let Some(ref mut views) = root_extension.views {
+            if let Some(view) = views.iter_mut().find(|v| v.id == sub_extension_id) {
+                how(view)?;
                 return Ok(());
             }
         }
@@ -1109,6 +1228,73 @@ fn parse_dynamic_placeholder(content: &str) -> Result<QuicklinkLinkComponent, St
 pub(crate) struct ExtensionSettings {
     /// If set, Coco main window would hide before opening this document/e
     pub(crate) hide_before_open: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub(crate) struct ExtensionPermission {
+    fs: Option<Vec<ExtensionFileSystemPermission>>,
+    http: Option<Vec<ExtensionHttpPermission>>,
+    api: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub(crate) struct ExtensionFileSystemPermission {
+    pub(crate) path: String,
+    pub(crate) access: FileSystemAccess,
+}
+
+bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+    pub(crate) struct FileSystemAccess: u8 {
+        const READ = 0b00000001;
+        const WRITE = 0b00000010;
+    }
+}
+
+impl Serialize for FileSystemAccess {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut access_vec = Vec::new();
+        if self.contains(FileSystemAccess::READ) {
+            access_vec.push("read");
+        }
+        if self.contains(FileSystemAccess::WRITE) {
+            access_vec.push("write");
+        }
+        access_vec.serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for FileSystemAccess {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let access_vec: Vec<String> = Vec::deserialize(deserializer)?;
+        let mut access = FileSystemAccess::empty();
+
+        for access_type in access_vec {
+            match access_type.as_str() {
+                "read" => access |= FileSystemAccess::READ,
+                "write" => access |= FileSystemAccess::WRITE,
+                _ => {
+                    return Err(serde::de::Error::unknown_variant(
+                        access_type.as_str(),
+                        &["read", "write"],
+                    ));
+                }
+            }
+        }
+
+        Ok(access)
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub(crate) struct ExtensionHttpPermission {
+    pub(crate) host: String,
 }
 
 /// Calculates a similarity score between a query and a text, aiming for a [0, 1] range.
@@ -1718,5 +1904,143 @@ mod tests {
 
         // Verify that non-perfect matches are capped at 0.95
         assert!(calculate_text_similarity("almost", "almost perfect").unwrap() <= 0.95);
+    }
+
+    #[test]
+    fn test_filesystem_access_serialize_empty() {
+        let access = FileSystemAccess::empty();
+        let serialized = serde_json::to_string(&access).unwrap();
+        assert_eq!(serialized, "[]");
+    }
+
+    #[test]
+    fn test_filesystem_access_serialize_read_only() {
+        let access = FileSystemAccess::READ;
+        let serialized = serde_json::to_string(&access).unwrap();
+        assert_eq!(serialized, r#"["read"]"#);
+    }
+
+    #[test]
+    fn test_filesystem_access_serialize_write_only() {
+        let access = FileSystemAccess::WRITE;
+        let serialized = serde_json::to_string(&access).unwrap();
+        assert_eq!(serialized, r#"["write"]"#);
+    }
+
+    #[test]
+    fn test_filesystem_access_serialize_read_write() {
+        let access = FileSystemAccess::READ | FileSystemAccess::WRITE;
+        let serialized = serde_json::to_string(&access).unwrap();
+        // The order should be consistent based on our implementation (read first, then write)
+        assert_eq!(serialized, r#"["read","write"]"#);
+    }
+
+    #[test]
+    fn test_filesystem_access_deserialize_empty() {
+        let json = "[]";
+        let access: FileSystemAccess = serde_json::from_str(json).unwrap();
+        assert_eq!(access, FileSystemAccess::empty());
+        assert!(!access.contains(FileSystemAccess::READ));
+        assert!(!access.contains(FileSystemAccess::WRITE));
+    }
+
+    #[test]
+    fn test_filesystem_access_deserialize_read_only() {
+        let json = r#"["read"]"#;
+        let access: FileSystemAccess = serde_json::from_str(json).unwrap();
+        assert_eq!(access, FileSystemAccess::READ);
+        assert!(access.contains(FileSystemAccess::READ));
+        assert!(!access.contains(FileSystemAccess::WRITE));
+    }
+
+    #[test]
+    fn test_filesystem_access_deserialize_write_only() {
+        let json = r#"["write"]"#;
+        let access: FileSystemAccess = serde_json::from_str(json).unwrap();
+        assert_eq!(access, FileSystemAccess::WRITE);
+        assert!(!access.contains(FileSystemAccess::READ));
+        assert!(access.contains(FileSystemAccess::WRITE));
+    }
+
+    #[test]
+    fn test_filesystem_access_deserialize_read_write() {
+        let json = r#"["read", "write"]"#;
+        let access: FileSystemAccess = serde_json::from_str(json).unwrap();
+        assert_eq!(access, FileSystemAccess::READ | FileSystemAccess::WRITE);
+        assert!(access.contains(FileSystemAccess::READ));
+        assert!(access.contains(FileSystemAccess::WRITE));
+    }
+
+    #[test]
+    fn test_filesystem_access_deserialize_write_read_order() {
+        // Test that order doesn't matter during deserialization
+        let json = r#"["write", "read"]"#;
+        let access: FileSystemAccess = serde_json::from_str(json).unwrap();
+        assert_eq!(access, FileSystemAccess::READ | FileSystemAccess::WRITE);
+        assert!(access.contains(FileSystemAccess::READ));
+        assert!(access.contains(FileSystemAccess::WRITE));
+    }
+
+    #[test]
+    fn test_filesystem_access_deserialize_duplicate_values() {
+        // Test that duplicate values don't cause issues
+        let json = r#"["read", "read", "write"]"#;
+        let access: FileSystemAccess = serde_json::from_str(json).unwrap();
+        assert_eq!(access, FileSystemAccess::READ | FileSystemAccess::WRITE);
+        assert!(access.contains(FileSystemAccess::READ));
+        assert!(access.contains(FileSystemAccess::WRITE));
+    }
+
+    #[test]
+    fn test_filesystem_access_deserialize_invalid_value() {
+        let json = r#"["invalid"]"#;
+        let result: Result<FileSystemAccess, _> = serde_json::from_str(json);
+        assert!(result.is_err());
+
+        let error_msg = result.unwrap_err().to_string();
+        assert!(error_msg.contains("invalid"));
+        assert!(error_msg.contains("read") && error_msg.contains("write"));
+    }
+
+    #[test]
+    fn test_filesystem_access_deserialize_mixed_valid_invalid() {
+        let json = r#"["read", "invalid", "write"]"#;
+        let result: Result<FileSystemAccess, _> = serde_json::from_str(json);
+        assert!(result.is_err());
+
+        let error_msg = result.unwrap_err().to_string();
+        assert!(error_msg.contains("invalid"));
+    }
+
+    #[test]
+    fn test_filesystem_access_round_trip_empty() {
+        let original = FileSystemAccess::empty();
+        let serialized = serde_json::to_string(&original).unwrap();
+        let deserialized: FileSystemAccess = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(original, deserialized);
+    }
+
+    #[test]
+    fn test_filesystem_access_round_trip_read() {
+        let original = FileSystemAccess::READ;
+        let serialized = serde_json::to_string(&original).unwrap();
+        let deserialized: FileSystemAccess = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(original, deserialized);
+    }
+
+    #[test]
+    fn test_filesystem_access_round_trip_write() {
+        let original = FileSystemAccess::WRITE;
+        let serialized = serde_json::to_string(&original).unwrap();
+        let deserialized: FileSystemAccess = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(original, deserialized);
+    }
+
+    #[test]
+    fn test_filesystem_access_round_trip_read_write() {
+        let original = FileSystemAccess::READ | FileSystemAccess::WRITE;
+        let serialized = serde_json::to_string(&original).unwrap();
+        let deserialized: FileSystemAccess = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(original, deserialized);
     }
 }

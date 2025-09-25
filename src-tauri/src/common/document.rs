@@ -1,9 +1,9 @@
-use crate::extension::ExtensionSettings;
 #[cfg(target_os = "macos")]
 use crate::extension::built_in::window_management::actions::Action;
+use crate::extension::{ExtensionPermission, ExtensionSettings};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use tauri::AppHandle;
+use tauri::{AppHandle, Emitter};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RichLabel {
@@ -60,6 +60,11 @@ pub(crate) struct ExtensionOnOpened {
     ///
     /// Optional because not all extensions have their settings.
     pub(crate) settings: Option<ExtensionSettings>,
+    /// Permission needed by this extension.
+    ///
+    /// We do permission check when opening this permission. Currently, we only
+    /// do this to View extensions.
+    pub(crate) permission: Option<ExtensionPermission>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -78,6 +83,12 @@ pub(crate) enum ExtensionOnOpenedType {
     Quicklink {
         link: crate::extension::QuicklinkLink,
         open_with: Option<String>,
+    },
+    View {
+        /// Path to the HTML file that coco will load and render.
+        ///
+        /// It should be an absolute path or Tauri cannot open it.
+        page: String,
     },
 }
 
@@ -107,6 +118,10 @@ impl OnOpened {
                     // The URL of a quicklink is nearly useless without such dynamic user
                     // inputs, so until we have dynamic URL support, we just use "N/A".
                     ExtensionOnOpenedType::Quicklink { .. } => String::from("N/A"),
+                    ExtensionOnOpenedType::View { page: _ } => {
+                        // We currently don't have URL for this kind of extension.
+                        String::from("N/A")
+                    }
                 }
             }
         }
@@ -151,6 +166,7 @@ pub(crate) async fn open(
                     }
                 }
             }
+            let permission = ext_on_opened.permission;
 
             match ext_on_opened.ty {
                 ExtensionOnOpenedType::Command { action } => {
@@ -214,6 +230,24 @@ pub(crate) async fn open(
                             homemade_tauri_shell_open(tauri_app_handle.clone(), url).await?
                         }
                     }
+                }
+                ExtensionOnOpenedType::View { page } => {
+                    /*
+                     * Emit an event to let the frontend code open this extension.
+                     *
+                     * Payload `page_and_permission` contains the information needed
+                     * to do that.
+                     *
+                     * See "src/pages/main/index.tsx" for more info.
+                     */
+                    use serde_json::Value as Json;
+                    use serde_json::to_value;
+
+                    let page_and_permission: [Json; 2] =
+                        [Json::String(page), to_value(permission).unwrap()];
+                    tauri_app_handle
+                        .emit("open_view_extension", page_and_permission)
+                        .unwrap();
                 }
             }
         }

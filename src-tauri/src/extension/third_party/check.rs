@@ -47,7 +47,11 @@ pub(crate) fn general_check(extension: &Extension) -> Result<(), String> {
         Some(ref v) => v.as_slice(),
         None => &[],
     };
-    let sub_extensions = [commands, scripts, quicklinks].concat();
+    let views = match extension.views {
+        Some(ref v) => v.as_slice(),
+        None => &[],
+    };
+    let sub_extensions = [commands, scripts, quicklinks, views].concat();
     let mut sub_extension_ids = HashSet::new();
 
     for sub_extension in sub_extensions.iter() {
@@ -93,7 +97,10 @@ fn check_main_extension_only(extension: &Extension) -> Result<(), String> {
         }
     }
 
-    if extension.commands.is_some() || extension.scripts.is_some() || extension.quicklinks.is_some()
+    if extension.commands.is_some()
+        || extension.scripts.is_some()
+        || extension.quicklinks.is_some()
+        || extension.views.is_some()
     {
         if extension.r#type != ExtensionType::Group && extension.r#type != ExtensionType::Extension
         {
@@ -134,9 +141,10 @@ fn check_sub_extension_only(
     if sub_extension.commands.is_some()
         || sub_extension.scripts.is_some()
         || sub_extension.quicklinks.is_some()
+        || sub_extension.views.is_some()
     {
         return Err(format!(
-            "invalid sub-extension [{}-{}]: fields [commands/scripts/quicklinks] should not be set in sub-extensions",
+            "invalid sub-extension [{}-{}]: fields [commands/scripts/quicklinks/views] should not be set in sub-extensions",
             extension_id, sub_extension.id
         ));
     }
@@ -208,6 +216,21 @@ fn check_main_extension_or_sub_extension(
         ));
     }
 
+    // If field `page` is Some, then it should be a View
+    if extension.page.is_some() && extension.r#type != ExtensionType::View {
+        return Err(format!(
+            "invalid {}, field [page] is set for a non-View extension",
+            identifier
+        ));
+    }
+
+    if extension.r#type == ExtensionType::View && extension.page.is_none() {
+        return Err(format!(
+            "invalid {}, field [page] should be set for a View extension",
+            identifier
+        ));
+    }
+
     Ok(())
 }
 
@@ -220,6 +243,12 @@ mod tests {
 
     /// Helper function to create a basic valid extension
     fn create_basic_extension(id: &str, extension_type: ExtensionType) -> Extension {
+        let page = if extension_type == ExtensionType::View {
+            Some("index.html".into())
+        } else {
+            None
+        };
+
         Extension {
             id: id.to_string(),
             name: "Test Extension".to_string(),
@@ -233,9 +262,12 @@ mod tests {
             commands: None,
             scripts: None,
             quicklinks: None,
+            views: None,
             alias: None,
             hotkey: None,
             enabled: true,
+            page,
+            permission: None,
             settings: None,
             screenshots: None,
             url: None,
@@ -401,6 +433,36 @@ mod tests {
                 .contains("field [quicklink] is set for a non-Quicklink extension")
         );
     }
+
+    #[test]
+    fn test_view_must_have_page_field() {
+        let mut extension = create_basic_extension("test-view", ExtensionType::View);
+        // create_basic_extension() will set its page field if type is View, clear it
+        extension.page = None;
+
+        let result = general_check(&extension);
+        assert!(result.is_err());
+        assert!(
+            result
+                .unwrap_err()
+                .contains("field [page] should be set for a View extension")
+        );
+    }
+
+    #[test]
+    fn test_non_view_cannot_have_page_field() {
+        let mut extension = create_basic_extension("test-cmd", ExtensionType::Command);
+        extension.action = Some(create_command_action());
+        extension.page = Some("index.html".into());
+
+        let result = general_check(&extension);
+        assert!(result.is_err());
+        assert!(
+            result
+                .unwrap_err()
+                .contains("field [page] is set for a non-View extension")
+        );
+    }
     /* test check_main_extension_or_sub_extension */
 
     /* Test check_sub_extension_only */
@@ -466,11 +528,9 @@ mod tests {
 
         let result = general_check(&extension);
         assert!(result.is_err());
-        assert!(
-            result.unwrap_err().contains(
-                "fields [commands/scripts/quicklinks] should not be set in sub-extensions"
-            )
-        );
+        assert!(result.unwrap_err().contains(
+            "fields [commands/scripts/quicklinks/views] should not be set in sub-extensions"
+        ));
     }
     /* Test check_sub_extension_only */
 

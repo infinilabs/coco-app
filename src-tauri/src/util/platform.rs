@@ -54,7 +54,6 @@ impl Platform {
     }
 
     /// Returns a set that contains all the platforms.
-    #[cfg(test)] // currently, only used in tests
     pub(crate) fn all() -> std::collections::HashSet<Self> {
         Platform::VARIANTS.into_iter().copied().collect()
     }

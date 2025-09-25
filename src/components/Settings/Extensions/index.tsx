@@ -45,6 +45,23 @@ interface ExtensionQuicklink {
   link: string;
 }
 
+export type FileSystemAccess = ("read" | "write")[];
+
+export interface ExtensionFileSystemPermission {
+  path: string;
+  access: FileSystemAccess;
+}
+
+export interface ExtensionHttpPermission {
+  host: string;
+}
+
+export interface ExtensionPermission {
+  fs: ExtensionFileSystemPermission[] | null;
+  http: ExtensionHttpPermission[] | null;
+  api: string[] | null;
+}
+
 export interface Extension {
   id: ExtensionId;
   type: ExtensionType;
@@ -60,8 +77,11 @@ export interface Extension {
   commands?: Extension[];
   scripts?: Extension[];
   quicklinks?: Extension[];
+  views?: Extension[];
   settings: Record<string, unknown>;
   developer?: string;
+  page?: string;
+  permission?: ExtensionPermission;
 }
 
 type Category = LiteralUnion<

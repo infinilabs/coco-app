@@ -25,6 +25,7 @@ Information about release notes of Coco App is provided here.
 - feat: file search for Linux/GNOME #884
 - feat: file search for Linux/KDE #886
 - feat: extension Window Management for macOS #892
+- feat: new extension type View #894
 
 
 ### 🐛 Bug fix

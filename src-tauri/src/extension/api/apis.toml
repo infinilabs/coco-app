@@ -1,0 +1,5 @@
+# Complete Coco extension API list grouped by its category.
+
+fs = [
+  "read_dir"
+]
