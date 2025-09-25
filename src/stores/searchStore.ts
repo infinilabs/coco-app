@@ -1,4 +1,5 @@
 import { SearchExtensionItem } from "@/components/Search/ExtensionStore";
+import { ExtensionPermission } from "@/components/Settings/Extensions";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -41,6 +42,13 @@ export type ISearchStore = {
   setUninstallingExtensions: (uninstallingExtensions: string[]) => void;
   visibleExtensionDetail: boolean;
   setVisibleExtensionDetail: (visibleExtensionDetail: boolean) => void;
+
+  // When we open a View extension, we set this to a non-null value.
+  //
+  // The first array element is the path to the page that we should load, the 
+  // second element is the permission that this extension requires.
+  viewExtensionOpened: [string, ExtensionPermission | null] | null;
+  setViewExtensionOpened: (showViewExtension: [string, ExtensionPermission | null] | null) => void;
 };
 
 export const useSearchStore = create<ISearchStore>()(
@@ -105,6 +113,10 @@ export const useSearchStore = create<ISearchStore>()(
       visibleExtensionDetail: false,
       setVisibleExtensionDetail: (visibleExtensionDetail) => {
         return set({ visibleExtensionDetail });
+      },
+      viewExtensionOpened: null,
+      setViewExtensionOpened: (viewExtensionOpened) => {
+        return set({ viewExtensionOpened });
       },
     }),
     {
