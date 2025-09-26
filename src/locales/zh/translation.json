@@ -379,7 +379,8 @@
       "details": "详情",
       "install": "安装",
       "uninstall": "卸载",
-      "configureExtension": "配置扩展"
+      "configureExtension": "配置扩展",
+      "openContainingFolder": "打开所在文件夹"
     },
     "askCocoAi": {
       "title": "{{0}}{{1}}",

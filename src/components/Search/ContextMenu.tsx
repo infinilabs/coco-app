@@ -111,7 +111,7 @@ const ContextMenu = ({ formatUrl }: ContextMenuProps) => {
       return [];
     }
 
-    const { id, url, category, type, payload } = selectedSearchContent;
+    const { id, url, category, type, payload, source } = selectedSearchContent;
     const { query, result } = payload ?? {};
 
     if (category === "AI Overview") {
@@ -175,6 +175,18 @@ const ContextMenu = ({ formatUrl }: ContextMenuProps) => {
         hide: category !== "Calculator",
         clickEvent() {
           copyToClipboard(`${query.value} = ${result.value}`);
+        },
+      },
+      {
+        name: t("search.contextMenu.openContainingFolder"),
+        icon: <SquareArrowOutUpRight />,
+        keys: isMac ? ["⌘", "↩︎"] : ["Ctrl", "Enter"],
+        shortcut: isMac ? "meta.enter" : "ctrl.enter",
+        hide: source?.id !== "File Search",
+        clickEvent: async () => {
+          await platformAdapter.revealItemInDir(url);
+
+          platformAdapter.hideWindow();
         },
       },
     ];
