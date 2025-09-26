@@ -10,6 +10,7 @@ Information about release notes of Coco App is provided here.
 ## Latest (In development)
 
 ### ❌ Breaking changes
+
 - chore: update request accesstoken api #866
 
 ### 🚀 Features
@@ -26,7 +27,7 @@ Information about release notes of Coco App is provided here.
 - feat: file search for Linux/KDE #886
 - feat: extension Window Management for macOS #892
 - feat: new extension type View #894
-
+- feat: support opening file in its containing folder #900
 
 ### 🐛 Bug fix
 

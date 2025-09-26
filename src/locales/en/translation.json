@@ -379,7 +379,8 @@
       "details": "Details",
       "install": "Install",
       "uninstall": "Uninstall",
-      "configureExtension": "Configure Extension"
+      "configureExtension": "Configure Extension",
+      "openFileLocation": "Open File Location"
     },
     "askCocoAi": {
       "title": "{{0}} {{1}}",
