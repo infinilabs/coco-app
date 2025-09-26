@@ -43,16 +43,17 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
 
   const { fixedWindow, modifierKey } = useShortcutsStore();
 
-  const setWindowAlwaysOnTop = useCallback(async (isPinned: boolean) => {
-    setIsPinnedWeb?.(isPinned);
-    return platformAdapter.setAlwaysOnTop(isPinned);
-  }, []);
-
   const togglePin = async () => {
     try {
-      const newPinned = !isPinned;
-      await setWindowAlwaysOnTop(newPinned);
-      setIsPinned(newPinned);
+      const { isTauri, isPinned } = useAppStore.getState();
+
+      const nextPinned = !isPinned;
+
+      if (!isTauri) {
+        setIsPinnedWeb?.(nextPinned);
+      }
+
+      setIsPinned(nextPinned);
     } catch (err) {
       console.error("Failed to toggle window pin state:", err);
       setIsPinned(isPinned);
