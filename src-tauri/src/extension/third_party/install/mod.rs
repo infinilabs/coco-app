@@ -158,67 +158,72 @@ fn convert_file_src(path: &Path) -> Result<String, String> {
 ///
 /// 1. `<script type="xxx" crossorigin src="<PATH>"></script>`
 /// 2. `<a href="<PATH>">xxx</a>`
+/// 3. `<link rel="xxx" href="<PATH>"/>`
+/// 4. `<img class="xxx" src="<PATH>" alt="xxx"/>`
 fn _convert_page(page_content: &str, absolute_page_path: &Path) -> Result<String, String> {
     use scraper::{Html, Selector};
+
+    /// Helper function.
+    ///
+    /// Search `document` for the tag attributes specified by `tag_with_attribute`
+    /// and `tag_attribute`, call `convert_file_src()`, then update the attribute
+    /// value with the function return value.
+    fn modify_tag_attributes(
+        document: &Html,
+        modified_html: &mut String,
+        base_dir: &Path,
+        tag_with_attribute: &str,
+        tag_attribute: &str,
+    ) -> Result<(), String> {
+        let script_selector = Selector::parse(tag_with_attribute).unwrap();
+        for element in document.select(&script_selector) {
+            if let Some(src) = element.value().attr(tag_attribute) {
+                if !src.starts_with("http://")
+                    && !src.starts_with("https://")
+                    && !src.starts_with("asset://")
+                    && !src.starts_with("http://asset.localhost/")
+                {
+                    // It could be a path like "/assets/index-41be3ec9.js", but it
+                    // is still a relative path. We need to remove the starting /
+                    // or path.join() will think it is an absolute path and does nothing
+                    let corrected_src = if src.starts_with('/') { &src[1..] } else { src };
+
+                    let full_path = base_dir.join(corrected_src);
+
+                    let converted_path = convert_file_src(full_path.as_path())?;
+                    *modified_html = modified_html.replace(
+                        &format!("{}=\"{}\"", tag_attribute, src),
+                        &format!("{}=\"{}\"", tag_attribute, converted_path),
+                    );
+                }
+            }
+        }
+
+        Ok(())
+    }
 
     let base_dir = absolute_page_path
         .parent()
         .ok_or_else(|| format!("page path is invalid, it should have a parent path"))?;
+    let document: Html = Html::parse_document(page_content);
+    let mut modified_html: String = page_content.to_string();
 
-    // Parse the HTML
-    let document = Html::parse_document(page_content);
-    let mut modified_html = page_content.to_string();
-
-    // Process script tags with src attributes
-    let script_selector = Selector::parse("script[src]").unwrap();
-    for element in document.select(&script_selector) {
-        if let Some(src) = element.value().attr("src") {
-            if !src.starts_with("http://")
-                && !src.starts_with("https://")
-                && !src.starts_with("asset://")
-                && !src.starts_with("http://asset.localhost/")
-            {
-                // It could be a path like "/assets/index-41be3ec9.js", but it
-                // is still a relative path. We need to remove the starting /
-                // or path.join() will think it is an absolute path and does nothing
-                let corrected_src = if src.starts_with('/') { &src[1..] } else { src };
-
-                let full_path = base_dir.join(corrected_src);
-
-                let converted_path = convert_file_src(full_path.as_path())?;
-                modified_html = modified_html.replace(
-                    &format!("src=\"{}\"", src),
-                    &format!("src=\"{}\"", converted_path),
-                );
-            }
-        }
-    }
-
-    // Process a tags with href attributes
-    let a_selector = Selector::parse("a[href]").unwrap();
-    for element in document.select(&a_selector) {
-        if let Some(href) = element.value().attr("href") {
-            if !href.starts_with("http://")
-                && !href.starts_with("https://")
-                && !href.starts_with("asset://")
-                && !href.starts_with("http://asset.localhost/")
-            {
-                let corrected_href = if href.starts_with('/') {
-                    &href[1..]
-                } else {
-                    href
-                };
-
-                let full_path = base_dir.join(corrected_href);
-
-                let converted_path = convert_file_src(full_path.as_path())?;
-                modified_html = modified_html.replace(
-                    &format!("href=\"{}\"", href),
-                    &format!("href=\"{}\"", converted_path),
-                );
-            }
-        }
-    }
+    modify_tag_attributes(
+        &document,
+        &mut modified_html,
+        base_dir,
+        "script[src]",
+        "src",
+    )?;
+    modify_tag_attributes(&document, &mut modified_html, base_dir, "a[href]", "href")?;
+    modify_tag_attributes(
+        &document,
+        &mut modified_html,
+        base_dir,
+        "link[href]",
+        "href",
+    )?;
+    modify_tag_attributes(&document, &mut modified_html, base_dir, "img[src]", "src")?;
 
     Ok(modified_html)
 }
@@ -506,6 +511,100 @@ mod tests {
 
         let path = convert_file_src(&js_file).unwrap();
         let expected = format!("<html><body><a href=\"{}\">foo</a></body></html>", path);
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_convert_page_link_href_tag() {
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let html_file = temp_dir.path().join("test.html");
+        let css_file = temp_dir.path().join("main.css");
+
+        let html_content = r#"<html><body><link rel="stylesheet" href="main.css"/></body></html>"#;
+        std::fs::write(&html_file, html_content).unwrap();
+        std::fs::write(&css_file, "").unwrap();
+
+        let result = _convert_page(html_content, &html_file).unwrap();
+
+        let path = convert_file_src(&css_file).unwrap();
+        let expected = format!(
+            "<html><body><link rel=\"stylesheet\" href=\"{}\"/></body></html>",
+            path
+        );
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_convert_page_link_href_tag_with_a_root_tag() {
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let html_file = temp_dir.path().join("test.html");
+        let css_file = temp_dir.path().join("main.css");
+
+        let html_content = r#"<html><body><link rel="stylesheet" href="/main.css"/></body></html>"#;
+        std::fs::write(&html_file, html_content).unwrap();
+        std::fs::write(&css_file, "").unwrap();
+
+        let result = _convert_page(html_content, &html_file).unwrap();
+
+        let path = convert_file_src(&css_file).unwrap();
+        let expected = format!(
+            "<html><body><link rel=\"stylesheet\" href=\"{}\"/></body></html>",
+            path
+        );
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_convert_page_img_src_tag() {
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let html_file = temp_dir.path().join("test.html");
+        let png_file = temp_dir.path().join("main.png");
+
+        let html_content =
+            r#"<html><body> <img class="fit-picture" src="main.png" alt="xxx" /></body></html>"#;
+        std::fs::write(&html_file, html_content).unwrap();
+        std::fs::write(&png_file, "").unwrap();
+
+        let result = _convert_page(html_content, &html_file).unwrap();
+
+        let path = convert_file_src(&png_file).unwrap();
+        let expected = format!(
+            "<html><body> <img class=\"fit-picture\" src=\"{}\" alt=\"xxx\" /></body></html>",
+            path
+        );
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_convert_page_img_src_tag_with_a_root_tag() {
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let html_file = temp_dir.path().join("test.html");
+        let png_file = temp_dir.path().join("main.png");
+
+        let html_content =
+            r#"<html><body> <img class="fit-picture" src="/main.png" alt="xxx" /></body></html>"#;
+        std::fs::write(&html_file, html_content).unwrap();
+        std::fs::write(&png_file, "").unwrap();
+
+        let result = _convert_page(html_content, &html_file).unwrap();
+
+        let path = convert_file_src(&png_file).unwrap();
+        let expected = format!(
+            "<html><body> <img class=\"fit-picture\" src=\"{}\" alt=\"xxx\" /></body></html>",
+            path
+        );
 
         assert_eq!(result, expected);
     }

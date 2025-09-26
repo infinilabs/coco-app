@@ -56,6 +56,7 @@ Information about release notes of Coco App is provided here.
 - refactor: relax the file search conditions on macOS #883
 - refactor: ensure Coco won't take focus #891
 - chore: skip login check for web widget #895
+- chore: convertFileSrc() "link[href]" and "img[src]" #901
 
 ## 0.7.1 (2025-07-27)
 
