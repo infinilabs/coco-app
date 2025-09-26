@@ -249,7 +249,6 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     async revealItemInDir(path) {
       const { revealItemInDir } = await import("@tauri-apps/plugin-opener");
 
-
       revealItemInDir(path);
     },
 
