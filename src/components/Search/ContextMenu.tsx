@@ -178,7 +178,7 @@ const ContextMenu = ({ formatUrl }: ContextMenuProps) => {
         },
       },
       {
-        name: t("search.contextMenu.openContainingFolder"),
+        name: t("search.contextMenu.openFileLocation"),
         icon: <SquareArrowOutUpRight />,
         keys: isMac ? ["⌘", "↩︎"] : ["Ctrl", "Enter"],
         shortcut: isMac ? "meta.enter" : "ctrl.enter",

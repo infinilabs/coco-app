@@ -380,7 +380,7 @@
       "install": "Install",
       "uninstall": "Uninstall",
       "configureExtension": "Configure Extension",
-      "openContainingFolder": "Open Containing Folder"
+      "openFileLocation": "Open File Location"
     },
     "askCocoAi": {
       "title": "{{0}} {{1}}",
