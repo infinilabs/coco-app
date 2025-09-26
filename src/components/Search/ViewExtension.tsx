@@ -192,7 +192,6 @@ const ViewExtension: React.FC = () => {
       <div className="flex-1">
         <iframe
           src={pagePath}
-          title="iframe Example 1"
           className="w-full h-full border-0"
         >
         </iframe>
