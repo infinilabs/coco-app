@@ -16,399 +16,399 @@
       "id": "TopHalf",
       "name": "Top Half",
       "description": "Move the focused window to fill left half of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-TopHalf",
       "type": "command"
     },
     {
       "id": "BottomHalf",
       "name": "Bottom Half",
       "description": "Move the focused window to fill bottom half of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-BottomHalf",
       "type": "command"
     },
     {
       "id": "LeftHalf",
       "name": "Left Half",
       "description": "Move the focused window to fill left half of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-LeftHalf",
       "type": "command"
     },
     {
       "id": "RightHalf",
       "name": "Right Half",
       "description": "Move the focused window to fill right half of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-RightHalf",
       "type": "command"
     },
     {
       "id": "CenterHalf",
       "name": "Center Half",
       "description": "Move the focused window to fill center half of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-CenterHalf",
       "type": "command"
     },
     {
       "id": "Maximize",
       "name": "Maximize",
       "description": "Maximize the focused window to fit the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_Maximize",
       "type": "command"
     },
     {
       "id": "TopLeftQuarter",
       "name": "Top Left Quarter",
       "description": "Resize the focused window to the top left quarter of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-TopLeftQuarter",
       "type": "command"
     },
     {
       "id": "TopRightQuarter",
       "name": "Top Right Quarter",
       "description": "Resize the focused window to the top right quarter of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-TopRightQuarter",
       "type": "command"
     },
     {
       "id": "BottomLeftQuarter",
       "name": "Bottom Left Quarter",
       "description": "Resize the focused window to the bottom left quarter of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-BottomLeftQuarter",
       "type": "command"
     },
     {
       "id": "BottomRightQuarter",
       "name": "Bottom Right Quarter",
       "description": "Resize the focused window to the bottom right quarter of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-BottomRightQuarter",
       "type": "command"
     },
     {
       "id": "TopLeftSixth",
       "name": "Top Left Sixth",
       "description": "Resize the focused window to the top left sixth of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-TopLeftSixth",
       "type": "command"
     },
     {
       "id": "TopCenterSixth",
       "name": "Top Center Sixth",
       "description": "Resize the focused window to the top center sixth of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-TopCenterSixth",
       "type": "command"
     },
     {
       "id": "TopRightSixth",
       "name": "Top Right Sixth",
       "description": "Resize the focused window to the top right sixth of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-TopRightSixth",
       "type": "command"
     },
     {
       "id": "BottomLeftSixth",
       "name": "Bottom Left Sixth",
       "description": "Resize the focused window to the bottom left sixth of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-BottomLeftSixth",
       "type": "command"
     },
     {
       "id": "BottomCenterSixth",
       "name": "Bottom Center Sixth",
       "description": "Resize the focused window to the bottom center sixth of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-BottomCenterSixth",
       "type": "command"
     },
     {
       "id": "BottomRightSixth",
       "name": "Bottom Right Sixth",
       "description": "Resize the focused window to the bottom right sixth of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-BottomRightSixth",
       "type": "command"
     },
     {
       "id": "TopThird",
       "name": "Top Third",
       "description": "Resize the focused window to the top third of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-TopThirdFourth",
       "type": "command"
     },
     {
       "id": "MiddleThird",
       "name": "Middle Third",
       "description": "Resize the focused window to the middle third of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-MiddleThird",
       "type": "command"
     },
     {
       "id": "BottomThird",
       "name": "Bottom Third",
       "description": "Resize the focused window to the bottom third of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-BottomThird",
       "type": "command"
     },
     {
       "id": "Center",
       "name": "Center",
       "description": "Center the focused window in the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_Center",
       "type": "command"
     },
     {
       "id": "FirstFourth",
       "name": "First Fourth",
       "description": "Resize the focused window to the first fourth of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-FirstFourth",
       "type": "command"
     },
     {
       "id": "SecondFourth",
       "name": "Second Fourth",
       "description": "Resize the focused window to the second fourth of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-SecondFourth",
       "type": "command"
     },
     {
       "id": "ThirdFourth",
       "name": "Third Fourth",
       "description": "Resize the focused window to the third fourth of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-ThirdFourth",
       "type": "command"
     },
     {
       "id": "LastFourth",
       "name": "Last Fourth",
       "description": "Resize the focused window to the last fourth of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-LastFourth",
       "type": "command"
     },
     {
       "id": "FirstThird",
       "name": "First Third",
       "description": "Resize the focused window to the first third of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-FirstThird",
       "type": "command"
     },
     {
       "id": "CenterThird",
       "name": "Center Third",
       "description": "Resize the focused window to the center third of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-CenterThird",
       "type": "command"
     },
     {
       "id": "LastThird",
       "name": "Last Third",
       "description": "Resize the focused window to the last third of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-LastThird",
       "type": "command"
     },
     {
       "id": "FirstTwoThirds",
       "name": "First Two Thirds",
       "description": "Resize the focused window to the first two thirds of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-FirstTwoThirds",
       "type": "command"
     },
     {
       "id": "CenterTwoThirds",
       "name": "Center Two Thirds",
       "description": "Resize the focused window to the center two thirds of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-CenterTwoThirds",
       "type": "command"
     },
     {
       "id": "LastTwoThirds",
       "name": "Last Two Thirds",
       "description": "Resize the focused window to the last two thirds of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-LastTwoThirds",
       "type": "command"
     },
     {
       "id": "FirstThreeFourths",
       "name": "First Three Fourths",
       "description": "Resize the focused window to the first three fourths of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-FirstThreeFourths",
       "type": "command"
     },
     {
       "id": "CenterThreeFourths",
       "name": "Center Three Fourths",
       "description": "Resize the focused window to the center three fourths of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-CenterThreeFourths",
       "type": "command"
     },
     {
       "id": "LastThreeFourths",
       "name": "Last Three Fourths",
       "description": "Resize the focused window to the last three fourths of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-LastThreeFourths",
       "type": "command"
     },
     {
       "id": "TopThreeFourths",
       "name": "Top Three Fourths",
       "description": "Resize the focused window to the top three fourths of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-TopThreeFourths",
       "type": "command"
     },
     {
       "id": "BottomThreeFourths",
       "name": "Bottom Three Fourths",
       "description": "Resize the focused window to the bottom three fourths of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-BottomThreeFourths",
       "type": "command"
     },
     {
       "id": "TopTwoThirds",
       "name": "Top Two Thirds",
       "description": "Resize the focused window to the top two thirds of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-TopTwoThirds",
       "type": "command"
     },
     {
       "id": "BottomTwoThirds",
       "name": "Bottom Two Thirds",
       "description": "Resize the focused window to the bottom two thirds of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-BottomTwoThirds",
       "type": "command"
     },
     {
       "id": "TopCenterTwoThirds",
       "name": "Top Center Two Thirds",
       "description": "Resize the focused window to the top center two thirds of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-TopCenterTwoThirds",
       "type": "command"
     },
     {
       "id": "TopFirstFourth",
       "name": "Top First Fourth",
       "description": "Resize the focused window to the top first fourth of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-TopFirstFourth",
       "type": "command"
     },
     {
       "id": "TopSecondFourth",
       "name": "Top Second Fourth",
       "description": "Resize the focused window to the top second fourth of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-TopSecondFourth",
       "type": "command"
     },
     {
       "id": "TopThirdFourth",
       "name": "Top Third Fourth",
       "description": "Resize the focused window to the top third fourth of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-TopThirdFourth",
       "type": "command"
     },
     {
       "id": "TopLastFourth",
       "name": "Top Last Fourth",
       "description": "Resize the focused window to the top last fourth of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-TopLastFourth",
       "type": "command"
     },
     {
       "id": "MakeLarger",
       "name": "Make Larger",
       "description": "Increase the focused window until it reaches the screen size.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-MakeLarger",
       "type": "command"
     },
     {
       "id": "MakeSmaller",
       "name": "Make Smaller",
       "description": "Decrease the focused window until it reaches its minimal size.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-MakeSmaller",
       "type": "command"
     },
     {
       "id": "AlmostMaximize",
       "name": "Almost Maximize",
       "description": "Maximize the focused window to almost fit the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-AlmostMaximize",
       "type": "command"
     },
     {
       "id": "MaximizeWidth",
       "name": "Maximize Width",
       "description": "Maximize width of the focused window to fit the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-MaximizeWidth",
       "type": "command"
     },
     {
       "id": "MaximizeHeight",
       "name": "Maximize Height",
       "description": "Maximize height of the focused window to fit the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-MaximizeHeight",
       "type": "command"
     },
     {
       "id": "MoveUp",
       "name": "Move Up",
       "description": "Move the focused window to the top edge of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-MoveUp",
       "type": "command"
     },
     {
       "id": "MoveDown",
       "name": "Move Down",
       "description": "Move the focused window to the bottom of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-MoveDown",
       "type": "command"
     },
     {
       "id": "MoveLeft",
       "name": "Move Left",
       "description": "Move the focused window to the left edge of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-MoveLeft",
       "type": "command"
     },
     {
       "id": "MoveRight",
       "name": "Move Right",
       "description": "Move the focused window to the right edge of the screen.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-MoveRight",
       "type": "command"
     },
     {
       "id": "NextDesktop",
       "name": "Next Desktop",
       "description": "Move the focused window to the next desktop.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-NextDesktop",
       "type": "command"
     },
     {
       "id": "PreviousDesktop",
       "name": "Previous Desktop",
       "description": "Move the focused window to the previous desktop.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-PreviousDesktop",
       "type": "command"
     },
     {
       "id": "NextDisplay",
       "name": "Next Display",
       "description": "Move the focused window to the next display.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-NextDisplay",
       "type": "command"
     },
     {
       "id": "PreviousDisplay",
       "name": "Previous Display",
       "description": "Move the focused window to the previous display.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-PreviousDisplay",
       "type": "command"
     },
     {
       "id": "Restore",
       "name": "Restore",
       "description": "Restore the focused window to its last position.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_Restore",
       "type": "command"
     },
     {
       "id": "ToggleFullscreen",
       "name": "Toggle Fullscreen",
       "description": "Toggle fullscreen mode.",
-      "icon": "font_a-Windowmanagement",
+      "icon": "font_a-ToggleFullscreen",
       "type": "command"
     }
   ]
