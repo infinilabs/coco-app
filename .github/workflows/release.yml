@@ -106,6 +106,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils libtracker-sparql-3.0-dev
 
+
+      # On Windows, we need to generate bindings for 'searchapi.h' using bindgen.
+      # And bindgen relies on 'libclang'
+      # https://rust-lang.github.io/rust-bindgen/requirements.html#windows
+      - name: Install dependencies (Windows only)
+        if: startsWith(matrix.platform, 'windows-latest')
+        shell: bash
+        run: winget install LLVM.LLVM --silent --accept-package-agreements --accept-source-agreements
+
+
       - name: Add Rust build target
         working-directory: src-tauri
         shell: bash
