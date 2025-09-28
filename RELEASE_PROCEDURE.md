@@ -37,7 +37,10 @@
 
 4. Update the [roadmap](https://coco.rs/en/roadmap) (if needed)
 
-   > You should
+   > You should update both English and Chinese JSON files
+   >
+   > * English: https://github.com/infinilabs/coco-website/blob/main/i18n/locales/en.json
+   > * Chinese: https://github.com/infinilabs/coco-website/blob/main/i18n/locales/zh.json
 
    1. Add a new [section][roadmap_new] for the new release
    2. Adjust the entries under [In Progress][in_prog] and [Up Next][up_next] accordingly
