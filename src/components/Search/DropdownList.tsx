@@ -145,6 +145,7 @@ function DropdownList({
     handleItemAction,
     isChatMode,
     formatUrl,
+    searchData,
   });
 
   return (

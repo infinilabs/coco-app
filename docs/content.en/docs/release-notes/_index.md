@@ -8,11 +8,18 @@ title: "Release Notes"
 Information about release notes of Coco App is provided here.
 
 ## Latest (In development)
+
 ### ❌ Breaking changes
+
 ### 🚀 Features
+
+feat: support switching groups via keyboard shortcuts #911
+
 ### 🐛 Bug fix
+
 ### ✈️ Improvements
 
+refactor: improve sorting logic of search results #910
 
 ## 0.8.0 (2025-09-28)
 
