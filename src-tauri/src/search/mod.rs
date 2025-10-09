@@ -52,13 +52,16 @@ pub async fn query_coco_fusion(
         )
         .await
     } else {
-        query_coco_fusion_multi_query_sources(
+        let res = query_coco_fusion_multi_query_sources(
             tauri_app_handle,
             query_source_list,
             timeout_duration,
             search_query,
         )
-        .await
+        .await;
+        println!("{:#?}", res);
+
+        res
     }
 }
 
@@ -267,7 +270,8 @@ async fn query_coco_fusion_multi_query_sources(
         }
     }
 
-    // Sort hits within each source by score (descending)
+    // Sort hits within each source by score (descending) in case data sources
+    // do not sort hits
     for hits in hits_per_source.values_mut() {
         hits.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Greater));
     }
