@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useRef } from "react";
-import { debounce, isArray, orderBy, sortBy } from "lodash-es";
+import { debounce, orderBy } from "lodash-es";
 
 import type {
   QueryHits,
