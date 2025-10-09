@@ -41,8 +41,6 @@ function DropdownList({
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  console.log("searchData", searchData);
-
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [selectedName, setSelectedName] = useState<string>("");
   const [showIndex, setShowIndex] = useState<boolean>(false);
