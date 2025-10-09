@@ -52,16 +52,13 @@ pub async fn query_coco_fusion(
         )
         .await
     } else {
-        let res = query_coco_fusion_multi_query_sources(
+        query_coco_fusion_multi_query_sources(
             tauri_app_handle,
             query_source_list,
             timeout_duration,
             search_query,
         )
-        .await;
-        println!("{:#?}", res);
-
-        res
+        .await
     }
 }
 
@@ -190,7 +187,6 @@ async fn query_coco_fusion_multi_query_sources(
 
     let mut futures = FuturesUnordered::new();
 
-    let query_source_list_len = query_source_trait_object_list.len();
     for query_source_trait_object in query_source_trait_object_list {
         let query_source = query_source_trait_object.get_type().clone();
         let tauri_app_handle_clone = tauri_app_handle.clone();
@@ -211,14 +207,8 @@ async fn query_coco_fusion_multi_query_sources(
     }
 
     let mut total_hits = 0;
-    let mut need_rerank = true; //TODO set default to false when boost supported in Pizza
     let mut failed_requests = Vec::new();
-    let mut all_hits: Vec<(String, QueryHits, f64)> = Vec::new();
-    let mut hits_per_source: HashMap<String, Vec<(QueryHits, f64)>> = HashMap::new();
-
-    if query_source_list_len > 1 {
-        need_rerank = true; // If we have more than one source, we need to rerank the hits
-    }
+    let mut all_hits_grouped_by_source_id: HashMap<String, Vec<QueryHits>> = HashMap::new();
 
     while let Some((query_source, timeout_result)) = futures.next().await {
         match timeout_result {
@@ -249,12 +239,10 @@ async fn query_coco_fusion_multi_query_sources(
                             document,
                         };
 
-                        all_hits.push((source_id.clone(), query_hit.clone(), score));
-
-                        hits_per_source
+                        all_hits_grouped_by_source_id
                             .entry(source_id.clone())
                             .or_insert_with(Vec::new)
-                            .push((query_hit, score));
+                            .push(query_hit);
                     }
                 }
                 Err(search_error) => {
@@ -270,110 +258,121 @@ async fn query_coco_fusion_multi_query_sources(
         }
     }
 
-    // Sort hits within each source by score (descending) in case data sources
-    // do not sort hits
-    for hits in hits_per_source.values_mut() {
-        hits.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Greater));
+    let n_sources = all_hits_grouped_by_source_id.len();
+
+    if n_sources == 0 {
+        return Ok(MultiSourceQueryResponse {
+            failed: Vec::new(),
+            hits: Vec::new(),
+            total_hits: 0,
+        });
     }
 
-    let total_sources = hits_per_source.len();
-    let max_hits_per_source = if total_sources > 0 {
-        size as usize / total_sources
-    } else {
-        size as usize
-    };
+    let now = std::time::SystemTime::now();
+
+
+    /*
+     * Re-rank the hits
+     */
+    if n_sources > 1 {
+        boosted_levenshtein_rerank(&query_keyword, &mut all_hits_grouped_by_source_id);
+    }
+
+    /*
+     * Sort hits within each source by score (descending) in case data sources
+     * do not sort hits
+     */
+    for hits in all_hits_grouped_by_source_id.values_mut() {
+        hits.sort_by(|a, b| {
+            b.score
+                .partial_cmp(&a.score)
+                .unwrap_or(std::cmp::Ordering::Greater)
+        });
+    }
+
+    /*
+     * Collect hits evenly across sources, to ensure:
+     *
+     * 1. All sources have hits returned
+     * 2. Query sources with many hits won't dominate
+     */
+    let mut final_hits_grouped_by_source_id: HashMap<String, Vec<QueryHits>> = HashMap::new();
+    let mut pruned: HashMap<&str, &[QueryHits]> = HashMap::new();
+
+    // max_hits_per_source could be 0, then `final_hits_grouped_by_source_id`
+    // would be empty. But we don't need to worry about this case as we will 
+    // populate hits later.
+    let mut max_hits_per_source = size as usize / n_sources;
+    for (source_id, hits) in all_hits_grouped_by_source_id.iter() {
+        let hits_taken = if hits.len() > max_hits_per_source {
+            pruned.insert(&source_id, &hits[max_hits_per_source..]);
+            hits[0..max_hits_per_source].to_vec()
+        } else {
+            hits.clone()
+        };
+
+        final_hits_grouped_by_source_id.insert(source_id.clone(), hits_taken);
+    }
+
+
+    let final_hits_len = final_hits_grouped_by_source_id
+        .iter()
+        .fold(0, |acc: usize, (_source_id, hits)| acc + hits.len());
+    let pruned_len = pruned
+        .iter()
+        .fold(0, |acc: usize, (_source_id, hits)| acc + hits.len());
+
+    /*
+     * If we still need more hits, take the highest-scoring from `pruned`
+     *
+     * `pruned` contains sorted arrays, we scan it in a way similar to
+     * how n-way-merge-sort extracts the element with the greatest value.
+     */
+    if final_hits_len < size as usize {
+        let n_need = size as usize - final_hits_len;
+        let n_have = pruned_len;
+        let n_take = n_have.min(n_need);
+
+        for _ in 0..n_take {
+            let mut highest_score_hit: Option<(&str, &QueryHits)> = None;
+            for (source_id, sorted_hits) in pruned.iter_mut() {
+                if sorted_hits.is_empty() {
+                    continue;
+                }
+
+                let hit = &sorted_hits[0];
+
+                let have_higher_score_hit = match highest_score_hit {
+                    Some((_, current_highest_score_hit)) => {
+                        hit.score > current_highest_score_hit.score
+                    }
+                    None => true,
+                };
+
+                if have_higher_score_hit {
+                    highest_score_hit = Some((*source_id, hit));
+
+                    // Advance sorted_hits by 1 element, if have
+                    if sorted_hits.len() == 1 {
+                        *sorted_hits = &[];
+                    } else {
+                        *sorted_hits = &sorted_hits[1..];
+                    }
+                }
+            }
+
+            let (source_id, hit) = highest_score_hit.expect("`pruned` should contain at least `n_take` elements so `highest_score_hit` should be set");
+
+            final_hits_grouped_by_source_id
+                .get_mut(source_id)
+                .expect("all the source_ids stored in `pruned` come from `final_hits_grouped_by_source_id`, so it should exist")
+                .push(hit.clone());
+        }
+    }
 
     let mut final_hits = Vec::new();
-    let mut seen_docs = HashSet::new(); // To track documents we've already added
-
-    // Distribute hits fairly across sources
-    for (_source_id, hits) in &mut hits_per_source {
-        let take_count = hits.len().min(max_hits_per_source);
-        for (doc, score) in hits.drain(0..take_count) {
-            if !seen_docs.contains(&doc.document.id) {
-                seen_docs.insert(doc.document.id.clone());
-                log::debug!(
-                    "collect doc: {}, {:?}, {}",
-                    doc.document.id,
-                    doc.document.title,
-                    score
-                );
-                final_hits.push(doc);
-            }
-        }
-    }
-
-    log::debug!("final hits: {:?}", final_hits.len());
-
-    let mut unique_sources = HashSet::new();
-    for hit in &final_hits {
-        if let Some(source) = &hit.source {
-            if source.id != crate::extension::built_in::calculator::DATA_SOURCE_ID {
-                unique_sources.insert(&source.id);
-            }
-        }
-    }
-
-    log::debug!(
-        "Multiple sources found: {:?}, no rerank needed",
-        unique_sources
-    );
-
-    if unique_sources.len() < 1 {
-        need_rerank = false; // If we have hits from multiple sources, we don't need to rerank
-    }
-
-    if need_rerank && final_hits.len() > 1 {
-        // Precollect (index, title)
-        let titles_to_score: Vec<(usize, &str)> = final_hits
-            .iter()
-            .enumerate()
-            .filter_map(|(idx, hit)| {
-                let source = hit.source.as_ref()?;
-                let title = hit.document.title.as_deref()?;
-
-                if source.id != crate::extension::built_in::calculator::DATA_SOURCE_ID {
-                    Some((idx, title))
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        // Score them
-        let scored_hits = boosted_levenshtein_rerank(query_keyword.as_str(), titles_to_score);
-
-        // Sort descending by score
-        let mut scored_hits = scored_hits;
-        scored_hits.sort_by_key(|&(_, score)| Reverse((score * 1000.0) as u64));
-
-        // Apply new scores to final_hits
-        for (idx, score) in scored_hits.into_iter().take(size as usize) {
-            final_hits[idx].score = score;
-        }
-    } else if final_hits.len() < size as usize {
-        // If we still need more hits, take the highest-scoring remaining ones
-
-        let remaining_needed = size as usize - final_hits.len();
-
-        // Sort all hits by score descending, removing duplicates by document ID
-        all_hits.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap_or(std::cmp::Ordering::Equal));
-
-        let extra_hits = all_hits
-            .into_iter()
-            .filter(|(source_id, _, _)| hits_per_source.contains_key(source_id)) // Only take from known sources
-            .filter_map(|(_, doc, _)| {
-                if !seen_docs.contains(&doc.document.id) {
-                    seen_docs.insert(doc.document.id.clone());
-                    Some(doc)
-                } else {
-                    None
-                }
-            })
-            .take(remaining_needed)
-            .collect::<Vec<_>>();
-
-        final_hits.extend(extra_hits);
+    for (_source_id, hits) in final_hits_grouped_by_source_id {
+        final_hits.extend(hits);
     }
 
     // **Sort final hits by score descending**
@@ -382,6 +381,8 @@ async fn query_coco_fusion_multi_query_sources(
             .partial_cmp(&a.score)
             .unwrap_or(std::cmp::Ordering::Equal)
     });
+
+    final_hits.truncate(size as usize);
 
     if final_hits.len() < 5 {
         //TODO: Add a recommendation system to suggest more sources
@@ -399,31 +400,45 @@ async fn query_coco_fusion_multi_query_sources(
     })
 }
 
-fn boosted_levenshtein_rerank(query: &str, titles: Vec<(usize, &str)>) -> Vec<(usize, f64)> {
+fn boosted_levenshtein_rerank(
+    query: &str,
+    all_hits_grouped_by_source_id: &mut HashMap<String, Vec<QueryHits>>,
+) {
     use strsim::levenshtein;
 
     let query_lower = query.to_lowercase();
 
-    titles
-        .into_iter()
-        .map(|(idx, title)| {
-            let mut score = 0.0;
+    for (source_id, hits) in all_hits_grouped_by_source_id.iter_mut() {
+        // Re-ranking the calculator result is meaningless
+        if source_id == crate::extension::built_in::calculator::DATA_SOURCE_ID {
+            continue;
+        }
 
-            if title.contains(query) {
-                score += 0.4;
-            } else if title.to_lowercase().contains(&query_lower) {
-                score += 0.2;
-            }
+        for hit in hits.iter_mut() {
+            let document_title = hit.document.title.as_deref().unwrap_or("");
+            let document_title_lowercase = document_title.to_lowercase();
 
-            let dist = levenshtein(&query_lower, &title.to_lowercase());
-            let max_len = query_lower.len().max(title.len());
-            if max_len > 0 {
-                score += (1.0 - (dist as f64 / max_len as f64)) as f32;
-            }
+            let new_score = {
+                let mut score = 0.0;
 
-            (idx, score.min(1.0) as f64)
-        })
-        .collect()
+                if document_title.contains(query) {
+                    score += 0.4;
+                } else if document_title_lowercase.contains(&query_lower) {
+                    score += 0.2;
+                }
+
+                let dist = levenshtein(&query_lower, &&document_title_lowercase);
+                let max_len = query_lower.len().max(document_title.len());
+                if max_len > 0 {
+                    score += (1.0 - (dist as f64 / max_len as f64)) as f32;
+                }
+
+                score.min(1.0) as f64
+            };
+
+            hit.score = new_score;
+        }
+    }
 }
 
 /// Helper function to handle a failed request.
