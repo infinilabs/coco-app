@@ -270,7 +270,6 @@ async fn query_coco_fusion_multi_query_sources(
 
     let now = std::time::SystemTime::now();
 
-
     /*
      * Re-rank the hits
      */
@@ -300,7 +299,7 @@ async fn query_coco_fusion_multi_query_sources(
     let mut pruned: HashMap<&str, &[QueryHits]> = HashMap::new();
 
     // max_hits_per_source could be 0, then `final_hits_grouped_by_source_id`
-    // would be empty. But we don't need to worry about this case as we will 
+    // would be empty. But we don't need to worry about this case as we will
     // populate hits later.
     let mut max_hits_per_source = size as usize / n_sources;
     for (source_id, hits) in all_hits_grouped_by_source_id.iter() {
@@ -313,7 +312,6 @@ async fn query_coco_fusion_multi_query_sources(
 
         final_hits_grouped_by_source_id.insert(source_id.clone(), hits_taken);
     }
-
 
     let final_hits_len = final_hits_grouped_by_source_id
         .iter()
@@ -381,8 +379,6 @@ async fn query_coco_fusion_multi_query_sources(
             .partial_cmp(&a.score)
             .unwrap_or(std::cmp::Ordering::Equal)
     });
-
-    final_hits.truncate(size as usize);
 
     if final_hits.len() < 5 {
         //TODO: Add a recommendation system to suggest more sources
