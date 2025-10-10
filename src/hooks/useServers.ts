@@ -11,10 +11,6 @@ import {
 
 export const useServers = () => {
   const setServerList = useConnectStore((state) => state.setServerList);
-  const currentService = useConnectStore((state) => state.currentService);
-  const cloudSelectService = useConnectStore((state) => {
-    return state.cloudSelectService;
-  });
 
   const getAllServerList = async () => {
     try {
@@ -73,7 +69,7 @@ export const useServers = () => {
       await setCurrentWindowService({ ...service, enabled });
       await getAllServerList();
     },
-    [currentService, cloudSelectService]
+    []
   );
 
   const removeServer = useCallback(
@@ -81,7 +77,7 @@ export const useServers = () => {
       await platformAdapter.commands("remove_coco_server", id);
       await getAllServerList();
     },
-    [currentService?.id, cloudSelectService?.id]
+    []
   );
 
   const logoutServer = useCallback(async (id: string) => {
@@ -92,7 +88,7 @@ export const useServers = () => {
 
   useEffect(() => {
     getAllServerList();
-  }, [currentService?.enabled, cloudSelectService?.enabled]);
+  }, []);
 
   return {
     getAllServerList,

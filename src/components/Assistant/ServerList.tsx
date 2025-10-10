@@ -18,7 +18,10 @@ import StatusIndicator from "@/components/Cloud/StatusIndicator";
 import { useAuthStore } from "@/stores/authStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useServers } from "@/hooks/useServers";
-import { getCurrentWindowService, setCurrentWindowService } from "@/commands/windowService";
+import {
+  getCurrentWindowService,
+  setCurrentWindowService,
+} from "@/commands/windowService";
 
 interface ServerListProps {
   clearChat: () => void;
@@ -33,10 +36,9 @@ export function ServerList({ clearChat }: ServerListProps) {
   );
   const setEndpoint = useAppStore((state) => state.setEndpoint);
   const isTauri = useAppStore((state) => state.isTauri);
+
   const currentService = useConnectStore((state) => state.currentService);
-  const cloudSelectService = useConnectStore((state) => {
-    return state.cloudSelectService;
-  });
+  const serverList = useConnectStore((state) => state.serverList);
 
   const { setMessages } = useChatStore();
 
@@ -55,7 +57,6 @@ export function ServerList({ clearChat }: ServerListProps) {
   const serverListButtonRef = useRef<HTMLButtonElement>(null);
 
   const { refreshServerList } = useServers();
-  const serverList = useConnectStore((state) => state.serverList);
 
   const switchServer = async (server: IServer) => {
     if (!server) return;
@@ -95,8 +96,10 @@ export function ServerList({ clearChat }: ServerListProps) {
       } else {
         switchServer(enabledServers[enabledServers.length - 1]);
       }
+    } else {
+      setCurrentWindowService({});
     }
-  }, [currentService?.id, cloudSelectService?.id, serverList]);
+  }, [serverList]);
 
   useEffect(() => {
     if (!askAiServerId || serverList.length === 0) return;
