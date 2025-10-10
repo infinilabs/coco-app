@@ -1,54 +1,121 @@
-import { Globe, Github } from "lucide-react";
+import {
+  Globe,
+  Github,
+  Rocket,
+  BookOpen,
+  MessageCircleReply,
+  ScrollText,
+  SquareArrowOutUpRight,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { OpenURLWithBrowser } from "@/utils";
-import logoLight from "@/assets/images/logo-text-light.svg";
-import logoDark from "@/assets/images/logo-text-dark.svg";
+import lightLogo from "@/assets/images/logo-text-light.svg";
+import darkLogo from "@/assets/images/logo-text-dark.svg";
 import { useThemeStore } from "@/stores/themeStore";
+import { cloneElement, ReactElement, useMemo } from "react";
+import platformAdapter from "@/utils/platformAdapter";
+
+interface Link {
+  icon: ReactElement;
+  label: string;
+  url?: string;
+  onPress?: () => void;
+}
 
 export default function AboutView() {
   const { t } = useTranslation();
-  const isDark = useThemeStore((state) => state.isDark);
+  const { isDark } = useThemeStore();
 
-  const logo = isDark ? logoDark : logoLight;
+  const links = useMemo<Link[]>(() => {
+    return [
+      {
+        icon: <Rocket />,
+        label: t("settings.about.labels.changelog"),
+        url: "https://coco.rs/en/roadmap",
+      },
+      {
+        icon: <BookOpen />,
+        label: t("settings.about.labels.docs"),
+        url: "https://docs.infinilabs.com/coco-app/main",
+      },
+      {
+        icon: <Github />,
+        label: "GitHub",
+        url: "https://github.com/infinilabs/coco-app",
+      },
+      {
+        icon: <Globe />,
+        label: t("settings.about.labels.officialWebsite"),
+        url: "https://coco.rs",
+      },
+      {
+        icon: <MessageCircleReply />,
+        label: t("settings.about.labels.submitFeedback"),
+        url: "https://github.com/infinilabs/coco-app/issues",
+      },
+      {
+        icon: <ScrollText />,
+        label: t("settings.about.labels.runningLog"),
+        onPress: platformAdapter.openLogDir,
+      },
+    ];
+  }, [t]);
 
   return (
-    <div className="flex justify-center items-center flex-col h-[calc(100vh-170px)]">
-      <div>
+    <div className="flex h-[calc(100vh-170px)]">
+      <div className="flex flex-col items-center justify-center w-[70%] pr-10 text-[#999] text-sm">
         <img
-          src={logo}
-          className="w-48 dark:text-white"
+          src={isDark ? darkLogo : lightLogo}
+          className="h-14"
           alt={t("settings.about.logo")}
         />
+
+        <div className="mt-4 text-base font-medium text-[#333] dark:text-white/80">
+          {t("settings.about.slogan")}
+        </div>
+
+        <div className="mt-10">
+          {t("settings.about.version", {
+            version: process.env.VERSION || "N/A",
+          })}
+        </div>
+
+        <div className="mt-3">
+          {t("settings.about.copyright", { year: new Date().getFullYear() })}
+        </div>
       </div>
-      <div className="mt-8 font-medium text-gray-900 dark:text-gray-100">
-        {t("settings.about.slogan")}
-      </div>
-      <div className="flex justify-center items-center mt-10">
-        <button
-          onClick={() => OpenURLWithBrowser("https://coco.rs")}
-          className="w-6 h-6 mr-2.5 flex justify-center rounded-[6px] border-[1px] gray-200 dark:border-gray-700"
-          aria-label={t("settings.about.website")}
-        >
-          <Globe className="w-3 text-blue-500" />
-        </button>
-        <button
-          onClick={() =>
-            OpenURLWithBrowser("https://github.com/infinilabs/coco-app")
-          }
-          className="w-6 h-6 flex justify-center rounded-[6px] border-[1px] gray-200 dark:border-gray-700"
-          aria-label={t("settings.about.github")}
-        >
-          <Github className="w-3 text-blue-500" />
-        </button>
-      </div>
-      <div className="mt-8 text-sm text-gray-500 dark:text-gray-400">
-        {t("settings.about.version", {
-          version: process.env.VERSION || "N/A",
+
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 pl-10 border-l border-[#e5e5e5] dark:border-[#4e4e56]">
+        {links.map((item) => {
+          const { icon, label, url, onPress } = item;
+
+          return (
+            <div
+              key={label}
+              className="flex items-center justify-between w-full"
+            >
+              <div className="flex items-center gap-2">
+                {cloneElement(icon, {
+                  className: "size-4 text-[#999]",
+                })}
+
+                <span className="text-[#333] dark:text-white/80">{label}</span>
+              </div>
+
+              <SquareArrowOutUpRight
+                className="text-[#027FFE] size-4 cursor-pointer"
+                onClick={() => {
+                  if (url) {
+                    return OpenURLWithBrowser(url);
+                  }
+
+                  onPress?.();
+                }}
+              />
+            </div>
+          );
         })}
-      </div>
-      <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-        {t("settings.about.copyright", { year: new Date().getFullYear() })}
       </div>
     </div>
   );
