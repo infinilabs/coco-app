@@ -9,7 +9,7 @@ Coco AI is a fully open-source, cross-platform unified search and productivity t
 
 {{% load-img "/img/coco-preview.gif" "" %}}
 
-For more details on Coco Server, visit: [https://docs.infinilabs.com/coco-app/](https://docs.infinilabs.com/coco-app/).
+For more details on Coco Server, visit: [https://docs.infinilabs.com/coco-server/](https://docs.infinilabs.com/coco-server/).
 
 ## Community
 
