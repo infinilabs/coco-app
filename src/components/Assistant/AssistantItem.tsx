@@ -45,7 +45,7 @@ const AssistantItem = memo(
         {_source?.icon?.startsWith("font_") ? (
           <FontIcon name={_source?.icon} className="size-4" />
         ) : (
-          <img src={logoImg} className="size-4 dark:drop-shadow-[0_0_6px_rgb(255,255,255)]" alt={name} />
+          <img src={logoImg} className="size-4" alt={name} />
         )}
       </div>
       <div className="text-left flex-1 min-w-0">

@@ -109,7 +109,7 @@ const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
           }}
         />
 
-        <img src={logo} className="h-8 dark:drop-shadow-[0_0_6px_rgb(255,255,255)]" />
+        <img src={logo} className="h-8" />
 
         <div className="mt-3 mb-6 text-lg font-medium">
           {settings?.introduction}

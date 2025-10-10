@@ -163,7 +163,7 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
             ) : (
               <img
                 src={logoImg}
-                className="w-3 h-3 dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
+                className="w-3 h-3"
                 alt={t("assistant.message.logo")}
               />
             )}
