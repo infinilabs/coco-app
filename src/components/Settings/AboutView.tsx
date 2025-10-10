@@ -98,7 +98,7 @@ export default function AboutView() {
 
       <div className="flex-1 flex flex-col items-center justify-center gap-4 pl-10 border-l border-[#e5e5e5] dark:border-[#4e4e56]">
         {links.map((item) => {
-          const { icon, label, url, onPress } = item;
+          const { icon, label } = item;
 
           return (
             <div
