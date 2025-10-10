@@ -39,7 +39,14 @@
       "website": "访问官网",
       "github": "访问 GitHub",
       "version": "版本 {{version}}",
-      "copyright": "©{{year}} INFINI Labs，保留所有权利。"
+      "copyright": "©{{year}} INFINI Labs，保留所有权利。",
+      "labels": {
+        "changelog": "更新日志",
+        "docs": "帮助文档",
+        "officialWebsite": "官方网站",
+        "submitFeedback": "提交反馈",
+        "runningLog": "运行日志"
+      }
     },
     "advanced": {
       "startup": {

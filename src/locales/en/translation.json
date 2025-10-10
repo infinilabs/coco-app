@@ -39,7 +39,14 @@
       "website": "Visit Website",
       "github": "Visit GitHub",
       "version": "Version {{version}}",
-      "copyright": "©{{year}} INFINI Labs, All Rights Reserved."
+      "copyright": "©{{year}} INFINI Labs, All Rights Reserved.",
+      "labels": {
+        "changelog": "What’s New",
+        "docs": "Docs",
+        "officialWebsite": "Official Website",
+        "submitFeedback": "Submit Feedback",
+        "runningLog": "View App Logs"
+      }
     },
     "advanced": {
       "startup": {
