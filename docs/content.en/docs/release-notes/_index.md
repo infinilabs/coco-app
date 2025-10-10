@@ -17,6 +17,8 @@ feat: support switching groups via keyboard shortcuts #911
 
 ### 🐛 Bug fix
 
+fix: automatic update of service list #913
+
 ### ✈️ Improvements
 
 refactor: improve sorting logic of search results #910
