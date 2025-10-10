@@ -4,6 +4,7 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 import type { QueryHits, SearchDocument } from "@/types/search";
 import platformAdapter from "@/utils/platformAdapter";
 import { useSearchStore } from "@/stores/searchStore";
+import { isNumber } from "lodash-es";
 
 interface UseKeyboardNavigationProps {
   suggests: QueryHits[];
@@ -16,6 +17,7 @@ interface UseKeyboardNavigationProps {
   handleItemAction: (item: SearchDocument) => void;
   isChatMode: boolean;
   formatUrl?: (item: any) => string;
+  searchData: Record<string, QueryHits[]>;
 }
 
 export function useKeyboardNavigation({
@@ -29,6 +31,7 @@ export function useKeyboardNavigation({
   handleItemAction,
   isChatMode,
   formatUrl,
+  searchData,
 }: UseKeyboardNavigationProps) {
   const openPopover = useShortcutsStore((state) => state.openPopover);
   const visibleContextMenu = useSearchStore((state) => {
@@ -47,6 +50,20 @@ export function useKeyboardNavigation({
     return metaKeyPressed || ctrlKeyPressed || altKeyPressed;
   };
 
+  const getGroupContext = () => {
+    const groupEntries = Object.entries(searchData);
+    const groupIndex = groupEntries.findIndex(([_, value]) => {
+      return value.some((item) => {
+        return item.document.index === selectedIndex;
+      });
+    });
+
+    return {
+      groupEntries,
+      groupIndex,
+    };
+  };
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (isChatMode || !suggests.length || openPopover || visibleContextMenu) {
@@ -59,13 +76,28 @@ export function useKeyboardNavigation({
 
       if (e.key === "ArrowUp") {
         e.preventDefault();
-        // console.log("ArrowUp pressed", selectedIndex, suggests.length);
+
+        let nextIndex: number | undefined = void 0;
+
+        if (modifierKeyPressed) {
+          const { groupEntries, groupIndex } = getGroupContext();
+
+          const nextGroupIndex =
+            groupIndex > 0 ? groupIndex - 1 : groupEntries.length - 1;
+
+          nextIndex = groupEntries[nextGroupIndex][1][0].document.index;
+        }
+
         setSelectedIndex((prev) => {
           if (prev == null) {
             return Math.min(...indexes);
           }
 
-          const nextIndex = prev - 1;
+          if (isNumber(nextIndex)) {
+            return nextIndex;
+          }
+
+          nextIndex = prev - 1;
 
           if (indexes.includes(nextIndex)) {
             return nextIndex;
@@ -75,13 +107,28 @@ export function useKeyboardNavigation({
         });
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
-        //console.log("ArrowDown pressed", selectedIndex, suggests.length);
+
+        let nextIndex: number | undefined = void 0;
+
+        if (modifierKeyPressed) {
+          const { groupEntries, groupIndex } = getGroupContext();
+
+          const nextGroupIndex =
+            groupIndex < groupEntries.length - 1 ? groupIndex + 1 : 0;
+
+          nextIndex = groupEntries[nextGroupIndex][1][0].document.index;
+        }
+
         setSelectedIndex((prev) => {
           if (prev == null) {
             return Math.min(...indexes);
           }
 
-          const nextIndex = prev + 1;
+          if (isNumber(nextIndex)) {
+            return nextIndex;
+          }
+
+          nextIndex = prev + 1;
 
           if (indexes.includes(nextIndex)) {
             return nextIndex;
