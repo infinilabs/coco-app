@@ -7,14 +7,13 @@ use crate::common::traits::SearchSource;
 use crate::server::servers::logout_coco_server;
 use crate::server::servers::mark_server_as_offline;
 use function_name::named;
-use futures::stream::FuturesUnordered;
 use futures::StreamExt;
+use futures::stream::FuturesUnordered;
 use reqwest::StatusCode;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager};
-use tokio::time::{timeout, Duration};
-
+use tokio::time::{Duration, timeout};
 #[named]
 #[tauri::command]
 pub async fn query_coco_fusion(
