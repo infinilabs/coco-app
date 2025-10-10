@@ -107,7 +107,7 @@ const AskAi: FC<AskAiProps> = (props) => {
       unlisten.current = await platformAdapter.listenEvent(
         "quick-ai-access-client-id",
         ({ payload }) => {
-          console.log("ask_ai", JSON.parse(payload));
+          // console.log("ask_ai", JSON.parse(payload));
 
           const chunkData = JSON.parse(payload);
 

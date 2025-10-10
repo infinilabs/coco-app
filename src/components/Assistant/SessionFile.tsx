@@ -37,8 +37,6 @@ const SessionFile = (props: SessionFileProps) => {
 
   const getUploadedFiles = async () => {
     if (isTauri) {
-      console.log("sessionId", sessionId);
-
       const response: any = await platformAdapter.commands(
         "get_attachment_by_ids",
         {

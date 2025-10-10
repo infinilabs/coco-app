@@ -15,6 +15,7 @@ type keyArrayObject = {
 export type IConnectStore = {
   serverList: Server[];
   setServerList: (servers: Server[]) => void;
+  setServerListSilently: (servers: Server[]) => void;
   currentService: Server;
   setCurrentService: (service: Server) => void;
   cloudSelectService: Server;
@@ -44,7 +45,15 @@ export const useConnectStore = create<IConnectStore>()(
     persist(
       (set) => ({
         serverList: [],
-        setServerList: (serverList: Server[]) => {
+        setServerList: async(serverList: Server[]) => {
+          set(
+            produce((draft) => {
+              draft.serverList = serverList;
+            })
+          );
+          await platformAdapter.emitEvent("server-list-changed", serverList);
+        },
+        setServerListSilently: (serverList: Server[]) => {
           set(
             produce((draft) => {
               draft.serverList = serverList;
