@@ -400,38 +400,15 @@ async fn query_coco_fusion_multi_query_sources(
 use std::collections::HashSet;
 use strsim::levenshtein;
 
-/// Tokenize text into lowercase alphanumeric words
-fn tokenize(text: &str) -> HashSet<String> {
-    text.to_lowercase()
-        .split(|c: char| !c.is_alphanumeric())
-        .filter(|s| !s.is_empty())
-        .map(|s| s.to_string())
-        .collect()
-}
-
-/// Compute Jaccard similarity between query and title tokens
-fn jaccard_similarity(a: &str, b: &str) -> f32 {
-    let set_a = tokenize(a);
-    let set_b = tokenize(b);
-
-    if set_a.is_empty() || set_b.is_empty() {
-        return 0.0;
-    }
-
-    let intersection = set_a.intersection(&set_b).count() as f32;
-    let union = set_a.union(&set_b).count() as f32;
-
-    intersection / union
-}
-
-pub fn boosted_levenshtein_rerank(
+fn boosted_levenshtein_rerank(
     query: &str,
     all_hits_grouped_by_source_id: &mut HashMap<String, Vec<QueryHits>>,
 ) {
     let query_lower = query.to_lowercase();
 
     for (source_id, hits) in all_hits_grouped_by_source_id.iter_mut() {
-        if source_id.eq(crate::extension::built_in::calculator::DATA_SOURCE_ID) {
+        // Skip special sources like calculator
+        if source_id == crate::extension::built_in::calculator::DATA_SOURCE_ID {
             continue;
         }
 
@@ -439,31 +416,90 @@ pub fn boosted_levenshtein_rerank(
             let document_title = hit.document.title.as_deref().unwrap_or("");
             let document_title_lowercase = document_title.to_lowercase();
 
-            // --- Base Boost ---
-            let mut score = 0.0;
-            if document_title.contains(query) {
-                score += 0.4;
-            } else if document_title_lowercase.contains(&query_lower) {
-                score += 0.2;
-            }
+            let new_score = {
+                let mut score = 0.0;
 
-            // --- Levenshtein Similarity ---
-            let dist = levenshtein(&query_lower, &document_title_lowercase);
-            let max_len = query_lower.len().max(document_title.len());
-            if max_len > 0 {
-                score += (1.0 - (dist as f64 / max_len as f64)) as f32 * 0.6;
-            }
+                // --- Exact or substring boost ---
+                if document_title.contains(query) {
+                    score += 0.4;
+                } else if document_title_lowercase.contains(&query_lower) {
+                    score += 0.2;
+                }
 
-            // --- Token Overlap ---
-            let jaccard = jaccard_similarity(query, document_title);
-            score += jaccard * 0.8;
+                // --- Levenshtein distance (character similarity) ---
+                let dist = levenshtein(&query_lower, &document_title_lowercase);
+                let max_len = query_lower.len().max(document_title.len());
+                let levenshtein_score = if max_len > 0 {
+                    (1.0 - (dist as f64 / max_len as f64)) as f32
+                } else {
+                    0.0
+                };
 
-            // Cap score
-            let final_score = score.min(1.0);
+                // --- Jaccard similarity (token overlap) ---
+                let jaccard_score = jaccard_similarity(&query_lower, &document_title_lowercase);
 
-            hit.score = final_score as f64;
+                // --- Combine scores (weights adjustable) ---
+                // Levenshtein emphasizes surface similarity
+                // Jaccard emphasizes term overlap (semantic hint)
+                let hybrid_score = 0.7 * levenshtein_score + 0.3 * jaccard_score;
+
+                // --- Apply hybrid score ---
+                score += hybrid_score;
+
+                // --- Limit score range ---
+                score.min(1.0) as f64
+            };
+
+            // Optional debug output (with truncation for long titles)
+            let truncated_title: String = document_title_lowercase.chars().take(50).collect();
+            println!(
+                "query: {:<20} | dist: {:>3} | jaccard: {:>5.3} | score: {:>6.3} | title: {:<50}",
+                query,
+                levenshtein(&query_lower, &document_title_lowercase),
+                jaccard_similarity(&query_lower, &document_title_lowercase),
+                new_score,
+                truncated_title,
+            );
+
+            hit.score = new_score;
         }
     }
+
+    println!("Re-ranking completed.");
+    for (source_id, hits) in all_hits_grouped_by_source_id.iter() {
+        for hit in hits.iter() {
+            println!(
+                "Final score for source [{}], document title [{:?}]: [{}]",
+                source_id,
+                hit.document.title.as_deref().unwrap_or(""),
+                hit.score
+            );
+        }
+    }
+}
+
+/// Compute token-based Jaccard similarity
+fn jaccard_similarity(a: &str, b: &str) -> f32 {
+    let a_tokens: HashSet<_> = tokenize(a).into_iter().collect();
+    let b_tokens: HashSet<_> = tokenize(b).into_iter().collect();
+
+    if a_tokens.is_empty() || b_tokens.is_empty() {
+        return 0.0;
+    }
+
+    let intersection = a_tokens.intersection(&b_tokens).count() as f32;
+    let union = a_tokens.union(&b_tokens).count() as f32;
+
+    intersection / union
+}
+
+/// Basic tokenizer (case-insensitive, alphanumeric words only)
+fn tokenize(text: &str) -> Vec<String> {
+    text.to_lowercase()
+        .split(|c: char| !c.is_alphanumeric())
+        .filter(|s| !s.is_empty())
+        .map(|s| s.to_string())
+        .collect()
 }
 
 /// Helper function to handle a failed request.
