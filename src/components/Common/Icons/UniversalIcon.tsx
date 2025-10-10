@@ -49,7 +49,13 @@ function UniversalIcon({
 
   // Render image type icon
   const renderImageIcon = (src: string) => {
-    const img = <img className={className} src={src} alt="icon" />;
+    const img = (
+      <img
+        className={`dark:drop-shadow-[0_0_6px_rgb(255,255,255)] ${className}`}
+        src={src}
+        alt="icon"
+      />
+    );
     return wrapWithIconWrapper ? (
       <IconWrapper className={className} onClick={onClick}>
         {img}
@@ -63,7 +69,7 @@ function UniversalIcon({
   const renderAppIcon = (src: string) => {
     const img = (
       <img
-        className={className}
+        className={`dark:drop-shadow-[0_0_6px_rgb(255,255,255)] ${className}`}
         src={platformAdapter.convertFileSrc(src)}
         alt="icon"
       />

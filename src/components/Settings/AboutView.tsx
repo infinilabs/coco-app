@@ -17,7 +17,7 @@ export default function AboutView() {
       <div>
         <img
           src={logo}
-          className="w-48 dark:text-white"
+          className="w-48 dark:text-white dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
           alt={t("settings.about.logo")}
         />
       </div>

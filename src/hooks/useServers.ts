@@ -30,6 +30,8 @@ export const useServers = () => {
     } catch (error) {
       console.error("Failed to fetch server list:", error);
       setServerList([]);
+    } finally {
+      
     }
   };
 

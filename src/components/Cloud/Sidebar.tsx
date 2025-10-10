@@ -53,7 +53,7 @@ export const Sidebar = forwardRef<{ refreshData: () => void }, SidebarProps>(
             <img
               src={item?.provider?.icon || cocoLogoImg}
               alt={`${item.name} logo`}
-              className="w-5 h-5 flex-shrink-0"
+              className="w-5 h-5 flex-shrink-0 dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.src = cocoLogoImg;
