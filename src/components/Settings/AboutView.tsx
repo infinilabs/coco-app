@@ -62,6 +62,16 @@ export default function AboutView() {
     ];
   }, [t]);
 
+  const handleClick = (link: Link) => {
+    const { url, onPress } = link;
+
+    if (url) {
+      return OpenURLWithBrowser(url);
+    }
+
+    onPress?.();
+  };
+
   return (
     <div className="flex h-[calc(100vh-170px)]">
       <div className="flex flex-col items-center justify-center w-[70%] pr-10 text-[#999] text-sm">
@@ -100,17 +110,20 @@ export default function AboutView() {
                   className: "size-4 text-[#999]",
                 })}
 
-                <span className="text-[#333] dark:text-white/80">{label}</span>
+                <span
+                  className="text-[#333] dark:text-white/80 cursor-pointer hover:text-[#027FFE] transition"
+                  onClick={() => {
+                    handleClick(item);
+                  }}
+                >
+                  {label}
+                </span>
               </div>
 
               <SquareArrowOutUpRight
                 className="text-[#027FFE] size-4 cursor-pointer"
                 onClick={() => {
-                  if (url) {
-                    return OpenURLWithBrowser(url);
-                  }
-
-                  onPress?.();
+                  handleClick(item);
                 }}
               />
             </div>
