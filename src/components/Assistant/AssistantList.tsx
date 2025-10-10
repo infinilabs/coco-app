@@ -30,19 +30,23 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
   const setCurrentAssistant = useConnectStore((state) => {
     return state.setCurrentAssistant;
   });
+  const assistantList = useConnectStore((state) => state.assistantList);
+
   const aiAssistant = useShortcutsStore((state) => state.aiAssistant);
+
   const [assistants, setAssistants] = useState<any[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
   const popoverButtonRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [keyword, setKeyword] = useState("");
+
   const debounceKeyword = useDebounce(keyword, { wait: 500 });
+
   const askAiAssistantId = useSearchStore((state) => state.askAiAssistantId);
   const setAskAiAssistantId = useSearchStore((state) => {
     return state.setAskAiAssistantId;
   });
-  const assistantList = useConnectStore((state) => state.assistantList);
 
   const { fetchAssistant } = AssistantFetcher({
     debounceKeyword,

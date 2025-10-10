@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useRef } from "react";
-import { debounce } from "lodash-es";
+import { debounce, orderBy } from "lodash-es";
 
 import type {
   QueryHits,
@@ -65,7 +65,9 @@ export function useSearch() {
     response: MultiSourceQueryResponse,
     searchInput: string
   ) => {
-    const data = response?.hits || [];
+    const hits = response?.hits ?? [];
+
+    const data = orderBy(hits, "score", "desc");
 
     const searchData = data.reduce(
       (acc: SearchDataBySource, item: QueryHits) => {

@@ -117,7 +117,8 @@ export const useSyncStore = () => {
   const setShowTooltip = useAppStore((state) => state.setShowTooltip);
   const setEndpoint = useAppStore((state) => state.setEndpoint);
   const setLanguage = useAppStore((state) => state.setLanguage);
-  const { setCurrentService } = useConnectStore();
+  
+  const setServerListSilently = useConnectStore((state) => state.setServerListSilently);
 
   useEffect(() => {
     if (!resetFixedWindow) {
@@ -185,7 +186,6 @@ export const useSyncStore = () => {
           connectionTimeout,
           querySourceTimeout,
           allowSelfSignature,
-          currentService,
         } = payload;
         if (isNumber(connectionTimeout)) {
           setConnectionTimeout(connectionTimeout);
@@ -194,7 +194,6 @@ export const useSyncStore = () => {
           setQueryTimeout(querySourceTimeout);
         }
         setAllowSelfSignature(allowSelfSignature);
-        setCurrentService(currentService);
       }),
 
       platformAdapter.listenEvent("change-appearance-store", ({ payload }) => {
@@ -234,6 +233,10 @@ export const useSyncStore = () => {
         setShowTooltip(showTooltip);
         setEndpoint(endpoint);
         setLanguage(language);
+      }),
+
+      platformAdapter.listenEvent("server-list-changed", ({ payload }) => {
+        setServerListSilently(payload);
       }),
     ]);
 
