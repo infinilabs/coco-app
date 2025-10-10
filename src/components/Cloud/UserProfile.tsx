@@ -24,13 +24,13 @@ export function UserProfile({ server, userInfo, onLogout }: UserProfileProps) {
             <img
               src={userInfo?.avatar}
               alt=""
-              className="w-6 h-6"
+              className="w-6 h-6 dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
               onError={() => {
                 setImageLoadError(true);
               }}
             />
           ) : (
-            <User className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+            <User className="w-6 h-6 text-gray-500 dark:text-gray-400 dark:drop-shadow-[0_0_6px_rgb(255,255,255)]" />
           )}
         </div>
         <div className="flex-1">

@@ -232,11 +232,11 @@ export function ServerList({ clearChat }: ServerListProps) {
                         : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
                     }`}
                 >
-                  <div className="flex items-center gap-2 overflow-hidden min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
                     <img
                       src={server?.provider?.icon || logoImg}
                       alt={server.name}
-                      className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800"
+                      className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.src = logoImg;

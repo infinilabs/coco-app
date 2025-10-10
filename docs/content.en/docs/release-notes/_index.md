@@ -22,6 +22,7 @@ fix: automatic update of service list #913
 ### ✈️ Improvements
 
 refactor: improve sorting logic of search results #910
+style: add dark drop shadow to images #912
 
 ## 0.8.0 (2025-09-28)
 

@@ -88,7 +88,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
     if (visibleExtensionDetail && selectedExtension) {
       return (
         <div className="flex items-center gap-2">
-          <img src={selectedExtension.icon} className="size-5" />
+          <img src={selectedExtension.icon} className="size-5 dark:drop-shadow-[0_0_6px_rgb(255,255,255)]" />
           <span className="text-sm">{selectedExtension.name}</span>
         </div>
       );
