@@ -7,13 +7,13 @@ use crate::common::traits::SearchSource;
 use crate::server::servers::logout_coco_server;
 use crate::server::servers::mark_server_as_offline;
 use function_name::named;
-use futures::StreamExt;
 use futures::stream::FuturesUnordered;
+use futures::StreamExt;
 use reqwest::StatusCode;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager};
-use tokio::time::{Duration, timeout};
+use tokio::time::{timeout, Duration};
 
 #[named]
 #[tauri::command]
@@ -397,17 +397,41 @@ async fn query_coco_fusion_multi_query_sources(
     })
 }
 
-fn boosted_levenshtein_rerank(
+use std::collections::HashSet;
+use strsim::levenshtein;
+
+/// Tokenize text into lowercase alphanumeric words
+fn tokenize(text: &str) -> HashSet<String> {
+    text.to_lowercase()
+        .split(|c: char| !c.is_alphanumeric())
+        .filter(|s| !s.is_empty())
+        .map(|s| s.to_string())
+        .collect()
+}
+
+/// Compute Jaccard similarity between query and title tokens
+fn jaccard_similarity(a: &str, b: &str) -> f32 {
+    let set_a = tokenize(a);
+    let set_b = tokenize(b);
+
+    if set_a.is_empty() || set_b.is_empty() {
+        return 0.0;
+    }
+
+    let intersection = set_a.intersection(&set_b).count() as f32;
+    let union = set_a.union(&set_b).count() as f32;
+
+    intersection / union
+}
+
+pub fn boosted_levenshtein_rerank(
     query: &str,
     all_hits_grouped_by_source_id: &mut HashMap<String, Vec<QueryHits>>,
 ) {
-    use strsim::levenshtein;
-
     let query_lower = query.to_lowercase();
 
     for (source_id, hits) in all_hits_grouped_by_source_id.iter_mut() {
-        // Re-ranking the calculator result is meaningless
-        if source_id == crate::extension::built_in::calculator::DATA_SOURCE_ID {
+        if source_id.eq(crate::extension::built_in::calculator::DATA_SOURCE_ID) {
             continue;
         }
 
@@ -415,25 +439,29 @@ fn boosted_levenshtein_rerank(
             let document_title = hit.document.title.as_deref().unwrap_or("");
             let document_title_lowercase = document_title.to_lowercase();
 
-            let new_score = {
-                let mut score = 0.0;
+            // --- Base Boost ---
+            let mut score = 0.0;
+            if document_title.contains(query) {
+                score += 0.4;
+            } else if document_title_lowercase.contains(&query_lower) {
+                score += 0.2;
+            }
 
-                if document_title.contains(query) {
-                    score += 0.4;
-                } else if document_title_lowercase.contains(&query_lower) {
-                    score += 0.2;
-                }
+            // --- Levenshtein Similarity ---
+            let dist = levenshtein(&query_lower, &document_title_lowercase);
+            let max_len = query_lower.len().max(document_title.len());
+            if max_len > 0 {
+                score += (1.0 - (dist as f64 / max_len as f64)) as f32 * 0.6;
+            }
 
-                let dist = levenshtein(&query_lower, &&document_title_lowercase);
-                let max_len = query_lower.len().max(document_title.len());
-                if max_len > 0 {
-                    score += (1.0 - (dist as f64 / max_len as f64)) as f32;
-                }
+            // --- Token Overlap ---
+            let jaccard = jaccard_similarity(query, document_title);
+            score += jaccard * 0.8;
 
-                score.min(1.0) as f64
-            };
+            // Cap score
+            let final_score = score.min(1.0);
 
-            hit.score = new_score;
+            hit.score = final_score as f64;
         }
     }
 }
