@@ -268,8 +268,6 @@ async fn query_coco_fusion_multi_query_sources(
         });
     }
 
-    let now = std::time::SystemTime::now();
-
     /*
      * Re-rank the hits
      */
@@ -279,7 +277,7 @@ async fn query_coco_fusion_multi_query_sources(
 
     /*
      * Sort hits within each source by score (descending) in case data sources
-     * do not sort hits
+     * do not sort them
      */
     for hits in all_hits_grouped_by_source_id.values_mut() {
         hits.sort_by(|a, b| {
@@ -379,6 +377,11 @@ async fn query_coco_fusion_multi_query_sources(
             .partial_cmp(&a.score)
             .unwrap_or(std::cmp::Ordering::Equal)
     });
+
+    // Truncate `final_hits` in case it contains more than `size` hits
+    //
+    // Technically, we are safe to not do this. But since it is trivial, double-check it.
+    final_hits.truncate(size as usize);
 
     if final_hits.len() < 5 {
         //TODO: Add a recommendation system to suggest more sources
