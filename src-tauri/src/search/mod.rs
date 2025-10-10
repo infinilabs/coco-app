@@ -450,30 +450,7 @@ fn boosted_levenshtein_rerank(
                 score.min(1.0) as f64
             };
 
-            // Optional debug output (with truncation for long titles)
-            let truncated_title: String = document_title_lowercase.chars().take(50).collect();
-            println!(
-                "query: {:<20} | dist: {:>3} | jaccard: {:>5.3} | score: {:>6.3} | title: {:<50}",
-                query,
-                levenshtein(&query_lower, &document_title_lowercase),
-                jaccard_similarity(&query_lower, &document_title_lowercase),
-                new_score,
-                truncated_title,
-            );
-
             hit.score = new_score;
-        }
-    }
-
-    println!("Re-ranking completed.");
-    for (source_id, hits) in all_hits_grouped_by_source_id.iter() {
-        for hit in hits.iter() {
-            println!(
-                "Final score for source [{}], document title [{:?}]: [{}]",
-                source_id,
-                hit.document.title.as_deref().unwrap_or(""),
-                hit.score
-            );
         }
     }
 }
