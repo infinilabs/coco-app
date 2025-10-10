@@ -10,9 +10,7 @@ use function_name::named;
 use futures::StreamExt;
 use futures::stream::FuturesUnordered;
 use reqwest::StatusCode;
-use std::cmp::Reverse;
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager};
 use tokio::time::{Duration, timeout};
@@ -299,7 +297,7 @@ async fn query_coco_fusion_multi_query_sources(
     // max_hits_per_source could be 0, then `final_hits_grouped_by_source_id`
     // would be empty. But we don't need to worry about this case as we will
     // populate hits later.
-    let mut max_hits_per_source = size as usize / n_sources;
+    let max_hits_per_source = size as usize / n_sources;
     for (source_id, hits) in all_hits_grouped_by_source_id.iter() {
         let hits_taken = if hits.len() > max_hits_per_source {
             pruned.insert(&source_id, &hits[max_hits_per_source..]);
