@@ -204,7 +204,7 @@ export const ChatMessage = memo(function ChatMessage({
                   ) : (
                     <img
                       src={logoImg}
-                      className="w-4 h-4 dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
+                      className="w-4 h-4"
                       alt={t("assistant.message.logo")}
                     />
                   )}

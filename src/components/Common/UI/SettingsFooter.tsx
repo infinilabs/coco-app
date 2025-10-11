@@ -10,7 +10,7 @@ const Footer = () => {
           <MenuButton className="h-7 flex items-center space-x-2 px-1 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
             <img
               src={logoImg}
-              className="w-5 h-5 text-gray-600 dark:text-gray-400 dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
+              className="w-5 h-5 text-gray-600 dark:text-gray-400"
             />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Coco

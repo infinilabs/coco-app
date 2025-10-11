@@ -381,7 +381,7 @@ export function useChatActions(
           },
         });
       }
-      console.log("showChatHistory", showChatHistory);
+      // console.log("showChatHistory", showChatHistory);
 
       if (showChatHistory) {
         getChatHistory();

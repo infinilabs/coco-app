@@ -107,7 +107,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
       <>
         <img
           src={logoImg}
-          className="w-4 h-4 cursor-pointer dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
+          className="w-4 h-4 cursor-pointer"
           onClick={openSetting}
           alt={t("search.footer.logoAlt")}
         />
