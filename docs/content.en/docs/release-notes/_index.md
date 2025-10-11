@@ -20,6 +20,7 @@ feat: support opening logs from about page #915
 
 fix: automatic update of service list #913
 fix: duplicate chat content #916
+fix: resolve pinned window shortcut not working (#917)
 
 ### ✈️ Improvements
 

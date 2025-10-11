@@ -1,9 +1,6 @@
 import { MessageSquarePlus } from "lucide-react";
-import clsx from "clsx";
 
 import HistoryIcon from "@/icons/History";
-import PinOffIcon from "@/icons/PinOff";
-import PinIcon from "@/icons/Pin";
 import WindowsFullIcon from "@/icons/WindowsFull";
 import { useAppStore } from "@/stores/appStore";
 import type { Chat } from "@/types/chat";
@@ -12,6 +9,7 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { HISTORY_PANEL_ID } from "@/constants";
 import { AssistantList } from "./AssistantList";
 import { ServerList } from "./ServerList";
+import TogglePin from "../Common/TogglePin";
 
 interface ChatHeaderProps {
   clearChat: () => void;
@@ -34,21 +32,9 @@ export function ChatHeader({
   showChatHistory = true,
   assistantIDs,
 }: ChatHeaderProps) {
-  const { isPinned, setIsPinned, isTauri } = useAppStore();
+  const { isTauri } = useAppStore();
 
-  const { historicalRecords, newSession, fixedWindow, external } =
-    useShortcutsStore();
-
-  const togglePin = async () => {
-    try {
-      const { isPinned } = useAppStore.getState();
-
-      setIsPinned(!isPinned);
-    } catch (err) {
-      console.error("Failed to toggle window pin state:", err);
-      setIsPinned(isPinned);
-    }
-  };
+  const { historicalRecords, newSession, external } = useShortcutsStore();
 
   return (
     <header
@@ -101,16 +87,7 @@ export function ChatHeader({
 
       {isTauri ? (
         <div className="flex items-center gap-2">
-          <button
-            onClick={togglePin}
-            className={clsx("inline-flex", {
-              "text-blue-500": isPinned,
-            })}
-          >
-            <VisibleKey shortcut={fixedWindow} onKeyPress={togglePin}>
-              {isPinned ? <PinIcon /> : <PinOffIcon />}
-            </VisibleKey>
-          </button>
+          <TogglePin className="inline-flex" />
 
           <ServerList clearChat={clearChat} />
 
