@@ -52,7 +52,7 @@ export const useStreamChat = (options: Options) => {
       unlistenRef.current = await platformAdapter.listenEvent(
         clientId,
         ({ payload }) => {
-          console.log(clientId, JSON.parse(payload));
+          //console.log(clientId, JSON.parse(payload));
 
           const chunkData = JSON.parse(payload);
 

@@ -35,12 +35,7 @@ export default function StandaloneChat({}: StandaloneChatProps) {
     setIsTauri(true);
   }, []);
 
-  const {
-    setCurrentAssistant,
-    assistantList,
-    setVisibleStartPage,
-    currentService,
-  } = useConnectStore();
+  const currentService = useConnectStore((state) => state.currentService);
 
   const chatAIRef = useRef<ChatAIRef>(null);
 
@@ -77,7 +72,7 @@ export default function StandaloneChat({}: StandaloneChatProps) {
         query: keyword,
       });
       response = response ? JSON.parse(response) : null;
-      console.log("_history", response);
+      // console.log("_history", response);
       const hits = response?.hits?.hits || [];
       setChats(hits);
     } catch (error) {
@@ -112,39 +107,6 @@ export default function StandaloneChat({}: StandaloneChatProps) {
     chatAIRef.current?.init(params);
   };
 
-  const chatHistory = async (chat: typeChat) => {
-    try {
-      let response: any = await platformAdapter.commands(
-        "session_chat_history",
-        {
-          serverId: currentService?.id,
-          sessionId: chat?._id || "",
-          from: 0,
-          size: 500,
-        }
-      );
-      response = response ? JSON.parse(response) : null;
-      console.log("id_history", response);
-      const hits = response?.hits?.hits || [];
-      // set current assistant
-      const lastAssistantId = hits[hits.length - 1]?._source?.assistant_id;
-      const matchedAssistant = assistantList?.find(
-        (assistant) => assistant._id === lastAssistantId
-      );
-      if (matchedAssistant) {
-        setCurrentAssistant(matchedAssistant);
-      }
-      //
-      const updatedChat: typeChat = {
-        ...chat,
-        messages: hits,
-      };
-      setActiveChat(updatedChat);
-    } catch (error) {
-      console.error("session_chat_history:", error);
-    }
-  };
-
   const chatClose = async () => {
     if (!activeChat?._id) return;
     try {
@@ -153,26 +115,14 @@ export default function StandaloneChat({}: StandaloneChatProps) {
         sessionId: activeChat?._id,
       });
       response = response ? JSON.parse(response) : null;
-      console.log("_close", response);
+      // console.log("_close", response);
     } catch (error) {
       console.error("close_session_chat:", error);
     }
   };
 
   const onSelectChat = async (chat: any) => {
-    chatClose();
-    try {
-      let response: any = await platformAdapter.commands("open_session_chat", {
-        serverId: currentService?.id,
-        sessionId: chat?._id,
-      });
-      response = response ? JSON.parse(response) : null;
-      console.log("_open", response);
-      chatHistory(response);
-      setVisibleStartPage(false);
-    } catch (error) {
-      console.error("open_session_chat:", error);
-    }
+    chatAIRef.current?.onSelectChat(chat);
   };
 
   const cancelChat = async () => {
@@ -317,6 +267,7 @@ export default function StandaloneChat({}: StandaloneChatProps) {
               isChatPage={isChatPage}
               getFileUrl={getFileUrl}
               changeInput={setInput}
+              showChatHistory={true}
             />
           </div>
 

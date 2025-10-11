@@ -198,7 +198,7 @@ export function useSearch() {
         }
       }
 
-      console.log("_suggest", searchInput, response);
+      //console.log("_suggest", searchInput, response);
 
       if (timerRef.current) {
         clearTimeout(timerRef.current);

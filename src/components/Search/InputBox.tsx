@@ -121,7 +121,7 @@ export default function ChatInput({
   const handleSubmit = useCallback(() => {
     const trimmedValue = inputValue.trim();
 
-    console.log("handleSubmit", trimmedValue, disabled);
+    // console.log("handleSubmit", trimmedValue, disabled);
 
     if ((trimmedValue || !isEmpty(uploadAttachments)) && !disabled) {
       changeInput("");

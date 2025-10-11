@@ -52,6 +52,7 @@ export interface ChatAIRef {
   init: (params: SendMessageParams) => void;
   cancelChat: () => void;
   clearChat: () => void;
+  onSelectChat: (chat: Chat) => void;
 }
 
 const ChatAI = memo(
@@ -80,6 +81,7 @@ const ChatAI = memo(
         init: init,
         cancelChat: () => cancelChat(activeChat),
         clearChat: clearChat,
+        onSelectChat: onSelectChat,
       }));
 
       const curChatEnd = useChatStore((state) => state.curChatEnd);
