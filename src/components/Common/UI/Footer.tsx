@@ -5,13 +5,10 @@ import clsx from "clsx";
 
 import CommonIcon from "@/components/Common/Icons/CommonIcon";
 import Copyright from "@/components/Common/Copyright";
-import PinOffIcon from "@/icons/PinOff";
-import PinIcon from "@/icons/Pin";
 import logoImg from "@/assets/icon.svg";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useUpdateStore } from "@/stores/updateStore";
-import VisibleKey from "../VisibleKey";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { formatKey } from "@/utils/keyboardUtils";
 import source_default_img from "@/assets/images/source_default.png";
@@ -19,6 +16,7 @@ import source_default_dark_img from "@/assets/images/source_default_dark.png";
 import { useThemeStore } from "@/stores/themeStore";
 import platformAdapter from "@/utils/platformAdapter";
 import FontIcon from "../Icons/FontIcon";
+import TogglePin from "../TogglePin";
 
 interface FooterProps {
   setIsPinnedWeb?: (value: boolean) => void;
@@ -37,28 +35,11 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
 
   const isDark = useThemeStore((state) => state.isDark);
 
-  const { isTauri, isPinned, setIsPinned } = useAppStore();
+  const { isTauri } = useAppStore();
 
   const { setVisible, updateInfo, skipVersions } = useUpdateStore();
 
-  const { fixedWindow, modifierKey } = useShortcutsStore();
-
-  const togglePin = async () => {
-    try {
-      const { isTauri, isPinned } = useAppStore.getState();
-
-      const nextPinned = !isPinned;
-
-      if (!isTauri) {
-        setIsPinnedWeb?.(nextPinned);
-      }
-
-      setIsPinned(nextPinned);
-    } catch (err) {
-      console.error("Failed to toggle window pin state:", err);
-      setIsPinned(isPinned);
-    }
-  };
+  const { modifierKey } = useShortcutsStore();
 
   const openSetting = useCallback(() => {
     return platformAdapter.emitEvent("open_settings", "");
@@ -88,7 +69,10 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
     if (visibleExtensionDetail && selectedExtension) {
       return (
         <div className="flex items-center gap-2">
-          <img src={selectedExtension.icon} className="size-5 dark:drop-shadow-[0_0_6px_rgb(255,255,255)]" />
+          <img
+            src={selectedExtension.icon}
+            className="size-5 dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
+          />
           <span className="text-sm">{selectedExtension.name}</span>
         </div>
       );
@@ -139,17 +123,12 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
           <div className="flex items-center space-x-2">
             {renderLeft()}
 
-            <button
-              onClick={togglePin}
+            <TogglePin
               className={clsx({
-                "text-blue-500": isPinned,
                 "pl-2": hasUpdate,
               })}
-            >
-              <VisibleKey shortcut={fixedWindow} onKeyPress={togglePin}>
-                {isPinned ? <PinIcon /> : <PinOffIcon />}
-              </VisibleKey>
-            </button>
+              setIsPinnedWeb={setIsPinnedWeb}
+            />
           </div>
         </div>
       ) : (
