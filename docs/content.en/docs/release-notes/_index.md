@@ -15,6 +15,7 @@ Information about release notes of Coco App is provided here.
 
 feat: support switching groups via keyboard shortcuts #911
 feat: support opening logs from about page #915
+feat: support moving cursor with home and end keys #918
 
 ### 🐛 Bug fix
 
