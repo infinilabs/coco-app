@@ -34,6 +34,7 @@ use objc2_core_graphics::CGEventType;
 use objc2_core_graphics::CGMouseButton;
 use objc2_core_graphics::CGRectGetMidX;
 use objc2_core_graphics::CGRectGetMinY;
+use objc2_core_graphics::CGRectIntersectsRect;
 use objc2_core_graphics::CGWindowID;
 
 use super::error::Error;
@@ -46,12 +47,7 @@ use std::collections::HashMap;
 use std::sync::{LazyLock, Mutex};
 
 fn intersects(r1: CGRect, r2: CGRect) -> bool {
-    let overlapping = !(r1.origin.x + r1.size.width < r2.origin.x
-        || r1.origin.y + r1.size.height < r2.origin.y
-        || r1.origin.x > r2.origin.x + r2.size.width
-        || r1.origin.y > r2.origin.y + r2.size.height);
-
-    overlapping
+    unsafe { CGRectIntersectsRect(r1, r2) }
 }
 
 /// Core graphics APIs use flipped coordinate system, while AppKit uses the
@@ -461,6 +457,9 @@ fn get_frontmost_window_close_button_frame() -> Result<CGRect, Error> {
 /// 2. For non-main displays, it assumes that they don't have a menu bar, but macOS
 ///    puts a menu bar on every display.
 ///
+/// Update: This could be wrong, but looks like Apple fixed these 2 bugs in macOS
+/// 26. At least the buggy behaviors disappear in my test.
+///
 ///
 /// [^1]: Visible frame: a rectangle defines the portion of the screen in which it
 ///      is currently safe to draw your app’s content.
@@ -635,4 +634,57 @@ pub(crate) fn set_frontmost_window_last_frame(window_id: CGWindowID, frame: CGRe
 pub(crate) fn get_frontmost_window_last_frame(window_id: CGWindowID) -> Option<CGRect> {
     let map = LAST_FRAME.lock().unwrap();
     map.get(&window_id).cloned()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_intersects_adjacent_rects_x() {
+        let r1 = CGRect::new(CGPoint::new(0.0, 0.0), CGSize::new(100.0, 100.0));
+        let r2 = CGRect::new(CGPoint::new(100.0, 0.0), CGSize::new(100.0, 100.0));
+        assert!(
+            !intersects(r1, r2),
+            "Adjacent rects on X should not intersect"
+        );
+    }
+
+    #[test]
+    fn test_intersects_adjacent_rects_y() {
+        let r1 = CGRect::new(CGPoint::new(0.0, 0.0), CGSize::new(100.0, 100.0));
+        let r2 = CGRect::new(CGPoint::new(0.0, 100.0), CGSize::new(100.0, 100.0));
+        assert!(
+            !intersects(r1, r2),
+            "Adjacent rects on Y should not intersect"
+        );
+    }
+
+    #[test]
+    fn test_intersects_overlapping_rects() {
+        let r1 = CGRect::new(CGPoint::new(0.0, 0.0), CGSize::new(100.0, 100.0));
+        let r2 = CGRect::new(CGPoint::new(50.0, 50.0), CGSize::new(100.0, 100.0));
+        assert!(intersects(r1, r2), "Overlapping rects should intersect");
+    }
+
+    #[test]
+    fn test_intersects_separate_rects() {
+        let r1 = CGRect::new(CGPoint::new(0.0, 0.0), CGSize::new(100.0, 100.0));
+        let r2 = CGRect::new(CGPoint::new(101.0, 101.0), CGSize::new(100.0, 100.0));
+        assert!(!intersects(r1, r2), "Separate rects should not intersect");
+    }
+
+    #[test]
+    fn test_intersects_contained_rect() {
+        let r1 = CGRect::new(CGPoint::new(0.0, 0.0), CGSize::new(100.0, 100.0));
+        let r2 = CGRect::new(CGPoint::new(10.0, 10.0), CGSize::new(50.0, 50.0));
+        assert!(intersects(r1, r2), "Contained rect should intersect");
+    }
+
+    #[test]
+    fn test_intersects_identical_rects() {
+        let r1 = CGRect::new(CGPoint::new(0.0, 0.0), CGSize::new(100.0, 100.0));
+        let r2 = CGRect::new(CGPoint::new(0.0, 0.0), CGSize::new(100.0, 100.0));
+        assert!(intersects(r1, r2), "Identical rects should intersect");
+    }
 }
