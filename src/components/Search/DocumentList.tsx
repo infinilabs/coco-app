@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useInfiniteScroll } from "ahooks";
 import { useTranslation } from "react-i18next";
+import { Data } from "ahooks/lib/useInfiniteScroll/types";
+import { nanoid } from "nanoid";
+import { isNil } from "lodash-es";
 
 import { useSearchStore } from "@/stores/searchStore";
 import { SearchHeader } from "./SearchHeader";
@@ -11,9 +14,7 @@ import { Get } from "@/api/axiosRequest";
 import { useAppStore } from "@/stores/appStore";
 import { useConnectStore } from "@/stores/connectStore";
 import SearchEmpty from "../Common/SearchEmpty";
-import { Data } from "ahooks/lib/useInfiniteScroll/types";
-import { nanoid } from "nanoid";
-import { isNil } from "lodash-es";
+import Scrollbar from "@/components/Common/Scrollbar";
 
 interface DocumentListProps {
   onSelectDocument: (id: string) => void;
@@ -297,8 +298,8 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         />
       </div>
 
-      <div
-        className="flex-1 overflow-auto custom-scrollbar pr-0.5"
+      <Scrollbar
+        className="flex-1 overflow-auto pr-0.5"
         ref={containerRef}
       >
         {data?.list && data.list.length > 0 && (
@@ -334,7 +335,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
             <SearchEmpty />
           </div>
         )}
-      </div>
+      </Scrollbar>
     </div>
   );
 };

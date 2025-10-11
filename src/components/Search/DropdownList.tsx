@@ -16,6 +16,7 @@ import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
 import { SearchSource } from "./SearchSource";
 import DropdownListItem from "./DropdownListItem";
 import platformAdapter from "@/utils/platformAdapter";
+import Scrollbar from "@/components/Common/Scrollbar";
 
 type ISearchData = Record<string, QueryHits[]>;
 
@@ -149,10 +150,10 @@ function DropdownList({
   });
 
   return (
-    <div
+    <Scrollbar
       ref={containerRef}
       data-tauri-drag-region
-      className="h-full w-full p-2 flex flex-col overflow-y-auto custom-scrollbar focus:outline-none"
+      className="h-full w-full p-2 flex flex-col overflow-y-auto focus:outline-none"
       tabIndex={0}
       role="listbox"
       aria-label={t("search.header.results")}
@@ -189,7 +190,7 @@ function DropdownList({
           })}
         </div>
       ))}
-    </div>
+    </Scrollbar>
   );
 }
 
