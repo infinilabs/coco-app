@@ -29,7 +29,8 @@ export function useChatActions(
   isDeepThinkActive?: boolean,
   isMCPActive?: boolean,
   changeInput?: (val: string) => void,
-  showChatHistory?: boolean
+  showChatHistory?: boolean,
+  getChatHistoryChatPage?: () => void,
 ) {
   const isCurrentLogin = useAuthStore((state) => state.isCurrentLogin);
 
@@ -384,7 +385,7 @@ export function useChatActions(
       // console.log("showChatHistory", showChatHistory);
 
       if (showChatHistory) {
-        getChatHistory();
+        getChatHistoryChatPage ? getChatHistoryChatPage() : getChatHistory();
       }
     },
     [

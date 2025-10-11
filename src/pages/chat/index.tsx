@@ -268,6 +268,7 @@ export default function StandaloneChat({}: StandaloneChatProps) {
               getFileUrl={getFileUrl}
               changeInput={setInput}
               showChatHistory={true}
+              getChatHistoryChatPage={getChatHistory}
             />
           </div>
 

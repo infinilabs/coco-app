@@ -41,6 +41,7 @@ interface ChatAIProps {
   startPage?: StartPage;
   formatUrl?: (data: any) => string;
   instanceId?: string;
+  getChatHistoryChatPage?: () => void;
 }
 
 export interface SendMessageParams {
@@ -74,6 +75,7 @@ const ChatAI = memo(
         startPage,
         formatUrl,
         instanceId,
+        getChatHistoryChatPage,
       },
       ref
     ) => {
@@ -195,7 +197,8 @@ const ChatAI = memo(
         isDeepThinkActive,
         isMCPActive,
         changeInput,
-        showChatHistory
+        showChatHistory,
+        getChatHistoryChatPage,
       );
 
       const { dealMsg } = useMessageHandler(
