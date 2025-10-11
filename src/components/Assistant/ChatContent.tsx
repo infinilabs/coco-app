@@ -5,7 +5,6 @@ import { ChatMessage } from "@/components/ChatMessage";
 import { Greetings } from "./Greetings";
 import AttachmentList from "@/components/Assistant/AttachmentList";
 import { useChatScroll } from "@/hooks/useChatScroll";
-
 import type { Chat, IChunkData } from "@/types/chat";
 import { useConnectStore } from "@/stores/connectStore";
 // import SessionFile from "./SessionFile";
@@ -45,20 +44,23 @@ export const ChatContent = ({
   handleSendMessage,
   formatUrl,
 }: ChatContentProps) => {
-  const { currentSessionId, setCurrentSessionId } = useConnectStore();
-
   const { t } = useTranslation();
 
-  const { uploadAttachments } = useChatStore();
+  const currentSessionId = useConnectStore((state) => state.currentSessionId);
+  const setCurrentSessionId = useConnectStore(
+    (state) => state.setCurrentSessionId
+  );
+  const visibleStartPage = useConnectStore((state) => state.visibleStartPage);
+
+  const uploadAttachments = useChatStore((state) => state.uploadAttachments);
+  const curChatEnd = useChatStore((state) => state.curChatEnd);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { scrollToBottom } = useChatScroll(messagesEndRef);
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
-  const visibleStartPage = useConnectStore((state) => state.visibleStartPage);
-
-  const curChatEnd = useChatStore((state) => state.curChatEnd);
 
   useEffect(() => {
     setIsAtBottom(true);

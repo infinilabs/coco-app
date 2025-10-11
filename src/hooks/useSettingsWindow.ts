@@ -68,7 +68,7 @@ export default function useSettingsWindow() {
 
   useEffect(() => {
     const unlisten = platformAdapter.listenEvent("open_settings", async (event) => {
-      console.log("open_settings event received:", event);
+      //console.log("open_settings event received:", event);
       const tab = event.payload as string | "";
 
       platformAdapter.emitEvent("tab_index", tab);

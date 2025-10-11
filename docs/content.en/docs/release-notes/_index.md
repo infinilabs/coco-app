@@ -19,6 +19,7 @@ feat: support opening logs from about page #915
 ### 🐛 Bug fix
 
 fix: automatic update of service list #913
+fix: duplicate chat content #916
 
 ### ✈️ Improvements
 

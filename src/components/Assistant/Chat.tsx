@@ -41,6 +41,7 @@ interface ChatAIProps {
   startPage?: StartPage;
   formatUrl?: (data: any) => string;
   instanceId?: string;
+  getChatHistoryChatPage?: () => void;
 }
 
 export interface SendMessageParams {
@@ -52,6 +53,7 @@ export interface ChatAIRef {
   init: (params: SendMessageParams) => void;
   cancelChat: () => void;
   clearChat: () => void;
+  onSelectChat: (chat: Chat) => void;
 }
 
 const ChatAI = memo(
@@ -73,6 +75,7 @@ const ChatAI = memo(
         startPage,
         formatUrl,
         instanceId,
+        getChatHistoryChatPage,
       },
       ref
     ) => {
@@ -80,6 +83,7 @@ const ChatAI = memo(
         init: init,
         cancelChat: () => cancelChat(activeChat),
         clearChat: clearChat,
+        onSelectChat: onSelectChat,
       }));
 
       const curChatEnd = useChatStore((state) => state.curChatEnd);
@@ -193,7 +197,8 @@ const ChatAI = memo(
         isDeepThinkActive,
         isMCPActive,
         changeInput,
-        showChatHistory
+        showChatHistory,
+        getChatHistoryChatPage,
       );
 
       const { dealMsg } = useMessageHandler(

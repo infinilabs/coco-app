@@ -35,7 +35,7 @@ export function useMessageHandler(
       }
 
       messageTimeoutRef.current = setTimeout(() => {
-        console.log("AI response timeout");
+        // console.log("AI response timeout");
         setTimedoutShow(true);
         onCancel();
       }, (connectionTimeout ?? 120) * 1000);
@@ -108,7 +108,7 @@ export function useMessageHandler(
             clearTimeout(messageTimeoutRef.current);
           }
           setCurChatEnd(true);
-          console.log("AI finished output");
+          // console.log("AI finished output");
           return;
         }
       } catch (error) {

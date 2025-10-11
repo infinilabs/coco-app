@@ -29,7 +29,8 @@ export function useChatActions(
   isDeepThinkActive?: boolean,
   isMCPActive?: boolean,
   changeInput?: (val: string) => void,
-  showChatHistory?: boolean
+  showChatHistory?: boolean,
+  getChatHistoryChatPage?: () => void,
 ) {
   const isCurrentLogin = useAuthStore((state) => state.isCurrentLogin);
 
@@ -197,17 +198,17 @@ export function useChatActions(
       ) {
         try {
           const response = JSON.parse(msg);
-          console.log("first", response);
+          // console.log("first", response);
 
           let updatedChat: Chat;
           if (Array.isArray(response)) {
             curIdRef.current = response[0]?._id;
             curSessionIdRef.current = response[0]?._source?.session_id;
-            console.log(
-              "curIdRef-curSessionIdRef-Array",
-              curIdRef.current,
-              curSessionIdRef.current
-            );
+            // console.log(
+            //   "curIdRef-curSessionIdRef-Array",
+            //   curIdRef.current,
+            //   curSessionIdRef.current
+            // );
             updatedChat = {
               ...updatedChatRef.current,
               messages: [
@@ -215,16 +216,16 @@ export function useChatActions(
                 ...(response || []),
               ],
             };
-            console.log("array", updatedChat, updatedChatRef.current?.messages);
+            // console.log("array", updatedChat, updatedChatRef.current?.messages);
           } else {
             const newChat: Chat = response;
             curIdRef.current = response?.payload?.id;
             curSessionIdRef.current = response?.payload?.session_id;
-            console.log(
-              "curIdRef-curSessionIdRef",
-              curIdRef.current,
-              curSessionIdRef.current
-            );
+            // console.log(
+            //   "curIdRef-curSessionIdRef",
+            //   curIdRef.current,
+            //   curSessionIdRef.current
+            // );
 
             newChat._source = {
               ...response?.payload,
@@ -252,7 +253,7 @@ export function useChatActions(
     async (timestamp: number) => {
       cleanupListeners();
 
-      console.log("setupListeners", clientId, timestamp);
+      // console.log("setupListeners", clientId, timestamp);
       const unlisten_chat_message = await platformAdapter.listenEvent(
         `chat-stream-${clientId}-${timestamp}`,
         (event) => {
@@ -300,12 +301,45 @@ export function useChatActions(
     [setupListeners]
   );
 
+  const getChatHistory = useCallback(async () => {
+    let response: any;
+    if (isTauri) {
+      if (await unrequitable()) {
+        return setChats([]);
+      }
+
+      response = await platformAdapter.commands("chat_history", {
+        serverId: currentService?.id,
+        from: 0,
+        size: 100,
+        query: keyword,
+      });
+
+      response = response ? JSON.parse(response) : null;
+    } else {
+      const [_error, res] = await Get(`/chat/_history`, {
+        from: 0,
+        size: 100,
+      });
+      response = res;
+    }
+
+    const hits = response?.hits?.hits || [];
+    setChats(hits);
+  }, [
+    currentService?.id,
+    keyword,
+    isTauri,
+    currentService?.enabled,
+    isCurrentLogin,
+  ]);
+
   const createNewChat = useCallback(
     async (params?: SendMessageParams) => {
       const { message, attachments } = params || {};
 
-      console.log("message", message);
-      console.log("attachments", attachments);
+      // console.log("message", message);
+      // console.log("attachments", attachments);
 
       if (!message && isEmpty(attachments)) return;
 
@@ -325,7 +359,7 @@ export function useChatActions(
       if (isTauri) {
         if (!currentService?.id) return;
 
-        console.log("chat_create", clientId, timestamp);
+        // console.log("chat_create", clientId, timestamp);
 
         await platformAdapter.commands("chat_create", {
           serverId: currentService?.id,
@@ -334,7 +368,7 @@ export function useChatActions(
           queryParams,
           clientId: `chat-stream-${clientId}-${timestamp}`,
         });
-        console.log("_create end", message);
+        // console.log("_create end", message);
         resetChatState();
       } else {
         await streamPost({
@@ -342,11 +376,16 @@ export function useChatActions(
           body: { message },
           queryParams,
           onMessage: (line) => {
-            console.log("⏳", line);
+            // console.log("⏳", line);
             handleChatCreateStreamMessage(line);
             // append to chat box
           },
         });
+      }
+      // console.log("showChatHistory", showChatHistory);
+
+      if (showChatHistory) {
+        getChatHistoryChatPage ? getChatHistoryChatPage() : getChatHistory();
       }
     },
     [
@@ -360,6 +399,8 @@ export function useChatActions(
       currentAssistant,
       chatClose,
       clientId,
+      showChatHistory,
+      getChatHistory,
     ]
   );
 
@@ -386,7 +427,7 @@ export function useChatActions(
 
       if (isTauri) {
         if (!currentService?.id) return;
-        console.log("chat_chat", clientId, timestamp);
+        // console.log("chat_chat", clientId, timestamp);
         await platformAdapter.commands("chat_chat", {
           serverId: currentService?.id,
           sessionId: newChat?._id,
@@ -395,7 +436,7 @@ export function useChatActions(
           attachments,
           clientId: `chat-stream-${clientId}-${timestamp}`,
         });
-        console.log("chat_chat end", message, clientId);
+        // console.log("chat_chat end", message, clientId);
         resetChatState();
       } else {
         await streamPost({
@@ -403,7 +444,7 @@ export function useChatActions(
           body: { message },
           queryParams,
           onMessage: (line) => {
-            console.log("line", line);
+            // console.log("line", line);
             handleChatCreateStreamMessage(line);
             // append to chat box
           },
@@ -467,39 +508,6 @@ export function useChatActions(
     },
     [currentService?.id, isTauri]
   );
-
-  const getChatHistory = useCallback(async () => {
-    let response: any;
-    if (isTauri) {
-      if (await unrequitable()) {
-        return setChats([]);
-      }
-
-      response = await platformAdapter.commands("chat_history", {
-        serverId: currentService?.id,
-        from: 0,
-        size: 100,
-        query: keyword,
-      });
-
-      response = response ? JSON.parse(response) : null;
-    } else {
-      const [_error, res] = await Get(`/chat/_history`, {
-        from: 0,
-        size: 100,
-      });
-      response = res;
-    }
-
-    const hits = response?.hits?.hits || [];
-    setChats(hits);
-  }, [
-    currentService?.id,
-    keyword,
-    isTauri,
-    currentService?.enabled,
-    isCurrentLogin,
-  ]);
 
   useEffect(() => {
     if (showChatHistory) {

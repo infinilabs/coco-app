@@ -139,7 +139,7 @@ const ExtensionStore = ({ extensionId }: { extensionId?: string }) => {
       }
     );
 
-    console.log("search_extension", result);
+    // console.log("search_extension", result);
 
     setList(result ?? []);
 
