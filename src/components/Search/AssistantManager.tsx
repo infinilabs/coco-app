@@ -147,6 +147,17 @@ export function useAssistantManager({
 
         handleSubmit();
       }
+
+      if (key === "Home") {
+        e.preventDefault();
+        return currentTarget.setSelectionRange(0, 0);
+      }
+
+      if (key === "End") {
+        e.preventDefault();
+        const length = currentTarget.value.length;
+        return currentTarget.setSelectionRange(length, length);
+      }
     },
     [
       isChatMode,
