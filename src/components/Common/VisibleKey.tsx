@@ -6,6 +6,9 @@ import { last } from "lodash-es";
 import { POPOVER_PANEL_SELECTOR } from "@/constants";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useAppStore } from "@/stores/appStore";
+import { KeyType } from "ahooks/lib/useKeyPress";
+
+const keyTriggerMap = new Map<KeyType, number>();
 
 interface VisibleKeyProps extends HTMLAttributes<HTMLDivElement> {
   shortcut: string;
@@ -60,8 +63,16 @@ const VisibleKey: FC<VisibleKeyProps> = (props) => {
     setVisibleShortcut(isChildInPopover && modifierKeyPressed);
   }, [openPopover, modifierKeyPressed]);
 
-  useKeyPress(`${modifierKey}.${shortcut}`, (event) => {
-    if (!visibleShortcut) return;
+  useKeyPress(`${modifierKey}.${shortcut}`, (event, key) => {
+    if (!visibleShortcut || event.repeat) return;
+
+    const now = Date.now();
+    const last = keyTriggerMap.get(key) ?? 0;
+    const wait = 100;
+
+    if (now - last < wait) return;
+
+    keyTriggerMap.set(key, now);
 
     event.stopPropagation();
     event.preventDefault();

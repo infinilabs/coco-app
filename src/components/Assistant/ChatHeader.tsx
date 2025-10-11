@@ -87,7 +87,7 @@ export function ChatHeader({
 
       {isTauri ? (
         <div className="flex items-center gap-2">
-          <TogglePin triggerKeyPress className="inline-flex" />
+          <TogglePin className="inline-flex" />
 
           <ServerList clearChat={clearChat} />
 

@@ -5,15 +5,13 @@ import VisibleKey from "./VisibleKey";
 import { FC, HTMLAttributes } from "react";
 import PinOffIcon from "@/icons/PinOff";
 import PinIcon from "@/icons/Pin";
-import { noop } from "lodash-es";
 
 interface TogglePinProps extends HTMLAttributes<HTMLButtonElement> {
   setIsPinnedWeb?: (value: boolean) => void;
-  triggerKeyPress?: boolean;
 }
 
 const TogglePin: FC<TogglePinProps> = (props) => {
-  const { className, setIsPinnedWeb, triggerKeyPress = false } = props;
+  const { className, setIsPinnedWeb } = props;
   const { isPinned, setIsPinned } = useAppStore();
   const { fixedWindow } = useShortcutsStore();
 
@@ -29,8 +27,9 @@ const TogglePin: FC<TogglePinProps> = (props) => {
 
       setIsPinned(nextPinned);
     } catch (err) {
-      console.error("Failed to toggle window pin state:", err);
       setIsPinned(isPinned);
+
+      console.error("Failed to toggle window pin state:", err);
     }
   };
 
@@ -41,10 +40,7 @@ const TogglePin: FC<TogglePinProps> = (props) => {
         "text-blue-500": isPinned,
       })}
     >
-      <VisibleKey
-        shortcut={fixedWindow}
-        onKeyPress={triggerKeyPress ? togglePin : noop}
-      >
+      <VisibleKey shortcut={fixedWindow} onKeyPress={togglePin}>
         {isPinned ? <PinIcon /> : <PinOffIcon />}
       </VisibleKey>
     </button>
