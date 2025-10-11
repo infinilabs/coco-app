@@ -24,6 +24,7 @@ export interface TauriPlatformAdapter extends BasePlatformAdapter {
   ) => Promise<string | string[] | null>;
   metadata: typeof metadata;
   error: typeof error;
+  openLogDir: () => Promise<void>;
 }
 
 // Create Tauri adapter functions
@@ -277,14 +278,14 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
         return textarea.dispatchEvent(event);
       }
 
-      // View extension should be handled separately as it needs frontend to open 
+      // View extension should be handled separately as it needs frontend to open
       // a page
       const onOpened = data?.on_opened;
       if (onOpened?.Extension?.ty?.View) {
         const { setViewExtensionOpened } = useSearchStore.getState();
         const viewData = onOpened.Extension.ty.View;
         const extensionPermission = onOpened.Extension.permission;
-      
+
         setViewExtensionOpened([viewData.page, extensionPermission]);
         return;
       }
@@ -351,6 +352,15 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     async getCurrentWindowLabel() {
       const window = await windowWrapper.getWebviewWindow();
       return window.label;
+    },
+
+    async openLogDir() {
+      const { appLogDir } = await import("@tauri-apps/api/path");
+      const { revealItemInDir } = await import("@tauri-apps/plugin-opener");
+
+      const logDir = await appLogDir();
+
+      revealItemInDir(logDir);
     },
   };
 };
