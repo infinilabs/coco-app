@@ -129,6 +129,7 @@ export interface SystemOperations {
     queryParams: string[]
   ) => Promise<any[]>;
   fetchAssistant: (serverId: string, queryParams: string[]) => Promise<any>;
+  openLogDir: () => Promise<void>;
 }
 
 // Base platform adapter interface
