@@ -1,5 +1,7 @@
 import axios from "axios";
 
+axios.defaults.withCredentials = true;
+
 import { useAppStore } from "@/stores/appStore";
 
 import {
@@ -78,7 +80,7 @@ export const Get = <T>(
     }
 
     axios
-      .get(baseURL + url, { params })
+      .get(baseURL + url, { params, withCredentials: true })
       .then((result) => {
         let res: FcResponse<T>;
         if (clearFn !== undefined) {
@@ -110,10 +112,15 @@ export const Post = <T>(
     }
 
     axios
-      .post(baseURL + url, data, {
-        params,
-        headers,
-      } as any)
+      .post(
+        baseURL + url,
+        data,
+        {
+          params,
+          headers,
+          withCredentials: true,
+        } as any
+      )
       .then((result) => {
         resolve([null, result.data as FcResponse<T>]);
       })
