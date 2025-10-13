@@ -29,6 +29,7 @@ fix: WM ext does not work when operating focused win from another display #919
 
 refactor: improve sorting logic of search results #910
 style: add dark drop shadow to images #912
+chore: add cross-domain configuration for web component #921
 
 ## 0.8.0 (2025-09-28)
 
