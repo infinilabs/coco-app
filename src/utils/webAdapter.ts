@@ -7,6 +7,7 @@ export interface WebPlatformAdapter extends BasePlatformAdapter {
   openFileDialog: (options: any) => Promise<string | string[] | null>;
   metadata: (path: string, options: any) => Promise<Record<string, any>>;
   error: (message: string) => void;
+  openLogDir: () => Promise<void>;
 }
 
 // Create Web adapter functions
@@ -261,17 +262,20 @@ export const createWebAdapter = (): WebPlatformAdapter => {
         `/assistant/_search?${queryParams?.join("&")}`,
         undefined
       );
-
       if (error) {
         console.error("_search", error);
         return {};
       }
-
       return res;
     },
 
     async getCurrentWindowLabel() {
       return "web";
+    },
+    
+    async openLogDir() {
+      console.log("openLogDir is not supported in web environment");
+      return Promise.resolve();
     },
   };
 };
