@@ -34,6 +34,7 @@ export async function streamPost({
         ...(headersStorage),
         ...(headers || {}),
       },
+      credentials: "include",
       body: JSON.stringify(body),
     });
 
