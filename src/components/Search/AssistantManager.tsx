@@ -130,7 +130,7 @@ export function useAssistantManager({
 
             clearSearchValue();
             setViewExtensionOpened([viewData.page, extensionPermission]);
-            return setViewExtensionData(selectedSearchContent);
+            return setViewExtensionData(selectedSearchContent as any);
           }
         }
 

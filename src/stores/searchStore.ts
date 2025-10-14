@@ -13,8 +13,10 @@ export type ISearchStore = {
   setMCPIds: (prevSourceDataId: string[]) => void;
   visibleContextMenu: boolean;
   setVisibleContextMenu: (visibleContextMenu: boolean) => void;
-  selectedSearchContent?: SearchDocument;
-  setSelectedSearchContent: (selectedSearchContent?: SearchDocument) => void;
+  selectedSearchContent?: Record<string, any>;
+  setSelectedSearchContent: (
+    selectedSearchContent?: Record<string, any>
+  ) => void;
   goAskAi: boolean;
   setGoAskAi: (goAskAi: boolean) => void;
   askAiMessage: string;
