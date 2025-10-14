@@ -7,6 +7,7 @@ import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
 import type { Assistant } from "@/types/chat";
 import { useAppStore } from "@/stores/appStore";
+import { navigateBack } from "@/utils";
 
 interface AssistantManagerProps {
   isChatMode: boolean;
@@ -33,9 +34,7 @@ export function useAssistantManager({
     setVisibleExtensionStore,
     setSearchValue,
     visibleExtensionDetail,
-    setVisibleExtensionDetail,
     sourceData,
-    setSourceData,
   } = useSearchStore();
 
   const { quickAiAccessAssistant, disabledExtensions } = useExtensionsStore();
@@ -101,22 +100,13 @@ export function useAssistantManager({
       const { key, shiftKey, currentTarget } = e;
       const { value } = currentTarget;
 
+      const clearSearchValue = () => {
+        changeInput("");
+        setSearchValue("");
+      };
+
       if (key === "Backspace" && value === "") {
-        if (goAskAi) {
-          return setGoAskAi(false);
-        }
-
-        if (visibleExtensionDetail) {
-          return setVisibleExtensionDetail(false);
-        }
-
-        if (visibleExtensionStore) {
-          return setVisibleExtensionStore(false);
-        }
-
-        if (sourceData) {
-          return setSourceData(void 0);
-        }
+        return navigateBack();
       }
 
       if (key === "Tab" && !isChatMode && isTauri) {
@@ -125,9 +115,23 @@ export function useAssistantManager({
         if (visibleExtensionStore) return;
 
         if (selectedSearchContent?.id === "Extension Store") {
-          changeInput("");
-          setSearchValue("");
+          clearSearchValue();
           return setVisibleExtensionStore(true);
+        }
+
+        if (selectedSearchContent?.category === "View") {
+          const onOpened = selectedSearchContent?.on_opened;
+
+          if (onOpened?.Extension?.ty?.View) {
+            const { setViewExtensionOpened, setViewExtensionData } =
+              useSearchStore.getState();
+            const viewData = onOpened.Extension.ty.View;
+            const extensionPermission = onOpened.Extension.permission;
+
+            clearSearchValue();
+            setViewExtensionOpened([viewData.page, extensionPermission]);
+            return setViewExtensionData(selectedSearchContent);
+          }
         }
 
         assistant_get();

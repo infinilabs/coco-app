@@ -93,6 +93,10 @@ const VisibleKey: FC<VisibleKeyProps> = (props) => {
       return "↩︎";
     }
 
+    if (shortcut === "backspace") {
+      return "⌫";
+    }
+
     return shortcut;
   };
 

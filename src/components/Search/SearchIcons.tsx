@@ -1,7 +1,51 @@
 import { useSearchStore } from "@/stores/searchStore";
-import { ArrowBigLeft, Search, X } from "lucide-react";
+import { ChevronLeft, Search } from "lucide-react";
 
 import FontIcon from "@/components/Common/Icons/FontIcon";
+import { FC } from "react";
+import lightDefaultIcon from "@/assets/images/source_default.png";
+import darkDefaultIcon from "@/assets/images/source_default_dark.png";
+import { useThemeStore } from "@/stores/themeStore";
+import platformAdapter from "@/utils/platformAdapter";
+import { navigateBack } from "@/utils";
+import VisibleKey from "../Common/VisibleKey";
+
+interface MultilevelWrapperProps {
+  title?: string;
+  icon?: string;
+}
+
+const MultilevelWrapper: FC<MultilevelWrapperProps> = (props) => {
+  const { icon, title = "" } = props;
+  const { isDark } = useThemeStore();
+
+  const renderIcon = () => {
+    if (!icon) {
+      return <img src={isDark ? darkDefaultIcon : lightDefaultIcon} />;
+    }
+
+    if (icon.startsWith("font_")) {
+      return <FontIcon name={icon} />;
+    }
+
+    return <img src={icon} />;
+  };
+
+  return (
+    <div className="flex items-center justify-center h-[40px] gap-1 px-2 border border-[#EDEDED] dark:border-[#202126] rounded-l-lg">
+      <VisibleKey shortcut="backspace">
+        <ChevronLeft
+          className="size-5 text-[#ccc] dark:text-[#d8d8d8] cursor-pointer"
+          onClick={navigateBack}
+        />
+      </VisibleKey>
+
+      <div className="size-5 [&>*]:size-full">{renderIcon()}</div>
+
+      <span className="text-sm whitespace-nowrap">{title}</span>
+    </div>
+  );
+};
 
 interface SearchIconsProps {
   lineCount: number;
@@ -16,13 +60,12 @@ export default function SearchIcons({
 }: SearchIconsProps) {
   const {
     sourceData,
-    setSourceData,
     goAskAi,
-    setGoAskAi,
     visibleExtensionStore,
-    setVisibleExtensionStore,
     visibleExtensionDetail,
-    setVisibleExtensionDetail,
+    selectedExtension,
+    viewExtensionOpened,
+    viewExtensionData,
   } = useSearchStore();
 
   if (isChatMode) {
@@ -30,54 +73,42 @@ export default function SearchIcons({
   }
 
   const renderContent = () => {
+    if (visibleExtensionStore) {
+      if (visibleExtensionDetail && selectedExtension) {
+        const { name, icon } = selectedExtension;
+
+        return <MultilevelWrapper title={name} icon={icon} />;
+      }
+
+      return <MultilevelWrapper title="Extensions Store" icon="font_Store" />;
+    }
+
     if (goAskAi && assistant) {
-      return (
-        <div className="flex h-8 -my-1 -mx-1">
-          <div className="flex items-center gap-2 pl-2 text-sm bg-white dark:bg-black rounded-l-sm">
-            <div className="flex items-center gap-1 text-[#333] dark:text-[#D8D8D8]">
-              {assistant.icon?.startsWith("font_") ? (
-                <FontIcon name={assistant.icon} className="size-5" />
-              ) : (
-                <img src={assistant.icon} className="size-5" />
-              )}
-              <span>{assistant.name}</span>
-            </div>
+      const { name, icon } = assistant;
 
-            <X
-              className="size-4 text-[#999] cursor-pointer"
-              onClick={() => {
-                setGoAskAi(false);
-              }}
-            />
-          </div>
-
-          <div className="relative w-4 overflow-hidden">
-            <div className="absolute size-0 border-[16px] border-transparent border-l-white dark:border-l-black"></div>
-          </div>
-        </div>
-      );
+      return <MultilevelWrapper title={name} icon={icon} />;
     }
 
-    if (sourceData || visibleExtensionStore || visibleExtensionDetail) {
-      return (
-        <ArrowBigLeft
-          className="w-4 h-4 text-[#ccc] dark:text-[#d8d8d8] cursor-pointer"
-          onClick={() => {
-            if (visibleExtensionDetail) {
-              return setVisibleExtensionDetail(false);
-            }
+    if (sourceData) {
+      const { source } = sourceData;
+      const { name, icon } = source;
 
-            if (visibleExtensionStore) {
-              return setVisibleExtensionStore(false);
-            }
-
-            setSourceData(void 0);
-          }}
-        />
-      );
+      return <MultilevelWrapper title={name} icon={icon} />;
     }
 
-    return <Search className="w-4 h-4 text-[#ccc] dark:text-[#d8d8d8]" />;
+    if (viewExtensionOpened && viewExtensionData) {
+      const { title, icon } = viewExtensionData;
+
+      const iconPath = icon ? platformAdapter.convertFileSrc(icon) : void 0;
+
+      return <MultilevelWrapper title={title} icon={iconPath} />;
+    }
+
+    return (
+      <div className="flex items-center justify-center pl-2 h-[40px] bg-[#ededed] dark:bg-[#202126]">
+        <Search className="w-4 h-4 text-[#ccc] dark:text-[#d8d8d8]" />
+      </div>
+    );
   };
 
   if (lineCount === 1) {

@@ -7,6 +7,7 @@ import { useAppStore } from "@/stores/appStore";
 import { DEFAULT_COCO_SERVER_ID, HISTORY_PANEL_ID } from "@/constants";
 import { useChatStore } from "@/stores/chatStore";
 import { getCurrentWindowService } from "@/commands/windowService";
+import { useSearchStore } from "@/stores/searchStore";
 
 // 1
 export async function copyToClipboard(text: string) {
@@ -211,4 +212,42 @@ export const getUploadedAttachmentsId = () => {
   return uploadAttachments
     .map((item) => item.attachmentId)
     .filter((id) => !isNil(id));
+};
+
+// export const
+
+export const navigateBack = () => {
+  const {
+    goAskAi,
+    visibleExtensionStore,
+    visibleExtensionDetail,
+    viewExtensionOpened,
+    viewExtensionData,
+    setGoAskAi,
+    setVisibleExtensionDetail,
+    setVisibleExtensionStore,
+    setSourceData,
+    setViewExtensionOpened,
+    setViewExtensionData,
+  } = useSearchStore.getState();
+
+  if (goAskAi) {
+    return setGoAskAi(false);
+  }
+
+  if (visibleExtensionDetail) {
+    return setVisibleExtensionDetail(false);
+  }
+
+  if (visibleExtensionStore) {
+    return setVisibleExtensionStore(false);
+  }
+
+  if (viewExtensionOpened || viewExtensionData) {
+    setViewExtensionData(void 0);
+
+    return setViewExtensionOpened(null);
+  }
+
+  setSourceData(void 0);
 };

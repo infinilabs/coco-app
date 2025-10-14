@@ -330,16 +330,19 @@ export default function ChatInput({
   return (
     <div className={`w-full relative`}>
       <div
-        className={`p-2 flex items-center dark:text-[#D8D8D8] bg-[#ededed] dark:bg-[#202126] rounded-md transition-all relative overflow-hidden`}
+        className={`flex items-center dark:text-[#D8D8D8] rounded-md transition-all relative overflow-hidden`}
       >
+        {lineCount === 1 && renderSearchIcon()}
+
         <div
           ref={containerRef}
-          className={clsx("relative w-full", {
-            "flex items-center gap-2": lineCount === 1,
-          })}
+          className={clsx(
+            "relative w-full p-2 bg-[#ededed] dark:bg-[#202126]",
+            {
+              "flex items-center gap-2": lineCount === 1,
+            }
+          )}
         >
-          {lineCount === 1 && renderSearchIcon()}
-
           {renderTextarea()}
 
           {lineCount === 1 && renderExtraIcon()}

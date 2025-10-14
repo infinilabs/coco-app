@@ -1,5 +1,6 @@
 import { SearchExtensionItem } from "@/components/Search/ExtensionStore";
 import { ExtensionPermission } from "@/components/Settings/Extensions";
+import { SearchDocument } from "@/types/search";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -12,10 +13,8 @@ export type ISearchStore = {
   setMCPIds: (prevSourceDataId: string[]) => void;
   visibleContextMenu: boolean;
   setVisibleContextMenu: (visibleContextMenu: boolean) => void;
-  selectedSearchContent?: Record<string, any>;
-  setSelectedSearchContent: (
-    selectedSearchContent?: Record<string, any>
-  ) => void;
+  selectedSearchContent?: SearchDocument;
+  setSelectedSearchContent: (selectedSearchContent?: SearchDocument) => void;
   goAskAi: boolean;
   setGoAskAi: (goAskAi: boolean) => void;
   askAiMessage: string;
@@ -45,10 +44,15 @@ export type ISearchStore = {
 
   // When we open a View extension, we set this to a non-null value.
   //
-  // The first array element is the path to the page that we should load, the 
+  // The first array element is the path to the page that we should load, the
   // second element is the permission that this extension requires.
   viewExtensionOpened: [string, ExtensionPermission | null] | null;
-  setViewExtensionOpened: (showViewExtension: [string, ExtensionPermission | null] | null) => void;
+  setViewExtensionOpened: (
+    showViewExtension: [string, ExtensionPermission | null] | null
+  ) => void;
+
+  viewExtensionData?: SearchDocument;
+  setViewExtensionData: (viewExtensionData?: SearchDocument) => void;
 };
 
 export const useSearchStore = create<ISearchStore>()(
@@ -117,6 +121,9 @@ export const useSearchStore = create<ISearchStore>()(
       viewExtensionOpened: null,
       setViewExtensionOpened: (viewExtensionOpened) => {
         return set({ viewExtensionOpened });
+      },
+      setViewExtensionData(viewExtensionData) {
+        return set({ viewExtensionData });
       },
     }),
     {

@@ -44,7 +44,7 @@ function CommonIcon({
   // Handle regular icon types
   const renderIconByType = (renderType: string) => {
     if (isNil(isAbsolute)) return null;
-    
+
     switch (renderType) {
       case "special_icon": {
         if (item.id === "Calculator") {
