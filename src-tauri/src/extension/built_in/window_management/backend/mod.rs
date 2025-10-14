@@ -8,6 +8,7 @@ use std::ffi::c_ushort;
 use std::ffi::c_void;
 use std::ops::Deref;
 use std::ptr::NonNull;
+use std::time::Duration;
 
 use objc2::MainThreadMarker;
 use objc2_app_kit::NSEvent;
@@ -303,6 +304,10 @@ pub(crate) fn move_frontmost_window_to_workspace(space: usize) -> Result<(), Err
 
     let window_frame = get_frontmost_window_frame()?;
     let close_button_frame = get_frontmost_window_close_button_frame()?;
+    let prev_mouse_position = unsafe {
+        let event = CGEvent::new(None);
+        CGEvent::location(event.as_deref())
+    };
 
     let mouse_cursor_point = CGPoint::new(
         unsafe { CGRectGetMidX(close_button_frame) },
@@ -356,6 +361,9 @@ pub(crate) fn move_frontmost_window_to_workspace(space: usize) -> Result<(), Err
         CGEvent::post(CGEventTapLocation::HIDEventTap, mouse_drag_event.as_deref());
     }
 
+    // Make a slight delay to make sure the window is grabbed
+    std::thread::sleep(Duration::from_millis(50));
+
     // cast is safe as space is in range [1, 16]
     let hot_key: c_ushort = 118 + space as c_ushort - 1;
 
@@ -398,9 +406,30 @@ pub(crate) fn move_frontmost_window_to_workspace(space: usize) -> Result<(), Err
         );
     }
 
+    // Make a slight delay to finish the space transition animation
+    std::thread::sleep(Duration::from_millis(50));
+
+    /*
+     * Cleanup
+     */
     unsafe {
         // Let go of the window.
         CGEvent::post(CGEventTapLocation::HIDEventTap, mouse_up_event.as_deref());
+
+        // Reset mouse position
+        let mouse_reset_event = {
+            CGEvent::new_mouse_event(
+                None,
+                CGEventType::MouseMoved,
+                prev_mouse_position,
+                CGMouseButton::Left,
+            )
+        };
+        CGEvent::set_flags(mouse_reset_event.as_deref(), CGEventFlags(0));
+        CGEvent::post(
+            CGEventTapLocation::HIDEventTap,
+            mouse_reset_event.as_deref(),
+        );
     }
 
     Ok(())

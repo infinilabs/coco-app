@@ -24,6 +24,7 @@ fix: automatic update of service list #913
 fix: duplicate chat content #916
 fix: resolve pinned window shortcut not working #917
 fix: WM ext does not work when operating focused win from another display #919
+fix(Window Management): Next/Previous Desktop do not work #926
 
 ### ✈️ Improvements
 
