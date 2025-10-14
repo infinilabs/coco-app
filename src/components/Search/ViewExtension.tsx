@@ -1,16 +1,13 @@
-/*
- * ViewExtension.tsx
- *
- * View that will be rendered when opening a View extension.
- * 
- */
-
 import React from "react";
 import { useState, useEffect, useMemo } from "react";
 import { ArrowLeft } from "lucide-react";
+
 import { useSearchStore } from "@/stores/searchStore";
-import { convertFileSrc, invoke } from "@tauri-apps/api/core"; 
-import { ExtensionFileSystemPermission, FileSystemAccess } from "../Settings/Extensions";
+import {
+  ExtensionFileSystemPermission,
+  FileSystemAccess,
+} from "../Settings/Extensions";
+import platformAdapter from "@/utils/platformAdapter";
 
 const ViewExtension: React.FC = () => {
   const { setViewExtensionOpened, viewExtensionOpened } = useSearchStore();
@@ -32,7 +29,7 @@ const ViewExtension: React.FC = () => {
       // The check above ensures viewExtensionOpened is not null here.
       const filePath = viewExtensionOpened[0];
       if (filePath) {
-        setPagePath(convertFileSrc(filePath));
+        setPagePath(platformAdapter.convertFileSrc(filePath));
       }
     };
 
@@ -43,7 +40,9 @@ const ViewExtension: React.FC = () => {
   useEffect(() => {
     const fetchApis = async () => {
       try {
-        const availableApis = await invoke("apis") as Record<string, string[]>;
+        const availableApis = (await platformAdapter.invokeBackend(
+          "apis"
+        )) as Record<string, string[]>;
         setApis(new Map(Object.entries(availableApis)));
       } catch (error) {
         console.error("Failed to fetch APIs:", error);
@@ -108,10 +107,10 @@ const ViewExtension: React.FC = () => {
         const category = reversedApis.get(command)!;
         var api = null;
         if (permission == null) {
-          api = null
+          api = null;
         } else {
-          api = permission.api
-        };
+          api = permission.api;
+        }
         if (!apiPermissionCheck(category, command, api)) {
           source.postMessage(
             {
@@ -126,10 +125,10 @@ const ViewExtension: React.FC = () => {
 
         var fs = null;
         if (permission == null) {
-          fs = null
+          fs = null;
         } else {
-          fs = permission.fs
-        };
+          fs = permission.fs;
+        }
         if (!(await fsPermissionCheck(command, event.data, fs))) {
           source.postMessage(
             {
@@ -145,7 +144,9 @@ const ViewExtension: React.FC = () => {
         if (command === "read_dir") {
           const { path } = event.data;
           try {
-            const fileNames: [String] = await invoke("read_dir", { path: path });
+            const fileNames: [String] = await platformAdapter.invokeBackend("read_dir", {
+              path: path,
+            });
             source.postMessage(
               {
                 id,
@@ -171,7 +172,7 @@ const ViewExtension: React.FC = () => {
     console.info("Coco extension API listener is up");
 
     return () => {
-        window.removeEventListener('message', messageHandler);
+      window.removeEventListener("message", messageHandler);
     };
   }, [reversedApis, permission]); // Add apiPermissions as dependency
 
@@ -190,11 +191,7 @@ const ViewExtension: React.FC = () => {
 
       {/* Main content */}
       <div className="flex-1">
-        <iframe
-          src={pagePath}
-          className="w-full h-full border-0"
-        >
-        </iframe>
+        <iframe src={pagePath} className="w-full h-full border-0"></iframe>
       </div>
     </div>
   );
@@ -202,46 +199,56 @@ const ViewExtension: React.FC = () => {
 
 export default ViewExtension;
 
-
 // Permission check function - TypeScript translation of Rust function
-const apiPermissionCheck = (category: string, api: string, allowedApis: string[] | null): boolean => {
+const apiPermissionCheck = (
+  category: string,
+  api: string,
+  allowedApis: string[] | null
+): boolean => {
   if (!allowedApis) {
     return false;
   }
 
   const qualifiedApi = `${category}:${api}`;
-  return allowedApis.some(a => a === qualifiedApi);
+  return allowedApis.some((a) => a === qualifiedApi);
 };
 
-const extractFsAccessPattern = (command: string, requestPayload: any): [string, FileSystemAccess] => {
+const extractFsAccessPattern = (
+  command: string,
+  requestPayload: any
+): [string, FileSystemAccess] => {
   switch (command) {
     case "read_dir": {
-       const { path } = requestPayload;
+      const { path } = requestPayload;
 
-       return [path, ["read"]];
+      return [path, ["read"]];
     }
     default: {
-      throw new Error(`unknown command ${command}`); 
+      throw new Error(`unknown command ${command}`);
     }
   }
-}
+};
 
-const fsPermissionCheck = async (command: string, requestPayload: any, fsPermission: ExtensionFileSystemPermission[] | null): Promise<boolean> => {
+const fsPermissionCheck = async (
+  command: string,
+  requestPayload: any,
+  fsPermission: ExtensionFileSystemPermission[] | null
+): Promise<boolean> => {
   if (!fsPermission) {
     return false;
   }
 
-  const [ path, access ] = extractFsAccessPattern(command, requestPayload); 
-  const clean_path = await invoke("path_absolute", { path: path });
+  const [path, access] = extractFsAccessPattern(command, requestPayload);
+  const clean_path = await platformAdapter.invokeBackend("path_absolute", { path: path });
 
   // Walk through fsPermission array to find matching paths
   for (const permission of fsPermission) {
     if (permission.path === clean_path) {
       // Check if all required access permissions are included in the permission's access array
-      const hasAllRequiredAccess = access.every(requiredAccess => 
+      const hasAllRequiredAccess = access.every((requiredAccess) =>
         permission.access.includes(requiredAccess)
       );
-      
+
       if (hasAllRequiredAccess) {
         return true;
       }
@@ -249,4 +256,4 @@ const fsPermissionCheck = async (command: string, requestPayload: any, fsPermiss
   }
 
   return false;
-}
+};
