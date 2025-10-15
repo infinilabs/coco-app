@@ -35,6 +35,7 @@ export function useAssistantManager({
     setSearchValue,
     visibleExtensionDetail,
     sourceData,
+    setSourceData,
   } = useSearchStore();
 
   const { quickAiAccessAssistant, disabledExtensions } = useExtensionsStore();
@@ -112,7 +113,7 @@ export function useAssistantManager({
       if (key === "Tab" && !isChatMode && isTauri) {
         e.preventDefault();
 
-        if (visibleExtensionStore) return;
+        console.log("selectedSearchContent", selectedSearchContent);
 
         if (selectedSearchContent?.id === "Extension Store") {
           clearSearchValue();
@@ -134,8 +135,12 @@ export function useAssistantManager({
           }
         }
 
-        assistant_get();
-        return handleAskAi();
+        if (selectedSearchContent?.type === "AI Assistant") {
+          assistant_get();
+          return handleAskAi();
+        }
+
+        return setSourceData(selectedSearchContent);
       }
 
       if (key === "Enter" && !shiftKey) {

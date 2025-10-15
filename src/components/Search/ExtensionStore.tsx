@@ -150,6 +150,10 @@ const ExtensionStore = ({ extensionId }: { extensionId?: string }) => {
     setSelectedExtension(void 0);
   });
 
+  useKeyPress("tab", () => {
+    setVisibleExtensionDetail(true);
+  });
+
   useKeyPress(
     "enter",
     () => {

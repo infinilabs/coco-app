@@ -32,7 +32,7 @@ const MultilevelWrapper: FC<MultilevelWrapperProps> = (props) => {
   };
 
   return (
-    <div className="flex items-center justify-center h-[40px] gap-1 px-2 border border-[#EDEDED] dark:border-[#202126] rounded-l-lg">
+    <div className="flex items-center justify-center w-fit h-[40px] gap-1 px-2 border border-[#EDEDED] dark:border-[#202126] rounded-l-lg">
       <VisibleKey shortcut="backspace">
         <ChevronLeft
           className="size-5 text-[#ccc] dark:text-[#d8d8d8] cursor-pointer"
