@@ -55,8 +55,6 @@ function DropdownList({
   );
 
   const handleItemAction = useCallback((item: SearchDocument) => {
-    console.log("item", item);
-
     if (
       !item ||
       item.category === "Calculator" ||

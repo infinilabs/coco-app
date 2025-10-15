@@ -113,8 +113,6 @@ export function useAssistantManager({
       if (key === "Tab" && !isChatMode && isTauri) {
         e.preventDefault();
 
-        console.log("selectedSearchContent", selectedSearchContent);
-
         if (selectedSearchContent?.id === "Extension Store") {
           clearSearchValue();
           return setVisibleExtensionStore(true);
