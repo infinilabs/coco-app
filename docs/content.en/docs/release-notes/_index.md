@@ -31,6 +31,7 @@ fix(Window Management): Next/Previous Desktop do not work #926
 refactor: improve sorting logic of search results #910
 style: add dark drop shadow to images #912
 chore: add cross-domain configuration for web component #921
+refactor: retry if AXUIElementSetAttributeValue() does not work #924
 
 ## 0.8.0 (2025-09-28)
 
