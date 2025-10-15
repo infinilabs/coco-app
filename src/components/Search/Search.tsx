@@ -1,7 +1,4 @@
 import { useEffect, memo, useRef, useCallback, useState } from "react";
-// test code
-import { convertFileSrc, invoke } from "@tauri-apps/api/core";
-console.log(convertFileSrc, invoke) 
 
 import DropdownList from "./DropdownList";
 import { SearchResults } from "@/components/Search/SearchResults";
