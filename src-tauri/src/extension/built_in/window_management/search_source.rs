@@ -1,4 +1,5 @@
 use super::EXTENSION_ID;
+use super::EXTENSION_NAME_LOWERCASE;
 use crate::common::document::{DataSourceReference, Document};
 use crate::common::{
     error::SearchError,
@@ -79,6 +80,16 @@ impl SearchSource for WindowManagementSearchSource {
                     {
                         score += alias_score;
                     }
+                }
+
+                // An "extension" type extension should return all its
+                // sub-extensions when the query string matches its name.
+                // To do this, we score the extension name and take that
+                // into account.
+                if let Some(main_extension_score) =
+                    calculate_text_similarity(&query_string_lowercase, &EXTENSION_NAME_LOWERCASE)
+                {
+                    score += main_extension_score;
                 }
 
                 score
