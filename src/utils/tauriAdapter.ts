@@ -13,7 +13,7 @@ import {
 import type { BasePlatformAdapter } from "@/types/platform";
 import type { AppTheme } from "@/types/index";
 import { useAppearanceStore } from "@/stores/appearanceStore";
-import { copyToClipboard, dispatchTextAreaEvent, OpenURLWithBrowser } from ".";
+import { copyToClipboard, dispatchEvent, OpenURLWithBrowser } from ".";
 import { useAppStore } from "@/stores/appStore";
 import { unrequitable } from "@/utils";
 
@@ -263,7 +263,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
         data?.id === "Extension Store" ||
         data?.category === "View"
       ) {
-        return dispatchTextAreaEvent("Tab", 9);
+        return dispatchEvent("Tab", 9);
       }
 
       const hideCoco = () => {

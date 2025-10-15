@@ -250,23 +250,29 @@ export const navigateBack = () => {
   setSourceData(void 0);
 };
 
-export const dispatchTextAreaEvent = (key: string, keyCode: number) => {
-  const textarea = document.querySelector("#search-textarea");
+export const dispatchEvent = (
+  key: string,
+  keyCode: number,
+  selector?: string
+) => {
+  let target: HTMLElement | Window = window;
 
-  if (textarea instanceof HTMLTextAreaElement) {
-    if (document.activeElement === textarea) return;
+  if (isString(selector)) {
+    target = document.querySelector(selector) as HTMLElement;
 
-    textarea.focus();
-
-    const event = new KeyboardEvent("keydown", {
-      key,
-      code: key,
-      keyCode,
-      which: keyCode,
-      bubbles: true,
-      cancelable: true,
-    });
-
-    textarea.dispatchEvent(event);
+    if (document.activeElement !== target) {
+      target.focus();
+    }
   }
+
+  const event = new KeyboardEvent("keydown", {
+    key,
+    code: key,
+    keyCode,
+    which: keyCode,
+    bubbles: true,
+    cancelable: true,
+  });
+
+  target.dispatchEvent(event);
 };
