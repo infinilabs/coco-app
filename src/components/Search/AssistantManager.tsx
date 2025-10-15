@@ -7,7 +7,8 @@ import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
 import type { Assistant } from "@/types/chat";
 import { useAppStore } from "@/stores/appStore";
-import { navigateBack } from "@/utils";
+import { dispatchTextAreaEvent, navigateBack } from "@/utils";
+import { useKeyPress } from "ahooks";
 
 interface AssistantManagerProps {
   isChatMode: boolean;
@@ -36,6 +37,7 @@ export function useAssistantManager({
     visibleExtensionDetail,
     sourceData,
     setSourceData,
+    setVisibleExtensionDetail,
   } = useSearchStore();
 
   const { quickAiAccessAssistant, disabledExtensions } = useExtensionsStore();
@@ -107,11 +109,20 @@ export function useAssistantManager({
       };
 
       if (key === "Backspace" && value === "") {
+        e.preventDefault();
+
         return navigateBack();
       }
 
       if (key === "Tab" && !isChatMode && isTauri) {
         e.preventDefault();
+
+        const { visibleExtensionStore } = useSearchStore.getState();
+
+        if (visibleExtensionStore) {
+          clearSearchValue();
+          return setVisibleExtensionDetail(true);
+        }
 
         if (selectedSearchContent?.id === "Extension Store") {
           clearSearchValue();
@@ -178,6 +189,10 @@ export function useAssistantManager({
       sourceData,
     ]
   );
+
+  useKeyPress("backspace", () => {
+    dispatchTextAreaEvent("Backspace", 8);
+  });
 
   return {
     askAI,

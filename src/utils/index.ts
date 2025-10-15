@@ -214,8 +214,6 @@ export const getUploadedAttachmentsId = () => {
     .filter((id) => !isNil(id));
 };
 
-// export const
-
 export const navigateBack = () => {
   const {
     goAskAi,
@@ -250,4 +248,25 @@ export const navigateBack = () => {
   }
 
   setSourceData(void 0);
+};
+
+export const dispatchTextAreaEvent = (key: string, keyCode: number) => {
+  const textarea = document.querySelector("#search-textarea");
+
+  if (textarea instanceof HTMLTextAreaElement) {
+    if (document.activeElement === textarea) return;
+
+    textarea.focus();
+
+    const event = new KeyboardEvent("keydown", {
+      key,
+      code: key,
+      keyCode,
+      which: keyCode,
+      bubbles: true,
+      cancelable: true,
+    });
+
+    textarea.dispatchEvent(event);
+  }
 };

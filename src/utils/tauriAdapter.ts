@@ -13,7 +13,7 @@ import {
 import type { BasePlatformAdapter } from "@/types/platform";
 import type { AppTheme } from "@/types/index";
 import { useAppearanceStore } from "@/stores/appearanceStore";
-import { copyToClipboard, OpenURLWithBrowser } from ".";
+import { copyToClipboard, dispatchTextAreaEvent, OpenURLWithBrowser } from ".";
 import { useAppStore } from "@/stores/appStore";
 import { unrequitable } from "@/utils";
 
@@ -263,22 +263,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
         data?.id === "Extension Store" ||
         data?.category === "View"
       ) {
-        const textarea = document.querySelector("#search-textarea");
-
-        if (!(textarea instanceof HTMLTextAreaElement)) return;
-
-        textarea.focus();
-
-        const event = new KeyboardEvent("keydown", {
-          key: "Tab",
-          code: "Tab",
-          keyCode: 9,
-          which: 9,
-          bubbles: true,
-          cancelable: true,
-        });
-
-        return textarea.dispatchEvent(event);
+        return dispatchTextAreaEvent("Tab", 9);
       }
 
       const hideCoco = () => {
