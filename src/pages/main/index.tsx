@@ -11,7 +11,7 @@ import platformAdapter from "@/utils/platformAdapter";
 
 function MainApp() {
   const { setIsTauri } = useAppStore();
-  const { setViewExtensionOpened } =  useSearchStore();
+  const { setViewExtensionOpened } = useSearchStore();
 
   useEffect(() => {
     setIsTauri(true);
@@ -20,10 +20,11 @@ function MainApp() {
     //
     // Events will be sent when users try to open a View extension via hotkey,
     // whose payload contains the needed information to load the View page.
-    platformAdapter.listenEvent("open_view_extension", async ({ payload: view_extension_page_and_permission } ) => {
-       await platformAdapter.showWindow();
-       setViewExtensionOpened(view_extension_page_and_permission);
-    }) 
+    platformAdapter.listenEvent("open_view_extension", async ({ payload }) => {
+      await platformAdapter.showWindow();
+
+      setViewExtensionOpened(payload);
+    });
   }, []);
   const { synthesizeItem } = useChatStore();
 

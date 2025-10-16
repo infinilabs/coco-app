@@ -163,6 +163,8 @@ export function useAssistantManager({
     const { selectedSearchContent, visibleExtensionStore } =
       useSearchStore.getState();
 
+    console.log("selectedSearchContent", selectedSearchContent);
+
     const { id, type, category } = selectedSearchContent ?? {};
 
     if (isChatMode || !isTauri || id === "Calculator") return;
@@ -187,7 +189,11 @@ export function useAssistantManager({
         const extensionPermission = onOpened.Extension.permission;
 
         clearSearchValue();
-        setViewExtensionOpened([viewData.page, extensionPermission]);
+        setViewExtensionOpened([
+          viewData.page,
+          extensionPermission,
+          viewData.ui,
+        ]);
         return setViewExtensionData(selectedSearchContent as any);
       }
     }
