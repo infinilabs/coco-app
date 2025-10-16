@@ -7,8 +7,9 @@ import lightDefaultIcon from "@/assets/images/source_default.png";
 import darkDefaultIcon from "@/assets/images/source_default_dark.png";
 import { useThemeStore } from "@/stores/themeStore";
 import platformAdapter from "@/utils/platformAdapter";
-import { navigateBack } from "@/utils";
+import { navigateBack, visibleSearchBar } from "@/utils";
 import VisibleKey from "../Common/VisibleKey";
+import clsx from "clsx";
 
 interface MultilevelWrapperProps {
   title?: string;
@@ -32,8 +33,17 @@ const MultilevelWrapper: FC<MultilevelWrapperProps> = (props) => {
   };
 
   return (
-    <div className="flex items-center justify-center h-[40px] gap-1 px-2 border border-[#EDEDED] dark:border-[#202126] rounded-l-lg">
-      <VisibleKey shortcut="backspace">
+    <div
+      data-tauri-drag-region
+      className={clsx(
+        "flex items-center h-[40px] gap-1 px-2 border border-[#EDEDED] dark:border-[#202126] rounded-l-lg",
+        {
+          "justify-center": visibleSearchBar(),
+          "w-[calc(100vw-16px)] rounded-r-lg": !visibleSearchBar(),
+        }
+      )}
+    >
+      <VisibleKey shortcut="backspace" onKeyPress={navigateBack}>
         <ChevronLeft
           className="size-5 text-[#ccc] dark:text-[#d8d8d8] cursor-pointer"
           onClick={navigateBack}

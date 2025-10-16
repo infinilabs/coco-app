@@ -7,7 +7,7 @@ import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
 import type { Assistant } from "@/types/chat";
 import { useAppStore } from "@/stores/appStore";
-import { dispatchEvent, navigateBack } from "@/utils";
+import { navigateBack } from "@/utils";
 import { useKeyPress } from "ahooks";
 
 interface AssistantManagerProps {
@@ -152,10 +152,10 @@ export function useAssistantManager({
     setSearchValue("");
   };
 
-  useKeyPress("backspace", () => {
-    console.log("backspace");
-    dispatchEvent("Backspace", 8, "#search-textarea");
-  });
+  // useKeyPress("backspace", () => {
+  //   console.log("backspace");
+  //   dispatchEvent("Backspace", 8, "#search-textarea");
+  // });
 
   useKeyPress("tab", (event) => {
     event.preventDefault();

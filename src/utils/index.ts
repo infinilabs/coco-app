@@ -276,3 +276,33 @@ export const dispatchEvent = (
 
   target.dispatchEvent(event);
 };
+
+export const visibleSearchBar = () => {
+  const { viewExtensionOpened } = useSearchStore.getState();
+
+  if (isNil(viewExtensionOpened)) return true;
+
+  const [, , ui] = viewExtensionOpened;
+
+  return ui?.search_bar ?? true;
+};
+
+export const visibleFilterBar = () => {
+  const { viewExtensionOpened } = useSearchStore.getState();
+
+  if (isNil(viewExtensionOpened)) return true;
+
+  const [, , ui] = viewExtensionOpened;
+
+  return ui?.filter_bar ?? true;
+};
+
+export const visibleFooterBar = () => {
+  const { viewExtensionOpened } = useSearchStore.getState();
+
+  if (isNil(viewExtensionOpened)) return true;
+
+  const [, , ui] = viewExtensionOpened;
+
+  return ui?.footer ?? true;
+};

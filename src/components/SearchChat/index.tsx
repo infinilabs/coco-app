@@ -27,7 +27,11 @@ import { useThemeStore } from "@/stores/themeStore";
 import { useConnectStore } from "@/stores/connectStore";
 import { useAppearanceStore } from "@/stores/appearanceStore";
 import type { StartPage } from "@/types/chat";
-import { hasUploadingAttachment } from "@/utils";
+import {
+  hasUploadingAttachment,
+  visibleFilterBar,
+  visibleSearchBar,
+} from "@/utils";
 
 interface SearchChatProps {
   isTauri?: boolean;
@@ -289,9 +293,13 @@ function SearchChat({
 
       <div
         data-tauri-drag-region={isTauri}
-        className={`p-2 w-full flex justify-center transition-all duration-500 min-h-[82px] ${
-          isTransitioned ? "border-t" : "border-b"
-        } border-[#E6E6E6] dark:border-[#272626]`}
+        className={clsx(
+          "p-2 w-full flex justify-center transition-all duration-500 border-[#E6E6E6] dark:border-[#272626]",
+          [isTransitioned ? "border-t" : "border-b"],
+          {
+            "min-h-[82px]": visibleSearchBar() && visibleFilterBar(),
+          }
+        )}
       >
         <InputBox
           isChatMode={isChatMode}

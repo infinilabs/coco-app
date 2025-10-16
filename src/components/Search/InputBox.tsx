@@ -18,7 +18,12 @@ import { useAssistantManager } from "./AssistantManager";
 import InputControls from "./InputControls";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import AudioRecording from "../AudioRecording";
-import { getUploadedAttachmentsId, isDefaultServer } from "@/utils";
+import {
+  getUploadedAttachmentsId,
+  isDefaultServer,
+  visibleFilterBar,
+  visibleSearchBar,
+} from "@/utils";
 import { useTauriFocus } from "@/hooks/useTauriFocus";
 import { SendMessageParams } from "../Assistant/Chat";
 import { isEmpty } from "lodash-es";
@@ -334,52 +339,56 @@ export default function ChatInput({
       >
         {lineCount === 1 && renderSearchIcon()}
 
-        <div
-          ref={containerRef}
-          className={clsx(
-            "relative w-full p-2 bg-[#ededed] dark:bg-[#202126]",
-            {
-              "flex items-center gap-2": lineCount === 1,
-            }
-          )}
-        >
-          {renderTextarea()}
+        {visibleSearchBar() && (
+          <div
+            ref={containerRef}
+            className={clsx(
+              "relative w-full p-2 bg-[#ededed] dark:bg-[#202126]",
+              {
+                "flex items-center gap-2": lineCount === 1,
+              }
+            )}
+          >
+            {renderTextarea()}
 
-          {lineCount === 1 && renderExtraIcon()}
+            {lineCount === 1 && renderExtraIcon()}
 
-          {lineCount > 1 && (
-            <div className="flex items-center mt-2">
-              <div className="flex-1">{renderSearchIcon()}</div>
+            {lineCount > 1 && (
+              <div className="flex items-center mt-2">
+                <div className="flex-1">{renderSearchIcon()}</div>
 
-              <div className="self-end">{renderExtraIcon()}</div>
-            </div>
-          )}
-        </div>
+                <div className="self-end">{renderExtraIcon()}</div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      <InputControls
-        isChatMode={isChatMode}
-        isChatPage={isChatPage}
-        hasModules={hasModules}
-        searchPlaceholder={searchPlaceholder}
-        chatPlaceholder={chatPlaceholder}
-        isSearchActive={isSearchActive}
-        setIsSearchActive={setIsSearchActive}
-        isDeepThinkActive={isDeepThinkActive}
-        setIsDeepThinkActive={setIsDeepThinkActive}
-        isMCPActive={isMCPActive}
-        setIsMCPActive={setIsMCPActive}
-        changeMode={changeMode}
-        checkScreenPermission={checkScreenPermission}
-        requestScreenPermission={requestScreenPermission}
-        getScreenMonitors={getScreenMonitors}
-        getScreenWindows={getScreenWindows}
-        captureMonitorScreenshot={captureMonitorScreenshot}
-        captureWindowScreenshot={captureWindowScreenshot}
-        openFileDialog={openFileDialog}
-        getFileMetadata={getFileMetadata}
-        getFileIcon={getFileIcon}
-      />
+      {visibleFilterBar() && (
+        <InputControls
+          isChatMode={isChatMode}
+          isChatPage={isChatPage}
+          hasModules={hasModules}
+          searchPlaceholder={searchPlaceholder}
+          chatPlaceholder={chatPlaceholder}
+          isSearchActive={isSearchActive}
+          setIsSearchActive={setIsSearchActive}
+          isDeepThinkActive={isDeepThinkActive}
+          setIsDeepThinkActive={setIsDeepThinkActive}
+          isMCPActive={isMCPActive}
+          setIsMCPActive={setIsMCPActive}
+          changeMode={changeMode}
+          checkScreenPermission={checkScreenPermission}
+          requestScreenPermission={requestScreenPermission}
+          getScreenMonitors={getScreenMonitors}
+          getScreenWindows={getScreenWindows}
+          captureMonitorScreenshot={captureMonitorScreenshot}
+          captureWindowScreenshot={captureWindowScreenshot}
+          openFileDialog={openFileDialog}
+          getFileMetadata={getFileMetadata}
+          getFileIcon={getFileIcon}
+        />
+      )}
     </div>
   );
 }
