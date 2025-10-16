@@ -1,5 +1,5 @@
 import { SearchExtensionItem } from "@/components/Search/ExtensionStore";
-import { ExtensionPermission } from "@/components/Settings/Extensions";
+import { ExtensionPermission, ViewExtensionUISettings } from "@/components/Settings/Extensions";
 import { SearchDocument } from "@/types/search";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -46,11 +46,14 @@ export type ISearchStore = {
 
   // When we open a View extension, we set this to a non-null value.
   //
-  // The first array element is the path to the page that we should load, the
-  // second element is the permission that this extension requires.
-  viewExtensionOpened: [string, ExtensionPermission | null] | null;
+  // Arguments
+  //
+  // The first array element is the path to the page that we should load
+  // The second element is the permission that this extension requires.
+  // The third argument is the UI Settings
+  viewExtensionOpened: [string, ExtensionPermission | null, ViewExtensionUISettings | null ] | null;
   setViewExtensionOpened: (
-    showViewExtension: [string, ExtensionPermission | null] | null
+    showViewExtension: [string, ExtensionPermission | null, ViewExtensionUISettings | null] | null
   ) => void;
 
   viewExtensionData?: SearchDocument;

@@ -62,6 +62,12 @@ export interface ExtensionPermission {
   api: string[] | null;
 }
 
+export interface ViewExtensionUISettings {
+    search_bar: boolean,
+    filter_bar: boolean,
+    footer: boolean,
+}
+
 export interface Extension {
   id: ExtensionId;
   type: ExtensionType;
