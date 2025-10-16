@@ -267,6 +267,7 @@ mod tests {
             hotkey: None,
             enabled: true,
             page,
+            ui: None,
             permission: None,
             settings: None,
             screenshots: None,
