@@ -242,7 +242,7 @@ export default function ChatInput({
         />
       )}
 
-      {!isChatMode &&
+      {/* {!isChatMode &&
         (sourceData || visibleExtensionStore || selectedExtension) && (
           <div
             className={`absolute ${
@@ -251,7 +251,7 @@ export default function ChatInput({
           >
             <VisibleKey shortcut="←" />
           </div>
-        )}
+        )} */}
 
       {/* 
       <div
