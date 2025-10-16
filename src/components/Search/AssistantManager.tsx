@@ -153,27 +153,31 @@ export function useAssistantManager({
   };
 
   useKeyPress("backspace", () => {
+    console.log("backspace");
     dispatchEvent("Backspace", 8, "#search-textarea");
   });
 
   useKeyPress("tab", (event) => {
-    if (isChatMode || !isTauri) return;
-
     event.preventDefault();
 
-    const { visibleExtensionStore } = useSearchStore.getState();
+    const { selectedSearchContent, visibleExtensionStore } =
+      useSearchStore.getState();
+
+    const { id, type, category } = selectedSearchContent ?? {};
+
+    if (isChatMode || !isTauri || id === "Calculator") return;
 
     if (visibleExtensionStore) {
       clearSearchValue();
       return setVisibleExtensionDetail(true);
     }
 
-    if (selectedSearchContent?.id === "Extension Store") {
+    if (id === "Extension Store") {
       clearSearchValue();
       return setVisibleExtensionStore(true);
     }
 
-    if (selectedSearchContent?.category === "View") {
+    if (category === "View") {
       const onOpened = selectedSearchContent?.on_opened;
 
       if (onOpened?.Extension?.ty?.View) {
@@ -188,7 +192,7 @@ export function useAssistantManager({
       }
     }
 
-    if (selectedSearchContent?.type === "AI Assistant") {
+    if (type === "AI Assistant") {
       assistant_get();
       return handleAskAi();
     }

@@ -257,8 +257,6 @@ export const dispatchEvent = (
 ) => {
   let target: HTMLElement | Window = window;
 
-  console.log("selector", selector);
-
   if (isString(selector)) {
     target = document.querySelector(selector) as HTMLElement;
 
@@ -266,8 +264,6 @@ export const dispatchEvent = (
 
     target.focus();
   }
-
-  console.log("target", target);
 
   const event = new KeyboardEvent("keydown", {
     key,
