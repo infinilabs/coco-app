@@ -5,6 +5,8 @@ on:
     # Only run it when Frontend code changes
     paths:
       - 'src/**'
+      - 'tsup.config.ts'
+      - 'package.json'
 
 jobs:
   check:
@@ -29,6 +31,35 @@ jobs:
 
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
+
+    - name: Switch platformAdapter to Web adapter
+       shell: bash
+      run: >
+        node -e "const fs=require('fs');const f='src/utils/platformAdapter.ts';
+        let s=fs.readFileSync(f,'utf8');
+        s=s.replace(/import\\s*\\{\\s*createTauriAdapter\\s*\\}\\s*from\\s*\\\"\\.\\/tauriAdapter\\\";/,'import { createWebAdapter } from \\\"./webAdapter\\\";');
+        s=s.replace(/let\\s+platformAdapter\\s*=\\s*createTauriAdapter\\(\\);/,'let platformAdapter = createWebAdapter();');
+        fs.writeFileSync(f,s);"
+
+    - name: Build web (Tauri dependency check)
+      run: pnpm build:web
+
+    - name: Verify no Tauri refs in web output
+      run: |
+        if grep -R -n -E '@tauri-apps|tauri-plugin' out/search-chat; then
+          echo 'Tauri references found in web build output';
+          exit 1;
+        else
+          echo 'No Tauri references found';
+        fi
+
+    - name: Restore platformAdapter to Tauri adapter
+      run: >
+        node -e "const fs=require('fs');const f='src/utils/platformAdapter.ts';
+        let s=fs.readFileSync(f,'utf8');
+        s=s.replace(/import\\s*\\{\\s*createWebAdapter\\s*\\}\\s*from\\s*\\\"\\.\\/webAdapter\\\";/,'import { createTauriAdapter } from \\\"./tauriAdapter\\\";');
+        s=s.replace(/let\\s+platformAdapter\\s*=\\s*createWebAdapter\\(\\);/,'let platformAdapter = createTauriAdapter();');
+        fs.writeFileSync(f,s);"
 
     - name: Build frontend
       run: pnpm build

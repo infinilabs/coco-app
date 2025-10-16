@@ -1,10 +1,29 @@
 import { defineConfig } from 'tsup';
-import { writeFileSync, readFileSync } from 'fs';
+import { writeFileSync, readFileSync, readdirSync, statSync } from 'fs';
 import { join, resolve } from 'path';
 
 const projectPackageJson = JSON.parse(
   readFileSync(join(__dirname, 'package.json'), 'utf-8')
 );
+
+function walk(dir: string): string[] {
+  const entries = readdirSync(dir);
+  const files: string[] = [];
+  for (const name of entries) {
+    const full = join(dir, name);
+    const stat = statSync(full);
+    if (stat.isDirectory()) {
+      files.push(...walk(full));
+    } else {
+      files.push(full);
+    }
+  }
+  return files;
+}
+
+function hasTauriRefs(content: string): boolean {
+  return /@tauri-apps|tauri-plugin/i.test(content);
+}
 
 export default defineConfig({
   entry: ['src/pages/web/index.tsx'],
@@ -66,6 +85,18 @@ export default defineConfig({
   outDir: 'out/search-chat',
 
   async onSuccess() {
+    const outDir = join(__dirname, 'out/search-chat');
+    const files = walk(outDir).filter(f => /\.(m?js|cjs)$/i.test(f));
+    const tauriFiles = files.filter(f => {
+      const content = readFileSync(f, 'utf-8');
+      return hasTauriRefs(content);
+    });
+
+    if (tauriFiles.length) {
+      throw new Error(
+        `Build output contains Tauri references:\n${tauriFiles.map(f => ` - ${f}`).join('\n')}`
+      );
+    }
     const projectPackageJson = JSON.parse(
       readFileSync(join(__dirname, 'package.json'), 'utf-8')
     );
