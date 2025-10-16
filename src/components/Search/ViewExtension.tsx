@@ -174,7 +174,15 @@ const ViewExtension: React.FC = () => {
     };
   }, [reversedApis, permission]); // Add apiPermissions as dependency
 
-  return <iframe src={pagePath} className="w-full h-full border-0" />;
+  return (
+    <iframe
+      src={pagePath}
+      className="w-full h-full border-0"
+      onLoad={(event) => {
+        event.currentTarget.focus();
+      }}
+    />
+  );
 };
 
 export default ViewExtension;
