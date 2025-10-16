@@ -28,6 +28,7 @@ use tauri_plugin_global_shortcut::GlobalShortcutExt;
 use tauri_plugin_global_shortcut::ShortcutState;
 
 pub(crate) const EXTENSION_ID: &str = "Window Management";
+pub(crate) const EXTENSION_NAME_LOWERCASE: &str = "window management";
 
 /// JSON file for this extension.
 pub(crate) const PLUGIN_JSON_FILE: &str = include_str!("./plugin.json");

@@ -15,6 +15,7 @@ use crate::common::search::QuerySource;
 use crate::common::search::SearchQuery;
 use crate::common::traits::SearchSource;
 use crate::extension::ExtensionBundleIdBorrowed;
+use crate::extension::ExtensionType;
 use crate::extension::calculate_text_similarity;
 use crate::extension::canonicalize_relative_page_path;
 use crate::util::platform::Platform;
@@ -757,11 +758,22 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
 
             for extension in extensions_read_lock.iter().filter(|ext| ext.enabled) {
                 if extension.r#type.contains_sub_items() {
+                    let opt_main_extension_lowercase_name =
+                        if extension.r#type == ExtensionType::Extension {
+                            Some(extension.name.to_lowercase())
+                        } else {
+                            // None if it is of type `ExtensionType::Group`
+                            None
+                        };
+
                     if let Some(ref commands) = extension.commands {
                         for command in commands.iter().filter(|cmd| cmd.enabled) {
-                            if let Some(hit) =
-                                extension_to_hit(command, &query_lower, opt_data_source.as_deref())
-                            {
+                            if let Some(hit) = extension_to_hit(
+                                command,
+                                &query_lower,
+                                opt_data_source.as_deref(),
+                                opt_main_extension_lowercase_name.as_deref(),
+                            ) {
                                 hits.push(hit);
                             }
                         }
@@ -769,9 +781,12 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
 
                     if let Some(ref scripts) = extension.scripts {
                         for script in scripts.iter().filter(|script| script.enabled) {
-                            if let Some(hit) =
-                                extension_to_hit(script, &query_lower, opt_data_source.as_deref())
-                            {
+                            if let Some(hit) = extension_to_hit(
+                                script,
+                                &query_lower,
+                                opt_data_source.as_deref(),
+                                opt_main_extension_lowercase_name.as_deref(),
+                            ) {
                                 hits.push(hit);
                             }
                         }
@@ -783,6 +798,7 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
                                 quicklink,
                                 &query_lower,
                                 opt_data_source.as_deref(),
+                                opt_main_extension_lowercase_name.as_deref(),
                             ) {
                                 hits.push(hit);
                             }
@@ -791,16 +807,19 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
 
                     if let Some(ref views) = extension.views {
                         for view in views.iter().filter(|link| link.enabled) {
-                            if let Some(hit) =
-                                extension_to_hit(view, &query_lower, opt_data_source.as_deref())
-                            {
+                            if let Some(hit) = extension_to_hit(
+                                view,
+                                &query_lower,
+                                opt_data_source.as_deref(),
+                                opt_main_extension_lowercase_name.as_deref(),
+                            ) {
                                 hits.push(hit);
                             }
                         }
                     }
                 } else {
                     if let Some(hit) =
-                        extension_to_hit(extension, &query_lower, opt_data_source.as_deref())
+                        extension_to_hit(extension, &query_lower, opt_data_source.as_deref(), None)
                     {
                         hits.push(hit);
                     }
@@ -839,10 +858,18 @@ pub(crate) async fn uninstall_extension(
         .await
 }
 
+/// Argument `opt_main_extension_lowercase_name`: If `extension` is a sub-extension
+/// of an `extension` type extension, then this argument contains the lowercase
+/// name of that extension. Otherwise, None.
+///
+/// This argument is needed as an "extension" type extension should return all its
+/// sub-extensions when the query string matches its name. To do this, we pass the
+/// extension name, score it and take that into account.
 pub(crate) fn extension_to_hit(
     extension: &Extension,
     query_lower: &str,
     opt_data_source: Option<&str>,
+    opt_main_extension_lowercase_name: Option<&str>,
 ) -> Option<(Document, f64)> {
     if !extension.searchable() {
         return None;
@@ -865,14 +892,26 @@ pub(crate) fn extension_to_hit(
     if let Some(title_score) =
         calculate_text_similarity(&query_lower, &extension.name.to_lowercase())
     {
-        total_score += title_score * 1.0; // Weight for title
+        total_score += title_score;
     }
 
     // Score based on alias match if available
     // Alias is considered less important than title, so it gets a lower weight.
     if let Some(alias) = &extension.alias {
         if let Some(alias_score) = calculate_text_similarity(&query_lower, &alias.to_lowercase()) {
-            total_score += alias_score * 0.7; // Weight for alias
+            total_score += alias_score;
+        }
+    }
+
+    // An "extension" type extension should return all its
+    // sub-extensions when the query string matches its ID.
+    // To do this, we score the extension ID and take that
+    // into account.
+    if let Some(main_extension_lowercase_id) = opt_main_extension_lowercase_name {
+        if let Some(main_extension_score) =
+            calculate_text_similarity(&query_lower, main_extension_lowercase_id)
+        {
+            total_score += main_extension_score;
         }
     }
 

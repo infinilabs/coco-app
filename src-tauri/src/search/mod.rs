@@ -266,13 +266,6 @@ async fn query_coco_fusion_multi_query_sources(
     }
 
     /*
-     * Re-rank the hits
-     */
-    if n_sources > 1 {
-        boosted_levenshtein_rerank(&query_keyword, &mut all_hits_grouped_by_source_id);
-    }
-
-    /*
      * Sort hits within each source by score (descending) in case data sources
      * do not sort them
      */
@@ -361,6 +354,13 @@ async fn query_coco_fusion_multi_query_sources(
                 .expect("all the source_ids stored in `pruned` come from `final_hits_grouped_by_source_id`, so it should exist")
                 .push(hit.clone());
         }
+    }
+
+    /*
+     * Re-rank the final hits
+     */
+    if n_sources > 1 {
+        boosted_levenshtein_rerank(&query_keyword, &mut final_hits_grouped_by_source_id);
     }
 
     let mut final_hits = Vec::new();
