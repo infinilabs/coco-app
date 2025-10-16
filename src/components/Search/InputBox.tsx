@@ -93,7 +93,7 @@ export default function ChatInput({
 
   const { currentAssistant } = useConnectStore();
 
-  const { sourceData, goAskAi } = useSearchStore();
+  const { goAskAi } = useSearchStore();
 
   const { modifierKey, returnToInput, setModifierKeyPressed } =
     useShortcutsStore();
@@ -108,8 +108,7 @@ export default function ChatInput({
   const textareaRef = useRef<{ reset: () => void; focus: () => void }>(null);
 
   const { curChatEnd } = useChatStore();
-  const { setSearchValue, visibleExtensionStore, selectedExtension } =
-    useSearchStore();
+  const { setSearchValue, visibleExtensionStore } = useSearchStore();
   const { uploadAttachments } = useChatStore();
 
   useTauriFocus({

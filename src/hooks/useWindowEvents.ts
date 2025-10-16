@@ -13,7 +13,7 @@ export function useWindowEvents() {
         return setBlurred(true);
       }
 
-      // platformAdapter.hideWindow();
+      platformAdapter.hideWindow();
 
       console.log("Hide Coco");
     },
