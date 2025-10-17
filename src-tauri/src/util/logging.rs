@@ -7,11 +7,11 @@ use tauri::plugin::TauriPlugin;
 /// Tauri, except that the "{bundleIdentifier}" will be "Coco AI" rather
 /// than the real identifier.
 ///
-/// We do this because our bundle ID ("rs.coco.app") ends with ".app", log directory 
+/// We do this because our bundle ID ("rs.coco.app") ends with ".app", log directory
 /// "/Users/xxx/Library/Logs/rs.coco.app" is mistakenly thought as an application
 /// by Finder on macOS, making it inconvenient to open. We do not want to change the
-/// bundle identifier. The data directory, which stores all the data, still 
-/// references it. So doing that will be a breaking change. Using a custom log 
+/// bundle identifier. The data directory, which stores all the data, still
+/// references it. So doing that will be a breaking change. Using a custom log
 /// directory make more sense.
 ///
 /// ### Platform-specific
