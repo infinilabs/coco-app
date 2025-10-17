@@ -1,5 +1,7 @@
 pub(crate) mod app_lang;
 pub(crate) mod file;
+// We need this in main.rs, so it has to be pub
+pub mod logging;
 pub(crate) mod path;
 pub(crate) mod platform;
 pub(crate) mod prevent_default;
