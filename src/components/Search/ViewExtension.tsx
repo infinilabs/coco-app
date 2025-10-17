@@ -10,7 +10,7 @@ import platformAdapter from "@/utils/platformAdapter";
 
 const ViewExtension: React.FC = () => {
   const { viewExtensionOpened } = useSearchStore();
-  const [pagePath, setPagePath] = useState<string>("");
+  const [page, setPage] = useState<string>("");
   // Complete list of the backend APIs, grouped by their category.
   const [apis, setApis] = useState<Map<string, string[]> | null>(null);
 
@@ -27,8 +27,9 @@ const ViewExtension: React.FC = () => {
     const setupFileUrl = async () => {
       // The check above ensures viewExtensionOpened is not null here.
       const filePath = viewExtensionOpened[0];
+      
       if (filePath) {
-        setPagePath(platformAdapter.convertFileSrc(filePath));
+        setPage(platformAdapter.convertFileSrc(filePath));
       }
     };
 
@@ -176,7 +177,7 @@ const ViewExtension: React.FC = () => {
 
   return (
     <iframe
-      src={pagePath}
+      src={page}
       className="w-full h-full border-0"
       onLoad={(event) => {
         event.currentTarget.focus();

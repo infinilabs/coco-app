@@ -977,6 +977,14 @@ pub(crate) fn canonicalize_relative_page_path(
             .page
             .as_ref()
             .expect("this should be invoked on a View extension");
+
+        // Skip HTTP links
+        if let Ok(url) = url::Url::parse(page)
+            && ["http", "https"].contains(&url.scheme())
+        {
+            return Ok(());
+        }
+
         let page_path = Path::new(page);
 
         if page_path.is_relative() {
