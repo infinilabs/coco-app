@@ -259,6 +259,7 @@ mod tests {
             enabled: true,
             settings: None,
             page: None,
+            ui: None,
             permission: None,
             screenshots: None,
             url: None,

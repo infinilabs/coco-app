@@ -6,8 +6,8 @@ import { IStartupStore } from "@/stores/startupStore";
 import { AppTheme } from "@/types/index";
 import { SearchDocument } from "./search";
 import { IAppStore } from "@/stores/appStore";
-import { ExtensionPermission } from "@/components/Settings/Extensions";
 import type { Server } from "@/types/server";
+import { ViewExtensionOpened } from "@/stores/searchStore";
 
 export interface EventPayloads {
   "theme-changed": string;
@@ -49,7 +49,7 @@ export interface EventPayloads {
   "check-update": any;
   oauth_success: any;
   extension_install_success: any;
-  "open_view_extension": [string, ExtensionPermission];
+  open_view_extension: ViewExtensionOpened;
   "server-list-changed": Server[];
 }
 

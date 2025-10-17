@@ -13,9 +13,8 @@ import {
 import type { BasePlatformAdapter } from "@/types/platform";
 import type { AppTheme } from "@/types/index";
 import { useAppearanceStore } from "@/stores/appearanceStore";
-import { copyToClipboard, OpenURLWithBrowser } from ".";
+import { copyToClipboard, dispatchEvent, OpenURLWithBrowser } from ".";
 import { useAppStore } from "@/stores/appStore";
-import { useSearchStore } from "@/stores/searchStore";
 import { unrequitable } from "@/utils";
 
 export interface TauriPlatformAdapter extends BasePlatformAdapter {
@@ -259,35 +258,12 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       console.log("openSearchItem", data);
 
       // Extension store needs to be opened in a different way
-      if (data?.type === "AI Assistant" || data?.id === "Extension Store") {
-        const textarea = document.querySelector("#search-textarea");
-
-        if (!(textarea instanceof HTMLTextAreaElement)) return;
-
-        textarea.focus();
-
-        const event = new KeyboardEvent("keydown", {
-          key: "Tab",
-          code: "Tab",
-          keyCode: 9,
-          which: 9,
-          bubbles: true,
-          cancelable: true,
-        });
-
-        return textarea.dispatchEvent(event);
-      }
-
-      // View extension should be handled separately as it needs frontend to open
-      // a page
-      const onOpened = data?.on_opened;
-      if (onOpened?.Extension?.ty?.View) {
-        const { setViewExtensionOpened } = useSearchStore.getState();
-        const viewData = onOpened.Extension.ty.View;
-        const extensionPermission = onOpened.Extension.permission;
-
-        setViewExtensionOpened([viewData.page, extensionPermission]);
-        return;
+      if (
+        data?.type === "AI Assistant" ||
+        data?.id === "Extension Store" ||
+        data?.category === "View"
+      ) {
+        return dispatchEvent("Tab", 9);
       }
 
       const hideCoco = () => {

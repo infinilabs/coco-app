@@ -1,6 +1,6 @@
 #[cfg(target_os = "macos")]
 use crate::extension::built_in::window_management::actions::Action;
-use crate::extension::{ExtensionPermission, ExtensionSettings};
+use crate::extension::{ExtensionPermission, ExtensionSettings, ViewExtensionUISettings};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tauri::{AppHandle, Emitter};
@@ -89,6 +89,7 @@ pub(crate) enum ExtensionOnOpenedType {
         ///
         /// It should be an absolute path or Tauri cannot open it.
         page: String,
+        ui: Option<ViewExtensionUISettings>,
     },
 }
 
@@ -118,7 +119,7 @@ impl OnOpened {
                     // The URL of a quicklink is nearly useless without such dynamic user
                     // inputs, so until we have dynamic URL support, we just use "N/A".
                     ExtensionOnOpenedType::Quicklink { .. } => String::from("N/A"),
-                    ExtensionOnOpenedType::View { page: _ } => {
+                    ExtensionOnOpenedType::View { page: _, ui: _ } => {
                         // We currently don't have URL for this kind of extension.
                         String::from("N/A")
                     }
@@ -231,7 +232,7 @@ pub(crate) async fn open(
                         }
                     }
                 }
-                ExtensionOnOpenedType::View { page } => {
+                ExtensionOnOpenedType::View { page, ui } => {
                     /*
                      * Emit an event to let the frontend code open this extension.
                      *
@@ -243,8 +244,11 @@ pub(crate) async fn open(
                     use serde_json::Value as Json;
                     use serde_json::to_value;
 
-                    let page_and_permission: [Json; 2] =
-                        [Json::String(page), to_value(permission).unwrap()];
+                    let page_and_permission: [Json; 3] = [
+                        Json::String(page),
+                        to_value(permission).unwrap(),
+                        to_value(ui).unwrap(),
+                    ];
                     tauri_app_handle
                         .emit("open_view_extension", page_and_permission)
                         .unwrap();
