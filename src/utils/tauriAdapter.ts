@@ -1,6 +1,6 @@
 import type { OpenDialogOptions } from "@tauri-apps/plugin-dialog";
 import { isWindows10 } from "tauri-plugin-windows-version-api";
-import { convertFileSrc } from "@tauri-apps/api/core";
+import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { metadata } from "tauri-plugin-fs-pro-api";
 import { error } from "@tauri-apps/plugin-log";
 
@@ -355,10 +355,9 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     async openLogDir() {
-      const { appLogDir } = await import("@tauri-apps/api/path");
       const { revealItemInDir } = await import("@tauri-apps/plugin-opener");
 
-      const logDir = await appLogDir();
+      const logDir: string = await invoke("app_log_dir");
 
       revealItemInDir(logDir);
     },

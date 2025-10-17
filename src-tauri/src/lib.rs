@@ -7,17 +7,18 @@ mod server;
 mod settings;
 mod setup;
 mod shortcut;
-mod util;
+// We need this in main.rs, so it has to be pub
+pub mod util;
 
 use crate::common::register::SearchSourceRegistry;
 use crate::common::{CHECK_WINDOW_LABEL, MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL};
 use crate::server::servers::{load_or_insert_default_server, load_servers_token};
+use crate::util::logging::set_up_tauri_logger;
 use crate::util::prevent_default;
 use autostart::change_autostart;
 use lazy_static::lazy_static;
 use std::sync::Mutex;
 use std::sync::OnceLock;
-use tauri::plugin::TauriPlugin;
 use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, WebviewWindow, WindowEvent};
 use tauri_plugin_autostart::MacosLauncher;
 
@@ -179,6 +180,7 @@ pub fn run() {
             setup::backend_setup,
             util::app_lang::update_app_lang,
             util::path::path_absolute,
+            util::logging::app_log_dir
         ])
         .setup(|app| {
             #[cfg(target_os = "macos")]
@@ -429,136 +431,4 @@ async fn hide_check(app_handle: AppHandle) {
         .expect("we have a check window");
 
     window.hide().unwrap();
-}
-
-/// Log format:
-///
-/// ```text
-/// [time] [log level] [file module:line] message
-/// ```
-///
-/// Example:
-///
-///
-/// ```text
-/// [05-11 17:00:00] [INF] [coco_lib:625] Coco-AI started
-/// ```
-fn set_up_tauri_logger() -> TauriPlugin<tauri::Wry> {
-    use log::Level;
-    use log::LevelFilter;
-    use tauri_plugin_log::Builder;
-
-    /// Coco-AI app's default log level.
-    const DEFAULT_LOG_LEVEL: LevelFilter = LevelFilter::Info;
-    const LOG_LEVEL_ENV_VAR: &str = "COCO_LOG";
-
-    fn format_log_level(level: Level) -> &'static str {
-        match level {
-            Level::Trace => "TRC",
-            Level::Debug => "DBG",
-            Level::Info => "INF",
-            Level::Warn => "WAR",
-            Level::Error => "ERR",
-        }
-    }
-
-    fn format_target_and_line(record: &log::Record) -> String {
-        let mut str = record.target().to_string();
-        if let Some(line) = record.line() {
-            str.push(':');
-            str.push_str(&line.to_string());
-        }
-
-        str
-    }
-
-    /// Allow us to configure dynamic log levels via environment variable `COCO_LOG`.
-    ///
-    /// Generally, it mirros the behavior of `env_logger`. Syntax: `COCO_LOG=[target][=][level][,...]`
-    ///
-    /// * If this environment variable is not set, use the default log level.
-    /// * If it is set, respect it:
-    ///
-    /// * `COCO_LOG=coco_lib` turns on all logging for the `coco_lib` module, which is
-    ///   equivalent to `COCO_LOG=coco_lib=trace`
-    /// * `COCO_LOG=trace` turns on all logging for the application, regardless of its name
-    /// * `COCO_LOG=TRACE` turns on all logging for the application, regardless of its name (same as previous)
-    /// * `COCO_LOG=reqwest=debug` turns on debug logging for `reqwest`
-    /// * `COCO_LOG=trace,tauri=off` turns on all the logging except for the logs come from `tauri`
-    /// * `COCO_LOG=off` turns off all logging for the application
-    /// * `COCO_LOG=` Since the value is empty, turns off all logging for the application as well
-    fn dynamic_log_level(mut builder: Builder) -> Builder {
-        let Some(log_levels) = std::env::var_os(LOG_LEVEL_ENV_VAR) else {
-            return builder.level(DEFAULT_LOG_LEVEL);
-        };
-
-        builder = builder.level(LevelFilter::Off);
-
-        let log_levels = log_levels.into_string().unwrap_or_else(|e| {
-            panic!(
-                "The value '{}' set in environment varaible '{}' is not UTF-8 encoded",
-                // Cannot use `.display()` here becuase that requires MSRV 1.87.0
-                e.to_string_lossy(),
-                LOG_LEVEL_ENV_VAR
-            )
-        });
-
-        // COCO_LOG=[target][=][level][,...]
-        let target_log_levels = log_levels.split(',');
-        for target_log_level in target_log_levels {
-            #[allow(clippy::collapsible_else_if)]
-            if let Some(char_index) = target_log_level.chars().position(|c| c == '=') {
-                let (target, equal_sign_and_level) = target_log_level.split_at(char_index);
-                // Remove the equal sign, we know it takes 1 byte
-                let level = &equal_sign_and_level[1..];
-
-                if let Ok(level) = level.parse::<LevelFilter>() {
-                    // Here we have to call `.to_string()` because `Cow<'static, str>` requires `&'static str`
-                    builder = builder.level_for(target.to_string(), level);
-                } else {
-                    panic!(
-                        "log level '{}' set in '{}={}' is invalid",
-                        level, target, level
-                    );
-                }
-            } else {
-                if let Ok(level) = target_log_level.parse::<LevelFilter>() {
-                    // This is a level
-                    builder = builder.level(level);
-                } else {
-                    // This is a target, enable all the logging
-                    //
-                    // Here we have to call `.to_string()` because `Cow<'static, str>` requires `&'static str`
-                    builder = builder.level_for(target_log_level.to_string(), LevelFilter::Trace);
-                }
-            }
-        }
-
-        builder
-    }
-
-    // When running the built binary, set `COCO_LOG` to `coco_lib=trace` to capture all logs
-    // that come from Coco in the log file, which helps with debugging.
-    if !tauri::is_dev() {
-        // We have absolutely no guarantee that we (We have control over the Rust
-        // code, but definitely no idea about the libc C code, all the shared objects
-        // that we will link) will not concurrently read/write `envp`, so just use unsafe.
-        unsafe {
-            std::env::set_var("COCO_LOG", "coco_lib=trace");
-        }
-    }
-
-    let mut builder = tauri_plugin_log::Builder::new();
-    builder = builder.format(|out, message, record| {
-        let now = chrono::Local::now().format("%m-%d %H:%M:%S");
-        let level = format_log_level(record.level());
-        let target_and_line = format_target_and_line(record);
-        out.finish(format_args!(
-            "[{}] [{}] [{}] {}",
-            now, level, target_and_line, message
-        ));
-    });
-    builder = dynamic_log_level(builder);
-
-    builder.build()
 }
