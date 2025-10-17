@@ -138,7 +138,7 @@ impl SearchSource for CalculatorSource {
         // will only be evaluated against non-whitespace characters.
         let query_string = query_string.trim();
 
-        if query_string.is_empty() || query_string.len() == 1 {
+        if query_string.is_empty() {
             return Ok(QueryResponse {
                 source: self.get_type(),
                 hits: Vec::new(),
@@ -150,6 +150,26 @@ impl SearchSource for CalculatorSource {
         let query_source = self.get_type();
         let base_score = self.base_score;
         let closure = move || -> QueryResponse {
+            let Ok(tokens) = meval::tokenizer::tokenize(&query_string_clone) else {
+                // Invalid expression, return nothing.
+                return QueryResponse {
+                    source: query_source,
+                    hits: Vec::new(),
+                    total_hits: 0,
+                };
+            };
+            // If it is only a number, no need to evaluate it as the result is
+            // this number.
+            // Actually, there is no need to return the result back to the users
+            // in such case because letting them know "x = x" is meaningless.
+            if tokens.len() == 1 && matches!(tokens[0], meval::tokenizer::Token::Number(_)) {
+                return QueryResponse {
+                    source: query_source,
+                    hits: Vec::new(),
+                    total_hits: 0,
+                };
+            }
+
             let res_num = meval::eval_str(&query_string_clone);
 
             match res_num {
