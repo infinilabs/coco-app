@@ -26,11 +26,15 @@ const ViewExtension: React.FC = () => {
   useEffect(() => {
     const setupFileUrl = async () => {
       // The check above ensures viewExtensionOpened is not null here.
-      const filePath = viewExtensionOpened[0];
-      
-      if (filePath) {
-        setPage(platformAdapter.convertFileSrc(filePath));
+      const page = viewExtensionOpened[0];
+
+      // Only convert to file source if it's a local file path, not a URL
+      if (page.startsWith('http://') || page.startsWith('https://')) {
+        setPage(page);
+      } else {
+        setPage(platformAdapter.convertFileSrc(page));
       }
+
     };
 
     setupFileUrl();
