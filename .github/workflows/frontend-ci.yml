@@ -33,7 +33,7 @@ jobs:
       run: pnpm install --frozen-lockfile
 
     - name: Switch platformAdapter to Web adapter
-       shell: bash
+      shell: bash
       run: >
         node -e "const fs=require('fs');const f='src/utils/platformAdapter.ts';
         let s=fs.readFileSync(f,'utf8');
@@ -45,6 +45,7 @@ jobs:
       run: pnpm build:web
 
     - name: Verify no Tauri refs in web output
+      shell: bash
       run: |
         if grep -R -n -E '@tauri-apps|tauri-plugin' out/search-chat; then
           echo 'Tauri references found in web build output';
@@ -54,6 +55,7 @@ jobs:
         fi
 
     - name: Restore platformAdapter to Tauri adapter
+      shell: bash
       run: >
         node -e "const fs=require('fs');const f='src/utils/platformAdapter.ts';
         let s=fs.readFileSync(f,'utf8');
