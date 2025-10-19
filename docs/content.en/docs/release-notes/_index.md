@@ -19,6 +19,7 @@ feat: support moving cursor with home and end keys #918
 feat: support pageup/pagedown to navigate search results #920
 feat: standardize multi-level menu label structure #925
 feat(View Extension): page field now accepts HTTP(s) links #925
+feat: return sub-exts when extension type exts themselves are matched #928
 
 ### 🐛 Bug fix
 
@@ -26,12 +27,15 @@ fix: automatic update of service list #913
 fix: duplicate chat content #916
 fix: resolve pinned window shortcut not working #917
 fix: WM ext does not work when operating focused win from another display #919
+fix(Window Management): Next/Previous Desktop do not work #926
 
 ### ✈️ Improvements
 
 refactor: improve sorting logic of search results #910
 style: add dark drop shadow to images #912
 chore: add cross-domain configuration for web component #921
+refactor: retry if AXUIElementSetAttributeValue() does not work #924
+refactor(calculator): skip evaluation if expr is in form "num => num" #929
 
 ## 0.8.0 (2025-09-28)
 

@@ -8,6 +8,7 @@ use std::ffi::c_ushort;
 use std::ffi::c_void;
 use std::ops::Deref;
 use std::ptr::NonNull;
+use std::time::Duration;
 
 use objc2::MainThreadMarker;
 use objc2_app_kit::NSEvent;
@@ -82,6 +83,23 @@ fn get_ui_element_origin(ui_element: &CFRetained<AXUIElement>) -> Result<CGPoint
     Ok(position_cg_point)
 }
 
+/// Send a set origin request to the `ui_element`, return once request is sent.
+fn set_ui_element_origin_oneshot(
+    ui_element: &CFRetained<AXUIElement>,
+    mut origin: CGPoint,
+) -> Result<(), Error> {
+    let ptr_to_origin = NonNull::new((&mut origin as *mut CGPoint).cast::<c_void>()).unwrap();
+    let pos_value = unsafe { AXValue::new(AXValueType::CGPoint, ptr_to_origin) }.unwrap();
+    let pos_attr = CFString::from_static_str("AXPosition");
+
+    let error = unsafe { ui_element.set_attribute_value(&pos_attr, pos_value.deref()) };
+    if error != AXError::Success {
+        return Err(Error::AXError(error));
+    }
+
+    Ok(())
+}
+
 /// Helper function to extract an UI element's size.
 fn get_ui_element_size(ui_element: &CFRetained<AXUIElement>) -> Result<CGSize, Error> {
     let mut size_value: *const CFType = std::ptr::null();
@@ -104,6 +122,23 @@ fn get_ui_element_size(ui_element: &CFRetained<AXUIElement>) -> Result<CGSize, E
     assert!(result, "type mismatched");
 
     Ok(size_cg_size)
+}
+
+/// Send a set size request to the `ui_element`, return once request is sent.
+fn set_ui_element_size_oneshot(
+    ui_element: &CFRetained<AXUIElement>,
+    mut size: CGSize,
+) -> Result<(), Error> {
+    let ptr_to_size = NonNull::new((&mut size as *mut CGSize).cast::<c_void>()).unwrap();
+    let size_value = unsafe { AXValue::new(AXValueType::CGSize, ptr_to_size) }.unwrap();
+    let size_attr = CFString::from_static_str("AXSize");
+
+    let error = unsafe { ui_element.set_attribute_value(&size_attr, size_value.deref()) };
+    if error != AXError::Success {
+        return Err(Error::AXError(error));
+    }
+
+    Ok(())
 }
 
 /// Get the frontmost/focused window (as an UI element).
@@ -303,6 +338,10 @@ pub(crate) fn move_frontmost_window_to_workspace(space: usize) -> Result<(), Err
 
     let window_frame = get_frontmost_window_frame()?;
     let close_button_frame = get_frontmost_window_close_button_frame()?;
+    let prev_mouse_position = unsafe {
+        let event = CGEvent::new(None);
+        CGEvent::location(event.as_deref())
+    };
 
     let mouse_cursor_point = CGPoint::new(
         unsafe { CGRectGetMidX(close_button_frame) },
@@ -356,6 +395,9 @@ pub(crate) fn move_frontmost_window_to_workspace(space: usize) -> Result<(), Err
         CGEvent::post(CGEventTapLocation::HIDEventTap, mouse_drag_event.as_deref());
     }
 
+    // Make a slight delay to make sure the window is grabbed
+    std::thread::sleep(Duration::from_millis(50));
+
     // cast is safe as space is in range [1, 16]
     let hot_key: c_ushort = 118 + space as c_ushort - 1;
 
@@ -398,9 +440,30 @@ pub(crate) fn move_frontmost_window_to_workspace(space: usize) -> Result<(), Err
         );
     }
 
+    // Make a slight delay to finish the space transition animation
+    std::thread::sleep(Duration::from_millis(50));
+
+    /*
+     * Cleanup
+     */
     unsafe {
         // Let go of the window.
         CGEvent::post(CGEventTapLocation::HIDEventTap, mouse_up_event.as_deref());
+
+        // Reset mouse position
+        let mouse_reset_event = {
+            CGEvent::new_mouse_event(
+                None,
+                CGEventType::MouseMoved,
+                prev_mouse_position,
+                CGMouseButton::Left,
+            )
+        };
+        CGEvent::set_flags(mouse_reset_event.as_deref(), CGEventFlags(0));
+        CGEvent::post(
+            CGEventTapLocation::HIDEventTap,
+            mouse_reset_event.as_deref(),
+        );
     }
 
     Ok(())
@@ -557,27 +620,61 @@ pub fn move_frontmost_window(x: f64, y: f64) -> Result<(), Error> {
 
 /// Set the frontmost window's frame to the specified frame - adjust size and
 /// location at the same time.
+///
+/// This function **retries** up to `RETRY` times until the set operations
+/// successfully get performed.
+///
+/// # Retry
+///
+/// Retry is added because I encountered a case where `AXUIElementSetAttributeValue()`
+/// does not work in the expected way. When I execute the `NextDisplay` command
+/// to move the focused window from a big display (2560x1440) to a small display
+/// (1440*900), the window size could be set to 1460 sometimes. No idea if this
+/// is a bug of the Accessibility APIs or due to the improper API uses. So we
+/// retry for `RETRY` times at most to try our beest make it behave correctly.
 pub fn set_frontmost_window_frame(frame: CGRect) -> Result<(), Error> {
+    const RETRY: usize = 5;
+    /// Sleep for 50ms as I don't want to send too many requests to the focused
+    /// app and WindowServer because doing that could make them busy and then
+    /// they won't process my set requests.
+    ///
+    /// The above is simply my observation, I don't know how the messaging really
+    /// works under the hood.
+    const SLEEP: Duration = Duration::from_millis(50);
+
     let frontmost_window = get_frontmost_window()?;
 
-    let mut point = frame.origin;
-    let ptr_to_point = NonNull::new((&mut point as *mut CGPoint).cast::<c_void>()).unwrap();
-    let pos_value = unsafe { AXValue::new(AXValueType::CGPoint, ptr_to_point) }.unwrap();
-    let pos_attr = CFString::from_static_str("AXPosition");
+    /*
+     * Set window origin
+     */
+    set_ui_element_origin_oneshot(&frontmost_window, frame.origin)?;
+    for _ in 0..RETRY {
+        std::thread::sleep(SLEEP);
 
-    let error = unsafe { frontmost_window.set_attribute_value(&pos_attr, pos_value.deref()) };
-    if error != AXError::Success {
-        return Err(Error::AXError(error));
+        let current = get_ui_element_origin(&frontmost_window)?;
+        if current == frame.origin {
+            break;
+        } else {
+            set_ui_element_origin_oneshot(&frontmost_window, frame.origin)?;
+        }
     }
 
-    let mut size = frame.size;
-    let ptr_to_size = NonNull::new((&mut size as *mut CGSize).cast::<c_void>()).unwrap();
-    let size_value = unsafe { AXValue::new(AXValueType::CGSize, ptr_to_size) }.unwrap();
-    let size_attr = CFString::from_static_str("AXSize");
+    /*
+     * Set window size
+     */
+    set_ui_element_size_oneshot(&frontmost_window, frame.size)?;
+    for _ in 0..RETRY {
+        std::thread::sleep(SLEEP);
 
-    let error = unsafe { frontmost_window.set_attribute_value(&size_attr, size_value.deref()) };
-    if error != AXError::Success {
-        return Err(Error::AXError(error));
+        let current = get_ui_element_size(&frontmost_window)?;
+        // For size, we do not check if `current` has the exact same value as
+        // `frame.size` as I have encountered a case where I ask macOS to set
+        // the height to 1550, but the height gets set to 1551.
+        if cgsize_roughly_equal(current, frame.size, 3.0) {
+            break;
+        } else {
+            set_ui_element_size_oneshot(&frontmost_window, frame.size)?;
+        }
     }
 
     Ok(())
@@ -621,6 +718,15 @@ pub fn toggle_fullscreen() -> Result<(), Error> {
     }
 
     Ok(())
+}
+
+/// Check if `lhs` roughly equals to `rhs`. The Roughness can be controlled by
+/// argument `tolerance`.
+fn cgsize_roughly_equal(lhs: CGSize, rhs: CGSize, tolerance: f64) -> bool {
+    let width_diff = (lhs.width - rhs.width).abs();
+    let height_diff = (lhs.height - rhs.height).abs();
+
+    width_diff <= tolerance && height_diff <= tolerance
 }
 
 static LAST_FRAME: LazyLock<Mutex<HashMap<CGWindowID, CGRect>>> =
