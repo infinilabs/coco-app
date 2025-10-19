@@ -17,6 +17,7 @@ feat: support switching groups via keyboard shortcuts #911
 feat: support opening logs from about page #915
 feat: support moving cursor with home and end keys #918
 feat: support pageup/pagedown to navigate search results #920
+feat: return sub-exts when extension type exts themselves are matched #928
 
 ### 🐛 Bug fix
 
