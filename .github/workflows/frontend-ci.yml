@@ -33,7 +33,7 @@ jobs:
       run: pnpm install --frozen-lockfile
 
     - name: Switch platformAdapter to Web adapter
-       shell: bash
+      shell: bash
       run: >
         node -e "const fs=require('fs');const f='src/utils/platformAdapter.ts';
         let s=fs.readFileSync(f,'utf8');
