@@ -1,9 +1,18 @@
 //! credits to: https://github.com/ayangweb/ayangweb-EcoPaste/blob/169323dbe6365ffe4abb64d867439ed2ea84c6d1/src-tauri/src/core/setup/mac.rs
+//!
+//! # allow(deprecated)
+//!
+//! This file uses some deprecated interfaces from the `tauri_nspanel` crate. The
+//! only way to get rid of them is to bump that crate (v2->v2.1), we are not going
+//! to do that because doing that bump requires a re-write of the code in this
+//! file and v2 has been working well. So we allow these deprecated interfaces.
 
 use crate::common::MAIN_WINDOW_LABEL;
 use objc2_app_kit::NSNonactivatingPanelMask;
 use tauri::{AppHandle, Emitter, EventTarget, WebviewWindow};
-use tauri_nspanel::{WebviewWindowExt, cocoa::appkit::NSWindowCollectionBehavior, panel_delegate};
+#[allow(deprecated)]
+use tauri_nspanel::cocoa::appkit::NSWindowCollectionBehavior;
+use tauri_nspanel::{WebviewWindowExt, panel_delegate};
 
 const WINDOW_FOCUS_EVENT: &str = "tauri://focus";
 const WINDOW_BLUR_EVENT: &str = "tauri://blur";
@@ -32,6 +41,7 @@ pub fn platform(
     panel.set_floating_panel(true);
 
     // Open the window in the active workspace and full screen
+    #[allow(deprecated)]
     panel.set_collection_behaviour(
         NSWindowCollectionBehavior::NSWindowCollectionBehaviorMoveToActiveSpace
             | NSWindowCollectionBehavior::NSWindowCollectionBehaviorStationary
@@ -39,6 +49,7 @@ pub fn platform(
     );
 
     // Define the panel's delegate to listen to panel window events
+    #[allow(deprecated)]
     let delegate = panel_delegate!(EcoPanelDelegate {
         window_did_become_key,
         window_did_resign_key,
