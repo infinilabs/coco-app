@@ -223,49 +223,58 @@ pub(crate) async fn install_local_extension(
 
     /*
      * Call convert_page() to update the page files.  This has to be done after
-     * writing the extension files
+     * writing the extension files because we will edit them.
+     *
+     * HTTP links will be skipped.
      */
-    let absolute_page_paths: Vec<PathBuf> = {
-        fn canonicalize_page_path(page_path: &Path, extension_root: &Path) -> PathBuf {
-            if page_path.is_relative() {
-                // It is relative to the extension root directory
-                extension_root.join(page_path)
-            } else {
-                page_path.into()
-            }
-        }
-
+    let pages: Vec<&str> = {
         if extension.r#type == ExtensionType::View {
             let page = extension
                 .page
                 .as_ref()
                 .expect("View extension should set its page field");
-            let path = canonicalize_page_path(Path::new(page.as_str()), &dest_dir);
 
-            vec![path]
+            vec![page.as_str()]
         } else if extension.r#type.contains_sub_items()
             && let Some(ref views) = extension.views
         {
-            let mut paths = Vec::with_capacity(views.len());
+            let mut pages = Vec::with_capacity(views.len());
 
             for view in views.iter() {
                 let page = view
                     .page
                     .as_ref()
                     .expect("View extension should set its page field");
-                let path = canonicalize_page_path(Path::new(page.as_str()), &dest_dir);
 
-                paths.push(path);
+                pages.push(page.as_str());
             }
 
-            paths
+            pages
         } else {
             // No pages in this extension
             Vec::new()
         }
     };
-    for page_path in absolute_page_paths {
-        convert_page(&page_path).await?;
+    fn canonicalize_page_path(page_path: &Path, extension_root: &Path) -> PathBuf {
+        if page_path.is_relative() {
+            // It is relative to the extension root directory
+            extension_root.join(page_path)
+        } else {
+            page_path.into()
+        }
+    }
+    for page in pages {
+        /*
+         * Skip HTTP links
+         */
+        if let Ok(url) = url::Url::parse(page)
+            && ["http", "https"].contains(&url.scheme())
+        {
+            continue;
+        }
+
+        let path = canonicalize_page_path(Path::new(page), &dest_dir);
+        convert_page(&path).await?;
     }
 
     // Canonicalize relative icon and page paths

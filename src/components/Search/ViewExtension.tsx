@@ -1,6 +1,5 @@
 import React from "react";
 import { useState, useEffect, useMemo } from "react";
-import { ArrowLeft } from "lucide-react";
 
 import { useSearchStore } from "@/stores/searchStore";
 import {
@@ -10,8 +9,8 @@ import {
 import platformAdapter from "@/utils/platformAdapter";
 
 const ViewExtension: React.FC = () => {
-  const { setViewExtensionOpened, viewExtensionOpened } = useSearchStore();
-  const [pagePath, setPagePath] = useState<string>("");
+  const { viewExtensionOpened } = useSearchStore();
+  const [page, setPage] = useState<string>("");
   // Complete list of the backend APIs, grouped by their category.
   const [apis, setApis] = useState<Map<string, string[]> | null>(null);
 
@@ -27,10 +26,15 @@ const ViewExtension: React.FC = () => {
   useEffect(() => {
     const setupFileUrl = async () => {
       // The check above ensures viewExtensionOpened is not null here.
-      const filePath = viewExtensionOpened[0];
-      if (filePath) {
-        setPagePath(platformAdapter.convertFileSrc(filePath));
+      const page = viewExtensionOpened[0];
+
+      // Only convert to file source if it's a local file path, not a URL
+      if (page.startsWith('http://') || page.startsWith('https://')) {
+        setPage(page);
+      } else {
+        setPage(platformAdapter.convertFileSrc(page));
       }
+
     };
 
     setupFileUrl();
@@ -51,10 +55,6 @@ const ViewExtension: React.FC = () => {
 
     fetchApis();
   }, []);
-
-  const handleBack = () => {
-    setViewExtensionOpened(null);
-  };
 
   // White list of the permission entries
   const permission = viewExtensionOpened[1];
@@ -144,9 +144,12 @@ const ViewExtension: React.FC = () => {
         if (command === "read_dir") {
           const { path } = event.data;
           try {
-            const fileNames: [String] = await platformAdapter.invokeBackend("read_dir", {
-              path: path,
-            });
+            const fileNames: [String] = await platformAdapter.invokeBackend(
+              "read_dir",
+              {
+                path: path,
+              }
+            );
             source.postMessage(
               {
                 id,
@@ -177,23 +180,13 @@ const ViewExtension: React.FC = () => {
   }, [reversedApis, permission]); // Add apiPermissions as dependency
 
   return (
-    <div className="h-full w-full flex flex-col">
-      {/* Header with back button */}
-      <div className="flex items-center p-4 border-b border-gray-200 dark:border-gray-700">
-        <button
-          onClick={handleBack}
-          className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-300"
-        >
-          <ArrowLeft size={20} />
-          <span>Back to Search</span>
-        </button>
-      </div>
-
-      {/* Main content */}
-      <div className="flex-1">
-        <iframe src={pagePath} className="w-full h-full border-0"></iframe>
-      </div>
-    </div>
+    <iframe
+      src={page}
+      className="w-full h-full border-0"
+      onLoad={(event) => {
+        event.currentTarget.focus();
+      }}
+    />
   );
 };
 
@@ -239,7 +232,9 @@ const fsPermissionCheck = async (
   }
 
   const [path, access] = extractFsAccessPattern(command, requestPayload);
-  const clean_path = await platformAdapter.invokeBackend("path_absolute", { path: path });
+  const clean_path = await platformAdapter.invokeBackend("path_absolute", {
+    path: path,
+  });
 
   // Walk through fsPermission array to find matching paths
   for (const permission of fsPermission) {

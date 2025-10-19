@@ -7,6 +7,8 @@ import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
 import type { Assistant } from "@/types/chat";
 import { useAppStore } from "@/stores/appStore";
+import { navigateBack } from "@/utils";
+import { useKeyPress } from "ahooks";
 
 interface AssistantManagerProps {
   isChatMode: boolean;
@@ -33,9 +35,9 @@ export function useAssistantManager({
     setVisibleExtensionStore,
     setSearchValue,
     visibleExtensionDetail,
-    setVisibleExtensionDetail,
     sourceData,
     setSourceData,
+    setVisibleExtensionDetail,
   } = useSearchStore();
 
   const { quickAiAccessAssistant, disabledExtensions } = useExtensionsStore();
@@ -102,36 +104,9 @@ export function useAssistantManager({
       const { value } = currentTarget;
 
       if (key === "Backspace" && value === "") {
-        if (goAskAi) {
-          return setGoAskAi(false);
-        }
-
-        if (visibleExtensionDetail) {
-          return setVisibleExtensionDetail(false);
-        }
-
-        if (visibleExtensionStore) {
-          return setVisibleExtensionStore(false);
-        }
-
-        if (sourceData) {
-          return setSourceData(void 0);
-        }
-      }
-
-      if (key === "Tab" && !isChatMode && isTauri) {
         e.preventDefault();
 
-        if (visibleExtensionStore) return;
-
-        if (selectedSearchContent?.id === "Extension Store") {
-          changeInput("");
-          setSearchValue("");
-          return setVisibleExtensionStore(true);
-        }
-
-        assistant_get();
-        return handleAskAi();
+        return navigateBack();
       }
 
       if (key === "Enter" && !shiftKey) {
@@ -171,6 +146,65 @@ export function useAssistantManager({
       sourceData,
     ]
   );
+
+  const clearSearchValue = () => {
+    changeInput("");
+    setSearchValue("");
+  };
+
+  // useKeyPress("backspace", () => {
+  //   console.log("backspace");
+  //   dispatchEvent("Backspace", 8, "#search-textarea");
+  // });
+
+  useKeyPress("tab", (event) => {
+    event.preventDefault();
+
+    const { selectedSearchContent, visibleExtensionStore } =
+      useSearchStore.getState();
+
+    console.log("selectedSearchContent", selectedSearchContent);
+
+    const { id, type, category } = selectedSearchContent ?? {};
+
+    if (isChatMode || !isTauri || id === "Calculator") return;
+
+    if (visibleExtensionStore) {
+      clearSearchValue();
+      return setVisibleExtensionDetail(true);
+    }
+
+    if (id === "Extension Store") {
+      clearSearchValue();
+      return setVisibleExtensionStore(true);
+    }
+
+    if (category === "View") {
+      const onOpened = selectedSearchContent?.on_opened;
+
+      if (onOpened?.Extension?.ty?.View) {
+        const { setViewExtensionOpened, setViewExtensionData } =
+          useSearchStore.getState();
+        const viewData = onOpened.Extension.ty.View;
+        const extensionPermission = onOpened.Extension.permission;
+
+        clearSearchValue();
+        setViewExtensionOpened([
+          viewData.page,
+          extensionPermission,
+          viewData.ui,
+        ]);
+        return setViewExtensionData(selectedSearchContent as any);
+      }
+    }
+
+    if (type === "AI Assistant") {
+      assistant_get();
+      return handleAskAi();
+    }
+
+    setSourceData(selectedSearchContent);
+  });
 
   return {
     askAI,

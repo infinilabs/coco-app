@@ -21,14 +21,17 @@ import { isLinux, isWin } from "@/utils/platform";
 import { appReducer, initialAppState } from "@/reducers/appReducer";
 import { useWindowEvents } from "@/hooks/useWindowEvents";
 import { useAppStore } from "@/stores/appStore";
-import { useSearchStore } from "@/stores/searchStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { useStartupStore } from "@/stores/startupStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { useConnectStore } from "@/stores/connectStore";
 import { useAppearanceStore } from "@/stores/appearanceStore";
 import type { StartPage } from "@/types/chat";
-import { hasUploadingAttachment } from "@/utils";
+import {
+  hasUploadingAttachment,
+  visibleFilterBar,
+  visibleSearchBar,
+} from "@/utils";
 
 interface SearchChatProps {
   isTauri?: boolean;
@@ -105,7 +108,6 @@ function SearchChat({
 
   const [isWin10, setIsWin10] = useState(false);
   const blurred = useAppStore((state) => state.blurred);
-  const { viewExtensionOpened } = useSearchStore();
 
   useWindowEvents();
 
@@ -289,45 +291,45 @@ function SearchChat({
         </Suspense>
       </div>
 
-      {/* We don't want this inputbox when rendering View extensions */}
-      {/* TODO: figure out a better way to disable this inputbox */}
-      {!viewExtensionOpened && (
-        <div
-          data-tauri-drag-region={isTauri}
-          className={`p-2 w-full flex justify-center transition-all duration-500 min-h-[82px] ${
-            isTransitioned ? "border-t" : "border-b"
-          } border-[#E6E6E6] dark:border-[#272626]`}
-        >
-          <InputBox
-            isChatMode={isChatMode}
-            inputValue={input}
-            onSend={handleSendMessage}
-            disabled={isTyping}
-            disabledChange={cancelChat}
-            changeMode={changeMode}
-            changeInput={setInput}
-            isSearchActive={isSearchActive}
-            setIsSearchActive={toggleSearchActive}
-            isDeepThinkActive={isDeepThinkActive}
-            setIsDeepThinkActive={toggleDeepThinkActive}
-            isMCPActive={isMCPActive}
-            setIsMCPActive={toggleMCPActive}
-            setupWindowFocusListener={setupWindowFocusListener}
-            checkScreenPermission={checkScreenPermission}
-            requestScreenPermission={requestScreenPermission}
-            getScreenMonitors={getScreenMonitors}
-            getScreenWindows={getScreenWindows}
-            captureMonitorScreenshot={captureMonitorScreenshot}
-            captureWindowScreenshot={captureWindowScreenshot}
-            openFileDialog={openFileDialog}
-            getFileMetadata={getFileMetadata}
-            getFileIcon={getFileIcon}
-            hasModules={hasModules}
-            searchPlaceholder={searchPlaceholder}
-            chatPlaceholder={chatPlaceholder}
-          />
-        </div>
-      )}
+      <div
+        data-tauri-drag-region={isTauri}
+        className={clsx(
+          "p-2 w-full flex justify-center transition-all duration-500 border-[#E6E6E6] dark:border-[#272626]",
+          [isTransitioned ? "border-t" : "border-b"],
+          {
+            "min-h-[82px]": visibleSearchBar() && visibleFilterBar(),
+          }
+        )}
+      >
+        <InputBox
+          isChatMode={isChatMode}
+          inputValue={input}
+          onSend={handleSendMessage}
+          disabled={isTyping}
+          disabledChange={cancelChat}
+          changeMode={changeMode}
+          changeInput={setInput}
+          isSearchActive={isSearchActive}
+          setIsSearchActive={toggleSearchActive}
+          isDeepThinkActive={isDeepThinkActive}
+          setIsDeepThinkActive={toggleDeepThinkActive}
+          isMCPActive={isMCPActive}
+          setIsMCPActive={toggleMCPActive}
+          setupWindowFocusListener={setupWindowFocusListener}
+          checkScreenPermission={checkScreenPermission}
+          requestScreenPermission={requestScreenPermission}
+          getScreenMonitors={getScreenMonitors}
+          getScreenWindows={getScreenWindows}
+          captureMonitorScreenshot={captureMonitorScreenshot}
+          captureWindowScreenshot={captureWindowScreenshot}
+          openFileDialog={openFileDialog}
+          getFileMetadata={getFileMetadata}
+          getFileIcon={getFileIcon}
+          hasModules={hasModules}
+          searchPlaceholder={searchPlaceholder}
+          chatPlaceholder={chatPlaceholder}
+        />
+      </div>
 
       <div
         data-tauri-drag-region={isTauri}

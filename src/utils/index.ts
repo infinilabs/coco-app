@@ -7,6 +7,7 @@ import { useAppStore } from "@/stores/appStore";
 import { DEFAULT_COCO_SERVER_ID, HISTORY_PANEL_ID } from "@/constants";
 import { useChatStore } from "@/stores/chatStore";
 import { getCurrentWindowService } from "@/commands/windowService";
+import { useSearchStore } from "@/stores/searchStore";
 
 // 1
 export async function copyToClipboard(text: string) {
@@ -211,4 +212,97 @@ export const getUploadedAttachmentsId = () => {
   return uploadAttachments
     .map((item) => item.attachmentId)
     .filter((id) => !isNil(id));
+};
+
+export const navigateBack = () => {
+  const {
+    goAskAi,
+    visibleExtensionStore,
+    visibleExtensionDetail,
+    viewExtensionOpened,
+    viewExtensionData,
+    setGoAskAi,
+    setVisibleExtensionDetail,
+    setVisibleExtensionStore,
+    setSourceData,
+    setViewExtensionOpened,
+    setViewExtensionData,
+  } = useSearchStore.getState();
+
+  if (goAskAi) {
+    return setGoAskAi(false);
+  }
+
+  if (visibleExtensionDetail) {
+    return setVisibleExtensionDetail(false);
+  }
+
+  if (visibleExtensionStore) {
+    return setVisibleExtensionStore(false);
+  }
+
+  if (viewExtensionOpened || viewExtensionData) {
+    setViewExtensionData(void 0);
+
+    return setViewExtensionOpened(null);
+  }
+
+  setSourceData(void 0);
+};
+
+export const dispatchEvent = (
+  key: string,
+  keyCode: number,
+  selector?: string
+) => {
+  let target: HTMLElement | Window = window;
+
+  if (isString(selector)) {
+    target = document.querySelector(selector) as HTMLElement;
+
+    if (document.activeElement === target) return;
+
+    target.focus();
+  }
+
+  const event = new KeyboardEvent("keydown", {
+    key,
+    code: key,
+    keyCode,
+    which: keyCode,
+    bubbles: true,
+    cancelable: true,
+  });
+
+  target.dispatchEvent(event);
+};
+
+export const visibleSearchBar = () => {
+  const { viewExtensionOpened } = useSearchStore.getState();
+
+  if (isNil(viewExtensionOpened)) return true;
+
+  const [, , ui] = viewExtensionOpened;
+
+  return ui?.search_bar ?? true;
+};
+
+export const visibleFilterBar = () => {
+  const { viewExtensionOpened } = useSearchStore.getState();
+
+  if (isNil(viewExtensionOpened)) return true;
+
+  const [, , ui] = viewExtensionOpened;
+
+  return ui?.filter_bar ?? true;
+};
+
+export const visibleFooterBar = () => {
+  const { viewExtensionOpened } = useSearchStore.getState();
+
+  if (isNil(viewExtensionOpened)) return true;
+
+  const [, , ui] = viewExtensionOpened;
+
+  return ui?.footer ?? true;
 };

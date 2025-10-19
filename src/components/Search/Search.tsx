@@ -10,7 +10,9 @@ import AskAi from "./AskAi";
 import { useSearch } from "@/hooks/useSearch";
 import ExtensionStore from "./ExtensionStore";
 import platformAdapter from "@/utils/platformAdapter";
-import ViewExtension from "./ViewExtension"
+import ViewExtension from "./ViewExtension";
+import { visibleFooterBar } from "@/utils";
+import clsx from "clsx";
 
 const SearchResultsPanel = memo<{
   input: string;
@@ -47,8 +49,12 @@ const SearchResultsPanel = memo<{
     }
   }, [input, isChatMode, performSearch, sourceData]);
 
-  const { setSelectedAssistant, selectedSearchContent, visibleExtensionStore, viewExtensionOpened } =
-    useSearchStore();
+  const {
+    setSelectedAssistant,
+    selectedSearchContent,
+    visibleExtensionStore,
+    viewExtensionOpened,
+  } = useSearchStore();
 
   useEffect(() => {
     if (selectedSearchContent?.type === "AI Assistant") {
@@ -164,7 +170,12 @@ function Search({
   const mainWindowRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div ref={mainWindowRef} className={`h-full pb-8 w-full relative`}>
+    <div
+      ref={mainWindowRef}
+      className={clsx("h-full w-full relative", {
+        "pb-8": visibleFooterBar(),
+      })}
+    >
       <SearchResultsPanel
         input={input}
         isChatMode={isChatMode}
@@ -173,7 +184,7 @@ function Search({
         formatUrl={formatUrl}
       />
 
-      <Footer setIsPinnedWeb={setIsPinned} />
+      {visibleFooterBar() && <Footer setIsPinnedWeb={setIsPinned} />}
 
       <ContextMenu formatUrl={formatUrl} />
     </div>

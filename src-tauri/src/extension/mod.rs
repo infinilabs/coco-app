@@ -112,6 +112,8 @@ pub struct Extension {
     /// and render. Otherwise, `None`.
     page: Option<String>,
 
+    ui: Option<ViewExtensionUISettings>,
+
     /// Permission that this extension requires.
     permission: Option<ExtensionPermission>,
 
@@ -124,6 +126,17 @@ pub struct Extension {
     screenshots: Option<Json>,
     url: Option<Json>,
     version: Option<Json>,
+}
+
+/// Settings that control the built-in UI Components
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+pub(crate) struct ViewExtensionUISettings {
+    /// Show the search bar
+    search_bar: bool,
+    /// Show the filter bar
+    filter_bar: bool,
+    /// Show the footer
+    footer: bool,
 }
 
 /// Bundle ID uniquely identifies an extension.
@@ -265,8 +278,9 @@ impl Extension {
                 let page = self.page.as_ref().unwrap_or_else(|| {
                     panic!("View extension [{}]'s [page] field is not set, something wrong with your extension validity check", self.id);
                 }).clone();
+                let ui = self.ui.clone();
 
-                let extension_on_opened_type = ExtensionOnOpenedType::View { page };
+                let extension_on_opened_type = ExtensionOnOpenedType::View { page, ui };
                 let extension_on_opened = ExtensionOnOpened {
                     ty: extension_on_opened_type,
                     settings,
@@ -963,6 +977,14 @@ pub(crate) fn canonicalize_relative_page_path(
             .page
             .as_ref()
             .expect("this should be invoked on a View extension");
+
+        // Skip HTTP links
+        if let Ok(url) = url::Url::parse(page)
+            && ["http", "https"].contains(&url.scheme())
+        {
+            return Ok(());
+        }
+
         let page_path = Path::new(page);
 
         if page_path.is_relative() {

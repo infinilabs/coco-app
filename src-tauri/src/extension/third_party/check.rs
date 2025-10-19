@@ -231,6 +231,14 @@ fn check_main_extension_or_sub_extension(
         ));
     }
 
+    // If field `ui` is Some, then it should be a View
+    if extension.ui.is_some() && extension.r#type != ExtensionType::View {
+        return Err(format!(
+            "invalid {}, field [ui] is set for a non-View extension",
+            identifier
+        ));
+    }
+
     Ok(())
 }
 
@@ -267,6 +275,7 @@ mod tests {
             hotkey: None,
             enabled: true,
             page,
+            ui: None,
             permission: None,
             settings: None,
             screenshots: None,
