@@ -17,6 +17,7 @@ feat: support switching groups via keyboard shortcuts #911
 feat: support opening logs from about page #915
 feat: support moving cursor with home and end keys #918
 feat: support pageup/pagedown to navigate search results #920
+feat: standardize multi-level menu label structure #925
 
 ### 🐛 Bug fix
 
