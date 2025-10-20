@@ -42,8 +42,10 @@ pub(crate) mod local_extension;
 pub(crate) mod store;
 
 use crate::extension::Extension;
+use crate::extension::ExtensionType;
 use crate::util::platform::Platform;
 use std::path::Path;
+use std::path::PathBuf;
 
 use super::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE;
 
@@ -226,6 +228,63 @@ fn _convert_page(page_content: &str, absolute_page_path: &Path) -> Result<String
     modify_tag_attributes(&document, &mut modified_html, base_dir, "img[src]", "src")?;
 
     Ok(modified_html)
+}
+
+async fn view_extension_convert_pages(
+    extension: &Extension,
+    extension_directory: &Path,
+) -> Result<(), String> {
+    let pages: Vec<&str> = {
+        if extension.r#type == ExtensionType::View {
+            let page = extension
+                .page
+                .as_ref()
+                .expect("View extension should set its page field");
+
+            vec![page.as_str()]
+        } else if extension.r#type.contains_sub_items()
+            && let Some(ref views) = extension.views
+        {
+            let mut pages = Vec::with_capacity(views.len());
+
+            for view in views.iter() {
+                let page = view
+                    .page
+                    .as_ref()
+                    .expect("View extension should set its page field");
+
+                pages.push(page.as_str());
+            }
+
+            pages
+        } else {
+            // No pages in this extension
+            Vec::new()
+        }
+    };
+    fn canonicalize_page_path(page_path: &Path, extension_root: &Path) -> PathBuf {
+        if page_path.is_relative() {
+            // It is relative to the extension root directory
+            extension_root.join(page_path)
+        } else {
+            page_path.into()
+        }
+    }
+    for page in pages {
+        /*
+         * Skip HTTP links
+         */
+        if let Ok(url) = url::Url::parse(page)
+            && ["http", "https"].contains(&url.scheme())
+        {
+            continue;
+        }
+
+        let path = canonicalize_page_path(Path::new(page), &extension_directory);
+        convert_page(&path).await?;
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]

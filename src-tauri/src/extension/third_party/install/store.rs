@@ -10,15 +10,14 @@ use crate::common::search::QuerySource;
 use crate::common::search::SearchQuery;
 use crate::common::traits::SearchSource;
 use crate::extension::Extension;
-use crate::extension::ExtensionType;
 use crate::extension::PLUGIN_JSON_FILE_NAME;
 use crate::extension::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE;
 use crate::extension::canonicalize_relative_icon_path;
 use crate::extension::canonicalize_relative_page_path;
 use crate::extension::third_party::check::general_check;
 use crate::extension::third_party::get_third_party_extension_directory;
-use crate::extension::third_party::install::convert_page;
 use crate::extension::third_party::install::filter_out_incompatible_sub_extensions;
+use crate::extension::third_party::install::view_extension_convert_pages;
 use crate::server::http_client::HttpClient;
 use crate::util::platform::Platform;
 use async_trait::async_trait;
@@ -26,8 +25,6 @@ use reqwest::StatusCode;
 use serde_json::Map as JsonObject;
 use serde_json::Value as Json;
 use std::io::Read;
-use std::path::Path;
-use std::path::PathBuf;
 use tauri::AppHandle;
 
 const DATA_SOURCE_ID: &str = "Extension Store";
@@ -401,57 +398,11 @@ pub(crate) async fn install_extension_from_store(
 
     /*
      * Call convert_page() to update the page files.  This has to be done after
-     * writing the extension files
+     * writing the extension files because we will edit them.
+     *
+     * HTTP links will be skipped.
      */
-    let pages: Vec<&str> = {
-        if extension.r#type == ExtensionType::View {
-            let page = extension
-                .page
-                .as_ref()
-                .expect("View extension should set its page field");
-
-            vec![path.as_str()]
-        } else if extension.r#type.contains_sub_items()
-            && let Some(ref views) = extension.views
-        {
-            let mut pages = Vec::with_capacity(views.len());
-
-            for view in views.iter() {
-                let page = view
-                    .page
-                    .as_ref()
-                    .expect("View extension should set its page field");
-
-                pages.push(page.as_str());
-            }
-
-            pages
-        } else {
-            // No pages in this extension
-            Vec::new()
-        }
-    };
-    fn canonicalize_page_path(page_path: &Path, extension_root: &Path) -> PathBuf {
-        if page_path.is_relative() {
-            // It is relative to the extension root directory
-            extension_root.join(page_path)
-        } else {
-            page_path.into()
-        }
-    }
-    for page in pages {
-        /*
-         * Skip HTTP links
-         */
-        if let Ok(url) = url::Url::parse(page)
-            && ["http", "https"].contains(&url.scheme())
-        {
-            continue;
-        }
-
-        let path = canonicalize_page_path(Path::new(page), &extension_directory);
-        convert_page(&path).await?;
-    }
+    view_extension_convert_pages(&extension, &extension_directory).await?;
 
     // Canonicalize relative icon and page paths
     canonicalize_relative_icon_path(&extension_directory, &mut extension)?;

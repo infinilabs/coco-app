@@ -37,6 +37,7 @@ chore: add cross-domain configuration for web component #921
 refactor: retry if AXUIElementSetAttributeValue() does not work #924
 refactor(calculator): skip evaluation if expr is in form "num => num" #929
 chore: use a custom log directory #930
+refactor: procedure that convert_pages() into a func #934
 
 ## 0.8.0 (2025-09-28)
 

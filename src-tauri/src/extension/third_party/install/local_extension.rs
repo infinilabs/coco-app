@@ -1,6 +1,7 @@
+use crate::extension::PLUGIN_JSON_FILE_NAME;
 use crate::extension::third_party::check::general_check;
 use crate::extension::third_party::install::{
-    convert_page, filter_out_incompatible_sub_extensions, is_extension_installed,
+    filter_out_incompatible_sub_extensions, is_extension_installed, view_extension_convert_pages,
 };
 use crate::extension::third_party::{
     THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE, get_third_party_extension_directory,
@@ -8,7 +9,6 @@ use crate::extension::third_party::{
 use crate::extension::{
     Extension, canonicalize_relative_icon_path, canonicalize_relative_page_path,
 };
-use crate::extension::{ExtensionType, PLUGIN_JSON_FILE_NAME};
 use crate::util::platform::Platform;
 use serde_json::Value as Json;
 use std::path::Path;
@@ -227,55 +227,7 @@ pub(crate) async fn install_local_extension(
      *
      * HTTP links will be skipped.
      */
-    let pages: Vec<&str> = {
-        if extension.r#type == ExtensionType::View {
-            let page = extension
-                .page
-                .as_ref()
-                .expect("View extension should set its page field");
-
-            vec![page.as_str()]
-        } else if extension.r#type.contains_sub_items()
-            && let Some(ref views) = extension.views
-        {
-            let mut pages = Vec::with_capacity(views.len());
-
-            for view in views.iter() {
-                let page = view
-                    .page
-                    .as_ref()
-                    .expect("View extension should set its page field");
-
-                pages.push(page.as_str());
-            }
-
-            pages
-        } else {
-            // No pages in this extension
-            Vec::new()
-        }
-    };
-    fn canonicalize_page_path(page_path: &Path, extension_root: &Path) -> PathBuf {
-        if page_path.is_relative() {
-            // It is relative to the extension root directory
-            extension_root.join(page_path)
-        } else {
-            page_path.into()
-        }
-    }
-    for page in pages {
-        /*
-         * Skip HTTP links
-         */
-        if let Ok(url) = url::Url::parse(page)
-            && ["http", "https"].contains(&url.scheme())
-        {
-            continue;
-        }
-
-        let path = canonicalize_page_path(Path::new(page), &dest_dir);
-        convert_page(&path).await?;
-    }
+    view_extension_convert_pages(&extension, &dest_dir).await?;
 
     // Canonicalize relative icon and page paths
     canonicalize_relative_icon_path(&dest_dir, &mut extension)?;
