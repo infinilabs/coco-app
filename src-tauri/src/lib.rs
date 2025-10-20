@@ -267,35 +267,57 @@ async fn show_coco(app_handle: AppHandle) {
     if let Some(window) = app_handle.get_webview_window(MAIN_WINDOW_LABEL) {
         move_window_to_active_monitor(&window);
 
-        let _ = window.show();
-        let _ = window.unminimize();
+        cfg_if::cfg_if! {
+            if #[cfg(target_os = "macos")] {
+               use tauri_nspanel::ManagerExt;
 
-        // The Window Management (WM) extension (macOS-only) controls the
-        // frontmost window.  Setting focus on macOS makes Coco the frontmost
-        // window, which means the WM extension would control Coco instead of other
-        // windows, which is not what we want.
-        //
-        // On Linux/Windows, however, setting focus is a necessity to ensure that
-        // users open Coco's window, then they can start typing, without needing
-        // to click on the window.
-        #[cfg(not(target_os = "macos"))]
-        let _ = window.set_focus();
+               let app_handle_clone = app_handle.clone();
+
+                app_handle.run_on_main_thread(move || {
+                   let panel = app_handle_clone.get_webview_panel(MAIN_WINDOW_LABEL).unwrap();
+
+                    panel.show_and_make_key();
+                }).unwrap();
+            } else {
+                let _ = window.show();
+                let _ = window.unminimize();
+                // The Window Management (WM) extension (macOS-only) controls the
+                // frontmost window.  Setting focus on macOS makes Coco the frontmost
+                // window, which means the WM extension would control Coco instead of other
+                // windows, which is not what we want.
+                //
+                // On Linux/Windows, however, setting focus is a necessity to ensure that
+                // users open Coco's window, then they can start typing, without needing
+                // to click on the window.
+                let _ = window.set_focus();
+            }
+        };
 
         let _ = app_handle.emit("show-coco", ());
     }
 }
 
 #[tauri::command]
-async fn hide_coco(app: AppHandle) {
-    if let Some(window) = app.get_webview_window(MAIN_WINDOW_LABEL) {
-        if let Err(err) = window.hide() {
-            log::error!("Failed to hide the window: {}", err);
+async fn hide_coco(app_handle: AppHandle) {
+    cfg_if::cfg_if! {
+        if #[cfg(target_os = "macos")] {
+            use tauri_nspanel::ManagerExt;
+
+            let app_handle_clone = app_handle.clone();
+            app_handle.run_on_main_thread(move || {
+                let panel = app_handle_clone.get_webview_panel(MAIN_WINDOW_LABEL).expect("cannot find the main window/panel");
+                panel.hide();
+            }).unwrap();
         } else {
-            log::debug!("Window successfully hidden.");
+            let window = app_handle.get_webview_window(MAIN_WINDOW_LABEL).expect("cannot find the main window");
+
+            if let Err(err) = window.hide() {
+                log::error!("Failed to hide the window: {}", err);
+            } else {
+                log::debug!("Window successfully hidden.");
+            }
         }
-    } else {
-        log::error!("Main window not found.");
-    }
+    };
 }
 
 fn move_window_to_active_monitor(window: &WebviewWindow) {
