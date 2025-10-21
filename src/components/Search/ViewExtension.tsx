@@ -7,12 +7,14 @@ import {
   FileSystemAccess,
 } from "../Settings/Extensions";
 import platformAdapter from "@/utils/platformAdapter";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 const ViewExtension: React.FC = () => {
   const { viewExtensionOpened } = useSearchStore();
   const [page, setPage] = useState<string>("");
   // Complete list of the backend APIs, grouped by their category.
   const [apis, setApis] = useState<Map<string, string[]> | null>(null);
+  const { setModifierKeyPressed } = useShortcutsStore();
 
   if (viewExtensionOpened == null) {
     // When this view gets loaded, this state should not be NULL.
@@ -29,12 +31,11 @@ const ViewExtension: React.FC = () => {
       const page = viewExtensionOpened[0];
 
       // Only convert to file source if it's a local file path, not a URL
-      if (page.startsWith('http://') || page.startsWith('https://')) {
+      if (page.startsWith("http://") || page.startsWith("https://")) {
         setPage(page);
       } else {
         setPage(platformAdapter.convertFileSrc(page));
       }
-
     };
 
     setupFileUrl();
@@ -42,6 +43,8 @@ const ViewExtension: React.FC = () => {
 
   // invoke `apis()` and set the state
   useEffect(() => {
+    setModifierKeyPressed(false);
+
     const fetchApis = async () => {
       try {
         const availableApis = (await platformAdapter.invokeBackend(
