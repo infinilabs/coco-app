@@ -19,6 +19,7 @@ import InputControls from "./InputControls";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import AudioRecording from "../AudioRecording";
 import {
+  canNavigateBack,
   getUploadedAttachmentsId,
   isDefaultServer,
   visibleFilterBar,
@@ -108,7 +109,7 @@ export default function ChatInput({
   const textareaRef = useRef<{ reset: () => void; focus: () => void }>(null);
 
   const { curChatEnd } = useChatStore();
-  const { setSearchValue, visibleExtensionStore } = useSearchStore();
+  const { setSearchValue } = useSearchStore();
   const { uploadAttachments } = useChatStore();
 
   useTauriFocus({
@@ -241,38 +242,11 @@ export default function ChatInput({
         />
       )}
 
-      {/* {!isChatMode &&
-        (sourceData || visibleExtensionStore || selectedExtension) && (
-          <div
-            className={`absolute ${
-              lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-25px)]"
-            } left-2`}
-          >
-            <VisibleKey shortcut="←" />
-          </div>
-        )} */}
-
-      {/* 
-      <div
-        className={clsx(
-          `absolute ${
-            lineCount === 1 ? "-top-[5px]" : "top-[calc(100%-25px)]"
-          } left-2`,
-          {
-            "left-8": !isChatMode && sourceData,
-          }
-        )}
-      >
-        <VisibleKey shortcut={returnToInput} />
-      </div>
-     */}
-
       {!isChatMode &&
         isTauri &&
-        !goAskAi &&
         askAI &&
         !disabledExtensions.includes("QuickAIAccess") &&
-        !visibleExtensionStore && (
+        !canNavigateBack() && (
           <div className="flex items-center gap-2 text-sm text-[#AEAEAE] dark:text-[#545454] whitespace-nowrap">
             <span>
               {t("search.askCocoAi.title", {

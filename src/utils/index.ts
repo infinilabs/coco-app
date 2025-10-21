@@ -214,6 +214,26 @@ export const getUploadedAttachmentsId = () => {
     .filter((id) => !isNil(id));
 };
 
+export const canNavigateBack = () => {
+  const {
+    goAskAi,
+    visibleExtensionStore,
+    visibleExtensionDetail,
+    viewExtensionOpened,
+    viewExtensionData,
+    sourceData,
+  } = useSearchStore.getState();
+
+  return (
+    goAskAi ||
+    visibleExtensionStore ||
+    visibleExtensionDetail ||
+    viewExtensionOpened ||
+    viewExtensionData ||
+    sourceData
+  );
+};
+
 export const navigateBack = () => {
   const {
     goAskAi,
