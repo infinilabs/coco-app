@@ -28,6 +28,7 @@ fix: duplicate chat content #916
 fix: resolve pinned window shortcut not working #917
 fix: WM ext does not work when operating focused win from another display #919
 fix(Window Management): Next/Previous Desktop do not work #926
+fix: fix page rapidly flickering issue #935
 
 ### ✈️ Improvements
 
@@ -40,7 +41,6 @@ chore: use a custom log directory #930
 chore: bump tauri_nspanel to v2.1 #933
 refactor: show_coco/hide_coco now use NSPanel's function on macOS #933
 refactor: procedure that convert_pages() into a func #934
-
 
 ## 0.8.0 (2025-09-28)
 
