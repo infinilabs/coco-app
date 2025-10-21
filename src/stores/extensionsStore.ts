@@ -1,6 +1,7 @@
-import { ExtensionId } from "@/components/Settings/Extensions";
 import { create } from "zustand";
 import { persist, subscribeWithSelector } from "zustand/middleware";
+
+import { ExtensionId } from "@/components/Settings/Extensions";
 
 export type IExtensionsStore = {
   quickAiAccessServer?: any;
