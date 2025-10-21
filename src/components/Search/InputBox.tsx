@@ -214,6 +214,10 @@ export default function ChatInput({
   const extraIconRef = useRef<HTMLDivElement>(null);
   const extraIconSize = useSize(extraIconRef);
 
+  console.log("containerSize", containerSize);
+  console.log("searchIconSize", searchIconSize);
+  console.log("extraIconSize", extraIconSize);
+
   useAsyncEffect(async () => {
     setVisibleAudioInput(await isDefaultServer());
   }, [currentService]);
@@ -334,13 +338,13 @@ export default function ChatInput({
   return (
     <div className={`w-full relative`}>
       <div
+        ref={containerRef}
         className={`flex items-center dark:text-[#D8D8D8] rounded-md transition-all relative overflow-hidden`}
       >
         {lineCount === 1 && renderSearchIcon()}
 
         {visibleSearchBar() && (
           <div
-            ref={containerRef}
             className={clsx(
               "relative w-full p-2 bg-[#ededed] dark:bg-[#202126]",
               {
