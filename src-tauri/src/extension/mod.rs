@@ -430,7 +430,7 @@ impl QuicklinkLink {
     /// if any.
     pub(crate) fn concatenate_url(
         &self,
-        user_supplied_args: &Option<HashMap<String, String>>,
+        user_supplied_args: &Option<HashMap<String, Json>>,
     ) -> String {
         let mut out = String::new();
         for component in self.components.iter() {
@@ -442,20 +442,23 @@ impl QuicklinkLink {
                     argument_name,
                     default,
                 } => {
-                    let opt_argument_value = {
+                    let opt_argument_value: Option<&str> = {
                         let user_supplied_arg = user_supplied_args
                             .as_ref()
                             .and_then(|map| map.get(argument_name.as_str()));
 
                         if user_supplied_arg.is_some() {
-                            user_supplied_arg
+                            user_supplied_arg.map(|json| {
+                                json.as_str()
+                                    .expect("quicklink should provide string arguments")
+                            })
                         } else {
-                            default.as_ref()
+                            default.as_deref()
                         }
                     };
 
                     let argument_value_str = match opt_argument_value {
-                        Some(str) => str.as_str(),
+                        Some(str) => str,
                         // None => an empty string
                         None => "",
                     };
@@ -1763,7 +1766,7 @@ mod tests {
             ],
         };
         let mut user_args = HashMap::new();
-        user_args.insert("other_param".to_string(), "value".to_string());
+        user_args.insert("other_param".to_string(), Json::String("value".to_string()));
         let result = link.concatenate_url(&Some(user_args));
         assert_eq!(result, "https://www.google.com/search?q=");
     }
@@ -1800,7 +1803,7 @@ mod tests {
             ],
         };
         let mut user_args = HashMap::new();
-        user_args.insert("other_param".to_string(), "value".to_string());
+        user_args.insert("other_param".to_string(), Json::String("value".to_string()));
         let result = link.concatenate_url(&Some(user_args));
         assert_eq!(result, "https://www.google.com/search?q=rust");
     }
@@ -1823,7 +1826,7 @@ mod tests {
             ],
         };
         let mut user_args = HashMap::new();
-        user_args.insert("query".to_string(), "python".to_string());
+        user_args.insert("query".to_string(), Json::String("python".to_string()));
         let result = link.concatenate_url(&Some(user_args));
         assert_eq!(result, "https://www.google.com/search?q=python");
     }

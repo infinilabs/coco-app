@@ -2,6 +2,7 @@
 use crate::extension::built_in::window_management::actions::Action;
 use crate::extension::{ExtensionPermission, ExtensionSettings, ViewExtensionUISettings};
 use serde::{Deserialize, Serialize};
+use serde_json::Value as Json;
 use std::collections::HashMap;
 use tauri::{AppHandle, Emitter};
 
@@ -133,7 +134,7 @@ impl OnOpened {
 pub(crate) async fn open(
     tauri_app_handle: AppHandle,
     on_opened: OnOpened,
-    extra_args: Option<HashMap<String, String>>,
+    extra_args: Option<HashMap<String, Json>>,
 ) -> Result<(), String> {
     use crate::util::open as homemade_tauri_shell_open;
     use std::process::Command;
@@ -244,10 +245,17 @@ pub(crate) async fn open(
                     use serde_json::Value as Json;
                     use serde_json::to_value;
 
-                    let page_and_permission: [Json; 3] = [
+                    let mut extra_args =
+                        extra_args.expect("extra_args is needed to open() a view extension");
+                    let document = extra_args.remove("document").expect(
+                        "extra argument [document] should be provided to open a view extension",
+                    );
+
+                    let page_and_permission: [Json; 4] = [
                         Json::String(page),
                         to_value(permission).unwrap(),
                         to_value(ui).unwrap(),
+                        document,
                     ];
                     tauri_app_handle
                         .emit("open_view_extension", page_and_permission)
