@@ -7,8 +7,9 @@ import platformAdapter from "@/utils/platformAdapter";
 import { Get } from "@/api/axiosRequest";
 import type { Assistant } from "@/types/chat";
 import { useAppStore } from "@/stores/appStore";
-import { navigateBack } from "@/utils";
+import { canNavigateBack, navigateBack } from "@/utils";
 import { useKeyPress } from "ahooks";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 interface AssistantManagerProps {
   isChatMode: boolean;
@@ -49,6 +50,7 @@ export function useAssistantManager({
   }, [quickAiAccessAssistant, selectedAssistant]);
 
   const [assistantDetail, setAssistantDetail] = useState<any>({});
+  const { modifierKey } = useShortcutsStore();
 
   useEffect(() => {
     if (goAskAi) return;
@@ -78,7 +80,7 @@ export function useAssistantManager({
   }, [askAI?.id, askAI?.querySource?.id, disabledExtensions]);
 
   const handleAskAi = useCallback(() => {
-    if (!isTauri) return;
+    if (!isTauri || canNavigateBack()) return;
 
     if (disabledExtensions.includes("QuickAIAccess")) return;
 
@@ -204,6 +206,11 @@ export function useAssistantManager({
     }
 
     setSourceData(selectedSearchContent);
+  });
+
+  useKeyPress(`${modifierKey}.enter`, () => {
+    assistant_get();
+    return handleAskAi();
   });
 
   return {

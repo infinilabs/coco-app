@@ -37,7 +37,7 @@ export const KEY_SYMBOLS: Record<string, string> = {
   // Special keys
   Space: "Space",
   space: "Space",
-  Enter: "↵",
+  Enter: "↩︎",
   Backspace: "⌫",
   Delete: "Del",
   Escape: "Esc",
