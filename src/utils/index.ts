@@ -278,7 +278,10 @@ export const dispatchEvent = (
 };
 
 export const visibleSearchBar = () => {
-  const { viewExtensionOpened } = useSearchStore.getState();
+  const { viewExtensionOpened, visibleExtensionDetail } =
+    useSearchStore.getState();
+
+  if (visibleExtensionDetail) return false;
 
   if (isNil(viewExtensionOpened)) return true;
 
@@ -288,7 +291,10 @@ export const visibleSearchBar = () => {
 };
 
 export const visibleFilterBar = () => {
-  const { viewExtensionOpened } = useSearchStore.getState();
+  const { viewExtensionOpened, visibleExtensionDetail } =
+    useSearchStore.getState();
+
+  if (visibleExtensionDetail) return false;
 
   if (isNil(viewExtensionOpened)) return true;
 
