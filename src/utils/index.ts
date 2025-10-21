@@ -220,13 +220,11 @@ export const navigateBack = () => {
     visibleExtensionStore,
     visibleExtensionDetail,
     viewExtensionOpened,
-    viewExtensionData,
     setGoAskAi,
     setVisibleExtensionDetail,
     setVisibleExtensionStore,
     setSourceData,
     setViewExtensionOpened,
-    setViewExtensionData,
   } = useSearchStore.getState();
 
   if (goAskAi) {
@@ -241,10 +239,8 @@ export const navigateBack = () => {
     return setVisibleExtensionStore(false);
   }
 
-  if (viewExtensionOpened || viewExtensionData) {
-    setViewExtensionData(void 0);
-
-    return setViewExtensionOpened(null);
+  if (viewExtensionOpened) {
+    return setViewExtensionOpened(void 0);
   }
 
   setSourceData(void 0);

@@ -75,7 +75,6 @@ export default function SearchIcons({
     visibleExtensionDetail,
     selectedExtension,
     viewExtensionOpened,
-    viewExtensionData,
   } = useSearchStore();
 
   if (isChatMode) {
@@ -106,8 +105,8 @@ export default function SearchIcons({
       return <MultilevelWrapper title={name} icon={icon} />;
     }
 
-    if (viewExtensionOpened && viewExtensionData) {
-      const { title, icon } = viewExtensionData;
+    if (viewExtensionOpened) {
+      const { title, icon } = viewExtensionOpened[3];
 
       const iconPath = icon ? platformAdapter.convertFileSrc(icon) : void 0;
 

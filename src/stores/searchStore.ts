@@ -7,9 +7,12 @@ import { SearchDocument } from "@/types/search";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type ViewExtensionOpened =
-  | [string, ExtensionPermission | null, ViewExtensionUISettings | null]
-  | null;
+export type ViewExtensionOpened = [
+  string,
+  ExtensionPermission | null,
+  ViewExtensionUISettings | null,
+  SearchDocument
+];
 
 export type ISearchStore = {
   sourceData: any;
@@ -58,11 +61,8 @@ export type ISearchStore = {
   // The first array element is the path to the page that we should load
   // The second element is the permission that this extension requires.
   // The third argument is the UI Settings
-  viewExtensionOpened: ViewExtensionOpened;
-  setViewExtensionOpened: (showViewExtension: ViewExtensionOpened) => void;
-
-  viewExtensionData?: SearchDocument;
-  setViewExtensionData: (viewExtensionData?: SearchDocument) => void;
+  viewExtensionOpened?: ViewExtensionOpened;
+  setViewExtensionOpened: (showViewExtension?: ViewExtensionOpened) => void;
 };
 
 export const useSearchStore = create<ISearchStore>()(
@@ -128,12 +128,8 @@ export const useSearchStore = create<ISearchStore>()(
       setVisibleExtensionDetail: (visibleExtensionDetail) => {
         return set({ visibleExtensionDetail });
       },
-      viewExtensionOpened: null,
       setViewExtensionOpened: (viewExtensionOpened) => {
         return set({ viewExtensionOpened });
-      },
-      setViewExtensionData(viewExtensionData) {
-        return set({ viewExtensionData });
       },
     }),
     {
