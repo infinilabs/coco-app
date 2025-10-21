@@ -20,6 +20,7 @@ feat: support pageup/pagedown to navigate search results #920
 feat: standardize multi-level menu label structure #925
 feat(View Extension): page field now accepts HTTP(s) links #925
 feat: return sub-exts when extension type exts themselves are matched #928
+feat: open quick ai with modifier key + enter #939
 
 ### 🐛 Bug fix
 
