@@ -214,10 +214,6 @@ export default function ChatInput({
   const extraIconRef = useRef<HTMLDivElement>(null);
   const extraIconSize = useSize(extraIconRef);
 
-  console.log("containerSize", containerSize);
-  console.log("searchIconSize", searchIconSize);
-  console.log("extraIconSize", extraIconSize);
-
   useAsyncEffect(async () => {
     setVisibleAudioInput(await isDefaultServer());
   }, [currentService]);
