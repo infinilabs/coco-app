@@ -32,6 +32,7 @@ fix: resolve pinned window shortcut not working #917
 fix: WM ext does not work when operating focused win from another display #919
 fix(Window Management): Next/Previous Desktop do not work #926
 fix: fix page rapidly flickering issue #935
+fix(view extension): broken search bar UI when opening extensions via hotkey #938
 
 ### ✈️ Improvements
 

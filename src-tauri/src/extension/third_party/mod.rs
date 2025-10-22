@@ -23,6 +23,7 @@ use async_trait::async_trait;
 use borrowme::ToOwned;
 use check::general_check;
 use function_name::named;
+use std::collections::HashMap;
 use std::io::ErrorKind;
 use std::path::Path;
 use std::path::PathBuf;
@@ -524,6 +525,24 @@ impl ThirdPartyExtensionsSearchSource {
         let on_opened = extension.on_opened().unwrap_or_else(|| panic!(
             "setting hotkey for an extension that cannot be opened, extension ID [{:?}], extension type [{:?}]", bundle_id, extension.r#type,
         ));
+        let url = on_opened.url();
+        let extension_type_string = extension.r#type.to_string();
+        let document = Document {
+            id: extension.id.clone(),
+            title: Some(extension.name.clone()),
+            icon: Some(extension.icon.clone()),
+            on_opened: Some(on_opened.clone()),
+            url: Some(url),
+            category: Some(extension_type_string.clone()),
+            source: Some(DataSourceReference {
+                id: Some(extension_type_string.clone()),
+                name: Some(extension_type_string.clone()),
+                icon: None,
+                r#type: Some(extension_type_string),
+            }),
+
+            ..Default::default()
+        };
 
         let bundle_id_owned = bundle_id.to_owned();
         tauri_app_handle
@@ -533,9 +552,16 @@ impl ThirdPartyExtensionsSearchSource {
                 let bundle_id_clone = bundle_id_owned.clone();
                 let app_handle_clone = tauri_app_handle.clone();
 
+                let document_clone = document.clone();
                 if event.state() == ShortcutState::Pressed {
                     async_runtime::spawn(async move {
-                        let result = open(app_handle_clone, on_opened_clone, None).await;
+                        let mut args = HashMap::new();
+                        args.insert(
+                            String::from("document"),
+                            serde_json::to_value(&document_clone).unwrap(),
+                        );
+
+                        let result = open(app_handle_clone, on_opened_clone, Some(args)).await;
                         if let Err(msg) = result {
                             log::warn!(
                                 "failed to open extension [{:?}], error [{}]",
