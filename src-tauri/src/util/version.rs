@@ -19,7 +19,7 @@ const SNAPSHOT: &str = SNAPSHOT_DASH.split_at(SNAPSHOT_DASH_LEN - 1).0;
 ///
 ///   This is the official release for 0.8.0
 ///
-/// * 0.9.0-SNAPSHOT-<build num> => 0.8.0-SNAPSHOT.<build num>
+/// * 0.9.0-SNAPSHOT-<build num> => 0.9.0-SNAPSHOT.<build num>
 ///   
 ///   A pre-release of 0.9.0
 fn to_semver(version: &Version) -> Version {
