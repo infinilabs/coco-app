@@ -3,8 +3,10 @@ import * as commands from "@/commands";
 // Window operations
 export const windowWrapper = {
   async getCurrentWindow() {
-    const { getCurrentWindow } = await import("@tauri-apps/api/window");
-    return getCurrentWindow();
+    const { getCurrentWebviewWindow } = await import(
+      "@tauri-apps/api/webviewWindow"
+    );
+    return getCurrentWebviewWindow();
   },
 
   async getWebviewWindow() {

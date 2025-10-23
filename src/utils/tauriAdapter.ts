@@ -77,8 +77,10 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     async setAlwaysOnTop(isPinned) {
-      const { getCurrentWindow } = await import("@tauri-apps/api/window");
-      const window = getCurrentWindow();
+      const { getCurrentWebviewWindow } = await import(
+        "@tauri-apps/api/webviewWindow"
+      );
+      const window = getCurrentWebviewWindow();
       return window.setAlwaysOnTop(isPinned);
     },
 
@@ -210,8 +212,10 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     async getCurrentWindow() {
-      const { getCurrentWindow } = await import("@tauri-apps/api/window");
-      return getCurrentWindow();
+      const { getCurrentWebviewWindow } = await import(
+        "@tauri-apps/api/webviewWindow"
+      );
+      return getCurrentWebviewWindow();
     },
 
     async createWebviewWindow(label, options) {
