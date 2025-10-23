@@ -220,7 +220,6 @@ export const canNavigateBack = () => {
     visibleExtensionStore,
     visibleExtensionDetail,
     viewExtensionOpened,
-    viewExtensionData,
     sourceData,
   } = useSearchStore.getState();
 
@@ -229,7 +228,6 @@ export const canNavigateBack = () => {
     visibleExtensionStore ||
     visibleExtensionDetail ||
     viewExtensionOpened ||
-    viewExtensionData ||
     sourceData
   );
 };
