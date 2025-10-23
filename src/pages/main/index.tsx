@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import SearchChat from "@/components/SearchChat";
 import { useAppStore } from "@/stores/appStore";
 import { useSyncStore } from "@/hooks/useSyncStore";
@@ -6,15 +8,12 @@ import Synthesize from "@/components/Assistant/Synthesize";
 import { useChatStore } from "@/stores/chatStore";
 import { useSearchStore } from "@/stores/searchStore";
 import platformAdapter from "@/utils/platformAdapter";
-import { useMount } from "ahooks";
 
 function MainApp() {
   const { setIsTauri } = useAppStore();
   const { setViewExtensionOpened } = useSearchStore();
 
-  useMount(() => {
-    // const appWindow = platformAdapter.getcu();
-
+  useEffect(() => {
     setIsTauri(true);
 
     // Set up the listener that listens for "open_view_extension" events
@@ -26,7 +25,8 @@ function MainApp() {
 
       setViewExtensionOpened(payload);
     });
-  });
+  }, []);
+
   const { synthesizeItem } = useChatStore();
 
   useSyncStore();
