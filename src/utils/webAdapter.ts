@@ -8,6 +8,10 @@ export interface WebPlatformAdapter extends BasePlatformAdapter {
   metadata: (path: string, options: any) => Promise<Record<string, any>>;
   error: (message: string) => void;
   openLogDir: () => Promise<void>;
+  getCurrentWebviewWindow: () => Promise<any>;
+  getWindowTheme: () => Promise<string>;
+  setWindowTheme: (theme: string | null) => Promise<void>;
+  getAllWindows: () => Promise<any[]>;
 }
 
 // Create Web adapter functions
@@ -124,11 +128,6 @@ export const createWebAdapter = (): WebPlatformAdapter => {
       return () => {};
     },
 
-    async getWebviewWindow() {
-      console.log("Web mode simulated get webview window");
-      return null;
-    },
-
     async setWindowTheme(theme) {
       console.log("Web mode simulated set window theme:", theme);
     },
@@ -156,7 +155,7 @@ export const createWebAdapter = (): WebPlatformAdapter => {
       return [];
     },
 
-    async getCurrentWindow() {
+    async getCurrentWebviewWindow() {
       console.log("Web mode simulated get current window");
       return null;
     },
@@ -272,7 +271,7 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     async getCurrentWindowLabel() {
       return "web";
     },
-    
+
     async openLogDir() {
       console.log("openLogDir is not supported in web environment");
       return Promise.resolve();

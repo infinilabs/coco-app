@@ -19,7 +19,7 @@ export const useTauriFocus = (props: Props) => {
   useMount(async () => {
     if (!isTauri) return;
 
-    const appWindow = await platformAdapter.getWebviewWindow();
+    const appWindow = await platformAdapter.getCurrentWebviewWindow();
 
     const wait = isMac ? 0 : 100;
 

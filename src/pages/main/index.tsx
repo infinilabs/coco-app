@@ -26,6 +26,7 @@ function MainApp() {
       setViewExtensionOpened(payload);
     });
   }, []);
+
   const { synthesizeItem } = useChatStore();
 
   useSyncStore();

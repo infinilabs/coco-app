@@ -2,12 +2,7 @@ import * as commands from "@/commands";
 
 // Window operations
 export const windowWrapper = {
-  async getCurrentWindow() {
-    const { getCurrentWindow } = await import("@tauri-apps/api/window");
-    return getCurrentWindow();
-  },
-
-  async getWebviewWindow() {
+  async getCurrentWebviewWindow() {
     const { getCurrentWebviewWindow } = await import(
       "@tauri-apps/api/webviewWindow"
     );
@@ -16,7 +11,7 @@ export const windowWrapper = {
 
   async setSize(width: number, height: number) {
     const { LogicalSize } = await import("@tauri-apps/api/dpi");
-    const window = await this.getWebviewWindow();
+    const window = await this.getCurrentWebviewWindow();
     if (window) {
       await window.setSize(new LogicalSize(width, height));
     }

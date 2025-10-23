@@ -60,7 +60,6 @@ export interface WindowOperations {
   showWindow: () => Promise<void>;
   setAlwaysOnTop: (isPinned: boolean) => Promise<void>;
   setShadow(enable: boolean): Promise<void>;
-  getWebviewWindow: () => Promise<any>;
   getWindowByLabel: (label: string) => Promise<{
     show: () => Promise<void>;
     setFocus: () => Promise<void>;
@@ -68,8 +67,6 @@ export interface WindowOperations {
     close: () => Promise<void>;
   } | null>;
   createWindow: (label: string, options: any) => Promise<void>;
-  getAllWindows: () => Promise<any[]>;
-  getCurrentWindow: () => Promise<any>;
   createWebviewWindow: (label: string, options: any) => Promise<any>;
   listenWindowEvent: (
     event: string,
@@ -88,8 +85,6 @@ export interface ThemeAndEvents {
     event: K,
     callback: (event: { payload: EventPayloads[K] }) => void
   ) => Promise<() => void>;
-  setWindowTheme: (theme: string | null) => Promise<void>;
-  getWindowTheme: () => Promise<string>;
   onThemeChanged: (
     callback: (payload: { payload: string }) => void
   ) => Promise<void>;

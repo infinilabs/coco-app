@@ -4,7 +4,7 @@ import {
   getCurrent as getCurrentDeepLinkUrls,
   onOpenUrl,
 } from "@tauri-apps/plugin-deep-link";
-import { getCurrentWindow } from "@tauri-apps/api/window";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 import { useAppStore } from "@/stores/appStore";
 import { useConnectStore } from "@/stores/connectStore";
@@ -52,7 +52,7 @@ export function useDeepLinkManager() {
 
       // trigger oauth success event
       platformAdapter.emitEvent("oauth_success", { serverId });
-      getCurrentWindow().setFocus();
+      getCurrentWebviewWindow().setFocus();
     } catch (err) {
       console.error("Failed to parse OAuth callback URL:", err);
       addError("Invalid OAuth callback URL format: " + err);
