@@ -20,9 +20,8 @@ feat: support pageup/pagedown to navigate search results #920
 feat: standardize multi-level menu label structure #925
 feat(View Extension): page field now accepts HTTP(s) links #925
 feat: return sub-exts when extension type exts themselves are matched #928
-feat: allow navigate back when cursor is at the beginning #940
 feat: open quick ai with modifier key + enter #939
-
+feat: allow navigate back when cursor is at the beginning #940
 
 ### 🐛 Bug fix
 
@@ -33,6 +32,7 @@ fix: WM ext does not work when operating focused win from another display #919
 fix(Window Management): Next/Previous Desktop do not work #926
 fix: fix page rapidly flickering issue #935
 fix(view extension): broken search bar UI when opening extensions via hotkey #938
+fix: allow deletion after selecting all text #943
 
 ### ✈️ Improvements
 
