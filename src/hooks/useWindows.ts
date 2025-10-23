@@ -26,7 +26,7 @@ export const useWindows = () => {
   useEffect(() => {
     const fetchWindow = async () => {
       try {
-        const window = await platformAdapter.getCurrentWindow();
+        const window = await platformAdapter.getCurrentWebviewWindow();
         setAppWindow(window);
       } catch (error) {
         console.error("Failed to get current window:", error);
@@ -51,7 +51,7 @@ export const useWindows = () => {
 
     const win = await platformAdapter.createWebviewWindow(args.label, args);
 
-    if(win) {
+    if (win) {
       win.once("tauri://created", async () => {
         console.log("tauri://created");
         // if (args.label.includes("main")) {
@@ -68,7 +68,6 @@ export const useWindows = () => {
         console.error("error:", error);
       });
     }
-
   }, []);
 
   const closeWin = useCallback(async (label: string) => {
@@ -96,32 +95,44 @@ export const useWindows = () => {
   }, []);
 
   const listenEvents = useCallback(() => {
-    let unlistenHandlers: { (): void; (): void; (): void; (): void; }[] = [];
+    let unlistenHandlers: { (): void; (): void; (): void; (): void }[] = [];
 
     const setupListeners = async () => {
-      const winCreateHandler = await platformAdapter.listenWindowEvent("win-create", (event) => {
-        console.log(event);
-        createWin(event.payload);
-      });
+      const winCreateHandler = await platformAdapter.listenWindowEvent(
+        "win-create",
+        (event) => {
+          console.log(event);
+          createWin(event.payload);
+        }
+      );
       unlistenHandlers.push(winCreateHandler);
 
-      const winShowHandler = await platformAdapter.listenWindowEvent("win-show", async () => {
-        if (!appWindow || !appWindow.label.includes("main")) return;
-        await appWindow.show();
-        await appWindow.unminimize();
-        await appWindow.setFocus();
-      });
+      const winShowHandler = await platformAdapter.listenWindowEvent(
+        "win-show",
+        async () => {
+          if (!appWindow || !appWindow.label.includes("main")) return;
+          await appWindow.show();
+          await appWindow.unminimize();
+          await appWindow.setFocus();
+        }
+      );
       unlistenHandlers.push(winShowHandler);
 
-      const winHideHandler = await platformAdapter.listenWindowEvent("win-hide", async () => {
-        if (!appWindow || !appWindow.label.includes("main")) return;
-        await appWindow.hide();
-      });
+      const winHideHandler = await platformAdapter.listenWindowEvent(
+        "win-hide",
+        async () => {
+          if (!appWindow || !appWindow.label.includes("main")) return;
+          await appWindow.hide();
+        }
+      );
       unlistenHandlers.push(winHideHandler);
 
-      const winCloseHandler = await platformAdapter.listenWindowEvent("win-close", async () => {
-        await appWindow.close();
-      });
+      const winCloseHandler = await platformAdapter.listenWindowEvent(
+        "win-close",
+        async () => {
+          await appWindow.close();
+        }
+      );
       unlistenHandlers.push(winCloseHandler);
     };
 

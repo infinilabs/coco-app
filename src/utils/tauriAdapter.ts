@@ -16,6 +16,8 @@ import { useAppearanceStore } from "@/stores/appearanceStore";
 import { copyToClipboard, dispatchEvent, OpenURLWithBrowser } from ".";
 import { useAppStore } from "@/stores/appStore";
 import { unrequitable } from "@/utils";
+import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { Theme } from "@tauri-apps/api/window";
 
 export interface TauriPlatformAdapter extends BasePlatformAdapter {
   openFileDialog: (
@@ -24,6 +26,10 @@ export interface TauriPlatformAdapter extends BasePlatformAdapter {
   metadata: typeof metadata;
   error: typeof error;
   openLogDir: () => Promise<void>;
+  getCurrentWebviewWindow: () => Promise<WebviewWindow>;
+  getWindowTheme: () => Promise<Theme | null>;
+  setWindowTheme: (theme: Theme | null) => Promise<void>;
+  getAllWindows: () => Promise<WebviewWindow[]>;
 }
 
 // Create Tauri adapter functions
@@ -34,12 +40,12 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     async hideWindow() {
-      const window = await windowWrapper.getWebviewWindow();
+      const window = await windowWrapper.getCurrentWebviewWindow();
       return window?.hide();
     },
 
     async showWindow() {
-      const window = await windowWrapper.getWebviewWindow();
+      const window = await windowWrapper.getCurrentWebviewWindow();
       window?.show();
       window?.unminimize();
       return window?.setFocus();
@@ -166,7 +172,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       });
     },
 
-    async getWebviewWindow() {
+    async getCurrentWebviewWindow() {
       const { getCurrentWebviewWindow } = await import(
         "@tauri-apps/api/webviewWindow"
       );
@@ -174,14 +180,14 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     async setWindowTheme(theme) {
-      const window = await this.getWebviewWindow();
+      const window = await this.getCurrentWebviewWindow();
       if (window) {
         return window.setTheme(theme);
       }
     },
 
     async getWindowTheme() {
-      const window = await this.getWebviewWindow();
+      const window = await this.getCurrentWebviewWindow();
       if (window) {
         return window.theme();
       }
@@ -189,7 +195,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     async onThemeChanged(callback) {
-      const window = await this.getWebviewWindow();
+      const window = await this.getCurrentWebviewWindow();
       if (window) {
         window.onThemeChanged(callback);
       }
@@ -207,15 +213,10 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     async getAllWindows() {
-      const { getAllWindows } = await import("@tauri-apps/api/window");
-      return getAllWindows();
-    },
-
-    async getCurrentWindow() {
-      const { getCurrentWebviewWindow } = await import(
+      const { getAllWebviewWindows } = await import(
         "@tauri-apps/api/webviewWindow"
       );
-      return getCurrentWebviewWindow();
+      return getAllWebviewWindows();
     },
 
     async createWebviewWindow(label, options) {
@@ -330,7 +331,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     async getCurrentWindowLabel() {
-      const window = await windowWrapper.getWebviewWindow();
+      const window = await windowWrapper.getCurrentWebviewWindow();
       return window.label;
     },
 
