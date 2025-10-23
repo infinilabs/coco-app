@@ -103,9 +103,11 @@ export function useAssistantManager({
   const handleKeyDownAutoResizeTextarea = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       const { key, shiftKey, currentTarget } = e;
-      const { value, selectionStart } = currentTarget;
+      const { value, selectionStart, selectionEnd } = currentTarget;
 
-      if (key === "Backspace" && (value === "" || selectionStart === 0)) {
+      const cursorStart = selectionStart === 0 && selectionEnd === 0;
+
+      if (key === "Backspace" && (value === "" || cursorStart)) {
         e.preventDefault();
 
         return navigateBack();
