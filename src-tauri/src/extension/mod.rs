@@ -39,10 +39,9 @@ pub struct Extension {
     name: String,
     /// ID of the developer.
     ///
-    /// * For built-in extensions, this will always be None.
-    /// * For third-party first-layer extensions, the on-disk plugin.json file
-    ///   won't contain this field, but we will set this field for them after reading them into the memory.
-    /// * For third-party sub extensions, this field will be None.
+    /// * For built-in extensions, this is None.
+    /// * For third-party main extensions, this field contains the extension developer ID.
+    /// * For third-party sub extensions, this field is be None.
     developer: Option<String>,
     /// Platforms supported by this extension.
     ///
@@ -110,6 +109,9 @@ pub struct Extension {
 
     /// For View extensions, path to the HTML file/page that coco will load
     /// and render. Otherwise, `None`.
+    ///
+    /// It could be a path relative to the extension root directory, Coco will
+    /// canonicalize it in that case.
     page: Option<String>,
 
     ui: Option<ViewExtensionUISettings>,
@@ -921,6 +923,13 @@ pub(crate) fn canonicalize_relative_icon_path(
         let icon_path = Path::new(icon_str);
 
         if icon_path.is_relative() {
+            // If we enter this if statement, then there are 2 possible cases:
+            //
+            // 1. icon_path is a font class code, e.g., "font_coco"
+            // 2. icon_path is a indeed a relative path
+            //
+            // We distinguish between these 2 cases by checking if `absolute_icon_path` exists
+
             let absolute_icon_path = {
                 let mut assets_directory = extension_dir.join(ASSETS_DIRECTORY_FILE_NAME);
                 assets_directory.push(icon_path);
