@@ -6,7 +6,7 @@ pub(crate) mod path;
 pub(crate) mod platform;
 pub(crate) mod prevent_default;
 pub(crate) mod system_lang;
-pub(crate) mod updater;
+pub(crate) mod version;
 
 use std::{path::Path, process::Command};
 use tauri::AppHandle;
