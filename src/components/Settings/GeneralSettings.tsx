@@ -184,17 +184,14 @@ export default function GeneralSettings() {
 
   const windowModes: Array<{
     icon: ReactElement;
-    label: string;
     value: WindowMode;
   }> = [
     {
       icon: <PanelTop />,
-      label: "Default",
       value: "default",
     },
     {
       icon: <RectangleHorizontal />,
-      label: "Compact",
       value: "compact",
     },
   ];
@@ -264,12 +261,14 @@ export default function GeneralSettings() {
 
           <SettingsItem
             icon={PictureInPicture2}
-            title={"窗口模式"}
-            description={"设置窗口打开时的显示方式。"}
+            title={t("settings.windowMode.title")}
+            description={t("settings.windowMode.description")}
           />
           <div className="grid grid-cols-3 gap-4">
             {windowModes.map((item) => {
-              const { label, icon, value } = item;
+              const { icon, value } = item;
+
+              const label = t(`settings.windowMode.${value}`);
 
               let isSelected = value === windowMode;
 

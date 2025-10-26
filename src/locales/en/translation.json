@@ -17,6 +17,12 @@
       "dark": "Dark",
       "auto": "Auto"
     },
+    "windowMode": {
+      "title": "Window Mode",
+      "description": "Set how the window appears when opened.",
+      "default": "Default",
+      "compact": "Compact"
+    },
     "language": {
       "title": "Language",
       "description": "Choose your preferred language",
