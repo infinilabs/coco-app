@@ -310,6 +310,7 @@ export default function ChatInput({
     <div className={`w-full relative`}>
       <div
         ref={containerRef}
+        id="search-bar"
         className={`flex items-center dark:text-[#D8D8D8] rounded-md transition-all relative overflow-hidden`}
       >
         {lineCount === 1 && renderSearchIcon()}

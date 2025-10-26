@@ -9,7 +9,7 @@ import {
   useMemo,
 } from "react";
 import clsx from "clsx";
-import { useMount } from "ahooks";
+import { useMount, useMutationObserver } from "ahooks";
 
 import Search from "@/components/Search/Search";
 import InputBox from "@/components/Search/InputBox";
@@ -28,6 +28,7 @@ import { useConnectStore } from "@/stores/connectStore";
 import { useAppearanceStore } from "@/stores/appearanceStore";
 import type { StartPage } from "@/types/chat";
 import {
+  canNavigateBack,
   hasUploadingAttachment,
   visibleFilterBar,
   visibleSearchBar,
@@ -96,27 +97,36 @@ function SearchChat({
 
   const inputRef = useRef<string>();
   const isChatModeRef = useRef(false);
+  const inputAreaRef = useRef<HTMLDivElement>(null);
 
   const setWindowSize = useCallback(() => {
     const width = 680;
     let height = 590;
 
-    if (inputRef.current) {
-      platformAdapter.setWindowSize(width, height);
-    } else {
+    if (!canNavigateBack() && !inputRef.current) {
       const { windowMode } = useAppearanceStore.getState();
 
       if (windowMode === "compact") {
-        if (isChatModeRef.current) {
-          height = 80;
-        } else {
-          height = 86;
-        }
-      }
+        const searchBar = document.querySelector("#search-bar");
+        const filterBar = document.querySelector("#filter-bar");
 
-      platformAdapter.setWindowSize(width, height);
+        if (searchBar && filterBar) {
+          height = searchBar.clientHeight + filterBar.clientHeight + 16;
+        } else {
+          height = 82;
+        }
+
+        height = Math.min(height, 88);
+      }
     }
+
+    platformAdapter.setWindowSize(width, height);
   }, []);
+
+  useMutationObserver(setWindowSize, inputAreaRef, {
+    subtree: true,
+    childList: true,
+  });
 
   useEffect(() => {
     inputRef.current = input;
@@ -325,6 +335,7 @@ function SearchChat({
       </div>
 
       <div
+        ref={inputAreaRef}
         data-tauri-drag-region={isTauri}
         className={clsx(
           "p-2 w-full flex justify-center transition-all duration-500 border-[#E6E6E6] dark:border-[#272626]",
