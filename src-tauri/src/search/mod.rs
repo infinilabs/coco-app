@@ -4,6 +4,7 @@ use crate::common::search::{
     FailedRequest, MultiSourceQueryResponse, QueryHits, QuerySource, SearchQuery,
 };
 use crate::common::traits::SearchSource;
+use crate::extension::LOCAL_QUERY_SOURCE_TYPE;
 use crate::server::servers::logout_coco_server;
 use crate::server::servers::mark_server_as_offline;
 use function_name::named;
@@ -205,7 +206,7 @@ async fn query_coco_fusion_multi_query_sources(
 
     let mut total_hits = 0;
     let mut failed_requests = Vec::new();
-    let mut all_hits_grouped_by_source_id: HashMap<String, Vec<QueryHits>> = HashMap::new();
+    let mut all_hits_grouped_by_query_source: HashMap<QuerySource, Vec<QueryHits>> = HashMap::new();
 
     while let Some((query_source, timeout_result)) = futures.next().await {
         match timeout_result {
@@ -219,7 +220,6 @@ async fn query_coco_fusion_multi_query_sources(
             Ok(query_result) => match query_result {
                 Ok(response) => {
                     total_hits += response.total_hits;
-                    let source_id = response.source.id.clone();
 
                     for (document, score) in response.hits {
                         log::debug!(
@@ -236,8 +236,8 @@ async fn query_coco_fusion_multi_query_sources(
                             document,
                         };
 
-                        all_hits_grouped_by_source_id
-                            .entry(source_id.clone())
+                        all_hits_grouped_by_query_source
+                            .entry(query_source.clone())
                             .or_insert_with(Vec::new)
                             .push(query_hit);
                     }
@@ -255,7 +255,7 @@ async fn query_coco_fusion_multi_query_sources(
         }
     }
 
-    let n_sources = all_hits_grouped_by_source_id.len();
+    let n_sources = all_hits_grouped_by_query_source.len();
 
     if n_sources == 0 {
         return Ok(MultiSourceQueryResponse {
@@ -266,10 +266,24 @@ async fn query_coco_fusion_multi_query_sources(
     }
 
     /*
+     * Apply settings: local query source weight
+     */
+    let local_query_source_weight: f64 = 2.0;
+    // Scores remain unchanged if it is 1.0
+    if local_query_source_weight != 1.0 {
+        for (query_source, hits) in all_hits_grouped_by_query_source.iter_mut() {
+            if query_source.r#type == LOCAL_QUERY_SOURCE_TYPE {
+                hits.iter_mut().for_each(|hit| hit.score = hit.score * local_query_source_weight);
+            }
+        }
+    }
+
+
+    /*
      * Sort hits within each source by score (descending) in case data sources
      * do not sort them
      */
-    for hits in all_hits_grouped_by_source_id.values_mut() {
+    for hits in all_hits_grouped_by_query_source.values_mut() {
         hits.sort_by(|a, b| {
             b.score
                 .partial_cmp(&a.score)
@@ -288,15 +302,15 @@ async fn query_coco_fusion_multi_query_sources(
 
     // Include at least 2 hits from each query source
     let max_hits_per_source = (size as usize / n_sources).max(2);
-    for (source_id, hits) in all_hits_grouped_by_source_id.iter() {
+    for (query_source, hits) in all_hits_grouped_by_query_source.iter() {
         let hits_taken = if hits.len() > max_hits_per_source {
-            pruned.insert(&source_id, &hits[max_hits_per_source..]);
+            pruned.insert(&query_source.id, &hits[max_hits_per_source..]);
             hits[0..max_hits_per_source].to_vec()
         } else {
             hits.clone()
         };
 
-        final_hits_grouped_by_source_id.insert(source_id.clone(), hits_taken);
+        final_hits_grouped_by_source_id.insert(query_source.id.clone(), hits_taken);
     }
 
     let final_hits_len = final_hits_grouped_by_source_id

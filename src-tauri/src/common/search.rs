@@ -100,7 +100,7 @@ impl SearchQuery {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Hash, PartialEq, Eq)]
 pub struct QuerySource {
     pub r#type: String, //coco-server/local/ etc.
     pub id: String,     //coco server's id
