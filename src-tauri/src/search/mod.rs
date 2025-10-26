@@ -286,10 +286,8 @@ async fn query_coco_fusion_multi_query_sources(
     let mut final_hits_grouped_by_source_id: HashMap<String, Vec<QueryHits>> = HashMap::new();
     let mut pruned: HashMap<&str, &[QueryHits]> = HashMap::new();
 
-    // max_hits_per_source could be 0, then `final_hits_grouped_by_source_id`
-    // would be empty. But we don't need to worry about this case as we will
-    // populate hits later.
-    let max_hits_per_source = size as usize / n_sources;
+    // Include at least 2 hits from each query source
+    let max_hits_per_source = (size as usize / n_sources).max(2);
     for (source_id, hits) in all_hits_grouped_by_source_id.iter() {
         let hits_taken = if hits.len() > max_hits_per_source {
             pruned.insert(&source_id, &hits[max_hits_per_source..]);
@@ -376,8 +374,6 @@ async fn query_coco_fusion_multi_query_sources(
     });
 
     // Truncate `final_hits` in case it contains more than `size` hits
-    //
-    // Technically, we are safe to not do this. But since it is trivial, double-check it.
     final_hits.truncate(size as usize);
 
     if final_hits.len() < 5 {

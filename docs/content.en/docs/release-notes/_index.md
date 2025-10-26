@@ -45,6 +45,7 @@ chore: use a custom log directory #930
 chore: bump tauri_nspanel to v2.1 #933
 refactor: show_coco/hide_coco now use NSPanel's function on macOS #933
 refactor: procedure that convert_pages() into a func #934
+refactor(post-search): collect at least 2 documents from each query source #948
 
 ## 0.8.0 (2025-09-28)
 
