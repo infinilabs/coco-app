@@ -273,11 +273,11 @@ async fn query_coco_fusion_multi_query_sources(
     if local_query_source_weight != 1.0 {
         for (query_source, hits) in all_hits_grouped_by_query_source.iter_mut() {
             if query_source.r#type == LOCAL_QUERY_SOURCE_TYPE {
-                hits.iter_mut().for_each(|hit| hit.score = hit.score * local_query_source_weight);
+                hits.iter_mut()
+                    .for_each(|hit| hit.score = hit.score * local_query_source_weight);
             }
         }
     }
-
 
     /*
      * Sort hits within each source by score (descending) in case data sources
