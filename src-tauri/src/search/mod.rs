@@ -7,6 +7,7 @@ use crate::common::traits::SearchSource;
 use crate::extension::LOCAL_QUERY_SOURCE_TYPE;
 use crate::server::servers::logout_coco_server;
 use crate::server::servers::mark_server_as_offline;
+use crate::settings::get_local_query_source_weight;
 use function_name::named;
 use futures::StreamExt;
 use futures::stream::FuturesUnordered;
@@ -268,7 +269,7 @@ async fn query_coco_fusion_multi_query_sources(
     /*
      * Apply settings: local query source weight
      */
-    let local_query_source_weight: f64 = 2.0;
+    let local_query_source_weight: f64 = get_local_query_source_weight(tauri_app_handle);
     // Scores remain unchanged if it is 1.0
     if local_query_source_weight != 1.0 {
         for (query_source, hits) in all_hits_grouped_by_query_source.iter_mut() {
