@@ -97,13 +97,14 @@ function SearchChat({
 
   const inputRef = useRef<string>();
   const isChatModeRef = useRef(false);
-  const inputAreaRef = useRef<HTMLDivElement>(null);
 
   const setWindowSize = useCallback(() => {
     const width = 680;
     let height = 590;
 
-    if (!canNavigateBack() && !inputRef.current) {
+    const updateAppDialog = document.querySelector("#update-app-dialog");
+
+    if (!updateAppDialog && !canNavigateBack() && !inputRef.current) {
       const { windowMode } = useAppearanceStore.getState();
 
       if (windowMode === "compact") {
@@ -123,7 +124,7 @@ function SearchChat({
     platformAdapter.setWindowSize(width, height);
   }, []);
 
-  useMutationObserver(setWindowSize, inputAreaRef, {
+  useMutationObserver(setWindowSize, document.body, {
     subtree: true,
     childList: true,
   });
@@ -335,7 +336,6 @@ function SearchChat({
       </div>
 
       <div
-        ref={inputAreaRef}
         data-tauri-drag-region={isTauri}
         className={clsx(
           "p-2 w-full flex justify-center transition-all duration-500 border-[#E6E6E6] dark:border-[#272626]",
