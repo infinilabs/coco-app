@@ -32,6 +32,7 @@ import {
   visibleFilterBar,
   visibleSearchBar,
 } from "@/utils";
+import { useTauriFocus } from "@/hooks/useTauriFocus";
 
 interface SearchChatProps {
   isTauri?: boolean;
@@ -82,6 +83,7 @@ function SearchChat({
   );
 
   const [state, dispatch] = useReducer(appReducer, customInitialState);
+
   const {
     isChatMode,
     input,
@@ -91,6 +93,42 @@ function SearchChat({
     isMCPActive,
     isTyping,
   } = state;
+
+  const inputRef = useRef<string>();
+  const isChatModeRef = useRef(false);
+
+  const setWindowSize = useCallback(() => {
+    const width = 680;
+    let height = 590;
+
+    if (inputRef.current) {
+      platformAdapter.setWindowSize(width, height);
+    } else {
+      const { windowMode } = useAppearanceStore.getState();
+
+      if (windowMode === "compact") {
+        if (isChatModeRef.current) {
+          height = 80;
+        } else {
+          height = 86;
+        }
+      }
+
+      platformAdapter.setWindowSize(width, height);
+    }
+  }, []);
+
+  useEffect(() => {
+    inputRef.current = input;
+    isChatModeRef.current = isChatMode;
+
+    setWindowSize();
+  }, [input, isChatMode]);
+
+  useTauriFocus({
+    onFocus: setWindowSize,
+  });
+
   useEffect(() => {
     dispatch({
       type: "SET_SEARCH_ACTIVE",
@@ -113,11 +151,6 @@ function SearchChat({
 
   const setTheme = useThemeStore((state) => state.setTheme);
   const setIsDark = useThemeStore((state) => state.setIsDark);
-
-  const isChatModeRef = useRef(false);
-  useEffect(() => {
-    isChatModeRef.current = isChatMode;
-  }, [isChatMode]);
 
   useMount(async () => {
     const isWin10 = await platformAdapter.isWindows10();

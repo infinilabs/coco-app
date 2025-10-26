@@ -1,23 +1,13 @@
 import SettingsInput from "@/components/Settings/SettingsInput";
 import SettingsItem from "@/components/Settings/SettingsItem";
 import { useAppearanceStore } from "@/stores/appearanceStore";
-import platformAdapter from "@/utils/platformAdapter";
 import { AppWindowMac } from "lucide-react";
-import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 const Appearance = () => {
   const { t } = useTranslation();
   const opacity = useAppearanceStore((state) => state.opacity);
   const setOpacity = useAppearanceStore((state) => state.setOpacity);
-
-  useEffect(() => {
-    const unlisten = useAppearanceStore.subscribe((state) => {
-      platformAdapter.emitEvent("change-appearance-store", state);
-    });
-
-    return unlisten;
-  }, []);
 
   return (
     <>

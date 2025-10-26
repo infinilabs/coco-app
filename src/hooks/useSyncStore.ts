@@ -117,8 +117,11 @@ export const useSyncStore = () => {
   const setShowTooltip = useAppStore((state) => state.setShowTooltip);
   const setEndpoint = useAppStore((state) => state.setEndpoint);
   const setLanguage = useAppStore((state) => state.setLanguage);
-  
-  const setServerListSilently = useConnectStore((state) => state.setServerListSilently);
+  const { setWindowMode } = useAppearanceStore();
+
+  const setServerListSilently = useConnectStore(
+    (state) => state.setServerListSilently
+  );
 
   useEffect(() => {
     if (!resetFixedWindow) {
@@ -182,11 +185,8 @@ export const useSyncStore = () => {
       }),
 
       platformAdapter.listenEvent("change-connect-store", ({ payload }) => {
-        const {
-          connectionTimeout,
-          querySourceTimeout,
-          allowSelfSignature,
-        } = payload;
+        const { connectionTimeout, querySourceTimeout, allowSelfSignature } =
+          payload;
         if (isNumber(connectionTimeout)) {
           setConnectionTimeout(connectionTimeout);
         }
@@ -197,12 +197,13 @@ export const useSyncStore = () => {
       }),
 
       platformAdapter.listenEvent("change-appearance-store", ({ payload }) => {
-        const { opacity, snapshotUpdate } = payload;
+        const { opacity, snapshotUpdate, windowMode } = payload;
 
         if (isNumber(opacity)) {
           setOpacity(opacity);
         }
         setSnapshotUpdate(snapshotUpdate);
+        setWindowMode(windowMode);
       }),
 
       platformAdapter.listenEvent("change-extensions-store", ({ payload }) => {
