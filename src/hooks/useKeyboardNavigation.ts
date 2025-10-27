@@ -28,7 +28,6 @@ export function useKeyboardNavigation({
   setShowIndex,
   setSelectedName,
   globalItemIndexMap,
-  handleItemAction,
   isChatMode,
   formatUrl,
   searchData,
@@ -142,18 +141,6 @@ export function useKeyboardNavigation({
           setSelectedName(item?.source?.name || "");
         }
         setShowIndex(true);
-      }
-
-      if (
-        modifierKeyPressed &&
-        e.key === "ArrowRight" &&
-        selectedIndex !== null
-      ) {
-        e.preventDefault();
-
-        const item = globalItemIndexMap[selectedIndex];
-
-        handleItemAction(item);
       }
 
       if (e.key === "Enter" && !e.shiftKey && selectedIndex !== null) {
