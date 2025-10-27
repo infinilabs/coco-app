@@ -17,6 +17,12 @@
       "dark": "深色",
       "auto": "自动"
     },
+    "windowMode": {
+      "title": "窗口模式",
+      "description": "设置窗口打开时的显示方式。",
+      "default": "默认",
+      "compact": "紧凑"
+    },
     "language": {
       "title": "语言",
       "description": "选择您的首选语言",

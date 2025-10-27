@@ -22,6 +22,7 @@ feat(View Extension): page field now accepts HTTP(s) links #925
 feat: return sub-exts when extension type exts themselves are matched #928
 feat: open quick ai with modifier key + enter #939
 feat: allow navigate back when cursor is at the beginning #940
+feat: add compact mode for window #947
 
 ### 🐛 Bug fix
 
@@ -46,6 +47,7 @@ chore: bump tauri_nspanel to v2.1 #933
 refactor: show_coco/hide_coco now use NSPanel's function on macOS #933
 refactor: procedure that convert_pages() into a func #934
 refactor(post-search): collect at least 2 documents from each query source #948
+refactor: custom_version_comparator() now compares semantic versions #941
 
 ## 0.8.0 (2025-09-28)
 

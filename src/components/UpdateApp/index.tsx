@@ -131,9 +131,8 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
 
     const { skipVersions, updateInfo } = useUpdateStore.getState();
 
-    if(updateInfo?.version){
-    setSkipVersions([...skipVersions, updateInfo.version]);
-
+    if (updateInfo?.version) {
+      setSkipVersions([...skipVersions, updateInfo.version]);
     }
 
     isCheckPage ? hide_check() : setVisible(false);
@@ -143,6 +142,7 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
     <Dialog
       open={isCheckPage ? true : visible}
       as="div"
+      id="update-app-dialog"
       className="relative z-10 focus:outline-none"
       onClose={noop}
     >
@@ -154,6 +154,7 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
         }`}
       >
         <div
+          data-tauri-drag-region
           className={clsx(
             "flex min-h-full items-center justify-center",
             !isCheckPage && "p-4"
@@ -161,11 +162,13 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
         >
           <DialogPanel
             transition
-            className={`relative w-[340px] py-8 flex flex-col items-center ${
-              isCheckPage
-                ? ""
-                : "rounded-lg bg-white dark:bg-[#333] border border-[#EDEDED]  dark:border-black/20 shadow-md"
-            }`}
+            className={clsx(
+              "relative w-[340px] py-8 flex flex-col items-center",
+              {
+                "rounded-lg bg-white dark:bg-[#333] border border-[#EDEDED]  dark:border-black/20 shadow-md":
+                  !isCheckPage,
+              }
+            )}
           >
             {!isCheckPage && isOptional && (
               <X

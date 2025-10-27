@@ -16,6 +16,7 @@ import { useConnectStore } from "@/stores/connectStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore } from "@/stores/appStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
+import { useAppearanceStore } from "@/stores/appearanceStore";
 
 const tabIndexMap: { [key: string]: number } = {
   general: 0,
@@ -58,6 +59,10 @@ function SettingsPage() {
       platformAdapter.emitEvent("change-app-store", state);
     });
 
+    const unsubscribeAppearanceStore = useAppearanceStore.subscribe((state) => {
+      platformAdapter.emitEvent("change-appearance-store", state);
+    });
+
     const unlisten2 = platformAdapter.listenEvent(
       "config-extension",
       ({ payload }) => {
@@ -70,6 +75,7 @@ function SettingsPage() {
     return () => {
       unsubscribeConnect();
       unsubscribeAppStore();
+      unsubscribeAppearanceStore();
       unlisten.then((fn) => fn());
       unlisten2.then((fn) => fn());
     };
