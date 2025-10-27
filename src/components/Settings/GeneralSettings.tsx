@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, cloneElement, ReactElement } from "react";
 import {
   Command,
   Monitor,
@@ -9,6 +9,9 @@ import {
   Tags,
   // Trash2,
   Globe,
+  PictureInPicture2,
+  PanelTop,
+  RectangleHorizontal,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { isTauri } from "@tauri-apps/api/core";
@@ -31,6 +34,8 @@ import {
   unregister_shortcut,
 } from "@/commands";
 import platformAdapter from "@/utils/platformAdapter";
+import clsx from "clsx";
+import { useAppearanceStore, WindowMode } from "@/stores/appearanceStore";
 
 export function ThemeOption({
   icon: Icon,
@@ -76,6 +81,7 @@ export default function GeneralSettings() {
   const [launchAtLogin, setLaunchAtLogin] = useState(true);
 
   const { showTooltip, setShowTooltip, language, setLanguage } = useAppStore();
+  const { windowMode, setWindowMode } = useAppearanceStore();
 
   const fetchAutoStartStatus = async () => {
     if (isTauri()) {
@@ -176,6 +182,20 @@ export default function GeneralSettings() {
 
   const currentLanguage = language || i18n.language;
 
+  const windowModes: Array<{
+    icon: ReactElement;
+    value: WindowMode;
+  }> = [
+    {
+      icon: <PanelTop />,
+      value: "default",
+    },
+    {
+      icon: <RectangleHorizontal />,
+      value: "compact",
+    },
+  ];
+
   return (
     <div className="space-y-8">
       <div>
@@ -237,6 +257,51 @@ export default function GeneralSettings() {
               title={t("settings.appearance.auto")}
               theme="auto"
             />
+          </div>
+
+          <SettingsItem
+            icon={PictureInPicture2}
+            title={t("settings.windowMode.title")}
+            description={t("settings.windowMode.description")}
+          />
+          <div className="grid grid-cols-3 gap-4">
+            {windowModes.map((item) => {
+              const { icon, value } = item;
+
+              const label = t(`settings.windowMode.${value}`);
+
+              let isSelected = value === windowMode;
+
+              return (
+                <button
+                  onClick={() => {
+                    setWindowMode(value);
+                  }}
+                  className={clsx(
+                    "p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 flex flex-col items-center justify-center space-y-2 transition-all",
+                    {
+                      "!border-blue-500 bg-blue-50 dark:bg-blue-900/20":
+                        isSelected,
+                    }
+                  )}
+                  title={label}
+                >
+                  {cloneElement(icon, {
+                    className: clsx({
+                      "text-blue-500": isSelected,
+                    }),
+                  })}
+
+                  <span
+                    className={clsx(`text-sm font-medium`, {
+                      "text-blue-500": isSelected,
+                    })}
+                  >
+                    {label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           <SettingsItem

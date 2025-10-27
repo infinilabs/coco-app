@@ -4,7 +4,7 @@ interface SettingsItemProps {
   icon: LucideIcon;
   title: string;
   description: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export default function SettingsItem({
