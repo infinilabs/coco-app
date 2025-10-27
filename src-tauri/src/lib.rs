@@ -90,7 +90,7 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .plugin(
             tauri_plugin_updater::Builder::new()
-                .default_version_comparator(crate::util::updater::custom_version_comparator)
+                .default_version_comparator(crate::util::version::custom_version_comparator)
                 .build(),
         )
         .plugin(tauri_plugin_windows_version::init())
