@@ -41,7 +41,8 @@ export const SearchSource: React.FC<SearchSourceProps> = ({
         defaultIcon={isDark ? source_default_dark_img : source_default_img}
         className="w-4 h-4"
       />
-      {sourceName} {isTauri && items[0]?.source?.name && `- ${items[0].source.name}`}
+      {sourceName}{" "}
+      {isTauri && items[0]?.source?.name && `- ${items[0].source.name}`}
       <div className="flex-1 border-b border-b-[#e6e6e6] dark:border-b-[#272626]"></div>
       {!hideArrow && (
         <>
@@ -56,7 +57,7 @@ export const SearchSource: React.FC<SearchSourceProps> = ({
           </IconWrapper>
           {showIndex && sourceName === selectedName && (
             <div className="absolute top-1 right-4">
-              <VisibleKey shortcut="→" />
+              <VisibleKey shortcut="Tab" shortcutClassName="w-8" />
             </div>
           )}
         </>
