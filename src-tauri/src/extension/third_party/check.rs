@@ -14,6 +14,7 @@
 
 use crate::extension::Extension;
 use crate::extension::ExtensionType;
+use crate::extension::PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION;
 use crate::util::platform::Platform;
 use std::collections::HashSet;
 
@@ -179,6 +180,13 @@ fn check_sub_extension_only(
         }
     }
 
+    if sub_extension.minimum_coco_version.is_some() {
+        return Err(format!(
+            "invalid sub-extension [{}-{}]: [{}] cannot be set for sub-extensions",
+            extension_id, sub_extension.id, PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION
+        ));
+    }
+
     Ok(())
 }
 
@@ -278,6 +286,7 @@ mod tests {
             ui: None,
             permission: None,
             settings: None,
+            minimum_coco_version: None,
             screenshots: None,
             url: None,
             version: None,
@@ -540,6 +549,21 @@ mod tests {
         assert!(result.unwrap_err().contains(
             "fields [commands/scripts/quicklinks/views] should not be set in sub-extensions"
         ));
+    }
+
+    #[test]
+    fn test_sub_extension_cannot_set_minimum_coco_version() {
+        let mut extension = create_basic_extension("test-group", ExtensionType::Group);
+        let mut sub_cmd = create_basic_extension("sub-cmd", ExtensionType::Command);
+        sub_cmd.minimum_coco_version = Some(semver::Version::new(0, 8, 0));
+        extension.commands = Some(vec![sub_cmd]);
+
+        let result = general_check(&extension);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains(&format!(
+            "[{}] cannot be set for sub-extensions",
+            PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION
+        )));
     }
     /* Test check_sub_extension_only */
 

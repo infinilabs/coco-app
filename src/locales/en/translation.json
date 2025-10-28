@@ -222,9 +222,11 @@
         "importSuccess": "Extension imported successfully.",
         "importFailed": "No valid extension found in the selected folder. Please check the folder structure.",
         "extensionAlreadyImported": "Extension already imported. Please remove it first.",
-        "incompatibleExtension": "This extension is incompatible with your OS.",
+        "platformIncompatibleExtension": "This extension is incompatible with your OS.",
+        "appIncompatibleExtension": "Installation failed! Incompatible with your Coco App version. Please update and retry.",
         "uninstall": "Uninstall",
-        "uninstallSuccess": "Uninstalled successfully"
+        "uninstallSuccess": "Uninstalled successfully",
+        "incompatible": "Extension cannot run on the current version. Please upgrade Coco App."
       },
       "application": {
         "title": "Applications",
