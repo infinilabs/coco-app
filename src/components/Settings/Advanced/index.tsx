@@ -18,6 +18,7 @@ import SettingsInput from "@/components//Settings/SettingsInput";
 import platformAdapter from "@/utils/platformAdapter";
 import UpdateSettings from "./components/UpdateSettings";
 import SettingsToggle from "../SettingsToggle";
+import { isNil } from "lodash-es";
 
 const Advanced = () => {
   const { t } = useTranslation();
@@ -57,6 +58,7 @@ const Advanced = () => {
   const setAllowSelfSignature = useConnectStore((state) => {
     return state.setAllowSelfSignature;
   });
+  const { searchDelay, setSearchDelay } = useConnectStore();
 
   useMount(async () => {
     const allowSelfSignature = await platformAdapter.invokeBackend<boolean>(
@@ -207,6 +209,21 @@ const Advanced = () => {
             value={queryTimeout}
             onChange={(value) => {
               setQueryTimeout(!value ? void 0 : Number(value));
+            }}
+          />
+        </SettingsItem>
+
+        <SettingsItem
+          icon={Unplug}
+          title={t("settings.advanced.connect.searchDelay.title")}
+          description={t("settings.advanced.connect.searchDelay.description")}
+        >
+          <SettingsInput
+            type="number"
+            min={0}
+            value={searchDelay}
+            onChange={(value) => {
+              setSearchDelay(isNil(value) ? 0 : Number(value));
             }}
           />
         </SettingsItem>

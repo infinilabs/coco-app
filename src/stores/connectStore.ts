@@ -38,6 +38,8 @@ export type IConnectStore = {
   setVisibleStartPage: (visibleStartPage: boolean) => void;
   allowSelfSignature: boolean;
   setAllowSelfSignature: (allowSelfSignature: boolean) => void;
+  searchDelay: number;
+  setSearchDelay: (searchDelay: number) => void;
 };
 
 export const useConnectStore = create<IConnectStore>()(
@@ -45,7 +47,7 @@ export const useConnectStore = create<IConnectStore>()(
     persist(
       (set) => ({
         serverList: [],
-        setServerList: async(serverList: Server[]) => {
+        setServerList: async (serverList: Server[]) => {
           set(
             produce((draft) => {
               draft.serverList = serverList;
@@ -142,6 +144,10 @@ export const useConnectStore = create<IConnectStore>()(
         allowSelfSignature: false,
         setAllowSelfSignature: (allowSelfSignature: boolean) => {
           return set(() => ({ allowSelfSignature }));
+        },
+        searchDelay: 300,
+        setSearchDelay(searchDelay) {
+          return set(() => ({ searchDelay }));
         },
       }),
       {
