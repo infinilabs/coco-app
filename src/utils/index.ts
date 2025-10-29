@@ -8,6 +8,7 @@ import { DEFAULT_COCO_SERVER_ID, HISTORY_PANEL_ID } from "@/constants";
 import { useChatStore } from "@/stores/chatStore";
 import { getCurrentWindowService } from "@/commands/windowService";
 import { useSearchStore } from "@/stores/searchStore";
+import i18next from "i18next";
 
 // 1
 export async function copyToClipboard(text: string) {
@@ -325,4 +326,24 @@ export const visibleFooterBar = () => {
   const [, , ui] = viewExtensionOpened;
 
   return ui?.footer ?? true;
+};
+
+export const installExtensionError = (error: string) => {
+  const { addError } = useAppStore.getState();
+
+  let message = "settings.extensions.hints.importFailed";
+
+  if (error === "already imported") {
+    message = "settings.extensions.hints.extensionAlreadyImported";
+  }
+
+  if (error === "platform_incompatible") {
+    message = "settings.extensions.hints.platformIncompatibleExtension";
+  }
+
+  if (error === "app_incompatible") {
+    message = "settings.extensions.hints.appIncompatibleExtension";
+  }
+
+  addError(i18next.t(message));
 };

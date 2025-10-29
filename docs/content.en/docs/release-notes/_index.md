@@ -23,6 +23,7 @@ feat: return sub-exts when extension type exts themselves are matched #928
 feat: open quick ai with modifier key + enter #939
 feat: allow navigate back when cursor is at the beginning #940
 feat: add compact mode for window #947
+feat(extension compatibility): minimum_coco_version #946
 
 ### 🐛 Bug fix
 

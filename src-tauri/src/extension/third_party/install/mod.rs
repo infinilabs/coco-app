@@ -4,19 +4,27 @@
 //! # How
 //!
 //! Technically, installing an extension involves the following steps. The order
-//! may vary between implementations.
+//! varies between 2 implementations.
 //!
 //!   1. Check if it is already installed, if so, return
 //!   
-//!   2. Correct the `plugin.json` JSON if it does not conform to our `struct
+//!   2. Check if it is compatible by inspecting the "minimum_coco_version"
+//!      field. If it is incompatible, reject and error out.
+//!
+//!      This should be done before convert `plugin.json` JSON to `struct Extension`
+//!      as the definition of `struct Extension` could change in the future, in this
+//!      case, we want to tell users that "it is an incompatible extension" rather
+//!      than "this extension is invalid".
+//!   
+//!   3. Correct the `plugin.json` JSON if it does not conform to our `struct
 //!      Extension` definition. This can happen because the JSON written by
 //!      developers is in a simplified form for a better developer experience.
 //!
-//!   3. Validate the corrected `plugin.json`
+//!   4. Validate the corrected `plugin.json`
 //!      1. misc checks
 //!      2. Platform compatibility check
 //!
-//!   4. Write the extension files to the corresponding location
+//!   5. Write the extension files to the corresponding location
 //!
 //!      * developer directory
 //!        * extension directory
@@ -25,25 +33,29 @@
 //!          * plugin.json file
 //!          * View pages if exist
 //!
-//!   5. If this extension contains any View extensions, call `convert_page()`
+//!   6. If this extension contains any View extensions, call `convert_page()`
 //!      on them to make them loadable by Tauri/webview.
 //!
 //!      See `convert_page()` for more info.
 //!
-//!   6. Canonicalize `Extension.icon` and `Extension.page` fields if they are
+//!   7. Canonicalize `Extension.icon` and `Extension.page` fields if they are
 //!      relative paths
 //!
 //!      * icon: relative to the `assets` directory
 //!      * page: relative to the extension root directory
 //!
-//!   7. Add the extension to the in-memory extension list.
+//!   8. Add the extension to the in-memory extension list.
 
 pub(crate) mod local_extension;
 pub(crate) mod store;
 
 use crate::extension::Extension;
 use crate::extension::ExtensionType;
+use crate::extension::PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION;
 use crate::util::platform::Platform;
+use crate::util::version::{COCO_VERSION, parse_coco_semver};
+use serde_json::Value as Json;
+use std::ops::Deref;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -287,6 +299,33 @@ async fn view_extension_convert_pages(
     Ok(())
 }
 
+/// Inspect the "minimum_coco_version" field and see if this extension is
+/// compatible with the current Coco app.
+fn check_compatibility_via_mcv(plugin_json: &Json) -> Result<bool, String> {
+    let Some(mcv_json) = plugin_json.get(PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION) else {
+        return Ok(true);
+    };
+    if mcv_json == &Json::Null {
+        return Ok(true);
+    }
+
+    let Some(mcv_str) = mcv_json.as_str() else {
+        return Err(format!(
+            "invalid extension: field [{}] should be a string",
+            PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION
+        ));
+    };
+
+    let Some(mcv) = parse_coco_semver(mcv_str) else {
+        return Err(format!(
+            "invalid extension: [{}] is not a valid version string",
+            PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION
+        ));
+    };
+
+    Ok(COCO_VERSION.deref() >= &mcv)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -319,6 +358,7 @@ mod tests {
             settings: None,
             page: None,
             ui: None,
+            minimum_coco_version: None,
             permission: None,
             screenshots: None,
             url: None,

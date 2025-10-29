@@ -274,6 +274,7 @@ export default function GeneralSettings() {
 
               return (
                 <button
+                  key={value}
                   onClick={() => {
                     setWindowMode(value);
                   }}

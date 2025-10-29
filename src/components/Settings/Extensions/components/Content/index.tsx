@@ -1,5 +1,5 @@
 import { FC, MouseEvent, useContext, useMemo, useState } from "react";
-import { useReactive } from "ahooks";
+import { useMount, useReactive } from "ahooks";
 import { ChevronRight, LoaderCircle } from "lucide-react";
 import clsx from "clsx";
 import { isArray, startCase, sortBy } from "lodash-es";
@@ -20,11 +20,12 @@ const Content = () => {
   return rootState.extensions.map((item) => {
     const { id } = item;
 
-    return <Item key={id} {...item} level={1} />;
+    return <Item key={id} extension={item} level={1} />;
   });
 };
 
-interface ItemProps extends Extension {
+interface ItemProps {
+  extension: Extension;
   level: number;
   parentId?: ExtensionId;
   parentDeveloper?: string;
@@ -42,19 +43,8 @@ const subExtensionCommand: Partial<Record<ExtensionId, string>> = {
 };
 
 const Item: FC<ItemProps> = (props) => {
-  const {
-    id,
-    icon,
-    name,
-    type,
-    level,
-    platforms,
-    developer,
-    enabled,
-    parentId,
-    parentDeveloper,
-    parentDisabled,
-  } = props;
+  const { extension, level, parentId, parentDeveloper, parentDisabled } = props;
+  const { id, icon, name, type, platforms, developer, enabled } = extension;
   const { rootState } = useContext(ExtensionsContext);
   const state = useReactive<ItemState>({
     loading: false,
@@ -63,6 +53,18 @@ const Item: FC<ItemProps> = (props) => {
   const { t } = useTranslation();
   const { disabledExtensions, setDisabledExtensions } = useExtensionsStore();
   const [selfDisabled, setSelfDisabled] = useState(!enabled);
+  const [compatible, setCompatible] = useState(true);
+
+  useMount(async () => {
+    const compatible = await platformAdapter.invokeBackend<boolean>(
+      "is_extension_compatible",
+      {
+        extension,
+      }
+    );
+
+    setCompatible(compatible);
+  });
 
   const bundleId = {
     developer: developer ?? parentDeveloper,
@@ -71,7 +73,7 @@ const Item: FC<ItemProps> = (props) => {
   };
 
   const hasSubExtensions = () => {
-    const { commands, scripts, quicklinks } = props;
+    const { commands, scripts, quicklinks } = extension;
 
     if (subExtensionCommand[id]) {
       return true;
@@ -87,7 +89,7 @@ const Item: FC<ItemProps> = (props) => {
   const getSubExtensions = async () => {
     state.loading = true;
 
-    const { commands, scripts, quicklinks } = props;
+    const { commands, scripts, quicklinks } = extension;
 
     let subExtensions: Extension[] = [];
 
@@ -117,12 +119,16 @@ const Item: FC<ItemProps> = (props) => {
   };
 
   const isDisabled = useMemo(() => {
+    if (!compatible) {
+      return true;
+    }
+
     if (level === 1) {
       return selfDisabled;
     }
 
     return parentDisabled || selfDisabled;
-  }, [parentDisabled, selfDisabled]);
+  }, [parentDisabled, selfDisabled, compatible]);
 
   const editable = useMemo(() => {
     return (
@@ -134,7 +140,7 @@ const Item: FC<ItemProps> = (props) => {
   }, [type]);
 
   const renderAlias = () => {
-    const { alias } = props;
+    const { alias } = extension;
 
     const handleChange = (value: string) => {
       platformAdapter.invokeBackend("set_extension_alias", {
@@ -173,7 +179,7 @@ const Item: FC<ItemProps> = (props) => {
   };
 
   const renderHotkey = () => {
-    const { hotkey } = props;
+    const { hotkey } = extension;
 
     const handleChange = (value: string) => {
       if (value) {
@@ -246,7 +252,7 @@ const Item: FC<ItemProps> = (props) => {
     return (
       <div
         className={clsx("flex items-center justify-end", {
-          "opacity-50 pointer-events-none": parentDisabled,
+          "opacity-50 pointer-events-none": !compatible || parentDisabled,
         })}
       >
         <SettingsToggle
@@ -294,7 +300,7 @@ const Item: FC<ItemProps> = (props) => {
           <div
             className="flex items-center justify-between gap-2 h-8"
             onClick={() => {
-              rootState.activeExtension = props;
+              rootState.activeExtension = extension;
             }}
           >
             <div
@@ -356,7 +362,7 @@ const Item: FC<ItemProps> = (props) => {
             return (
               <Item
                 key={item.id}
-                {...item}
+                extension={item}
                 level={level + 1}
                 parentId={id}
                 parentDeveloper={developer}

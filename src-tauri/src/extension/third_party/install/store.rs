@@ -1,6 +1,7 @@
 //! Extension store related stuff.
 
 use super::super::LOCAL_QUERY_SOURCE_TYPE;
+use super::check_compatibility_via_mcv;
 use super::is_extension_installed;
 use crate::common::document::DataSourceReference;
 use crate::common::document::Document;
@@ -259,6 +260,10 @@ pub(crate) async fn install_extension_from_store(
     let mut extension: Json = serde_json::from_str(&plugin_json_content)
         .map_err(|e| format!("Failed to parse plugin.json: {}", e))?;
 
+    if !check_compatibility_via_mcv(&extension)? {
+        return Err("app_incompatible".into());
+    }
+
     let mut_ref_to_developer_object: &mut Json = extension
         .as_object_mut()
         .expect("plugin.json should be an object")
@@ -308,7 +313,7 @@ pub(crate) async fn install_extension_from_store(
     let current_platform = Platform::current();
     if let Some(ref platforms) = extension.platforms {
         if !platforms.contains(&current_platform) {
-            return Err("this extension is not compatible with your OS".into());
+            return Err("platform_incompatible".into());
         }
     }
 
