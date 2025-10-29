@@ -35,7 +35,6 @@ function MainApp() {
     <>
       <SearchChat isTauri={true} hasModules={["search", "chat"]} />
       <UpdateApp />
-
       {synthesizeItem && <Synthesize />}
     </>
   );
