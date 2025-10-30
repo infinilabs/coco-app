@@ -173,11 +173,12 @@ function DropdownList({
           )}
 
           {items.map((hit) => {
-            const currentIndex = hit.document.index || 0;
+            const currentIndex = hit.document.index ?? 0;
+            const itemKey = `${sourceName}-${hit.document.id ?? currentIndex}`;
 
             return (
               <DropdownListItem
-                key={hit.document.id}
+                key={itemKey}
                 item={hit.document}
                 selectedIndex={selectedIndex}
                 currentIndex={currentIndex}
