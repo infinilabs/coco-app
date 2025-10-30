@@ -114,7 +114,7 @@ function SearchChat({
         if (searchBar && filterBar) {
           height = searchBar.clientHeight + filterBar.clientHeight + 16;
         } else {
-          height = 82;
+          height = 84;
         }
 
         height = Math.min(height, 88);
@@ -278,6 +278,8 @@ function SearchChat({
   });
 
   const opacity = useAppearanceStore((state) => state.opacity);
+  const windowMode = useAppearanceStore((state) => state.windowMode);
+  const isCompact = windowMode === "compact";
 
   useEffect(() => {
     if (isTauri) {
@@ -338,10 +340,11 @@ function SearchChat({
       <div
         data-tauri-drag-region={isTauri}
         className={clsx(
-          "p-2 w-full flex justify-center transition-all duration-500 border-[#E6E6E6] dark:border-[#272626]",
-          [isTransitioned ? "border-t" : "border-b"],
+          "p-2 w-full flex justify-center transition-all duration-500",
+          !isCompact && "border-[#E6E6E6] dark:border-[#272626]",
+          !isCompact && [isTransitioned ? "border-t" : "border-b"],
           {
-            "min-h-[82px]": visibleSearchBar() && visibleFilterBar(),
+            "min-h-[84px]": visibleSearchBar() && visibleFilterBar(),
           }
         )}
       >
