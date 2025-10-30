@@ -130,7 +130,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     // set first select hover
     if (from === 0 && list.length > 0) {
       setSelectedItem(0);
-      getDocDetail(list[0]?.document);
     }
 
     if (taskId === taskIdRef.current) {
@@ -193,12 +192,11 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   );
 
   const onMouseEnter = useCallback(
-    (index: number, item: any) => {
+    (index: number) => {
       if (isKeyboardMode) return;
-      getDocDetail(item);
       setSelectedItem(index);
     },
-    [isKeyboardMode, getDocDetail]
+    [isKeyboardMode]
   );
 
   useEffect(() => {
@@ -236,7 +234,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
               ? Math.max(0, prev - 1)
               : Math.min(data.list.length - 1, prev + 1);
 
-          getDocDetail(data.list[nextIndex]?.document);
           itemRefs.current[nextIndex]?.scrollIntoView({
             behavior: "smooth",
             block: "nearest",
@@ -284,6 +281,14 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     };
   }, [handleKeyDown, handleMouseMove]);
 
+  useEffect(() => {
+    if (selectedItem === null) return;
+    const doc = data.list[selectedItem]?.document;
+    if (doc) {
+      getDocDetail(doc);
+    }
+  }, [selectedItem, data, getDocDetail]);
+
   return (
     <div
       className={`border-r border-gray-200 dark:border-gray-700 flex flex-col h-full overflow-x-hidden ${
@@ -298,10 +303,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         />
       </div>
 
-      <Scrollbar
-        className="flex-1 overflow-auto pr-0.5"
-        ref={containerRef}
-      >
+      <Scrollbar className="flex-1 overflow-auto pr-0.5" ref={containerRef}>
         {data?.list && data.list.length > 0 && (
           <div>
             {data.list.map((hit, index) => (
@@ -311,7 +313,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                 item={{ ...hit.document, querySource: hit.source }}
                 isSelected={selectedItem === index}
                 currentIndex={index}
-                onMouseEnter={() => onMouseEnter(index, hit.document)}
+                onMouseEnter={() => onMouseEnter(index)}
                 onItemClick={() => {
                   platformAdapter.openSearchItem(hit.document, formatUrl);
                 }}
