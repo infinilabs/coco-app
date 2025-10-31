@@ -34,6 +34,7 @@ import {
   visibleSearchBar,
 } from "@/utils";
 import { useTauriFocus } from "@/hooks/useTauriFocus";
+import { POPOVER_PANEL_SELECTOR } from "@/constants";
 
 interface SearchChatProps {
   isTauri?: boolean;
@@ -97,14 +98,16 @@ function SearchChat({
 
   const inputRef = useRef<string>();
   const isChatModeRef = useRef(false);
+  const [hideMiddleBorder, setHideMiddleBorder] = useState(false);
 
   const setWindowSize = useCallback(() => {
     const width = 680;
     let height = 590;
 
     const updateAppDialog = document.querySelector("#update-app-dialog");
+    const popoverPanelEl = document.querySelector(POPOVER_PANEL_SELECTOR);
 
-    if (!updateAppDialog && !canNavigateBack() && !inputRef.current) {
+    if (!updateAppDialog && !canNavigateBack() && !inputRef.current && !popoverPanelEl) {
       const { windowMode } = useAppearanceStore.getState();
 
       if (windowMode === "compact") {
@@ -118,7 +121,10 @@ function SearchChat({
         }
 
         height = Math.min(height, 88);
+        setHideMiddleBorder(height < 590);
       }
+    } else {
+      setHideMiddleBorder(false);
     }
 
     platformAdapter.setWindowSize(width, height);
@@ -278,8 +284,6 @@ function SearchChat({
   });
 
   const opacity = useAppearanceStore((state) => state.opacity);
-  const windowMode = useAppearanceStore((state) => state.windowMode);
-  const isCompact = windowMode === "compact";
 
   useEffect(() => {
     if (isTauri) {
@@ -341,8 +345,8 @@ function SearchChat({
         data-tauri-drag-region={isTauri}
         className={clsx(
           "p-2 w-full flex justify-center transition-all duration-500",
-          !isCompact && "border-[#E6E6E6] dark:border-[#272626]",
-          !isCompact && [isTransitioned ? "border-t" : "border-b"],
+          !hideMiddleBorder && "border-[#E6E6E6] dark:border-[#272626]",
+          !hideMiddleBorder && [isTransitioned ? "border-t" : "border-b"],
           {
             "min-h-[84px]": visibleSearchBar() && visibleFilterBar(),
           }
