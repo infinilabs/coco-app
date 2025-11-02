@@ -167,6 +167,7 @@ pub fn run() {
             extension::third_party::install::store::install_extension_from_store,
             extension::third_party::install::local_extension::install_local_extension,
             extension::third_party::uninstall_extension,
+            extension::is_extension_compatible,
             extension::api::apis,
             extension::api::fs::read_dir,
             settings::set_allow_self_signature,

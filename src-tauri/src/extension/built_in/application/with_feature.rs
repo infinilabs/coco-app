@@ -1227,6 +1227,7 @@ pub async fn get_app_list(tauri_app_handle: AppHandle) -> Result<Vec<Extension>,
             name,
             platforms: None,
             developer: None,
+            minimum_coco_version: None,
             // Leave it empty as it won't be used
             description: String::new(),
             icon: icon_path,

@@ -1,3 +1,4 @@
+use super::check_compatibility_via_mcv;
 use crate::extension::PLUGIN_JSON_FILE_NAME;
 use crate::extension::third_party::check::general_check;
 use crate::extension::third_party::install::{
@@ -79,6 +80,10 @@ pub(crate) async fn install_local_extension(
     let mut extension_json: Json =
         serde_json::from_str(&plugin_json_content).map_err(|e| e.to_string())?;
 
+    if !check_compatibility_via_mcv(&extension_json)? {
+        return Err("app_incompatible".into());
+    }
+
     // Set the main extension ID to the directory name
     let extension_obj = extension_json
         .as_object_mut()
@@ -158,7 +163,7 @@ pub(crate) async fn install_local_extension(
             //
             // This is definitely error-prone, but we have to do this until we have
             // structured error type
-            return Err("incompatible".into());
+            return Err("platform_incompatible".into());
         }
     }
     /* Check ends here */

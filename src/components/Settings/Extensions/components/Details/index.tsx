@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 
 import { ExtensionsContext } from "../..";
 import Applications from "./Applications";
@@ -8,11 +8,12 @@ import SharedAi from "./SharedAi";
 import AiOverview from "./AiOverview";
 import Calculator from "./Calculator";
 import FileSearch from "./FileSearch";
-import { Ellipsis } from "lucide-react";
+import { Ellipsis, Info } from "lucide-react";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore } from "@/stores/appStore";
 import { useTranslation } from "react-i18next";
+import { useAsyncEffect } from "ahooks";
 
 const Details = () => {
   const { rootState } = useContext(ExtensionsContext);
@@ -32,6 +33,23 @@ const Details = () => {
     return state.addError;
   });
   const { t } = useTranslation();
+
+  const [compatible, setCompatible] = useState(true);
+
+  useAsyncEffect(async () => {
+    if (rootState.activeExtension?.id) {
+      const compatible = await platformAdapter.invokeBackend<boolean>(
+        "is_extension_compatible",
+        {
+          extension: rootState.activeExtension,
+        }
+      );
+
+      setCompatible(compatible);
+    } else {
+      setCompatible(true);
+    }
+  }, [rootState.activeExtension?.id]);
 
   const renderContent = () => {
     if (!rootState.activeExtension) return;
@@ -77,7 +95,7 @@ const Details = () => {
   return (
     <div className="flex-1 h-full pr-4 pb-4 overflow-auto">
       <div className="flex items-start justify-between gap-4 mb-4">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <h2 className="m-0 text-lg font-semibold text-gray-900 dark:text-white">
           {rootState.activeExtension?.name}
         </h2>
 
@@ -129,6 +147,16 @@ const Details = () => {
           </Menu>
         )}
       </div>
+
+      {!compatible && (
+        <div className="-mt-1 mb-3 bg-red-50 p-2 rounded">
+          <Info className="inline-flex size-4 mr-1 text-red-600" />
+
+          <span className="text-[#333]">
+            {t("settings.extensions.hints.incompatible")}
+          </span>
+        </div>
+      )}
 
       <div className="text-sm">{renderContent()}</div>
     </div>

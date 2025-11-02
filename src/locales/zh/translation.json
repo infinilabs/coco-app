@@ -222,9 +222,11 @@
         "importSuccess": "插件导入成功。",
         "importFailed": "未在该目录中找到有效的插件，请检查目录结构是否正确。",
         "extensionAlreadyImported": "插件已存在，无法重复导入。请先将其删除后再尝试。",
-        "incompatibleExtension": "此插件与当前操作系统不兼容。",
+        "platformIncompatibleExtension": "此插件与当前操作系统不兼容。",
+        "appIncompatibleExtension": "安装失败！该插件与当前 Coco App 版本不兼容，请升级后重试。",
         "uninstall": "卸载",
-        "uninstallSuccess": "卸载成功"
+        "uninstallSuccess": "卸载成功",
+        "incompatible": "扩展无法在当前版本中运行，请升级 Coco App。"
       },
       "application": {
         "title": "应用程序",

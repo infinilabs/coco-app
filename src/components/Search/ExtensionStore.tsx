@@ -5,7 +5,7 @@ import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
 import { useSearchStore } from "@/stores/searchStore";
-import { parseSearchQuery } from "@/utils";
+import { installExtensionError, parseSearchQuery } from "@/utils";
 import platformAdapter from "@/utils/platformAdapter";
 import SearchEmpty from "../Common/SearchEmpty";
 import ExtensionDetail from "./ExtensionDetail";
@@ -244,7 +244,7 @@ const ExtensionStore = ({ extensionId }: { extensionId?: string }) => {
         "info"
       );
     } catch (error) {
-      addError(String(error), "error");
+      installExtensionError(String(error));
     } finally {
       const { installingExtensions } = useSearchStore.getState();
 

@@ -13,6 +13,7 @@ import Details from "./components/Details";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import SettingsInput from "../SettingsInput";
 import { useAppStore } from "@/stores/appStore";
+import { installExtensionError } from "@/utils";
 
 export type ExtensionId = LiteralUnion<
   | "Applications"
@@ -32,7 +33,9 @@ type ExtensionType =
   | "setting"
   | "calculator"
   | "command"
-  | "ai_extension";
+  | "ai_extension"
+  | "view"
+  | "unknown";
 
 export type ExtensionPlatform = "windows" | "macos" | "linux";
 
@@ -63,9 +66,9 @@ export interface ExtensionPermission {
 }
 
 export interface ViewExtensionUISettings {
-    search_bar: boolean,
-    filter_bar: boolean,
-    footer: boolean,
+  search_bar: boolean;
+  filter_bar: boolean;
+  footer: boolean;
 }
 
 export interface Extension {
@@ -142,6 +145,8 @@ export const Extensions = () => {
         listEnabled: false,
       }
     );
+
+    console.log("extensions", cloneDeep(extensions));
 
     state.extensions = sortBy(extensions, ["name"]);
 
@@ -228,21 +233,7 @@ export const Extensions = () => {
                           "info"
                         );
                       } catch (error) {
-                        const errorMessage = String(error);
-
-                        if (errorMessage === "already imported") {
-                          addError(
-                            t(
-                              "settings.extensions.hints.extensionAlreadyImported"
-                            )
-                          );
-                        } else if (errorMessage === "incompatible") {
-                          addError(
-                            t("settings.extensions.hints.incompatibleExtension")
-                          );
-                        } else {
-                          addError(t("settings.extensions.hints.importFailed"));
-                        }
+                        installExtensionError(String(error));
                       }
                     }}
                   >
