@@ -50,6 +50,7 @@ refactor: show_coco/hide_coco now use NSPanel's function on macOS #933
 refactor: procedure that convert_pages() into a func #934
 refactor(post-search): collect at least 2 documents from each query source #948
 refactor: custom_version_comparator() now compares semantic versions #941
+chore: center the main window vertically #959
 
 ## 0.8.0 (2025-09-28)
 
