@@ -24,6 +24,7 @@ use tauri_plugin_autostart::MacosLauncher;
 
 /// Tauri store name
 pub(crate) const COCO_TAURI_STORE: &str = "coco_tauri_store";
+pub(crate) const WINDOW_CENTER_BASELINE_HEIGHT: i32 = 590;
 
 lazy_static! {
     static ref PREVIOUS_MONITOR_NAME: Mutex<Option<String>> = Mutex::new(None);
@@ -45,6 +46,26 @@ async fn change_window_height(handle: AppHandle, height: u32) {
     let mut size = window.outer_size().unwrap();
     size.height = height;
     window.set_size(size).unwrap();
+
+    // Center the window horizontally and vertically based on the baseline height of 590
+    let monitor = window.primary_monitor().ok().flatten().or_else(|| {
+        window
+            .available_monitors()
+            .ok()
+            .and_then(|ms| ms.into_iter().next())
+    });
+    if let Some(monitor) = monitor {
+        let monitor_position = monitor.position();
+        let monitor_size = monitor.size();
+
+        let window_width = window.outer_size().unwrap().width as i32;
+        let x = monitor_position.x + (monitor_size.width as i32 - window_width) / 2;
+
+        let y =
+            monitor_position.y + (monitor_size.height as i32 - WINDOW_CENTER_BASELINE_HEIGHT) / 2;
+
+        let _ = window.set_position(PhysicalPosition::new(x, y));
+    }
 }
 
 #[derive(serde::Deserialize)]
@@ -346,7 +367,6 @@ fn move_window_to_active_monitor(window: &WebviewWindow) {
         // Convert cursor position to integers
         let cursor_x = cursor_position.x.round() as i32;
         let cursor_y = cursor_position.y.round() as i32;
-
         // Find the monitor that contains the cursor
         available_monitors.into_iter().find(|monitor| {
             let monitor_position = monitor.position();
@@ -372,11 +392,9 @@ fn move_window_to_active_monitor(window: &WebviewWindow) {
 
     if let Some(name) = monitor.name() {
         let previous_monitor_name = PREVIOUS_MONITOR_NAME.lock().unwrap();
-
         if let Some(ref prev_name) = *previous_monitor_name {
             if name.to_string() == *prev_name {
                 log::debug!("Currently on the same monitor");
-
                 return;
             }
         }
@@ -385,7 +403,7 @@ fn move_window_to_active_monitor(window: &WebviewWindow) {
     let monitor_position = monitor.position();
     let monitor_size = monitor.size();
 
-    // Get the current size of the window
+    // Current window size for horizontal centering
     let window_size = match window.inner_size() {
         Ok(size) => size,
         Err(e) => {
@@ -393,22 +411,19 @@ fn move_window_to_active_monitor(window: &WebviewWindow) {
             return;
         }
     };
-
     let window_width = window_size.width as i32;
-    let window_height = window_size.height as i32;
 
-    // Calculate the new position to center the window on the monitor
+    // Horizontal center uses actual width, vertical center uses 590 baseline
     let window_x = monitor_position.x + (monitor_size.width as i32 - window_width) / 2;
-    let window_y = monitor_position.y + (monitor_size.height as i32 - window_height) / 2;
+    let window_y =
+        monitor_position.y + (monitor_size.height as i32 - WINDOW_CENTER_BASELINE_HEIGHT) / 2;
 
-    // Move the window to the new position
     if let Err(e) = window.set_position(PhysicalPosition::new(window_x, window_y)) {
         log::error!("Failed to move window: {}", e);
     }
 
     if let Some(name) = monitor.name() {
         log::debug!("Window moved to monitor: {}", name);
-
         let mut previous_monitor = PREVIOUS_MONITOR_NAME.lock().unwrap();
         *previous_monitor = Some(name.to_string());
     }
