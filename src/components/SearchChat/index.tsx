@@ -100,6 +100,8 @@ function SearchChat({
   const isChatModeRef = useRef(false);
   const [hideMiddleBorder, setHideMiddleBorder] = useState(false);
 
+  const setSuppressErrors = useAppStore((state) => state.setSuppressErrors);
+
   const setWindowSize = useCallback(() => {
     const width = 680;
     let height = 590;
@@ -107,7 +109,12 @@ function SearchChat({
     const updateAppDialog = document.querySelector("#update-app-dialog");
     const popoverPanelEl = document.querySelector(POPOVER_PANEL_SELECTOR);
 
-    if (!updateAppDialog && !canNavigateBack() && !inputRef.current && !popoverPanelEl) {
+    if (
+      !updateAppDialog &&
+      !canNavigateBack() &&
+      !inputRef.current &&
+      !popoverPanelEl
+    ) {
       const { windowMode } = useAppearanceStore.getState();
 
       if (windowMode === "compact") {
@@ -121,10 +128,13 @@ function SearchChat({
         }
 
         height = Math.min(height, 88);
+        //
         setHideMiddleBorder(height < 590);
+        setSuppressErrors(height < 590);
       }
     } else {
       setHideMiddleBorder(false);
+      setSuppressErrors(false);
     }
 
     platformAdapter.setWindowSize(width, height);

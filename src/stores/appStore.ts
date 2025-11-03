@@ -41,6 +41,9 @@ export type IAppStore = {
 
   blurred: boolean;
   setBlurred: (blurred: boolean) => void;
+  
+  suppressErrors: boolean;
+  setSuppressErrors: (suppressErrors: boolean) => void;
 };
 
 export const useAppStore = create<IAppStore>()(
@@ -110,6 +113,9 @@ export const useAppStore = create<IAppStore>()(
 
         blurred: false,
         setBlurred: (blurred: boolean) => set({ blurred }),
+
+        suppressErrors: false,
+        setSuppressErrors: (suppressErrors: boolean) => set({ suppressErrors }),
       }),
       {
         name: "app-store",

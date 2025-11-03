@@ -16,6 +16,7 @@ const ErrorNotification = ({
 }: ErrorNotificationProps) => {
   const errors = useAppStore((state) => state.errors);
   const removeError = useAppStore((state) => state.removeError);
+  const suppressErrors = useAppStore((state) => state.suppressErrors);
 
   useEffect(() => {
     if (!autoClose) return;
@@ -32,7 +33,7 @@ const ErrorNotification = ({
     return () => clearInterval(timer);
   }, [errors, duration, autoClose]);
 
-  if (errors.length === 0) return null;
+  if (errors.length === 0 || suppressErrors) return null;
 
   return (
     <div
