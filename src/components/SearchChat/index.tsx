@@ -311,11 +311,11 @@ function SearchChat({
     <div
       data-tauri-drag-region={isTauri}
       className={clsx(
-        "m-auto overflow-hidden relative bg-no-repeat bg-cover bg-center bg-white dark:bg-black flex flex-col",
+        "m-auto overflow-hidden relative bg-no-repeat bg-white dark:bg-black flex flex-col",
         [
           isTransitioned
-            ? "bg-chat_bg_light dark:bg-chat_bg_dark"
-            : "bg-search_bg_light dark:bg-search_bg_dark",
+            ? "bg-bottom bg-chat_bg_light dark:bg-chat_bg_dark"
+            : "bg-top bg-search_bg_light dark:bg-search_bg_dark",
         ],
         {
           "size-full": !isTauri,
@@ -325,7 +325,10 @@ function SearchChat({
           "border-t border-t-[#999] dark:border-t-[#333]": isTauri && isWin10,
         }
       )}
-      style={{ opacity: blurred ? (opacity ?? 30) / 100 : 1 }}
+      style={{
+        backgroundSize: "auto 590px",
+        opacity: blurred ? (opacity ?? 30) / 100 : 1,
+      }}
     >
       <div
         data-tauri-drag-region={isTauri}
