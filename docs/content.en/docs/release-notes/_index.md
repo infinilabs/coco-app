@@ -24,6 +24,7 @@ feat: open quick ai with modifier key + enter #939
 feat: allow navigate back when cursor is at the beginning #940
 feat: add compact mode for window #947
 feat(extension compatibility): minimum_coco_version #946
+feat: add window opacity configuration option #963
 
 ### 🐛 Bug fix
 
