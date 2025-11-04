@@ -251,7 +251,7 @@ const InputControls = ({
             !visibleExtensionStore && (
               <div
                 className={clsx(
-                  "inline-flex items-center gap-1 px-2 py-1 rounded-full hover:!text-[#881c94] cursor-pointer transition",
+                  "inline-flex items-center gap-1 h-[20px] px-1 rounded-full hover:!text-[#881c94] cursor-pointer transition",
                   [
                     enabledAiOverview
                       ? "text-[#881c94]"
@@ -271,7 +271,7 @@ const InputControls = ({
                     setEnabledAiOverview(!enabledAiOverview);
                   }}
                 >
-                  <Sparkles className="size-4" />
+                  <Sparkles className="size-3" />
                 </VisibleKey>
 
                 <span
