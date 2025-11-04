@@ -130,6 +130,12 @@ export default function ChatInput({
     // console.log("handleSubmit", trimmedValue, disabled);
 
     if ((trimmedValue || !isEmpty(uploadAttachments)) && !disabled) {
+      const { setHasActiveChat } = useChatStore.getState();
+
+      if (isChatMode) {
+        setHasActiveChat(true);
+      }
+
       changeInput("");
       onSend({
         message: trimmedValue,
