@@ -118,20 +118,11 @@ function SearchChat({
       const { windowMode } = useAppearanceStore.getState();
 
       if (windowMode === "compact") {
-        const searchBar = document.querySelector("#search-bar");
-        const filterBar = document.querySelector("#filter-bar");
-
-        if (searchBar && filterBar) {
-          height = searchBar.clientHeight + filterBar.clientHeight + 16;
-        } else {
-          height = 84;
-        }
-
-        height = Math.min(height, 88);
-        //
-        setHideMiddleBorder(height < 590);
-        setSuppressErrors(height < 590);
+        height = 84;
       }
+
+      setHideMiddleBorder(height < 590);
+      setSuppressErrors(height < 590);
     } else {
       setHideMiddleBorder(false);
       setSuppressErrors(false);
@@ -293,7 +284,7 @@ function SearchChat({
     return state.defaultStartupWindow;
   });
 
-  const opacity = useAppearanceStore((state) => state.opacity);
+  const { normalOpacity, blurOpacity } = useAppearanceStore();
 
   useEffect(() => {
     if (isTauri) {
@@ -327,7 +318,7 @@ function SearchChat({
       )}
       style={{
         backgroundSize: "auto 590px",
-        opacity: blurred ? (opacity ?? 30) / 100 : 1,
+        opacity: blurred ? blurOpacity / 100 : normalOpacity / 100,
       }}
     >
       <div

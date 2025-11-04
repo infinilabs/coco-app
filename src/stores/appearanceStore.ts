@@ -4,8 +4,10 @@ import { persist, subscribeWithSelector } from "zustand/middleware";
 export type WindowMode = "default" | "compact";
 
 export type IAppearanceStore = {
-  opacity: number;
-  setOpacity: (opacity?: number) => void;
+  normalOpacity: number;
+  setNormalOpacity: (normalOpacity: number) => void;
+  blurOpacity: number;
+  setBlurOpacity: (blurOpacity: number) => void;
   snapshotUpdate: boolean;
   setSnapshotUpdate: (snapshotUpdate: boolean) => void;
   windowMode: WindowMode;
@@ -16,9 +18,13 @@ export const useAppearanceStore = create<IAppearanceStore>()(
   subscribeWithSelector(
     persist(
       (set) => ({
-        opacity: 30,
-        setOpacity: (opacity) => {
-          return set({ opacity: opacity });
+        normalOpacity: 100,
+        setNormalOpacity(normalOpacity) {
+          return set({ normalOpacity });
+        },
+        blurOpacity: 30,
+        setBlurOpacity(blurOpacity) {
+          return set({ blurOpacity });
         },
         snapshotUpdate: false,
         setSnapshotUpdate: (snapshotUpdate) => {
@@ -32,7 +38,8 @@ export const useAppearanceStore = create<IAppearanceStore>()(
       {
         name: "startup-store",
         partialize: (state) => ({
-          opacity: state.opacity,
+          normalOpacity: state.normalOpacity,
+          blurOpacity: state.blurOpacity,
           snapshotUpdate: state.snapshotUpdate,
           windowMode: state.windowMode,
         }),

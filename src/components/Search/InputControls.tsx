@@ -165,7 +165,6 @@ const InputControls = ({
 
   return (
     <div
-      id="filter-bar"
       data-tauri-drag-region
       className="flex justify-between items-center pt-2"
     >

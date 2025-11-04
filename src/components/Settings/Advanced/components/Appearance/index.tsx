@@ -6,8 +6,8 @@ import { useTranslation } from "react-i18next";
 
 const Appearance = () => {
   const { t } = useTranslation();
-  const opacity = useAppearanceStore((state) => state.opacity);
-  const setOpacity = useAppearanceStore((state) => state.setOpacity);
+  const { normalOpacity, setNormalOpacity, blurOpacity, setBlurOpacity } =
+    useAppearanceStore();
 
   return (
     <>
@@ -17,16 +17,34 @@ const Appearance = () => {
 
       <SettingsItem
         icon={AppWindowMac}
-        title={t("settings.advanced.appearance.opacity.title")}
-        description={t("settings.advanced.appearance.opacity.description")}
+        title={t("settings.advanced.appearance.normalOpacity.title")}
+        description={t(
+          "settings.advanced.appearance.normalOpacity.description"
+        )}
       >
         <SettingsInput
           type="number"
           min={10}
           max={100}
-          value={opacity}
+          value={normalOpacity}
           onChange={(value) => {
-            return setOpacity(!value ? void 0 : Number(value));
+            return setNormalOpacity(!value ? 100 : Number(value));
+          }}
+        />
+      </SettingsItem>
+
+      <SettingsItem
+        icon={AppWindowMac}
+        title={t("settings.advanced.appearance.blurOpacity.title")}
+        description={t("settings.advanced.appearance.blurOpacity.description")}
+      >
+        <SettingsInput
+          type="number"
+          min={10}
+          max={100}
+          value={blurOpacity}
+          onChange={(value) => {
+            return setBlurOpacity(!value ? 30 : Number(value));
           }}
         />
       </SettingsItem>
