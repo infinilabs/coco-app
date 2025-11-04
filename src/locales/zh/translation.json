@@ -181,7 +181,11 @@
       },
       "appearance": {
         "title": "外观设置",
-        "opacity": {
+        "normalOpacity": {
+          "title": "窗口透明度",
+          "description": "调整 Coco AI 窗口在使用时的透明度。范围为10%到100%，其中100%表示完全不透明，较低的值会增加透明度，使底层内容能够透过窗口显示出来。"
+        },
+        "blurOpacity": {
           "title": "置顶时失焦透明度",
           "description": "设置 Coco AI 窗口在置顶且失去焦点时的不透明度（10%–100%，100% 表示完全不透明）。"
         }

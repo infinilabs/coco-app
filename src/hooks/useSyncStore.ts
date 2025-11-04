@@ -82,7 +82,7 @@ export const useSyncStore = () => {
   const setQueryTimeout = useConnectStore((state) => {
     return state.setQuerySourceTimeout;
   });
-  const setOpacity = useAppearanceStore((state) => state.setOpacity);
+  const { setNormalOpacity, setBlurOpacity } = useAppearanceStore();
   const setSnapshotUpdate = useAppearanceStore((state) => {
     return state.setSnapshotUpdate;
   });
@@ -197,11 +197,11 @@ export const useSyncStore = () => {
       }),
 
       platformAdapter.listenEvent("change-appearance-store", ({ payload }) => {
-        const { opacity, snapshotUpdate, windowMode } = payload;
+        const { normalOpacity, blurOpacity, snapshotUpdate, windowMode } =
+          payload;
 
-        if (isNumber(opacity)) {
-          setOpacity(opacity);
-        }
+        setNormalOpacity(normalOpacity);
+        setBlurOpacity(blurOpacity);
         setSnapshotUpdate(snapshotUpdate);
         setWindowMode(windowMode);
       }),

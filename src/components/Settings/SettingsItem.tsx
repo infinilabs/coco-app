@@ -14,7 +14,7 @@ export default function SettingsItem({
   children,
 }: SettingsItemProps) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-6">
       <div className="flex items-center space-x-3">
         <Icon className="h-5 min-w-5 text-gray-400 dark:text-gray-500" />
         <div>

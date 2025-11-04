@@ -181,7 +181,11 @@
       },
       "appearance": {
         "title": "Appearance Settings",
-        "opacity": {
+        "normalOpacity": {
+          "title": "Active Window Opacity",
+          "description": "Adjust the opacity of the Coco AI window while in use. The range is from 10% to 100%, where 100% means fully opaque, and lower values increase transparency, allowing the underlying content to show through."
+        },
+        "blurOpacity": {
           "title": "Pinned Window Dimness Setting",
           "description": "Adjusts the opacity level of the Coco AI window when it’s pinned and not in focus. Set a value between 10% and 100%, where 100% means fully opaque (no dimming), and lower values increase transparency, allowing underlying content to show through."
         }
