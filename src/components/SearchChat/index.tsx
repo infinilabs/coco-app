@@ -35,6 +35,8 @@ import {
 } from "@/utils";
 import { useTauriFocus } from "@/hooks/useTauriFocus";
 import { POPOVER_PANEL_SELECTOR } from "@/constants";
+import { useChatStore } from "@/stores/chatStore";
+import { debounce } from "lodash-es";
 
 interface SearchChatProps {
   isTauri?: boolean;
@@ -109,12 +111,18 @@ function SearchChat({
     const updateAppDialog = document.querySelector("#update-app-dialog");
     const popoverPanelEl = document.querySelector(POPOVER_PANEL_SELECTOR);
 
+    const { hasActiveChat } = useChatStore.getState();
+
     if (
-      !updateAppDialog &&
-      !canNavigateBack() &&
-      !inputRef.current &&
-      !popoverPanelEl
+      updateAppDialog ||
+      canNavigateBack() ||
+      inputRef.current ||
+      popoverPanelEl ||
+      (isChatModeRef.current && hasActiveChat)
     ) {
+      setHideMiddleBorder(false);
+      setSuppressErrors(false);
+    } else {
       const { windowMode } = useAppearanceStore.getState();
 
       if (windowMode === "compact") {
@@ -123,15 +131,14 @@ function SearchChat({
 
       setHideMiddleBorder(height < 590);
       setSuppressErrors(height < 590);
-    } else {
-      setHideMiddleBorder(false);
-      setSuppressErrors(false);
     }
 
     platformAdapter.setWindowSize(width, height);
   }, []);
 
-  useMutationObserver(setWindowSize, document.body, {
+  const debouncedSetWindowSize = debounce(setWindowSize, 50);
+
+  useMutationObserver(debouncedSetWindowSize, document.body, {
     subtree: true,
     childList: true,
   });
@@ -140,11 +147,11 @@ function SearchChat({
     inputRef.current = input;
     isChatModeRef.current = isChatMode;
 
-    setWindowSize();
+    debouncedSetWindowSize();
   }, [input, isChatMode]);
 
   useTauriFocus({
-    onFocus: setWindowSize,
+    onFocus: debouncedSetWindowSize,
   });
 
   useEffect(() => {
