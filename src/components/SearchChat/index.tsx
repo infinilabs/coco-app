@@ -355,14 +355,21 @@ function SearchChat({
       <div
         data-tauri-drag-region={isTauri}
         className={clsx(
-          "p-2 w-full flex justify-center transition-all duration-500",
-          !hideMiddleBorder && "border-[#E6E6E6] dark:border-[#272626]",
-          !hideMiddleBorder && [isTransitioned ? "border-t" : "border-b"],
+          "relative p-2 w-full flex justify-center transition-all duration-500",
           {
             "min-h-[84px]": visibleSearchBar() && visibleFilterBar(),
           }
         )}
       >
+        {!hideMiddleBorder && (
+          <div
+            className={clsx(
+              "pointer-events-none absolute left-0 right-0 h-[1px] bg-[#E6E6E6] dark:bg-[#272626]",
+              isTransitioned ? "top-0" : "bottom-0"
+            )}
+          />
+        )}
+
         <InputBox
           isChatMode={isChatMode}
           inputValue={input}
