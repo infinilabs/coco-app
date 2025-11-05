@@ -241,7 +241,7 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
               )}
             </Button>
 
-            {!isCheckPage && updateInfo && isOptional && (
+            {updateInfo && isOptional && (
               <div
                 className={clsx("text-xs text-[#999]", cursorClassName)}
                 onClick={handleSkip}
