@@ -596,5 +596,17 @@
   },
   "deepLink": {
     "extensionInstallSuccessfully": "Extension installed successfully."
+  },
+  "webLogin": {
+    "title": "Account Information",
+    "hints": {
+      "tourist": "Tourist mode, login to unlock the full experience.",
+      "login": "Please log in to your account to start.",
+      "welcome": "Welcome to Coco AI.",
+      "pleaseLogin": "Please log in to your account to start."
+    },
+    "buttons": {
+      "login": "Login"
+    }
   }
 }

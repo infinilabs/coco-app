@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import SearchPopover from "./SearchPopover";
 import MCPPopover from "./MCPPopover";
 import ChatSwitch from "@/components/Common/ChatSwitch";
-import Copyright from "@/components/Common/Copyright";
 import type { DataSource } from "@/types/commands";
 import platformAdapter from "@/utils/platformAdapter";
 import { useConnectStore } from "@/stores/connectStore";
@@ -17,6 +16,7 @@ import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { parseSearchQuery, SearchQuery } from "@/utils";
 import InputUpload from "./InputUpload";
+import WebFooter from "../Common/UI/WebFooter";
 
 interface InputControlsProps {
   isChatMode: boolean;
@@ -237,7 +237,7 @@ const InputControls = ({
             (source?.type !== "deep_think" || !source?.config?.visible) &&
             !(source?.mcp_servers?.enabled && source?.mcp_servers?.visible) && (
               <div className="px-[9px]">
-                <Copyright />
+                <WebFooter />
               </div>
             )}
         </div>

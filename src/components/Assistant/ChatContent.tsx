@@ -10,6 +10,9 @@ import { useConnectStore } from "@/stores/connectStore";
 // import SessionFile from "./SessionFile";
 import ScrollToBottom from "@/components/Common/ScrollToBottom";
 import { useChatStore } from "@/stores/chatStore";
+import { useWebConfigStore } from "@/stores/webConfigStore";
+import { useAppStore } from "@/stores/appStore";
+import { NoResults } from "../Common/UI/NoResults";
 
 interface ChatContentProps {
   activeChat?: Chat;
@@ -97,87 +100,100 @@ export const ChatContent = ({
     setIsAtBottom(isAtBottom);
   };
 
+  const { isTauri } = useAppStore();
+  const { disabled } = useWebConfigStore();
+
   return (
     <div className="flex-1 overflow-hidden flex flex-col justify-between relative user-select-text">
-      <div
-        ref={scrollRef}
-        className="flex-1 w-full overflow-x-hidden overflow-y-auto border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.15)] custom-scrollbar relative"
-        onScroll={handleScroll}
-      >
-        {(!activeChat || activeChat?.messages?.length === 0) &&
-          !visibleStartPage && <Greetings />}
+      {!isTauri && disabled ? (
+        <NoResults />
+      ) : (
+        <>
+          <div
+            ref={scrollRef}
+            className="flex-1 w-full overflow-x-hidden overflow-y-auto border-t border-[rgba(0,0,0,0.1)] dark:border-[rgba(255,255,255,0.15)] custom-scrollbar relative"
+            onScroll={handleScroll}
+          >
+            {(!activeChat || activeChat?.messages?.length === 0) &&
+              !visibleStartPage && <Greetings />}
 
-        {activeChat?.messages?.map((message, index) => (
-          <ChatMessage
-            key={message._id + index}
-            message={message}
-            isTyping={false}
-            onResend={handleSendMessage}
-          />
-        ))}
+            {activeChat?.messages?.map((message, index) => (
+              <ChatMessage
+                key={message._id + index}
+                message={message}
+                isTyping={false}
+                onResend={handleSendMessage}
+              />
+            ))}
 
-        {(!curChatEnd ||
-          query_intent ||
-          tools ||
-          fetch_source ||
-          pick_source ||
-          deep_read ||
-          think ||
-          response) &&
-        activeChat?._source?.id ? (
-          <ChatMessage
-            key={"current"}
-            message={{
-              _id: "current",
-              _source: {
-                type: "assistant",
-                assistant_id:
-                  allMessages[allMessages.length - 1]?._source?.assistant_id,
-                message: "",
-                question: Question,
-              },
-            }}
-            onResend={handleSendMessage}
-            isTyping={!curChatEnd}
-            query_intent={query_intent}
-            tools={tools}
-            fetch_source={fetch_source}
-            pick_source={pick_source}
-            deep_read={deep_read}
-            think={think}
-            response={response}
-            loadingStep={loadingStep}
-            formatUrl={formatUrl}
-          />
-        ) : null}
+            {(!curChatEnd ||
+              query_intent ||
+              tools ||
+              fetch_source ||
+              pick_source ||
+              deep_read ||
+              think ||
+              response) &&
+            activeChat?._source?.id ? (
+              <ChatMessage
+                key={"current"}
+                message={{
+                  _id: "current",
+                  _source: {
+                    type: "assistant",
+                    assistant_id:
+                      allMessages[allMessages.length - 1]?._source
+                        ?.assistant_id,
+                    message: "",
+                    question: Question,
+                  },
+                }}
+                onResend={handleSendMessage}
+                isTyping={!curChatEnd}
+                query_intent={query_intent}
+                tools={tools}
+                fetch_source={fetch_source}
+                pick_source={pick_source}
+                deep_read={deep_read}
+                think={think}
+                response={response}
+                loadingStep={loadingStep}
+                formatUrl={formatUrl}
+              />
+            ) : null}
 
-        {timedoutShow ? (
-          <ChatMessage
-            key={"timedout"}
-            message={{
-              _id: "timedout",
-              _source: {
-                type: "assistant",
-                message: t("assistant.chat.timedout"),
-                question: Question,
-              },
-            }}
-            onResend={handleSendMessage}
-            isTyping={false}
-          />
-        ) : null}
-        <div ref={messagesEndRef} />
-      </div>
+            {timedoutShow ? (
+              <ChatMessage
+                key={"timedout"}
+                message={{
+                  _id: "timedout",
+                  _source: {
+                    type: "assistant",
+                    message: t("assistant.chat.timedout"),
+                    question: Question,
+                  },
+                }}
+                onResend={handleSendMessage}
+                isTyping={false}
+              />
+            ) : null}
+            <div ref={messagesEndRef} />
+          </div>
 
-      {uploadAttachments.length > 0 && (
-        <div key={currentSessionId} className="max-h-[120px] overflow-auto p-2">
-          <AttachmentList />
-        </div>
+          {uploadAttachments.length > 0 && (
+            <div
+              key={currentSessionId}
+              className="max-h-[120px] overflow-auto p-2"
+            >
+              <AttachmentList />
+            </div>
+          )}
+
+          {/* {currentSessionId && <SessionFile sessionId={currentSessionId} />} */}
+
+          <ScrollToBottom scrollRef={scrollRef} isAtBottom={isAtBottom} />
+        </>
       )}
-
-      {/* {currentSessionId && <SessionFile sessionId={currentSessionId} />} */}
-
-      <ScrollToBottom scrollRef={scrollRef} isAtBottom={isAtBottom} />
     </div>
   );
 };
