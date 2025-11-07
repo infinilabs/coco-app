@@ -595,5 +595,17 @@
   },
   "deepLink": {
     "extensionInstallSuccessfully": "扩展安装成功。"
+  },
+  "webLogin": {
+    "title": "账户信息",
+    "hints": {
+      "tourist": "游客模式，登录解锁完整体验。",
+      "login": "请登录您的账户以开始。",
+      "welcome": "欢迎访问 Coco AI。",
+      "pleaseLogin": "请登录您的帐户开始使用。"
+    },
+    "buttons": {
+      "login": "登录"
+    }
   }
 }

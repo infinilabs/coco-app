@@ -112,15 +112,11 @@ export const Post = <T>(
     }
 
     axios
-      .post(
-        baseURL + url,
-        data,
-        {
-          params,
-          headers,
-          withCredentials: true,
-        } as any
-      )
+      .post(baseURL + url, data, {
+        params,
+        headers,
+        withCredentials: true,
+      } as any)
       .then((result) => {
         resolve([null, result.data as FcResponse<T>]);
       })
