@@ -1,3 +1,5 @@
+import { useAppStore } from "@/stores/appStore";
+import { useWebConfigStore } from "@/stores/webConfigStore";
 import { useBoolean } from "ahooks";
 import {
   useImperativeHandle,
@@ -101,6 +103,9 @@ const AutoResizeTextarea = forwardRef<
       [setInput]
     );
 
+    const { isTauri } = useAppStore();
+    const { disabled } = useWebConfigStore();
+
     return (
       <>
         <textarea
@@ -121,6 +126,7 @@ const AutoResizeTextarea = forwardRef<
             setTimeout(setFalse, 0);
           }}
           rows={1}
+          disabled={!isTauri && disabled}
         />
 
         <div ref={calcRef} className="absolute whitespace-nowrap -z-10">

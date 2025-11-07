@@ -10,7 +10,6 @@ import { getCurrentWindowService } from "@/commands/windowService";
 import { useSearchStore } from "@/stores/searchStore";
 import i18next from "i18next";
 
-// 1
 export async function copyToClipboard(text: string) {
   const addError = useAppStore.getState().addError;
   const language = useAppStore.getState().language;

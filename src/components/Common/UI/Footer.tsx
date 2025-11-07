@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 
 import CommonIcon from "@/components/Common/Icons/CommonIcon";
-import Copyright from "@/components/Common/Copyright";
 import logoImg from "@/assets/icon.svg";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
@@ -17,6 +16,7 @@ import { useThemeStore } from "@/stores/themeStore";
 import platformAdapter from "@/utils/platformAdapter";
 import FontIcon from "../Icons/FontIcon";
 import TogglePin from "../TogglePin";
+import WebFooter from "./WebFooter";
 
 interface FooterProps {
   setIsPinnedWeb?: (value: boolean) => void;
@@ -49,7 +49,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
     return updateInfo && !skipVersions.includes(updateInfo.version);
   }, [updateInfo, skipVersions]);
 
-  const renderLeft = () => {
+  const renderTauriLeft = () => {
     if (sourceData?.source?.name) {
       return (
         <div className="flex items-center gap-2">
@@ -121,7 +121,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
       {isTauri ? (
         <div className="flex items-center">
           <div className="flex items-center space-x-2">
-            {renderLeft()}
+            {renderTauriLeft()}
 
             <TogglePin
               className={clsx({
@@ -132,7 +132,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
           </div>
         </div>
       ) : (
-        <Copyright />
+        <WebFooter />
       )}
 
       <div className={`flex mobile:hidden items-center gap-3`}>
