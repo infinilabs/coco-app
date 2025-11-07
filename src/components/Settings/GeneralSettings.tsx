@@ -36,6 +36,8 @@ import {
 import platformAdapter from "@/utils/platformAdapter";
 import clsx from "clsx";
 import { useAppearanceStore, WindowMode } from "@/stores/appearanceStore";
+import { Sparkles } from "lucide-react";
+import { useSelectionStore } from "@/stores/selectionStore";
 
 export function ThemeOption({
   icon: Icon,
@@ -82,6 +84,9 @@ export default function GeneralSettings() {
 
   const { showTooltip, setShowTooltip, language, setLanguage } = useAppStore();
   const { windowMode, setWindowMode } = useAppearanceStore();
+
+  const selectionEnabled = useSelectionStore((state) => state.selectionEnabled);
+  const setSelectionEnabled = useSelectionStore((state) => state.setSelectionEnabled);
 
   const fetchAutoStartStatus = async () => {
     if (isTauri()) {
@@ -304,6 +309,19 @@ export default function GeneralSettings() {
               );
             })}
           </div>
+
+          {/* 在这里增加一个 AI 划词工具栏 启用关闭的开关，默认开启 */}
+          <SettingsItem
+            icon={Sparkles}
+            title={t("settings.ai.title")}
+            description={t("settings.ai.description")}
+          >
+            <SettingsToggle
+              checked={selectionEnabled}
+              onChange={(value) => setSelectionEnabled(value)}
+              label={t("settings.ai.toggle")}
+            />
+          </SettingsItem>
 
           <SettingsItem
             icon={Globe}

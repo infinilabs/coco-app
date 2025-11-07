@@ -38,5 +38,9 @@
   <string>Coco AI requires camera access for scanning documents and capturing images.</string>
   <key>NSSpeechRecognitionUsageDescription</key>
   <string>Coco AI uses speech recognition to convert your voice into text for a hands-free experience.</string>
+  <key>NSAppleEventsUsageDescription</key>
+  <string>需要访问系统划词功能</string>
+  <key>NSAccessibility</key>
+  <true/>
 </dict>
 </plist>

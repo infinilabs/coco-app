@@ -7,6 +7,7 @@ import SettingsPage from "@/pages/settings/index";
 import StandaloneChat from "@/pages/chat/index";
 import WebPage from "@/pages/web/index";
 import CheckPage from "@/pages/check/index";
+import SelectionWindow from "@/pages/selection/index";
 
 const routerOptions = {
   basename: "/",
@@ -27,6 +28,7 @@ export const router = createBrowserRouter(
         { path: "/ui/settings", element: <SettingsPage /> },
         { path: "/ui/chat", element: <StandaloneChat /> },
         { path: "/ui/check", element: <CheckPage /> },
+        { path: "/ui/selection", element: <SelectionWindow /> },
         { path: "/web", element: <WebPage /> },
       ],
     },

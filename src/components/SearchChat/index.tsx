@@ -36,6 +36,7 @@ import {
 import { useTauriFocus } from "@/hooks/useTauriFocus";
 import { POPOVER_PANEL_SELECTOR } from "@/constants";
 import { useChatStore } from "@/stores/chatStore";
+import { useSearchStore } from "@/stores/searchStore"; // 新增
 import { debounce } from "lodash-es";
 
 interface SearchChatProps {
@@ -292,6 +293,37 @@ function SearchChat({
   });
 
   const { normalOpacity, blurOpacity } = useAppearanceStore();
+
+  useEffect(() => {
+    const unlistenAsk = platformAdapter.listenEvent("selection-ask-ai", ({ payload }: any) => {
+      const value = typeof payload === "string" ? payload : String(payload?.text ?? "");
+      dispatch({ type: "SET_CHAT_MODE", payload: true });
+      dispatch({ type: "SET_INPUT", payload: value });
+      platformAdapter.showWindow();
+    });
+
+    const unlistenAction = platformAdapter.listenEvent("selection-action", ({ payload }: any) => {
+      const { action, text } = payload || {};
+      console.log(111111, action, text);
+      const value = String(text ?? "");
+      if (action === "search") {
+        dispatch({ type: "SET_CHAT_MODE", payload: false });
+        dispatch({ type: "SET_INPUT", payload: value });
+        const { setSearchValue } = useSearchStore.getState();
+        setSearchValue(value);
+        platformAdapter.showWindow();
+      } else if (action === "translate") {
+        dispatch({ type: "SET_CHAT_MODE", payload: true });
+        dispatch({ type: "SET_INPUT", payload: `请翻译以下内容：\n${value}` });
+        platformAdapter.showWindow();
+      }
+    });
+
+    return () => {
+      unlistenAsk.then((fn) => fn());
+      unlistenAction.then((fn) => fn());
+    };
+  }, []);
 
   useEffect(() => {
     if (isTauri) {

@@ -78,6 +78,26 @@
           "state": "active",
           "radius": 7
         }
+      },
+      {
+        "label": "selection",
+        "title": "Selection",
+        "url": "/ui/selection",
+        "width": 320,
+        "minWidth": 280,
+        "height": 90,
+        "minHeight": 56,
+        "center": false,
+        "decorations": false,
+        "transparent": true,
+        "maximizable": false,
+        "skipTaskbar": true,
+        "dragDropEnabled": true,
+        "hiddenTitle": true,
+        "visible": false,
+        "shadow": true,
+        "alwaysOnTop": true,
+        "acceptFirstMouse": true
       }
     ],
     "security": {
