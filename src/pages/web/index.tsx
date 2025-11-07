@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { isPlainObject } from "lodash-es";
 
 import SearchChat from "@/components/SearchChat";
 import { useAppStore } from "@/stores/appStore";
@@ -10,12 +11,11 @@ import useEscape from "@/hooks/useEscape";
 import { useViewportHeight } from "@/hooks/useViewportHeight";
 import type { StartPage } from "@/types/chat";
 import ErrorNotification from "@/components/Common/ErrorNotification";
+import { Get } from "@/api/axiosRequest";
+import { useWebConfigStore } from "@/stores/webConfigStore";
 
 import "@/i18n";
 import "@/web.css";
-import { Get } from "@/api/axiosRequest";
-import { useWebConfigStore } from "@/stores/webConfigStore";
-import { isPlainObject } from "lodash-es";
 
 interface WebAppProps {
   headers?: Record<string, unknown>;
@@ -83,11 +83,14 @@ function WebApp({
   } = useWebConfigStore();
 
   const getUserProfile = async () => {
-    const [_, result] = await Get("/account/profile");
+    const [err, result] = await Get("/account/profile");
 
-    if (isPlainObject(result)) {
-      setLoginInfo(result as any);
+    if (err || !isPlainObject(result)) {
+      setLoginInfo(void 0);
+      return;
     }
+
+    setLoginInfo(result as any);
   };
 
   useEffect(() => {
