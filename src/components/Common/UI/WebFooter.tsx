@@ -19,7 +19,7 @@ const WebFooter = () => {
     <div className="relative">
       <Popover>
         <PopoverButton
-          onClick={() => {
+          onMouseDown={() => {
             console.log("WebFooter PopoverButton click");
           }}
         >
@@ -33,10 +33,7 @@ const WebFooter = () => {
           )}
         </PopoverButton>
 
-        <PopoverPanel
-          anchor={{ to: "top start" }}
-          className="absolute z-50 w-[300px] rounded-xl bg-white dark:bg-[#202126] text-sm/6 text-[#333] dark:text-[#D8D8D8] shadow-lg border dark:border-white/10 -translate-y-2"
-        >
+        <PopoverPanel className="absolute z-50 bottom-5 left-0 w-[300px] rounded-xl bg-white dark:bg-[#202126] text-sm/6 text-[#333] dark:text-[#D8D8D8] shadow-lg border dark:border-white/10 -translate-y-2">
           <div className="p-3">
             <div className="flex items-center justify-between mb-2">
               <span>{t("webLogin.title")}</span>
@@ -60,7 +57,7 @@ const WebFooter = () => {
                   </div>
 
                   <button
-                    className="flex items-center justify-center size-6 bg-white dark:bg-[#202126] rounded-lg border dark:border-white/10"
+                    className="flex items-center justify-center size-6 bg-white dark:bg-[#202126] rounded-[8px] border dark:border-white/10"
                     onClick={async () => {
                       await Post("/account/logout", void 0);
 

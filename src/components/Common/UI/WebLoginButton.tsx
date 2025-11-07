@@ -13,7 +13,7 @@ const WebLoginButton = () => {
 
   return (
     <Button
-      className="px-6 h-8 text-white bg-[#0287FF] rounded-lg flex items-center justify-center gap-1"
+      className="px-6 h-8 text-white bg-[#0287FF] flex rounded-[8px] items-center justify-center gap-1"
       onClick={handleClick}
     >
       <span>{t("webLogin.buttons.login")}</span>

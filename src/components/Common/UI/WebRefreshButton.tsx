@@ -26,7 +26,7 @@ const WebRefreshButton: FC<ButtonProps> = (props) => {
       {...rest}
       onClick={handleRefresh}
       className={clsx(
-        "flex items-center justify-center size-6 bg-white dark:bg-[#202126] rounded-lg border dark:border-white/10",
+        "flex items-center justify-center size-6 bg-white dark:bg-[#202126] rounded-[8px] border dark:border-white/10",
         className
       )}
       disabled={isRefreshing}
