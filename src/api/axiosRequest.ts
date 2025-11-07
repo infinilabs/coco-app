@@ -61,8 +61,19 @@ export const handleApiError = (error: any) => {
     message = error.message;
   }
 
+  const url =
+    error?.config?.url ||
+    error?.response?.config?.url ||
+    error?.request?.config?.url;
+
+  const suppressProfileError =
+    typeof url === "string" && url.includes("/account/profile");
+
   console.error(error);
-  addError(message, "error");
+  if (!suppressProfileError) {
+    addError(message, "error");
+  }
+
   return error;
 };
 
