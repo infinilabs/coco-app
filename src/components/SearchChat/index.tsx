@@ -214,6 +214,8 @@ function SearchChat({
 
       dispatch({ type: "SET_INPUT", payload: params?.message ?? "" });
       if (isChatMode) {
+        const { setHasActiveChat } = useChatStore.getState();
+        setHasActiveChat(true);
         chatAIRef.current?.init(params);
       }
     },
