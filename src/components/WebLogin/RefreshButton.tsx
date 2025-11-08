@@ -3,10 +3,10 @@ import { FC, useState } from "react";
 import { Button, ButtonProps } from "@headlessui/react";
 import clsx from "clsx";
 
-import VisibleKey from "../VisibleKey";
 import { useWebConfigStore } from "@/stores/webConfigStore";
+import VisibleKey from "../Common/VisibleKey";
 
-const WebRefreshButton: FC<ButtonProps> = (props) => {
+const RefreshButton: FC<ButtonProps> = (props) => {
   const { className, ...rest } = props;
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { onRefresh } = useWebConfigStore();
@@ -45,4 +45,4 @@ const WebRefreshButton: FC<ButtonProps> = (props) => {
   );
 };
 
-export default WebRefreshButton;
+export default RefreshButton;

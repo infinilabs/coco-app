@@ -10,6 +10,7 @@ import { HISTORY_PANEL_ID } from "@/constants";
 import { AssistantList } from "./AssistantList";
 import { ServerList } from "./ServerList";
 import TogglePin from "../Common/TogglePin";
+import WebLogin from "../WebLogin";
 
 interface ChatHeaderProps {
   clearChat: () => void;
@@ -63,7 +64,7 @@ export function ChatHeader({
 
         <AssistantList assistantIDs={assistantIDs} />
 
-        {showChatHistory ? (
+        {showChatHistory && (
           <button
             onClick={clearChat}
             className="p-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -76,7 +77,7 @@ export function ChatHeader({
               <MessageSquarePlus className="h-4 w-4 relative top-0.5" />
             </VisibleKey>
           </button>
-        ) : null}
+        )}
       </div>
 
       <h2 className="max-w-[calc(100%-200px)] text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
@@ -100,7 +101,7 @@ export function ChatHeader({
           )}
         </div>
       ) : (
-        <div />
+        <WebLogin panelClassName="top-8 right-0" />
       )}
     </header>
   );
