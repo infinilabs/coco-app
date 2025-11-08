@@ -18,11 +18,7 @@ const WebFooter = () => {
   return (
     <div className="relative">
       <Popover>
-        <PopoverButton
-          onMouseDown={() => {
-            console.log("WebFooter PopoverButton click");
-          }}
-        >
+        <PopoverButton>
           {loginInfo ? (
             <WebUserAvatar />
           ) : (
