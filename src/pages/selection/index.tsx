@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import platformAdapter from "@/utils/platformAdapter";
 import {
   Bot,
   Copy,
@@ -11,8 +10,11 @@ import {
   Play,
 } from "lucide-react";
 import clsx from "clsx";
+
 import { useSelectionStore } from "@/stores/selectionStore";
 import { copyToClipboard } from "@/utils";
+import cocoLogoImg from "@/assets/app-icon.png";
+import platformAdapter from "@/utils/platformAdapter";
 
 // Simple animated selection window content
 export default function SelectionWindow() {
@@ -262,7 +264,6 @@ export default function SelectionWindow() {
   return (
     <div
       ref={containerRef}
-      data-tauri-drag-region="true"
       onMouseDown={(e) => {
         if (e.target === containerRef.current && !isSpeaking) {
           close();
@@ -282,19 +283,41 @@ export default function SelectionWindow() {
       )}
     >
       <div className="px-2 pt-1">
-        <div className="rounded-md bg-black/5 dark:bg-white/5 px-2 py-1 leading-4 text-[12px] text-ellipsis whitespace-nowrap overflow-hidden">
+        <div
+          data-tauri-drag-region="true"
+          className="rounded-md bg-black/5 dark:bg-white/5 px-2 py-1 leading-4 text-[12px] text-ellipsis whitespace-nowrap overflow-hidden"
+        >
           {text || "未检测到文本"}
         </div>
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-2 flex-nowrap overflow-hidden">
+      <div
+        data-tauri-drag-region="true"
+        className="flex items-center gap-2 px-3 py-2 flex-nowrap overflow-hidden"
+      >
+        <img
+          src={cocoLogoImg}
+          alt="Coco Logo"
+          className="w-6 h-6"
+          onClick={openMain}
+          onError={(e) => {
+            try {
+              (e.target as HTMLImageElement).src = "/src-tauri/assets/logo.png";
+            } catch {}
+          }}
+        />
+
+        <div>||</div>
+
         <button
           className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover:ring-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"
           onClick={searchMain}
           title="搜索"
         >
           <Search className="size-4 text-[#6366F1] transition-transform duration-150 group-hover:scale-105 group-hover:opacity-90" />
-          <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">搜索</span>
+          <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">
+            搜索
+          </span>
         </button>
 
         <button
@@ -303,7 +326,9 @@ export default function SelectionWindow() {
           title="AI 问答"
         >
           <Bot className="size-4 text-[#0287FF] transition-transform duration-150 group-hover:scale-105 group-hover:opacity-90" />
-          <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">问答</span>
+          <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">
+            问答
+          </span>
         </button>
 
         <button
@@ -312,7 +337,9 @@ export default function SelectionWindow() {
           title="翻译"
         >
           <Languages className="size-4 text-[#10B981] transition-transform duration-150 group-hover:scale-105 group-hover:opacity-90" />
-          <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">翻译</span>
+          <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">
+            翻译
+          </span>
         </button>
 
         <button
@@ -321,10 +348,16 @@ export default function SelectionWindow() {
           title="复制"
         >
           <Copy className="size-4 text-[#64748B] transition-transform duration-150 group-hover:scale-105 group-hover:opacity-90" />
-          <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">复制</span>
+          <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">
+            复制
+          </span>
         </button>
         {copied && (
-          <span className="text-[12px] text-[#10B981]" role="status" aria-live="polite">
+          <span
+            className="text-[12px] text-[#10B981]"
+            role="status"
+            aria-live="polite"
+          >
             已复制
           </span>
         )}
@@ -335,7 +368,9 @@ export default function SelectionWindow() {
           title="朗读"
         >
           <Volume2 className="size-4 text-[#F59E0B] transition-transform duration-150 group-hover:scale-105 group-hover:opacity-90" />
-          <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">朗读</span>
+          <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">
+            朗读
+          </span>
         </button>
         {isSpeaking && (
           <div className="flex items-center gap-2">
@@ -346,7 +381,9 @@ export default function SelectionWindow() {
               aria-label="停止朗读"
             >
               <X className="size-4 transition-transform duration-150 group-hover:scale-105 group-hover:opacity-90" />
-              <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">停止</span>
+              <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">
+                停止
+              </span>
             </button>
             <button
               className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover:ring-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"

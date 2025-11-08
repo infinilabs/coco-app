@@ -136,8 +136,8 @@ export default function LayoutOutlet() {
       }
 
       const label = "selection";
-      const width = 500;
-      const height = 70;
+      const width = 550;
+      const height = 75;
 
       const options: any = {
         label,
