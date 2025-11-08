@@ -16,7 +16,7 @@ import { useThemeStore } from "@/stores/themeStore";
 import platformAdapter from "@/utils/platformAdapter";
 import FontIcon from "../Icons/FontIcon";
 import TogglePin from "../TogglePin";
-import WebFooter from "./WebFooter";
+import WebLogin from "@/components/WebLogin";
 
 interface FooterProps {
   setIsPinnedWeb?: (value: boolean) => void;
@@ -137,7 +137,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
           </div>
         </div>
       ) : (
-        <WebFooter />
+        <WebLogin panelClassName="bottom-5 left-0" />
       )}
 
       <div className={`flex mobile:hidden items-center gap-3`}>

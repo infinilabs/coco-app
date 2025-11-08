@@ -6,8 +6,8 @@ import clsx from "clsx";
 import { formatKey } from "@/utils/keyboardUtils";
 import SearchEmpty from "../SearchEmpty";
 import FontIcon from "../Icons/FontIcon";
-import WebLoginButton from "./WebLoginButton";
-import WebRefreshButton from "./WebRefreshButton";
+import WebLoginButton from "@/components/WebLogin/LoginButton";
+import WebRefreshButton from "@/components/WebLogin/RefreshButton";
 import { useWebConfigStore } from "@/stores/webConfigStore";
 import { useAppStore } from "@/stores/appStore";
 

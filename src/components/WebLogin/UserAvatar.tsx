@@ -2,11 +2,11 @@ import clsx from "clsx";
 import { LucideProps, User } from "lucide-react";
 import { FC, HTMLAttributes } from "react";
 
-interface WebUserAvatarProps extends HTMLAttributes<HTMLDivElement> {
+interface UserAvatarProps extends HTMLAttributes<HTMLDivElement> {
   icon?: LucideProps;
 }
 
-const WebUserAvatar: FC<WebUserAvatarProps> = (props) => {
+const UserAvatar: FC<UserAvatarProps> = (props) => {
   const { className, icon } = props;
 
   return (
@@ -21,4 +21,4 @@ const WebUserAvatar: FC<WebUserAvatarProps> = (props) => {
   );
 };
 
-export default WebUserAvatar;
+export default UserAvatar;
