@@ -1,16 +1,22 @@
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
-import FontIcon from "../Icons/FontIcon";
 import { useWebConfigStore } from "@/stores/webConfigStore";
 import { LogOut } from "lucide-react";
 import clsx from "clsx";
-import Copyright from "../Copyright";
-import WebLoginButton from "./WebLoginButton";
-import WebRefreshButton from "./WebRefreshButton";
-import WebUserAvatar from "./WebUserAvatar";
 import { Post } from "@/api/axiosRequest";
 import { useTranslation } from "react-i18next";
+import UserAvatar from "./UserAvatar";
+import FontIcon from "../Common/Icons/FontIcon";
+import RefreshButton from "./RefreshButton";
+import LoginButton from "./LoginButton";
+import { FC } from "react";
+import Copyright from "../Common/Copyright";
 
-const WebFooter = () => {
+interface WebLoginProps {
+  panelClassName: string;
+}
+
+const WebLogin: FC<WebLoginProps> = (props) => {
+  const { panelClassName } = props;
   const { integration, loginInfo, setIntegration, setLoginInfo } =
     useWebConfigStore();
   const { t } = useTranslation();
@@ -18,13 +24,9 @@ const WebFooter = () => {
   return (
     <div className="relative">
       <Popover>
-        <PopoverButton
-          onMouseDown={() => {
-            console.log("WebFooter PopoverButton click");
-          }}
-        >
+        <PopoverButton>
           {loginInfo ? (
-            <WebUserAvatar />
+            <UserAvatar />
           ) : (
             <FontIcon
               name="font_coco-logo-line"
@@ -33,19 +35,24 @@ const WebFooter = () => {
           )}
         </PopoverButton>
 
-        <PopoverPanel className="absolute z-50 bottom-5 left-0 w-[300px] rounded-xl bg-white dark:bg-[#202126] text-sm/6 text-[#333] dark:text-[#D8D8D8] shadow-lg border dark:border-white/10 -translate-y-2">
+        <PopoverPanel
+          className={clsx(
+            "absolute z-50 w-[300px] rounded-xl bg-white dark:bg-[#202126] text-sm/6 text-[#333] dark:text-[#D8D8D8] shadow-lg border dark:border-white/10 -translate-y-2",
+            panelClassName
+          )}
+        >
           <div className="p-3">
             <div className="flex items-center justify-between mb-2">
               <span>{t("webLogin.title")}</span>
 
-              <WebRefreshButton />
+              <RefreshButton />
             </div>
 
             <div className="py-2">
               {loginInfo ? (
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-3">
-                    <WebUserAvatar
+                    <UserAvatar
                       className="!size-12"
                       icon={{ className: "!size-6" }}
                     />
@@ -80,7 +87,7 @@ const WebFooter = () => {
                       : t("webLogin.hints.login")}
                   </span>
 
-                  <WebLoginButton />
+                  <LoginButton />
                 </div>
               )}
             </div>
@@ -95,4 +102,4 @@ const WebFooter = () => {
   );
 };
 
-export default WebFooter;
+export default WebLogin;

@@ -3,7 +3,7 @@ import { Button } from "@headlessui/react";
 import { SquareArrowOutUpRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-const WebLoginButton = () => {
+const LoginButton = () => {
   const { endpoint } = useAppStore();
   const { t } = useTranslation();
 
@@ -23,4 +23,4 @@ const WebLoginButton = () => {
   );
 };
 
-export default WebLoginButton;
+export default LoginButton;

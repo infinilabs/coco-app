@@ -16,7 +16,7 @@ import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { parseSearchQuery, SearchQuery } from "@/utils";
 import InputUpload from "./InputUpload";
-import WebFooter from "../Common/UI/WebFooter";
+import Copyright from "../Common/Copyright";
 
 interface InputControlsProps {
   isChatMode: boolean;
@@ -237,7 +237,7 @@ const InputControls = ({
             (source?.type !== "deep_think" || !source?.config?.visible) &&
             !(source?.mcp_servers?.enabled && source?.mcp_servers?.visible) && (
               <div className="px-[9px]">
-                <WebFooter />
+                <Copyright />
               </div>
             )}
         </div>
