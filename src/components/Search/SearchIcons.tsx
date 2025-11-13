@@ -106,11 +106,12 @@ export default function SearchIcons({
     }
 
     if (viewExtensionOpened) {
-      const { title, icon } = viewExtensionOpened[3];
+      const name = viewExtensionOpened[0];
+      const icon = viewExtensionOpened[1];
 
       const iconPath = icon ? platformAdapter.convertFileSrc(icon) : void 0;
 
-      return <MultilevelWrapper title={title} icon={iconPath} />;
+      return <MultilevelWrapper title={name} icon={iconPath} />;
     }
 
     return (

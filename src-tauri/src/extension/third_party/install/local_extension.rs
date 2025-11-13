@@ -2,7 +2,7 @@ use super::check_compatibility_via_mcv;
 use crate::extension::PLUGIN_JSON_FILE_NAME;
 use crate::extension::third_party::check::general_check;
 use crate::extension::third_party::install::{
-    filter_out_incompatible_sub_extensions, is_extension_installed, view_extension_convert_pages,
+    filter_out_incompatible_sub_extensions, is_extension_installed,
 };
 use crate::extension::third_party::{
     THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE, get_third_party_extension_directory,
@@ -225,14 +225,6 @@ pub(crate) async fn install_local_extension(
     fs::write(&dest_plugin_json_path, corrected_plugin_json)
         .await
         .map_err(|e| e.to_string())?;
-
-    /*
-     * Call convert_page() to update the page files.  This has to be done after
-     * writing the extension files because we will edit them.
-     *
-     * HTTP links will be skipped.
-     */
-    view_extension_convert_pages(&extension, &dest_dir).await?;
 
     // Canonicalize relative icon and page paths
     canonicalize_relative_icon_path(&dest_dir, &mut extension)?;

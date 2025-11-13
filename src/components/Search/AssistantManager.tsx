@@ -187,17 +187,8 @@ export function useAssistantManager({
       const onOpened = selectedSearchContent?.on_opened;
 
       if (onOpened?.Extension?.ty?.View) {
-        const { setViewExtensionOpened } = useSearchStore.getState();
-        const viewData = onOpened.Extension.ty.View;
-        const extensionPermission = onOpened.Extension.permission;
-
         clearSearchValue();
-        return setViewExtensionOpened([
-          viewData.page,
-          extensionPermission,
-          viewData.ui,
-          selectedSearchContent as any,
-        ]);
+        return platformAdapter.invokeBackend("open", { onOpened: onOpened, extraArgs: null });
       }
     }
 
