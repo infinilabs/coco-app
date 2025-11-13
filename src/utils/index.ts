@@ -299,7 +299,7 @@ export const visibleSearchBar = () => {
 
   if (isNil(viewExtensionOpened)) return true;
 
-  const [, , ui] = viewExtensionOpened;
+  const ui = viewExtensionOpened[4];
 
   return ui?.search_bar ?? true;
 };
@@ -312,7 +312,7 @@ export const visibleFilterBar = () => {
 
   if (isNil(viewExtensionOpened)) return true;
 
-  const [, , ui] = viewExtensionOpened;
+  const ui = viewExtensionOpened[4];
 
   return ui?.filter_bar ?? true;
 };
@@ -322,7 +322,7 @@ export const visibleFooterBar = () => {
 
   if (isNil(viewExtensionOpened)) return true;
 
-  const [, , ui] = viewExtensionOpened;
+  const ui = viewExtensionOpened[4];
 
   return ui?.footer ?? true;
 };

@@ -11,7 +11,6 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 const ViewExtension: React.FC = () => {
   const { viewExtensionOpened } = useSearchStore();
-  const [page, setPage] = useState<string>("");
   // Complete list of the backend APIs, grouped by their category.
   const [apis, setApis] = useState<Map<string, string[]> | null>(null);
   const { setModifierKeyPressed } = useShortcutsStore();
@@ -22,24 +21,6 @@ const ViewExtension: React.FC = () => {
       "ViewExtension Error: viewExtensionOpened is null. This should not happen."
     );
   }
-
-  // Tauri/webview is not allowed to access local files directly,
-  // use convertFileSrc to work around the issue.
-  useEffect(() => {
-    const setupFileUrl = async () => {
-      // The check above ensures viewExtensionOpened is not null here.
-      const page = viewExtensionOpened[0];
-
-      // Only convert to file source if it's a local file path, not a URL
-      if (page.startsWith("http://") || page.startsWith("https://")) {
-        setPage(page);
-      } else {
-        setPage(platformAdapter.convertFileSrc(page));
-      }
-    };
-
-    setupFileUrl();
-  }, [viewExtensionOpened]);
 
   // invoke `apis()` and set the state
   useEffect(() => {
@@ -60,7 +41,7 @@ const ViewExtension: React.FC = () => {
   }, []);
 
   // White list of the permission entries
-  const permission = viewExtensionOpened[1];
+  const permission = viewExtensionOpened[3];
 
   // apis is in format {"category": ["api1", "api2"]}, to make the permission check
   // easier, reverse the map key values: {"api1": "category", "api2": "category"}
@@ -182,9 +163,11 @@ const ViewExtension: React.FC = () => {
     };
   }, [reversedApis, permission]); // Add apiPermissions as dependency
 
+  const fileUrl = viewExtensionOpened[2];
+
   return (
     <iframe
-      src={page}
+      src={fileUrl}
       className="w-full h-full border-0"
       onLoad={(event) => {
         event.currentTarget.focus();

@@ -81,7 +81,7 @@
       }
     ],
     "security": {
-      "csp": null,
+      "csp": "default-src blob: data: filesystem: ws: wss: http://127.0.0.1:* http://localhost:* 'unsafe-inline' 'unsafe-eval';",
       "dangerousDisableAssetCspModification": true,
       "assetProtocol": {
         "enable": true,
