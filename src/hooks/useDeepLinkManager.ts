@@ -10,7 +10,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useConnectStore } from "@/stores/connectStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { useTranslation } from "react-i18next";
-import { MAIN_WINDOW_LABEL } from "@/constants";
+import { MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL } from "@/constants";
 import { useAsyncEffect, useEventListener } from "ahooks";
 
 export interface DeepLinkHandler {
@@ -86,7 +86,13 @@ export function useDeepLinkManager() {
   const handlers: DeepLinkHandler[] = [
     {
       pattern: "oauth_callback",
-      handler: handleOAuthCallback,
+      handler: async (url) => {
+        const windowLabel = await platformAdapter.getCurrentWindowLabel();
+
+        if (windowLabel !== SETTINGS_WINDOW_LABEL) return;
+
+        handleOAuthCallback(url);
+      },
     },
     {
       pattern: "install_extension_from_store",
