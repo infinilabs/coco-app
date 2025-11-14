@@ -494,7 +494,10 @@
       "serverPlaceholder": "例如：https://coco.infini.cloud/",
       "connecting": "连接中...",
       "connect": "连接",
-      "closeError": "关闭错误提示"
+      "closeError": "关闭错误提示",
+      "hints": {
+        "loginSuccess": "登录成功"
+      }
     },
     "dataSource": {
       "title": "数据源",
