@@ -494,7 +494,10 @@
       "serverPlaceholder": "For example: https://coco.infini.cloud/",
       "connecting": "Connecting...",
       "connect": "Connect",
-      "closeError": "Close error message"
+      "closeError": "Close error message",
+      "hints": {
+        "loginSuccess": "Login Successful"
+      }
     },
     "dataSource": {
       "title": "Data Source",

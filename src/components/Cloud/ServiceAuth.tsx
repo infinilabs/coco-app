@@ -2,6 +2,7 @@ import { FC, memo, useCallback, useEffect, useState } from "react";
 import { Copy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { v4 as uuidv4 } from "uuid";
+import { useDebounceFn } from "ahooks";
 
 import { UserProfile } from "./UserProfile";
 import { OpenURLWithBrowser } from "@/utils";
@@ -20,7 +21,6 @@ const ServiceAuth = memo(
   ({ setRefreshLoading, refreshClick }: ServiceAuthProps) => {
     const { t } = useTranslation();
 
-    const language = useAppStore((state) => state.language);
     const addError = useAppStore((state) => state.addError);
     const ssoRequestID = useAppStore((state) => state.ssoRequestID);
     const setSSORequestID = useAppStore((state) => state.setSSORequestID);
@@ -61,19 +61,21 @@ const ServiceAuth = memo(
       [logoutServer]
     );
 
+    const { run: debouncedAuthSuccess } = useDebounceFn((event) => {
+      const { serverId } = event.payload;
+      if (serverId) {
+        refreshClick(serverId, () => {
+          setLoading(false);
+        });
+        addError(t("cloud.connect.hints.loginSuccess"), "info");
+      }
+    });
+
     // handle oauth success event
     useEffect(() => {
       const unlistenOAuth = platformAdapter.listenEvent(
         "oauth_success",
-        (event) => {
-          const { serverId } = event.payload;
-          if (serverId) {
-            refreshClick(serverId, () => {
-              setLoading(false);
-            });
-            addError(language === "zh" ? "登录成功" : "Login Success", "info");
-          }
-        }
+        debouncedAuthSuccess
       );
 
       return () => {
