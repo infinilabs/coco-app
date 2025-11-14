@@ -82,7 +82,7 @@
     ],
     "security": {
       "csp": {
-        "default-src": "'self' asset: http://127.0.0.1:* https://at.alicdn.com ipc: http://ipc.localhost http://asset.localhost blob: data:"
+        "default-src": "'self' asset: http: https: ipc: blob: data:"
       },
       "dangerousDisableAssetCspModification": true,
       "assetProtocol": {
