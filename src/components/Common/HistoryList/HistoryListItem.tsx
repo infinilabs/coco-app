@@ -169,7 +169,7 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
                 return (
                   <button
                     key={label}
-                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-[#EDEDED] dark:hover:bg-[#2B2C31] transition"
+                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-[6px] hover:bg-[#EDEDED] dark:hover:bg-[#2B2C31] transition"
                     onClick={onClick}
                   >
                     <VisibleKey shortcut={shortcut} onKeyPress={onClick}>

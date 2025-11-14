@@ -96,7 +96,7 @@
   }
 
   .input-body {
-    @apply rounded-md overflow-hidden;
+    @apply rounded-[6px] overflow-hidden;
   }
 
   .icon {
@@ -164,7 +164,7 @@
 /* Component styles */
 @layer components {
   .settings-input {
-    @apply block w-full rounded-md border-gray-300 dark:border-gray-600
+    @apply block w-full rounded-[6px] border-gray-300 dark:border-gray-600
         bg-white dark:bg-gray-700
         text-gray-900 dark:text-gray-100
         shadow-sm focus:border-blue-500 focus:ring-blue-500
@@ -172,7 +172,7 @@
   }
 
   .settings-select {
-    @apply text-sm rounded-md border-gray-300 dark:border-gray-600
+    @apply text-sm rounded-[6px] border-gray-300 dark:border-gray-600
         bg-white dark:bg-gray-700
         text-gray-900 dark:text-gray-100
         shadow-sm focus:border-blue-500 focus:ring-blue-500

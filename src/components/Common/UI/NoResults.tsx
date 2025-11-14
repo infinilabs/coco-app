@@ -54,7 +54,7 @@ export const NoResults = () => {
 
           <span
             className={clsx(
-              "ml-3 h-5 min-w-5 rounded-md border border-[#D8D8D8] flex justify-center items-center",
+              "ml-3 h-5 min-w-5 rounded-[6px] border border-[#D8D8D8] flex justify-center items-center",
               {
                 "px-1": !isMac,
               }

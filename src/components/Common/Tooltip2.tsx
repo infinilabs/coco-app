@@ -27,7 +27,7 @@ const Tooltip2: FC<Tooltip2Props> = (props) => {
         static
         anchor={anchor}
         className={clsx(
-          "fixed z-1000 p-2 rounded-md text-xs text-white bg-black/75 hidden",
+          "fixed z-1000 p-2 rounded-[6px] text-xs text-white bg-black/75 hidden",
           {
             "!block": visible,
           }
