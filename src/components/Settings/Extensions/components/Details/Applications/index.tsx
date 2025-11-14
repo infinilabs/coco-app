@@ -83,7 +83,7 @@ const Applications = () => {
       </div>
 
       <Button
-        className="w-full h-8 my-4 text-[#0087FF] border border-[#EEF0F3] hover:!border-[#0087FF] dark:border-gray-700 rounded-md transition"
+        className="w-full h-8 my-4 text-[#0087FF] border border-[#EEF0F3] hover:!border-[#0087FF] dark:border-gray-700 rounded-[6px] transition"
         onClick={handleReindex}
       >
         {t("settings.extensions.application.details.reindex")}

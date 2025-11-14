@@ -289,7 +289,7 @@ const Shortcuts = () => {
                 <Button
                   disabled={disabled}
                   className={clsx(
-                    "flex items-center justify-center size-8 rounded-md border border-black/5 dark:border-white/10 transition",
+                    "flex items-center justify-center size-8 rounded-[6px] border border-black/5 dark:border-white/10 transition",
                     {
                       "hover:border-[#0072FF]": !disabled,
                       "opacity-70 cursor-not-allowed": disabled,

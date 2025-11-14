@@ -292,7 +292,7 @@ const Item: FC<ItemProps> = (props) => {
     return (
       <>
         <div
-          className={clsx("-mx-2 px-2 text-sm rounded-md", {
+          className={clsx("-mx-2 px-2 text-sm rounded-[6px]", {
             "bg-[#f0f6fe] dark:bg-gray-700":
               id === rootState.activeExtension?.id,
           })}

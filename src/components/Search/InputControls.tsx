@@ -187,7 +187,7 @@ const InputControls = ({
           {source?.type === "deep_think" && source?.config?.visible && (
             <button
               className={clsx(
-                "flex items-center justify-center gap-1 h-[20px] px-1 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
+                "flex items-center justify-center gap-1 h-[20px] px-1 rounded-[6px] transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
                 {
                   "!bg-[rgba(0,114,255,0.3)]": isDeepThinkActive,
                 }
