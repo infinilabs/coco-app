@@ -151,7 +151,7 @@ export default function LayoutOutlet() {
         closable: true,
         minimizable: false,
         maximizable: false,
-        dragDropEnabled: true,
+        dragDropEnabled: false,
         resizable: false,
         center: false,
         url: "/ui/selection",
@@ -204,7 +204,15 @@ export default function LayoutOutlet() {
     };
 
     if (state.visible && state.text) {
-      openSelectionWindow(state.text);
+      // 用 DOM 选区 + 屏幕位置计算全局物理坐标，避免无坐标时居中
+      const rect = state.rect;
+      const dpr = window.devicePixelRatio || 1;
+      const screenX = window.screenX || 0; // 窗口左上角相对屏幕的 X（CSS 像素）
+      const screenY = window.screenY || 0; // 窗口左上角相对屏幕的 Y（CSS 像素）
+      const px = rect ? Math.round((screenX + rect.left) * dpr) : 0;
+      const py = rect ? Math.round((screenY + rect.top) * dpr) : 0;
+
+      openSelectionWindow({ text: state.text, x: px, y: py });
       close();
     }
 

@@ -36,37 +36,75 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
     std::thread::spawn(move || {
         use objc2_app_kit::NSEvent;
         use objc2_core_graphics::CGEvent;
+        use objc2_core_graphics::{
+            CGDisplayBounds, CGDisplayPixelsHigh, CGDisplayPixelsWide, CGGetActiveDisplayList,
+            CGMainDisplayID,
+        };
 
-        log::info!("start_selection_monitor: 鼠标监控线程已启动");
-        let mut last_left_pressed = false;
-        let mut popup_visible = false;
-        // 最近一次“按下”是否发生在选择窗口内部
-        let mut last_click_in_popup = false;
-
-        // 获取当前鼠标屏幕坐标
+        // 统一为：左上角原点 + 物理像素坐标（多屏/Retina 兼容）
         let current_mouse = || -> (i32, i32) {
             unsafe {
+                // 全局鼠标位置（Quartz，原点在左下，单位 point）
                 let event = CGEvent::new(None);
                 let pt = objc2_core_graphics::CGEvent::location(event.as_deref());
-                (pt.x as i32, pt.y as i32)
+
+                // 获取所有活动显示器
+                let mut displays: [u32; 16] = [0; 16];
+                let mut display_count: u32 = 0;
+                let _ = CGGetActiveDisplayList(displays.len() as u32, displays.as_mut_ptr(), &mut display_count);
+
+                // 选取包含鼠标点的显示器（pt 落在哪个 bounds 内）
+                let mut chosen = CGMainDisplayID(); // 回退主屏
+                for i in 0..display_count as usize {
+                    let did = displays[i];
+                    let b = CGDisplayBounds(did);
+                    let in_x = pt.x >= b.origin.x && pt.x <= b.origin.x + b.size.width;
+                    let in_y = pt.y >= b.origin.y && pt.y <= b.origin.y + b.size.height;
+                    if in_x && in_y {
+                        chosen = did;
+                        break;
+                    }
+                }
+
+                // 选定屏幕的边界（point）与像素尺寸
+                let bounds = CGDisplayBounds(chosen);
+                let px_w = CGDisplayPixelsWide(chosen) as f64;
+                let px_h = CGDisplayPixelsHigh(chosen) as f64;
+                let pt_w = bounds.size.width as f64;
+                let pt_h = bounds.size.height as f64;
+
+                // 缩放因子（避免 Retina 下 2x 偏移）
+                let scale_x = if pt_w > 0.0 { px_w / pt_w } else { 1.0 };
+                let scale_y = if pt_h > 0.0 { px_h / pt_h } else { 1.0 };
+
+                // 相对该屏幕左上角的物理像素坐标
+                let x_px = ((pt.x - bounds.origin.x) as f64 * scale_x).round() as i32;
+                let y_px_top = (((bounds.origin.y + bounds.size.height) - pt.y) as f64 * scale_y).round() as i32;
+
+                // 转为“全局左上角”坐标：该屏幕左上角在全局的 y 是 (bounds.origin.y + bounds.size.height)
+                // 但上面的 y_px_top 已经做了翻转，且 offset 已在 setPosition 处处理，这里返回屏幕内相对左上像素即可。
+                (x_px, y_px_top)
             }
         };
 
-        // 判断给定屏幕坐标是否落在选择窗口矩形内
+        // 判断给定屏幕坐标是否落在选择窗口矩形内（同为物理像素 + 左上角原点）
         let is_point_in_selection_window = |x: i32, y: i32| -> bool {
             if let Some(win) = app_handle.get_webview_window("selection") {
-                // 取窗口外部位置和尺寸，均为物理坐标
                 if let (Ok(pos), Ok(size)) = (win.outer_position(), win.outer_size()) {
                     let x0 = pos.x;
                     let y0 = pos.y;
                     let w = size.width as i32;
                     let h = size.height as i32;
-                    // 简单包围盒判断
                     return x >= x0 && x <= x0 + w && y >= y0 && y <= y0 + h;
                 }
             }
             false
         };
+
+        log::info!("start_selection_monitor: 鼠标监控线程已启动");
+        let mut last_left_pressed = false;
+        let mut popup_visible = false;
+        let mut last_click_in_popup = false;
 
         loop {
             std::thread::sleep(Duration::from_millis(30));

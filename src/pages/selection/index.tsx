@@ -104,6 +104,24 @@ export default function SelectionWindow() {
       }
     );
 
+    const unlistenDetected = platformAdapter.listenEvent(
+        "selection-detected",
+        async ({ payload }: any) => {
+            const x = Number(payload?.x ?? NaN);
+            const y = Number(payload?.y ?? NaN);
+            if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+    
+            const win = await platformAdapter.getCurrentWebviewWindow();
+            // 轻微偏移，让弹框出现在选区上方靠右一点
+            const offsetX = 12;
+            const offsetY = 20;
+            const targetX = Math.max(0, x + offsetX);
+            const targetY = Math.max(0, y - 100 - offsetY); // 估算高度，避免遮挡
+            // @ts-ignore
+            await win?.setPosition({ type: "Physical", x: targetX, y: targetY });
+        }
+    );
+
     return () => {
       unlistenPromise
         .then((fn) => {
@@ -116,6 +134,8 @@ export default function SelectionWindow() {
         clearTimeout(timerRef.current);
         timerRef.current = null;
       }
+      //
+      unlistenDetected.then((fn) => { try { fn(); } catch {} });
     };
   }, [autoHideMs]);
 
@@ -284,7 +304,7 @@ export default function SelectionWindow() {
     >
       <div className="px-2 pt-1">
         <div
-          data-tauri-drag-region="true"
+          data-tauri-drag-region="false"
           className="rounded-md bg-black/5 dark:bg-white/5 px-2 py-1 leading-4 text-[12px] text-ellipsis whitespace-nowrap overflow-hidden"
         >
           {text || "未检测到文本"}
@@ -292,7 +312,7 @@ export default function SelectionWindow() {
       </div>
 
       <div
-        data-tauri-drag-region="true"
+        data-tauri-drag-region="false"
         className="flex items-center gap-2 px-3 py-2 flex-nowrap overflow-hidden"
       >
         <img
@@ -310,7 +330,7 @@ export default function SelectionWindow() {
         <div>||</div>
 
         <button
-          className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover:ring-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"
+          className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"
           onClick={searchMain}
           title="搜索"
         >
@@ -321,7 +341,7 @@ export default function SelectionWindow() {
         </button>
 
         <button
-          className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover:ring-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"
+          className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"
           onClick={askAI}
           title="AI 问答"
         >
@@ -332,7 +352,7 @@ export default function SelectionWindow() {
         </button>
 
         <button
-          className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover:ring-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"
+          className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"
           onClick={translate}
           title="翻译"
         >
@@ -343,7 +363,7 @@ export default function SelectionWindow() {
         </button>
 
         <button
-          className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover:ring-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"
+          className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"
           onClick={copy}
           title="复制"
         >
@@ -363,7 +383,7 @@ export default function SelectionWindow() {
         )}
 
         <button
-          className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover:ring-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"
+          className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"
           onClick={speak}
           title="朗读"
         >
