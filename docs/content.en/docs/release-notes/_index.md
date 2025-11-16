@@ -38,6 +38,7 @@ fix(view extension): broken search bar UI when opening extensions via hotkey #93
 fix: allow deletion after selecting all text #943
 fix: prevent shaking when switching between chat and search pages #955
 fix: prevent duplicate login success messages #977
+fix: fix quick ai not continuing conversation #979
 
 ### ✈️ Improvements
 
