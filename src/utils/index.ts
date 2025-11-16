@@ -144,7 +144,7 @@ export const parseSearchQuery = (searchQuery: SearchQuery) => {
 
   const result = Object.entries(rest)
     .filter(([_, value]) => !isTrulyEmpty(value))
-    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`);
+    .map(([key, value]) => `${key}=${value}`);
 
   if (isObject(filters)) {
     for (const [key, value] of Object.entries(filters)) {
