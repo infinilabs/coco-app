@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   AppWindowMac,
@@ -58,12 +58,9 @@ const Advanced = () => {
   const setAllowSelfSignature = useConnectStore((state) => {
     return state.setAllowSelfSignature;
   });
-  const {
-    searchDelay,
-    setSearchDelay,
-    localSearchResultWeight,
-    setLocalSearchResultWeight,
-  } = useConnectStore();
+  const { searchDelay, setSearchDelay } = useConnectStore();
+
+  const [localSearchResultWeight, setLocalSearchResultWeight] = useState(1);
 
   useMount(async () => {
     const allowSelfSignature = await platformAdapter.invokeBackend<boolean>(
@@ -71,6 +68,12 @@ const Advanced = () => {
     );
 
     setAllowSelfSignature(allowSelfSignature);
+
+    const weight = await platformAdapter.invokeBackend<number>(
+      "get_local_query_source_weight"
+    );
+
+    setLocalSearchResultWeight(weight);
   });
 
   useEffect(() => {
@@ -277,9 +280,9 @@ const Advanced = () => {
             }}
             className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value={0.5}>低</option>
-            <option value={1}>中等</option>
-            <option value={2}>高</option>
+            <option value="0.5">低</option>
+            <option value="1">中等</option>
+            <option value="2">高</option>
           </select>
         </SettingsItem>
       </div>

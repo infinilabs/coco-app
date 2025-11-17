@@ -40,8 +40,6 @@ export type IConnectStore = {
   setAllowSelfSignature: (allowSelfSignature: boolean) => void;
   searchDelay: number;
   setSearchDelay: (searchDelay: number) => void;
-  localSearchResultWeight: number;
-  setLocalSearchResultWeight: (localSearchResultWeight: number) => void;
 };
 
 export const useConnectStore = create<IConnectStore>()(
@@ -151,10 +149,6 @@ export const useConnectStore = create<IConnectStore>()(
         setSearchDelay(searchDelay) {
           return set(() => ({ searchDelay }));
         },
-        localSearchResultWeight: 1,
-        setLocalSearchResultWeight(localSearchResultWeight) {
-          return set(() => ({ localSearchResultWeight }));
-        },
       }),
       {
         name: "connect-store",
@@ -168,7 +162,6 @@ export const useConnectStore = create<IConnectStore>()(
           currentAssistant: state.currentAssistant,
           querySourceTimeout: state.querySourceTimeout,
           allowSelfSignature: state.allowSelfSignature,
-          localSearchResultWeight: state.localSearchResultWeight,
         }),
       }
     )
