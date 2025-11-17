@@ -26,7 +26,7 @@ feat(extension compatibility): minimum_coco_version #946
 feat: add compact mode for window #947
 feat: advanced settings search debounce & local query source weight #950
 feat: add window opacity configuration option #963
-
+feat: add auto collapse delay for compact mode #981
 
 ### 🐛 Bug fix
 
