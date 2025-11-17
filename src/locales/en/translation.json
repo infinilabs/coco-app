@@ -164,8 +164,22 @@
           "description": "Shortcut button to enable AI Overview in chat mode."
         }
       },
-      "connect": {
-        "title": "Connection Settings",
+      "appearance": {
+        "title": "Appearance Settings",
+        "opacity": {
+          "title": "Pinned Window Dimness Setting",
+          "description": "Adjusts the opacity level of the Coco AI window when it’s pinned and not in focus. Set a value between 10% and 100%, where 100% means fully opaque (no dimming), and lower values increase transparency, allowing underlying content to show through."
+        }
+      },
+      "updateVersion": {
+        "title": "Version & Updates",
+        "snapshotUpdate": {
+          "title": "Snapshot Updates",
+          "description": "Get early access to new features. May be unstable."
+        }
+      },
+      "other": {
+        "title": "Other Settings",
         "connectionTimeout": {
           "title": "Connection Timeout",
           "description": "Retries the connection if no response is received within this time. Default: 120s."
@@ -181,20 +195,10 @@
         "allowSelfSignature": {
           "title": "Allow Self-Signed Certificates",
           "description": "Allow connections to servers using self-signed certificates. Enable only if you trust the source."
-        }
-      },
-      "appearance": {
-        "title": "Appearance Settings",
-        "opacity": {
-          "title": "Pinned Window Dimness Setting",
-          "description": "Adjusts the opacity level of the Coco AI window when it’s pinned and not in focus. Set a value between 10% and 100%, where 100% means fully opaque (no dimming), and lower values increase transparency, allowing underlying content to show through."
-        }
-      },
-      "updateVersion": {
-        "title": "Version & Updates",
-        "snapshotUpdate": {
-          "title": "Snapshot Updates",
-          "description": "Get early access to new features. May be unstable."
+        },
+        "localSearchResultWeight": {
+          "title": "Local Search Result Weight",
+          "description": "Adjusts how local results (files, extensions, commands, etc.) are ranked. Higher values place them closer to the top."
         }
       }
     },

@@ -74,6 +74,8 @@ pub async fn get_allow_self_signature(tauri_app_handle: AppHandle) -> bool {
 
 #[tauri::command]
 pub async fn set_local_query_source_weight(tauri_app_handle: AppHandle, value: f64) {
+    println!("set_local_query_source_weight: {}", value);
+
     let store = tauri_app_handle
         .store(COCO_TAURI_STORE)
         .unwrap_or_else(|e| {

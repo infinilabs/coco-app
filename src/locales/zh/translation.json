@@ -164,8 +164,22 @@
           "description": "在搜索模式下启用 AI 总结的快捷按键。"
         }
       },
-      "connect": {
-        "title": "连接设置",
+      "appearance": {
+        "title": "外观设置",
+        "opacity": {
+          "title": "置顶时失焦透明度",
+          "description": "设置 Coco AI 窗口在置顶且失去焦点时的不透明度（10%–100%，100% 表示完全不透明）。"
+        }
+      },
+      "updateVersion": {
+        "title": "版本与更新",
+        "snapshotUpdate": {
+          "title": "快照版更新",
+          "description": "抢先体验新功能，可能不稳定。"
+        }
+      },
+      "other": {
+        "title": "其它设置",
         "connectionTimeout": {
           "title": "连接超时",
           "description": "如果在此时间内未收到响应，则重试连接。默认值：120 秒。"
@@ -181,20 +195,10 @@
         "allowSelfSignature": {
           "title": "允许自签名证书",
           "description": "允许连接使用自签名证书的服务器。仅在信任来源的情况下启用。"
-        }
-      },
-      "appearance": {
-        "title": "外观设置",
-        "opacity": {
-          "title": "置顶时失焦透明度",
-          "description": "设置 Coco AI 窗口在置顶且失去焦点时的不透明度（10%–100%，100% 表示完全不透明）。"
-        }
-      },
-      "updateVersion": {
-        "title": "版本与更新",
-        "snapshotUpdate": {
-          "title": "快照版更新",
-          "description": "抢先体验新功能，可能不稳定。"
+        },
+        "localSearchResultWeight": {
+          "title": "本地搜索结果展示权重",
+          "description": "调整本地结果（文件、扩展名、命令等）的排名。值越高，它们越接近顶部。"
         }
       }
     },

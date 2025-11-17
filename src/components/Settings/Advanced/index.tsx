@@ -58,7 +58,12 @@ const Advanced = () => {
   const setAllowSelfSignature = useConnectStore((state) => {
     return state.setAllowSelfSignature;
   });
-  const { searchDelay, setSearchDelay } = useConnectStore();
+  const {
+    searchDelay,
+    setSearchDelay,
+    localSearchResultWeight,
+    setLocalSearchResultWeight,
+  } = useConnectStore();
 
   useMount(async () => {
     const allowSelfSignature = await platformAdapter.invokeBackend<boolean>(
@@ -176,16 +181,20 @@ const Advanced = () => {
 
       <Shortcuts />
 
+      <Appearance />
+
+      <UpdateSettings />
+
       <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        {t("settings.advanced.connect.title")}
+        {t("settings.advanced.other.title")}
       </h2>
 
       <div className="space-y-6">
         <SettingsItem
           icon={Unplug}
-          title={t("settings.advanced.connect.connectionTimeout.title")}
+          title={t("settings.advanced.other.connectionTimeout.title")}
           description={t(
-            "settings.advanced.connect.connectionTimeout.description"
+            "settings.advanced.other.connectionTimeout.description"
           )}
         >
           <SettingsInput
@@ -200,8 +209,8 @@ const Advanced = () => {
 
         <SettingsItem
           icon={Unplug}
-          title={t("settings.advanced.connect.queryTimeout.title")}
-          description={t("settings.advanced.connect.queryTimeout.description")}
+          title={t("settings.advanced.other.queryTimeout.title")}
+          description={t("settings.advanced.other.queryTimeout.description")}
         >
           <SettingsInput
             type="number"
@@ -215,8 +224,8 @@ const Advanced = () => {
 
         <SettingsItem
           icon={Unplug}
-          title={t("settings.advanced.connect.searchDelay.title")}
-          description={t("settings.advanced.connect.searchDelay.description")}
+          title={t("settings.advanced.other.searchDelay.title")}
+          description={t("settings.advanced.other.searchDelay.description")}
         >
           <SettingsInput
             type="number"
@@ -230,13 +239,13 @@ const Advanced = () => {
 
         <SettingsItem
           icon={ShieldCheck}
-          title={t("settings.advanced.connect.allowSelfSignature.title")}
+          title={t("settings.advanced.other.allowSelfSignature.title")}
           description={t(
-            "settings.advanced.connect.allowSelfSignature.description"
+            "settings.advanced.other.allowSelfSignature.description"
           )}
         >
           <SettingsToggle
-            label={t("settings.advanced.connect.allowSelfSignature.title")}
+            label={t("settings.advanced.other.allowSelfSignature.title")}
             checked={allowSelfSignature}
             onChange={(value) => {
               setAllowSelfSignature(value);
@@ -247,11 +256,33 @@ const Advanced = () => {
             }}
           />
         </SettingsItem>
+
+        <SettingsItem
+          icon={ShieldCheck}
+          title={t("settings.advanced.other.localSearchResultWeight.title")}
+          description={t(
+            "settings.advanced.other.localSearchResultWeight.description"
+          )}
+        >
+          <select
+            value={localSearchResultWeight}
+            onChange={(event) => {
+              const weight = Number(event.target.value);
+
+              setLocalSearchResultWeight(weight);
+
+              platformAdapter.invokeBackend("set_local_query_source_weight", {
+                value: weight,
+              });
+            }}
+            className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value={0.5}>低</option>
+            <option value={1}>中等</option>
+            <option value={2}>高</option>
+          </select>
+        </SettingsItem>
       </div>
-
-      <Appearance />
-
-      <UpdateSettings />
     </div>
   );
 };
