@@ -3,15 +3,18 @@ import {
   ExtensionPermission,
   ViewExtensionUISettings,
 } from "@/components/Settings/Extensions";
-import { SearchDocument } from "@/types/search";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export type ViewExtensionOpened = [
+  // Extension name
+  string,
+  // An absolute path to the extension icon or a font code.
+  string,
+  // HTML file URL
   string,
   ExtensionPermission | null,
   ViewExtensionUISettings | null,
-  SearchDocument
 ];
 
 export type ISearchStore = {
@@ -55,12 +58,6 @@ export type ISearchStore = {
   setVisibleExtensionDetail: (visibleExtensionDetail: boolean) => void;
 
   // When we open a View extension, we set this to a non-null value.
-  //
-  // Arguments
-  //
-  // The first array element is the path to the page that we should load
-  // The second element is the permission that this extension requires.
-  // The third argument is the UI Settings
   viewExtensionOpened?: ViewExtensionOpened;
   setViewExtensionOpened: (showViewExtension?: ViewExtensionOpened) => void;
 };

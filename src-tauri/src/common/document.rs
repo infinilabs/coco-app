@@ -1,6 +1,8 @@
 #[cfg(target_os = "macos")]
 use crate::extension::built_in::window_management::actions::Action;
+use crate::extension::view_extension::serve_files_in;
 use crate::extension::{ExtensionPermission, ExtensionSettings, ViewExtensionUISettings};
+use log::debug;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as Json;
 use std::collections::HashMap;
@@ -86,6 +88,10 @@ pub(crate) enum ExtensionOnOpenedType {
         open_with: Option<String>,
     },
     View {
+        /// Extension name
+        name: String,
+        // An absolute path to the extension icon or a font code.
+        icon: String,
         /// Path to the HTML file that coco will load and render.
         ///
         /// It should be an absolute path or Tauri cannot open it.
@@ -120,7 +126,12 @@ impl OnOpened {
                     // The URL of a quicklink is nearly useless without such dynamic user
                     // inputs, so until we have dynamic URL support, we just use "N/A".
                     ExtensionOnOpenedType::Quicklink { .. } => String::from("N/A"),
-                    ExtensionOnOpenedType::View { page: _, ui: _ } => {
+                    ExtensionOnOpenedType::View {
+                        name: _,
+                        icon: _,
+                        page: _,
+                        ui: _,
+                    } => {
                         // We currently don't have URL for this kind of extension.
                         String::from("N/A")
                     }
@@ -233,32 +244,49 @@ pub(crate) async fn open(
                         }
                     }
                 }
-                ExtensionOnOpenedType::View { page, ui } => {
+                ExtensionOnOpenedType::View {
+                    name,
+                    icon,
+                    page,
+                    ui,
+                } => {
+                    let page_path = Utf8Path::new(&page);
+                    let directory = page_path.parent().unwrap_or_else(|| {
+                          panic!("View extension page path should have a parent, i.e., it should be under a directory, but [{}] does not", page);
+                    });
+                    let mut url = serve_files_in(directory.as_ref()).await;
+
                     /*
                      * Emit an event to let the frontend code open this extension.
                      *
-                     * Payload `page_and_permission` contains the information needed
+                     * Payload `view_extension_opened` contains the information needed
                      * to do that.
                      *
                      * See "src/pages/main/index.tsx" for more info.
                      */
+                    use camino::Utf8Path;
                     use serde_json::Value as Json;
                     use serde_json::to_value;
 
-                    let mut extra_args =
-                        extra_args.expect("extra_args is needed to open() a view extension");
-                    let document = extra_args.remove("document").expect(
-                        "extra argument [document] should be provided to open a view extension",
-                    );
+                    let html_filename = page_path
+                        .file_name()
+                        .unwrap_or_else(|| {
+                          panic!("View extension page path should have a file name, but [{}] does not have one", page);
+                        }).to_string();
+                    url.push('/');
+                    url.push_str(&html_filename);
 
-                    let page_and_permission: [Json; 4] = [
-                        Json::String(page),
+                    let html_file_url = url;
+                    debug!("View extension listening on: {}", html_file_url);
+                    let view_extension_opened: [Json; 5] = [
+                        Json::String(name),
+                        Json::String(icon),
+                        Json::String(html_file_url),
                         to_value(permission).unwrap(),
                         to_value(ui).unwrap(),
-                        document,
                     ];
                     tauri_app_handle
-                        .emit("open_view_extension", page_and_permission)
+                        .emit("open_view_extension", view_extension_opened)
                         .unwrap();
                 }
             }

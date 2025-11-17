@@ -166,7 +166,11 @@
       },
       "appearance": {
         "title": "外观设置",
-        "opacity": {
+        "normalOpacity": {
+          "title": "窗口透明度",
+          "description": "调整 Coco AI 窗口在使用时的透明度。范围为10%到100%，其中100%表示完全不透明，较低的值会增加透明度，使底层内容能够透过窗口显示出来。"
+        },
+        "blurOpacity": {
           "title": "置顶时失焦透明度",
           "description": "设置 Coco AI 窗口在置顶且失去焦点时的不透明度（10%–100%，100% 表示完全不透明）。"
         }
@@ -235,9 +239,11 @@
         "importSuccess": "插件导入成功。",
         "importFailed": "未在该目录中找到有效的插件，请检查目录结构是否正确。",
         "extensionAlreadyImported": "插件已存在，无法重复导入。请先将其删除后再尝试。",
-        "incompatibleExtension": "此插件与当前操作系统不兼容。",
+        "platformIncompatibleExtension": "此插件与当前操作系统不兼容。",
+        "appIncompatibleExtension": "安装失败！该插件与当前 Coco App 版本不兼容，请升级后重试。",
         "uninstall": "卸载",
-        "uninstallSuccess": "卸载成功"
+        "uninstallSuccess": "卸载成功",
+        "incompatible": "扩展无法在当前版本中运行，请升级 Coco App。"
       },
       "application": {
         "title": "应用程序",
@@ -501,7 +507,10 @@
       "serverPlaceholder": "例如：https://coco.infini.cloud/",
       "connecting": "连接中...",
       "connect": "连接",
-      "closeError": "关闭错误提示"
+      "closeError": "关闭错误提示",
+      "hints": {
+        "loginSuccess": "登录成功"
+      }
     },
     "dataSource": {
       "title": "数据源",
@@ -602,5 +611,17 @@
   },
   "deepLink": {
     "extensionInstallSuccessfully": "扩展安装成功。"
+  },
+  "webLogin": {
+    "title": "账户信息",
+    "hints": {
+      "tourist": "游客模式，登录解锁完整体验。",
+      "login": "请登录您的账户以开始。",
+      "welcome": "欢迎访问 Coco AI。",
+      "pleaseLogin": "请登录您的帐户开始使用。"
+    },
+    "buttons": {
+      "login": "登录"
+    }
   }
 }

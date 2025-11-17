@@ -112,7 +112,7 @@ const DirectoryScope: FC<DirectoryScopeProps> = (props) => {
       )}
 
       <Button
-        className="w-full h-8 text-[#0087FF] border border-[#EEF0F3] hover:!border-[#0087FF] dark:border-gray-700 rounded-md transition"
+        className="w-full h-8 text-[#0087FF] border border-[#EEF0F3] hover:!border-[#0087FF] dark:border-gray-700 rounded-[6px] transition"
         onClick={handleAdd}
       >
         {t("settings.extensions.directoryScope.button.addDirectories")}

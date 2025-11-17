@@ -121,6 +121,12 @@ const ChatAI = memo(
       }, [activeChatProp]);
 
       useEffect(() => {
+        const { setHasActiveChat } = useChatStore.getState();
+
+        setHasActiveChat(Boolean(activeChat));
+      }, [activeChat]);
+
+      useEffect(() => {
         if (!isTauri) return;
 
         if (!currentService?.enabled) {
@@ -198,7 +204,7 @@ const ChatAI = memo(
         isMCPActive,
         changeInput,
         showChatHistory,
-        getChatHistoryChatPage,
+        getChatHistoryChatPage
       );
 
       const { dealMsg } = useMessageHandler(
@@ -382,7 +388,7 @@ const ChatAI = memo(
           <div
             data-tauri-drag-region
             data-chat-instance={instanceId}
-            className={`flex flex-col rounded-md h-full overflow-hidden relative`}
+            className={`flex flex-col rounded-[6px] h-full overflow-hidden relative`}
           >
             <ChatHeader
               clearChat={clearChat}

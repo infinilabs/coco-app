@@ -1,22 +1,27 @@
 pub(crate) mod api;
 pub(crate) mod built_in;
 pub(crate) mod third_party;
+pub(crate) mod view_extension;
 
 use crate::common::document::ExtensionOnOpened;
 use crate::common::document::ExtensionOnOpenedType;
 use crate::common::document::OnOpened;
 use crate::common::register::SearchSourceRegistry;
 use crate::util::platform::Platform;
+use crate::util::version::COCO_VERSION;
+use crate::util::version::parse_coco_semver;
 use anyhow::Context;
 use bitflags::bitflags;
 use borrowme::{Borrow, ToOwned};
 use derive_more::Display;
 use indexmap::IndexMap;
+use semver::Version as SemVer;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::Value as Json;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::ops::Deref;
 use std::path::Path;
 use tauri::{AppHandle, Manager};
 use third_party::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE;
@@ -24,6 +29,7 @@ use third_party::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE;
 pub const LOCAL_QUERY_SOURCE_TYPE: &str = "local";
 const PLUGIN_JSON_FILE_NAME: &str = "plugin.json";
 const ASSETS_DIRECTORY_FILE_NAME: &str = "assets";
+const PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION: &str = "minimum_coco_version";
 
 fn default_true() -> bool {
     true
@@ -118,6 +124,16 @@ pub struct Extension {
 
     /// Permission that this extension requires.
     permission: Option<ExtensionPermission>,
+
+    /// The version of Coco app that this extension requires.
+    ///
+    /// If not set, then this extension is compatible with all versions of Coco app.
+    ///
+    /// It is only for third-party extensions. Built-in extensions should always
+    /// set this field to `None`.
+    #[serde(deserialize_with = "deserialize_coco_semver")]
+    #[serde(default)] // None if this field is missing
+    minimum_coco_version: Option<SemVer>,
 
     /*
      * The following fields are currently useless to us but are needed by our
@@ -277,12 +293,19 @@ impl Extension {
             ExtensionType::Script => todo!("not supported yet"),
             ExtensionType::Setting => todo!("not supported yet"),
             ExtensionType::View => {
+                let name = self.name.clone();
+                let icon = self.icon.clone();
                 let page = self.page.as_ref().unwrap_or_else(|| {
                     panic!("View extension [{}]'s [page] field is not set, something wrong with your extension validity check", self.id);
                 }).clone();
                 let ui = self.ui.clone();
 
-                let extension_on_opened_type = ExtensionOnOpenedType::View { page, ui };
+                let extension_on_opened_type = ExtensionOnOpenedType::View {
+                    name,
+                    icon,
+                    page,
+                    ui,
+                };
                 let extension_on_opened = ExtensionOnOpened {
                     ty: extension_on_opened_type,
                     settings,
@@ -291,6 +314,9 @@ impl Extension {
                 let on_opened = OnOpened::Extension(extension_on_opened);
 
                 Some(on_opened)
+            }
+            ExtensionType::Unknown => {
+                unreachable!("Extensions of type [Unknown] should never be opened")
             }
         }
     }
@@ -364,6 +390,26 @@ impl Extension {
 
         ty != ExtensionType::Group && ty != ExtensionType::Extension
     }
+}
+
+/// Deserialize Coco SemVer from a string.
+///
+/// This function adapts `parse_coco_semver` to work with serde's `deserialize_with`
+/// attribute.
+fn deserialize_coco_semver<'de, D>(deserializer: D) -> Result<Option<SemVer>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let version_str: Option<String> = Option::deserialize(deserializer)?;
+    let Some(version_str) = version_str else {
+        return Ok(None);
+    };
+
+    let Some(semver) = parse_coco_semver(&version_str) else {
+        return Err(serde::de::Error::custom("version string format is invalid"));
+    };
+
+    Ok(Some(semver))
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
@@ -569,6 +615,10 @@ pub enum ExtensionType {
     AiExtension,
     #[display("View")]
     View,
+    /// Add this variant for better compatibility: Future versions of Coco may
+    /// add new extension types that older versions of Coco are not aware of.
+    #[display("Unknown")]
+    Unknown,
 }
 
 impl ExtensionType {
@@ -814,6 +864,22 @@ pub(crate) async fn init_extensions(tauri_app_handle: &AppHandle) -> Result<(), 
     }
 
     Ok(())
+}
+
+/// Is `extension` compatible with the current running Coco app?
+///
+/// It is defined as a tauri command rather than an associated function because
+/// it will be used in frontend code as well.
+///
+/// Async tauri commands are required to return `Result<T, E>`, this function
+/// only needs to return a boolean, so it is not marked async.
+#[tauri::command]
+pub(crate) fn is_extension_compatible(extension: Extension) -> bool {
+    let Some(ref minimum_coco_version) = extension.minimum_coco_version else {
+        return true;
+    };
+
+    COCO_VERSION.deref() >= minimum_coco_version
 }
 
 #[tauri::command]

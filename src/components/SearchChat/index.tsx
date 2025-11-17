@@ -34,6 +34,9 @@ import {
   visibleSearchBar,
 } from "@/utils";
 import { useTauriFocus } from "@/hooks/useTauriFocus";
+import { POPOVER_PANEL_SELECTOR } from "@/constants";
+import { useChatStore } from "@/stores/chatStore";
+import { debounce } from "lodash-es";
 
 interface SearchChatProps {
   isTauri?: boolean;
@@ -97,34 +100,45 @@ function SearchChat({
 
   const inputRef = useRef<string>();
   const isChatModeRef = useRef(false);
+  const [hideMiddleBorder, setHideMiddleBorder] = useState(false);
+
+  const setSuppressErrors = useAppStore((state) => state.setSuppressErrors);
 
   const setWindowSize = useCallback(() => {
     const width = 680;
     let height = 590;
 
     const updateAppDialog = document.querySelector("#update-app-dialog");
+    const popoverPanelEl = document.querySelector(POPOVER_PANEL_SELECTOR);
 
-    if (!updateAppDialog && !canNavigateBack() && !inputRef.current) {
+    const { hasActiveChat } = useChatStore.getState();
+
+    if (
+      updateAppDialog ||
+      canNavigateBack() ||
+      inputRef.current ||
+      popoverPanelEl ||
+      (isChatModeRef.current && hasActiveChat)
+    ) {
+      setHideMiddleBorder(false);
+      setSuppressErrors(false);
+    } else {
       const { windowMode } = useAppearanceStore.getState();
 
       if (windowMode === "compact") {
-        const searchBar = document.querySelector("#search-bar");
-        const filterBar = document.querySelector("#filter-bar");
-
-        if (searchBar && filterBar) {
-          height = searchBar.clientHeight + filterBar.clientHeight + 16;
-        } else {
-          height = 82;
-        }
-
-        height = Math.min(height, 88);
+        height = 84;
       }
+
+      setHideMiddleBorder(height < 590);
+      setSuppressErrors(height < 590);
     }
 
     platformAdapter.setWindowSize(width, height);
   }, []);
 
-  useMutationObserver(setWindowSize, document.body, {
+  const debouncedSetWindowSize = debounce(setWindowSize, 50);
+
+  useMutationObserver(debouncedSetWindowSize, document.body, {
     subtree: true,
     childList: true,
   });
@@ -133,11 +147,11 @@ function SearchChat({
     inputRef.current = input;
     isChatModeRef.current = isChatMode;
 
-    setWindowSize();
+    debouncedSetWindowSize();
   }, [input, isChatMode]);
 
   useTauriFocus({
-    onFocus: setWindowSize,
+    onFocus: debouncedSetWindowSize,
   });
 
   useEffect(() => {
@@ -199,6 +213,8 @@ function SearchChat({
 
       dispatch({ type: "SET_INPUT", payload: params?.message ?? "" });
       if (isChatMode) {
+        const { setHasActiveChat } = useChatStore.getState();
+        setHasActiveChat(true);
         chatAIRef.current?.init(params);
       }
     },
@@ -277,7 +293,7 @@ function SearchChat({
     return state.defaultStartupWindow;
   });
 
-  const opacity = useAppearanceStore((state) => state.opacity);
+  const { normalOpacity, blurOpacity } = useAppearanceStore();
 
   useEffect(() => {
     if (isTauri) {
@@ -295,11 +311,11 @@ function SearchChat({
     <div
       data-tauri-drag-region={isTauri}
       className={clsx(
-        "m-auto overflow-hidden relative bg-no-repeat bg-cover bg-center bg-white dark:bg-black flex flex-col",
+        "m-auto overflow-hidden relative bg-no-repeat bg-white dark:bg-black flex flex-col",
         [
           isTransitioned
-            ? "bg-chat_bg_light dark:bg-chat_bg_dark"
-            : "bg-search_bg_light dark:bg-search_bg_dark",
+            ? "bg-bottom bg-chat_bg_light dark:bg-chat_bg_dark"
+            : "bg-top bg-search_bg_light dark:bg-search_bg_dark",
         ],
         {
           "size-full": !isTauri,
@@ -309,7 +325,10 @@ function SearchChat({
           "border-t border-t-[#999] dark:border-t-[#333]": isTauri && isWin10,
         }
       )}
-      style={{ opacity: blurred ? (opacity ?? 30) / 100 : 1 }}
+      style={{
+        backgroundSize: "auto 590px",
+        opacity: blurred ? blurOpacity / 100 : normalOpacity / 100,
+      }}
     >
       <div
         data-tauri-drag-region={isTauri}
@@ -338,13 +357,21 @@ function SearchChat({
       <div
         data-tauri-drag-region={isTauri}
         className={clsx(
-          "p-2 w-full flex justify-center transition-all duration-500 border-[#E6E6E6] dark:border-[#272626]",
-          [isTransitioned ? "border-t" : "border-b"],
+          "relative p-2 w-full flex justify-center transition-all duration-500",
           {
-            "min-h-[82px]": visibleSearchBar() && visibleFilterBar(),
+            "min-h-[84px]": visibleSearchBar() && visibleFilterBar(),
           }
         )}
       >
+        {!hideMiddleBorder && (
+          <div
+            className={clsx(
+              "pointer-events-none absolute left-0 right-0 h-[1px] bg-[#E6E6E6] dark:bg-[#272626]",
+              isTransitioned ? "top-0" : "bottom-0"
+            )}
+          />
+        )}
+
         <InputBox
           isChatMode={isChatMode}
           inputValue={input}

@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import SearchPopover from "./SearchPopover";
 import MCPPopover from "./MCPPopover";
 import ChatSwitch from "@/components/Common/ChatSwitch";
-import Copyright from "@/components/Common/Copyright";
 import type { DataSource } from "@/types/commands";
 import platformAdapter from "@/utils/platformAdapter";
 import { useConnectStore } from "@/stores/connectStore";
@@ -17,6 +16,7 @@ import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { parseSearchQuery, SearchQuery } from "@/utils";
 import InputUpload from "./InputUpload";
+import Copyright from "../Common/Copyright";
 
 interface InputControlsProps {
   isChatMode: boolean;
@@ -165,7 +165,6 @@ const InputControls = ({
 
   return (
     <div
-      id="filter-bar"
       data-tauri-drag-region
       className="flex justify-between items-center pt-2"
     >
@@ -188,7 +187,7 @@ const InputControls = ({
           {source?.type === "deep_think" && source?.config?.visible && (
             <button
               className={clsx(
-                "flex items-center justify-center gap-1 h-[20px] px-1 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
+                "flex items-center justify-center gap-1 h-[20px] px-1 rounded-[6px] transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
                 {
                   "!bg-[rgba(0,114,255,0.3)]": isDeepThinkActive,
                 }
@@ -251,7 +250,7 @@ const InputControls = ({
             !visibleExtensionStore && (
               <div
                 className={clsx(
-                  "inline-flex items-center gap-1 px-2 py-1 rounded-full hover:!text-[#881c94] cursor-pointer transition",
+                  "inline-flex items-center gap-1 h-[20px] px-1 rounded-full hover:!text-[#881c94] cursor-pointer transition",
                   [
                     enabledAiOverview
                       ? "text-[#881c94]"
@@ -271,7 +270,7 @@ const InputControls = ({
                     setEnabledAiOverview(!enabledAiOverview);
                   }}
                 >
-                  <Sparkles className="size-4" />
+                  <Sparkles className="size-3" />
                 </VisibleKey>
 
                 <span

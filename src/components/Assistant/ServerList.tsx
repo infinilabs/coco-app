@@ -197,7 +197,7 @@ export function ServerList({ clearChat }: ServerListProps) {
             <div className="flex items-center gap-2">
               <button
                 onClick={openSettings}
-                className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
+                className="p-1 rounded-[6px] hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
               >
                 <VisibleKey shortcut=",">
                   <Settings className="h-4 w-4 text-[#0287FF]" />
@@ -205,7 +205,7 @@ export function ServerList({ clearChat }: ServerListProps) {
               </button>
               <button
                 onClick={handleRefresh}
-                className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
+                className="p-1 rounded-[6px] hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
                 disabled={isRefreshing}
               >
                 <VisibleKey shortcut="R" onKeyPress={handleRefresh}>

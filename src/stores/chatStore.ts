@@ -33,6 +33,8 @@ export type IChatStore = {
   setUploadAttachments: (value: UploadAttachments[]) => void;
   synthesizeItem?: SynthesizeItem;
   setSynthesizeItem: (synthesizeItem?: SynthesizeItem) => void;
+  hasActiveChat?: boolean;
+  setHasActiveChat: (hasActiveChat?: boolean) => void;
 };
 
 export const useChatStore = create<IChatStore>()(
@@ -53,8 +55,11 @@ export const useChatStore = create<IChatStore>()(
       setUploadAttachments: (uploadAttachments: UploadAttachments[]) => {
         return set(() => ({ uploadAttachments }));
       },
-      setSynthesizeItem(synthesizeItem?: SynthesizeItem) {
+      setSynthesizeItem: (synthesizeItem?: SynthesizeItem) => {
         return set(() => ({ synthesizeItem }));
+      },
+      setHasActiveChat(hasActiveChat) {
+        return set(() => ({ hasActiveChat }));
       },
     }),
     {

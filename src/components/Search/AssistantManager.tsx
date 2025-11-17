@@ -80,7 +80,7 @@ export function useAssistantManager({
   }, [askAI?.id, askAI?.querySource?.id, disabledExtensions]);
 
   const handleAskAi = useCallback(() => {
-    if (!isTauri || canNavigateBack()) return;
+    if (!isTauri) return;
 
     if (disabledExtensions.includes("QuickAIAccess")) return;
 
@@ -187,17 +187,11 @@ export function useAssistantManager({
       const onOpened = selectedSearchContent?.on_opened;
 
       if (onOpened?.Extension?.ty?.View) {
-        const { setViewExtensionOpened } = useSearchStore.getState();
-        const viewData = onOpened.Extension.ty.View;
-        const extensionPermission = onOpened.Extension.permission;
-
         clearSearchValue();
-        return setViewExtensionOpened([
-          viewData.page,
-          extensionPermission,
-          viewData.ui,
-          selectedSearchContent as any,
-        ]);
+        return platformAdapter.invokeBackend("open", {
+          onOpened: onOpened,
+          extraArgs: null,
+        });
       }
     }
 
@@ -210,7 +204,10 @@ export function useAssistantManager({
   });
 
   useKeyPress(`${modifierKey}.enter`, () => {
+    if (canNavigateBack()) return;
+
     assistant_get();
+
     return handleAskAi();
   });
 

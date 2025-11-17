@@ -8,8 +8,8 @@ import { DEFAULT_COCO_SERVER_ID, HISTORY_PANEL_ID } from "@/constants";
 import { useChatStore } from "@/stores/chatStore";
 import { getCurrentWindowService } from "@/commands/windowService";
 import { useSearchStore } from "@/stores/searchStore";
+import i18next from "i18next";
 
-// 1
 export async function copyToClipboard(text: string) {
   const addError = useAppStore.getState().addError;
   const language = useAppStore.getState().language;
@@ -144,7 +144,7 @@ export const parseSearchQuery = (searchQuery: SearchQuery) => {
 
   const result = Object.entries(rest)
     .filter(([_, value]) => !isTrulyEmpty(value))
-    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`);
+    .map(([key, value]) => `${key}=${value}`);
 
   if (isObject(filters)) {
     for (const [key, value] of Object.entries(filters)) {
@@ -299,7 +299,7 @@ export const visibleSearchBar = () => {
 
   if (isNil(viewExtensionOpened)) return true;
 
-  const [, , ui] = viewExtensionOpened;
+  const ui = viewExtensionOpened[4];
 
   return ui?.search_bar ?? true;
 };
@@ -312,7 +312,7 @@ export const visibleFilterBar = () => {
 
   if (isNil(viewExtensionOpened)) return true;
 
-  const [, , ui] = viewExtensionOpened;
+  const ui = viewExtensionOpened[4];
 
   return ui?.filter_bar ?? true;
 };
@@ -322,7 +322,27 @@ export const visibleFooterBar = () => {
 
   if (isNil(viewExtensionOpened)) return true;
 
-  const [, , ui] = viewExtensionOpened;
+  const ui = viewExtensionOpened[4];
 
   return ui?.footer ?? true;
+};
+
+export const installExtensionError = (error: string) => {
+  const { addError } = useAppStore.getState();
+
+  let message = "settings.extensions.hints.importFailed";
+
+  if (error === "already imported") {
+    message = "settings.extensions.hints.extensionAlreadyImported";
+  }
+
+  if (error === "platform_incompatible") {
+    message = "settings.extensions.hints.platformIncompatibleExtension";
+  }
+
+  if (error === "app_incompatible") {
+    message = "settings.extensions.hints.appIncompatibleExtension";
+  }
+
+  addError(i18next.t(message));
 };

@@ -22,8 +22,11 @@ feat(View Extension): page field now accepts HTTP(s) links #925
 feat: return sub-exts when extension type exts themselves are matched #928
 feat: open quick ai with modifier key + enter #939
 feat: allow navigate back when cursor is at the beginning #940
+feat(extension compatibility): minimum_coco_version #946
 feat: add compact mode for window #947
 feat: advanced settings search debounce & local query source weight #950
+feat: add window opacity configuration option #963
+
 
 ### 🐛 Bug fix
 
@@ -35,6 +38,9 @@ fix(Window Management): Next/Previous Desktop do not work #926
 fix: fix page rapidly flickering issue #935
 fix(view extension): broken search bar UI when opening extensions via hotkey #938
 fix: allow deletion after selecting all text #943
+fix: prevent shaking when switching between chat and search pages #955
+fix: prevent duplicate login success messages #977
+fix: fix quick ai not continuing conversation #979
 
 ### ✈️ Improvements
 
@@ -49,6 +55,8 @@ refactor: show_coco/hide_coco now use NSPanel's function on macOS #933
 refactor: procedure that convert_pages() into a func #934
 refactor(post-search): collect at least 2 documents from each query source #948
 refactor: custom_version_comparator() now compares semantic versions #941
+chore: center the main window vertically #959
+refactor(view extension): load HTML/resources via local HTTP server #973
 
 ## 0.8.0 (2025-09-28)
 

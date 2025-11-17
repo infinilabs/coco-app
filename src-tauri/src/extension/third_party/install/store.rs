@@ -1,6 +1,7 @@
 //! Extension store related stuff.
 
 use super::super::LOCAL_QUERY_SOURCE_TYPE;
+use super::check_compatibility_via_mcv;
 use super::is_extension_installed;
 use crate::common::document::DataSourceReference;
 use crate::common::document::Document;
@@ -17,7 +18,6 @@ use crate::extension::canonicalize_relative_page_path;
 use crate::extension::third_party::check::general_check;
 use crate::extension::third_party::get_third_party_extension_directory;
 use crate::extension::third_party::install::filter_out_incompatible_sub_extensions;
-use crate::extension::third_party::install::view_extension_convert_pages;
 use crate::server::http_client::HttpClient;
 use crate::util::platform::Platform;
 use async_trait::async_trait;
@@ -259,6 +259,10 @@ pub(crate) async fn install_extension_from_store(
     let mut extension: Json = serde_json::from_str(&plugin_json_content)
         .map_err(|e| format!("Failed to parse plugin.json: {}", e))?;
 
+    if !check_compatibility_via_mcv(&extension)? {
+        return Err("app_incompatible".into());
+    }
+
     let mut_ref_to_developer_object: &mut Json = extension
         .as_object_mut()
         .expect("plugin.json should be an object")
@@ -308,7 +312,7 @@ pub(crate) async fn install_extension_from_store(
     let current_platform = Platform::current();
     if let Some(ref platforms) = extension.platforms {
         if !platforms.contains(&current_platform) {
-            return Err("this extension is not compatible with your OS".into());
+            return Err("platform_incompatible".into());
         }
     }
 
@@ -395,14 +399,6 @@ pub(crate) async fn install_extension_from_store(
     tokio::fs::write(&plugin_json_path, extension_json)
         .await
         .map_err(|e| e.to_string())?;
-
-    /*
-     * Call convert_page() to update the page files.  This has to be done after
-     * writing the extension files because we will edit them.
-     *
-     * HTTP links will be skipped.
-     */
-    view_extension_convert_pages(&extension, &extension_directory).await?;
 
     // Canonicalize relative icon and page paths
     canonicalize_relative_icon_path(&extension_directory, &mut extension)?;

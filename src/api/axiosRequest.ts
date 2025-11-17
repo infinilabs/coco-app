@@ -61,8 +61,19 @@ export const handleApiError = (error: any) => {
     message = error.message;
   }
 
+  const url =
+    error?.config?.url ||
+    error?.response?.config?.url ||
+    error?.request?.config?.url;
+
+  const suppressProfileError =
+    typeof url === "string" && url.includes("/account/profile");
+
   console.error(error);
-  addError(message, "error");
+  if (!suppressProfileError) {
+    addError(message, "error");
+  }
+
   return error;
 };
 
@@ -112,15 +123,11 @@ export const Post = <T>(
     }
 
     axios
-      .post(
-        baseURL + url,
-        data,
-        {
-          params,
-          headers,
-          withCredentials: true,
-        } as any
-      )
+      .post(baseURL + url, data, {
+        params,
+        headers,
+        withCredentials: true,
+      } as any)
       .then((result) => {
         resolve([null, result.data as FcResponse<T>]);
       })

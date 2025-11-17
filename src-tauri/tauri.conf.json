@@ -65,20 +65,25 @@
         "height": 260,
         "minHeight": 260,
         "center": false,
+        "decorations": false,
         "transparent": true,
         "maximizable": false,
         "skipTaskbar": false,
         "dragDropEnabled": false,
         "hiddenTitle": true,
         "visible": false,
+        "shadow": false,
         "windowEffects": {
           "effects": ["sidebar"],
-          "state": "active"
+          "state": "active",
+          "radius": 7
         }
       }
     ],
     "security": {
-      "csp": null,
+      "csp": {
+        "default-src": "'self' asset: http: https: ipc: blob: data:"
+      },
       "dangerousDisableAssetCspModification": true,
       "assetProtocol": {
         "enable": true,

@@ -166,7 +166,11 @@
       },
       "appearance": {
         "title": "Appearance Settings",
-        "opacity": {
+        "normalOpacity": {
+          "title": "Active Window Opacity",
+          "description": "Adjust the opacity of the Coco AI window while in use. The range is from 10% to 100%, where 100% means fully opaque, and lower values increase transparency, allowing the underlying content to show through."
+        },
+        "blurOpacity": {
           "title": "Pinned Window Dimness Setting",
           "description": "Adjusts the opacity level of the Coco AI window when it’s pinned and not in focus. Set a value between 10% and 100%, where 100% means fully opaque (no dimming), and lower values increase transparency, allowing underlying content to show through."
         }
@@ -235,9 +239,11 @@
         "importSuccess": "Extension imported successfully.",
         "importFailed": "No valid extension found in the selected folder. Please check the folder structure.",
         "extensionAlreadyImported": "Extension already imported. Please remove it first.",
-        "incompatibleExtension": "This extension is incompatible with your OS.",
+        "platformIncompatibleExtension": "This extension is incompatible with your OS.",
+        "appIncompatibleExtension": "Installation failed! Incompatible with your Coco App version. Please update and retry.",
         "uninstall": "Uninstall",
-        "uninstallSuccess": "Uninstalled successfully"
+        "uninstallSuccess": "Uninstalled successfully",
+        "incompatible": "Extension cannot run on the current version. Please upgrade Coco App."
       },
       "application": {
         "title": "Applications",
@@ -501,7 +507,10 @@
       "serverPlaceholder": "For example: https://coco.infini.cloud/",
       "connecting": "Connecting...",
       "connect": "Connect",
-      "closeError": "Close error message"
+      "closeError": "Close error message",
+      "hints": {
+        "loginSuccess": "Login Successful"
+      }
     },
     "dataSource": {
       "title": "Data Source",
@@ -603,5 +612,17 @@
   },
   "deepLink": {
     "extensionInstallSuccessfully": "Extension installed successfully."
+  },
+  "webLogin": {
+    "title": "Account Information",
+    "hints": {
+      "tourist": "Tourist mode, login to unlock the full experience.",
+      "login": "Please log in to your account to start.",
+      "welcome": "Welcome to Coco AI.",
+      "pleaseLogin": "Please log in to your account to start."
+    },
+    "buttons": {
+      "login": "Login"
+    }
   }
 }

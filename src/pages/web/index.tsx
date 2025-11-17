@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { isPlainObject } from "lodash-es";
 
 import SearchChat from "@/components/SearchChat";
 import { useAppStore } from "@/stores/appStore";
@@ -10,6 +11,8 @@ import useEscape from "@/hooks/useEscape";
 import { useViewportHeight } from "@/hooks/useViewportHeight";
 import type { StartPage } from "@/types/chat";
 import ErrorNotification from "@/components/Common/ErrorNotification";
+import { Get } from "@/api/axiosRequest";
+import { useWebConfigStore } from "@/stores/webConfigStore";
 
 import "@/i18n";
 import "@/web.css";
@@ -32,6 +35,8 @@ interface WebAppProps {
   formatUrl?: (item: any) => string;
   isOpen?: boolean;
   language?: string;
+  settings?: any;
+  refreshSettings?: () => Promise<void>;
 }
 
 function WebApp({
@@ -45,7 +50,7 @@ function WebApp({
   hasModules = ["search", "chat"],
   defaultModule = "search",
   assistantIDs = [],
-  theme = "dark",
+  theme = "auto",
   searchPlaceholder = "",
   chatPlaceholder = "",
   showChatHistory = false,
@@ -53,9 +58,11 @@ function WebApp({
   setIsPinned,
   onCancel,
   formatUrl,
-  language = 'en',
+  language = "en",
+  settings,
+  refreshSettings,
 }: WebAppProps) {
-  const {setIsTauri, setEndpoint} = useAppStore();
+  const { setIsTauri, setEndpoint } = useAppStore();
   const setModeSwitch = useShortcutsStore((state) => state.setModeSwitch);
   const setInternetSearch = useShortcutsStore((state) => {
     return state.setInternetSearch;
@@ -66,11 +73,38 @@ function WebApp({
     i18n.changeLanguage(language);
   }, [language]);
 
+  const {
+    integration,
+    loginInfo,
+    setIntegration,
+    setLoginInfo,
+    setOnRefresh,
+    setDisabled,
+  } = useWebConfigStore();
+
+  const getUserProfile = async () => {
+    const [err, result] = await Get("/account/profile");
+
+    if (err || !isPlainObject(result)) {
+      setLoginInfo(void 0);
+      return;
+    }
+
+    setLoginInfo(result as any);
+  };
+
   useEffect(() => {
+    getUserProfile();
+
     setIsTauri(false);
     setEndpoint(serverUrl);
     setModeSwitch("S");
     setInternetSearch("E");
+    setIntegration(settings);
+    setOnRefresh(async () => {
+      await getUserProfile();
+      return refreshSettings?.();
+    });
 
     localStorage.setItem("headers", JSON.stringify(headers || {}));
   }, []);
@@ -82,6 +116,10 @@ function WebApp({
   useEscape();
   useModifierKeyPress();
   useViewportHeight();
+
+  useEffect(() => {
+    setDisabled(!loginInfo && !integration?.guest?.enabled);
+  }, [integration, loginInfo]);
 
   return (
     <div
@@ -126,7 +164,7 @@ function WebApp({
         startPage={startPage}
         formatUrl={formatUrl}
       />
-      <ErrorNotification isTauri={false}/>
+      <ErrorNotification isTauri={false} />
     </div>
   );
 }
