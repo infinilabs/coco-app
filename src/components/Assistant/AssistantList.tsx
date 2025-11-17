@@ -225,7 +225,7 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
               autoFocus
               value={keyword}
               placeholder={t("assistant.popover.search")}
-              className="w-full h-8 px-2 bg-transparent border rounded-md dark:border-white/10"
+              className="w-full h-8 px-2 bg-transparent border rounded-[6px] dark:border-white/10"
               onChange={(event) => {
                 setKeyword(event.target.value);
               }}

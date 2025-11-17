@@ -18,7 +18,6 @@ use crate::extension::canonicalize_relative_page_path;
 use crate::extension::third_party::check::general_check;
 use crate::extension::third_party::get_third_party_extension_directory;
 use crate::extension::third_party::install::filter_out_incompatible_sub_extensions;
-use crate::extension::third_party::install::view_extension_convert_pages;
 use crate::server::http_client::HttpClient;
 use crate::util::platform::Platform;
 use async_trait::async_trait;
@@ -400,14 +399,6 @@ pub(crate) async fn install_extension_from_store(
     tokio::fs::write(&plugin_json_path, extension_json)
         .await
         .map_err(|e| e.to_string())?;
-
-    /*
-     * Call convert_page() to update the page files.  This has to be done after
-     * writing the extension files because we will edit them.
-     *
-     * HTTP links will be skipped.
-     */
-    view_extension_convert_pages(&extension, &extension_directory).await?;
 
     // Canonicalize relative icon and page paths
     canonicalize_relative_icon_path(&extension_directory, &mut extension)?;

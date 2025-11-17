@@ -2,6 +2,7 @@ import { FC, memo, useCallback, useEffect, useState } from "react";
 import { Copy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { v4 as uuidv4 } from "uuid";
+import { useDebounceFn } from "ahooks";
 
 import { UserProfile } from "./UserProfile";
 import { OpenURLWithBrowser } from "@/utils";
@@ -20,7 +21,6 @@ const ServiceAuth = memo(
   ({ setRefreshLoading, refreshClick }: ServiceAuthProps) => {
     const { t } = useTranslation();
 
-    const language = useAppStore((state) => state.language);
     const addError = useAppStore((state) => state.addError);
     const ssoRequestID = useAppStore((state) => state.ssoRequestID);
     const setSSORequestID = useAppStore((state) => state.setSSORequestID);
@@ -61,19 +61,21 @@ const ServiceAuth = memo(
       [logoutServer]
     );
 
+    const { run: debouncedAuthSuccess } = useDebounceFn((event) => {
+      const { serverId } = event.payload;
+      if (serverId) {
+        refreshClick(serverId, () => {
+          setLoading(false);
+        });
+        addError(t("cloud.connect.hints.loginSuccess"), "info");
+      }
+    });
+
     // handle oauth success event
     useEffect(() => {
       const unlistenOAuth = platformAdapter.listenEvent(
         "oauth_success",
-        (event) => {
-          const { serverId } = event.payload;
-          if (serverId) {
-            refreshClick(serverId, () => {
-              setLoading(false);
-            });
-            addError(language === "zh" ? "登录成功" : "Login Success", "info");
-          }
-        }
+        debouncedAuthSuccess
       );
 
       return () => {
@@ -163,7 +165,7 @@ const LoginButton: FC<LoginButtonProps> = memo((props) => {
 
   return (
     <button
-      className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors mb-3"
+      className="px-6 py-2 bg-blue-500 text-white rounded-[6px] hover:bg-blue-600 transition-colors mb-3"
       onClick={LoginClick}
       aria-label={t("cloud.login")}
     >
@@ -184,7 +186,7 @@ const LoadingState: FC<LoadingStateProps> = memo((props) => {
   return (
     <div className="flex items-center space-x-2 mb-3">
       <button
-        className="px-6 py-2 text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors"
+        className="px-6 py-2 text-white bg-red-500 rounded-[6px] hover:bg-red-600 transition-colors"
         onClick={onCancel}
       >
         {t("cloud.cancel")}

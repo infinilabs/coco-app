@@ -115,7 +115,7 @@ const FileSearch = () => {
         {t("settings.extensions.fileSearch.label.searchFileTypes")}
       </div>
 
-      <div className="flex flex-wrap gap-2 p-2 border rounded-md dark:border-gray-700">
+      <div className="flex flex-wrap gap-2 p-2 border rounded-[6px] dark:border-gray-700">
         {config.file_types.map((item) => {
           return (
             <div

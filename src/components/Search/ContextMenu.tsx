@@ -334,7 +334,7 @@ const ContextMenu = ({ formatUrl }: ContextMenuProps) => {
                         <kbd
                           key={key}
                           className={clsx(
-                            "flex justify-center items-center font-sans h-[20px] min-w-[20px] text-[10px] rounded-md border border-[#EDEDED] dark:border-white/10 bg-white dark:bg-[#202126]",
+                            "flex justify-center items-center font-sans h-[20px] min-w-[20px] text-[10px] rounded-[6px] border border-[#EDEDED] dark:border-white/10 bg-white dark:bg-[#202126]",
                             {
                               "px-1": key.length > 1,
                             }

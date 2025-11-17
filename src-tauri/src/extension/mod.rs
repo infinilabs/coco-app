@@ -1,6 +1,7 @@
 pub(crate) mod api;
 pub(crate) mod built_in;
 pub(crate) mod third_party;
+pub(crate) mod view_extension;
 
 use crate::common::document::ExtensionOnOpened;
 use crate::common::document::ExtensionOnOpenedType;
@@ -292,12 +293,19 @@ impl Extension {
             ExtensionType::Script => todo!("not supported yet"),
             ExtensionType::Setting => todo!("not supported yet"),
             ExtensionType::View => {
+                let name = self.name.clone();
+                let icon = self.icon.clone();
                 let page = self.page.as_ref().unwrap_or_else(|| {
                     panic!("View extension [{}]'s [page] field is not set, something wrong with your extension validity check", self.id);
                 }).clone();
                 let ui = self.ui.clone();
 
-                let extension_on_opened_type = ExtensionOnOpenedType::View { page, ui };
+                let extension_on_opened_type = ExtensionOnOpenedType::View {
+                    name,
+                    icon,
+                    page,
+                    ui,
+                };
                 let extension_on_opened = ExtensionOnOpened {
                     ty: extension_on_opened_type,
                     settings,

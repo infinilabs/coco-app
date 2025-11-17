@@ -47,7 +47,7 @@ const SettingsSelectPro: FC<SettingsSelectProProps> = (props) => {
   return (
     <div ref={containerRef} className="relative">
       <div
-        className="flex items-center h-8 px-3 truncate rounded-md border dark:bg-[#1F2937] bg-white dark:border-[#374151]"
+        className="flex items-center h-8 px-3 truncate rounded-[6px] border dark:bg-[#1F2937] bg-white dark:border-[#374151]"
         onClick={toggle}
       >
         {option?.[labelField] ?? (
@@ -57,7 +57,7 @@ const SettingsSelectPro: FC<SettingsSelectProProps> = (props) => {
 
       <div
         className={clsx(
-          "absolute z-100 top-10 left-0 right-0 rounded-md py-2 border dark:border-[#374151] bg-white dark:bg-[#1F2937] shadow-[0_5px_15px_rgba(0,0,0,0.2)] dark:shadow-[0_5px_10px_rgba(0,0,0,0.3)]",
+          "absolute z-100 top-10 left-0 right-0 rounded-[6px] py-2 border dark:border-[#374151] bg-white dark:bg-[#1F2937] shadow-[0_5px_15px_rgba(0,0,0,0.2)] dark:shadow-[0_5px_10px_rgba(0,0,0,0.3)]",
           {
             hidden: !open,
           }
@@ -83,7 +83,7 @@ const SettingsSelectPro: FC<SettingsSelectProProps> = (props) => {
                 <div
                   key={item?.[valueField] ?? index}
                   className={clsx(
-                    "h-8 leading-8 px-2 rounded-md hover:bg-[#EDEDED] hover:dark:bg-[#374151] transition cursor-pointer",
+                    "h-8 leading-8 px-2 rounded-[6px] hover:bg-[#EDEDED] hover:dark:bg-[#374151] transition cursor-pointer",
                     {
                       "bg-[#EDEDED] dark:bg-[#374151]":
                         value === item?.[valueField],

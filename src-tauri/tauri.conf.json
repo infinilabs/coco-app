@@ -101,7 +101,9 @@
       }
     ],
     "security": {
-      "csp": null,
+      "csp": {
+        "default-src": "'self' asset: http: https: ipc: blob: data:"
+      },
       "dangerousDisableAssetCspModification": true,
       "assetProtocol": {
         "enable": true,
