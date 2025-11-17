@@ -208,6 +208,10 @@
             "medium": "Medium",
             "low": "Low"
           }
+        },
+        "compactModeAutoCollapseDelay": {
+          "title": "Compact Mode Auto-Collapse Delay",
+          "description": "Adds a delay before collapsing in Compact Mode to avoid sudden size changes when typing or clearing input."
         }
       }
     },

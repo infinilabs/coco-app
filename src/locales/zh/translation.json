@@ -208,6 +208,10 @@
             "medium": "中",
             "low": "低"
           }
+        },
+        "compactModeAutoCollapseDelay": {
+          "title": "紧凑模式自动收起延迟",
+          "description": "为紧凑模式的自动收起添加延迟，避免输入或清空内容时窗口突然缩小。默认: 10s。"
         }
       }
     },

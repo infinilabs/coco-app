@@ -40,6 +40,10 @@ export type IConnectStore = {
   setAllowSelfSignature: (allowSelfSignature: boolean) => void;
   searchDelay: number;
   setSearchDelay: (searchDelay: number) => void;
+  compactModeAutoCollapseDelay: number;
+  setCompactModeAutoCollapseDelay: (
+    compactModeAutoCollapseDelay: number
+  ) => void;
 };
 
 export const useConnectStore = create<IConnectStore>()(
@@ -148,6 +152,10 @@ export const useConnectStore = create<IConnectStore>()(
         searchDelay: 300,
         setSearchDelay(searchDelay) {
           return set(() => ({ searchDelay }));
+        },
+        compactModeAutoCollapseDelay: 10,
+        setCompactModeAutoCollapseDelay(compactModeAutoCollapseDelay) {
+          return set(() => ({ compactModeAutoCollapseDelay }));
         },
       }),
       {
