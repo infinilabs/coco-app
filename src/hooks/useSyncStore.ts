@@ -118,6 +118,7 @@ export const useSyncStore = () => {
   const setEndpoint = useAppStore((state) => state.setEndpoint);
   const setLanguage = useAppStore((state) => state.setLanguage);
   const { setWindowMode } = useAppearanceStore();
+  const { setSearchDelay } = useConnectStore();
 
   const setServerListSilently = useConnectStore(
     (state) => state.setServerListSilently
@@ -185,14 +186,19 @@ export const useSyncStore = () => {
       }),
 
       platformAdapter.listenEvent("change-connect-store", ({ payload }) => {
-        const { connectionTimeout, querySourceTimeout, allowSelfSignature } =
-          payload;
+        const {
+          connectionTimeout,
+          querySourceTimeout,
+          searchDelay,
+          allowSelfSignature,
+        } = payload;
         if (isNumber(connectionTimeout)) {
           setConnectionTimeout(connectionTimeout);
         }
         if (isNumber(querySourceTimeout)) {
           setQueryTimeout(querySourceTimeout);
         }
+        setSearchDelay(searchDelay);
         setAllowSelfSignature(allowSelfSignature);
       }),
 

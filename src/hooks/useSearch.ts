@@ -51,7 +51,7 @@ export function useSearch() {
     return state.aiOverviewMinQuantity;
   });
 
-  const { querySourceTimeout } = useConnectStore();
+  const { querySourceTimeout, searchDelay } = useConnectStore();
 
   const [searchState, setSearchState] = useState<SearchState>({
     isError: [],
@@ -159,6 +159,8 @@ export function useSearch() {
 
   const performSearch = useCallback(
     async (searchInput: string) => {
+      console.log(123);
+
       if (!searchInput) {
         setSearchState((prev) => ({ ...prev, suggests: [] }));
         return;
@@ -219,10 +221,11 @@ export function useSearch() {
     ]
   );
 
-  const debouncedSearch = useMemo(
-    () => debounce(performSearch, 300),
-    [performSearch]
-  );
+  const debouncedSearch = useMemo(() => {
+    console.log("searchDelay", searchDelay);
+
+    return debounce(performSearch, searchDelay);
+  }, [performSearch, searchDelay]);
 
   return {
     ...searchState,

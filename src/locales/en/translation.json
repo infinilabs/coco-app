@@ -164,21 +164,6 @@
           "description": "Shortcut button to enable AI Overview in chat mode."
         }
       },
-      "connect": {
-        "title": "Connection Settings",
-        "connectionTimeout": {
-          "title": "Connection Timeout",
-          "description": "Retries the connection if no response is received within this time. Default: 120s."
-        },
-        "queryTimeout": {
-          "title": "Query Timeout",
-          "description": "Terminates the query if no search results are returned within this time. Default: 500ms."
-        },
-        "allowSelfSignature": {
-          "title": "Allow Self-Signed Certificates",
-          "description": "Allow connections to servers using self-signed certificates. Enable only if you trust the source."
-        }
-      },
       "appearance": {
         "title": "Appearance Settings",
         "normalOpacity": {
@@ -195,6 +180,34 @@
         "snapshotUpdate": {
           "title": "Snapshot Updates",
           "description": "Get early access to new features. May be unstable."
+        }
+      },
+      "other": {
+        "title": "Other Settings",
+        "connectionTimeout": {
+          "title": "Connection Timeout",
+          "description": "Retries the connection if no response is received within this time. Default: 120s."
+        },
+        "queryTimeout": {
+          "title": "Query Timeout",
+          "description": "Terminates the query if no search results are returned within this time. Default: 500ms."
+        },
+        "searchDelay": {
+          "title": "Search Delay",
+          "description": "Delay before search is triggered after user stops typing. Default: 300 ms."
+        },
+        "allowSelfSignature": {
+          "title": "Allow Self-Signed Certificates",
+          "description": "Allow connections to servers using self-signed certificates. Enable only if you trust the source."
+        },
+        "localSearchResultWeight": {
+          "title": "Local Search Result Weight",
+          "description": "Adjusts how local results (files, extensions, commands, etc.) are ranked. Higher values place them closer to the top.",
+          "options": {
+            "high": "High",
+            "medium": "Medium",
+            "low": "Low"
+          }
         }
       }
     },
