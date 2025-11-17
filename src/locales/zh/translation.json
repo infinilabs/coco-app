@@ -198,7 +198,12 @@
         },
         "localSearchResultWeight": {
           "title": "本地搜索结果展示权重",
-          "description": "调整本地结果（文件、扩展名、命令等）的排名。值越高，它们越接近顶部。"
+          "description": "调整本地结果（文件、扩展名、命令等）的排名。值越高，它们越接近顶部。",
+          "options": {
+            "high": "高",
+            "medium": "中",
+            "low": "低"
+          }
         }
       }
     },

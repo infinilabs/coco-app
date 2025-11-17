@@ -198,7 +198,12 @@
         },
         "localSearchResultWeight": {
           "title": "Local Search Result Weight",
-          "description": "Adjusts how local results (files, extensions, commands, etc.) are ranked. Higher values place them closer to the top."
+          "description": "Adjusts how local results (files, extensions, commands, etc.) are ranked. Higher values place them closer to the top.",
+          "options": {
+            "high": "High",
+            "medium": "Medium",
+            "low": "Low"
+          }
         }
       }
     },

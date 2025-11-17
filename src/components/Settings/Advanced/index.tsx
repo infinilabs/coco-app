@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   AppWindowMac,
+  ArrowUpWideNarrow,
   MessageSquareMore,
   Search,
   ShieldCheck,
@@ -261,7 +262,7 @@ const Advanced = () => {
         </SettingsItem>
 
         <SettingsItem
-          icon={ShieldCheck}
+          icon={ArrowUpWideNarrow}
           title={t("settings.advanced.other.localSearchResultWeight.title")}
           description={t(
             "settings.advanced.other.localSearchResultWeight.description"
@@ -280,9 +281,19 @@ const Advanced = () => {
             }}
             className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="0.5">低</option>
-            <option value="1">中等</option>
-            <option value="2">高</option>
+            <option value="0.5">
+              {t("settings.advanced.other.localSearchResultWeight.options.low")}
+            </option>
+            <option value="1">
+              {t(
+                "settings.advanced.other.localSearchResultWeight.options.medium"
+              )}
+            </option>
+            <option value="2">
+              {t(
+                "settings.advanced.other.localSearchResultWeight.options.high"
+              )}
+            </option>
           </select>
         </SettingsItem>
       </div>
