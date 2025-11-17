@@ -118,7 +118,7 @@ export const useSyncStore = () => {
   const setEndpoint = useAppStore((state) => state.setEndpoint);
   const setLanguage = useAppStore((state) => state.setLanguage);
   const { setWindowMode } = useAppearanceStore();
-  const { setSearchDelay } = useConnectStore();
+  const { setSearchDelay, setCompactModeAutoCollapseDelay } = useConnectStore();
 
   const setServerListSilently = useConnectStore(
     (state) => state.setServerListSilently
@@ -191,6 +191,7 @@ export const useSyncStore = () => {
           querySourceTimeout,
           searchDelay,
           allowSelfSignature,
+          compactModeAutoCollapseDelay,
         } = payload;
         if (isNumber(connectionTimeout)) {
           setConnectionTimeout(connectionTimeout);
@@ -200,6 +201,7 @@ export const useSyncStore = () => {
         }
         setSearchDelay(searchDelay);
         setAllowSelfSignature(allowSelfSignature);
+        setCompactModeAutoCollapseDelay(compactModeAutoCollapseDelay);
       }),
 
       platformAdapter.listenEvent("change-appearance-store", ({ payload }) => {

@@ -4,6 +4,7 @@ import {
   AppWindowMac,
   ArrowUpWideNarrow,
   MessageSquareMore,
+  PanelTopClose,
   Search,
   ShieldCheck,
   Unplug,
@@ -59,7 +60,12 @@ const Advanced = () => {
   const setAllowSelfSignature = useConnectStore((state) => {
     return state.setAllowSelfSignature;
   });
-  const { searchDelay, setSearchDelay } = useConnectStore();
+  const {
+    searchDelay,
+    setSearchDelay,
+    compactModeAutoCollapseDelay,
+    setCompactModeAutoCollapseDelay,
+  } = useConnectStore();
 
   const [localSearchResultWeight, setLocalSearchResultWeight] = useState(1);
 
@@ -295,6 +301,25 @@ const Advanced = () => {
               )}
             </option>
           </select>
+        </SettingsItem>
+
+        <SettingsItem
+          icon={PanelTopClose}
+          title={t(
+            "settings.advanced.other.compactModeAutoCollapseDelay.title"
+          )}
+          description={t(
+            "settings.advanced.other.compactModeAutoCollapseDelay.description"
+          )}
+        >
+          <SettingsInput
+            type="number"
+            min={0}
+            value={compactModeAutoCollapseDelay}
+            onChange={(value) => {
+              setCompactModeAutoCollapseDelay(!value ? 0 : Number(value));
+            }}
+          />
         </SettingsItem>
       </div>
     </div>

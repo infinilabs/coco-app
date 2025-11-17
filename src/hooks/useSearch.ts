@@ -159,8 +159,6 @@ export function useSearch() {
 
   const performSearch = useCallback(
     async (searchInput: string) => {
-      console.log(123);
-
       if (!searchInput) {
         setSearchState((prev) => ({ ...prev, suggests: [] }));
         return;

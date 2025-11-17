@@ -103,8 +103,13 @@ function SearchChat({
   const [hideMiddleBorder, setHideMiddleBorder] = useState(false);
 
   const setSuppressErrors = useAppStore((state) => state.setSuppressErrors);
+  let collapseWindowTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const setWindowSize = useCallback(() => {
+    if (collapseWindowTimer.current) {
+      clearTimeout(collapseWindowTimer.current);
+    }
+
     const width = 680;
     let height = 590;
 
@@ -128,12 +133,22 @@ function SearchChat({
       if (windowMode === "compact") {
         height = 84;
       }
-
-      setHideMiddleBorder(height < 590);
-      setSuppressErrors(height < 590);
     }
 
-    platformAdapter.setWindowSize(width, height);
+    if (height < 590) {
+      const { compactModeAutoCollapseDelay } = useConnectStore.getState();
+
+      console.log("compactModeAutoCollapseDelay", compactModeAutoCollapseDelay);
+
+      collapseWindowTimer.current = setTimeout(() => {
+        setHideMiddleBorder(true);
+        setSuppressErrors(true);
+
+        platformAdapter.setWindowSize(width, height);
+      }, compactModeAutoCollapseDelay * 1000);
+    } else {
+      platformAdapter.setWindowSize(width, height);
+    }
   }, []);
 
   const debouncedSetWindowSize = debounce(setWindowSize, 50);
