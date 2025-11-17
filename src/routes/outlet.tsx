@@ -17,8 +17,7 @@ import { Extension } from "@/components/Settings/Extensions";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useServers } from "@/hooks/useServers";
 import { useDeepLinkManager } from "@/hooks/useDeepLinkManager";
-import { useSelectionPanel } from "@/hooks/useSelectionPanel";
-import { useSelectionStore } from "@/stores/selectionStore";
+import { useSelectionWindow } from "../hooks/useSelectionWindow";
 
 export default function LayoutOutlet() {
   const location = useLocation();
@@ -122,117 +121,7 @@ export default function LayoutOutlet() {
   });
 
   // --- Selection window ---
-  const { state, close } = useSelectionPanel();
-
-  useEffect(() => {
-    const openSelectionWindow = async (payload: any) => {
-      // 全局开关：关闭时不创建、不显示选择窗口
-      if (!useSelectionStore.getState().selectionEnabled) {
-        const existing = await platformAdapter.getWindowByLabel("selection");
-        if (existing) {
-          await existing.hide();
-        }
-        return;
-      }
-
-      const label = "selection";
-      const width = 550;
-      const height = 75;
-
-      const options: any = {
-        label,
-        title: "Selection",
-        width,
-        height,
-        alwaysOnTop: true,
-        shadow: true,
-        decorations: false,
-        transparent: false,
-        closable: true,
-        minimizable: false,
-        maximizable: false,
-        dragDropEnabled: false,
-        resizable: false,
-        center: false,
-        url: "/ui/selection",
-        data: { timestamp: Date.now() },
-      };
-
-      const raw = typeof payload === "string" ? payload : String(payload?.text ?? "");
-      const text = raw.trim();
-      // 后端坐标通常为物理像素，统一在前端转换为逻辑坐标（mac 标准为 point / Logical）
-      const dpr = window.devicePixelRatio || 1;
-      const pxPhysical = Number(payload?.x ?? 0);
-      const pyPhysical = Number(payload?.y ?? 0);
-      const pxLogicalFromBackend = Math.round(pxPhysical / dpr);
-      const pyLogicalFromBackend = Math.round(pyPhysical / dpr);
-
-      const existingWindow = await platformAdapter.getWindowByLabel(label);
-
-      // 空内容时立即隐藏，不创建/显示窗口
-      if (!text) {
-        if (existingWindow) {
-          await existingWindow.hide();
-        }
-        await platformAdapter.emitEvent("selection-text", "");
-        return;
-      }
-
-      if (!existingWindow) {
-        await platformAdapter.createWindow(label, options);
-      }
-      const win = await platformAdapter.getWindowByLabel(label);
-      if (!win) return;
-
-      // 强制设置尺寸（即便窗口已存在）
-      // @ts-ignore
-      await win.setSize({ type: "Logical", width, height });
-
-      await win.show();
-      // 避免抢焦点
-      // await win.setFocus();
-
-      // 按鼠标位置放置窗口（使用 Logical 坐标）
-      if (pxLogicalFromBackend > 0 || pyLogicalFromBackend > 0) {
-        const offsetX = 12;
-        const offsetY = 20;
-        const targetX = Math.max(0, pxLogicalFromBackend + offsetX);
-        const targetY = Math.max(0, pyLogicalFromBackend - height - offsetY);
-        // @ts-ignore
-        await win.setPosition({ type: "Logical", x: targetX, y: targetY });
-      } else {
-        await win.center();
-      }
-
-      await platformAdapter.emitEvent("selection-text", text);
-    };
-
-    if (state.visible && state.text) {
-      // 用 DOM 选区 + 屏幕位置计算全局物理坐标，避免无坐标时居中
-      const rect = state.rect;
-      const screenX = window.screenX || 0; // CSS 像素（逻辑坐标）
-      const screenY = window.screenY || 0; // CSS 像素（逻辑坐标）
-      // 直接使用逻辑坐标（point）作为统一标准
-      const xLogical = rect ? Math.round(screenX + rect.left) : 0;
-      const yLogical = rect ? Math.round(screenY + rect.top) : 0;
-
-      openSelectionWindow({ text: state.text, x: xLogical, y: yLogical });
-      close();
-    }
-
-    // 改为监听 selection-detected（来自后端）
-    const unlistenSelection = platformAdapter.listenEvent(
-      "selection-detected",
-      async (event: any) => {
-        const payload = event?.payload;
-        await openSelectionWindow(payload);
-      }
-    );
-
-    return () => {
-      unlistenSelection.then((fn) => fn());
-    };
-  }, [state.visible, state.text, close]);
+  useSelectionWindow();
 
   return (
     <>

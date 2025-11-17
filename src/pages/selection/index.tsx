@@ -104,38 +104,6 @@ export default function SelectionWindow() {
       }
     );
 
-    const unlistenDetected = platformAdapter.listenEvent(
-      "selection-detected",
-      async ({ payload }: any) => {
-        const x = Number(payload?.x ?? NaN);
-        const y = Number(payload?.y ?? NaN);
-        if (!Number.isFinite(x) || !Number.isFinite(y)) return;
-
-        const win = await platformAdapter.getCurrentWebviewWindow();
-        const dpr = window.devicePixelRatio || 1;
-        // 轻微偏移，让弹框出现在选区上方靠右一点
-        const offsetX = 12;
-        const offsetY = 20;
-        // 将后端坐标统一转换为逻辑坐标（point）
-        const xLogical = Math.round(x / dpr);
-        const yLogical = Math.round(y / dpr);
-        // 获取窗口实际高度（物理像素），转换为逻辑高度用于定位
-        let heightLogical = 100; // 兜底估算
-        try {
-          const size = await win?.outerSize();
-          const h = Number(size?.height ?? 0);
-          if (Number.isFinite(h) && h > 0) {
-            heightLogical = Math.max(50, Math.round(h / dpr));
-          }
-        } catch {}
-
-        const targetX = Math.max(0, xLogical + offsetX);
-        const targetY = Math.max(0, yLogical - heightLogical - offsetY);
-        // @ts-ignore
-        await win?.setPosition({ type: "Logical", x: targetX, y: targetY });
-      }
-    );
-
     return () => {
       unlistenPromise
         .then((fn) => {
@@ -148,8 +116,6 @@ export default function SelectionWindow() {
         clearTimeout(timerRef.current);
         timerRef.current = null;
       }
-      //
-      unlistenDetected.then((fn) => { try { fn(); } catch {} });
     };
   }, [autoHideMs]);
 
@@ -173,7 +139,7 @@ export default function SelectionWindow() {
 
   const copy = async () => {
     try {
-      await copyToClipboard(text.trim());
+      await copyToClipboard(text.trim(), true);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch (e) {
@@ -382,19 +348,20 @@ export default function SelectionWindow() {
           title="复制"
         >
           <Copy className="size-4 text-[#64748B] transition-transform duration-150 group-hover:scale-105 group-hover:opacity-90" />
-          <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">
-            复制
-          </span>
+          {copied ? (
+            <span
+              className="text-[12px] text-[#10B981]"
+              role="status"
+              aria-live="polite"
+            >
+              已复制
+            </span>
+          ) : (
+            <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">
+              复制
+            </span>
+          )}
         </button>
-        {copied && (
-          <span
-            className="text-[12px] text-[#10B981]"
-            role="status"
-            aria-live="polite"
-          >
-            已复制
-          </span>
-        )}
 
         <button
           className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"

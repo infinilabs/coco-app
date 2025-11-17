@@ -203,7 +203,9 @@ pub fn run() {
             setup::backend_setup,
             util::app_lang::update_app_lang,
             util::path::path_absolute,
-            util::logging::app_log_dir
+            util::logging::app_log_dir,
+            selection_monitor::set_selection_enabled,
+            selection_monitor::get_selection_enabled,
         ])
         .setup(|app| {
             #[cfg(target_os = "macos")]

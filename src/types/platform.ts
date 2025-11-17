@@ -58,6 +58,7 @@ export interface EventPayloads {
     text: string;
   };
   "selection-detected": string;
+  "selection-enabled": boolean;
 }
 
 // Window operation interface

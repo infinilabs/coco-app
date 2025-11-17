@@ -310,7 +310,6 @@ export default function GeneralSettings() {
             })}
           </div>
 
-          {/* 在这里增加一个 AI 划词工具栏 启用关闭的开关，默认开启 */}
           <SettingsItem
             icon={Sparkles}
             title={t("settings.ai.title")}

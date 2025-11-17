@@ -23,6 +23,11 @@
       "default": "默认",
       "compact": "紧凑"
     },
+    "ai": {
+      "title": "划词工具栏",
+      "description": "选择文本后显示独立可操作窗口",
+      "toggle": "启用划词工具栏"
+    },
     "language": {
       "title": "语言",
       "description": "选择您的首选语言",
@@ -517,6 +522,8 @@
   },
   "tray": {
     "showCoco": "显示 Coco",
+    "selectionDisable": "禁用划词工具栏",
+    "selectionEnable": "启用划词工具栏",
     "settings": "偏好设置",
     "quitCoco": "退出 Coco",
     "checkUpdate": "检查更新"
