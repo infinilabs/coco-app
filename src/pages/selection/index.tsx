@@ -105,21 +105,35 @@ export default function SelectionWindow() {
     );
 
     const unlistenDetected = platformAdapter.listenEvent(
-        "selection-detected",
-        async ({ payload }: any) => {
-            const x = Number(payload?.x ?? NaN);
-            const y = Number(payload?.y ?? NaN);
-            if (!Number.isFinite(x) || !Number.isFinite(y)) return;
-    
-            const win = await platformAdapter.getCurrentWebviewWindow();
-            // 轻微偏移，让弹框出现在选区上方靠右一点
-            const offsetX = 12;
-            const offsetY = 20;
-            const targetX = Math.max(0, x + offsetX);
-            const targetY = Math.max(0, y - 100 - offsetY); // 估算高度，避免遮挡
-            // @ts-ignore
-            await win?.setPosition({ type: "Physical", x: targetX, y: targetY });
-        }
+      "selection-detected",
+      async ({ payload }: any) => {
+        const x = Number(payload?.x ?? NaN);
+        const y = Number(payload?.y ?? NaN);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+
+        const win = await platformAdapter.getCurrentWebviewWindow();
+        const dpr = window.devicePixelRatio || 1;
+        // 轻微偏移，让弹框出现在选区上方靠右一点
+        const offsetX = 12;
+        const offsetY = 20;
+        // 将后端坐标统一转换为逻辑坐标（point）
+        const xLogical = Math.round(x / dpr);
+        const yLogical = Math.round(y / dpr);
+        // 获取窗口实际高度（物理像素），转换为逻辑高度用于定位
+        let heightLogical = 100; // 兜底估算
+        try {
+          const size = await win?.outerSize();
+          const h = Number(size?.height ?? 0);
+          if (Number.isFinite(h) && h > 0) {
+            heightLogical = Math.max(50, Math.round(h / dpr));
+          }
+        } catch {}
+
+        const targetX = Math.max(0, xLogical + offsetX);
+        const targetY = Math.max(0, yLogical - heightLogical - offsetY);
+        // @ts-ignore
+        await win?.setPosition({ type: "Logical", x: targetX, y: targetY });
+      }
     );
 
     return () => {

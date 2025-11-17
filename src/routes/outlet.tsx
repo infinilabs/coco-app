@@ -160,8 +160,12 @@ export default function LayoutOutlet() {
 
       const raw = typeof payload === "string" ? payload : String(payload?.text ?? "");
       const text = raw.trim();
-      const px = Number(payload?.x ?? 0);
-      const py = Number(payload?.y ?? 0);
+      // 后端坐标通常为物理像素，统一在前端转换为逻辑坐标（mac 标准为 point / Logical）
+      const dpr = window.devicePixelRatio || 1;
+      const pxPhysical = Number(payload?.x ?? 0);
+      const pyPhysical = Number(payload?.y ?? 0);
+      const pxLogicalFromBackend = Math.round(pxPhysical / dpr);
+      const pyLogicalFromBackend = Math.round(pyPhysical / dpr);
 
       const existingWindow = await platformAdapter.getWindowByLabel(label);
 
@@ -188,14 +192,14 @@ export default function LayoutOutlet() {
       // 避免抢焦点
       // await win.setFocus();
 
-      // 按鼠标位置放置窗口
-      if (px > 0 || py > 0) {
+      // 按鼠标位置放置窗口（使用 Logical 坐标）
+      if (pxLogicalFromBackend > 0 || pyLogicalFromBackend > 0) {
         const offsetX = 12;
         const offsetY = 20;
-        const targetX = Math.max(0, px + offsetX);
-        const targetY = Math.max(0, py - height - offsetY);
+        const targetX = Math.max(0, pxLogicalFromBackend + offsetX);
+        const targetY = Math.max(0, pyLogicalFromBackend - height - offsetY);
         // @ts-ignore
-        await win.setPosition({ type: "Physical", x: targetX, y: targetY });
+        await win.setPosition({ type: "Logical", x: targetX, y: targetY });
       } else {
         await win.center();
       }
@@ -206,13 +210,13 @@ export default function LayoutOutlet() {
     if (state.visible && state.text) {
       // 用 DOM 选区 + 屏幕位置计算全局物理坐标，避免无坐标时居中
       const rect = state.rect;
-      const dpr = window.devicePixelRatio || 1;
-      const screenX = window.screenX || 0; // 窗口左上角相对屏幕的 X（CSS 像素）
-      const screenY = window.screenY || 0; // 窗口左上角相对屏幕的 Y（CSS 像素）
-      const px = rect ? Math.round((screenX + rect.left) * dpr) : 0;
-      const py = rect ? Math.round((screenY + rect.top) * dpr) : 0;
+      const screenX = window.screenX || 0; // CSS 像素（逻辑坐标）
+      const screenY = window.screenY || 0; // CSS 像素（逻辑坐标）
+      // 直接使用逻辑坐标（point）作为统一标准
+      const xLogical = rect ? Math.round(screenX + rect.left) : 0;
+      const yLogical = rect ? Math.round(screenY + rect.top) : 0;
 
-      openSelectionWindow({ text: state.text, x: px, y: py });
+      openSelectionWindow({ text: state.text, x: xLogical, y: yLogical });
       close();
     }
 
