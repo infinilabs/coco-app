@@ -169,21 +169,6 @@
           "description": "在搜索模式下启用 AI 总结的快捷按键。"
         }
       },
-      "connect": {
-        "title": "连接设置",
-        "connectionTimeout": {
-          "title": "连接超时",
-          "description": "如果在此时间内未收到响应，则重试连接。默认值：120 秒。"
-        },
-        "queryTimeout": {
-          "title": "查询超时",
-          "description": "在此时间内未返回搜索结果，则终止查询。默认值：500 毫秒。"
-        },
-        "allowSelfSignature": {
-          "title": "允许自签名证书",
-          "description": "允许连接使用自签名证书的服务器。仅在信任来源的情况下启用。"
-        }
-      },
       "appearance": {
         "title": "外观设置",
         "normalOpacity": {
@@ -200,6 +185,38 @@
         "snapshotUpdate": {
           "title": "快照版更新",
           "description": "抢先体验新功能，可能不稳定。"
+        }
+      },
+      "other": {
+        "title": "其它设置",
+        "connectionTimeout": {
+          "title": "连接超时",
+          "description": "如果在此时间内未收到响应，则重试连接。默认值：120 秒。"
+        },
+        "queryTimeout": {
+          "title": "查询超时",
+          "description": "在此时间内未返回搜索结果，则终止查询。默认值：500 毫秒。"
+        },
+        "searchDelay": {
+          "title": "搜索延迟",
+          "description": "停止输入后触发搜索的延迟时间。默认值：300 毫秒。 "
+        },
+        "allowSelfSignature": {
+          "title": "允许自签名证书",
+          "description": "允许连接使用自签名证书的服务器。仅在信任来源的情况下启用。"
+        },
+        "localSearchResultWeight": {
+          "title": "本地搜索结果展示权重",
+          "description": "调整本地结果（文件、扩展名、命令等）的排名。值越高，它们越接近顶部。",
+          "options": {
+            "high": "高",
+            "medium": "中",
+            "low": "低"
+          }
+        },
+        "compactModeAutoCollapseDelay": {
+          "title": "紧凑模式自动收起延迟",
+          "description": "为紧凑模式的自动收起添加延迟，避免输入或清空内容时窗口突然缩小。默认: 10s。"
         }
       }
     },

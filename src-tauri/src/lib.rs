@@ -194,6 +194,8 @@ pub fn run() {
             extension::api::fs::read_dir,
             settings::set_allow_self_signature,
             settings::get_allow_self_signature,
+            settings::set_local_query_source_weight,
+            settings::get_local_query_source_weight,
             assistant::ask_ai,
             crate::common::document::open,
             extension::built_in::file_search::config::get_file_system_config,
