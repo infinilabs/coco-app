@@ -19,7 +19,9 @@ use autostart::change_autostart;
 use lazy_static::lazy_static;
 use std::sync::Mutex;
 use std::sync::OnceLock;
-use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, WebviewWindow, WindowEvent};
+use tauri::{
+    AppHandle, Emitter, LogicalPosition, Manager, PhysicalPosition, WebviewWindow, WindowEvent,
+};
 use tauri_plugin_autostart::MacosLauncher;
 
 /// Tauri store name
@@ -345,89 +347,58 @@ async fn hide_coco(app_handle: AppHandle) {
 }
 
 fn move_window_to_active_monitor(window: &WebviewWindow) {
-    //dbg!("Moving window to active monitor");
-    // Try to get the available monitors, handle failure gracefully
-    let available_monitors = match window.available_monitors() {
-        Ok(monitors) => monitors,
-        Err(e) => {
-            log::error!("Failed to get monitors: {}", e);
-            return;
-        }
-    };
+    let scale_factor = window.scale_factor().unwrap();
 
-    // Attempt to get the cursor position, handle failure gracefully
-    let cursor_position = match window.cursor_position() {
-        Ok(pos) => Some(pos),
-        Err(e) => {
-            log::error!("Failed to get cursor position: {}", e);
-            None
-        }
-    };
+    let point = window.cursor_position().unwrap();
 
-    // Find the monitor that contains the cursor or default to the primary monitor
-    let target_monitor = if let Some(cursor_position) = cursor_position {
-        // Convert cursor position to integers
-        let cursor_x = cursor_position.x.round() as i32;
-        let cursor_y = cursor_position.y.round() as i32;
-        // Find the monitor that contains the cursor
-        available_monitors.into_iter().find(|monitor| {
+    let LogicalPosition { x, y } = point.to_logical(scale_factor);
+
+    match window.monitor_from_point(x, y) {
+        Ok(Some(monitor)) => {
+            if let Some(name) = monitor.name() {
+                let previous_monitor_name = PREVIOUS_MONITOR_NAME.lock().unwrap();
+                if let Some(ref prev_name) = *previous_monitor_name {
+                    if name.to_string() == *prev_name {
+                        log::debug!("Currently on the same monitor");
+                        return;
+                    }
+                }
+            }
+
             let monitor_position = monitor.position();
             let monitor_size = monitor.size();
 
-            cursor_x >= monitor_position.x
-                && cursor_x <= monitor_position.x + monitor_size.width as i32
-                && cursor_y >= monitor_position.y
-                && cursor_y <= monitor_position.y + monitor_size.height as i32
-        })
-    } else {
-        None
-    };
+            // Current window size for horizontal centering
+            let window_size = match window.inner_size() {
+                Ok(size) => size,
+                Err(e) => {
+                    log::error!("Failed to get window size: {}", e);
+                    return;
+                }
+            };
+            let window_width = window_size.width as i32;
 
-    // Use the target monitor or default to the primary monitor
-    let monitor = match target_monitor.or_else(|| window.primary_monitor().ok().flatten()) {
-        Some(monitor) => monitor,
-        None => {
-            log::error!("No monitor found!");
-            return;
-        }
-    };
+            // Horizontal center uses actual width, vertical center uses 590 baseline
+            let window_x = monitor_position.x + (monitor_size.width as i32 - window_width) / 2;
+            let window_y = monitor_position.y
+                + (monitor_size.height as i32 - WINDOW_CENTER_BASELINE_HEIGHT) / 2;
 
-    if let Some(name) = monitor.name() {
-        let previous_monitor_name = PREVIOUS_MONITOR_NAME.lock().unwrap();
-        if let Some(ref prev_name) = *previous_monitor_name {
-            if name.to_string() == *prev_name {
-                log::debug!("Currently on the same monitor");
-                return;
+            if let Err(e) = window.set_position(PhysicalPosition::new(window_x, window_y)) {
+                log::error!("Failed to move window: {}", e);
+            }
+
+            if let Some(name) = monitor.name() {
+                log::debug!("Window moved to monitor: {}", name);
+                let mut previous_monitor = PREVIOUS_MONITOR_NAME.lock().unwrap();
+                *previous_monitor = Some(name.to_string());
             }
         }
-    }
-
-    let monitor_position = monitor.position();
-    let monitor_size = monitor.size();
-
-    // Current window size for horizontal centering
-    let window_size = match window.inner_size() {
-        Ok(size) => size,
-        Err(e) => {
-            log::error!("Failed to get window size: {}", e);
-            return;
+        Ok(None) => {
+            log::error!("No monitor found at the specified point");
         }
-    };
-    let window_width = window_size.width as i32;
-
-    // Horizontal center uses actual width, vertical center uses 590 baseline
-    let window_x = monitor_position.x + (monitor_size.width as i32 - window_width) / 2;
-    let window_y =
-        monitor_position.y + (monitor_size.height as i32 - WINDOW_CENTER_BASELINE_HEIGHT) / 2;
-
-    if let Err(e) = window.set_position(PhysicalPosition::new(window_x, window_y)) {
-        log::error!("Failed to move window: {}", e);
-    }
-
-    if let Some(name) = monitor.name() {
-        log::debug!("Window moved to monitor: {}", name);
-        let mut previous_monitor = PREVIOUS_MONITOR_NAME.lock().unwrap();
-        *previous_monitor = Some(name.to_string());
+        Err(e) => {
+            log::error!("Failed to get monitor from point: {}", e);
+        }
     }
 }
 
