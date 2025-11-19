@@ -104,15 +104,23 @@ pub(crate) async fn search_extension(
     .await
     .map_err(|e| format!("Failed to send request: {:?}", e))?;
 
+    if response.status() == StatusCode::NOT_FOUND {
+        return Ok(Vec::new());
+    }
+
     // The response of a ES style search request
     let mut response: JsonObject<String, Json> = response
         .json()
         .await
         .map_err(|e| format!("Failed to parse response: {:?}", e))?;
 
-    let hits_json = response
-        .remove("hits")
-        .expect("the JSON response should contain field [hits]");
+    let hits_json = response.remove("hits").unwrap_or_else(|| {
+        panic!(
+            "the JSON response should contain field [hits], response [{:?}]",
+            response
+        )
+    });
+
     let mut hits = match hits_json {
         Json::Object(obj) => obj,
         _ => panic!(
