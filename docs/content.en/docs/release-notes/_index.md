@@ -10,6 +10,13 @@ Information about release notes of Coco App is provided here.
 ## Latest (In development)
 
 ### ❌ Breaking changes
+### 🚀 Features
+### 🐛 Bug fix
+### ✈️ Improvements
+
+## 0.9.0 (2025-11-19)
+
+### ❌ Breaking changes
 
 ### 🚀 Features
 
