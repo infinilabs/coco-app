@@ -11,6 +11,9 @@ Information about release notes of Coco App is provided here.
 ### ❌ Breaking changes  
 ### 🚀 Features  
 ### 🐛 Bug fix  
+
+- fix: search_extension should not panic when ext is not found #983
+
 ### ✈️ Improvements  
 
 ## 0.9.0 (2025-11-19)
