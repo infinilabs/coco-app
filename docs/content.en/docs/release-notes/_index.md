@@ -7,14 +7,18 @@ title: "Release Notes"
 
 Information about release notes of Coco App is provided here.
 
-## Latest (In development)  
-### ❌ Breaking changes  
-### 🚀 Features  
-### 🐛 Bug fix  
+## Latest (In development)
+
+### ❌ Breaking changes
+
+### 🚀 Features
+
+### 🐛 Bug fix
 
 - fix: search_extension should not panic when ext is not found #983
+- fix: persist configuration settings properly #987
 
-### ✈️ Improvements  
+### ✈️ Improvements
 
 ## 0.9.0 (2025-11-19)
 
