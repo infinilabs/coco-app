@@ -170,6 +170,8 @@ export const useConnectStore = create<IConnectStore>()(
           currentAssistant: state.currentAssistant,
           querySourceTimeout: state.querySourceTimeout,
           allowSelfSignature: state.allowSelfSignature,
+          searchDelay: state.searchDelay,
+          compactModeAutoCollapseDelay: state.compactModeAutoCollapseDelay,
         }),
       }
     )
