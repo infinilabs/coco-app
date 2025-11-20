@@ -13,6 +13,8 @@ Information about release notes of Coco App is provided here.
 
 ### 🚀 Features
 
+- feat: add selection toolbar window #980
+
 ### 🐛 Bug fix
 
 - fix: search_extension should not panic when ext is not found #983
