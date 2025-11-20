@@ -3,6 +3,7 @@ mod autostart;
 mod common;
 mod extension;
 mod search;
+mod selection_monitor;
 mod server;
 mod settings;
 mod setup;
@@ -87,7 +88,7 @@ struct Payload {
 pub fn run() {
     let ctx = tauri::generate_context!();
 
-    let mut app_builder = tauri::Builder::default();
+    let mut app_builder = tauri::Builder::default().plugin(tauri_plugin_clipboard_manager::init());
     // Set up logger first
     app_builder = app_builder.plugin(set_up_tauri_logger());
 
@@ -206,7 +207,9 @@ pub fn run() {
             setup::backend_setup,
             util::app_lang::update_app_lang,
             util::path::path_absolute,
-            util::logging::app_log_dir
+            util::logging::app_log_dir,
+            selection_monitor::set_selection_enabled,
+            selection_monitor::get_selection_enabled,
         ])
         .setup(|app| {
             #[cfg(target_os = "macos")]
@@ -215,7 +218,6 @@ pub fn run() {
                 app.set_activation_policy(tauri::ActivationPolicy::Accessory);
                 log::trace!("Dock icon should be hidden now");
             }
-
 
             /* ----------- This code must be executed on the main thread and must not be relocated. ----------- */
             let app_handle = app.app_handle();

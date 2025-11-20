@@ -10,6 +10,7 @@ import {
   Unplug,
 } from "lucide-react";
 import { useMount } from "ahooks";
+import { isNil } from "lodash-es";
 
 import Shortcuts from "./components/Shortcuts";
 import SettingsItem from "../SettingsItem";
@@ -20,7 +21,7 @@ import SettingsInput from "@/components//Settings/SettingsInput";
 import platformAdapter from "@/utils/platformAdapter";
 import UpdateSettings from "./components/UpdateSettings";
 import SettingsToggle from "../SettingsToggle";
-import { isNil } from "lodash-es";
+import SelectionSettings from "./components/Selection";
 
 const Advanced = () => {
   const { t } = useTranslation();
@@ -188,6 +189,8 @@ const Advanced = () => {
           );
         })}
       </div>
+
+      <SelectionSettings />
 
       <Shortcuts />
 

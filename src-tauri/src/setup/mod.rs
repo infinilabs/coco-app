@@ -99,6 +99,12 @@ pub(crate) async fn backend_setup(tauri_app_handle: AppHandle, app_lang: String)
         })
         .expect("failed to run this closure on the main thread");
 
+    // Start system-wide selection monitor (macOS-only currently)
+    #[cfg(target_os = "macos")]
+    {
+        crate::selection_monitor::start_selection_monitor(tauri_app_handle.clone());
+    }
+
     crate::init(&tauri_app_handle).await;
 
     if let Err(err) = crate::extension::init_extensions(&tauri_app_handle).await {

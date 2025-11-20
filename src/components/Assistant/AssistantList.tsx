@@ -47,6 +47,10 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
   const setAskAiAssistantId = useSearchStore((state) => {
     return state.setAskAiAssistantId;
   });
+  const targetAssistantId = useSearchStore((state) => state.targetAssistantId);
+  const setTargetAssistantId = useSearchStore((state) => {
+    return state.setTargetAssistantId;
+  });
 
   const { fetchAssistant } = AssistantFetcher({
     debounceKeyword,
@@ -81,17 +85,22 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
 
   useEffect(() => {
-    if (!askAiAssistantId || assistantList.length === 0) return;
+    const targetId = askAiAssistantId ?? targetAssistantId;
+    if (!targetId || assistantList.length === 0) return;
 
-    const matched = assistantList.find((item) => {
-      return item._id === askAiAssistantId;
-    });
-
+    const matched = assistantList.find((item) => item._id === targetId);
     if (!matched) return;
 
-    setCurrentAssistant(matched);
-    setAskAiAssistantId(void 0);
-  }, [assistantList, askAiAssistantId]);
+    if (currentAssistant?._id !== matched._id) {
+      setCurrentAssistant(matched);
+    }
+
+    if (askAiAssistantId) {
+      setAskAiAssistantId(void 0);
+    } else if (targetAssistantId) {
+      setTargetAssistantId(void 0);
+    }
+  }, [assistantList, askAiAssistantId, targetAssistantId]);
 
   useKeyPress(
     ["uparrow", "downarrow", "enter"],

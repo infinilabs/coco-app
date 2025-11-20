@@ -9,6 +9,7 @@ import { isMac } from "@/utils/platform";
 import { useAppStore } from "@/stores/appStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { show_coco, show_settings, show_check } from "@/commands";
+import { useSelectionStore } from "@/stores/selectionStore";
 
 const TRAY_ID = "COCO_TRAY";
 
@@ -16,11 +17,13 @@ export const useTray = () => {
   const { t, i18n } = useTranslation();
   const showCocoShortcuts = useAppStore((state) => state.showCocoShortcuts);
 
+  const selectionEnabled = useSelectionStore((state) => state.selectionEnabled);
+
   useUpdateEffect(() => {
     if (showCocoShortcuts.length === 0) return;
 
     updateTrayMenu();
-  }, [i18n.language, showCocoShortcuts]);
+  }, [i18n.language, showCocoShortcuts, selectionEnabled]);
 
   const getTrayById = () => {
     return TrayIcon.getById(TRAY_ID);
@@ -56,6 +59,18 @@ export const useTray = () => {
         },
       }),
       PredefinedMenuItem.new({ item: "Separator" }),
+      MenuItem.new({
+        text: selectionEnabled
+          ? t("tray.selectionDisable")
+          : t("tray.selectionEnable"),
+        action: async () => {
+          try {
+            await platformAdapter.invokeBackend("set_selection_enabled", { enabled: !selectionEnabled });
+          } catch (e) {
+            console.error("set_selection_enabled invoke failed:", e);
+          }
+        },
+      }),
       MenuItem.new({
         text: t("tray.settings"),
         // accelerator: "CommandOrControl+,",
