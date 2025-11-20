@@ -10,7 +10,7 @@ export function useSelectionWindow() {
   useEffect(() => {
     const openSelectionWindow = async (payload: any) => {
       console.log("[selection] openSelectionWindow payload", payload);
-      // 全局开关：关闭时不创建、不显示选择窗口
+      // when selection is disabled, hide the existing window and return
       if (!useSelectionStore.getState().selectionEnabled) {
         const existing = await platformAdapter.getWindowByLabel("selection");
         if (existing) {
@@ -45,13 +45,13 @@ export function useSelectionWindow() {
       const raw = typeof payload === "string" ? payload : String(payload?.text ?? "");
       const text = raw.trim();
 
-      // 接收后端“全局左上角原点 + 逻辑坐标（Quartz point）”，不再进行 dpr 转换
+      // Receive backend "top-left origin + logical coordinates (Quartz point)" directly, no need for dpr conversion
       const xLogical = Math.round(Number(payload?.x ?? 0));
       const yLogical = Math.round(Number(payload?.y ?? 0));
 
       const existingWindow = await platformAdapter.getWindowByLabel(label);
 
-      // 空内容时立即隐藏，不创建/显示窗口
+      // Empty text: hide existing window and emit empty event
       if (!text) {
         if (existingWindow) {
           await existingWindow.hide();
@@ -66,13 +66,14 @@ export function useSelectionWindow() {
       const win = await platformAdapter.getWindowByLabel(label);
       if (!win) return;
 
-      // 强制设置尺寸（即便窗口已存在）
+      // Set window size to fixed width and height
       // @ts-ignore
       await win.setSize({ type: "Logical", width, height });
 
       await win.show();
 
-      // 按“左上角为原点 + 逻辑坐标”直接定位；X 向右偏移 0，Y 上移 90px（不减窗口高度）
+      // Position window based on "top-left origin + logical coordinates" directly
+      // X offset 0, Y offset -90px (not subtracting window height)
       if (xLogical > 0 || yLogical > 0) {
         const offsetX = 0;
         const offsetY = 90;
@@ -85,11 +86,11 @@ export function useSelectionWindow() {
       await platformAdapter.emitEvent("selection-text", text);
     };
 
-    // DOM 选区 + 屏幕位置计算逻辑坐标（point）
+    // DOM fallback: when panel is visible and has text, use its position
     if (panelState?.visible && panelState?.text) {
       const rect = panelState.rect || null;
-      const screenX = window.screenX || 0; // CSS 像素（逻辑坐标）
-      const screenY = window.screenY || 0; // CSS 像素（逻辑坐标）
+      const screenX = window.screenX || 0; // CSS pixel (logical coordinate)
+      const screenY = window.screenY || 0; // CSS pixel (logical coordinate)
       const xLogical = rect ? Math.round(screenX + rect.left) : 0;
       const yLogical = rect ? Math.round(screenY + rect.top) : 0;
       console.log("[selection] DOM fallback logical", { screenX, screenY, rect, xLogical, yLogical });
@@ -98,7 +99,7 @@ export function useSelectionWindow() {
       onClose?.();
     }
 
-    // 监听 selection-detected（来自后端）
+    // Listen to selection-detected event from backend
     const unlistenSelection = platformAdapter.listenEvent(
       "selection-detected",
       async (event: any) => {
