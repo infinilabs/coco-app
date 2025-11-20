@@ -18,6 +18,7 @@ import { isTauri } from "@tauri-apps/api/core";
 import { isEnabled } from "@tauri-apps/plugin-autostart";
 import { emit } from "@tauri-apps/api/event";
 import { useCreation } from "ahooks";
+import clsx from "clsx";
 
 import SettingsItem from "./SettingsItem";
 import SettingsToggle from "./SettingsToggle";
@@ -34,10 +35,7 @@ import {
   unregister_shortcut,
 } from "@/commands";
 import platformAdapter from "@/utils/platformAdapter";
-import clsx from "clsx";
 import { useAppearanceStore, WindowMode } from "@/stores/appearanceStore";
-import { Sparkles } from "lucide-react";
-import { useSelectionStore } from "@/stores/selectionStore";
 
 export function ThemeOption({
   icon: Icon,
@@ -85,8 +83,7 @@ export default function GeneralSettings() {
   const { showTooltip, setShowTooltip, language, setLanguage } = useAppStore();
   const { windowMode, setWindowMode } = useAppearanceStore();
 
-  const selectionEnabled = useSelectionStore((state) => state.selectionEnabled);
-  const setSelectionEnabled = useSelectionStore((state) => state.setSelectionEnabled);
+  
 
   const fetchAutoStartStatus = async () => {
     if (isTauri()) {
@@ -310,17 +307,7 @@ export default function GeneralSettings() {
             })}
           </div>
 
-          <SettingsItem
-            icon={Sparkles}
-            title={t("settings.ai.title")}
-            description={t("settings.ai.description")}
-          >
-            <SettingsToggle
-              checked={selectionEnabled}
-              onChange={(value) => setSelectionEnabled(value)}
-              label={t("settings.ai.toggle")}
-            />
-          </SettingsItem>
+          
 
           <SettingsItem
             icon={Globe}

@@ -2,23 +2,31 @@ import { create } from "zustand";
 import { persist, subscribeWithSelector } from "zustand/middleware";
 
 export type ISelectionStore = {
+  // whether selection is enabled
   selectionEnabled: boolean;
   setSelectionEnabled: (selectionEnabled: boolean) => void;
+  // toolbar buttons configuration for selection window
+  toolbarConfig: any[];
+  setToolbarConfig: (toolbarConfig: any[]) => void;
 };
 
 export const useSelectionStore = create<ISelectionStore>()(
   subscribeWithSelector(
     persist(
       (set) => ({
-        selectionEnabled: true,
+        selectionEnabled: false,
         setSelectionEnabled(selectionEnabled) {
-          return set({ selectionEnabled });
+          set({ selectionEnabled });
+        },
+        toolbarConfig: [],
+        setToolbarConfig(toolbarConfig) {
+          return set({ toolbarConfig });
         },
       }),
       {
         name: "selection-store",
         partialize: (state) => ({
-          selectionEnabled: state.selectionEnabled,
+          toolbarConfig: state.toolbarConfig,
         }),
       }
     )

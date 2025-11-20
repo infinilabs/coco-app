@@ -634,5 +634,31 @@
     "buttons": {
       "login": "登录"
     }
+  },
+  "selection": {
+    "title": "划词工具栏设置",
+    "actions": {
+      "search": "搜索",
+      "ask_ai": "问答",
+      "translate": "翻译",
+      "summary": "总结",
+      "copy": "复制",
+      "speak": "朗读"
+    },
+    "noText": "未检测到文本",
+    "copied": "已复制",
+    "speak": {
+      "stopTitle": "停止朗读",
+      "stopAria": "停止朗读",
+      "stopLabel": "停止",
+      "pauseTitle": "暂停朗读",
+      "pauseAria": "暂停朗读",
+      "pauseLabel": "暂停",
+      "resumeTitle": "继续朗读",
+      "resumeAria": "继续朗读",
+      "resumeLabel": "继续",
+      "volumeSr": "音量",
+      "volumeAria": "朗读音量"
+    }
   }
 }

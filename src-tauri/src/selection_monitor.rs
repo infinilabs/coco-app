@@ -1,9 +1,6 @@
-// 事件负载（发送到前端的 JSON）
-// 语义：表示一次“检测到选中”事件，包含选中文本与坐标。
-// 坐标约定：逻辑坐标（Quartz point），原点在全局左上。
-// 说明：发送 point 坐标，前端以 Logical 进行定位，可直接使用并做少量偏移。
-/// 发送到前端的事件载荷：一次“检测到选中”事件
-/// 坐标：逻辑坐标（Quartz point），全局左上为原点；当前 y 已在后端反转以配合前端
+/// Event payload sent to the frontend when selection is detected.
+/// Coordinates use logical (Quartz) points with a top-left origin.
+/// Note: `y` is flipped on the backend to match the frontend’s usage.
 use tauri::Emitter;
 
 #[derive(serde::Serialize, Clone)]
@@ -15,7 +12,7 @@ struct SelectionEventPayload {
 
 use std::sync::atomic::{AtomicBool, Ordering};
 
-// 全局开关：默认启用划词监控
+/// Global toggle: selection monitoring enabled by default.
 static SELECTION_ENABLED: AtomicBool = AtomicBool::new(true);
 
 #[derive(serde::Serialize, Clone)]
@@ -23,24 +20,24 @@ struct SelectionEnabledPayload {
     enabled: bool,
 }
 
-/// 读取当前开关状态
+/// Read the current selection monitoring state.
 pub fn is_selection_enabled() -> bool {
     SELECTION_ENABLED.load(Ordering::Relaxed)
 }
 
-/// 内部设置开关并广播到前端
+/// Update the monitoring state and broadcast to the frontend.
 fn set_selection_enabled_internal(app_handle: &tauri::AppHandle, enabled: bool) {
     SELECTION_ENABLED.store(enabled, Ordering::Relaxed);
     let _ = app_handle.emit("selection-enabled", SelectionEnabledPayload { enabled });
 }
 
-/// Tauri 命令：设置开关（前端调用）
+/// Tauri command: set selection monitoring state.
 #[tauri::command]
 pub fn set_selection_enabled(app_handle: tauri::AppHandle, enabled: bool) {
     set_selection_enabled_internal(&app_handle, enabled);
 }
 
-/// Tauri 命令：获取当前开关状态（前端调用）
+/// Tauri command: get selection monitoring state.
 #[tauri::command]
 pub fn get_selection_enabled() -> bool {
     is_selection_enabled()
@@ -48,27 +45,25 @@ pub fn get_selection_enabled() -> bool {
 
 #[cfg(target_os = "macos")]
 pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
-    // 入口：负责权限检查、平台特定初始化，以及启动后台线程。
+    // Entrypoint: checks permissions (macOS), initializes, and starts a background watcher thread.
     log::info!("start_selection_monitor: 入口函数启动");
     use std::time::Duration;
     use tauri::Emitter;
 
-    // 启动时同步一次当前启用状态到前端
+    // Sync initial enabled state to the frontend on startup.
     set_selection_enabled_internal(&app_handle, is_selection_enabled());
 
-    // 权限检查与申请：需要辅助功能权限以读取前台应用选中文本
-    // 1) 若未授予，则弹窗申请；
-    // 2) 若用户拒绝或未授予，则忽略本功能（直接返回，不启动监听线程）。
+    // Accessibility permission is required to read selected text in the foreground app.
+    // If not granted, prompt the user once; if still not granted, skip starting the watcher.
     #[cfg(target_os = "macos")]
     {
         let trusted_before = macos_accessibility_client::accessibility::application_is_trusted();
         if !trusted_before {
-            // 弹窗申请（系统可能不会立即返回新状态，下面仍会再检查一次）
             let _ = macos_accessibility_client::accessibility::application_is_trusted_with_prompt();
         }
         let trusted_after = macos_accessibility_client::accessibility::application_is_trusted();
         if !trusted_after {
-            return; // 不启动监听线程，忽略功能
+            return;
         }
     }
     #[cfg(not(target_os = "macos"))]
@@ -76,21 +71,20 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
         log::info!("start_selection_monitor: 非 macOS 平台，无划词监控");
     }
 
-    // 后台线程：基于鼠标按压/释放与 AX 选中状态驱动弹框显示/隐藏
+    // Background thread: drives popup show/hide based on mouse and AX selection state.
     std::thread::spawn(move || {
         #[cfg(target_os = "macos")]
         use objc2_app_kit::NSWorkspace;
         use objc2_core_graphics::CGEvent;
         use objc2_core_graphics::{CGDisplayBounds, CGGetActiveDisplayList, CGMainDisplayID};
 
-        // 反转后的 Quartz point（逻辑坐标）
+        // Get current mouse position (logical top-left origin), flipping `y` to match frontend usage.
         let current_mouse_point_global = || -> (i32, i32) {
             unsafe {
-                // 全局鼠标位置（Quartz，原点左下，单位 point）
                 let event = CGEvent::new(None);
                 let pt = objc2_core_graphics::CGEvent::location(event.as_deref());
 
-                // 获取所有活动显示器
+                // Enumerate active displays to compute global bounds and pick the display containing the cursor.
                 let mut displays: [u32; 16] = [0; 16];
                 let mut display_count: u32 = 0;
                 let _ = CGGetActiveDisplayList(
@@ -99,7 +93,7 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
                     &mut display_count,
                 );
                 if display_count == 0 {
-                    // 无显示器信息时回退主屏
+                    // Fallback to main display.
                     let did = CGMainDisplayID();
                     let b = CGDisplayBounds(did);
                     let min_x_pt = b.origin.x as f64;
@@ -107,17 +101,14 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
                     let min_bottom_pt = b.origin.y as f64;
                     let total_h_pt = max_top_pt - min_bottom_pt;
 
-                    // 左上原点坐标
                     let x_top_left = (pt.x as f64 - min_x_pt).round() as i32;
                     let y_top_left = (max_top_pt - pt.y as f64).round() as i32;
-                    // 反转为“自底部量起”的值，用来抵消当前前端的上下反转效果
                     let y_flipped = (total_h_pt.round() as i32 - y_top_left).max(0);
 
                     return (x_top_left, y_flipped);
                 }
 
-                // 选取包含鼠标点的显示器，并计算全局边界
-                let mut chosen = CGMainDisplayID(); // 回退主屏
+                let mut chosen = CGMainDisplayID(); // default fallback
                 log::info!(
                     "current_mouse: pt=({:.1},{:.1}) → display={}",
                     pt.x as f64,
@@ -126,8 +117,8 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
                 );
 
                 let mut min_x_pt = f64::INFINITY;
-                let mut max_top_pt = f64::NEG_INFINITY; // 顶部 = origin.y + height
-                let mut min_bottom_pt = f64::INFINITY; // 最低的 origin.y
+                let mut max_top_pt = f64::NEG_INFINITY;
+                let mut min_bottom_pt = f64::INFINITY;
                 for i in 0..display_count as usize {
                     let did = displays[i];
                     let b = CGDisplayBounds(did);
@@ -159,17 +150,16 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
 
                 let total_h_pt = max_top_pt - min_bottom_pt;
 
-                // 左上原点坐标
                 let x_top_left = (pt.x as f64 - min_x_pt).round() as i32;
                 let y_top_left = (max_top_pt - pt.y as f64).round() as i32;
-                // 反转为“自底部量起”的值
                 let y_flipped = (total_h_pt.round() as i32 - y_top_left).max(0);
 
                 (x_top_left, y_flipped)
             }
         };
 
-        // 前台应用是否为本进程（Coco）。在与弹框交互时避免将“前台为空选区”误判为需要隐藏弹框。
+        // Determine whether the frontmost app is this process (Coco).
+        // Avoid misinterpreting empty selection when interacting with the popup itself.
         let is_frontmost_app_me = || -> bool {
             #[cfg(target_os = "macos")]
             unsafe {
@@ -183,13 +173,13 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
             false
         };
 
-        // 选择驱动的状态机（丝滑版）
+        // Selection-driven state machine.
         let mut popup_visible = false;
         let mut last_text = String::new();
 
-        // 稳定性与隐藏判定参数（可按需微调）
-        let stable_threshold = 2; // 连续相同≥2次才认为“稳定选中”
-        let empty_threshold = 2; // 连续空值≥2次才认为“稳定为空”
+        // Stability and hide thresholds (tunable).
+        let stable_threshold = 2; // same content ≥2 times → stable selection
+        let empty_threshold = 2; // empty value ≥2 times → stable empty
         let mut stable_text = String::new();
         let mut stable_count = 0;
         let mut empty_count = 0;
@@ -197,7 +187,7 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
         loop {
             std::thread::sleep(Duration::from_millis(30));
 
-            // 若功能关闭：不读取 AX，不弹窗；如已显示则主动隐藏
+            // If disabled: do not read AX / do not show popup; hide if currently visible.
             if !is_selection_enabled() {
                 if popup_visible {
                     let _ = app_handle.emit("selection-detected", "");
@@ -208,15 +198,15 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
                 continue;
             }
 
-            // 若前台为 Coco（弹框所在进程），跳过隐藏判定以避免交互导致闪烁
+            // Skip empty-selection hide checks while interacting with the Coco popup.
             let front_is_me = is_frontmost_app_me();
 
-            // 轻量重试以应对 AX 焦点瞬时不稳定（避免卡顿）
+            // Lightweight retries to smooth out transient AX focus instability.
             let selected_text = if front_is_me {
-                // 与弹框交互中：不主动读取选区，避免误判为空
+                // Do not read selection during popup interaction to avoid false empty.
                 None
             } else {
-                // 低开销重试：最多 2 次，每次间隔 35ms
+                // Up to 2 retries, 35ms apart.
                 read_selected_text_with_retries(2, 35)
             };
 
@@ -230,7 +220,7 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
                         stable_count = 1;
                     }
 
-                    // 选区稳定后才触发显示或更新，避免卡顿和抖动
+                    // Update/show only when selection is stable to avoid flicker.
                     if stable_count >= stable_threshold {
                         if !popup_visible || text != last_text {
                             let (x, y) = current_mouse_point_global();
@@ -247,7 +237,7 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
                     }
                 }
                 _ => {
-                    // 非 Coco 前台且选区为空：累计空值，达到阈值再隐藏
+                    // If not Coco in front and selection is empty: accumulate empties, then hide.
                     if !front_is_me {
                         stable_count = 0;
                         empty_count += 1;
@@ -258,8 +248,7 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
                             stable_text.clear();
                         }
                     } else {
-                        // 前台为 Coco：交互中不隐藏也不清空状态，保证丝滑体验
-                        // 不修改 popup_visible / last_text / stable_text
+                        // When Coco is frontmost: do not hide or clear state during interaction.
                     }
                 }
             }
@@ -267,28 +256,26 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
     });
 }
 
-// macOS 系统范围可访问性：用于获取系统级焦点元素
+// macOS-wide accessibility entry point: allows reading system-level focused elements.
 #[cfg(target_os = "macos")]
 unsafe extern "C" {
     fn AXUIElementCreateSystemWide() -> *mut objc2_application_services::AXUIElement;
 }
 
-// 读取前台应用当前选中文本（无需剪贴板），仅在 macOS 可用
+/// Read the selected text of the frontmost application (without using the clipboard).
+/// macOS only. Returns `None` when the frontmost app is Coco to avoid false empties.
 #[cfg(target_os = "macos")]
 fn read_selected_text() -> Option<String> {
-    // 通过 AX 接口读取当前前台应用的选中文本（非剪贴板）。
-    // 注意：若前台应用为本进程（Coco），直接返回 None，避免自身窗口交互被误判为空选区。
     use objc2_app_kit::NSWorkspace;
     use objc2_application_services::{AXError, AXUIElement};
     use objc2_core_foundation::{CFRetained, CFString, CFType};
     use std::ptr::NonNull;
 
-    // 优先使用系统范围的焦点元素，避免某些应用无法通过应用级 AX 读取焦点。
-    // 若系统范围获取失败，再回退到前台应用级的焦点元素。
+    // Prefer system-wide focused element; if unavailable, fall back to app/window focused element.
     let mut focused_ui_ptr: *const CFType = std::ptr::null();
     let focused_attr = CFString::from_static_str("AXFocusedUIElement");
 
-    // 系统范围焦点元素
+    // System-wide focused UI element.
     let system_elem = unsafe { AXUIElementCreateSystemWide() };
     if !system_elem.is_null() {
         let system_elem_retained: CFRetained<AXUIElement> =
@@ -302,26 +289,25 @@ fn read_selected_text() -> Option<String> {
         }
     }
 
-    // 若系统范围失败，回退到前台应用的焦点/窗口元素
+    // Fallback to the frontmost app's focused/window element.
     if focused_ui_ptr.is_null() {
         let workspace = unsafe { NSWorkspace::sharedWorkspace() };
         let frontmost_app = unsafe { workspace.frontmostApplication() }?;
         let pid = unsafe { frontmost_app.processIdentifier() };
 
-        // 如果当前前台应用就是 Coco（本进程），直接跳过选区读取，避免误判为空
+        // Skip if frontmost is Coco (this process).
         let my_pid = std::process::id() as i32;
         if pid == my_pid {
             return None;
         }
 
-        // 应用 AX 元素
         let app_element = unsafe { AXUIElement::new_application(pid) };
         let err = unsafe {
             app_element
                 .copy_attribute_value(&focused_attr, NonNull::new(&mut focused_ui_ptr).unwrap())
         };
         if err != AXError::Success || focused_ui_ptr.is_null() {
-            // 尝试回退到窗口层级：AXFocusedWindow
+            // Try `AXFocusedWindow` as a lightweight fallback.
             let mut focused_window_ptr: *const CFType = std::ptr::null();
             let focused_window_attr = CFString::from_static_str("AXFocusedWindow");
             let w_err = unsafe {
@@ -333,7 +319,6 @@ fn read_selected_text() -> Option<String> {
             if w_err != AXError::Success || focused_window_ptr.is_null() {
                 return None;
             }
-            // 用窗口元素作为后续文本读取的目标
             focused_ui_ptr = focused_window_ptr;
         }
     }
@@ -342,7 +327,7 @@ fn read_selected_text() -> Option<String> {
     let focused_ui: CFRetained<AXUIElement> =
         unsafe { CFRetained::from_raw(NonNull::new(focused_ui_elem).unwrap()) };
 
-    // 选中文本（优先直接获取 AXSelectedText）
+    // Prefer `AXSelectedText`; otherwise return None (can be extended to read ranges).
     let mut selected_text_ptr: *const CFType = std::ptr::null();
     let selected_text_attr = CFString::from_static_str("AXSelectedText");
     let err = unsafe {
@@ -352,12 +337,10 @@ fn read_selected_text() -> Option<String> {
         )
     };
     if err != AXError::Success || selected_text_ptr.is_null() {
-        // 回退策略（轻量）：仍返回 None。
-        // 可进一步扩展为读取 AXSelectedTextRange + AXAttributedStringForRange/AXStringForRange。
         return None;
     }
 
-    // CFString -> Rust String
+    // CFString → Rust String
     let selected_cfstr: CFRetained<CFString> = unsafe {
         CFRetained::from_raw(NonNull::new(selected_text_ptr.cast::<CFString>().cast_mut()).unwrap())
     };
@@ -365,7 +348,7 @@ fn read_selected_text() -> Option<String> {
     Some(selected_cfstr.to_string())
 }
 
-// 带重试的读取：针对释放事件后 AX 焦点与选区尚未稳定的情况
+/// Read selected text with lightweight retries to handle transient AX focus instability.
 #[cfg(target_os = "macos")]
 fn read_selected_text_with_retries(retries: u32, delay_ms: u64) -> Option<String> {
     use std::thread;

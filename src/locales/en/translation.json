@@ -635,5 +635,31 @@
     "buttons": {
       "login": "Login"
     }
+  },
+  "selection": {
+    "title": "Selection Toolbar Settings",
+    "actions": {
+      "search": "Search",
+      "ask_ai": "Q&A",
+      "translate": "Translate",
+      "summary": "Summary",
+      "copy": "Copy",
+      "speak": "Read Aloud"
+    },
+    "noText": "No text detected",
+    "copied": "Copied",
+    "speak": {
+      "stopTitle": "Stop speaking",
+      "stopAria": "Stop speaking",
+      "stopLabel": "Stop",
+      "pauseTitle": "Pause speaking",
+      "pauseAria": "Pause speaking",
+      "pauseLabel": "Pause",
+      "resumeTitle": "Resume speaking",
+      "resumeAria": "Resume speaking",
+      "resumeLabel": "Resume",
+      "volumeSr": "Volume",
+      "volumeAria": "Speech volume"
+    }
   }
 }

@@ -8,8 +8,10 @@ import {
   Volume2,
   Pause,
   Play,
+  FileText,
 } from "lucide-react";
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
 
 import { useSelectionStore } from "@/stores/selectionStore";
 import { copyToClipboard } from "@/utils";
@@ -18,6 +20,8 @@ import platformAdapter from "@/utils/platformAdapter";
 
 // Simple animated selection window content
 export default function SelectionWindow() {
+  const { t } = useTranslation();
+  
   const [text, setText] = useState("");
   const [visible, setVisible] = useState(false);
   const [animatingOut, setAnimatingOut] = useState(false);
@@ -29,11 +33,6 @@ export default function SelectionWindow() {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
   const textRef = useRef<string>("");
-
-  const selectionEnabled = useSelectionStore((state) => state.selectionEnabled);
-  const setSelectionEnabled = useSelectionStore(
-    (state) => state.setSelectionEnabled
-  );
 
   const AUTO_HIDE_KEY = "selection_auto_hide_ms";
   const autoHideMs = useMemo(() => {
@@ -84,7 +83,7 @@ export default function SelectionWindow() {
 
         if (!trimmed) {
           setText("");
-          textRef.current = ""; // 立即同步 ref，避免旧值
+          textRef.current = ""; // sync ref immediately to avoid stale value
           setVisible(false);
           const win = await getCurrentWinSafe();
           win?.hide();
@@ -92,7 +91,7 @@ export default function SelectionWindow() {
         }
 
         setText(incoming);
-        textRef.current = incoming; // 立即同步 ref，避免依赖后续渲染
+        textRef.current = incoming; // sync ref immediately to avoid relying on render
         setAnimatingOut(false);
         setVisible(true);
 
@@ -137,16 +136,6 @@ export default function SelectionWindow() {
     }, 150);
   };
 
-  const copy = async () => {
-    try {
-      await copyToClipboard(text.trim(), true);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch (e) {
-      platformAdapter.error("复制失败");
-    }
-  };
-
   const openMain = async () => {
     try {
       await platformAdapter.commands("show_coco");
@@ -156,35 +145,29 @@ export default function SelectionWindow() {
     }
   };
 
-  const askAI = useCallback(async () => {
-    const payloadText = (textRef.current || "").trim(); // 冻结点击时文本
-    if (!payloadText) return;
+  const handleChatAction = useCallback(
+    async (assistantId?: string) => {
+      const payloadText = (textRef.current || "").trim();
+      if (!payloadText) return;
 
-    await openMain();
-    await new Promise((r) => setTimeout(r, 120));
-    await platformAdapter.emitEvent("selection-ask-ai", { text: payloadText });
-    if (!isSpeaking) {
-      await close();
-    }
-  }, []);
+      await openMain();
+      await new Promise((r) => setTimeout(r, 120));
 
-  const translate = useCallback(async () => {
-    const payloadText = (textRef.current || "").trim(); // 冻结点击时文本
-    if (!payloadText) return;
+      await platformAdapter.emitEvent("selection-action", {
+        action: "chat",
+        text: payloadText,
+        assistantId,
+      });
 
-    await openMain();
-    await new Promise((r) => setTimeout(r, 120));
-    await platformAdapter.emitEvent("selection-action", {
-      action: "translate",
-      text: payloadText,
-    });
-    if (!isSpeaking) {
-      await close();
-    }
-  }, []);
+      if (!isSpeaking) {
+        await close();
+      }
+    },
+    [openMain, isSpeaking, close]
+  );
 
   const searchMain = useCallback(async () => {
-    const payloadText = (textRef.current || "").trim(); // 冻结点击时文本
+    const payloadText = (textRef.current || "").trim();
     console.log("searchMain payload", payloadText);
     if (!payloadText) return;
 
@@ -230,7 +213,7 @@ export default function SelectionWindow() {
       utterance.rate = 1;
       utterance.volume = volume;
 
-      // 朗读期间暂停自动隐藏
+      // pause auto-hide while speaking
       if (timerRef.current) {
         clearTimeout(timerRef.current);
         timerRef.current = null;
@@ -261,6 +244,213 @@ export default function SelectionWindow() {
     }
   }, [text]);
 
+  const handleCopy = useCallback(async () => {
+    const payloadText = (textRef.current || "").trim();
+    if (!payloadText) return;
+
+    try {
+      await copyToClipboard(text.trim(), true);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (e) {
+      console.warn("Copy failed:", e);
+    }
+  }, []);
+
+  const getActionHandler = (type: string, assistantId?: string) => {
+    switch (type) {
+      case "ask_ai":
+      case "translate":
+      case "summary":
+        return () => handleChatAction(assistantId);
+      case "copy":
+        return handleCopy;
+      case "search":
+        return searchMain;
+      case "speak":
+        return speak;
+      default:
+        return () => {};
+    }
+  };
+
+  // Render buttons from store; hide ones requiring assistant without assistantId
+  const toolbarConfig = useSelectionStore((s) => s.toolbarConfig);
+
+  const requiresAssistant = (type?: string) =>
+    type === "ask_ai" || type === "translate" || type === "summary";
+
+  const visibleButtons = useMemo(
+    () =>
+      (Array.isArray(toolbarConfig) ? toolbarConfig : []).filter((btn: any) => {
+        const type = btn?.action?.type;
+        if (requiresAssistant(type)) {
+          return Boolean(btn?.action?.assistantId);
+        }
+        return true;
+      }),
+    [toolbarConfig]
+  );
+
+  // Lucide icon map for dynamic rendering
+  const LUCIDE_ICON_MAP: Record<string, any> = {
+    Search,
+    Bot,
+    Languages,
+    FileText,
+    Copy,
+    Volume2,
+  };
+
+  // Component: render icon (lucide or custom)
+  const IconRenderer = ({ icon }: { icon?: any }) => {
+    // Support lucide icon or custom image
+    if (icon?.type === "lucide") {
+      const Icon =
+        LUCIDE_ICON_MAP[icon?.name as string] || LUCIDE_ICON_MAP.Search;
+      return (
+        <Icon
+          className="size-4 transition-transform duration-150"
+          style={icon?.color ? { color: icon.color } : undefined}
+        />
+      );
+    }
+    if (icon?.type === "custom" && icon?.dataUrl) {
+      return (
+        <img
+          src={icon.dataUrl}
+          className="size-4 rounded"
+          alt=""
+          style={
+            icon?.color
+              ? { filter: `drop-shadow(0 0 0 ${icon.color})` }
+              : undefined
+          }
+        />
+      );
+    }
+    // default
+    return <Search className="size-4 text-[#6366F1]" />;
+  };
+
+  // Component: single toolbar button
+  const ToolbarButton = ({
+    btn,
+    onClick,
+  }: {
+    btn: any;
+    onClick: () => void;
+  }) => {
+    const label = btn?.labelKey ? t(btn.labelKey) : btn?.label || btn?.id || "";
+    return (
+      <button
+        className="flex items-center gap-1 px-2 py-1 rounded-md cursor-pointer whitespace-nowrap transition-all duration-150"
+        onClick={onClick}
+        title={label}
+      >
+        <IconRenderer icon={btn?.icon} />
+        <span className="text-[13px] transition-opacity duration-150">
+          {label}
+        </span>
+      </button>
+    );
+  };
+
+  // Component: header logo
+  const HeaderLogo = () => {
+    return (
+      <img
+        src={cocoLogoImg}
+        alt="Coco Logo"
+        className="w-6 h-6"
+        onClick={openMain}
+        onError={(e) => {
+          try {
+            (e.target as HTMLImageElement).src = "/src-tauri/assets/logo.png";
+          } catch {}
+        }}
+      />
+    );
+  };
+
+  // Component: selected text preview
+  const TextPreview = ({ text }: { text: string }) => {
+    return (
+      <div className="relative">
+        <div
+          data-tauri-drag-region="false"
+          className="rounded-md bg-black/5 dark:bg-white/5 px-2 py-1 leading-4 text-[12px] text-ellipsis whitespace-nowrap overflow-hidden"
+        >
+          {text || t("selection.noText")}
+        </div>
+        {copied && (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-start pl-2">
+            <span className="px-2 py-1 rounded bg-black/75 text-white text-[12px]">
+              {t("selection.copied")}
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Component: speak controls
+  const SpeakControls = () => {
+    return (
+      <div className="flex items-center gap-2">
+        <button
+          className="flex items-center gap-1 px-2 py-1 rounded-md cursor-pointer whitespace-nowrap transition-all duration-150"
+          onClick={stopSpeak}
+          title={t("selection.speak.stopTitle")}
+          aria-label={t("selection.speak.stopAria")}
+        >
+          <X className="size-4 transition-transform duration-150" />
+          <span className="text-[13px] transition-opacity duration-150">
+            {t("selection.speak.stopLabel")}
+          </span>
+        </button>
+        <button
+          className="flex items-center gap-1 px-2 py-1 rounded-md cursor-pointer whitespace-nowrap transition-all duration-150"
+          onClick={speak}
+          title={
+            isPaused
+              ? t("selection.speak.resumeTitle")
+              : t("selection.speak.pauseTitle")
+          }
+          aria-pressed={isPaused}
+          aria-label={
+            isPaused
+              ? t("selection.speak.resumeAria")
+              : t("selection.speak.pauseAria")
+          }
+        >
+          {isPaused ? (
+            <Play className="size-4 transition-transform duration-150" />
+          ) : (
+            <Pause className="size-4 transition-transform duration-150" />
+          )}
+          <span className="text-[13px] transition-opacity duration-150">
+            {isPaused
+              ? t("selection.speak.resumeLabel")
+              : t("selection.speak.pauseLabel")}
+          </span>
+        </button>
+        <label className="flex items-center gap-1 text-[13px]">
+          <span className="sr-only">{t("selection.speak.volumeSr")}</span>
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.1}
+            value={volume}
+            onChange={(e) => setVolume(Number(e.target.value))}
+            aria-label={t("selection.speak.volumeAria")}
+          />
+        </label>
+      </div>
+    );
+  };
+
   return (
     <div
       ref={containerRef}
@@ -283,161 +473,29 @@ export default function SelectionWindow() {
       )}
     >
       <div className="px-2 pt-1">
-        <div
-          data-tauri-drag-region="false"
-          className="rounded-md bg-black/5 dark:bg-white/5 px-2 py-1 leading-4 text-[12px] text-ellipsis whitespace-nowrap overflow-hidden"
-        >
-          {text || "未检测到文本"}
-        </div>
+        <TextPreview text={text} />
       </div>
 
       <div
         data-tauri-drag-region="false"
         className="flex items-center gap-2 px-3 py-2 flex-nowrap overflow-hidden"
       >
-        <img
-          src={cocoLogoImg}
-          alt="Coco Logo"
-          className="w-6 h-6"
-          onClick={openMain}
-          onError={(e) => {
-            try {
-              (e.target as HTMLImageElement).src = "/src-tauri/assets/logo.png";
-            } catch {}
-          }}
-        />
+        <HeaderLogo />
 
         <div>||</div>
 
-        <button
-          className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"
-          onClick={searchMain}
-          title="搜索"
-        >
-          <Search className="size-4 text-[#6366F1] transition-transform duration-150 group-hover:scale-105 group-hover:opacity-90" />
-          <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">
-            搜索
-          </span>
-        </button>
+        {visibleButtons.map((btn: any) => {
+          const { type, assistantId } = btn?.action;
+          return (
+            <ToolbarButton
+              key={btn.id}
+              btn={btn}
+              onClick={getActionHandler(type, assistantId)}
+            />
+          );
+        })}
 
-        <button
-          className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"
-          onClick={askAI}
-          title="AI 问答"
-        >
-          <Bot className="size-4 text-[#0287FF] transition-transform duration-150 group-hover:scale-105 group-hover:opacity-90" />
-          <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">
-            问答
-          </span>
-        </button>
-
-        <button
-          className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"
-          onClick={translate}
-          title="翻译"
-        >
-          <Languages className="size-4 text-[#10B981] transition-transform duration-150 group-hover:scale-105 group-hover:opacity-90" />
-          <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">
-            翻译
-          </span>
-        </button>
-
-        <button
-          className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"
-          onClick={copy}
-          title="复制"
-        >
-          <Copy className="size-4 text-[#64748B] transition-transform duration-150 group-hover:scale-105 group-hover:opacity-90" />
-          {copied ? (
-            <span
-              className="text-[12px] text-[#10B981]"
-              role="status"
-              aria-live="polite"
-            >
-              已复制
-            </span>
-          ) : (
-            <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">
-              复制
-            </span>
-          )}
-        </button>
-
-        <button
-          className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"
-          onClick={speak}
-          title="朗读"
-        >
-          <Volume2 className="size-4 text-[#F59E0B] transition-transform duration-150 group-hover:scale-105 group-hover:opacity-90" />
-          <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">
-            朗读
-          </span>
-        </button>
-        {isSpeaking && (
-          <div className="flex items-center gap-2">
-            <button
-              className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover:ring-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"
-              onClick={stopSpeak}
-              title="停止朗读"
-              aria-label="停止朗读"
-            >
-              <X className="size-4 transition-transform duration-150 group-hover:scale-105 group-hover:opacity-90" />
-              <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">
-                停止
-              </span>
-            </button>
-            <button
-              className="group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover:ring-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150"
-              onClick={speak}
-              title={isPaused ? "继续" : "暂停"}
-              aria-pressed={isPaused}
-              aria-label={isPaused ? "继续朗读" : "暂停朗读"}
-            >
-              {isPaused ? (
-                <Play className="size-4 transition-transform duration-150 group-hover:scale-105 group-hover:opacity-90" />
-              ) : (
-                <Pause className="size-4 transition-transform duration-150 group-hover:scale-105 group-hover:opacity-90" />
-              )}
-              <span className="text-[13px] transition-opacity duration-150 group-hover:opacity-90">
-                {isPaused ? "继续" : "暂停"}
-              </span>
-            </button>
-            <label className="flex items-center gap-1 text-[13px]">
-              <span className="sr-only">音量</span>
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step={0.1}
-                value={volume}
-                onChange={(e) => setVolume(Number(e.target.value))}
-                aria-label="朗读音量"
-              />
-            </label>
-          </div>
-        )}
-
-        <label className="ml-auto flex items-center gap-1 px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-white/15 hover:ring-1 hover:ring-black/10 dark:hover:ring-white/10 cursor-pointer whitespace-nowrap transition-all duration-150">
-          <input
-            type="checkbox"
-            checked={!selectionEnabled}
-            onChange={(e) => {
-              const next = e.target.checked;
-              setSelectionEnabled(!next);
-              if (next) close();
-            }}
-            title="不再提示"
-          />
-          <span className="text-[13px]">不再提示</span>
-        </label>
-
-        <button
-          className="group px-2 py-1 rounded-md hover:bg-black/8 dark:hover:bg-black/15 hover:ring-1 hover:ring-black/10 dark:hover:ring-white/10 cursor-pointer transition-all duration-150"
-          onClick={close}
-          title="关闭"
-        >
-          <X className="size-4 transition-transform duration-150 group-hover:scale-105 group-hover:opacity-90" />
-        </button>
+        {isSpeaking && <SpeakControls />}
       </div>
     </div>
   );
