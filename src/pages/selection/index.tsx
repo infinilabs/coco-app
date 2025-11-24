@@ -249,7 +249,7 @@ export default function SelectionWindow() {
     if (!payloadText) return;
 
     try {
-      await copyToClipboard(text.trim(), true);
+      await copyToClipboard(payloadText, true);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (e) {
