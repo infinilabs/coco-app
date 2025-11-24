@@ -83,14 +83,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Rust nightly for src-tauri
-        working-directory: src-tauri
-        shell: bash
-        run: |
-          rustup toolchain install nightly --profile minimal
-          rustup override set nightly
-          rustc --version
-
       - name: Checkout dependency repository
         uses: actions/checkout@v4
         with:
@@ -161,7 +153,6 @@ jobs:
       - name: Build the coco at ${{ matrix.platform}} for ${{ matrix.target }} @ ${{ env.APP_VERSION }}
         uses: tauri-apps/tauri-action@v0
         env:
-          RUSTUP_TOOLCHAIN: nightly
           CI: false
           PLATFORM: ${{ matrix.platform }}
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}

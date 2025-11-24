@@ -120,7 +120,6 @@ path-clean = "1.0.1"
 actix-files = "0.6.8"
 actix-web = "4.11.0"
 tauri-plugin-clipboard-manager = "2"
-get-selected-text = "0.1.6"
 macos-accessibility-client = "0.0.1"
 
 [dev-dependencies]
@@ -133,9 +132,6 @@ objc2 = "0.6.2"
 objc2-core-foundation =  {version = "0.3.1", features = ["CFString", "CFCGTypes", "CFArray"] }
 objc2-application-services = { version = "0.3.1", features = ["HIServices"] }
 objc2-core-graphics = { version = "=0.3.1", features = ["CGEvent"] }
-core-graphics = "0.23"
-enigo = "0.3"
-arboard = "3"
 
 [target."cfg(target_os = \"linux\")".dependencies]
 gio = "0.21.2"
