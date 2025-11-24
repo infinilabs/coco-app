@@ -71,18 +71,7 @@ async fn change_window_height(handle: AppHandle, height: u32) {
     }
 }
 
-#[derive(serde::Deserialize)]
-struct ThemeChangedPayload {
-    #[allow(dead_code)]
-    is_dark_mode: bool,
-}
-
-#[derive(Clone, serde::Serialize)]
-#[allow(dead_code)]
-struct Payload {
-    args: Vec<String>,
-    cwd: String,
-}
+// Removed unused Payload to avoid unnecessary serde derive macro invocations
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

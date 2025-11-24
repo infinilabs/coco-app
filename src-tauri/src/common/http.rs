@@ -1,25 +1,7 @@
 use crate::common;
 use reqwest::Response;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use std::collections::HashMap;
 use tauri_plugin_store::JsonValue;
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct GetResponse {
-    pub _id: String,
-    pub _source: Source,
-    pub result: String,
-    pub payload: Option<Value>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Source {
-    pub id: String,
-    pub created: String,
-    pub updated: String,
-    pub status: String,
-}
 
 pub async fn get_response_body_text(response: Response) -> Result<String, String> {
     let status = response.status().as_u16();
