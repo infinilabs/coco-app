@@ -1,2 +1,6 @@
 [toolchain]
-channel = "nightly-2025-06-26"
+channel = "nightly"
+profile = "minimal"
+
+# Optional: add clippy/rustfmt if CI uses them
+# components = ["clippy", "rustfmt"]
