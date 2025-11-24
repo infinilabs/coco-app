@@ -122,7 +122,7 @@ actix-web = "4.11.0"
 tauri-plugin-clipboard-manager = "2"
 get-selected-text = "0.1.6"
 macos-accessibility-client = "0.0.1"
-hashbrown_0_15_5_enable_default_feature = { package = "hashbrown", version = "=0.15.5", default-features=true } 
+hashbrown_0_15_5_enable_default_feature = { package = "hashbrown", version = "=0.15.5", default-features=true, features = ["allocator-api2"] } 
 
 
 [dev-dependencies]
