@@ -13,6 +13,8 @@ Information about release notes of Coco App is provided here.
 
 ### 🚀 Features
 
+- feat: add a heartbeat worker to check Coco server availability #988
+
 ### 🐛 Bug fix
 
 - fix: search_extension should not panic when ext is not found #983
