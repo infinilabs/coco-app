@@ -161,6 +161,7 @@ jobs:
       - name: Build the coco at ${{ matrix.platform}} for ${{ matrix.target }} @ ${{ env.APP_VERSION }}
         uses: tauri-apps/tauri-action@v0
         env:
+          RUSTUP_TOOLCHAIN: nightly
           CI: false
           PLATFORM: ${{ matrix.platform }}
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
