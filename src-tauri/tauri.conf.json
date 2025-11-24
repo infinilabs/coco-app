@@ -82,22 +82,25 @@
       {
         "label": "selection",
         "title": "Selection",
-        "url": "/ui/selection",
-        "width": 320,
-        "minWidth": 280,
-        "height": 90,
-        "minHeight": 56,
-        "center": false,
+        "alwaysOnTop": true,
+        "shadow": true,
         "decorations": false,
         "transparent": true,
+        "closable": true,
+        "minimizable": false,
         "maximizable": false,
-        "skipTaskbar": true,
-        "dragDropEnabled": true,
+        "dragDropEnabled": false,
+        "resizable": false,
+        "center": false,
+        "url": "/ui/selection",
         "hiddenTitle": true,
         "visible": false,
-        "shadow": true,
-        "alwaysOnTop": true,
-        "acceptFirstMouse": true
+        "acceptFirstMouse": true,
+        "windowEffects": {
+          "effects": [],
+          "state": "active",
+          "radius": 7
+        }
       }
     ],
     "security": {

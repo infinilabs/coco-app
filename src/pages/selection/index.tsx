@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
+import { Separator } from "@radix-ui/react-separator";
 
 import { useSelectionStore } from "@/stores/selectionStore";
 import { copyToClipboard } from "@/utils";
@@ -117,6 +118,10 @@ export default function SelectionWindow() {
       }
     };
   }, [autoHideMs]);
+
+  useEffect(() => {
+    useSelectionStore.getState().initSync();
+  }, []);
 
   const close = async () => {
     if (timerRef.current) {
@@ -276,6 +281,7 @@ export default function SelectionWindow() {
 
   // Render buttons from store; hide ones requiring assistant without assistantId
   const toolbarConfig = useSelectionStore((s) => s.toolbarConfig);
+  const iconsOnly = useSelectionStore((s) => s.iconsOnly);
 
   const requiresAssistant = (type?: string) =>
     type === "ask_ai" || type === "translate" || type === "summary";
@@ -344,14 +350,16 @@ export default function SelectionWindow() {
     const label = btn?.labelKey ? t(btn.labelKey) : btn?.label || btn?.id || "";
     return (
       <button
-        className="flex items-center gap-1 px-2 py-1 rounded-md cursor-pointer whitespace-nowrap transition-all duration-150"
+        className="flex items-center gap-1 p-1 rounded-md cursor-pointer whitespace-nowrap transition-all duration-150"
         onClick={onClick}
         title={label}
       >
         <IconRenderer icon={btn?.icon} />
-        <span className="text-[13px] transition-opacity duration-150">
-          {label}
-        </span>
+        {!iconsOnly && (
+          <span className="text-[13px] transition-opacity duration-150">
+            {label}
+          </span>
+        )}
       </button>
     );
   };
@@ -397,20 +405,22 @@ export default function SelectionWindow() {
   // Component: speak controls
   const SpeakControls = () => {
     return (
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         <button
-          className="flex items-center gap-1 px-2 py-1 rounded-md cursor-pointer whitespace-nowrap transition-all duration-150"
+          className="flex items-center gap-1 p-1 rounded-md cursor-pointer whitespace-nowrap transition-all duration-150"
           onClick={stopSpeak}
           title={t("selection.speak.stopTitle")}
           aria-label={t("selection.speak.stopAria")}
         >
           <X className="size-4 transition-transform duration-150" />
-          <span className="text-[13px] transition-opacity duration-150">
-            {t("selection.speak.stopLabel")}
-          </span>
+          {!iconsOnly && (
+            <span className="text-[13px] transition-opacity duration-150">
+              {t("selection.speak.stopLabel")}
+            </span>
+          )}
         </button>
         <button
-          className="flex items-center gap-1 px-2 py-1 rounded-md cursor-pointer whitespace-nowrap transition-all duration-150"
+          className="flex items-center gap-1 p-1 rounded-md cursor-pointer whitespace-nowrap transition-all duration-150"
           onClick={speak}
           title={
             isPaused
@@ -429,11 +439,13 @@ export default function SelectionWindow() {
           ) : (
             <Pause className="size-4 transition-transform duration-150" />
           )}
-          <span className="text-[13px] transition-opacity duration-150">
-            {isPaused
-              ? t("selection.speak.resumeLabel")
-              : t("selection.speak.pauseLabel")}
-          </span>
+          {!iconsOnly && (
+            <span className="text-[13px] transition-opacity duration-150">
+              {isPaused
+                ? t("selection.speak.resumeLabel")
+                : t("selection.speak.pauseLabel")}
+            </span>
+          )}
         </button>
         <label className="flex items-center gap-1 text-[13px]">
           <span className="sr-only">{t("selection.speak.volumeSr")}</span>
@@ -478,11 +490,15 @@ export default function SelectionWindow() {
 
       <div
         data-tauri-drag-region="false"
-        className="flex items-center gap-2 px-3 py-2 flex-nowrap overflow-hidden"
+        className="flex items-center gap-1 p-1 flex-nowrap overflow-hidden"
       >
         <HeaderLogo />
 
-        <div>||</div>
+        <Separator
+          orientation="vertical"
+          decorative
+          className="mx-2 h-4 w-px bg-gray-300 dark:bg-white/30 shrink-0"
+        />
 
         {visibleButtons.map((btn: any) => {
           const { type, assistantId } = btn?.action;

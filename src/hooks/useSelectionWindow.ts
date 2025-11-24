@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import platformAdapter from "@/utils/platformAdapter";
 import { useSelectionStore } from "@/stores/selectionStore";
@@ -6,12 +6,23 @@ import { useSelectionPanel } from "@/hooks/useSelectionPanel";
 
 export function useSelectionWindow() {
   const { state: panelState, close: onClose } = useSelectionPanel();
+  const lastWidthRef = useRef<number | null>(null);
+
+  // Subscribe to store for reactive updates
+  const iconsOnly = useSelectionStore((s) => s.iconsOnly);
+  const selectionEnabled = useSelectionStore((s) => s.selectionEnabled);
+
+  const WIDTH_ICONS_ONLY = 250;
+  const WIDTH_FULL = 470;
+  const HEIGHT = 62;
+  const getSelectionWidth = (isIconsOnly: boolean) =>
+    isIconsOnly ? WIDTH_ICONS_ONLY : WIDTH_FULL;
 
   useEffect(() => {
     const openSelectionWindow = async (payload: any) => {
       console.log("[selection] openSelectionWindow payload", payload);
       // when selection is disabled, hide the existing window and return
-      if (!useSelectionStore.getState().selectionEnabled) {
+      if (!selectionEnabled) {
         const existing = await platformAdapter.getWindowByLabel("selection");
         if (existing) {
           await existing.hide();
@@ -20,8 +31,8 @@ export function useSelectionWindow() {
       }
 
       const label = "selection";
-      const width = 550;
-      const height = 75;
+      const width = getSelectionWidth(iconsOnly);
+      const height = HEIGHT;
 
       const options: any = {
         label,
@@ -31,7 +42,7 @@ export function useSelectionWindow() {
         alwaysOnTop: true,
         shadow: true,
         decorations: false,
-        transparent: false,
+        transparent: true,
         closable: true,
         minimizable: false,
         maximizable: false,
@@ -39,6 +50,14 @@ export function useSelectionWindow() {
         resizable: false,
         center: false,
         url: "/ui/selection",
+        windowEffects: {
+          effects: [],
+          state: "active",
+          radius: 7,
+        },
+        hiddenTitle: true,
+        visible: false,
+        acceptFirstMouse: true,
         data: { timestamp: Date.now() },
       };
 
@@ -67,8 +86,12 @@ export function useSelectionWindow() {
       if (!win) return;
 
       // Set window size to fixed width and height
-      // @ts-ignore
-      await win.setSize({ type: "Logical", width, height });
+      // Avoid redundant setSize calls if width is unchanged
+      if (lastWidthRef.current !== width) {
+        // @ts-ignore
+        await win.setSize({ type: "Logical", width, height });
+        lastWidthRef.current = width;
+      }
 
       await win.show();
 
@@ -111,5 +134,5 @@ export function useSelectionWindow() {
     return () => {
       unlistenSelection.then((fn) => fn());
     };
-  }, [panelState?.visible, panelState?.text, onClose]);
+  }, [panelState?.visible, panelState?.text, onClose, iconsOnly, selectionEnabled]);
 }

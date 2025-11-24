@@ -659,6 +659,17 @@
       "resumeLabel": "继续",
       "volumeSr": "音量",
       "volumeAria": "朗读音量"
+    },
+    "display": {
+      "title": "显示样式",
+      "iconsOnlyDesc": "仅显示图标（隐藏文字标签）",
+      "iconsOnlyLabel": "仅显示图标"
+    },
+    "bind": {
+      "service": "选择服务",
+      "defaultService": "默认服务",
+      "assistant": "绑定小助手（仅聊天）",
+      "defaultAssistant": "默认小助手"
     }
   }
 }

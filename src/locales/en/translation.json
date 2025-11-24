@@ -660,6 +660,17 @@
       "resumeLabel": "Resume",
       "volumeSr": "Volume",
       "volumeAria": "Speech volume"
+    },
+    "display": {
+      "title": "Display Style",
+      "iconsOnlyDesc": "Show icons only (hide text labels)",
+      "iconsOnlyLabel": "Icons only"
+    },
+    "bind": {
+      "service": "Select Service",
+      "defaultService": "Default service",
+      "assistant": "Bind Assistant (Chat only)",
+      "defaultAssistant": "Default assistant"
     }
   }
 }

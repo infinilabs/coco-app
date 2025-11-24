@@ -12,12 +12,12 @@ import {
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
-import { useConnectStore } from "@/stores/connectStore";
 import { AssistantFetcher } from "@/components/Assistant/AssistantFetcher";
 import { useSelectionStore } from "@/stores/selectionStore";
 import SettingsToggle from "@/components/Settings/SettingsToggle";
 import SettingsItem from "@/components/Settings/SettingsItem";
 import platformAdapter from "@/utils/platformAdapter";
+import { useEnabledServers } from "@/hooks/useEnabledServers";
 
 /**
  * Selection toolbar button config types
@@ -42,6 +42,7 @@ type ButtonConfig = {
   action: {
     type: ActionType;
     assistantId?: string;
+    assistantServerId?: string;
     eventName?: string;
   };
   // i18n key for built-in labels; if present, render by t(labelKey)
@@ -137,32 +138,21 @@ function saveToolbarConfig(cfg: ButtonConfig[]) {
 const SelectionSettings = () => {
   const { t } = useTranslation();
   // Reactive service and assistant list
-  const currentService = useConnectStore((s) => s.currentService);
-  const assistantList = useConnectStore((s) => s.assistantList);
-  const setAssistantList = useConnectStore((s) => s.setAssistantList);
+  const { enabledServers: serverList } = useEnabledServers();
 
   const selectionEnabled = useSelectionStore((state) => state.selectionEnabled);
+  const iconsOnly = useSelectionStore((state) => state.iconsOnly);
+  const setIconsOnly = useSelectionStore((state) => state.setIconsOnly);
+
+  useEffect(() => {
+    useSelectionStore.getState().initSync();
+  }, []);
 
   // Assistant fetcher
   const { fetchAssistant } = AssistantFetcher({});
 
-  // Fetch assistants when service changes if list is empty
-  useEffect(() => {
-    if (!currentService?.id) return;
-
-    (async () => {
-      try {
-        const data = await fetchAssistant({
-          current: 1,
-          pageSize: 1000,
-        });
-        setAssistantList(data.list || []);
-      } catch (err) {
-        console.error("SelectionSettings assistants fetch error:", err);
-        setAssistantList([]);
-      }
-    })();
-  }, [currentService?.id]);
+  // Cache assistants per server for per-button selection
+  const [assistantByServer, setAssistantByServer] = useState<Record<string, any[]>>({});
 
   // Initialize from global store; write back on change for multi-window sync
   const toolbarConfig = useSelectionStore((s) => s.toolbarConfig);
@@ -226,6 +216,41 @@ const SelectionSettings = () => {
     updateAction(btn.id, { assistantId: id });
   };
 
+  // Handle server selection per button and fetch its assistants
+  const handleServerSelect = async (btn: ButtonConfig, serverId: string) => {
+    const sid = serverId || undefined;
+    // When changing server, clear assistantId to avoid mismatched binding
+    updateAction(btn.id, { assistantServerId: sid, assistantId: undefined });
+    if (!sid) return;
+    try {
+      const data = await fetchAssistant({ current: 1, pageSize: 1000, serverId: sid });
+      setAssistantByServer((prev) => ({ ...prev, [sid]: data.list || [] }));
+    } catch (err) {
+      console.error("Fetch assistants for server failed:", err);
+      setAssistantByServer((prev) => ({ ...prev, [sid]: [] }));
+    }
+  };
+
+  // Prefetch assistants for buttons that already have server selection
+  useEffect(() => {
+    const uniqueServerIds = Array.from(
+      new Set(
+        buttons
+          .map((b) => b.action.assistantServerId)
+          .filter((sid): sid is string => Boolean(sid))
+      )
+    );
+    uniqueServerIds.forEach(async (sid) => {
+      if (!sid || assistantByServer[sid]) return;
+      try {
+        const data = await fetchAssistant({ current: 1, pageSize: 1000, serverId: sid });
+        setAssistantByServer((prev) => ({ ...prev, [sid]: data.list || [] }));
+      } catch (err) {
+        console.error("Prefetch assistants for stored server failed:", err);
+      }
+    });
+  }, [buttons]);
+
   return (
     <div className="space-y-6 py-4">
       <div className="flex items-center justify-between">
@@ -241,7 +266,9 @@ const SelectionSettings = () => {
           checked={selectionEnabled}
           onChange={async (value) => {
             try {
-              await platformAdapter.invokeBackend("set_selection_enabled", { enabled: value });
+              await platformAdapter.invokeBackend("set_selection_enabled", {
+                enabled: value,
+              });
             } catch (e) {
               console.error("set_selection_enabled invoke failed:", e);
             }
@@ -252,6 +279,20 @@ const SelectionSettings = () => {
 
       {selectionEnabled && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <SettingsItem
+              icon={Sparkles}
+              title={t("selection.display.title")}
+              description={t("selection.display.iconsOnlyDesc")}
+            >
+              <SettingsToggle
+                checked={iconsOnly}
+                onChange={async (value) => {
+                  // Update local store
+                  setIconsOnly(value);
+                }}
+                label={t("selection.display.iconsOnlyLabel")}
+              />
+            </SettingsItem>
           <div className="space-y-3">
             {buttons.map((btn, index) => {
               const IconComp =
@@ -314,21 +355,43 @@ const SelectionSettings = () => {
 
                     <div className="ml-auto flex items-center gap-2">
                       {isChat && (
-                        <select
-                          className="rounded-md border px-2 py-1 text-sm bg-white dark:bg-[#0B1220] w-40"
-                          value={btn.action.assistantId || ""}
-                          onChange={(e) =>
-                            handleAssistantSelect(btn, e.target.value)
-                          }
-                          title="Bind assistant (Chat only)"
-                        >
-                          <option value="">Default assistant</option>
-                          {assistantList.map((a: any) => (
-                            <option key={a._id} value={a._id}>
-                              {a._source?.name || a._id}
-                            </option>
-                          ))}
-                        </select>
+                        <>
+                          {/* Service selection */}
+                          <select
+                            className="rounded-md border px-2 py-1 text-sm bg-white dark:bg-[#0B1220] w-44"
+                            value={btn.action.assistantServerId || ""}
+                            onChange={(e) => handleServerSelect(btn, e.target.value)}
+                            title={t("selection.bind.service")}
+                          >
+                            <option value="">{t("selection.bind.defaultService")}</option>
+                            {serverList.map((s: any) => (
+                              <option key={s.id} value={s.id}>
+                                {s.name || s.endpoint || s.id}
+                              </option>
+                            ))}
+                          </select>
+
+                          {/* Assistant selection bound to chosen service */}
+                          {(() => {
+                            const sid = btn.action.assistantServerId;
+                            const list = sid && assistantByServer[sid] || [];
+                            return (
+                              <select
+                                className="rounded-md border px-2 py-1 text-sm bg-white dark:bg-[#0B1220] w-44"
+                                value={btn.action.assistantId || ""}
+                                onChange={(e) => handleAssistantSelect(btn, e.target.value)}
+                                title={t("selection.bind.assistant")}
+                              >
+                                <option value="">{t("selection.bind.defaultAssistant")}</option>
+                                {list.map((a: any) => (
+                                  <option key={a._id} value={a._id}>
+                                    {a._source?.name || a._id}
+                                  </option>
+                                ))}
+                              </select>
+                            );
+                          })()}
+                        </>
                       )}
                     </div>
                   </div>
