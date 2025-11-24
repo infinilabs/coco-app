@@ -1,3 +1,5 @@
+#![feature(allocator_api)]
+
 mod assistant;
 mod autostart;
 mod common;

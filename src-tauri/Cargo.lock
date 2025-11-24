@@ -1232,6 +1232,7 @@ dependencies = [
  "get-selected-text",
  "gio 0.21.2",
  "glib 0.21.3",
+ "hashbrown 0.15.5",
  "hostname",
  "http 1.3.1",
  "hyper 0.14.32",
