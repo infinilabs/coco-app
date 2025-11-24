@@ -218,12 +218,14 @@ const SelectionSettings = () => {
 
   // Handle server selection per button and fetch its assistants
   const handleServerSelect = async (btn: ButtonConfig, serverId: string) => {
+    console.log("1111111", btn, serverId);
     const sid = serverId || undefined;
     // When changing server, clear assistantId to avoid mismatched binding
     updateAction(btn.id, { assistantServerId: sid, assistantId: undefined });
     if (!sid) return;
     try {
       const data = await fetchAssistant({ current: 1, pageSize: 1000, serverId: sid });
+      console.log("2222222", sid, data);
       setAssistantByServer((prev) => ({ ...prev, [sid]: data.list || [] }));
     } catch (err) {
       console.error("Fetch assistants for server failed:", err);

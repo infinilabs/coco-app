@@ -20,7 +20,7 @@ export function useSelectionWindow() {
 
   useEffect(() => {
     const openSelectionWindow = async (payload: any) => {
-      console.log("[selection] openSelectionWindow payload", payload);
+      // console.log("[selection] openSelectionWindow payload", payload);
       // when selection is disabled, hide the existing window and return
       if (!selectionEnabled) {
         const existing = await platformAdapter.getWindowByLabel("selection");

@@ -11,7 +11,11 @@ export function useEnabledServers() {
   const serverList = useConnectStore((s) => s.serverList);
   const { refreshServerList } = useServers();
 
-  const enabledServers = useMemo(() => getEnabledServers(serverList), [serverList]);
+  const enabledServers = useMemo(() => {
+    const list = getEnabledServers(serverList);
+    // Further filter to public servers or those with user profile (logged-in)
+    return list.filter((s) => s.public || s.profile);
+  }, [serverList]);
 
   return { enabledServers, refreshServerList };
 }
