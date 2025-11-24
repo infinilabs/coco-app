@@ -20,6 +20,8 @@ Information about release notes of Coco App is provided here.
 
 ### ✈️ Improvements
 
+- chore: write panic message to stdout in panic hook #989
+
 ## 0.9.0 (2025-11-19)
 
 ### ❌ Breaking changes
