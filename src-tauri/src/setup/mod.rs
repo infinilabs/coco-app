@@ -82,6 +82,12 @@ pub(crate) async fn backend_setup(tauri_app_handle: AppHandle, app_lang: String)
         .expect("global tauri AppHandle already initialized");
     log::trace!("global Tauri AppHandle set");
 
+    /*
+     * This should be set before Rust code makes any HTTP requests as it is
+     * needed to provider HTTP header: X-APP-LANG
+     */
+    update_app_lang(app_lang).await;
+
     let registry = SearchSourceRegistry::default();
     tauri_app_handle.manage(registry); // Store registry in Tauri's app state
 
@@ -115,8 +121,6 @@ pub(crate) async fn backend_setup(tauri_app_handle: AppHandle, app_lang: String)
     }
 
     autostart::ensure_autostart_state_consistent(&tauri_app_handle).unwrap();
-
-    update_app_lang(app_lang).await;
 
     // Invoked, now update the state
     BACKEND_SETUP_COMPLETED.store(true, Ordering::Relaxed);

@@ -13,8 +13,11 @@ use serde_json::Value as JsonValue;
 use serde_json::from_value;
 use std::collections::HashMap;
 use std::sync::LazyLock;
+use std::thread;
+use std::time::Duration;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_store::StoreExt;
+use tokio::runtime;
 use tokio::sync::RwLock;
 
 /// Coco sever list
@@ -310,6 +313,109 @@ pub async fn refresh_all_coco_server_info(app_handle: AppHandle) {
     for server in servers {
         let _ = refresh_coco_server_info(app_handle.clone(), server.id.clone()).await;
     }
+}
+
+/// Start a background worker that periodically sends heartbeats (`GET /provider/_info`)
+/// to the connected Coco servers, checks if they are available and updates the
+/// `SearchSourceRegistry` accordingly.
+pub(crate) fn start_bg_heartbeat_worker(tauri_app_handle: AppHandle) {
+    const THREAD_NAME: &str = "Coco background heartbeat worker";
+    const SLEEP_DURATION: Duration = Duration::from_secs(15);
+
+    let main_closure = || {
+        let single_thread_rt = runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap_or_else(|e| {
+                panic!(
+                    "failed to create a single-threaded Tokio runtime within thread [{}] because [{}]",
+                    THREAD_NAME, e
+                );
+            });
+
+        single_thread_rt.block_on(async move {
+            let mut server_removed = Vec::new();
+            let mut server_added = Vec::new();
+
+            let search_sources = tauri_app_handle.state::<SearchSourceRegistry>();
+            loop {
+                log::info!("Coco Server Heartbeat worker is working...");
+
+                refresh_all_coco_server_info(tauri_app_handle.clone()).await;
+
+                /*
+                 * For the Coco servers that are included in the SearchSourceRegistry
+                 * but unavailable, they should be removed from the registry.
+                 *
+                 * We do this step first so that there are less search source to
+                 * scan.
+                 */
+                for search_source in search_sources.get_sources().await {
+                    let query_source = search_source.get_type();
+                    let search_source_id = query_source.id;
+                    let search_source_name = query_source.name;
+
+                    let Some(coco_server) = get_server_by_id(&search_source_id).await else {
+                        // This search source may not be a Coco server, try the next one.
+                        continue;
+                    };
+
+                    assert!(
+                        coco_server.enabled,
+                        "Coco servers stored in search source list should all be enabled"
+                    );
+
+                    if !coco_server.available {
+                        let removed = search_sources.remove_source(&search_source_id).await;
+                        if removed {
+                            server_removed.push((search_source_id, search_source_name));
+                        }
+                    }
+                }
+
+                /*
+                 * Coco servers that are available and enabled should be added to
+                 * the SearchSourceRegistry if they are not already included.
+                 */
+                for coco_server in get_all_servers().await {
+                    if coco_server.enabled
+                        && coco_server.available
+                        && search_sources.get_source(&coco_server.id).await.is_none()
+                    {
+                        server_added.push((coco_server.id.clone(), coco_server.name.clone()));
+
+                        let source = CocoSearchSource::new(coco_server);
+                        search_sources.register_source(source).await;
+                    }
+                }
+
+                /*
+                 * Log the updates to SearchSourceRegistry
+                 */
+                log::info!(
+                    "Coco Server Heartbeat worker: removed {:?} from the SearchSourceRegistry",
+                    server_removed
+                );
+                log::info!(
+                    "Coco Server Heartbeat worker: added {:?} to the SearchSourceRegistry",
+                    server_added
+                );
+
+                // Sleep for a period of time
+                tokio::time::sleep(SLEEP_DURATION).await;
+            }
+        });
+    };
+
+    thread::Builder::new()
+        .name(THREAD_NAME.into())
+        .spawn(main_closure)
+        .unwrap_or_else(|e| {
+            panic!(
+                "failed to start thread [{}] for reason [{}]",
+                THREAD_NAME, e
+            )
+        });
 }
 
 #[tauri::command]

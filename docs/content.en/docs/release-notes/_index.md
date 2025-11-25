@@ -14,6 +14,7 @@ Information about release notes of Coco App is provided here.
 ### 🚀 Features
 
 - feat: add selection toolbar window for mac #980
+- feat: add a heartbeat worker to check Coco server availability #988
 
 ### 🐛 Bug fix
 
@@ -21,6 +22,8 @@ Information about release notes of Coco App is provided here.
 - fix: persist configuration settings properly #987
 
 ### ✈️ Improvements
+
+- chore: write panic message to stdout in panic hook #989
 
 ## 0.9.0 (2025-11-19)
 

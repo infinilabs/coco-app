@@ -13,7 +13,9 @@ pub mod util;
 
 use crate::common::register::SearchSourceRegistry;
 use crate::common::{CHECK_WINDOW_LABEL, MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL};
-use crate::server::servers::{load_or_insert_default_server, load_servers_token};
+use crate::server::servers::{
+    load_or_insert_default_server, load_servers_token, start_bg_heartbeat_worker,
+};
 use crate::util::logging::set_up_tauri_logger;
 use crate::util::prevent_default;
 use autostart::change_autostart;
@@ -275,6 +277,12 @@ pub async fn init(app_handle: &AppHandle) {
         crate::server::servers::try_register_server_to_search_source(app_handle.clone(), &server)
             .await;
     }
+
+    /*
+     * Start the background heartbeat worker here after setting up Coco server
+     * storage and SearchSourceRegistry.
+     */
+    start_bg_heartbeat_worker(app_handle.clone());
 
     extension::built_in::pizza_engine_runtime::start_pizza_engine_runtime().await;
 }

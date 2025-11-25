@@ -22,9 +22,11 @@ impl SearchSourceRegistry {
         sources.clear();
     }
 
-    pub async fn remove_source(&self, id: &str) {
+    /// Remove the SearchSource specified by `id`, return a boolean indicating
+    /// if it get removed or not.
+    pub async fn remove_source(&self, id: &str) -> bool {
         let mut sources = self.sources.write().await;
-        sources.remove(id);
+        sources.remove(id).is_some()
     }
 
     #[allow(dead_code)]

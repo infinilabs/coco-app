@@ -69,6 +69,9 @@ fn setup_panic_hook() {
                 eprintln!("Panic hook error: Failed to open panic log file: {}", e);
             }
         }
+
+        // Write to stdout, with a new-line char since stdout is line-buffered.
+        println!("{}\n", panic_log);
     }));
 }
 
