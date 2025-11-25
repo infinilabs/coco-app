@@ -419,8 +419,8 @@ export default function SelectionWindow() {
             </span>
           )}
         </button>
-        {/* <button
-          className="flex items-center gap-1 p-1 rounded-md cursor-pointer whitespace-nowrap transition-all duration-150"
+        <button
+          className="hidden items-center gap-1 p-1 rounded-md cursor-pointer whitespace-nowrap transition-all duration-150"
           onClick={speak}
           title={
             isPaused
@@ -447,7 +447,7 @@ export default function SelectionWindow() {
             </span>
           )}
         </button>
-        <label className="flex items-center gap-1 text-[12px]">
+        <label className="hidden items-center gap-1 text-[12px]">
           <span className="sr-only">{t("selection.speak.volumeSr")}</span>
           <input
             type="range"
@@ -458,7 +458,7 @@ export default function SelectionWindow() {
             onChange={(e) => setVolume(Number(e.target.value))}
             aria-label={t("selection.speak.volumeAria")}
           />
-        </label> */}
+        </label>
       </div>
     );
   };
@@ -484,9 +484,9 @@ export default function SelectionWindow() {
         }
       )}
     >
-      {/* <div className="px-2 pt-1">
+      <div className="hidden px-2 pt-1">
         <TextPreview text={text} />
-      </div> */}
+      </div>
 
       <div
         data-tauri-drag-region="false"
