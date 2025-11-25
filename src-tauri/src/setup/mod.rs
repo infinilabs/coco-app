@@ -83,6 +83,8 @@ pub(crate) async fn backend_setup(tauri_app_handle: AppHandle, app_lang: String)
     log::trace!("global Tauri AppHandle set");
 
     /*
+     * Initialize the app language setting stored in backend.
+     *
      * This should be set before Rust code makes any HTTP requests as it is
      * needed to provider HTTP header: X-APP-LANG
      */
