@@ -220,8 +220,6 @@ export function useSearch() {
   );
 
   const debouncedSearch = useMemo(() => {
-    console.log("searchDelay", searchDelay);
-
     return debounce(performSearch, searchDelay);
   }, [performSearch, searchDelay]);
 
