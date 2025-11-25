@@ -14,7 +14,7 @@ export function useSelectionWindow() {
 
   const WIDTH_ICONS_ONLY = 250;
   const WIDTH_FULL = 470;
-  const HEIGHT = 62;
+  const HEIGHT = 32;
   const getSelectionWidth = (isIconsOnly: boolean) =>
     isIconsOnly ? WIDTH_ICONS_ONLY : WIDTH_FULL;
 
@@ -40,7 +40,7 @@ export function useSelectionWindow() {
         width,
         height,
         alwaysOnTop: true,
-        shadow: true,
+        shadow: false,
         decorations: false,
         transparent: true,
         closable: true,
@@ -96,10 +96,10 @@ export function useSelectionWindow() {
       await win.show();
 
       // Position window based on "top-left origin + logical coordinates" directly
-      // X offset 0, Y offset -90px (not subtracting window height)
+      // X offset 0, Y offset -40px (not subtracting window height)
       if (xLogical > 0 || yLogical > 0) {
         const offsetX = 0;
-        const offsetY = 90;
+        const offsetY = 40;
         const targetX = Math.max(0, xLogical + offsetX);
         const targetY = Math.max(0, yLogical - offsetY);
         // @ts-ignore

@@ -83,7 +83,7 @@
         "label": "selection",
         "title": "Selection",
         "alwaysOnTop": true,
-        "shadow": true,
+        "shadow": false,
         "decorations": false,
         "transparent": true,
         "closable": true,

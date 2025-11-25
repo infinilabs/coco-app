@@ -356,7 +356,7 @@ export default function SelectionWindow() {
       >
         <IconRenderer icon={btn?.icon} />
         {!iconsOnly && (
-          <span className="text-[13px] transition-opacity duration-150">
+          <span className="text-[12px] transition-opacity duration-150">
             {label}
           </span>
         )}
@@ -414,12 +414,12 @@ export default function SelectionWindow() {
         >
           <X className="size-4 transition-transform duration-150" />
           {!iconsOnly && (
-            <span className="text-[13px] transition-opacity duration-150">
+            <span className="text-[12px] transition-opacity duration-150">
               {t("selection.speak.stopLabel")}
             </span>
           )}
         </button>
-        <button
+        {/* <button
           className="flex items-center gap-1 p-1 rounded-md cursor-pointer whitespace-nowrap transition-all duration-150"
           onClick={speak}
           title={
@@ -440,14 +440,14 @@ export default function SelectionWindow() {
             <Pause className="size-4 transition-transform duration-150" />
           )}
           {!iconsOnly && (
-            <span className="text-[13px] transition-opacity duration-150">
+            <span className="text-[12px] transition-opacity duration-150">
               {isPaused
                 ? t("selection.speak.resumeLabel")
                 : t("selection.speak.pauseLabel")}
             </span>
           )}
         </button>
-        <label className="flex items-center gap-1 text-[13px]">
+        <label className="flex items-center gap-1 text-[12px]">
           <span className="sr-only">{t("selection.speak.volumeSr")}</span>
           <input
             type="range"
@@ -458,7 +458,7 @@ export default function SelectionWindow() {
             onChange={(e) => setVolume(Number(e.target.value))}
             aria-label={t("selection.speak.volumeAria")}
           />
-        </label>
+        </label> */}
       </div>
     );
   };
@@ -472,11 +472,11 @@ export default function SelectionWindow() {
         }
       }}
       className={clsx(
-        "m-0 p-0 w-full h-full",
+        "m-0 p-0 w-full h-full overflow-hidden",
         "text-[13px] select-none",
         "bg-white dark:bg-[#1E293B]",
         "text-[#111] dark:text-[#ddd]",
-        "rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.25)] border border-white/20 dark:border-[#2A3443]",
+        "rounded-xl",
         "transition-all duration-150",
         {
           "translate-y-0": visible && !animatingOut,
@@ -484,9 +484,9 @@ export default function SelectionWindow() {
         }
       )}
     >
-      <div className="px-2 pt-1">
+      {/* <div className="px-2 pt-1">
         <TextPreview text={text} />
-      </div>
+      </div> */}
 
       <div
         data-tauri-drag-region="false"
