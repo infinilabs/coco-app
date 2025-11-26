@@ -78,7 +78,7 @@ export default function useSettingsWindow() {
 
     return () => {
       unlisten.then((fn) => fn());
-      window.addEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [openSettingsWindow, handleKeyDown]);
 

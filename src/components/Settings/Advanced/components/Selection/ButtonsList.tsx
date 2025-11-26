@@ -1,61 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import {
   GripVertical,
-  Bot,
-  Copy,
-  Languages,
-  Search,
-  Volume2,
-  FileText,
+  Trash2,
 } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
 import { AssistantFetcher } from "@/components/Assistant/AssistantFetcher";
 import { setCurrentWindowService } from "@/commands/windowService";
-
-type ActionType =
-  | "search"
-  | "ask_ai"
-  | "translate"
-  | "summary"
-  | "copy"
-  | "speak"
-  | "custom";
-
-type LucideIconName =
-  | "Search"
-  | "Bot"
-  | "Languages"
-  | "FileText"
-  | "Copy"
-  | "Volume2";
-
-type IconConfig =
-  | { type: "lucide"; name: LucideIconName; color?: string }
-  | { type: "custom"; dataUrl: string; color?: string };
-
-export type ButtonConfig = {
-  id: string;
-  label: string;
-  icon: IconConfig;
-  action: {
-    type: ActionType;
-    assistantId?: string;
-    assistantServerId?: string;
-    eventName?: string;
-  };
-  labelKey?: string;
-};
-
-const LUCIDE_ICON_MAP: Record<LucideIconName, any> = {
-  Search,
-  Bot,
-  Languages,
-  FileText,
-  Copy,
-  Volume2,
-};
+import { AddChatButton } from "./AddChatButton";
+import { ButtonConfig, resolveLucideIcon } from "./config";
 
 const ASSISTANT_CACHE_KEY = "assistant_list_cache";
 
@@ -97,6 +51,7 @@ const ButtonsList = ({ buttons, setButtons, serverList }: ButtonsListProps) => {
   const [assistantByServer, setAssistantByServer] = useState<Record<string, any[]>>({});
   const [assistantLoadingByServer, setAssistantLoadingByServer] = useState<Record<string, boolean>>({});
   const [assistantCache, setAssistantCacheState] = useState<Record<string, AssistantCacheItem>>(() => loadAssistantCache());
+  const BUILT_IN_IDS = new Set(["search", "ask_ai", "translate", "summary", "copy", "speak"]);
 
   const dragIndexRef = useRef<number | null>(null);
   const initializedServiceRef = useRef<boolean>(false);
@@ -210,8 +165,9 @@ const ButtonsList = ({ buttons, setButtons, serverList }: ButtonsListProps) => {
   return (
     <div className="space-y-3">
       {buttons.map((btn, index) => {
-        const IconComp = btn.icon.type === "lucide" ? LUCIDE_ICON_MAP[btn.icon.name] : null;
+        const IconComp = btn.icon.type === "lucide" ? resolveLucideIcon(btn.icon.name) : null;
         const isChat = ["ask_ai", "translate", "summary"].includes(btn.action.type);
+        const isBuiltIn = BUILT_IN_IDS.has(btn.id);
         const visualType: "Chat" | "Search" | "Tool" = isChat ? "Chat" : btn.action.type === "search" ? "Search" : "Tool";
 
         return (
@@ -279,7 +235,7 @@ const ButtonsList = ({ buttons, setButtons, serverList }: ButtonsListProps) => {
                           <option value="">{t("selection.bind.defaultAssistant")}</option>
                           {loading && (
                             <option value="" disabled>
-                              加载中...
+                              {t("common.loading")}
                             </option>
                           )}
                           {list.map((a: any) => (
@@ -292,11 +248,23 @@ const ButtonsList = ({ buttons, setButtons, serverList }: ButtonsListProps) => {
                     })()}
                   </>
                 )}
+                {!isBuiltIn && (
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center rounded-md border border-transparent bg-red-50 text-red-600 hover:bg-red-100 p-1"
+                    title={t("selection.actions.delete")}
+                    aria-label={t("selection.actions.delete")}
+                    onClick={() => setButtons((prev) => prev.filter((b) => b.id !== btn.id))}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
           </div>
         );
       })}
+      <AddChatButton serverList={serverList} onAdd={(newBtn) => setButtons((prev) => [...prev, newBtn])} />
     </div>
   );
 };

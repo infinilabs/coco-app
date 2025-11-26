@@ -12,8 +12,6 @@ export type ISelectionStore = {
   // whether to show icons only (hide labels) in selection window
   iconsOnly: boolean;
   setIconsOnly: (iconsOnly: boolean) => void;
-  // initialize cross-window sync listeners once
-  initSync: () => Promise<void>;
 };
 
 export const useSelectionStore = create<ISelectionStore>()(
@@ -23,35 +21,30 @@ export const useSelectionStore = create<ISelectionStore>()(
         selectionEnabled: false,
         setSelectionEnabled(selectionEnabled) {
           set({ selectionEnabled });
+          platformAdapter.emitEvent("change-selection-store", {
+              iconsOnly: useSelectionStore.getState().iconsOnly,
+              selectionEnabled: selectionEnabled,
+              toolbarConfig: useSelectionStore.getState().toolbarConfig,
+            });
         },
         toolbarConfig: [],
         setToolbarConfig(toolbarConfig) {
-          return set({ toolbarConfig });
+          set({ toolbarConfig });
+          platformAdapter.emitEvent("change-selection-store", {
+              iconsOnly: useSelectionStore.getState().iconsOnly,
+              selectionEnabled: useSelectionStore.getState().selectionEnabled,
+              toolbarConfig,
+            });
         },
         iconsOnly: false,
         setIconsOnly(iconsOnly) {
           set({ iconsOnly });
-          // broadcast to other windows
-          try {
-            platformAdapter.emitEvent("selection-icons-only", { value: iconsOnly });
-          } catch {}
-        },
-        initSync: async () => {
-          // ensure listener only initialized once per window context
-          const hasInit = (window as any).__selectionIconsOnlyInit__;
-          if (hasInit) return;
-          (window as any).__selectionIconsOnlyInit__ = true;
-          try {
-            await platformAdapter.listenEvent(
-              "selection-icons-only",
-              ({ payload }: any) => {
-                const next = Boolean(payload?.value);
-                // apply without re-broadcast to avoid echo
-                set({ iconsOnly: next });
-              }
-            );
-          } catch {}
-        },
+          platformAdapter.emitEvent("change-selection-store", {
+              iconsOnly,
+              selectionEnabled: useSelectionStore.getState().selectionEnabled,
+              toolbarConfig: useSelectionStore.getState().toolbarConfig,
+            });
+        }
       }),
       {
         name: "selection-store",

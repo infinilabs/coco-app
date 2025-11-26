@@ -16,6 +16,29 @@ export interface WebPlatformAdapter extends BasePlatformAdapter {
 
 // Create Web adapter functions
 export const createWebAdapter = (): WebPlatformAdapter => {
+  // Simple in-page event bus using CustomEvent
+  const emitCustomEvent = (event: string, payload?: any) => {
+    try {
+      const ce = new CustomEvent(event, { detail: payload });
+      window.dispatchEvent(ce);
+    } catch (e) {
+      console.warn("Web event emit failed", event, e);
+    }
+  };
+
+  const listenCustomEvent = (event: string, callback: Function) => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent;
+      try {
+        callback({ payload: ce.detail });
+      } catch (err) {
+        console.warn("Web event callback error", event, err);
+      }
+    };
+    window.addEventListener(event, handler as EventListener);
+    return () => window.removeEventListener(event, handler as EventListener);
+  };
+
   return {
     async commands(commandName, ...args) {
       console.warn(
@@ -42,8 +65,13 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     },
 
     async showWindow() {
-      console.log("Web mode simulated window show");
-      // No actual operation needed in web environment
+      try {
+        if (!location.pathname.startsWith("/ui")) {
+          window.location.href = "/ui";
+        }
+      } catch (e) {
+        console.warn("Web showWindow navigation failed", e);
+      }
     },
 
     convertFileSrc(path) {
@@ -51,12 +79,11 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     },
 
     async emitEvent(event, payload) {
-      console.log("Web mode simulated event emit", event, payload);
+      emitCustomEvent(event, payload);
     },
 
-    async listenEvent(event, _callback) {
-      console.log("Web mode simulated event listen", event);
-      return () => {};
+    async listenEvent(event, callback) {
+      return Promise.resolve(listenCustomEvent(event, callback));
     },
 
     async setAlwaysOnTop(isPinned) {
@@ -142,12 +169,17 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     },
 
     async getWindowByLabel(label) {
-      console.log("Web mode simulated get window by label:", label);
+      console.log("Web getWindowByLabel:", label);
       return null;
     },
 
-    async createWindow(label, options) {
-      console.log("Web mode simulated create window:", label, options);
+    async createWindow(_label, options) {
+      const url = options?.url || "/";
+      try {
+        window.location.href = url;
+      } catch (e) {
+        console.warn("Web navigate failed", url, e);
+      }
     },
 
     async getAllWindows() {

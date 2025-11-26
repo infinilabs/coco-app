@@ -8,45 +8,8 @@ import SettingsItem from "@/components/Settings/SettingsItem";
 import platformAdapter from "@/utils/platformAdapter";
 import { useEnabledServers } from "@/hooks/useEnabledServers";
 import ButtonsList from "./ButtonsList";
-
-/**
- * Selection toolbar button config types
- */
-type IconConfig =
-  | { type: "lucide"; name: LucideIconName; color?: string }
-  | { type: "custom"; dataUrl: string; color?: string };
-
-type ActionType =
-  | "search"
-  | "ask_ai"
-  | "translate"
-  | "summary"
-  | "copy"
-  | "speak"
-  | "custom";
-
-type ButtonConfig = {
-  id: string;
-  label: string;
-  icon: IconConfig;
-  action: {
-    type: ActionType;
-    assistantId?: string;
-    assistantServerId?: string;
-    eventName?: string;
-  };
-  // i18n key for built-in labels; if present, render by t(labelKey)
-  labelKey?: string;
-};
-
-type LucideIconName =
-  | "Search"
-  | "Bot"
-  | "Languages"
-  | "FileText"
-  | "Copy"
-  | "Volume2";
-
+import HeaderToolbar from "@/components/Selection/HeaderToolbar";
+import { ButtonConfig } from "./config";
 
 const DEFAULT_CONFIG: ButtonConfig[] = [
   {
@@ -126,10 +89,6 @@ const SelectionSettings = () => {
   const iconsOnly = useSelectionStore((state) => state.iconsOnly);
   const setIconsOnly = useSelectionStore((state) => state.setIconsOnly);
 
-  useEffect(() => {
-    useSelectionStore.getState().initSync();
-  }, []);
-
   // Initialize from global store; write back on change for multi-window sync
   const toolbarConfig = useSelectionStore((s) => s.toolbarConfig);
   const setToolbarConfig = useSelectionStore((s) => s.setToolbarConfig);
@@ -147,13 +106,31 @@ const SelectionSettings = () => {
 
   useEffect(() => {
     saveToolbarConfig(buttons);
-    setToolbarConfig(buttons); // push to store for multi-window
+    setToolbarConfig(buttons);
   }, [buttons]);
 
   return (
     <div className="space-y-6 py-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">{t("selection.title")}</h2>
+      </div>
+
+      <div className="relative rounded-xl p-4 bg-gradient-to-r from-[#E6F0FA] to-[#FFF1F1]">
+        <div className="flex items-center flex-col" aria-hidden="true">
+          <div className="rounded-xl border border-gray-200 bg-white/70 shadow-sm dark:border-gray-700 dark:bg-gray-900/40">
+            <HeaderToolbar
+              buttons={buttons as any}
+              iconsOnly={iconsOnly}
+              onAction={() => {}}
+              onLogoClick={() => {}}
+            />
+          </div>
+        </div>
+        <div
+          className="absolute inset-0 bg-transparent cursor-not-allowed"
+          aria-label={t("selection.preview.readonly")}
+          tabIndex={-1}
+        />
       </div>
 
       <SettingsItem
@@ -192,7 +169,11 @@ const SelectionSettings = () => {
               label={t("selection.display.iconsOnlyLabel")}
             />
           </SettingsItem>
-          <ButtonsList buttons={buttons} setButtons={setButtons} serverList={serverList} />
+          <ButtonsList
+            buttons={buttons}
+            setButtons={setButtons}
+            serverList={serverList}
+          />
         </div>
       )}
     </div>
