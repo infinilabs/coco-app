@@ -58,5 +58,5 @@ pub(crate) async fn update_app_lang(lang: String) {
 /// Helper getter method to handle the `None` case.
 pub(crate) async fn get_app_lang() -> Lang {
     let opt_lang = *APP_LANG.read().await;
-    opt_lang.expect("frontend code did not invoke [update_app_lang()] to set the APP_LANG")
+    opt_lang.expect("frontend code did not invoke [backend_setup()] to set the APP_LANG")
 }

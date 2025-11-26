@@ -139,11 +139,15 @@ function SearchChat({
     if (height < 590) {
       const { compactModeAutoCollapseDelay } = useConnectStore.getState();
 
-      console.log("compactModeAutoCollapseDelay", compactModeAutoCollapseDelay);
-
       collapseWindowTimer.current = setTimeout(() => {
         setHideMiddleBorder(true);
         setSuppressErrors(true);
+
+        const textarea = document.querySelector(".auto-resize-textarea");
+
+        if (textarea instanceof HTMLTextAreaElement) {
+          textarea.focus();
+        }
 
         platformAdapter.setWindowSize(width, height);
       }, compactModeAutoCollapseDelay * 1000);
