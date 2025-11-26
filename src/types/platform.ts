@@ -54,7 +54,7 @@ export interface EventPayloads {
   "selection-text": string;
   "selection-ask-ai": any;
   "selection-action": {
-    action: "translate" | "search" | "copy" | "summary";
+    action: string;
     text: string;
   };
   "selection-detected": string;
