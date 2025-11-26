@@ -21,18 +21,12 @@ export const useSelectionStore = create<ISelectionStore>()(
         selectionEnabled: false,
         setSelectionEnabled(selectionEnabled) {
           set({ selectionEnabled });
-          platformAdapter.emitEvent("change-selection-store", {
-              iconsOnly: useSelectionStore.getState().iconsOnly,
-              selectionEnabled: selectionEnabled,
-              toolbarConfig: useSelectionStore.getState().toolbarConfig,
-            });
         },
         toolbarConfig: [],
         setToolbarConfig(toolbarConfig) {
           set({ toolbarConfig });
           platformAdapter.emitEvent("change-selection-store", {
               iconsOnly: useSelectionStore.getState().iconsOnly,
-              selectionEnabled: useSelectionStore.getState().selectionEnabled,
               toolbarConfig,
             });
         },
@@ -41,7 +35,6 @@ export const useSelectionStore = create<ISelectionStore>()(
           set({ iconsOnly });
           platformAdapter.emitEvent("change-selection-store", {
               iconsOnly,
-              selectionEnabled: useSelectionStore.getState().selectionEnabled,
               toolbarConfig: useSelectionStore.getState().toolbarConfig,
             });
         }

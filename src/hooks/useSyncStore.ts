@@ -13,7 +13,6 @@ import platformAdapter from "@/utils/platformAdapter";
 export const useSyncStore = () => {
   const setToolbarConfig = useSelectionStore((s) => s.setToolbarConfig);
   const setIconsOnly = useSelectionStore((s) => s.setIconsOnly);
-  const setSelectionEnabled = useSelectionStore((s) => s.setSelectionEnabled);
   
   const setModifierKey = useShortcutsStore((state) => {
     return state.setModifierKey;
@@ -257,13 +256,10 @@ export const useSyncStore = () => {
       platformAdapter.listenEvent(
         "change-selection-store",
         ({ payload }) => {
-          const {selectionEnabled, iconsOnly, toolbarConfig} = payload;
-
-          console.log("11111111change-selection-store", payload);
+          const {iconsOnly, toolbarConfig} = payload;
 
           setToolbarConfig(toolbarConfig);
           setIconsOnly(iconsOnly);
-          setSelectionEnabled(selectionEnabled)
         }
       ),
     ]);
