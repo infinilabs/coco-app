@@ -18,8 +18,8 @@ export function AddChatButton({ serverList, onAdd }: AddChatButtonProps) {
   return (
     <div className="pt-1">
       <Button
-        variant="secondary"
-        className="inline-flex items-center gap-2"
+        variant="ghost"
+        className="inline-flex items-center gap-2 border border-dashed border-border hover:border-primary/50 hover:bg-secondary/50 text-muted-foreground transition-all duration-200"
         onClick={() => setOpen(true)}
       >
         <Plus className="w-4 h-4" />

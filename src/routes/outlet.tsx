@@ -19,6 +19,7 @@ import { useServers } from "@/hooks/useServers";
 import { useDeepLinkManager } from "@/hooks/useDeepLinkManager";
 import { useSelectionWindow } from "../hooks/useSelectionWindow";
 import { useSelectionStore } from "@/stores/selectionStore";
+import { useSelectionSyncStore } from "@/hooks/useSelectionSyncStore";
 
 export default function LayoutOutlet() {
   const location = useLocation();
@@ -143,6 +144,7 @@ export default function LayoutOutlet() {
   });
 
   // --- Selection window ---
+  useSelectionSyncStore();
   useSelectionWindow();
 
   return (

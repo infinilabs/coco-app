@@ -7,13 +7,9 @@ import { useConnectStore } from "@/stores/connectStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useStartupStore } from "@/stores/startupStore";
-import { useSelectionStore } from "@/stores/selectionStore";
 import platformAdapter from "@/utils/platformAdapter";
 
 export const useSyncStore = () => {
-  const setToolbarConfig = useSelectionStore((s) => s.setToolbarConfig);
-  const setIconsOnly = useSelectionStore((s) => s.setIconsOnly);
-  
   const setModifierKey = useShortcutsStore((state) => {
     return state.setModifierKey;
   });
@@ -251,17 +247,6 @@ export const useSyncStore = () => {
       platformAdapter.listenEvent("server-list-changed", ({ payload }) => {
         setServerListSilently(payload);
       }),
-
-      // Unified selection store sync: combined payload
-      platformAdapter.listenEvent(
-        "change-selection-store",
-        ({ payload }) => {
-          const {iconsOnly, toolbarConfig} = payload;
-
-          setToolbarConfig(toolbarConfig);
-          setIconsOnly(iconsOnly);
-        }
-      ),
     ]);
 
     return () => {

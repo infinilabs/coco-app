@@ -248,7 +248,7 @@ export default function AddChatDialog({
         </div>
 
         <div className="flex justify-end gap-2 mt-6">
-          <Button variant="secondary" onClick={handleClose}>{t("settings.general.cancel") ?? "Cancel"}</Button>
+          <Button variant="secondary" onClick={handleClose}>{t("deleteDialog.button.cancel") ?? "Cancel"}</Button>
           <Button onClick={handleAdd}>{t("settings.shortcut.save") ?? "Save"}</Button>
         </div>
       </div>

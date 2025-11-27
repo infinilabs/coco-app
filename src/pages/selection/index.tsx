@@ -7,13 +7,10 @@ import { useSelectionStore } from "@/stores/selectionStore";
 import { copyToClipboard } from "@/utils";
 import platformAdapter from "@/utils/platformAdapter";
 import HeaderToolbar from "@/components/Selection/HeaderToolbar";
-import { useSyncStore } from "@/hooks/useSyncStore";
 
 // Simple animated selection window content
 export default function SelectionWindow() {
   const { t } = useTranslation();
-
-  useSyncStore()
 
   const [text, setText] = useState("");
   const [visible, setVisible] = useState(false);
