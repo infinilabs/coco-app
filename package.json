@@ -33,6 +33,7 @@
     "@tauri-apps/plugin-shell": "^2.2.1",
     "@tauri-apps/plugin-updater": "github:infinilabs/tauri-plugin-updater#v2",
     "@tauri-apps/plugin-window": "2.0.0-alpha.1",
+    "@tauri-store/zustand": "^1.1.0",
     "@wavesurfer/react": "^1.0.11",
     "ahooks": "^3.8.4",
     "axios": "^1.12.0",
