@@ -17,6 +17,8 @@ import { Extension } from "@/components/Settings/Extensions";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useServers } from "@/hooks/useServers";
 import { useDeepLinkManager } from "@/hooks/useDeepLinkManager";
+import { useSelectionWindow } from "../hooks/useSelectionWindow";
+import { useSelectionStore } from "@/stores/selectionStore";
 
 export default function LayoutOutlet() {
   const location = useLocation();
@@ -29,6 +31,27 @@ export default function LayoutOutlet() {
   useServers();
   // init deep link manager
   useDeepLinkManager();
+
+  // --- Selection state: init + subscribe backend as SSOT ---
+  useMount(async () => {
+    try {
+      const enabled = await platformAdapter.invokeBackend<boolean>("get_selection_enabled");
+      useSelectionStore.getState().setSelectionEnabled(!!enabled);
+    } catch (e) {
+      console.error("get_selection_enabled failed:", e);
+    }
+
+    const unlisten = await platformAdapter.listenEvent(
+      "selection-enabled",
+      ({ payload }: any) => {
+        useSelectionStore.getState().setSelectionEnabled(!!payload?.enabled);
+      }
+    );
+
+    return () => {
+      unlisten && unlisten();
+    };
+  });
 
   useEffect(() => {
     i18n.changeLanguage(language);
@@ -118,6 +141,9 @@ export default function LayoutOutlet() {
 
     setDisabledExtensions(disabledExtensions.map((item) => item.id));
   });
+
+  // --- Selection window ---
+  useSelectionWindow();
 
   return (
     <>

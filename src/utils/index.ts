@@ -10,7 +10,7 @@ import { getCurrentWindowService } from "@/commands/windowService";
 import { useSearchStore } from "@/stores/searchStore";
 import i18next from "i18next";
 
-export async function copyToClipboard(text: string) {
+export async function copyToClipboard(text: string, noTip = false) {
   const addError = useAppStore.getState().addError;
   const language = useAppStore.getState().language;
 
@@ -37,7 +37,7 @@ export async function copyToClipboard(text: string) {
     document.body.removeChild(textArea);
   }
 
-  addError(language === "zh" ? "复制成功" : "Copy Success", "info");
+  !noTip && addError(language === "zh" ? "复制成功" : "Copy Success", "info");
 }
 
 // 2

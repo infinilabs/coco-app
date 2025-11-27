@@ -13,6 +13,7 @@ Information about release notes of Coco App is provided here.
 
 ### 🚀 Features
 
+- feat: add selection toolbar window for mac #980
 - feat: add a heartbeat worker to check Coco server availability #988
 
 ### 🐛 Bug fix

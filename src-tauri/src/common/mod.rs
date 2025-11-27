@@ -1,5 +1,4 @@
 pub mod assistant;
-pub mod auth;
 pub mod connector;
 pub mod datasource;
 pub mod document;

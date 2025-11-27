@@ -51,6 +51,15 @@ export interface EventPayloads {
   extension_install_success: any;
   open_view_extension: ViewExtensionOpened;
   "server-list-changed": Server[];
+  "selection-text": string;
+  "selection-ask-ai": any;
+  "selection-action": {
+    action: "translate" | "search" | "copy" | "summary";
+    text: string;
+  };
+  "selection-detected": string;
+  "selection-enabled": boolean;
+  "selection-icons-only": { value: boolean };
 }
 
 // Window operation interface
@@ -65,6 +74,7 @@ export interface WindowOperations {
     setFocus: () => Promise<void>;
     center: () => Promise<void>;
     close: () => Promise<void>;
+    hide: () => Promise<void>;
   } | null>;
   createWindow: (label: string, options: any) => Promise<void>;
   createWebviewWindow: (label: string, options: any) => Promise<any>;

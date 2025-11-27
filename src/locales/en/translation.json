@@ -23,6 +23,11 @@
       "default": "Default",
       "compact": "Compact"
     },
+    "ai": {
+      "title": "Selection Toolbar",
+      "description": "Show selection toolbar after text selection",
+      "toggle": "Enable selection toolbar"
+    },
     "language": {
       "title": "Language",
       "description": "Choose your preferred language",
@@ -534,6 +539,8 @@
   },
   "tray": {
     "showCoco": "Show Coco",
+    "selectionDisable": "Disable Selection Toolbar",
+    "selectionEnable": "Enable Selection Toolbar",
     "settings": "Settings",
     "quitCoco": "Quit Coco",
     "checkUpdate": "Check for Updates"
@@ -627,6 +634,43 @@
     },
     "buttons": {
       "login": "Login"
+    }
+  },
+  "selection": {
+    "title": "Selection Toolbar Settings",
+    "actions": {
+      "search": "Search",
+      "ask_ai": "Q&A",
+      "translate": "Translate",
+      "summary": "Summary",
+      "copy": "Copy",
+      "speak": "Read Aloud"
+    },
+    "noText": "No text detected",
+    "copied": "Copied",
+    "speak": {
+      "stopTitle": "Stop speaking",
+      "stopAria": "Stop speaking",
+      "stopLabel": "Stop",
+      "pauseTitle": "Pause speaking",
+      "pauseAria": "Pause speaking",
+      "pauseLabel": "Pause",
+      "resumeTitle": "Resume speaking",
+      "resumeAria": "Resume speaking",
+      "resumeLabel": "Resume",
+      "volumeSr": "Volume",
+      "volumeAria": "Speech volume"
+    },
+    "display": {
+      "title": "Display Style",
+      "iconsOnlyDesc": "Show icons only (hide text labels)",
+      "iconsOnlyLabel": "Icons only"
+    },
+    "bind": {
+      "service": "Select Service",
+      "defaultService": "Default service",
+      "assistant": "Bind Assistant (Chat only)",
+      "defaultAssistant": "Default assistant"
     }
   }
 }
