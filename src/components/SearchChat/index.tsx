@@ -10,6 +10,7 @@ import {
 } from "react";
 import clsx from "clsx";
 import { useMount, useMutationObserver } from "ahooks";
+import { debounce } from "lodash-es";
 
 import Search from "@/components/Search/Search";
 import InputBox from "@/components/Search/InputBox";
@@ -36,7 +37,7 @@ import {
 import { useTauriFocus } from "@/hooks/useTauriFocus";
 import { POPOVER_PANEL_SELECTOR } from "@/constants";
 import { useChatStore } from "@/stores/chatStore";
-import { debounce } from "lodash-es";
+import { useSearchStore } from "@/stores/searchStore";
 
 interface SearchChatProps {
   isTauri?: boolean;
@@ -313,6 +314,43 @@ function SearchChat({
   });
 
   const { normalOpacity, blurOpacity } = useAppearanceStore();
+
+  useEffect(() => {
+    const unlistenAsk = platformAdapter.listenEvent("selection-ask-ai", ({ payload }: any) => {
+      const value = typeof payload === "string" ? payload : String(payload?.text ?? "");
+      dispatch({ type: "SET_CHAT_MODE", payload: true });
+      dispatch({ type: "SET_INPUT", payload: value });
+      platformAdapter.showWindow();
+    });
+
+    const unlistenAction = platformAdapter.listenEvent("selection-action", ({ payload }: any) => {
+      const { action, text, assistantId } = payload || {};
+      const value = String(text ?? "");
+      if (action === "search") {
+        dispatch({ type: "SET_CHAT_MODE", payload: false });
+        dispatch({ type: "SET_INPUT", payload: value });
+        const { setSearchValue } = useSearchStore.getState();
+        setSearchValue(value);
+        platformAdapter.showWindow();
+      } else if (action === "chat") {
+        dispatch({ type: "SET_CHAT_MODE", payload: true });
+        dispatch({ type: "SET_INPUT", payload: value });
+
+        const { assistantList } = useConnectStore.getState();
+        const assistant = assistantList.find((item) => item._source?.id === assistantId);
+        if (assistant) {
+          const { setTargetAssistantId } = useSearchStore.getState();
+          setTargetAssistantId(assistant._id);
+        }
+        platformAdapter.showWindow();
+      }
+    });
+
+    return () => {
+      unlistenAsk.then((fn) => fn());
+      unlistenAction.then((fn) => fn());
+    };
+  }, []);
 
   useEffect(() => {
     if (isTauri) {

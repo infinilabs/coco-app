@@ -78,6 +78,29 @@
           "state": "active",
           "radius": 7
         }
+      },
+      {
+        "label": "selection",
+        "title": "Selection",
+        "alwaysOnTop": true,
+        "shadow": false,
+        "decorations": false,
+        "transparent": true,
+        "closable": true,
+        "minimizable": false,
+        "maximizable": false,
+        "dragDropEnabled": false,
+        "resizable": false,
+        "center": false,
+        "url": "/ui/selection",
+        "hiddenTitle": true,
+        "visible": false,
+        "acceptFirstMouse": true,
+        "windowEffects": {
+          "effects": [],
+          "state": "active",
+          "radius": 7
+        }
       }
     ],
     "security": {

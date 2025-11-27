@@ -2,7 +2,7 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main", "chat", "settings", "check"],
+  "windows": ["main", "chat", "settings", "check", "selection"],
   "permissions": [
     "core:default",
     "core:event:allow-emit",
@@ -30,6 +30,7 @@
     "core:window:allow-set-always-on-top",
     "core:window:deny-internal-toggle-maximize",
     "core:window:allow-set-shadow",
+    "core:window:allow-set-position",
     "core:app:allow-set-app-theme",
     "shell:default",
     "http:default",

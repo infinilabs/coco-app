@@ -23,6 +23,11 @@
       "default": "默认",
       "compact": "紧凑"
     },
+    "ai": {
+      "title": "划词工具栏",
+      "description": "选择文本后显示独立可操作窗口",
+      "toggle": "启用划词工具栏"
+    },
     "language": {
       "title": "语言",
       "description": "选择您的首选语言",
@@ -534,6 +539,8 @@
   },
   "tray": {
     "showCoco": "显示 Coco",
+    "selectionDisable": "禁用划词工具栏",
+    "selectionEnable": "启用划词工具栏",
     "settings": "偏好设置",
     "quitCoco": "退出 Coco",
     "checkUpdate": "检查更新"
@@ -626,6 +633,43 @@
     },
     "buttons": {
       "login": "登录"
+    }
+  },
+  "selection": {
+    "title": "划词工具栏设置",
+    "actions": {
+      "search": "搜索",
+      "ask_ai": "问答",
+      "translate": "翻译",
+      "summary": "总结",
+      "copy": "复制",
+      "speak": "朗读"
+    },
+    "noText": "未检测到文本",
+    "copied": "已复制",
+    "speak": {
+      "stopTitle": "停止朗读",
+      "stopAria": "停止朗读",
+      "stopLabel": "停止",
+      "pauseTitle": "暂停朗读",
+      "pauseAria": "暂停朗读",
+      "pauseLabel": "暂停",
+      "resumeTitle": "继续朗读",
+      "resumeAria": "继续朗读",
+      "resumeLabel": "继续",
+      "volumeSr": "音量",
+      "volumeAria": "朗读音量"
+    },
+    "display": {
+      "title": "显示样式",
+      "iconsOnlyDesc": "仅显示图标（隐藏文字标签）",
+      "iconsOnlyLabel": "仅显示图标"
+    },
+    "bind": {
+      "service": "选择服务",
+      "defaultService": "默认服务",
+      "assistant": "绑定小助手（仅聊天）",
+      "defaultAssistant": "默认小助手"
     }
   }
 }
