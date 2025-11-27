@@ -599,7 +599,7 @@ pub(crate) enum QuicklinkLinkComponent {
     },
 }
 
-#[derive(Debug, PartialEq, Deserialize, Serialize, Clone, Display, Copy)]
+#[derive(Debug, PartialEq, Deserialize, Serialize, Clone, Display, Copy, Eq)]
 #[serde(rename_all(serialize = "snake_case", deserialize = "snake_case"))]
 pub enum ExtensionType {
     #[display("Group")]

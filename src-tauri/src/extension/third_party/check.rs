@@ -41,7 +41,7 @@ impl Display for InvalidPluginJsonError {
 
 impl Error for InvalidPluginJsonError {}
 
-#[derive(Debug, Display)]
+#[derive(Debug, Display, PartialEq, Eq)]
 pub(crate) enum InvalidPluginJsonErrorKind {
     #[display("duplicate ID, sub-extension with ID '{}' already exists", id)]
     DuplicateSubExtensionId { id: String },
@@ -384,15 +384,28 @@ mod tests {
         }
     }
 
+    fn expect_error_kind(
+        result: Result<(), InvalidPluginJsonError>,
+        expected_kind: InvalidPluginJsonErrorKind,
+    ) -> InvalidPluginJsonError {
+        let err = result.expect_err("expected Err but got Ok");
+        assert_eq!(&err.kind, &expected_kind);
+        err
+    }
+
     /* test_check_main_extension_only */
     #[test]
     fn test_group_cannot_have_alias() {
         let mut extension = create_basic_extension("test-group", ExtensionType::Group);
         extension.alias = Some("group-alias".to_string());
 
-        let result = general_check(&extension);
-        assert!(result.is_err());
-        assert!(result.unwrap_err().contains("cannot have alias"));
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::FieldsNotAllowed {
+                fields: &["alias"],
+                ty: ExtensionType::Group,
+            },
+        );
     }
 
     #[test]
@@ -400,9 +413,13 @@ mod tests {
         let mut extension = create_basic_extension("test-ext", ExtensionType::Extension);
         extension.alias = Some("ext-alias".to_string());
 
-        let result = general_check(&extension);
-        assert!(result.is_err());
-        assert!(result.unwrap_err().contains("cannot have alias"));
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::FieldsNotAllowed {
+                fields: &["alias"],
+                ty: ExtensionType::Extension,
+            },
+        );
     }
 
     #[test]
@@ -410,9 +427,13 @@ mod tests {
         let mut extension = create_basic_extension("test-group", ExtensionType::Group);
         extension.hotkey = Some("cmd+g".to_string());
 
-        let result = general_check(&extension);
-        assert!(result.is_err());
-        assert!(result.unwrap_err().contains("cannot have hotkey"));
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::FieldsNotAllowed {
+                fields: &["hotkey"],
+                ty: ExtensionType::Group,
+            },
+        );
     }
 
     #[test]
@@ -420,9 +441,13 @@ mod tests {
         let mut extension = create_basic_extension("test-ext", ExtensionType::Extension);
         extension.hotkey = Some("cmd+e".to_string());
 
-        let result = general_check(&extension);
-        assert!(result.is_err());
-        assert!(result.unwrap_err().contains("cannot have hotkey"));
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::FieldsNotAllowed {
+                fields: &["hotkey"],
+                ty: ExtensionType::Extension,
+            },
+        );
     }
 
     #[test]
@@ -434,12 +459,12 @@ mod tests {
             ExtensionType::Command,
         )]);
 
-        let result = general_check(&extension);
-        assert!(result.is_err());
-        assert!(
-            result
-                .unwrap_err()
-                .contains("only extension of type [Group] and [Extension] can have sub-extensions")
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::FieldsNotAllowed {
+                fields: &["commands", "scripts", "quicklinks", "views"],
+                ty: ExtensionType::Command,
+            },
         );
     }
 
@@ -449,20 +474,24 @@ mod tests {
         extension.settings = Some(ExtensionSettings {
             hide_before_open: None,
         });
-        let error_msg = general_check(&extension).unwrap_err();
-        assert!(
-            error_msg
-                .contains("field [settings] is currently only allowed in searchable extension")
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::FieldsNotAllowed {
+                fields: &["settings"],
+                ty: ExtensionType::Group,
+            },
         );
 
         let mut extension = create_basic_extension("test-extension", ExtensionType::Extension);
         extension.settings = Some(ExtensionSettings {
             hide_before_open: None,
         });
-        let error_msg = general_check(&extension).unwrap_err();
-        assert!(
-            error_msg
-                .contains("field [settings] is currently only allowed in searchable extension")
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::FieldsNotAllowed {
+                fields: &["settings"],
+                ty: ExtensionType::Extension,
+            },
         );
     }
     /* test_check_main_extension_only */
@@ -472,12 +501,12 @@ mod tests {
     fn test_command_must_have_action() {
         let extension = create_basic_extension("test-cmd", ExtensionType::Command);
 
-        let result = general_check(&extension);
-        assert!(result.is_err());
-        assert!(
-            result
-                .unwrap_err()
-                .contains("field [action] should be set for a Command extension")
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::FieldRequired {
+                field: "action",
+                ty: ExtensionType::Command,
+            },
         );
     }
 
@@ -486,12 +515,12 @@ mod tests {
         let mut extension = create_basic_extension("test-script", ExtensionType::Script);
         extension.action = Some(create_command_action());
 
-        let result = general_check(&extension);
-        assert!(result.is_err());
-        assert!(
-            result
-                .unwrap_err()
-                .contains("field [action] is set for a non-Command extension")
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::FieldsNotAllowed {
+                fields: &["action"],
+                ty: ExtensionType::Script,
+            },
         );
     }
 
@@ -499,12 +528,12 @@ mod tests {
     fn test_quicklink_must_have_quicklink_field() {
         let extension = create_basic_extension("test-quicklink", ExtensionType::Quicklink);
 
-        let result = general_check(&extension);
-        assert!(result.is_err());
-        assert!(
-            result
-                .unwrap_err()
-                .contains("field [quicklink] should be set for a Quicklink extension")
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::FieldRequired {
+                field: "quicklink",
+                ty: ExtensionType::Quicklink,
+            },
         );
     }
 
@@ -514,12 +543,12 @@ mod tests {
         extension.action = Some(create_command_action());
         extension.quicklink = Some(create_quicklink());
 
-        let result = general_check(&extension);
-        assert!(result.is_err());
-        assert!(
-            result
-                .unwrap_err()
-                .contains("field [quicklink] is set for a non-Quicklink extension")
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::FieldsNotAllowed {
+                fields: &["quicklink"],
+                ty: ExtensionType::Command,
+            },
         );
     }
 
@@ -529,12 +558,12 @@ mod tests {
         // create_basic_extension() will set its page field if type is View, clear it
         extension.page = None;
 
-        let result = general_check(&extension);
-        assert!(result.is_err());
-        assert!(
-            result
-                .unwrap_err()
-                .contains("field [page] should be set for a View extension")
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::FieldRequired {
+                field: "page",
+                ty: ExtensionType::View,
+            },
         );
     }
 
@@ -544,12 +573,12 @@ mod tests {
         extension.action = Some(create_command_action());
         extension.page = Some("index.html".into());
 
-        let result = general_check(&extension);
-        assert!(result.is_err());
-        assert!(
-            result
-                .unwrap_err()
-                .contains("field [page] is set for a non-View extension")
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::FieldsNotAllowed {
+                fields: &["page"],
+                ty: ExtensionType::Command,
+            },
         );
     }
     /* test check_main_extension_or_sub_extension */
@@ -561,12 +590,11 @@ mod tests {
         let sub_group = create_basic_extension("sub-group", ExtensionType::Group);
         extension.commands = Some(vec![sub_group]);
 
-        let result = general_check(&extension);
-        assert!(result.is_err());
-        assert!(
-            result
-                .unwrap_err()
-                .contains("sub-extensions should not be of type [Group] or [Extension]")
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::TypesNotAllowedForSubExtension {
+                types: &[ExtensionType::Group, ExtensionType::Extension],
+            },
         );
     }
 
@@ -576,12 +604,11 @@ mod tests {
         let sub_ext = create_basic_extension("sub-ext", ExtensionType::Extension);
         extension.scripts = Some(vec![sub_ext]);
 
-        let result = general_check(&extension);
-        assert!(result.is_err());
-        assert!(
-            result
-                .unwrap_err()
-                .contains("sub-extensions should not be of type [Group] or [Extension]")
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::TypesNotAllowedForSubExtension {
+                types: &[ExtensionType::Group, ExtensionType::Extension],
+            },
         );
     }
 
@@ -594,12 +621,11 @@ mod tests {
 
         extension.commands = Some(vec![sub_cmd]);
 
-        let result = general_check(&extension);
-        assert!(result.is_err());
-        assert!(
-            result
-                .unwrap_err()
-                .contains("field [developer] should not be set in sub-extensions")
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::FieldsNotAllowedForSubExtension {
+                fields: &["developer"],
+            },
         );
     }
 
@@ -615,11 +641,12 @@ mod tests {
 
         extension.commands = Some(vec![sub_cmd]);
 
-        let result = general_check(&extension);
-        assert!(result.is_err());
-        assert!(result.unwrap_err().contains(
-            "fields [commands/scripts/quicklinks/views] should not be set in sub-extensions"
-        ));
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::FieldsNotAllowedForSubExtension {
+                fields: &["commands", "scripts", "quicklinks", "views"],
+            },
+        );
     }
 
     #[test]
@@ -629,12 +656,12 @@ mod tests {
         sub_cmd.minimum_coco_version = Some(semver::Version::new(0, 8, 0));
         extension.commands = Some(vec![sub_cmd]);
 
-        let result = general_check(&extension);
-        assert!(result.is_err());
-        assert!(result.unwrap_err().contains(&format!(
-            "[{}] cannot be set for sub-extensions",
-            PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION
-        )));
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::FieldsNotAllowedForSubExtension {
+                fields: &["minimum_coco_version"],
+            },
+        );
     }
     /* Test check_sub_extension_only */
 
@@ -650,12 +677,11 @@ mod tests {
 
         extension.commands = Some(vec![cmd1, cmd2]);
 
-        let result = general_check(&extension);
-        assert!(result.is_err());
-        assert!(
-            result
-                .unwrap_err()
-                .contains("sub-extension with ID [duplicate-id] already exists")
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::DuplicateSubExtensionId {
+                id: "duplicate-id".to_string(),
+            },
         );
     }
 
@@ -671,12 +697,11 @@ mod tests {
         extension.commands = Some(vec![cmd]);
         extension.scripts = Some(vec![script]);
 
-        let result = general_check(&extension);
-        assert!(result.is_err());
-        assert!(
-            result
-                .unwrap_err()
-                .contains("sub-extension with ID [same-id] already exists")
+        expect_error_kind(
+            general_check(&extension),
+            InvalidPluginJsonErrorKind::DuplicateSubExtensionId {
+                id: "same-id".to_string(),
+            },
         );
     }
 
@@ -839,12 +864,12 @@ mod tests {
 
         main_extension.commands = Some(vec![sub_cmd]);
 
-        let result = general_check(&main_extension);
-        assert!(result.is_err());
-        let error_msg = result.unwrap_err();
-        assert!(error_msg.contains("it supports platforms"));
-        assert!(error_msg.contains("that are not supported by the main extension"));
-        assert!(error_msg.contains("Linux")); // Should mention the unsupported platform
+        expect_error_kind(
+            general_check(&main_extension),
+            InvalidPluginJsonErrorKind::SubExtensionHasMoreSupportedPlatforms {
+                extra_platforms: vec!["Linux".to_string()],
+            },
+        );
     }
 
     #[test]
@@ -860,12 +885,12 @@ mod tests {
 
         main_extension.commands = Some(vec![sub_cmd]);
 
-        let result = general_check(&main_extension);
-        assert!(result.is_err());
-        let error_msg = result.unwrap_err();
-        assert!(error_msg.contains("it supports platforms"));
-        assert!(error_msg.contains("that are not supported by the main extension"));
-        assert!(error_msg.contains("Linux")); // Should mention the unsupported platform
+        expect_error_kind(
+            general_check(&main_extension),
+            InvalidPluginJsonErrorKind::SubExtensionHasMoreSupportedPlatforms {
+                extra_platforms: vec!["Linux".to_string()],
+            },
+        );
     }
 
     #[test]
