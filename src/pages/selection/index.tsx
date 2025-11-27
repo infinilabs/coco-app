@@ -119,10 +119,6 @@ export default function SelectionWindow() {
     };
   }, [autoHideMs]);
 
-  useEffect(() => {
-    useSelectionStore.getState().initSync();
-  }, []);
-
   const close = async () => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);

@@ -19,7 +19,6 @@ import { useSelectionStore } from "@/stores/selectionStore";
 import { useServers } from "@/hooks/useServers";
 import { useDeepLinkManager } from "@/hooks/useDeepLinkManager";
 import { useSelectionWindow } from "../hooks/useSelectionWindow";
-import { useSelectionStore } from "@/stores/selectionStore";
 
 export default function LayoutOutlet() {
   const location = useLocation();
