@@ -14,14 +14,66 @@
 
 use crate::extension::Extension;
 use crate::extension::ExtensionType;
-use crate::extension::PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION;
 use crate::util::platform::Platform;
+use derive_more::Display;
 use std::collections::HashSet;
+use std::error::Error;
+use std::fmt::Display;
 
-pub(crate) fn general_check(extension: &Extension) -> Result<(), String> {
+/// Errors that may be found when we check() `plugin.json`, i.e., `struct Extension`
+#[derive(Debug)]
+pub(crate) struct InvalidPluginJsonError {
+    kind: InvalidPluginJsonErrorKind,
+    /// Some if it is a sub-extension rather than the main extension that is
+    /// invalid
+    sub_extension_id: Option<String>,
+}
+
+impl Display for InvalidPluginJsonError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if let Some(ref sub_extension_id) = self.sub_extension_id {
+            write!(f, "invalid sub-extension '{}'", sub_extension_id)?;
+        }
+
+        write!(f, "{}", self.kind)
+    }
+}
+
+impl Error for InvalidPluginJsonError {}
+
+#[derive(Debug, Display)]
+pub(crate) enum InvalidPluginJsonErrorKind {
+    #[display("duplicate ID, sub-extension with ID '{}' already exists", id)]
+    DuplicateSubExtensionId { id: String },
+    #[display(
+        "fields '{:?}' are not allowed for extensions of type '{}'",
+        fields,
+        ty
+    )]
+    FieldsNotAllowed {
+        fields: &'static [&'static str],
+        ty: ExtensionType,
+    },
+    #[display("fields '{:?}' are not allowed for sub-extensions", fields)]
+    FieldsNotAllowedForSubExtension { fields: &'static [&'static str] },
+    #[display("sub-extensions cannot be of types {:?}", types)]
+    TypesNotAllowedForSubExtension { types: &'static [ExtensionType] },
+    #[display(
+        "it supports platforms {:?} that are not supported by the main extension",
+        extra_platforms
+    )]
+    SubExtensionHasMoreSupportedPlatforms { extra_platforms: Vec<String> },
+    #[display("an extensions of type '{}' should have field '{}' set", ty, field)]
+    FieldRequired {
+        field: &'static str,
+        ty: ExtensionType,
+    },
+}
+
+pub(crate) fn general_check(extension: &Extension) -> Result<(), InvalidPluginJsonError> {
     // Check main extension
     check_main_extension_only(extension)?;
-    check_main_extension_or_sub_extension(extension, &format!("extension [{}]", extension.id))?;
+    check_main_extension_or_sub_extension(extension, false)?;
 
     // `None` if `extension` is compatible with all the platforms. Otherwise `Some(limited_platforms)`
     let limited_supported_platforms = match extension.platforms.as_ref() {
@@ -56,18 +108,17 @@ pub(crate) fn general_check(extension: &Extension) -> Result<(), String> {
     let mut sub_extension_ids = HashSet::new();
 
     for sub_extension in sub_extensions.iter() {
-        check_sub_extension_only(&extension.id, sub_extension, limited_supported_platforms)?;
-        check_main_extension_or_sub_extension(
-            extension,
-            &format!("sub-extension [{}-{}]", extension.id, sub_extension.id),
-        )?;
+        check_sub_extension_only(sub_extension, limited_supported_platforms)?;
+        check_main_extension_or_sub_extension(extension, true)?;
 
         if !sub_extension_ids.insert(sub_extension.id.as_str()) {
             // extension ID already exists
-            return Err(format!(
-                "sub-extension with ID [{}] already exists",
-                sub_extension.id
-            ));
+            return Err(InvalidPluginJsonError {
+                sub_extension_id: Some(sub_extension.id.clone()),
+                kind: InvalidPluginJsonErrorKind::DuplicateSubExtensionId {
+                    id: sub_extension.id.clone(),
+                },
+            });
         }
     }
 
@@ -75,27 +126,33 @@ pub(crate) fn general_check(extension: &Extension) -> Result<(), String> {
 }
 
 /// This checks the main extension only, it won't check sub-extensions.
-fn check_main_extension_only(extension: &Extension) -> Result<(), String> {
+fn check_main_extension_only(extension: &Extension) -> Result<(), InvalidPluginJsonError> {
+    // Helper closure to construct `InvalidPluginJsonError` easily.
+    let err = |kind| InvalidPluginJsonError {
+        sub_extension_id: None,
+        kind,
+    };
+
     // Group and Extension cannot have alias
-    if extension.alias.is_some() {
-        if extension.r#type == ExtensionType::Group || extension.r#type == ExtensionType::Extension
-        {
-            return Err(format!(
-                "invalid extension [{}], extension of type [{:?}] cannot have alias",
-                extension.id, extension.r#type
-            ));
-        }
+    if extension.alias.is_some()
+        && (extension.r#type == ExtensionType::Group
+            || extension.r#type == ExtensionType::Extension)
+    {
+        return Err(err(InvalidPluginJsonErrorKind::FieldsNotAllowed {
+            fields: &["alias"],
+            ty: extension.r#type,
+        }));
     }
 
     // Group and Extension cannot have hotkey
-    if extension.hotkey.is_some() {
-        if extension.r#type == ExtensionType::Group || extension.r#type == ExtensionType::Extension
-        {
-            return Err(format!(
-                "invalid extension [{}], extension of type [{:?}] cannot have hotkey",
-                extension.id, extension.r#type
-            ));
-        }
+    if extension.hotkey.is_some()
+        && (extension.r#type == ExtensionType::Group
+            || extension.r#type == ExtensionType::Extension)
+    {
+        return Err(err(InvalidPluginJsonErrorKind::FieldsNotAllowed {
+            fields: &["hotkey"],
+            ty: extension.r#type,
+        }));
     }
 
     if extension.commands.is_some()
@@ -105,20 +162,20 @@ fn check_main_extension_only(extension: &Extension) -> Result<(), String> {
     {
         if extension.r#type != ExtensionType::Group && extension.r#type != ExtensionType::Extension
         {
-            return Err(format!(
-                "invalid extension [{}], only extension of type [Group] and [Extension] can have sub-extensions",
-                extension.id,
-            ));
+            return Err(err(InvalidPluginJsonErrorKind::FieldsNotAllowed {
+                fields: &["commands", "scripts", "quicklinks", "views"],
+                ty: extension.r#type,
+            }));
         }
     }
 
     if extension.settings.is_some() {
         // Sub-extensions are all searchable, so this check is only for main extensions.
         if !extension.searchable() {
-            return Err(format!(
-                "invalid extension {}, field [settings] is currently only allowed in searchable extension, this type of extension is not searchable [{}]",
-                extension.id, extension.r#type
-            ));
+            return Err(err(InvalidPluginJsonErrorKind::FieldsNotAllowed {
+                fields: &["settings"],
+                ty: extension.r#type,
+            }));
         }
     }
 
@@ -126,16 +183,21 @@ fn check_main_extension_only(extension: &Extension) -> Result<(), String> {
 }
 
 fn check_sub_extension_only(
-    extension_id: &str,
     sub_extension: &Extension,
     limited_platforms: Option<&HashSet<Platform>>,
-) -> Result<(), String> {
+) -> Result<(), InvalidPluginJsonError> {
+    let err = |kind| InvalidPluginJsonError {
+        sub_extension_id: Some(sub_extension.id.clone()),
+        kind,
+    };
+
     if sub_extension.r#type == ExtensionType::Group
         || sub_extension.r#type == ExtensionType::Extension
     {
-        return Err(format!(
-            "invalid sub-extension [{}-{}]: sub-extensions should not be of type [Group] or [Extension]",
-            extension_id, sub_extension.id
+        return Err(err(
+            InvalidPluginJsonErrorKind::TypesNotAllowedForSubExtension {
+                types: &[ExtensionType::Group, ExtensionType::Extension],
+            },
         ));
     }
 
@@ -144,16 +206,18 @@ fn check_sub_extension_only(
         || sub_extension.quicklinks.is_some()
         || sub_extension.views.is_some()
     {
-        return Err(format!(
-            "invalid sub-extension [{}-{}]: fields [commands/scripts/quicklinks/views] should not be set in sub-extensions",
-            extension_id, sub_extension.id
+        return Err(err(
+            InvalidPluginJsonErrorKind::FieldsNotAllowedForSubExtension {
+                fields: &["commands", "scripts", "quicklinks", "views"],
+            },
         ));
     }
 
     if sub_extension.developer.is_some() {
-        return Err(format!(
-            "invalid sub-extension [{}-{}]: field [developer] should not be set in sub-extensions",
-            extension_id, sub_extension.id
+        return Err(err(
+            InvalidPluginJsonErrorKind::FieldsNotAllowedForSubExtension {
+                fields: &["developer"],
+            },
         ));
     }
 
@@ -167,9 +231,10 @@ fn check_sub_extension_only(
                     .collect::<Vec<String>>();
 
                 if !diff.is_empty() {
-                    return Err(format!(
-                        "invalid sub-extension [{}-{}]: it supports platforms {:?} that are not supported by the main extension",
-                        extension_id, sub_extension.id, diff
+                    return Err(err(
+                        InvalidPluginJsonErrorKind::SubExtensionHasMoreSupportedPlatforms {
+                            extra_platforms: diff,
+                        },
                     ));
                 }
             }
@@ -181,9 +246,10 @@ fn check_sub_extension_only(
     }
 
     if sub_extension.minimum_coco_version.is_some() {
-        return Err(format!(
-            "invalid sub-extension [{}-{}]: [{}] cannot be set for sub-extensions",
-            extension_id, sub_extension.id, PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION
+        return Err(err(
+            InvalidPluginJsonErrorKind::FieldsNotAllowedForSubExtension {
+                fields: &["minimum_coco_version"],
+            },
         ));
     }
 
@@ -192,59 +258,64 @@ fn check_sub_extension_only(
 
 fn check_main_extension_or_sub_extension(
     extension: &Extension,
-    identifier: &str,
-) -> Result<(), String> {
+    is_sub_extension: bool,
+) -> Result<(), InvalidPluginJsonError> {
+    let err = |kind| InvalidPluginJsonError {
+        kind,
+        sub_extension_id: is_sub_extension.then(|| extension.id.clone()),
+    };
+
     // If field `action` is Some, then it should be a Command
     if extension.action.is_some() && extension.r#type != ExtensionType::Command {
-        return Err(format!(
-            "invalid {}, field [action] is set for a non-Command extension",
-            identifier
-        ));
+        return Err(err(InvalidPluginJsonErrorKind::FieldsNotAllowed {
+            fields: &["action"],
+            ty: extension.r#type,
+        }));
     }
 
     if extension.r#type == ExtensionType::Command && extension.action.is_none() {
-        return Err(format!(
-            "invalid {}, field [action] should be set for a Command extension",
-            identifier
-        ));
+        return Err(err(InvalidPluginJsonErrorKind::FieldRequired {
+            field: "action",
+            ty: extension.r#type,
+        }));
     }
 
     // If field `quicklink` is Some, then it should be a Quicklink
     if extension.quicklink.is_some() && extension.r#type != ExtensionType::Quicklink {
-        return Err(format!(
-            "invalid {}, field [quicklink] is set for a non-Quicklink extension",
-            identifier
-        ));
+        return Err(err(InvalidPluginJsonErrorKind::FieldsNotAllowed {
+            fields: &["quicklink"],
+            ty: extension.r#type,
+        }));
     }
 
     if extension.r#type == ExtensionType::Quicklink && extension.quicklink.is_none() {
-        return Err(format!(
-            "invalid {}, field [quicklink] should be set for a Quicklink extension",
-            identifier
-        ));
+        return Err(err(InvalidPluginJsonErrorKind::FieldRequired {
+            field: "quicklink",
+            ty: extension.r#type,
+        }));
     }
 
     // If field `page` is Some, then it should be a View
     if extension.page.is_some() && extension.r#type != ExtensionType::View {
-        return Err(format!(
-            "invalid {}, field [page] is set for a non-View extension",
-            identifier
-        ));
+        return Err(err(InvalidPluginJsonErrorKind::FieldsNotAllowed {
+            fields: &["page"],
+            ty: extension.r#type,
+        }));
     }
 
     if extension.r#type == ExtensionType::View && extension.page.is_none() {
-        return Err(format!(
-            "invalid {}, field [page] should be set for a View extension",
-            identifier
-        ));
+        return Err(err(InvalidPluginJsonErrorKind::FieldRequired {
+            field: "page",
+            ty: extension.r#type,
+        }));
     }
 
     // If field `ui` is Some, then it should be a View
     if extension.ui.is_some() && extension.r#type != ExtensionType::View {
-        return Err(format!(
-            "invalid {}, field [ui] is set for a non-View extension",
-            identifier
-        ));
+        return Err(err(InvalidPluginJsonErrorKind::FieldsNotAllowed {
+            fields: &["ui"],
+            ty: extension.r#type,
+        }));
     }
 
     Ok(())

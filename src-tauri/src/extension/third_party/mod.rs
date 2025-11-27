@@ -9,7 +9,9 @@ use super::canonicalize_relative_icon_path;
 use crate::common::document::DataSourceReference;
 use crate::common::document::Document;
 use crate::common::document::open;
+use crate::common::error::ReportErrorStyle;
 use crate::common::error::SearchError;
+use crate::common::error::report_error;
 use crate::common::search::QueryResponse;
 use crate::common::search::QuerySource;
 use crate::common::search::SearchQuery;
@@ -159,13 +161,17 @@ pub(crate) async fn load_third_party_extensions_from_directory(
                             continue 'extension;
                         };
 
-                        let Some(mcv) = parse_coco_semver(mcv_str) else {
-                            log::warn!(
-                                "invalid extension: [{}]: field [{}] has invalid version string",
-                                extension_dir_file_name,
-                                PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION
-                            );
-                            continue 'extension;
+                        let mcv = match parse_coco_semver(mcv_str) {
+                            Ok(ver) => ver,
+                            Err(e) => {
+                                log::warn!(
+                                    "invalid extension: [{}]: field [{}] has invalid version: {} ",
+                                    extension_dir_file_name,
+                                    PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION,
+                                    report_error(e, ReportErrorStyle::SingleLine)
+                                );
+                                continue 'extension;
+                            }
                         };
 
                         Some(mcv)
