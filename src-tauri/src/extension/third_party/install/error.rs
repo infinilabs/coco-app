@@ -1,5 +1,6 @@
 use super::super::check::InvalidPluginJsonError;
 use crate::extension::third_party::install::ParsingMinimumCocoVersionError;
+use crate::server::http_client::HttpClientError;
 use crate::util::platform::Platform;
 use serde::Serialize;
 use snafu::prelude::*;
@@ -34,6 +35,12 @@ pub(crate) enum InvalidExtensionError {
 pub(crate) enum InstallExtensionError {
     #[snafu(display("extension is invalid"))]
     InvalidExtension { source: InvalidExtensionError },
+    #[snafu(display("extension '{}' does not exist", id))]
+    NotFound { id: String },
+    #[snafu(display("failed to download extension"))]
+    DownloadFailure { source: HttpClientError },
+    #[snafu(display("failed to decode the downloaded archive"))]
+    ZipArchiveDecodingError { source: zip::result::ZipError },
     #[snafu(display("extension is already installed"))]
     AlreadyInstalled,
     #[snafu(display(
@@ -49,8 +56,8 @@ pub(crate) enum InstallExtensionError {
     #[snafu(display("extension is incompatible with your Coco AI app",))]
     // TODO: include the actual 'minimum_coco_version' in the Display impl
     IncompatibleCocoApp,
-    #[snafu(display("failed to write extension files"))]
-    WriteExtensionFiles { source: io::Error },
+    #[snafu(display("I/O Error"))]
+    IoError { source: io::Error },
 }
 
 impl Serialize for InstallExtensionError {

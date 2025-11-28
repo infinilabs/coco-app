@@ -8,8 +8,8 @@ use crate::extension::third_party::check::general_check;
 use crate::extension::third_party::install::error::DecodePluginJsonSnafu;
 use crate::extension::third_party::install::error::InvalidExtensionError;
 use crate::extension::third_party::install::error::InvalidPluginJsonSnafu;
+use crate::extension::third_party::install::error::IoSnafu;
 use crate::extension::third_party::install::error::ParseMinimumCocoVersionSnafu;
-use crate::extension::third_party::install::error::WriteExtensionFilesSnafu;
 use crate::extension::third_party::install::{
     filter_out_incompatible_sub_extensions, is_extension_installed,
 };
@@ -184,20 +184,12 @@ pub(crate) async fn install_local_extension(
         .join(DEVELOPER_ID_LOCAL)
         .join(extension_dir_name);
 
-    fs::create_dir_all(&dest_dir)
-        .await
-        .context(WriteExtensionFilesSnafu)?;
+    fs::create_dir_all(&dest_dir).await.context(IoSnafu)?;
 
     // Copy all files except plugin.json
-    let mut entries = fs::read_dir(&path)
-        .await
-        .context(WriteExtensionFilesSnafu)?;
+    let mut entries = fs::read_dir(&path).await.context(IoSnafu)?;
 
-    while let Some(entry) = entries
-        .next_entry()
-        .await
-        .context(WriteExtensionFilesSnafu)?
-    {
+    while let Some(entry) = entries.next_entry().await.context(IoSnafu)? {
         let file_name = entry.file_name();
         let file_name_str = file_name
             .to_str()
@@ -218,12 +210,10 @@ pub(crate) async fn install_local_extension(
             // Recursively copy directory
             copy_dir_recursively(&src_path, &dest_path)
                 .await
-                .context(WriteExtensionFilesSnafu)?;
+                .context(IoSnafu)?;
         } else {
             // Copy file
-            fs::copy(&src_path, &dest_path)
-                .await
-                .context(WriteExtensionFilesSnafu)?;
+            fs::copy(&src_path, &dest_path).await.context(IoSnafu)?;
         }
     }
 
@@ -239,11 +229,11 @@ pub(crate) async fn install_local_extension(
     let dest_plugin_json_path = dest_dir.join(PLUGIN_JSON_FILE_NAME);
     fs::write(&dest_plugin_json_path, corrected_plugin_json)
         .await
-        .context(WriteExtensionFilesSnafu)?;
+        .context(IoSnafu)?;
 
     // Canonicalize relative icon and page paths
-    canonicalize_relative_icon_path(&dest_dir, &mut extension).context(WriteExtensionFilesSnafu)?;
-    canonicalize_relative_page_path(&dest_dir, &mut extension).context(WriteExtensionFilesSnafu)?;
+    canonicalize_relative_icon_path(&dest_dir, &mut extension).context(IoSnafu)?;
+    canonicalize_relative_page_path(&dest_dir, &mut extension).context(IoSnafu)?;
 
     // Add extension to the search source
     third_party_ext_list_write_lock.push(extension);
