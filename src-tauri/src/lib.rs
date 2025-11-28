@@ -110,6 +110,7 @@ pub fn run() {
         )
         .plugin(tauri_plugin_windows_version::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_zustand::init())
         .plugin(prevent_default::init());
 
     // Conditional compilation for macOS
