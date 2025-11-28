@@ -635,6 +635,9 @@
       "login": "登录"
     }
   },
+  "common": {
+    "loading": "加载中..."
+  },
   "selection": {
     "title": "划词工具栏设置",
     "actions": {
@@ -643,7 +646,9 @@
       "translate": "翻译",
       "summary": "总结",
       "copy": "复制",
-      "speak": "朗读"
+      "speak": "朗读",
+      "delete": "删除",
+      "addChat": "添加聊天功能"
     },
     "noText": "未检测到文本",
     "copied": "已复制",
@@ -670,6 +675,22 @@
       "defaultService": "默认服务",
       "assistant": "绑定小助手（仅聊天）",
       "defaultAssistant": "默认小助手"
+    },
+    "custom": {
+      "chat": "自定义聊天",
+      "namePlaceholder": "功能名称"
+    },
+    "icon": {
+      "type": "图标类型",
+      "type.lucide": "Lucide",
+      "type.custom": "自定义",
+      "pick": "选择图标",
+      "color": "图标颜色",
+      "upload": "上传图标",
+      "alt": "图标"
+    },
+    "preview": {
+      "readonly": "预览仅供查看"
     }
   }
 }
