@@ -60,12 +60,4 @@ export const useSelectionStore = create<SelectionStore>((set) => ({
 export const tauriHandler = createTauriStore('selection-store', useSelectionStore, {
   saveOnChange: true,
   autoStart: true,
-
-  // You can also debounce or throttle when saving.
-  // This is optional. The default behavior is to save immediately.
-  saveStrategy: 'debounce',
-  saveInterval: 1000,
-
-  syncStrategy: 'debounce',
-  syncInterval: 1000,
 });
