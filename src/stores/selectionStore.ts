@@ -1,65 +1,63 @@
-import { create } from "zustand";
-import { persist, subscribeWithSelector } from "zustand/middleware";
-import platformAdapter from "@/utils/platformAdapter";
+import { create } from 'zustand';
+import { createTauriStore } from '@tauri-store/zustand';
 
-export type ISelectionStore = {
-  // whether selection is enabled
-  selectionEnabled: boolean;
-  setSelectionEnabled: (selectionEnabled: boolean) => void;
-  // toolbar buttons configuration for selection window
-  toolbarConfig: any[];
-  setToolbarConfig: (toolbarConfig: any[]) => void;
-  // whether to show icons only (hide labels) in selection window
-  iconsOnly: boolean;
-  setIconsOnly: (iconsOnly: boolean) => void;
-  // initialize cross-window sync listeners once
-  initSync: () => Promise<void>;
+// Types adapted from Selection/index.tsx to ensure compatibility
+export type LucideIconName =
+  | "Search"
+  | "Bot"
+  | "Languages"
+  | "FileText"
+  | "Copy"
+  | "Volume2";
+
+type IconConfig =
+  | { type: "lucide"; name: LucideIconName; color?: string }
+  | { type: "custom"; dataUrl: string; color?: string };
+
+type ActionType =
+  | "search"
+  | "ask_ai"
+  | "translate"
+  | "summary"
+  | "copy"
+  | "speak"
+  | "custom";
+
+export type ButtonConfig = {
+  id: string;
+  label: string;
+  icon: IconConfig;
+  action: {
+    type: ActionType;
+    assistantId?: string;
+    assistantServerId?: string;
+    eventName?: string;
+  };
+  labelKey?: string;
 };
 
-export const useSelectionStore = create<ISelectionStore>()(
-  subscribeWithSelector(
-    persist(
-      (set) => ({
-        selectionEnabled: false,
-        setSelectionEnabled(selectionEnabled) {
-          set({ selectionEnabled });
-        },
-        toolbarConfig: [],
-        setToolbarConfig(toolbarConfig) {
-          return set({ toolbarConfig });
-        },
-        iconsOnly: false,
-        setIconsOnly(iconsOnly) {
-          set({ iconsOnly });
-          // broadcast to other windows
-          try {
-            platformAdapter.emitEvent("selection-icons-only", { value: iconsOnly });
-          } catch {}
-        },
-        initSync: async () => {
-          // ensure listener only initialized once per window context
-          const hasInit = (window as any).__selectionIconsOnlyInit__;
-          if (hasInit) return;
-          (window as any).__selectionIconsOnlyInit__ = true;
-          try {
-            await platformAdapter.listenEvent(
-              "selection-icons-only",
-              ({ payload }: any) => {
-                const next = Boolean(payload?.value);
-                // apply without re-broadcast to avoid echo
-                set({ iconsOnly: next });
-              }
-            );
-          } catch {}
-        },
-      }),
-      {
-        name: "selection-store",
-        partialize: (state) => ({
-          toolbarConfig: state.toolbarConfig,
-          iconsOnly: state.iconsOnly,
-        }),
-      }
-    )
-  )
-);
+type SelectionStore = {
+  iconsOnly: boolean;
+  setIconsOnly: (iconsOnly: boolean) => void;
+  toolbarConfig: ButtonConfig[];
+  setToolbarConfig: (config: ButtonConfig[]) => void;
+  selectionEnabled: boolean;
+  setSelectionEnabled: (enabled: boolean) => void;
+}
+
+// A Zustand store, like any other.
+export const useSelectionStore = create<SelectionStore>((set) => ({
+  iconsOnly: false,
+  setIconsOnly: (iconsOnly) => set({ iconsOnly }),
+  toolbarConfig: [],
+  setToolbarConfig: (toolbarConfig) => set({ toolbarConfig }),
+  selectionEnabled: true,
+  setSelectionEnabled: (selectionEnabled) => set({ selectionEnabled }),
+}));
+
+// A handle to the Tauri plugin.
+// We will need this to start the store.
+export const tauriHandler = createTauriStore('selection-store', useSelectionStore, {
+  saveOnChange: true,
+  autoStart: true,
+});

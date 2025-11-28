@@ -67,7 +67,7 @@ export const AssistantFetcher = ({
       lastServerId.current = currentService?.id;
 
       return {
-        total: response.hits.total.value,
+        total: response?.hits?.total?.value ?? 0,
         list: assistantList,
       };
     } catch (error) {

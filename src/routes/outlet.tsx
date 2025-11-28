@@ -15,10 +15,10 @@ import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 import { useIconfontScript } from "@/hooks/useScript";
 import { Extension } from "@/components/Settings/Extensions";
 import { useExtensionsStore } from "@/stores/extensionsStore";
+import { useSelectionStore } from "@/stores/selectionStore";
 import { useServers } from "@/hooks/useServers";
 import { useDeepLinkManager } from "@/hooks/useDeepLinkManager";
 import { useSelectionWindow } from "../hooks/useSelectionWindow";
-import { useSelectionStore } from "@/stores/selectionStore";
 
 export default function LayoutOutlet() {
   const location = useLocation();
@@ -26,6 +26,9 @@ export default function LayoutOutlet() {
   const { language } = useAppStore();
   const { i18n } = useTranslation();
   const { activeTheme, isDark, setIsDark, setTheme } = useThemeStore();
+
+  // Initialize selection store synchronization
+  useSelectionStore();
 
   // init servers isTauri
   useServers();

@@ -126,10 +126,6 @@ const SelectionSettings = () => {
   const iconsOnly = useSelectionStore((state) => state.iconsOnly);
   const setIconsOnly = useSelectionStore((state) => state.setIconsOnly);
 
-  useEffect(() => {
-    useSelectionStore.getState().initSync();
-  }, []);
-
   // Initialize from global store; write back on change for multi-window sync
   const toolbarConfig = useSelectionStore((s) => s.toolbarConfig);
   const setToolbarConfig = useSelectionStore((s) => s.setToolbarConfig);
