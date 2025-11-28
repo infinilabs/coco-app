@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   GripVertical,
-  Trash2,
+  Trash2
 } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";

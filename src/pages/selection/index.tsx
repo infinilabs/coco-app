@@ -11,7 +11,6 @@ import HeaderToolbar from "@/components/Selection/HeaderToolbar";
 // Simple animated selection window content
 export default function SelectionWindow() {
   const { t } = useTranslation();
-
   const [text, setText] = useState("");
   const [visible, setVisible] = useState(false);
   const [animatingOut, setAnimatingOut] = useState(false);
