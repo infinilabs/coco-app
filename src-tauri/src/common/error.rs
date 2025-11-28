@@ -1,6 +1,8 @@
 use reqwest::StatusCode;
-use serde::{Deserialize, Serialize, Serializer};
-use thiserror::Error;
+use serde::{Deserialize, Serializer};
+use snafu::prelude::*;
+
+use crate::server::http_client::HttpRequestError;
 
 fn serialize_optional_status_code<S>(
     status_code: &Option<StatusCode>,
@@ -15,68 +17,50 @@ where
     }
 }
 
-#[allow(unused)]
 #[derive(Debug, Deserialize)]
-pub struct ErrorCause {
+pub struct ApiErrorCause {
+    /// Only the top-level error contains this.
+    #[serde(default)]
+    pub root_cause: Option<Vec<ApiErrorCause>>,
+
     #[serde(default)]
     pub r#type: Option<String>,
     #[serde(default)]
     pub reason: Option<String>,
+
+    /// Recursion, [error A] cause by [error B] caused by [error C]
+    #[serde(default)]
+    pub caused_by: Option<Box<ApiErrorCause>>,
 }
 
 #[derive(Debug, Deserialize)]
-#[allow(unused)]
-pub struct ErrorDetail {
+pub struct ApiError {
     #[serde(default)]
-    pub root_cause: Option<Vec<ErrorCause>>,
+    pub error: Option<ApiErrorCause>,
     #[serde(default)]
-    pub r#type: Option<String>,
-    #[serde(default)]
-    pub reason: Option<String>,
-    #[serde(default)]
-    pub caused_by: Option<ErrorCause>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct ErrorResponse {
-    #[serde(default)]
-    pub error: Option<ErrorDetail>,
-    #[serde(default)]
-    #[allow(unused)]
     pub status: Option<u16>,
 }
 
-#[derive(Debug, Error, Serialize)]
+#[derive(Debug, Snafu)]
+#[snafu(visibility(pub(crate)))]
 pub enum SearchError {
-    #[error("HttpError: status code [{status_code:?}], msg [{msg}]")]
-    HttpError {
-        #[serde(serialize_with = "serialize_optional_status_code")]
-        status_code: Option<StatusCode>,
-        msg: String,
-    },
-
-    #[error("ParseError: {0}")]
-    ParseError(String),
-
-    #[error("Timeout occurred")]
-    Timeout,
-
-    #[error("InternalError: {0}")]
-    InternalError(String),
+    #[snafu(display("HTTP request error"))]
+    HttpError { source: HttpRequestError },
+    #[snafu(display("failed to decode query response"))]
+    ResponseDecodeError { source: serde_json::Error },
+    /// The search operation timed out.
+    #[snafu(display("search operation timed out"))]
+    SearchTimeout,
+    #[snafu(display("an internal error occurred: '{}'", error))]
+    InternalError { error: String },
 }
 
-impl From<reqwest::Error> for SearchError {
-    fn from(err: reqwest::Error) -> Self {
-        if err.is_timeout() {
-            SearchError::Timeout
-        } else if err.is_decode() {
-            SearchError::ParseError(err.to_string())
-        } else {
-            SearchError::HttpError {
-                status_code: err.status(),
-                msg: err.to_string(),
-            }
-        }
+impl serde::ser::Serialize for SearchError {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        todo!("remove this")
     }
 }
 

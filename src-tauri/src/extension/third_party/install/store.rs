@@ -29,8 +29,8 @@ use crate::extension::third_party::install::error::IoSnafu;
 use crate::extension::third_party::install::error::ParseMinimumCocoVersionSnafu;
 use crate::extension::third_party::install::error::ZipArchiveDecodingSnafu;
 use crate::extension::third_party::install::filter_out_incompatible_sub_extensions;
+use crate::server::http_client::DecodeResponseSnafu;
 use crate::server::http_client::HttpClient;
-use crate::server::http_client::RequestSnafu;
 use crate::util::platform::Platform;
 use async_trait::async_trait;
 use reqwest::StatusCode;
@@ -259,7 +259,7 @@ pub(crate) async fn install_extension_from_store(
     let bytes = response
         .bytes()
         .await
-        .context(RequestSnafu)
+        .context(DecodeResponseSnafu)
         .context(DownloadFailureSnafu)?;
 
     let cursor = std::io::Cursor::new(bytes);

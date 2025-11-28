@@ -1,13 +1,14 @@
 use crate::common::document::{Document, OnOpened};
-use crate::common::error::SearchError;
+use crate::common::error::{HttpSnafu, ResponseDecodeSnafu, SearchError};
 use crate::common::http::get_response_body_text;
 use crate::common::search::{QueryHits, QueryResponse, QuerySource, SearchQuery, SearchResponse};
 use crate::common::server::Server;
 use crate::common::traits::SearchSource;
-use crate::server::http_client::HttpClient;
+use crate::server::http_client::{HttpClient, HttpRequestError};
 use async_trait::async_trait;
 use ordered_float::OrderedFloat;
 use reqwest::StatusCode;
+use snafu::ResultExt;
 use std::collections::HashMap;
 use tauri::AppHandle;
 
@@ -112,31 +113,29 @@ impl SearchSource for CocoSearchSource {
 
         let response = HttpClient::get(&self.server.id, &url, Some(query_params))
             .await
-            .map_err(|e| SearchError::HttpError {
-                status_code: None,
-                msg: format!("{}", e),
-            })?;
+            .context(HttpSnafu)?;
         let status_code = response.status();
 
         if ![StatusCode::OK, StatusCode::CREATED].contains(&status_code) {
-            return Err(SearchError::HttpError {
-                status_code: Some(status_code),
-                msg: format!("Request failed with status code [{}]", status_code),
-            });
+            let http_err = HttpRequestError::RequestFailed {
+                status: status_code.as_u16(),
+                error_response_body_str: None,
+                coco_server_api_error_response_body: None,
+            };
+            let search_err = SearchError::HttpError { source: http_err };
+            return Err(search_err);
         }
 
         // Use the helper function to parse the response body
-        let response_body = get_response_body_text(response)
-            .await
-            .map_err(|e| SearchError::ParseError(e))?;
+        let response_body = get_response_body_text(response).await.context(HttpSnafu)?;
 
         // Check if the response body is empty
         if !response_body.is_empty() {
             // log::info!("Search response body: {}", &response_body);
 
             // Parse the search response from the body text
-            let parsed: SearchResponse<Document> = serde_json::from_str(&response_body)
-                .map_err(|e| SearchError::ParseError(format!("{}", e)))?;
+            let parsed: SearchResponse<Document> =
+                serde_json::from_str(&response_body).context(ResponseDecodeSnafu)?;
 
             // Process the parsed response
             total_hits = parsed.hits.total.value as usize;

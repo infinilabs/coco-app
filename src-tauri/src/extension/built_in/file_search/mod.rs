@@ -85,7 +85,7 @@ impl SearchSource for FileSearchExtensionSearchSource {
 
         let hits = implementation::hits(&query_string, from, size, &config)
             .await
-            .map_err(SearchError::InternalError)?;
+            .map_err(|e| SearchError::InternalError { error: e })?;
 
         let total_hits = hits.len();
         Ok(QueryResponse {

@@ -1,6 +1,6 @@
 use super::super::check::InvalidPluginJsonError;
 use crate::extension::third_party::install::ParsingMinimumCocoVersionError;
-use crate::server::http_client::HttpClientError;
+use crate::server::http_client::HttpRequestError;
 use crate::util::platform::Platform;
 use serde::Serialize;
 use snafu::prelude::*;
@@ -38,7 +38,7 @@ pub(crate) enum InstallExtensionError {
     #[snafu(display("extension '{}' does not exist", id))]
     NotFound { id: String },
     #[snafu(display("failed to download extension"))]
-    DownloadFailure { source: HttpClientError },
+    DownloadFailure { source: HttpRequestError },
     #[snafu(display("failed to decode the downloaded archive"))]
     ZipArchiveDecodingError { source: zip::result::ZipError },
     #[snafu(display("extension is already installed"))]
