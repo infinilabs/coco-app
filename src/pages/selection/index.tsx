@@ -7,6 +7,8 @@ import { useSelectionStore } from "@/stores/selectionStore";
 import { copyToClipboard } from "@/utils";
 import platformAdapter from "@/utils/platformAdapter";
 import HeaderToolbar from "@/components/Selection/HeaderToolbar";
+import type { ActionConfig } from "@/components/Settings/Advanced/components/Selection/config";
+import { show_coco } from "@/commands";
 
 // Simple animated selection window content
 export default function SelectionWindow() {
@@ -125,34 +127,27 @@ export default function SelectionWindow() {
     }, 150);
   };
 
-  const openMain = async () => {
-    try {
-      await platformAdapter.commands("show_coco");
-    } catch {
-      await platformAdapter.emitEvent("show-coco");
-      await platformAdapter.showWindow();
-    }
-  };
-
   const handleChatAction = useCallback(
-    async (assistantId?: string) => {
+    async (action: ActionConfig) => {
       const payloadText = (textRef.current || "").trim();
+
       if (!payloadText) return;
 
-      await openMain();
-      await new Promise((r) => setTimeout(r, 120));
+      await show_coco();
+      await new Promise((r) => setTimeout(r, 300));
 
       await platformAdapter.emitEvent("selection-action", {
         action: "chat",
         text: payloadText,
-        assistantId,
+        assistantId: action.assistantId,
+        serverId: action.assistantServerId,
       });
 
       if (!isSpeaking) {
         await close();
       }
     },
-    [openMain, isSpeaking, close]
+    [isSpeaking, close]
   );
 
   const searchMain = useCallback(async () => {
@@ -160,7 +155,7 @@ export default function SelectionWindow() {
     console.log("searchMain payload", payloadText);
     if (!payloadText) return;
 
-    await openMain();
+    await show_coco();
     await new Promise((r) => setTimeout(r, 120));
     await platformAdapter.emitEvent("selection-action", {
       action: "search",
@@ -227,7 +222,7 @@ export default function SelectionWindow() {
       setIsSpeaking(true);
       setIsPaused(false);
     } catch (e) {
-      console.error("TTS 播放失败", e);
+      console.error("TTS play failed:", e);
       stopSpeak();
       scheduleAutoHide();
     }
@@ -246,26 +241,26 @@ export default function SelectionWindow() {
     }
   }, []);
 
-  const getActionHandler = (type: string, assistantId?: string) => {
-    switch (type) {
+  const getActionHandler = (action: ActionConfig) => {
+    console.log(111111111, action);
+    switch (action.type) {
       case "ask_ai":
       case "translate":
       case "summary":
-        return () => handleChatAction(assistantId);
+        handleChatAction(action);
+        break;
       case "copy":
-        return handleCopy;
+        handleCopy();
+        break;
       case "search":
-        return searchMain;
+        searchMain();
+        break;
       case "speak":
-        return speak;
+        speak();
+        break;
       default:
-        return () => {};
+        break;
     }
-  };
-
-  const handleToolbarAction = (type: string, assistantId?: string) => {
-    const handler = getActionHandler(type, assistantId);
-    handler();
   };
 
   const iconsOnly = useSelectionStore((s) => s.iconsOnly);
@@ -386,8 +381,8 @@ export default function SelectionWindow() {
       <HeaderToolbar
         buttons={visibleButtons as any}
         iconsOnly={iconsOnly}
-        onAction={handleToolbarAction}
-        onLogoClick={openMain}
+        onAction={getActionHandler}
+        onLogoClick={show_coco}
       >
         {isSpeaking && <SpeakControls />}
       </HeaderToolbar>

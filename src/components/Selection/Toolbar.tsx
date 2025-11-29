@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Search } from "lucide-react";
 
 import {
-  ActionType,
+  ActionConfig,
   ButtonConfig,
   IconConfig,
   resolveLucideIcon,
@@ -83,7 +83,7 @@ export default function SelectionToolbar({
 }: {
   buttons: ButtonConfig[];
   iconsOnly: boolean;
-  onAction: (type: ActionType, assistantId?: string) => void;
+  onAction: (action: ActionConfig) => void;
   className?: string;
   requireAssistantCheck?: boolean;
 }) {
@@ -107,7 +107,7 @@ export default function SelectionToolbar({
         <ToolbarButton
           key={btn.id}
           btn={btn}
-          onClick={() => onAction(btn.action.type, btn.action.assistantId)}
+          onClick={() => onAction(btn.action)}
           showLabel={!iconsOnly}
         />
       ))}

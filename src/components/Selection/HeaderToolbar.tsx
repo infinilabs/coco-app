@@ -1,7 +1,8 @@
 import { Separator } from "@radix-ui/react-separator";
+
 import cocoLogoImg from "@/assets/app-icon.png";
 import SelectionToolbar from "@/components/Selection/Toolbar";
-import type { ActionType, ButtonConfig } from "@/components/Settings/Advanced/components/Selection/config";
+import type { ActionConfig, ButtonConfig } from "@/components/Settings/Advanced/components/Selection/config";
 
 export default function HeaderToolbar({
   buttons,
@@ -13,7 +14,7 @@ export default function HeaderToolbar({
 }: {
   buttons: ButtonConfig[];
   iconsOnly: boolean;
-  onAction: (type: ActionType, assistantId?: string) => void;
+  onAction: (action: ActionConfig) => void;
   onLogoClick?: () => void;
   className?: string;
   children?: React.ReactNode;

@@ -46,7 +46,7 @@ pub fn get_selection_enabled() -> bool {
 #[cfg(target_os = "macos")]
 pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
     // Entrypoint: checks permissions (macOS), initializes, and starts a background watcher thread.
-    log::info!("start_selection_monitor: 入口函数启动");
+    // log::info!("start_selection_monitor: 入口函数启动");
     use std::time::Duration;
     use tauri::Emitter;
 
@@ -108,13 +108,13 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
                     return (x_top_left, y_flipped);
                 }
 
-                let mut chosen = CGMainDisplayID(); // default fallback
-                log::info!(
-                    "current_mouse: pt=({:.1},{:.1}) → display={}",
-                    pt.x as f64,
-                    pt.y as f64,
-                    chosen
-                );
+                let mut _chosen = CGMainDisplayID(); // default fallback
+                // log::info!(
+                //     "current_mouse: pt=({:.1},{:.1}) → display={}",
+                //     pt.x as f64,
+                //     pt.y as f64,
+                //     chosen
+                // );
 
                 let mut min_x_pt = f64::INFINITY;
                 let mut max_top_pt = f64::NEG_INFINITY;
@@ -136,15 +136,15 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
                     let in_x = pt.x >= b.origin.x && pt.x <= b.origin.x + b.size.width;
                     let in_y = pt.y >= b.origin.y && pt.y <= b.origin.y + b.size.height;
                     if in_x && in_y {
-                        chosen = did;
-                        log::info!(
-                            "current_mouse: pt=({:.1},{:.1}) → display={} → point_global_top_left=(x={}, y={})",
-                            pt.x as f64,
-                            pt.y as f64,
-                            chosen,
-                            b.origin.x,
-                            b.origin.y
-                        );
+                        _chosen = did;
+                        // log::info!(
+                        //     "current_mouse: pt=({:.1},{:.1}) → display={} → point_global_top_left=(x={}, y={})",
+                        //     pt.x as f64,
+                        //     pt.y as f64,
+                        //     chosen,
+                        //     b.origin.x,
+                        //     b.origin.y
+                        // );
                     }
                 }
 
@@ -357,10 +357,10 @@ fn read_selected_text_with_retries(retries: u32, delay_ms: u64) -> Option<String
         if let Some(text) = read_selected_text() {
             if !text.is_empty() {
                 if attempt > 0 {
-                    log::info!(
-                        "read_selected_text: 第{}次重试成功，获取到选中文本",
-                        attempt
-                    );
+                    // log::info!(
+                    //     "read_selected_text: 第{}次重试成功，获取到选中文本",
+                    //     attempt
+                    // );
                 }
                 return Some(text);
             }

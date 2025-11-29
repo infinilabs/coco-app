@@ -53,10 +53,7 @@ export interface EventPayloads {
   "server-list-changed": Server[];
   "selection-text": string;
   "selection-ask-ai": any;
-  "selection-action": {
-    action: string;
-    text: string;
-  };
+  "selection-action": any;
   "selection-detected": string;
   "selection-enabled": boolean;
   "change-selection-store": any;

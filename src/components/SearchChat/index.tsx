@@ -316,35 +316,50 @@ function SearchChat({
   const { normalOpacity, blurOpacity } = useAppearanceStore();
 
   useEffect(() => {
-    const unlistenAsk = platformAdapter.listenEvent("selection-ask-ai", ({ payload }: any) => {
-      const value = typeof payload === "string" ? payload : String(payload?.text ?? "");
-      dispatch({ type: "SET_CHAT_MODE", payload: true });
-      dispatch({ type: "SET_INPUT", payload: value });
-      platformAdapter.showWindow();
-    });
-
-    const unlistenAction = platformAdapter.listenEvent("selection-action", ({ payload }: any) => {
-      const { action, text, assistantId } = payload || {};
-      const value = String(text ?? "");
-      if (action === "search") {
-        dispatch({ type: "SET_CHAT_MODE", payload: false });
-        dispatch({ type: "SET_INPUT", payload: value });
-        const { setSearchValue } = useSearchStore.getState();
-        setSearchValue(value);
-        platformAdapter.showWindow();
-      } else if (action === "chat") {
+    const unlistenAsk = platformAdapter.listenEvent(
+      "selection-ask-ai",
+      ({ payload }: any) => {
+        const value =
+          typeof payload === "string" ? payload : String(payload?.text ?? "");
         dispatch({ type: "SET_CHAT_MODE", payload: true });
         dispatch({ type: "SET_INPUT", payload: value });
-
-        const { assistantList } = useConnectStore.getState();
-        const assistant = assistantList.find((item) => item._source?.id === assistantId);
-        if (assistant) {
-          const { setTargetAssistantId } = useSearchStore.getState();
-          setTargetAssistantId(assistant._id);
-        }
         platformAdapter.showWindow();
       }
-    });
+    );
+
+    const unlistenAction = platformAdapter.listenEvent(
+      "selection-action",
+      ({ payload }: any) => {
+        const { action, text, assistantId, serverId } = payload || {};
+        const value = String(text ?? "");
+
+        //
+        if (action === "search") {
+          dispatch({ type: "SET_CHAT_MODE", payload: false });
+          dispatch({ type: "SET_INPUT", payload: value });
+          const { setSearchValue } = useSearchStore.getState();
+          setSearchValue(value);
+        } else if (action === "chat") {
+          dispatch({ type: "SET_CHAT_MODE", payload: true });
+          dispatch({ type: "SET_INPUT", payload: value });
+          //
+          const { setTargetServerId, setTargetAssistantId } =
+            useSearchStore.getState();
+
+          if (serverId) {
+            setTargetServerId(serverId);
+          }
+
+          const { assistantList } = useConnectStore.getState();
+          const assistant = assistantList.find(
+            (item) => item._source?.id === assistantId
+          );
+          if (assistant) {
+            setTargetAssistantId(assistant._id);
+          }
+        }
+      }
+    );
 
     return () => {
       unlistenAsk.then((fn) => fn());

@@ -46,6 +46,12 @@ export function ServerList({ clearChat }: ServerListProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [highlightId, setHighlightId] = useState<string>("");
 
+  const targetServerId = useSearchStore((state) => {
+    return state.targetServerId;
+  });
+  const setTargetServerId = useSearchStore((state) => {
+    return state.setTargetServerId;
+  });
   const askAiServerId = useSearchStore((state) => {
     return state.askAiServerId;
   });
@@ -102,17 +108,20 @@ export function ServerList({ clearChat }: ServerListProps) {
   }, [serverList]);
 
   useEffect(() => {
-    if (!askAiServerId || serverList.length === 0) return;
+    const targetId = targetServerId ?? askAiServerId;
+    if (!targetId || list.length === 0) return;
 
-    const matched = serverList.find((server) => {
-      return server.id === askAiServerId;
-    });
-
+    const matched = list.find((server) => server.id === targetId);
     if (!matched) return;
 
     switchServer(matched);
-    setAskAiServerId(void 0);
-  }, [serverList, askAiServerId]);
+    setHighlightId(matched.id);
+    if (targetServerId) {
+      setTargetServerId(void 0);
+    } else {
+      setAskAiServerId(void 0);
+    }
+  }, [list, askAiServerId, targetServerId]);
 
   useEffect(() => {
     if (!isTauri) return;

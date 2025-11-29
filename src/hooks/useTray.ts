@@ -85,18 +85,6 @@ export const useTray = () => {
 
     itemPromises.push(
       MenuItem.new({
-        text: selectionEnabled
-          ? t("tray.selectionDisable")
-          : t("tray.selectionEnable"),
-        action: async () => {
-          try {
-            await platformAdapter.invokeBackend("set_selection_enabled", { enabled: !selectionEnabled });
-          } catch (e) {
-            console.error("set_selection_enabled invoke failed:", e);
-          }
-        },
-      }),
-      MenuItem.new({
         text: t("tray.settings"),
         // accelerator: "CommandOrControl+,",
         action: () => {

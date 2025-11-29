@@ -23,16 +23,18 @@ export type IconConfig =
   | { type: "lucide"; name: LucideIconName; color?: string }
   | { type: "custom"; dataUrl: string; color?: string };
 
+export type ActionConfig = {
+  type: ActionType;
+  assistantId?: string;
+  assistantServerId?: string;
+  eventName?: string;
+};
+
 export type ButtonConfig = {
   id: string;
   label: string;
   icon: IconConfig;
-  action: {
-    type: ActionType;
-    assistantId?: string;
-    assistantServerId?: string;
-    eventName?: string;
-  };
+  action: ActionConfig;
   labelKey?: string;
 };
 
