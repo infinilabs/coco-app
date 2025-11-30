@@ -637,7 +637,8 @@
     }
   },
   "common": {
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "notFound": "Not found"
   },
   "selection": {
     "title": "Selection Toolbar Settings",
@@ -683,8 +684,8 @@
     },
     "icon": {
       "type": "Icon Type",
-      "type.lucide": "Lucide",
-      "type.custom": "Custom",
+      "lucide": "Lucide",
+      "custom": "Custom",
       "pick": "Pick Icon",
       "color": "Icon Color",
       "upload": "Upload Icon",

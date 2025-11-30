@@ -636,7 +636,8 @@
     }
   },
   "common": {
-    "loading": "加载中..."
+    "loading": "加载中...",
+    "notFound": "未找到"
   },
   "selection": {
     "title": "划词工具栏设置",
@@ -682,8 +683,8 @@
     },
     "icon": {
       "type": "图标类型",
-      "type.lucide": "Lucide",
-      "type.custom": "自定义",
+      "lucide": "Lucide",
+      "custom": "自定义",
       "pick": "选择图标",
       "color": "图标颜色",
       "upload": "上传图标",

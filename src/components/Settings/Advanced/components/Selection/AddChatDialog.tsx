@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AssistantFetcher } from "@/components/Assistant/AssistantFetcher";
+import * as LucideIcons from "lucide-react";
 import { nanoid } from "nanoid";
+
+import { AssistantFetcher } from "@/components/Assistant/AssistantFetcher";
 import { Button } from "@/components/ui/button";
 import { ButtonConfig, IconConfig, LUCIDE_ICON_MAP, LucideIconName } from "./config";
-import * as LucideIcons from "lucide-react";
 
 export default function AddChatDialog({
   serverList,
@@ -93,7 +94,6 @@ export default function AddChatDialog({
     handleClose();
   };
 
-  // 解析用户输入的 Lucide 图标名，支持大小写/连字符/下划线等格式
   const resolveLucideIcon = (name: string) => {
     if (!name) return null;
     let Comp = (LucideIcons as any)[name];
@@ -107,7 +107,6 @@ export default function AddChatDialog({
     return (LucideIcons as any)[normalized] || null;
   };
 
-  // 预览图标组件
   const IconPreview = () => {
     const Comp = iconType === "lucide" ? resolveLucideIcon(lucideName) : null;
     return (
@@ -120,7 +119,7 @@ export default function AddChatDialog({
           ) : iconType === "lucide" ? (
             <div className="flex items-center gap-2">
               <LucideIcons.Bot className="w-6 h-6" style={{ color }} />
-              <span className="text-xs text-muted-foreground">{t("common.notFound") || "未找到图标"}</span>
+              <span className="text-xs text-muted-foreground">{t("common.notFound")}</span>
             </div>
           ) : (
             <div className="w-6 h-6 rounded bg-muted" />
@@ -168,8 +167,8 @@ export default function AddChatDialog({
                 value={iconType}
                 onChange={(e) => setIconType(e.target.value as any)}
               >
-                <option value="lucide">{t("selection.icon.type.lucide")}</option>
-                <option value="custom">{t("selection.icon.type.custom")}</option>
+                <option value="lucide">{t("selection.icon.lucide")}</option>
+                <option value="custom">{t("selection.icon.custom")}</option>
               </select>
             </div>
             <div className="space-y-1.5">
@@ -200,7 +199,7 @@ export default function AddChatDialog({
                     ))}
                   </datalist>
                   {!resolveLucideIcon(lucideName) && (
-                    <p className="text-xs text-muted-foreground mt-1">{t("common.notFound") || "未找到图标名，试试 PascalCase，如: MessageCircle"}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t("common.notFound")}</p>
                   )}
                 </>
               ) : (

@@ -47,7 +47,6 @@ export const LUCIDE_ICON_MAP: Record<string, any> = {
   Volume2,
 };
 
-// 统一的 Lucide 图标解析器：支持直接名与规范化（PascalCase）名
 export function resolveLucideIcon(name?: string): any {
   if (!name) return (LucideIcons as any)["Search"] || Search;
   const direct = (LucideIcons as any)[name];
