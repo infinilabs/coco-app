@@ -1,38 +1,59 @@
-use crate::common;
+use crate::{
+    common,
+    server::http_client::{DecodeResponseSnafu, HttpRequestError},
+};
 use reqwest::Response;
 use std::collections::HashMap;
 use tauri_plugin_store::JsonValue;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use snafu::ResultExt;
 
-pub async fn get_response_body_text(response: Response) -> Result<String, String> {
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GetResponse {
+    pub _id: String,
+    pub _source: Source,
+    pub result: String,
+    pub payload: Option<Value>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Source {
+    pub id: String,
+    pub created: String,
+    pub updated: String,
+    pub status: String,
+}
+
+pub async fn get_response_body_text(response: Response) -> Result<String, HttpRequestError> {
     let status = response.status().as_u16();
     let body = response
         .text()
         .await
-        .map_err(|e| format!("Failed to read response body: {}, code: {}", e, status))?;
+        .context(DecodeResponseSnafu)?
+        .trim()
+        .to_string();
 
     log::debug!("Response status: {}, body: {}", status, &body);
 
     if status < 200 || status >= 400 {
-        // Try to parse the error body
-        let fallback_error = "Failed to send message".to_string();
-
-        if body.trim().is_empty() {
-            return Err(fallback_error);
+        if body.is_empty() {
+            return Err(HttpRequestError::RequestFailed {
+                status,
+                error_response_body_str: None,
+                coco_server_api_error_response_body: None,
+            });
         }
 
-        match serde_json::from_str::<common::error::ErrorResponse>(&body) {
-            Ok(parsed_error) => {
-                dbg!(&parsed_error);
-                Err(format!(
-                    "Server error ({}): {:?}",
-                    status, parsed_error.error
-                ))
-            }
-            Err(_) => {
-                log::warn!("Failed to parse error response: {}", &body);
-                Err(fallback_error)
-            }
-        }
+        // Ignore this error, including a `serde_json::Error` in `HttpRequestError::RequestFailed`
+        // would be too verbose. And it is still easy to debug without this error, since we have
+        // the raw error response body.
+        let api_error = serde_json::from_str::<common::error::ApiError>(&body).ok();
+        Err(HttpRequestError::RequestFailed {
+            status,
+            error_response_body_str: Some(body),
+            coco_server_api_error_response_body: api_error,
+        })
     } else {
         Ok(body)
     }

@@ -5,7 +5,9 @@ use super::check_compatibility_via_mcv;
 use super::is_extension_installed;
 use crate::common::document::DataSourceReference;
 use crate::common::document::Document;
+use crate::common::error::ReportErrorStyle;
 use crate::common::error::SearchError;
+use crate::common::error::report_error;
 use crate::common::search::QueryResponse;
 use crate::common::search::QuerySource;
 use crate::common::search::SearchQuery;
@@ -17,13 +19,24 @@ use crate::extension::canonicalize_relative_icon_path;
 use crate::extension::canonicalize_relative_page_path;
 use crate::extension::third_party::check::general_check;
 use crate::extension::third_party::get_third_party_extension_directory;
+use crate::extension::third_party::install::error::DecodePluginJsonSnafu;
+use crate::extension::third_party::install::error::DownloadFailureSnafu;
+use crate::extension::third_party::install::error::InstallExtensionError;
+use crate::extension::third_party::install::error::InvalidExtensionError;
+use crate::extension::third_party::install::error::InvalidExtensionSnafu;
+use crate::extension::third_party::install::error::InvalidPluginJsonSnafu;
+use crate::extension::third_party::install::error::IoSnafu;
+use crate::extension::third_party::install::error::ParseMinimumCocoVersionSnafu;
+use crate::extension::third_party::install::error::ZipArchiveDecodingSnafu;
 use crate::extension::third_party::install::filter_out_incompatible_sub_extensions;
+use crate::server::http_client::DecodeResponseSnafu;
 use crate::server::http_client::HttpClient;
 use crate::util::platform::Platform;
 use async_trait::async_trait;
 use reqwest::StatusCode;
 use serde_json::Map as JsonObject;
 use serde_json::Value as Json;
+use snafu::ResultExt;
 use std::io::Read;
 use tauri::AppHandle;
 
@@ -233,24 +246,24 @@ pub(crate) async fn extension_detail(
 pub(crate) async fn install_extension_from_store(
     tauri_app_handle: AppHandle,
     id: String,
-) -> Result<(), String> {
+) -> Result<(), InstallExtensionError> {
     let path = format!("store/extension/{}/_download", id);
     let response = HttpClient::get("default_coco_server", &path, None)
         .await
-        .map_err(|e| format!("Failed to download extension: {}", e))?;
+        .context(DownloadFailureSnafu)?;
 
     if response.status() == StatusCode::NOT_FOUND {
-        return Err(format!("extension [{}] not found", id));
+        return Err(InstallExtensionError::NotFound { id });
     }
 
     let bytes = response
         .bytes()
         .await
-        .map_err(|e| format!("Failed to read response bytes: {}", e))?;
+        .context(DecodeResponseSnafu)
+        .context(DownloadFailureSnafu)?;
 
     let cursor = std::io::Cursor::new(bytes);
-    let mut archive =
-        zip::ZipArchive::new(cursor).map_err(|e| format!("Failed to read zip archive: {}", e))?;
+    let mut archive = zip::ZipArchive::new(cursor).context(ZipArchiveDecodingSnafu)?;
 
     // The plugin.json sent from the server does not conform to our `struct Extension` definition:
     //
@@ -260,27 +273,48 @@ pub(crate) async fn install_extension_from_store(
     // we need to correct it
     let mut plugin_json = archive
         .by_name(PLUGIN_JSON_FILE_NAME)
-        .map_err(|e| e.to_string())?;
+        .context(ZipArchiveDecodingSnafu)?;
     let mut plugin_json_content = String::new();
-    std::io::Read::read_to_string(&mut plugin_json, &mut plugin_json_content)
-        .map_err(|e| e.to_string())?;
-    let mut extension: Json = serde_json::from_str(&plugin_json_content)
-        .map_err(|e| format!("Failed to parse plugin.json: {}", e))?;
 
-    if !check_compatibility_via_mcv(&extension)? {
-        return Err("app_incompatible".into());
+    std::io::Read::read_to_string(&mut plugin_json, &mut plugin_json_content).context(IoSnafu)?;
+
+    let mut extension: Json = serde_json::from_str(&plugin_json_content)
+        .context(DecodePluginJsonSnafu)
+        .context(InvalidExtensionSnafu)?;
+
+    let compatible_with_app = check_compatibility_via_mcv(&extension)
+        .context(ParseMinimumCocoVersionSnafu)
+        .context(InvalidExtensionSnafu)?;
+    if !compatible_with_app {
+        return Err(InstallExtensionError::IncompatibleCocoApp);
     }
 
-    let mut_ref_to_developer_object: &mut Json = extension
+    let extension_object = extension
         .as_object_mut()
-        .expect("plugin.json should be an object")
+        .ok_or_else(|| InvalidExtensionError::DecodePluginJson {
+            source: serde::de::Error::custom("plugin.json should be an object"),
+        })
+        .context(InvalidExtensionSnafu)?;
+
+    let mut_ref_to_developer_object: &mut Json = extension_object
         .get_mut("developer")
-        .expect("plugin.json should contain field [developer]");
+        .ok_or_else(|| InvalidExtensionError::DecodePluginJson {
+            source: serde::de::Error::missing_field("developer"),
+        })
+        .context(InvalidExtensionSnafu)?;
+
     let developer_id = mut_ref_to_developer_object
         .get("id")
-        .expect("plugin.json should contain [developer.id]")
+        .ok_or_else(|| InvalidExtensionError::DecodePluginJson {
+            source: serde::de::Error::missing_field("id"),
+        })
+        .context(InvalidExtensionSnafu)?
         .as_str()
-        .expect("plugin.json field [developer.id] should be a string");
+        .ok_or_else(|| InvalidExtensionError::DecodePluginJson {
+            source: serde::de::Error::custom("field 'id' should be of type 'string'"),
+        })
+        .context(InvalidExtensionSnafu)?;
+
     *mut_ref_to_developer_object = Json::String(developer_id.into());
 
     // Set IDs for sub-extensions (commands, quicklinks, scripts)
@@ -305,27 +339,33 @@ pub(crate) async fn install_extension_from_store(
     set_ids_for_field(&mut extension, "scripts", &mut counter);
 
     // Now the extension JSON is valid
-    let mut extension: Extension = serde_json::from_value(extension).unwrap_or_else(|e| {
-        panic!(
-            "cannot parse plugin.json as struct Extension, error [{:?}]",
-            e
-        );
-    });
-    let developer_id = extension.developer.clone().expect("developer has been set");
+    let mut extension: Extension = serde_json::from_value(extension)
+        .context(DecodePluginJsonSnafu)
+        .context(InvalidExtensionSnafu)?;
+
+    let developer_id = extension
+        .developer
+        .clone()
+        .expect("we checked this field exists");
 
     drop(plugin_json);
 
-    general_check(&extension)?;
+    general_check(&extension)
+        .context(InvalidPluginJsonSnafu)
+        .context(InvalidExtensionSnafu)?;
 
     let current_platform = Platform::current();
     if let Some(ref platforms) = extension.platforms {
         if !platforms.contains(&current_platform) {
-            return Err("platform_incompatible".into());
+            return Err(InstallExtensionError::IncompatiblePlatform {
+                current_platform,
+                compatible_platforms: platforms.clone(),
+            });
         }
     }
 
     if is_extension_installed(&developer_id, &id).await {
-        return Err("Extension already installed.".into());
+        return Err(InstallExtensionError::AlreadyInstalled);
     }
 
     // Extension is compatible with current platform, but it could contain sub
@@ -350,11 +390,11 @@ pub(crate) async fn install_extension_from_store(
     };
     tokio::fs::create_dir_all(extension_directory.as_path())
         .await
-        .map_err(|e| e.to_string())?;
+        .context(IoSnafu)?;
 
     // Extract all files except plugin.json
     for i in 0..archive.len() {
-        let mut zip_file = archive.by_index(i).map_err(|e| e.to_string())?;
+        let mut zip_file = archive.by_index(i).context(ZipArchiveDecodingSnafu)?;
         // `.name()` is safe to use in our cases, the cases listed in the below
         // page won't happen to us.
         //
@@ -382,35 +422,39 @@ pub(crate) async fn install_extension_from_store(
         {
             tokio::fs::create_dir_all(parent_dir)
                 .await
-                .map_err(|e| e.to_string())?;
+                .context(IoSnafu)?;
         }
 
         let mut dest_file = tokio::fs::File::create(&dest_file_path)
             .await
-            .map_err(|e| e.to_string())?;
+            .context(IoSnafu)?;
         let mut src_bytes = Vec::with_capacity(
             zip_file
                 .size()
                 .try_into()
                 .expect("we won't have a extension file that is bigger than 4GiB"),
         );
-        zip_file
-            .read_to_end(&mut src_bytes)
-            .map_err(|e| e.to_string())?;
+        zip_file.read_to_end(&mut src_bytes).context(IoSnafu)?;
         tokio::io::copy(&mut src_bytes.as_slice(), &mut dest_file)
             .await
-            .map_err(|e| e.to_string())?;
+            .context(IoSnafu)?;
     }
     // Create plugin.json from the extension variable
     let plugin_json_path = extension_directory.join(PLUGIN_JSON_FILE_NAME);
-    let extension_json = serde_json::to_string_pretty(&extension).map_err(|e| e.to_string())?;
+    let extension_json = serde_json::to_string_pretty(&extension).unwrap_or_else(|e| {
+        panic!(
+            "failed to serialize extension {:?}, error:\n{}",
+            extension,
+            report_error(&e, ReportErrorStyle::MultipleLines)
+        )
+    });
     tokio::fs::write(&plugin_json_path, extension_json)
         .await
-        .map_err(|e| e.to_string())?;
+        .context(IoSnafu)?;
 
     // Canonicalize relative icon and page paths
-    canonicalize_relative_icon_path(&extension_directory, &mut extension)?;
-    canonicalize_relative_page_path(&extension_directory, &mut extension)?;
+    canonicalize_relative_icon_path(&extension_directory, &mut extension).context(IoSnafu)?;
+    canonicalize_relative_page_path(&extension_directory, &mut extension).context(IoSnafu)?;
 
     third_party_ext_list_write_lock.push(extension);
 

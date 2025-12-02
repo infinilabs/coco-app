@@ -6,6 +6,8 @@ pub(crate) mod view_extension;
 use crate::common::document::ExtensionOnOpened;
 use crate::common::document::ExtensionOnOpenedType;
 use crate::common::document::OnOpened;
+use crate::common::error::ReportErrorStyle;
+use crate::common::error::report_error;
 use crate::common::register::SearchSourceRegistry;
 use crate::util::platform::Platform;
 use crate::util::version::COCO_VERSION;
@@ -21,6 +23,7 @@ use serde::Serialize;
 use serde_json::Value as Json;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::io;
 use std::ops::Deref;
 use std::path::Path;
 use tauri::{AppHandle, Manager};
@@ -405,8 +408,12 @@ where
         return Ok(None);
     };
 
-    let Some(semver) = parse_coco_semver(&version_str) else {
-        return Err(serde::de::Error::custom("version string format is invalid"));
+    let semver = match parse_coco_semver(&version_str) {
+        Ok(ver) => ver,
+        Err(e) => {
+            let error_msg = report_error(&e, ReportErrorStyle::SingleLine);
+            return Err(serde::de::Error::custom(&error_msg));
+        }
     };
 
     Ok(Some(semver))
@@ -592,7 +599,7 @@ pub(crate) enum QuicklinkLinkComponent {
     },
 }
 
-#[derive(Debug, PartialEq, Deserialize, Serialize, Clone, Display, Copy)]
+#[derive(Debug, PartialEq, Deserialize, Serialize, Clone, Display, Copy, Eq)]
 #[serde(rename_all(serialize = "snake_case", deserialize = "snake_case"))]
 pub enum ExtensionType {
     #[display("Group")]
@@ -980,11 +987,11 @@ pub(crate) async fn is_extension_enabled(
 pub(crate) fn canonicalize_relative_icon_path(
     extension_dir: &Path,
     extension: &mut Extension,
-) -> Result<(), String> {
+) -> Result<(), io::Error> {
     fn _canonicalize_relative_icon_path(
         extension_dir: &Path,
         extension: &mut Extension,
-    ) -> Result<(), String> {
+    ) -> Result<(), io::Error> {
         let icon_str = &extension.icon;
         let icon_path = Path::new(icon_str);
 
@@ -1003,7 +1010,7 @@ pub(crate) fn canonicalize_relative_icon_path(
                 assets_directory
             };
 
-            if absolute_icon_path.try_exists().map_err(|e| e.to_string())? {
+            if absolute_icon_path.try_exists()? {
                 extension.icon = absolute_icon_path
                     .into_os_string()
                     .into_string()
@@ -1046,11 +1053,11 @@ pub(crate) fn canonicalize_relative_icon_path(
 pub(crate) fn canonicalize_relative_page_path(
     extension_dir: &Path,
     extension: &mut Extension,
-) -> Result<(), String> {
+) -> Result<(), io::Error> {
     fn _canonicalize_view_extension_page_path(
         extension_dir: &Path,
         extension: &mut Extension,
-    ) -> Result<(), String> {
+    ) -> Result<(), io::Error> {
         let page = extension
             .page
             .as_ref()
@@ -1068,7 +1075,7 @@ pub(crate) fn canonicalize_relative_page_path(
         if page_path.is_relative() {
             let absolute_page_path = extension_dir.join(page_path);
 
-            if absolute_page_path.try_exists().map_err(|e| e.to_string())? {
+            if absolute_page_path.try_exists()? {
                 extension.page = Some(
                     absolute_page_path
                         .into_os_string()

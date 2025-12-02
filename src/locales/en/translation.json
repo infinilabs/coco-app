@@ -252,7 +252,21 @@
         "appIncompatibleExtension": "Installation failed! Incompatible with your Coco App version. Please update and retry.",
         "uninstall": "Uninstall",
         "uninstallSuccess": "Uninstalled successfully",
-        "incompatible": "Extension cannot run on the current version. Please upgrade Coco App."
+        "incompatible": "Extension cannot run on the current version. Please upgrade Coco App.",
+        "invalidExtension": "Extension is invalid.",
+        "noFileName": "Path '{{path}}' contains no filename.",
+        "nonUtf8Encoding": "'{{os_str}}' is not UTF-8 encoded.",
+        "missingPluginJson": "File 'plugin.json' does not exist.",
+        "readPluginJson": "Failed to read 'plugin.json'.",
+        "decodePluginJson": "Failed to decode 'plugin.json'.",
+        "invalidPluginJson": "'plugin.json' is invalid.",
+        "parseMinimumCocoVersion": "Failed to parse field 'minimum_coco_version'.",
+        "duplicateSubExtensionId": "Duplicate ID, sub-extension with ID '{{id}}' already exists.",
+        "fieldsNotAllowed": "Fields '{{fields}}' are not allowed for extensions of type '{{ty}}'.",
+        "fieldsNotAllowedForSubExtension": "Fields '{{fields}}' are not allowed for sub-extensions.",
+        "typesNotAllowedForSubExtension": "Sub-extensions cannot be of types {{types}}.",
+        "subExtensionHasMoreSupportedPlatforms": "It supports platforms {{extra_platforms}} that are not supported by the main extension.",
+        "fieldRequired": "An extension of type '{{ty}}' should have field '{{field}}' set."
       },
       "application": {
         "title": "Applications",

@@ -121,6 +121,7 @@ actix-files = "0.6.8"
 actix-web = "4.11.0"
 tauri-plugin-clipboard-manager = "2"
 tauri-plugin-zustand = "1"
+snafu = "0.8.9"
 
 [dev-dependencies]
 tempfile = "3.23.0"
