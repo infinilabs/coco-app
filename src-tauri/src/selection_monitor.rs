@@ -46,7 +46,7 @@ pub fn get_selection_enabled() -> bool {
 #[cfg(target_os = "macos")]
 pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
     // Entrypoint: checks permissions (macOS), initializes, and starts a background watcher thread.
-    // log::info!("start_selection_monitor: 入口函数启动");
+    // log::info!("start_selection_monitor: entrypoint");
     use std::time::Duration;
     use tauri::Emitter;
 
@@ -68,7 +68,7 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
     }
     #[cfg(not(target_os = "macos"))]
     {
-        log::info!("start_selection_monitor: 非 macOS 平台，无划词监控");
+        log::info!("start_selection_monitor: non-macos platform, no selection monitor");
     }
 
     // Background thread: drives popup show/hide based on mouse and AX selection state.
@@ -199,13 +199,27 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
             }
 
             // Skip empty-selection hide checks while interacting with the Coco popup.
-            let front_is_me = is_frontmost_app_me();
+            // Robust check: treat as "self" if either the frontmost app or the
+            // system-wide focused element belongs to this process.
+            let front_is_me = is_frontmost_app_me() || is_focused_element_me();
+
+            // New: When Coco is frontmost, completely disable monitoring and hide the popup.
+            // This guarantees selection monitoring does not operate inside our own app.
+            if front_is_me {
+                if popup_visible {
+                    let _ = app_handle.emit("selection-detected", "");
+                    popup_visible = false;
+                    last_text.clear();
+                    stable_text.clear();
+                }
+                // Reset counters to avoid stale state on re-entry.
+                stable_count = 0;
+                empty_count = 0;
+                continue;
+            }
 
             // Lightweight retries to smooth out transient AX focus instability.
-            let selected_text = if front_is_me {
-                // Do not read selection during popup interaction to avoid false empty.
-                None
-            } else {
+            let selected_text = {
                 // Up to 2 retries, 35ms apart.
                 read_selected_text_with_retries(2, 35)
             };
@@ -223,6 +237,19 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
                     // Update/show only when selection is stable to avoid flicker.
                     if stable_count >= stable_threshold {
                         if !popup_visible || text != last_text {
+                            // Second guard: never emit when Coco is frontmost or the
+                            // system-wide focused element belongs to Coco.
+                            if is_frontmost_app_me() || is_focused_element_me() {
+                                if popup_visible {
+                                    let _ = app_handle.emit("selection-detected", "");
+                                    popup_visible = false;
+                                }
+                                last_text.clear();
+                                stable_text.clear();
+                                stable_count = 0;
+                                empty_count = 0;
+                                continue;
+                            }
                             let (x, y) = current_mouse_point_global();
                             let payload = SelectionEventPayload {
                                 text: text.clone(),
@@ -260,6 +287,49 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
 #[cfg(target_os = "macos")]
 unsafe extern "C" {
     fn AXUIElementCreateSystemWide() -> *mut objc2_application_services::AXUIElement;
+}
+
+#[cfg(target_os = "macos")]
+unsafe extern "C" {
+    fn AXUIElementGetPid(
+        element: *mut objc2_application_services::AXUIElement,
+        pid: *mut i32,
+    ) -> objc2_application_services::AXError;
+}
+
+#[cfg(target_os = "macos")]
+fn is_focused_element_me() -> bool {
+    use objc2_application_services::{AXError, AXUIElement};
+    use objc2_core_foundation::{CFRetained, CFString, CFType};
+    use std::ptr::NonNull;
+
+    let mut focused_ui_ptr: *const CFType = std::ptr::null();
+    let focused_attr = CFString::from_static_str("AXFocusedUIElement");
+
+    let system_elem = unsafe { AXUIElementCreateSystemWide() };
+    if system_elem.is_null() {
+        return false;
+    }
+
+    let system_elem_retained: CFRetained<AXUIElement> =
+        unsafe { CFRetained::from_raw(NonNull::new(system_elem).unwrap()) };
+    let err = unsafe {
+        system_elem_retained
+            .copy_attribute_value(&focused_attr, NonNull::new(&mut focused_ui_ptr).unwrap())
+    };
+    if err != AXError::Success || focused_ui_ptr.is_null() {
+        return false;
+    }
+
+    let focused_ui_elem: *mut AXUIElement = focused_ui_ptr.cast::<AXUIElement>().cast_mut();
+    let mut pid: i32 = -1;
+    let get_err = unsafe { AXUIElementGetPid(focused_ui_elem, &mut pid as *mut i32) };
+    if get_err != AXError::Success {
+        return false;
+    }
+
+    let my_pid = std::process::id() as i32;
+    pid == my_pid
 }
 
 /// Read the selected text of the frontmost application (without using the clipboard).
