@@ -10,6 +10,7 @@ export default function HeaderToolbar({
   onAction,
   onLogoClick,
   className,
+  rootRef,
   children,
 }: {
   buttons: ButtonConfig[];
@@ -17,10 +18,12 @@ export default function HeaderToolbar({
   onAction: (action: ActionConfig) => void;
   onLogoClick?: () => void;
   className?: string;
+  rootRef?: React.Ref<HTMLDivElement>;
   children?: React.ReactNode;
 }) {
   return (
     <div
+      ref={rootRef}
       data-tauri-drag-region="false"
       className={`flex items-center gap-1 p-1 flex-nowrap overflow-hidden ${className ?? ""}`}
     >

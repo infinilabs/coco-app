@@ -242,7 +242,6 @@ export default function SelectionWindow() {
   }, []);
 
   const getActionHandler = (action: ActionConfig) => {
-    console.log(111111111, action);
     switch (action.type) {
       case "ask_ai":
       case "translate":
@@ -265,11 +264,51 @@ export default function SelectionWindow() {
 
   const iconsOnly = useSelectionStore((s) => s.iconsOnly);
   const toolbarConfig = useSelectionStore((s) => s.toolbarConfig);
+  const toolbarRef = useRef<HTMLDivElement | null>(null);
 
   const visibleButtons = useMemo(
     () => (Array.isArray(toolbarConfig) ? toolbarConfig : []),
     [toolbarConfig]
   );
+
+  // Resize window width to fit toolbar content
+  const resizeToContentWidth = useCallback(async () => {
+    try {
+      if (!visible) return;
+      const el = toolbarRef.current;
+      if (!el) return;
+
+      // Measure desired width: content width + small padding
+      const contentWidth = el.scrollWidth;
+      const PAD = 12; // extra padding buffer
+      const WIDTH_MIN = iconsOnly ? 160 : 240;
+      const WIDTH_MAX = iconsOnly ? 360 : 720;
+      const desiredWidth = Math.max(
+        WIDTH_MIN,
+        Math.min(WIDTH_MAX, Math.round(contentWidth + PAD))
+      );
+
+      const win = await platformAdapter.getCurrentWebviewWindow();
+      const size = await win.innerSize();
+      // Only update width; preserve current height
+      const currentWidth = size.width;
+      if (Math.abs(currentWidth - desiredWidth) >= 2) {
+        await platformAdapter.setWindowSize(desiredWidth, 32);
+      }
+    } catch (e) {
+      console.warn("resizeToContentWidth failed:", e);
+    }
+  }, [visible, iconsOnly]);
+
+  // Recalculate on relevant changes (buttons, labels, speaking state, visibility)
+  useEffect(() => {
+    if (!visible) return;
+    // Ensure DOM updated before measure
+    const id = window.requestAnimationFrame(() => {
+      resizeToContentWidth();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [visibleButtons, iconsOnly, isSpeaking, visible, resizeToContentWidth]);
 
   // Component: selected text preview
   const TextPreview = ({ text }: { text: string }) => {
@@ -383,6 +422,7 @@ export default function SelectionWindow() {
         iconsOnly={iconsOnly}
         onAction={getActionHandler}
         onLogoClick={show_coco}
+        rootRef={toolbarRef}
       >
         {isSpeaking && <SpeakControls />}
       </HeaderToolbar>
