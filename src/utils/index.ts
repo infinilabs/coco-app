@@ -327,21 +327,75 @@ export const visibleFooterBar = () => {
   return ui?.footer ?? true;
 };
 
-export const installExtensionError = (error: string) => {
+export const installExtensionError = (error: any) => {
+  console.log(error);
+   
   const { addError } = useAppStore.getState();
 
   let message = "settings.extensions.hints.importFailed";
 
-  if (error === "already imported") {
+  if (error == "AlreadyInstalled") {
     message = "settings.extensions.hints.extensionAlreadyImported";
   }
 
-  if (error === "platform_incompatible") {
+  if ( isObject(error) && "IncompatiblePlatform" in error
+  ) {
     message = "settings.extensions.hints.platformIncompatibleExtension";
   }
 
-  if (error === "app_incompatible") {
+  if (error === "IncompatibleApp") {
     message = "settings.extensions.hints.appIncompatibleExtension";
+  }
+
+  if (isObject(error) && "InvalidExtension" in error) {
+    const source = (error as any).InvalidExtension.source;
+    let options = {};
+
+    if (isObject(source)) {
+      if ("NoFileName" in source) {
+        message = "settings.extensions.hints.noFileName";
+        options = (source as any).NoFileName;
+      } else if ("NonUtf8Encoding" in source) {
+        message = "settings.extensions.hints.nonUtf8Encoding";
+        options = (source as any).NonUtf8Encoding;
+      } else if ("ReadPluginJson" in source) {
+        message = "settings.extensions.hints.readPluginJson";
+      } else if ("DecodePluginJson" in source) {
+        message = "settings.extensions.hints.decodePluginJson";
+      } else if ("ParseMinimumCocoVersion" in source) {
+        message = "settings.extensions.hints.parseMinimumCocoVersion";
+      } else if ("InvalidPluginJson" in source) {
+        const innerSource = (source as any).InvalidPluginJson.source;
+        const kind = innerSource.kind;
+        
+        if (isObject(kind)) {
+            if ("DuplicateSubExtensionId" in kind) {
+                message = "settings.extensions.hints.duplicateSubExtensionId";
+                options = (kind as any).DuplicateSubExtensionId;
+            } else if ("FieldsNotAllowed" in kind) {
+                message = "settings.extensions.hints.fieldsNotAllowed";
+                options = (kind as any).FieldsNotAllowed;
+            } else if ("FieldsNotAllowedForSubExtension" in kind) {
+                message = "settings.extensions.hints.fieldsNotAllowedForSubExtension";
+                options = (kind as any).FieldsNotAllowedForSubExtension;
+            } else if ("TypesNotAllowedForSubExtension" in kind) {
+                message = "settings.extensions.hints.typesNotAllowedForSubExtension";
+                options = (kind as any).TypesNotAllowedForSubExtension;
+            } else if ("SubExtensionHasMoreSupportedPlatforms" in kind) {
+                message = "settings.extensions.hints.subExtensionHasMoreSupportedPlatforms";
+                options = (kind as any).SubExtensionHasMoreSupportedPlatforms;
+            } else if ("FieldRequired" in kind) {
+                message = "settings.extensions.hints.fieldRequired";
+                options = (kind as any).FieldRequired;
+            }
+        }
+      }
+    } else if (source === "MissingPluginJson") {
+      message = "settings.extensions.hints.missingPluginJson";
+    }
+
+    addError(i18next.t(message, options));
+    return;
   }
 
   addError(i18next.t(message));

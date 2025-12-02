@@ -233,7 +233,7 @@ export const Extensions = () => {
                           "info"
                         );
                       } catch (error) {
-                        installExtensionError(String(error));
+                        installExtensionError(error);
                       }
                     }}
                   >

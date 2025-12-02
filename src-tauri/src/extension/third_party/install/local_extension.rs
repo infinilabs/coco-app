@@ -1,6 +1,15 @@
 use super::check_compatibility_via_mcv;
+use super::error::InstallExtensionError;
+use super::error::InvalidExtensionSnafu;
+use crate::common::error::ReportErrorStyle;
+use crate::common::error::report_error;
 use crate::extension::PLUGIN_JSON_FILE_NAME;
 use crate::extension::third_party::check::general_check;
+use crate::extension::third_party::install::error::DecodePluginJsonSnafu;
+use crate::extension::third_party::install::error::InvalidExtensionError;
+use crate::extension::third_party::install::error::InvalidPluginJsonSnafu;
+use crate::extension::third_party::install::error::IoSnafu;
+use crate::extension::third_party::install::error::ParseMinimumCocoVersionSnafu;
 use crate::extension::third_party::install::{
     filter_out_incompatible_sub_extensions, is_extension_installed,
 };
@@ -12,6 +21,9 @@ use crate::extension::{
 };
 use crate::util::platform::Platform;
 use serde_json::Value as Json;
+use snafu::ResultExt;
+use std::io;
+use std::io::ErrorKind as IoErrorKind;
 use std::path::Path;
 use std::path::PathBuf;
 use tauri::AppHandle;
@@ -36,52 +48,53 @@ const DEVELOPER_ID_LOCAL: &str = "__local__";
 pub(crate) async fn install_local_extension(
     tauri_app_handle: AppHandle,
     path: PathBuf,
-) -> Result<(), String> {
+) -> Result<(), InstallExtensionError> {
     let extension_dir_name = path
         .file_name()
-        .ok_or_else(|| "Invalid extension: no directory name".to_string())?
+        .ok_or_else(|| InvalidExtensionError::NoFileName { path: path.clone() })
+        .context(InvalidExtensionSnafu)?
         .to_str()
-        .ok_or_else(|| "Invalid extension: non-UTF8 extension id".to_string())?;
+        .ok_or_else(|| InvalidExtensionError::NonUtf8Encoding {
+            os_str: path.clone().into_os_string(),
+        })
+        .context(InvalidExtensionSnafu)?;
 
     // we use extension directory name as the extension ID.
     let extension_id = extension_dir_name;
     if is_extension_installed(DEVELOPER_ID_LOCAL, extension_id).await {
-        // The frontend code uses this string to distinguish between 2 error cases:
-        //
-        // 1. This extension is already imported
-        // 2. This extension is incompatible with the current platform
-        // 3. The selected directory does not contain a valid extension
-        //
-        // do NOT edit this without updating the frontend code.
-        //
-        // ```ts
-        // if (errorMessage === "already imported") {
-        //   addError(t("settings.extensions.hints.extensionAlreadyImported"));
-        // } else if (errorMessage === "incompatible") {
-        //   addError(t("settings.extensions.hints.incompatibleExtension"));
-        // } else {
-        //   addError(t("settings.extensions.hints.importFailed"));
-        // }
-        // ```
-        //
-        // This is definitely error-prone, but we have to do this until we have
-        // structured error type
-        return Err("already imported".into());
+        return Err(InstallExtensionError::AlreadyInstalled);
     }
 
     let plugin_json_path = path.join(PLUGIN_JSON_FILE_NAME);
 
-    let plugin_json_content = fs::read_to_string(&plugin_json_path)
-        .await
-        .map_err(|e| e.to_string())?;
+    let plugin_json_content = match fs::read_to_string(&plugin_json_path).await {
+        Ok(content) => content,
+        Err(io_err) => {
+            let io_err_kind = io_err.kind();
+
+            if io_err_kind == IoErrorKind::NotFound {
+                return Err(InstallExtensionError::InvalidExtension {
+                    source: InvalidExtensionError::MissingPluginJson,
+                });
+            } else {
+                return Err(InstallExtensionError::InvalidExtension {
+                    source: InvalidExtensionError::ReadPluginJson { source: io_err },
+                });
+            }
+        }
+    };
 
     // Parse as JSON first as it is not valid for `struct Extension`, we need to
     // correct it (set fields `id` and `developer`) before converting it to `struct Extension`:
-    let mut extension_json: Json =
-        serde_json::from_str(&plugin_json_content).map_err(|e| e.to_string())?;
+    let mut extension_json: Json = serde_json::from_str(&plugin_json_content)
+        .context(DecodePluginJsonSnafu)
+        .context(InvalidExtensionSnafu)?;
 
-    if !check_compatibility_via_mcv(&extension_json)? {
-        return Err("app_incompatible".into());
+    let compatible_with_app = check_compatibility_via_mcv(&extension_json)
+        .context(ParseMinimumCocoVersionSnafu)
+        .context(InvalidExtensionSnafu)?;
+    if !compatible_with_app {
+        return Err(InstallExtensionError::IncompatibleCocoApp);
     }
 
     // Set the main extension ID to the directory name
@@ -134,36 +147,22 @@ pub(crate) async fn install_local_extension(
     }
 
     // Now we can convert JSON to `struct Extension`
-    let mut extension: Extension =
-        serde_json::from_value(extension_json).map_err(|e| e.to_string())?;
+    let mut extension: Extension = serde_json::from_value(extension_json)
+        .context(DecodePluginJsonSnafu)
+        .context(InvalidExtensionSnafu)?;
 
     let current_platform = Platform::current();
     /* Check begins here */
-    general_check(&extension)?;
+    general_check(&extension)
+        .context(InvalidPluginJsonSnafu)
+        .context(InvalidExtensionSnafu)?;
 
     if let Some(ref platforms) = extension.platforms {
         if !platforms.contains(&current_platform) {
-            // The frontend code uses this string to distinguish between 3 error cases:
-            //
-            // 1. This extension is already imported
-            // 2. This extension is incompatible with the current platform
-            // 3. The selected directory does not contain a valid extension
-            //
-            // do NOT edit this without updating the frontend code.
-            //
-            // ```ts
-            // if (errorMessage === "already imported") {
-            //   addError(t("settings.extensions.hints.extensionAlreadyImported"));
-            // } else if (errorMessage === "incompatible") {
-            //   addError(t("settings.extensions.hints.incompatibleExtension"));
-            // } else {
-            //   addError(t("settings.extensions.hints.importFailed"));
-            // }
-            // ```
-            //
-            // This is definitely error-prone, but we have to do this until we have
-            // structured error type
-            return Err("platform_incompatible".into());
+            return Err(InstallExtensionError::IncompatiblePlatform {
+                current_platform,
+                compatible_platforms: platforms.clone(),
+            });
         }
     }
     /* Check ends here */
@@ -185,18 +184,19 @@ pub(crate) async fn install_local_extension(
         .join(DEVELOPER_ID_LOCAL)
         .join(extension_dir_name);
 
-    fs::create_dir_all(&dest_dir)
-        .await
-        .map_err(|e| e.to_string())?;
+    fs::create_dir_all(&dest_dir).await.context(IoSnafu)?;
 
     // Copy all files except plugin.json
-    let mut entries = fs::read_dir(&path).await.map_err(|e| e.to_string())?;
+    let mut entries = fs::read_dir(&path).await.context(IoSnafu)?;
 
-    while let Some(entry) = entries.next_entry().await.map_err(|e| e.to_string())? {
+    while let Some(entry) = entries.next_entry().await.context(IoSnafu)? {
         let file_name = entry.file_name();
         let file_name_str = file_name
             .to_str()
-            .ok_or_else(|| "Invalid filename: non-UTF8".to_string())?;
+            .ok_or_else(|| InvalidExtensionError::NonUtf8Encoding {
+                os_str: file_name.clone(),
+            })
+            .context(InvalidExtensionSnafu)?;
 
         // plugin.json will be handled separately.
         if file_name_str == PLUGIN_JSON_FILE_NAME {
@@ -208,27 +208,32 @@ pub(crate) async fn install_local_extension(
 
         if src_path.is_dir() {
             // Recursively copy directory
-            copy_dir_recursively(&src_path, &dest_path).await?;
+            copy_dir_recursively(&src_path, &dest_path)
+                .await
+                .context(IoSnafu)?;
         } else {
             // Copy file
-            fs::copy(&src_path, &dest_path)
-                .await
-                .map_err(|e| e.to_string())?;
+            fs::copy(&src_path, &dest_path).await.context(IoSnafu)?;
         }
     }
 
     // Write the corrected plugin.json file
-    let corrected_plugin_json =
-        serde_json::to_string_pretty(&extension).map_err(|e| e.to_string())?;
+    let corrected_plugin_json = serde_json::to_string_pretty(&extension).unwrap_or_else(|e| {
+        panic!(
+            "failed to serialize extension {:?}, error:\n{}",
+            extension,
+            report_error(&e, ReportErrorStyle::MultipleLines)
+        )
+    });
 
     let dest_plugin_json_path = dest_dir.join(PLUGIN_JSON_FILE_NAME);
     fs::write(&dest_plugin_json_path, corrected_plugin_json)
         .await
-        .map_err(|e| e.to_string())?;
+        .context(IoSnafu)?;
 
     // Canonicalize relative icon and page paths
-    canonicalize_relative_icon_path(&dest_dir, &mut extension)?;
-    canonicalize_relative_page_path(&dest_dir, &mut extension)?;
+    canonicalize_relative_icon_path(&dest_dir, &mut extension).context(IoSnafu)?;
+    canonicalize_relative_page_path(&dest_dir, &mut extension).context(IoSnafu)?;
 
     // Add extension to the search source
     third_party_ext_list_write_lock.push(extension);
@@ -238,22 +243,18 @@ pub(crate) async fn install_local_extension(
 
 /// Helper function to recursively copy directories.
 #[async_recursion::async_recursion]
-async fn copy_dir_recursively(src: &Path, dest: &Path) -> Result<(), String> {
-    tokio::fs::create_dir_all(dest)
-        .await
-        .map_err(|e| e.to_string())?;
-    let mut read_dir = tokio::fs::read_dir(src).await.map_err(|e| e.to_string())?;
+async fn copy_dir_recursively(src: &Path, dest: &Path) -> Result<(), io::Error> {
+    tokio::fs::create_dir_all(dest).await?;
+    let mut read_dir = tokio::fs::read_dir(src).await?;
 
-    while let Some(entry) = read_dir.next_entry().await.map_err(|e| e.to_string())? {
+    while let Some(entry) = read_dir.next_entry().await? {
         let src_path = entry.path();
         let dest_path = dest.join(entry.file_name());
 
         if src_path.is_dir() {
             copy_dir_recursively(&src_path, &dest_path).await?;
         } else {
-            tokio::fs::copy(&src_path, &dest_path)
-                .await
-                .map_err(|e| e.to_string())?;
+            tokio::fs::copy(&src_path, &dest_path).await?;
         }
     }
 

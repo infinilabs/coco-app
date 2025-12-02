@@ -1,13 +1,14 @@
 use crate::common::assistant::ChatRequestMessage;
 use crate::common::http::convert_query_params_to_strings;
 use crate::common::register::SearchSourceRegistry;
-use crate::server::http_client::HttpClient;
+use crate::server::http_client::{DecodeResponseSnafu, HttpClient, HttpRequestError};
 use crate::{common, server::servers::COCO_SERVERS};
 use futures::StreamExt;
 use futures::stream::FuturesUnordered;
 use futures_util::TryStreamExt;
 use http::Method;
 use serde_json::Value;
+use snafu::ResultExt;
 use std::collections::HashMap;
 use tauri::{AppHandle, Emitter, Manager};
 use tokio::io::AsyncBufReadExt;
@@ -19,7 +20,7 @@ pub async fn chat_history(
     from: u32,
     size: u32,
     query: Option<String>,
-) -> Result<String, String> {
+) -> Result<String, HttpRequestError> {
     let mut query_params = Vec::new();
 
     // Add from/size as number values
@@ -32,12 +33,7 @@ pub async fn chat_history(
         }
     }
 
-    let response = HttpClient::get(&server_id, "/chat/_history", Some(query_params))
-        .await
-        .map_err(|e| {
-            dbg!("Error get history: {}", &e);
-            format!("Error get history: {}", e)
-        })?;
+    let response = HttpClient::get(&server_id, "/chat/_history", Some(query_params)).await?;
 
     common::http::get_response_body_text(response).await
 }
@@ -49,7 +45,7 @@ pub async fn session_chat_history(
     session_id: String,
     from: u32,
     size: u32,
-) -> Result<String, String> {
+) -> Result<String, HttpRequestError> {
     let mut query_params = Vec::new();
 
     // Add from/size as number values
@@ -58,9 +54,7 @@ pub async fn session_chat_history(
 
     let path = format!("/chat/{}/_history", session_id);
 
-    let response = HttpClient::get(&server_id, path.as_str(), Some(query_params))
-        .await
-        .map_err(|e| format!("Error get session message: {}", e))?;
+    let response = HttpClient::get(&server_id, path.as_str(), Some(query_params)).await?;
 
     common::http::get_response_body_text(response).await
 }
@@ -70,12 +64,10 @@ pub async fn open_session_chat(
     _app_handle: AppHandle,
     server_id: String,
     session_id: String,
-) -> Result<String, String> {
+) -> Result<String, HttpRequestError> {
     let path = format!("/chat/{}/_open", session_id);
 
-    let response = HttpClient::post(&server_id, path.as_str(), None, None)
-        .await
-        .map_err(|e| format!("Error open session: {}", e))?;
+    let response = HttpClient::post(&server_id, path.as_str(), None, None).await?;
 
     common::http::get_response_body_text(response).await
 }
@@ -85,12 +77,10 @@ pub async fn close_session_chat(
     _app_handle: AppHandle,
     server_id: String,
     session_id: String,
-) -> Result<String, String> {
+) -> Result<String, HttpRequestError> {
     let path = format!("/chat/{}/_close", session_id);
 
-    let response = HttpClient::post(&server_id, path.as_str(), None, None)
-        .await
-        .map_err(|e| format!("Error close session: {}", e))?;
+    let response = HttpClient::post(&server_id, path.as_str(), None, None).await?;
 
     common::http::get_response_body_text(response).await
 }
@@ -100,13 +90,11 @@ pub async fn cancel_session_chat(
     server_id: String,
     session_id: String,
     query_params: Option<HashMap<String, Value>>,
-) -> Result<String, String> {
+) -> Result<String, HttpRequestError> {
     let path = format!("/chat/{}/_cancel", session_id);
     let query_params = convert_query_params_to_strings(query_params);
 
-    let response = HttpClient::post(&server_id, path.as_str(), query_params, None)
-        .await
-        .map_err(|e| format!("Error cancel session: {}", e))?;
+    let response = HttpClient::post(&server_id, path.as_str(), query_params, None).await?;
 
     common::http::get_response_body_text(response).await
 }
@@ -270,14 +258,23 @@ pub async fn chat_chat(
 }
 
 #[tauri::command]
-pub async fn delete_session_chat(server_id: String, session_id: String) -> Result<bool, String> {
+pub async fn delete_session_chat(
+    server_id: String,
+    session_id: String,
+) -> Result<bool, HttpRequestError> {
     let response =
         HttpClient::delete(&server_id, &format!("/chat/{}", session_id), None, None).await?;
 
-    if response.status().is_success() {
+    let status = response.status();
+
+    if status.is_success() {
         Ok(true)
     } else {
-        Err(format!("Delete failed with status: {}", response.status()))
+        Err(HttpRequestError::RequestFailed {
+            status: status.as_u16(),
+            error_response_body_str: None,
+            coco_server_api_error_response_body: None,
+        })
     }
 }
 
@@ -287,7 +284,7 @@ pub async fn update_session_chat(
     session_id: String,
     title: Option<String>,
     context: Option<HashMap<String, Value>>,
-) -> Result<bool, String> {
+) -> Result<bool, HttpRequestError> {
     let mut body = HashMap::new();
     if let Some(title) = title {
         body.insert("title".to_string(), Value::String(title));
@@ -306,8 +303,7 @@ pub async fn update_session_chat(
         None,
         Some(reqwest::Body::from(serde_json::to_string(&body).unwrap())),
     )
-    .await
-    .map_err(|e| format!("Error updating session: {}", e))?;
+    .await?;
 
     Ok(response.status().is_success())
 }
@@ -317,15 +313,10 @@ pub async fn assistant_search(
     _app_handle: AppHandle,
     server_id: String,
     query_params: Option<Vec<String>>,
-) -> Result<Value, String> {
-    let response = HttpClient::post(&server_id, "/assistant/_search", query_params, None)
-        .await
-        .map_err(|e| format!("Error searching assistants: {}", e))?;
+) -> Result<Value, HttpRequestError> {
+    let response = HttpClient::post(&server_id, "/assistant/_search", query_params, None).await?;
 
-    response
-        .json::<Value>()
-        .await
-        .map_err(|err| err.to_string())
+    response.json::<Value>().await.context(DecodeResponseSnafu)
 }
 
 #[tauri::command]
@@ -333,19 +324,15 @@ pub async fn assistant_get(
     _app_handle: AppHandle,
     server_id: String,
     assistant_id: String,
-) -> Result<Value, String> {
+) -> Result<Value, HttpRequestError> {
     let response = HttpClient::get(
         &server_id,
         &format!("/assistant/{}", assistant_id),
         None, // headers
     )
-    .await
-    .map_err(|e| format!("Error getting assistant: {}", e))?;
+    .await?;
 
-    response
-        .json::<Value>()
-        .await
-        .map_err(|err| err.to_string())
+    response.json::<Value>().await.context(DecodeResponseSnafu)
 }
 
 /// Gets the information of the assistant specified by `assistant_id` by querying **all**
@@ -356,7 +343,7 @@ pub async fn assistant_get(
 pub async fn assistant_get_multi(
     app_handle: AppHandle,
     assistant_id: String,
-) -> Result<Value, String> {
+) -> Result<Option<Value>, HttpRequestError> {
     let search_sources = app_handle.state::<SearchSourceRegistry>();
     let sources_future = search_sources.get_sources();
     let sources_list = sources_future.await;
@@ -375,19 +362,17 @@ pub async fn assistant_get_multi(
         let path = format!("/assistant/{}", assistant_id);
 
         let fut = async move {
-            let res_response = HttpClient::get(
+            let response = HttpClient::get(
                 &coco_server_id,
                 &path,
                 None, // headers
             )
-            .await;
-            match res_response {
-                Ok(response) => response
-                    .json::<serde_json::Value>()
-                    .await
-                    .map_err(|e| e.to_string()),
-                Err(e) => Err(e),
-            }
+            .await?;
+
+            response
+                .json::<serde_json::Value>()
+                .await
+                .context(DecodeResponseSnafu)
         };
 
         futures.push(fut);
@@ -419,15 +404,12 @@ pub async fn assistant_get_multi(
         // ```
         if let Some(found) = response_json.get("found") {
             if found == true {
-                return Ok(response_json);
+                return Ok(Some(response_json));
             }
         }
     }
 
-    Err(format!(
-        "could not find Assistant [{}] on all the Coco servers",
-        assistant_id
-    ))
+    Ok(None)
 }
 
 use regex::Regex;
@@ -453,7 +435,7 @@ pub async fn ask_ai(
     server_id: String,
     assistant_id: String,
     client_id: String,
-) -> Result<(), String> {
+) -> Result<(), HttpRequestError> {
     let cleaned = remove_icon_fields(message.as_str());
 
     let body = serde_json::json!({ "message": cleaned });
@@ -472,13 +454,19 @@ pub async fn ask_ai(
     )
     .await?;
 
-    if response.status() == 429 {
+    let status = response.status().as_u16();
+
+    if status == 429 {
         log::warn!("Rate limit exceeded for assistant: {}", &assistant_id);
         return Ok(());
     }
 
     if !response.status().is_success() {
-        return Err(format!("Request Failed: {}", response.status()));
+        return Err(HttpRequestError::RequestFailed {
+            status,
+            error_response_body_str: None,
+            coco_server_api_error_response_body: None,
+        });
     }
 
     let stream = response.bytes_stream();
@@ -491,7 +479,7 @@ pub async fn ask_ai(
         dbg!("Received line: {}", &line);
 
         let _ = app_handle.emit(&client_id, line).map_err(|err| {
-            println!("Failed to emit: {:?}", err);
+            log::error!("Failed to emit: {:?}", err);
         });
     }
 

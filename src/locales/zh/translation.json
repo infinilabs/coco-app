@@ -252,7 +252,21 @@
         "appIncompatibleExtension": "安装失败！该插件与当前 Coco App 版本不兼容，请升级后重试。",
         "uninstall": "卸载",
         "uninstallSuccess": "卸载成功",
-        "incompatible": "扩展无法在当前版本中运行，请升级 Coco App。"
+        "incompatible": "扩展无法在当前版本中运行，请升级 Coco App。",
+        "invalidExtension": "插件无效。",
+        "noFileName": "路径 '{{path}}' 不包含文件名。",
+        "nonUtf8Encoding": "'{{os_str}}' 不是 UTF-8 编码。",
+        "missingPluginJson": "文件 'plugin.json' 不存在。",
+        "readPluginJson": "读取 'plugin.json' 失败。",
+        "decodePluginJson": "解码 'plugin.json' 失败。",
+        "invalidPluginJson": "'plugin.json' 无效。",
+        "parseMinimumCocoVersion": "解析字段 'minimum_coco_version' 失败。",
+        "duplicateSubExtensionId": "ID 重复，ID 为 '{{id}}' 的子插件已存在。",
+        "fieldsNotAllowed": "字段 '{{fields}}' 不允许用于类型为 '{{ty}}' 的插件。",
+        "fieldsNotAllowedForSubExtension": "字段 '{{fields}}' 不允许用于子插件。",
+        "typesNotAllowedForSubExtension": "子插件不能是类型 {{types}}。",
+        "subExtensionHasMoreSupportedPlatforms": "它支持主插件不支持的平台 {{extra_platforms}}。",
+        "fieldRequired": "类型为 '{{ty}}' 的插件应设置字段 '{{field}}'。"
       },
       "application": {
         "title": "应用程序",

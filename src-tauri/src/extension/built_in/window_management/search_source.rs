@@ -57,7 +57,7 @@ impl SearchSource for WindowManagementSearchSource {
             &get_built_in_extension_directory(&tauri_app_handle),
             super::EXTENSION_ID,
         )
-        .map_err(SearchError::InternalError)?;
+        .map_err(|e| SearchError::InternalError { error: e })?;
         let commands = extension.commands.expect("this extension has commands");
 
         let mut hits: Vec<(Document, f64)> = Vec::new();

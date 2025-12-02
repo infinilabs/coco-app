@@ -11,6 +11,7 @@ pub mod window_management;
 
 use super::Extension;
 use crate::SearchSourceRegistry;
+use crate::common::error::{ReportErrorStyle, report_error};
 use crate::extension::built_in::application::{set_apps_hotkey, unset_apps_hotkey};
 use crate::extension::{
     ExtensionBundleIdBorrowed, PLUGIN_JSON_FILE_NAME, alter_extension_json_file,
@@ -628,7 +629,9 @@ fn load_extension_from_json_file(
     )
     .map_err(|e| e.to_string())?;
 
-    super::canonicalize_relative_icon_path(extension_directory, &mut extension)?;
+    // TODO: refactor error handling
+    super::canonicalize_relative_icon_path(extension_directory, &mut extension)
+        .map_err(|e| report_error(&e, ReportErrorStyle::SingleLine))?;
 
     Ok(extension)
 }

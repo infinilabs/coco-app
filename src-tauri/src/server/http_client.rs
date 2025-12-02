@@ -1,9 +1,13 @@
+use crate::common::error::ApiError;
+use crate::common::error::serialize_error;
 use crate::server::servers::{get_server_by_id, get_server_token};
 use crate::util::app_lang::get_app_lang;
 use crate::util::platform::Platform;
 use http::{HeaderName, HeaderValue, StatusCode};
 use once_cell::sync::Lazy;
 use reqwest::{Client, Method, RequestBuilder};
+use serde::Serialize;
+use snafu::prelude::*;
 use std::collections::HashMap;
 use std::sync::LazyLock;
 use std::time::Duration;
@@ -28,6 +32,52 @@ pub static HTTP_CLIENT: Lazy<Mutex<Client>> = Lazy::new(|| {
     );
     Mutex::new(new_reqwest_http_client(allow_self_signature))
 });
+
+/// Errors that could happen when handling a HTTP request.
+///
+/// `reqwest` uses the same error type `reqwest::Error` for all kinds of
+/// errors, it distinguishes kinds via those `is_xxx()` methods (e.g.,
+/// `is_connect()` [1]). Due to this reason, both `SendError` and
+/// `DecodeResponseError` use `request::Error` as the associated value.
+///
+/// Technically, `ServerNotFound` is not a HTTP request error, but Coco app
+/// primarily send HTTP requests to Coco servers, so it is included.
+///
+/// [1]: https://docs.rs/reqwest/0.12.24/reqwest/struct.Error.html#method.is_connect
+#[derive(Debug, Snafu, Serialize)]
+#[snafu(visibility(pub(crate)))]
+pub(crate) enum HttpRequestError {
+    #[snafu(display("failed to send HTTP request"))]
+    SendError {
+        #[serde(serialize_with = "serialize_error")]
+        source: reqwest::Error,
+    },
+    #[snafu(display("failed to decode HTTP response"))]
+    DecodeResponseError {
+        #[serde(serialize_with = "serialize_error")]
+        source: reqwest::Error,
+    },
+    #[snafu(display("connection timed out"))]
+    ConnectionTimeout,
+    #[snafu(display(
+        "HTTP request failed, status '{}', response body '{:?}', coco_server_api_error: '{:?}'",
+        status,
+        error_response_body_str,
+        coco_server_api_error_response_body,
+    ))]
+    RequestFailed {
+        status: u16,
+        /// None if we do not have response body.
+        error_response_body_str: Option<String>,
+        /// Some if:
+        ///
+        /// 1. This is a request sent to Coco server
+        /// 2. We successfully decode an `ApiError` from the `error_response_body_str`.
+        coco_server_api_error_response_body: Option<ApiError>,
+    },
+    #[snafu(display("no Coco server with specific ID '{}' exists", id))]
+    ServerNotFound { id: String },
+}
 
 /// These header values won't change during a process's lifetime.
 static STATIC_HEADERS: LazyLock<HashMap<String, String>> = LazyLock::new(|| {
@@ -65,7 +115,7 @@ impl HttpClient {
         query_params: Option<Vec<String>>,
         headers: Option<HashMap<String, String>>,
         body: Option<reqwest::Body>,
-    ) -> Result<reqwest::Response, String> {
+    ) -> Result<reqwest::Response, HttpRequestError> {
         log::debug!(
             "Sending Request: {}, query_params: {:?}, header: {:?}, body: {:?}",
             &url,
@@ -77,10 +127,16 @@ impl HttpClient {
         let request_builder =
             Self::get_request_builder(method, url, headers, query_params, body).await;
 
-        let response = request_builder.send().await.map_err(|e| {
-            //dbg!("Failed to send request: {}", &e);
-            format!("Failed to send request: {}", e)
-        })?;
+        let response = match request_builder.send().await {
+            Ok(response) => response,
+            Err(e) => {
+                if e.is_timeout() {
+                    return Err(HttpRequestError::ConnectionTimeout);
+                } else {
+                    return Err(HttpRequestError::SendError { source: e });
+                }
+            }
+        };
 
         log::debug!(
             "Request: {}, Response status: {:?}, header: {:?}",
@@ -173,7 +229,7 @@ impl HttpClient {
         custom_headers: Option<HashMap<String, String>>,
         query_params: Option<Vec<String>>,
         body: Option<reqwest::Body>,
-    ) -> Result<reqwest::Response, String> {
+    ) -> Result<reqwest::Response, HttpRequestError> {
         // Fetch the server using the server_id
         let server = get_server_by_id(server_id).await;
         if let Some(s) = server {
@@ -205,7 +261,9 @@ impl HttpClient {
 
             Self::send_raw_request(method, &url, query_params, Some(headers), body).await
         } else {
-            Err(format!("Server [{}] not found", server_id))
+            Err(HttpRequestError::ServerNotFound {
+                id: server_id.to_string(),
+            })
         }
     }
 
@@ -214,7 +272,7 @@ impl HttpClient {
         server_id: &str,
         path: &str,
         query_params: Option<Vec<String>>,
-    ) -> Result<reqwest::Response, String> {
+    ) -> Result<reqwest::Response, HttpRequestError> {
         HttpClient::send_request(server_id, Method::GET, path, None, query_params, None).await
     }
 
@@ -224,7 +282,7 @@ impl HttpClient {
         path: &str,
         query_params: Option<Vec<String>>,
         body: Option<reqwest::Body>,
-    ) -> Result<reqwest::Response, String> {
+    ) -> Result<reqwest::Response, HttpRequestError> {
         HttpClient::send_request(server_id, Method::POST, path, None, query_params, body).await
     }
 
@@ -234,7 +292,7 @@ impl HttpClient {
         custom_headers: Option<HashMap<String, String>>,
         query_params: Option<Vec<String>>,
         body: Option<reqwest::Body>,
-    ) -> Result<reqwest::Response, String> {
+    ) -> Result<reqwest::Response, HttpRequestError> {
         HttpClient::send_request(
             server_id,
             Method::POST,
@@ -254,7 +312,7 @@ impl HttpClient {
         custom_headers: Option<HashMap<String, String>>,
         query_params: Option<Vec<String>>,
         body: Option<reqwest::Body>,
-    ) -> Result<reqwest::Response, String> {
+    ) -> Result<reqwest::Response, HttpRequestError> {
         HttpClient::send_request(
             server_id,
             Method::PUT,
@@ -273,7 +331,7 @@ impl HttpClient {
         path: &str,
         custom_headers: Option<HashMap<String, String>>,
         query_params: Option<Vec<String>>,
-    ) -> Result<reqwest::Response, String> {
+    ) -> Result<reqwest::Response, HttpRequestError> {
         HttpClient::send_request(
             server_id,
             Method::DELETE,

@@ -1,4 +1,9 @@
+use crate::common::error::serialize_error;
+use crate::common::error::{ReportErrorStyle, report_error};
 use semver::{BuildMetadata, Prerelease, Version as SemVer};
+use serde::Serialize;
+use snafu::{ResultExt, prelude::*};
+use std::num::ParseIntError;
 use std::sync::LazyLock;
 use tauri_plugin_updater::RemoteRelease;
 
@@ -11,6 +16,22 @@ const SNAPSHOT: &str = SNAPSHOT_DASH.split_at(SNAPSHOT_DASH_LEN - 1).0;
 pub(crate) static COCO_VERSION: LazyLock<SemVer> = LazyLock::new(|| {
     parse_coco_semver(env!("CARGO_PKG_VERSION")).expect("parsing should never fail, if version format changes, then parse_coco_semver() should be updated as well")
 });
+
+#[derive(Debug, Snafu, Serialize)]
+#[snafu(visibility(pub(crate)))]
+pub(crate) enum ParseVersionError {
+    #[snafu(display("SemVer::Version::parse() failed"))]
+    SemVerParseError {
+        #[serde(serialize_with = "serialize_error")]
+        source: semver::Error,
+    },
+    #[snafu(display("failed to parse build number '{}'", build_number))]
+    ParseBuildNumberError {
+        build_number: String,
+        #[serde(serialize_with = "serialize_error")]
+        source: ParseIntError,
+    },
+}
 
 /// Coco AI app adopt SemVer but the version string format does not adhere to
 /// the SemVer specification, this function does the conversion. Returns `None`
@@ -30,11 +51,11 @@ pub(crate) static COCO_VERSION: LazyLock<SemVer> = LazyLock::new(|| {
 /// * 0.9.0-SNAPSHOT-<build num> => 0.9.0-SNAPSHOT.<build num>
 ///   
 ///   A pre-release of 0.9.0
-fn to_semver(version: &SemVer) -> Option<SemVer> {
+fn to_semver(version: &SemVer) -> Result<SemVer, ParseVersionError> {
     let pre = &version.pre;
 
     if pre.is_empty() {
-        return Some(SemVer::new(version.major, version.minor, version.patch));
+        return Ok(SemVer::new(version.major, version.minor, version.patch));
     }
     let is_pre_release = pre.starts_with(SNAPSHOT_DASH);
 
@@ -44,19 +65,23 @@ fn to_semver(version: &SemVer) -> Option<SemVer> {
         pre.as_str()
     };
     // Parse the build number to validate it, we do not need the actual number though.
-    build_number_str.parse::<usize>().ok()?;
+    build_number_str
+        .parse::<usize>()
+        .context(ParseBuildNumberSnafu {
+            build_number: build_number_str.to_string(),
+        })?;
 
     // Return after checking the build number is valid
     if !is_pre_release {
-        return Some(SemVer::new(version.major, version.minor, version.patch));
+        return Ok(SemVer::new(version.major, version.minor, version.patch));
     }
 
     let pre = {
         let pre_str = format!("{}.{}", SNAPSHOT, build_number_str);
-        Prerelease::new(&pre_str).unwrap_or_else(|e| panic!("invalid Prerelease: {}", e))
+        Prerelease::new(&pre_str).context(SemVerParseSnafu)?
     };
 
-    Some(SemVer {
+    Ok(SemVer {
         major: version.major,
         minor: version.minor,
         patch: version.patch,
@@ -67,15 +92,39 @@ fn to_semver(version: &SemVer) -> Option<SemVer> {
 
 /// Parse Coco version string to a `SemVer`. Returns `None` if it is not a valid
 /// version string.
-pub(crate) fn parse_coco_semver(version_str: &str) -> Option<SemVer> {
-    let not_semver = SemVer::parse(version_str).ok()?;
+pub(crate) fn parse_coco_semver(version_str: &str) -> Result<SemVer, ParseVersionError> {
+    let not_semver = SemVer::parse(version_str).context(SemVerParseSnafu)?;
     to_semver(&not_semver)
 }
 
 pub(crate) fn custom_version_comparator(local: SemVer, remote_release: RemoteRelease) -> bool {
+    /// We are not allowed to populate errors in this function, so when errors
+    /// happen, we do not update.
+    const SHOULD_NOT_UPDATE_WHEN_UNEXPECTED_ERROR_HAPPEN: bool = false;
+
     let remote = remote_release.version;
-    let local_semver = to_semver(&local);
-    let remote_semver = to_semver(&remote);
+    let local_semver = match to_semver(&local) {
+        Ok(ver) => ver,
+        Err(e) => {
+            log::error!(
+                "failed to parse this Coco app's version '{}', error {}",
+                local,
+                snafu::Report::from_error(e)
+            );
+            return SHOULD_NOT_UPDATE_WHEN_UNEXPECTED_ERROR_HAPPEN;
+        }
+    };
+    let remote_semver = match to_semver(&remote) {
+        Ok(ver) => ver,
+        Err(e) => {
+            log::error!(
+                "failed to parse the version '{}' fetch from the '.latest.json' file, error '{}'",
+                remote,
+                report_error(&e, ReportErrorStyle::SingleLine)
+            );
+            return SHOULD_NOT_UPDATE_WHEN_UNEXPECTED_ERROR_HAPPEN;
+        }
+    };
 
     let should_update = remote_semver > local_semver;
 
@@ -172,14 +221,28 @@ mod tests {
     fn test_try_into_semver_invalid_build_number() {
         // Should panic when build number is not a valid number
         let input = SemVer::parse("0.8.0-abc").unwrap();
-        assert!(to_semver(&input).is_none());
+        let err = to_semver(&input).unwrap_err();
+        assert!(matches!(
+            err,
+            ParseVersionError::ParseBuildNumberError {
+                build_number: _,
+                source: _
+            }
+        ));
     }
 
     #[test]
     fn test_try_into_semver_invalid_snapshot_build_number() {
         // Should panic when SNAPSHOT build number is not a valid number
         let input = SemVer::parse("0.9.0-SNAPSHOT-xyz").unwrap();
-        assert!(to_semver(&input).is_none());
+        let err = to_semver(&input).unwrap_err();
+        assert!(matches!(
+            err,
+            ParseVersionError::ParseBuildNumberError {
+                build_number: _,
+                source: _
+            }
+        ));
     }
 
     #[test]
