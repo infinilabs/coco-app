@@ -3,11 +3,11 @@ use crate::{
     server::http_client::{DecodeResponseSnafu, HttpRequestError},
 };
 use reqwest::Response;
-use std::collections::HashMap;
-use tauri_plugin_store::JsonValue;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use snafu::ResultExt;
+use std::collections::HashMap;
+use tauri_plugin_store::JsonValue;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GetResponse {
