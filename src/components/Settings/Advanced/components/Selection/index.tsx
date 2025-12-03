@@ -23,7 +23,7 @@ const DEFAULT_CONFIG: ButtonConfig[] = [
     id: "ask_ai",
     label: "问答",
     labelKey: "selection.actions.ask_ai",
-    icon: { type: "lucide", name: "Bot", color: "#0287FF" },
+    icon: { type: "lucide", name: "BotMessageSquare", color: "#0287FF" },
     action: { type: "ask_ai" },
   },
   {
@@ -66,9 +66,11 @@ function loadToolbarConfig(): ButtonConfig[] {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_CONFIG;
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0)
-      return parsed as ButtonConfig[];
-    return DEFAULT_CONFIG;
+    let cfg: ButtonConfig[] = Array.isArray(parsed) && parsed.length > 0 ? (parsed as ButtonConfig[]) : DEFAULT_CONFIG;
+    // Lightweight migration: ensure ask_ai icon follows the updated default
+    const defaultAsk = DEFAULT_CONFIG.find((b) => b.id === "ask_ai");
+    cfg = cfg.map((b) => (b.id === "ask_ai" && defaultAsk ? { ...b, icon: defaultAsk.icon } : b));
+    return cfg;
   } catch {
     return DEFAULT_CONFIG;
   }

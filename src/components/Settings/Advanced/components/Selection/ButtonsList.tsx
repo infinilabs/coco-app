@@ -1,8 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  GripVertical,
-  Trash2
-} from "lucide-react";
+import { GripVertical, Trash2 } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
@@ -48,10 +45,23 @@ const ButtonsList = ({ buttons, setButtons, serverList }: ButtonsListProps) => {
   const { t } = useTranslation();
   const { fetchAssistant } = AssistantFetcher({});
 
-  const [assistantByServer, setAssistantByServer] = useState<Record<string, any[]>>({});
-  const [assistantLoadingByServer, setAssistantLoadingByServer] = useState<Record<string, boolean>>({});
-  const [assistantCache, setAssistantCacheState] = useState<Record<string, AssistantCacheItem>>(() => loadAssistantCache());
-  const BUILT_IN_IDS = new Set(["search", "ask_ai", "translate", "summary", "copy", "speak"]);
+  const [assistantByServer, setAssistantByServer] = useState<
+    Record<string, any[]>
+  >({});
+  const [assistantLoadingByServer, setAssistantLoadingByServer] = useState<
+    Record<string, boolean>
+  >({});
+  const [assistantCache, setAssistantCacheState] = useState<
+    Record<string, AssistantCacheItem>
+  >(() => loadAssistantCache());
+  const BUILT_IN_IDS = new Set([
+    "search",
+    "ask_ai",
+    "translate",
+    "summary",
+    "copy",
+    "speak",
+  ]);
 
   const dragIndexRef = useRef<number | null>(null);
   const initializedServiceRef = useRef<boolean>(false);
@@ -73,7 +83,11 @@ const ButtonsList = ({ buttons, setButtons, serverList }: ButtonsListProps) => {
   };
 
   const updateAction = (id: string, patch: Partial<ButtonConfig["action"]>) => {
-    setButtons((prev) => prev.map((b) => (b.id === id ? { ...b, action: { ...b.action, ...patch } } : b)));
+    setButtons((prev) =>
+      prev.map((b) =>
+        b.id === id ? { ...b, action: { ...b.action, ...patch } } : b
+      )
+    );
   };
 
   const handleAssistantSelect = (btn: ButtonConfig, value: string) => {
@@ -100,10 +114,17 @@ const ButtonsList = ({ buttons, setButtons, serverList }: ButtonsListProps) => {
     }
     setAssistantLoadingByServer((prev) => ({ ...prev, [sid]: true }));
     try {
-      const data = await fetchAssistant({ current: 1, pageSize: 1000, serverId: sid });
+      const data = await fetchAssistant({
+        current: 1,
+        pageSize: 1000,
+        serverId: sid,
+      });
       const list = data.list || [];
       setAssistantByServer((prev) => ({ ...prev, [sid]: list }));
-      const nextCache = { ...assistantCache, [sid]: { list, updatedAt: Date.now() } };
+      const nextCache = {
+        ...assistantCache,
+        [sid]: { list, updatedAt: Date.now() },
+      };
       setAssistantCacheState(nextCache);
       saveAssistantCache(nextCache);
     } catch (err) {
@@ -119,8 +140,8 @@ const ButtonsList = ({ buttons, setButtons, serverList }: ButtonsListProps) => {
     initializedServiceRef.current = true;
 
     const preferredSid =
-      buttons.find((b) => b.action.assistantServerId)?.action.assistantServerId ||
-      Object.keys(assistantCache)[0];
+      buttons.find((b) => b.action.assistantServerId)?.action
+        .assistantServerId || Object.keys(assistantCache)[0];
 
     if (!preferredSid) return;
     const target = serverList.find((s: any) => s.id === preferredSid);
@@ -148,10 +169,17 @@ const ButtonsList = ({ buttons, setButtons, serverList }: ButtonsListProps) => {
       }
       setAssistantLoadingByServer((prev) => ({ ...prev, [sid]: true }));
       try {
-        const data = await fetchAssistant({ current: 1, pageSize: 1000, serverId: sid });
+        const data = await fetchAssistant({
+          current: 1,
+          pageSize: 1000,
+          serverId: sid,
+        });
         const list = data.list || [];
         setAssistantByServer((prev) => ({ ...prev, [sid]: list }));
-        const nextCache = { ...assistantCache, [sid]: { list, updatedAt: Date.now() } };
+        const nextCache = {
+          ...assistantCache,
+          [sid]: { list, updatedAt: Date.now() },
+        };
         setAssistantCacheState(nextCache);
         saveAssistantCache(nextCache);
       } catch (err) {
@@ -165,10 +193,17 @@ const ButtonsList = ({ buttons, setButtons, serverList }: ButtonsListProps) => {
   return (
     <div className="space-y-3">
       {buttons.map((btn, index) => {
-        const IconComp = btn.icon.type === "lucide" ? resolveLucideIcon(btn.icon.name) : null;
-        const isChat = ["ask_ai", "translate", "summary"].includes(btn.action.type);
+        const IconComp =
+          btn.icon.type === "lucide" ? resolveLucideIcon(btn.icon.name) : null;
+        const isChat = ["ask_ai", "translate", "summary"].includes(
+          btn.action.type
+        );
         const isBuiltIn = BUILT_IN_IDS.has(btn.id);
-        const visualType: "Chat" | "Search" | "Tool" = isChat ? "Chat" : btn.action.type === "search" ? "Search" : "Tool";
+        const visualType: "Chat" | "Search" | "Tool" = isChat
+          ? "Chat"
+          : btn.action.type === "search"
+          ? "Search"
+          : "Tool";
 
         return (
           <div
@@ -185,11 +220,20 @@ const ButtonsList = ({ buttons, setButtons, serverList }: ButtonsListProps) => {
             <div className="flex items-center gap-3">
               <GripVertical className="size-4 text-[#64748B] shrink-0" />
               {IconComp ? (
-                <IconComp className="size-4 shrink-0" style={{ color: btn.icon.color || "#6B7280" }} />
+                <IconComp
+                  className="size-4 shrink-0"
+                  // style={{ color: btn.icon.color || "#6B7280" }}
+                />
               ) : (
-                <img src={(btn.icon as any).dataUrl} alt="icon" className="w-4 h-4 rounded shrink-0" />
+                <img
+                  src={(btn.icon as any).dataUrl}
+                  alt="icon"
+                  className="w-4 h-4 rounded shrink-0"
+                />
               )}
-              <span className="text-sm font-medium">{btn.labelKey ? t(btn.labelKey) : btn.label}</span>
+              <span className="text-sm font-medium">
+                {btn.labelKey ? t(btn.labelKey) : btn.label}
+              </span>
               <span
                 className={clsx(
                   "ml-2 inline-flex items-center rounded px-2 py-0.5 text-xs",
@@ -212,7 +256,9 @@ const ButtonsList = ({ buttons, setButtons, serverList }: ButtonsListProps) => {
                       onChange={(e) => handleServerSelect(btn, e.target.value)}
                       title={t("selection.bind.service")}
                     >
-                      <option value="">{t("selection.bind.defaultService")}</option>
+                      <option value="">
+                        {t("selection.bind.defaultService")}
+                      </option>
                       {serverList.map((s: any) => (
                         <option key={s.id} value={s.id}>
                           {s.name || s.endpoint || s.id}
@@ -228,11 +274,15 @@ const ButtonsList = ({ buttons, setButtons, serverList }: ButtonsListProps) => {
                         <select
                           className="rounded-md border px-2 py-1 text-sm bg-white dark:bg-[#0B1220] w-44"
                           value={btn.action.assistantId || ""}
-                          onChange={(e) => handleAssistantSelect(btn, e.target.value)}
+                          onChange={(e) =>
+                            handleAssistantSelect(btn, e.target.value)
+                          }
                           title={t("selection.bind.assistant")}
                           disabled={loading}
                         >
-                          <option value="">{t("selection.bind.defaultAssistant")}</option>
+                          <option value="">
+                            {t("selection.bind.defaultAssistant")}
+                          </option>
                           {loading && (
                             <option value="" disabled>
                               {t("common.loading")}
@@ -254,7 +304,9 @@ const ButtonsList = ({ buttons, setButtons, serverList }: ButtonsListProps) => {
                     className="inline-flex items-center justify-center rounded-md border border-transparent bg-red-50 text-red-600 hover:bg-red-100 p-1"
                     title={t("selection.actions.delete")}
                     aria-label={t("selection.actions.delete")}
-                    onClick={() => setButtons((prev) => prev.filter((b) => b.id !== btn.id))}
+                    onClick={() =>
+                      setButtons((prev) => prev.filter((b) => b.id !== btn.id))
+                    }
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -264,7 +316,10 @@ const ButtonsList = ({ buttons, setButtons, serverList }: ButtonsListProps) => {
           </div>
         );
       })}
-      <AddChatButton serverList={serverList} onAdd={(newBtn) => setButtons((prev) => [...prev, newBtn])} />
+      <AddChatButton
+        serverList={serverList}
+        onAdd={(newBtn) => setButtons((prev) => [...prev, newBtn])}
+      />
     </div>
   );
 };

@@ -25,7 +25,7 @@ export default function HeaderToolbar({
     <div
       ref={rootRef}
       data-tauri-drag-region="false"
-      className={`flex items-center gap-1 p-1 flex-nowrap overflow-hidden ${className ?? ""}`}
+      className={`flex items-center gap-1 px-2 py-1 flex-nowrap overflow-hidden ${className ?? ""}`}
     >
       <img
         src={cocoLogoImg}
@@ -42,7 +42,7 @@ export default function HeaderToolbar({
       <Separator
         orientation="vertical"
         decorative
-        className="mx-2 h-4 w-px bg-gray-300 dark:bg-white/30 shrink-0"
+        className="mx-1 h-4 w-px bg-gray-300 dark:bg-white/30 shrink-0"
       />
 
       <SelectionToolbar

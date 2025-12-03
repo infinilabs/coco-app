@@ -1,30 +1,19 @@
 import {
-  Bot,
   Copy,
   FileText,
   Languages,
   Search,
   Volume2,
+  BotMessageSquare,
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 
-export type ActionType =
-  | "search"
-  | "ask_ai"
-  | "translate"
-  | "summary"
-  | "copy"
-  | "speak"
-  | "custom";
-
-export type LucideIconName = string;
-
 export type IconConfig =
-  | { type: "lucide"; name: LucideIconName; color?: string }
+  | { type: "lucide"; name: string; color?: string }
   | { type: "custom"; dataUrl: string; color?: string };
 
 export type ActionConfig = {
-  type: ActionType;
+  type: string;
   assistantId?: string;
   assistantServerId?: string;
   eventName?: string;
@@ -40,11 +29,11 @@ export type ButtonConfig = {
 
 export const LUCIDE_ICON_MAP: Record<string, any> = {
   Search,
-  Bot,
   Languages,
   FileText,
   Copy,
   Volume2,
+  BotMessageSquare,
 };
 
 export function resolveLucideIcon(name?: string): any {

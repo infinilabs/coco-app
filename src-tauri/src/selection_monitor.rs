@@ -203,15 +203,9 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
             // system-wide focused element belongs to this process.
             let front_is_me = is_frontmost_app_me() || is_focused_element_me();
 
-            // New: When Coco is frontmost, completely disable monitoring and hide the popup.
-            // This guarantees selection monitoring does not operate inside our own app.
+            // When Coco is frontmost, disable detection but do NOT hide the popup.
+            // Users may be clicking the popup; we must keep it visible.
             if front_is_me {
-                if popup_visible {
-                    let _ = app_handle.emit("selection-detected", "");
-                    popup_visible = false;
-                    last_text.clear();
-                    stable_text.clear();
-                }
                 // Reset counters to avoid stale state on re-entry.
                 stable_count = 0;
                 empty_count = 0;
@@ -237,15 +231,10 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
                     // Update/show only when selection is stable to avoid flicker.
                     if stable_count >= stable_threshold {
                         if !popup_visible || text != last_text {
-                            // Second guard: never emit when Coco is frontmost or the
-                            // system-wide focused element belongs to Coco.
+                            // Second guard: do not emit when Coco is frontmost
+                            // or the system-wide focused element belongs to Coco.
+                            // Keep popup as-is to allow user interaction.
                             if is_frontmost_app_me() || is_focused_element_me() {
-                                if popup_visible {
-                                    let _ = app_handle.emit("selection-detected", "");
-                                    popup_visible = false;
-                                }
-                                last_text.clear();
-                                stable_text.clear();
                                 stable_count = 0;
                                 empty_count = 0;
                                 continue;

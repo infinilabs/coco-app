@@ -19,14 +19,14 @@ function IconRenderer({ icon }: { icon?: IconConfig }) {
       return (
         <Comp
           className="size-4 transition-transform duration-150"
-          style={icon?.color ? { color: icon.color } : undefined}
+          // style={icon?.color ? { color: icon.color } : undefined}
         />
       );
     }
     return (
       <Search
         className="size-4 transition-transform duration-150"
-        style={icon?.color ? { color: icon.color } : undefined}
+        // style={icon?.color ? { color: icon.color } : undefined}
       />
     );
   }
@@ -36,11 +36,11 @@ function IconRenderer({ icon }: { icon?: IconConfig }) {
         src={icon.dataUrl}
         className="size-4 rounded"
         alt=""
-        style={
-          icon?.color
-            ? { filter: `drop-shadow(0 0 0 ${icon.color})` }
-            : undefined
-        }
+        // style={
+        //   icon?.color
+        //     ? { filter: `drop-shadow(0 0 0 ${icon.color})` }
+        //     : undefined
+        // }
       />
     );
   }

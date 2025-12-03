@@ -271,21 +271,35 @@ export default function SelectionWindow() {
     [toolbarConfig]
   );
 
-  // Resize window width to fit toolbar content
+  // Resize window width to fit toolbar content (sum child widths to avoid feedback growth)
   const resizeToContentWidth = useCallback(async () => {
     try {
       if (!visible) return;
       const el = toolbarRef.current;
       if (!el) return;
 
-      // Measure desired width: content width + small padding
-      const contentWidth = el.scrollWidth;
-      const PAD = 12; // extra padding buffer
+      // Robust intrinsic width measurement: clone offscreen to avoid flex shrink/grow feedback.
+      const clone = el.cloneNode(true) as HTMLElement;
+      clone.style.position = "absolute";
+      clone.style.visibility = "hidden";
+      clone.style.left = "-10000px";
+      clone.style.top = "0";
+      clone.style.width = "auto";
+      clone.style.maxWidth = "none";
+      clone.style.overflow = "visible";
+      // prevent wrapping that may change inline width
+      (clone.style as any).whiteSpace = "nowrap";
+      document.body.appendChild(clone);
+      const intrinsicWidth = Math.ceil(clone.getBoundingClientRect().width);
+      clone.remove();
+
+      // Apply small buffer and clamp by mode
+      const PAD = 12;
       const WIDTH_MIN = iconsOnly ? 160 : 240;
-      const WIDTH_MAX = iconsOnly ? 360 : 720;
+      const WIDTH_MAX = iconsOnly ? 640 : 960;
       const desiredWidth = Math.max(
         WIDTH_MIN,
-        Math.min(WIDTH_MAX, Math.round(contentWidth + PAD))
+        Math.min(WIDTH_MAX, Math.ceil(intrinsicWidth + PAD))
       );
 
       const win = await platformAdapter.getCurrentWebviewWindow();
@@ -293,7 +307,7 @@ export default function SelectionWindow() {
       // Only update width; preserve current height
       const currentWidth = size.width;
       if (Math.abs(currentWidth - desiredWidth) >= 2) {
-        await platformAdapter.setWindowSize(desiredWidth, 32);
+        await platformAdapter.setWindowSize(desiredWidth, size.height);
       }
     } catch (e) {
       console.warn("resizeToContentWidth failed:", e);
