@@ -10,10 +10,19 @@ struct SelectionEventPayload {
     y: i32,
 }
 
+use once_cell::sync::Lazy;
+use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 /// Global toggle: selection monitoring enabled by default.
 static SELECTION_ENABLED: AtomicBool = AtomicBool::new(true);
+
+/// Session flags for controlling macOS Accessibility prompts.
+#[cfg(target_os = "macos")]
+static SEEN_ACCESSIBILITY_TRUSTED_ONCE: AtomicBool = AtomicBool::new(false);
+#[cfg(target_os = "macos")]
+static LAST_ACCESSIBILITY_PROMPT: Lazy<Mutex<Option<std::time::Instant>>> =
+    Lazy::new(|| Mutex::new(None));
 
 #[derive(serde::Serialize, Clone)]
 struct SelectionEnabledPayload {
@@ -35,6 +44,16 @@ fn set_selection_enabled_internal(app_handle: &tauri::AppHandle, enabled: bool) 
 #[tauri::command]
 pub fn set_selection_enabled(app_handle: tauri::AppHandle, enabled: bool) {
     set_selection_enabled_internal(&app_handle, enabled);
+
+    // When enabling selection monitoring on macOS, ensure Accessibility permission.
+    // If not granted, trigger system prompt and deep-link to the right settings pane,
+    // and notify frontend to guide the user.
+    #[cfg(target_os = "macos")]
+    {
+        if enabled {
+            let _ = ensure_accessibility_permission(&app_handle);
+        }
+    }
 }
 
 /// Tauri command: get selection monitoring state.
@@ -57,12 +76,7 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
     // If not granted, prompt the user once; if still not granted, skip starting the watcher.
     #[cfg(target_os = "macos")]
     {
-        let trusted_before = macos_accessibility_client::accessibility::application_is_trusted();
-        if !trusted_before {
-            let _ = macos_accessibility_client::accessibility::application_is_trusted_with_prompt();
-        }
-        let trusted_after = macos_accessibility_client::accessibility::application_is_trusted();
-        if !trusted_after {
+        if !ensure_accessibility_permission(&app_handle) {
             return;
         }
     }
@@ -270,6 +284,63 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
             }
         }
     });
+}
+
+/// Ensure macOS Accessibility permission with double-checking and session throttling.
+/// Returns true when trusted; otherwise triggers prompt/settings link and emits
+/// `selection-permission-required` to the frontend, then returns false.
+#[cfg(target_os = "macos")]
+fn ensure_accessibility_permission(app_handle: &tauri::AppHandle) -> bool {
+    use std::time::{Duration, Instant};
+
+    // First check — fast path.
+    let trusted = macos_accessibility_client::accessibility::application_is_trusted();
+    if trusted {
+        SEEN_ACCESSIBILITY_TRUSTED_ONCE.store(true, Ordering::Relaxed);
+        return true;
+    }
+
+    // If we've seen trust earlier in this session, transient false may occur.
+    // Re-check after a short delay to avoid spurious prompts.
+    if SEEN_ACCESSIBILITY_TRUSTED_ONCE.load(Ordering::Relaxed) {
+        std::thread::sleep(Duration::from_millis(150));
+        if macos_accessibility_client::accessibility::application_is_trusted() {
+            return true;
+        }
+    }
+
+    // Throttle system prompt to at most once per 60s in this session.
+    let mut last = LAST_ACCESSIBILITY_PROMPT.lock().unwrap();
+    let now = Instant::now();
+    let allow_prompt = match *last {
+        Some(ts) => now.duration_since(ts) > Duration::from_secs(60),
+        None => true,
+    };
+
+    if allow_prompt {
+        // Try to trigger the system authorization prompt.
+        let _ = macos_accessibility_client::accessibility::application_is_trusted_with_prompt();
+        *last = Some(now);
+
+        // Small grace period then re-check.
+        std::thread::sleep(Duration::from_millis(150));
+        if macos_accessibility_client::accessibility::application_is_trusted() {
+            SEEN_ACCESSIBILITY_TRUSTED_ONCE.store(true, Ordering::Relaxed);
+            return true;
+        }
+    }
+
+    // Still not trusted — notify frontend and deep-link to settings.
+    let _ = app_handle.emit("selection-permission-required", true);
+    #[allow(unused_must_use)]
+    {
+        use std::process::Command;
+        Command::new("open")
+            .arg("x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
+            .status();
+    }
+
+    false
 }
 
 // macOS-wide accessibility entry point: allows reading system-level focused elements.
