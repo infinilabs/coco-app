@@ -1,6 +1,6 @@
 ---
 weight: 3
-title: Basic Usage
+title: Search
 ---
 
 # Search

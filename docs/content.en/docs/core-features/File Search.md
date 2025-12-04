@@ -1,6 +1,6 @@
 ---
 weight: 3
-title: Basic Usage
+title: File Search
 ---
 
 # File Search

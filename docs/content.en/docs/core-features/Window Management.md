@@ -1,6 +1,6 @@
 ---
 weight: 6
-title: Basic Usage
+title: Window Management
 ---
 
 # Window Management

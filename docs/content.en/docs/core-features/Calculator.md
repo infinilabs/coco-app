@@ -1,6 +1,6 @@
 ---
 weight: 5
-title: Basic Usage
+title: Calculator
 ---
 
 # Calculator

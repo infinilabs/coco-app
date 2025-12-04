@@ -1,6 +1,6 @@
 ---
 weight: 4
-title: Basic Usage
+title: Application Search
 ---
 
 # Application Search

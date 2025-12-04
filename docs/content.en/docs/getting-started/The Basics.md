@@ -1,6 +1,6 @@
 ---
 weight: 2
-title: Basic Usage
+title: The Basics
 ---
 
 # The Basics

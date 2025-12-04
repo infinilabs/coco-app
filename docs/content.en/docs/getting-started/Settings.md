@@ -1,6 +1,6 @@
 ---
 weight: 7
-title: Basic Usage
+title: Settings
 ---
 
 # Settings

@@ -1,6 +1,6 @@
 ---
 weight: 4
-title: Basic Usage
+title: AI Chat
 ---
 
 # AI Chat

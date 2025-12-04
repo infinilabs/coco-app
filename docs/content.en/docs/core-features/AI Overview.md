@@ -1,6 +1,6 @@
 ---
 weight: 1
-title: Basic Usage
+title: AI Overview
 ---
 
 # AI Overview

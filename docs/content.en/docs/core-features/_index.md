@@ -1,5 +1,5 @@
 ---
 weight: 1
-title:核心功能
+title: Core Features
 bookCollapseSection: true
 ---
