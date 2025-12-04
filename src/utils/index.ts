@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { isArray, isNil, isObject, isString } from "lodash-es";
 import { filesize as filesizeLib } from "filesize";
+import i18next from "i18next";
 
 import platformAdapter from "./platformAdapter";
 import { useAppStore } from "@/stores/appStore";
@@ -8,7 +9,6 @@ import { DEFAULT_COCO_SERVER_ID, HISTORY_PANEL_ID } from "@/constants";
 import { useChatStore } from "@/stores/chatStore";
 import { getCurrentWindowService } from "@/commands/windowService";
 import { useSearchStore } from "@/stores/searchStore";
-import i18next from "i18next";
 
 export async function copyToClipboard(text: string, noTip = false) {
   const addError = useAppStore.getState().addError;
