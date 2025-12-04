@@ -25,7 +25,7 @@ export const AssistantFetcher = ({
     query?: string;
   }) => {
     try {
-      // Only gate by current window service when no explicit serverId provided.
+      // Only gate by current window service.
       if (await unrequitable()) {
         return {
           total: 0,
