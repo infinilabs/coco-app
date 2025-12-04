@@ -29,6 +29,7 @@ use tauri_plugin_autostart::MacosLauncher;
 
 /// Tauri store name
 pub(crate) const COCO_TAURI_STORE: &str = "coco_tauri_store";
+pub(crate) const WINDOW_CENTER_BASELINE_HEIGHT: i32 = 590;
 
 lazy_static! {
     static ref PREVIOUS_MONITOR_NAME: Mutex<Option<String>> = Mutex::new(None);
@@ -51,7 +52,7 @@ async fn change_window_height(handle: AppHandle, height: u32) {
     size.height = height;
     window.set_size(size).unwrap();
 
-    // Center the window horizontally and vertically based on the actual window size
+    // Center the window horizontally and vertically based on the baseline height of 590
     let monitor = window.primary_monitor().ok().flatten().or_else(|| {
         window
             .available_monitors()
@@ -67,7 +68,9 @@ async fn change_window_height(handle: AppHandle, height: u32) {
         let window_height = outer_size.height as i32;
 
         let x = monitor_position.x + (monitor_size.width as i32 - window_width) / 2;
-        let y = monitor_position.y + (monitor_size.height as i32 - window_height) / 2;
+
+        let y =
+            monitor_position.y + (monitor_size.height as i32 - WINDOW_CENTER_BASELINE_HEIGHT) / 2;
 
         let _ = window.set_position(PhysicalPosition::new(x, y));
     }
@@ -368,8 +371,8 @@ fn move_window_to_active_monitor(window: &WebviewWindow) {
             let monitor_position = monitor.position();
             let monitor_size = monitor.size();
 
-            // Current window outer size for centering on both axes
-            let window_size = match window.outer_size() {
+            // Current window size for horizontal centering
+            let window_size = match window.inner_size() {
                 Ok(size) => size,
                 Err(e) => {
                     log::error!("Failed to get window size: {}", e);
@@ -377,11 +380,11 @@ fn move_window_to_active_monitor(window: &WebviewWindow) {
                 }
             };
             let window_width = window_size.width as i32;
-            let window_height = window_size.height as i32;
 
-            // Center using actual outer size on both axes for consistency
+            // Horizontal center uses actual width, vertical center uses 590 baseline
             let window_x = monitor_position.x + (monitor_size.width as i32 - window_width) / 2;
-            let window_y = monitor_position.y + (monitor_size.height as i32 - window_height) / 2;
+            let window_y = monitor_position.y
+                + (monitor_size.height as i32 - WINDOW_CENTER_BASELINE_HEIGHT) / 2;
 
             if let Err(e) = window.set_position(PhysicalPosition::new(window_x, window_y)) {
                 log::error!("Failed to move window: {}", e);
