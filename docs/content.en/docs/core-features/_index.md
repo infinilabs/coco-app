@@ -1,5 +1,5 @@
 ---
 weight: 1
-title: "Installation"
+title:核心功能
 bookCollapseSection: true
 ---
