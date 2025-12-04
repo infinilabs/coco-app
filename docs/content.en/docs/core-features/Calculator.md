@@ -7,7 +7,7 @@ title: Calculator
 
 Coco AI provides a concise calculator function that allows users to perform quickquick basic mathematical calculations directly in the input box without opening a separate calculator application. Simply enter an arithmetic expression, and the system will instantly provide the result. It also supports copying the arithmetic expression and the calculation result for easy use at any time.
 
-{{% load-img "/img/core-features/calculator_01" "" %}}
+{{% load-img "/img/core-features/calculator_01.png" "" %}}
 
 
 
@@ -28,5 +28,5 @@ Coco AI provides a concise calculator function that allows users to perform quic
    - When the result is displayed, press `Enter` to copy the calculation result.
    - Use the shortcut key `Meta + K` to open more operations, and select **Copy Answer**, **Copy Question and Answer**, or **Copy Answer (in Word)**
 
-{{% load-img "/img/core-features/calculator_02" "" %}}
+{{% load-img "/img/core-features/calculator_02.png" "" %}}
 

@@ -14,9 +14,9 @@ Coco AI provides an intuitive set of keyboard shortcuts to help you navigate eff
 
 Simply go to **Settings** (shortcut: `Meta + ,`) → **General → Tooltip**, and turn on the shortcut hint switch. After enabling, when you hold down the modifier key, the corresponding shortcut hints will be displayed in real-time in each functional area of the interface.
 
-{{% load-img "/img/core-features/shortcuts_01" "" %}}
+{{% load-img "/img/core-features/shortcuts_01.png" "" %}}
 
-{{% load-img "/img/core-features/shortcuts_03" "" %}}
+{{% load-img "/img/core-features/shortcuts_03.png" "" %}}
 
 
 ## Global Shortcuts
@@ -84,4 +84,4 @@ Coco AI allows you to customize shortcuts in the settings to adjust according to
 
 Simply go to **Settings** (shortcut: `Meta + ,`) → **Advanced → Keyboard Shortcuts** to modify the default shortcuts.
 
-{{% load-img "/img/core-features/shortcuts_02" "" %}}
+{{% load-img "/img/core-features/shortcuts_02.png" "" %}}

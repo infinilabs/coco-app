@@ -7,7 +7,7 @@ title: AI Overview
 
 The **AI Overview** feature can automatically refine and summarize current search results in search mode, helping users quickly grasp the key points of the search results without having to browse each individual result. This feature is particularly useful in scenarios where information needs to be extracted quickly.
 
-{{% load-img "/img/core-features/ai_overview_01" "" %}}
+{{% load-img "/img/core-features/ai_overview_01.png" "" %}}
 
 
 
@@ -23,7 +23,7 @@ The **AI Overview** feature can automatically refine and summarize current searc
 
 ## Enabling AI Overview
 
-{{% load-img "/img/core-features/ai_overview_02" "" %}}
+{{% load-img "/img/core-features/ai_overview_02.png" "" %}}
 
 
 

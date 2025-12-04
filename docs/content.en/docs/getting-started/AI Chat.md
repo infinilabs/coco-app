@@ -8,7 +8,7 @@ title: AI Chat
 Coco AI is not just a search tool, but your AI intelligent center.
 In chat mode, you can communicate with AI in natural language, ask questions, analyze files, and summarize knowledge.
 
-{{% load-img "/img/core-features/basics_02" "" %}}
+{{% load-img "/img/core-features/basics_02.png" "" %}}
 
 
 
@@ -28,7 +28,7 @@ In chat mode, you can communicate with AI in natural language, ask questions, an
 
 Coco AI's chat interface is designed to be concise and intuitive, allowing you to quickly switch AI assistants, access different Coco Servers, browse historical conversations, or use advanced capabilities such as deep thinking, web search, and tool calls.
 
-{{% load-img "/img/core-features/ai_chat_01" "" %}}
+{{% load-img "/img/core-features/ai_chat_01.png" "" %}}
 
 #### Interface Overview
 
@@ -60,7 +60,7 @@ Click the **server icon** in the upper right corner to view the current connecti
 - Lists the number of available AI assistants on the server.
 - Supports one-click switching, refreshing, or entering the settings page.
 
-{{% load-img "/img/core-features/ai_chat_03" "" %}}
+{{% load-img "/img/core-features/ai_chat_03.png" "" %}}
 
 
 
@@ -70,7 +70,7 @@ The drop-down menu in the upper left corner lists all assistants in the current 
 
 Each assistant may have different capabilities and modes according to the configuration.
 
-{{% load-img "/img/core-features/ai_chat_02" "" %}}
+{{% load-img "/img/core-features/ai_chat_02.png" "" %}}
 
 
 
@@ -90,7 +90,7 @@ The function buttons at the bottom left of the input box can quickly call the fo
 
 > **💡 Tip**: Search and MCP tool calls rely on the currently connected Coco Server, and their availability depends on server configuration.
 
-{{% load-img "/img/core-features/ai_chat_04" "" %}}
+{{% load-img "/img/core-features/ai_chat_04.png" "" %}}
 
 
 

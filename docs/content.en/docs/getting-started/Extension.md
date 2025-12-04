@@ -7,7 +7,7 @@ title: Extension
 
 Extensions of Coco AI are plug-in modules that add specific functions to the core system. By installing extensions, you can greatly enhance the capabilities of Coco AI and create a personalized intelligent working environment.
 
-{{% load-img "/img/core-features/extension_01" "" %}}
+{{% load-img "/img/core-features/extension_01.png" "" %}}
 
 
 
@@ -17,7 +17,7 @@ Extensions of Coco AI are plug-in modules that add specific functions to the cor
 
 In the Extension Store, you can browse or search for the required extensions. After finding the desired extension, press `↵` to view details, and click the install button on the details page. Coco AI will automatically complete the download and installation process.
 
-{{% load-img "/img/core-features/extension_02" "" %}}
+{{% load-img "/img/core-features/extension_02.png" "" %}}
 
 
 
@@ -37,7 +37,7 @@ View-type extensions provide a complete user interface, embedding visual applica
 
 In search mode, enter the extension name or keywords, select the corresponding extension from the search results, and press `↵` to enter the corresponding extension's interaction interface.
 
-{{% load-img "/img/core-features/extension_04" "" %}}
+{{% load-img "/img/core-features/extension_04.png" "" %}}
 
 
 
@@ -53,7 +53,7 @@ Open Settings (shortcut key: `Meta+,`). On the Extensions page, you can:
 - Uninstall extensions
 - Set extension command shortcuts or aliases
 
-{{% load-img "/img/core-features/extension_03" "" %}}
+{{% load-img "/img/core-features/extension_03.png" "" %}}
 
 
 

@@ -7,13 +7,13 @@ title: Quick AI Access
 
 The **Quick AI Access** feature allows you to directly start a conversation with AI through the search box without switching to chat mode. This feature provides users with a smoother and more efficient interaction experience, especially suitable for scenarios where quick feedback or handling simple questions is needed.
 
-{{% load-img "/img/core-features/quick_ai_access_01" "" %}}
+{{% load-img "/img/core-features/quick_ai_access_01.png" "" %}}
 
 
 
 ## Feature Overview
 
-{{% load-img "/img/core-features/quick_ai_access_02" "" %}}
+{{% load-img "/img/core-features/quick_ai_access_02.png" "" %}}
 
 - **Quickly Start a Conversation**: After entering content in the search box, press `Meta + Enter` to directly start a conversation with the AI assistant without switching to chat mode.
 - **Instant Response**: Coco AI will display the conversation reply in the same window, providing answers or suggestions quickly.
@@ -23,7 +23,7 @@ The **Quick AI Access** feature allows you to directly start a conversation with
 
 ## Enabling Quick AI Access
 
-{{% load-img "/img/core-features/quick_ai_access_03" "" %}}
+{{% load-img "/img/core-features/quick_ai_access_03.png" "" %}}
 
 To use the **Quick AI Access** feature, you need to configure it in the settings:
 

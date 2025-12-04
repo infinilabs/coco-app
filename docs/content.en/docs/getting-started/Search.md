@@ -7,7 +7,7 @@ title: Search
 
 Coco AI's search function is designed to provide a unified, intelligent, and efficient cross-platform information retrieval experience. In search mode, you can quickly find local files, applications, commands, extensions, data sources in Coco Server (including Google Drive, Notion, Yuque, Hugo sites, RSS, Github, Postgres, etc.), and AI assistants through the search box.
 
-{{% load-img "/img/core-features/search_02" "" %}}
+{{% load-img "/img/core-features/search_02.png" "" %}}
 
 
 
@@ -17,7 +17,7 @@ Coco AI's search function is designed to provide a unified, intelligent, and eff
 - The interface is in search mode (switch modes using the toggle button or the shortcut `Meta + T`).
 - Enter keywords, file names, or natural language questions in the input box.
 
-{{% load-img "/img/core-features/search_01" "" %}}
+{{% load-img "/img/core-features/search_01.png" "" %}}
 
 
 
@@ -43,7 +43,7 @@ Coco AI will automatically return a set of concise, structured search results af
 
 #### Quick Filtering and Navigation
 
-{{% load-img "/img/core-features/search_03" "" %}}
+{{% load-img "/img/core-features/search_03.png" "" %}}
 
 When browsing results, you can use the **Tab key** to quickly filter the currently selected result:
 

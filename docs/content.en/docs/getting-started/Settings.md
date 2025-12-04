@@ -13,7 +13,7 @@ In Coco AI, you can adjust various settings of the application according to your
 
 In the General Settings section, you can adjust Coco AI's startup items, startup shortcuts, interface appearance, and language.
 
-{{% load-img "/img/core-features/settings_01" "" %}}
+{{% load-img "/img/core-features/settings_01.png" "" %}}
 
 
 
@@ -21,7 +21,7 @@ In the General Settings section, you can adjust Coco AI's startup items, startup
 
 In the Extension Settings, you can view, manage, and configure installed extensions.
 
-{{% load-img "/img/core-features/settings_02" "" %}}
+{{% load-img "/img/core-features/settings_02.png" "" %}}
 
 
 
@@ -29,7 +29,7 @@ In the Extension Settings, you can view, manage, and configure installed extensi
 
 In the Connect Settings, you can view and manage connections to Coco Server. This section involves logging in, enabling/disabling, and deleting connected servers.
 
-{{% load-img "/img/core-features/settings_03" "" %}}
+{{% load-img "/img/core-features/settings_03.png" "" %}}
 
 
 
@@ -37,7 +37,7 @@ In the Connect Settings, you can view and manage connections to Coco Server. Thi
 
 In the Advanced Settings, you can configure more detailed options such as startup, connections, shortcuts, and version updates.
 
-{{% load-img "/img/core-features/settings_04" "" %}}
+{{% load-img "/img/core-features/settings_04.png" "" %}}
 
 
 
@@ -45,4 +45,4 @@ In the Advanced Settings, you can configure more detailed options such as startu
 
 In the About Us section, you can view current version information, access help documentation, and submit feedback.
 
-{{% load-img "/img/core-features/settings_05" "" %}}
+{{% load-img "/img/core-features/settings_05.png" "" %}}
