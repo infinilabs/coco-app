@@ -14,6 +14,9 @@ export const windowWrapper = {
     const window = await this.getCurrentWebviewWindow();
     if (window) {
       await window.setSize(new LogicalSize(width, height));
+      if (height < 590) {
+        await window.center();
+      }
     }
   },
 };

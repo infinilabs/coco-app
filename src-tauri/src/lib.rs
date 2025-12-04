@@ -63,11 +63,12 @@ async fn change_window_height(handle: AppHandle, height: u32) {
         let monitor_position = monitor.position();
         let monitor_size = monitor.size();
 
-        let window_width = window.outer_size().unwrap().width as i32;
-        let x = monitor_position.x + (monitor_size.width as i32 - window_width) / 2;
+        let outer_size = window.outer_size().unwrap();
+        let window_width = outer_size.width as i32;
+        let window_height = outer_size.height as i32;
 
-        let y =
-            monitor_position.y + (monitor_size.height as i32 - WINDOW_CENTER_BASELINE_HEIGHT) / 2;
+        let x = monitor_position.x + (monitor_size.width as i32 - window_width) / 2;
+        let y = monitor_position.y + (monitor_size.height as i32 - window_height) / 2;
 
         let _ = window.set_position(PhysicalPosition::new(x, y));
     }
