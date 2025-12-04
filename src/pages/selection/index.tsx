@@ -307,7 +307,7 @@ export default function SelectionWindow() {
       // Only update width; preserve current height
       const currentWidth = size.width;
       if (Math.abs(currentWidth - desiredWidth) >= 2) {
-        await platformAdapter.setWindowSize(desiredWidth, size.height);
+        await platformAdapter.setWindowSize(desiredWidth, 32);
       }
     } catch (e) {
       console.warn("resizeToContentWidth failed:", e);
