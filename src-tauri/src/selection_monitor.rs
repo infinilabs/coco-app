@@ -14,8 +14,8 @@ use once_cell::sync::Lazy;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-/// Global toggle: selection monitoring enabled by default.
-static SELECTION_ENABLED: AtomicBool = AtomicBool::new(true);
+/// Global toggle: selection monitoring disabled for this release.
+static SELECTION_ENABLED: AtomicBool = AtomicBool::new(false);
 
 /// Ensure we only start the monitor thread once. Allows delayed start after
 /// Accessibility permission is granted post-launch.
