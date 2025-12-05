@@ -25,6 +25,8 @@ Information about release notes of Coco App is provided here.
 ### ✈️ Improvements
 
 - chore: write panic message to stdout in panic hook #989
+- refactor: error handling in install_extension interfaces #995
+- chore: adjust the position of the compact mode window #997
 
 ## 0.9.0 (2025-11-19)
 

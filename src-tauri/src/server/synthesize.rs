@@ -1,4 +1,4 @@
-use crate::server::http_client::HttpClient;
+use crate::server::http_client::{HttpClient, HttpRequestError};
 use futures_util::StreamExt;
 use http::Method;
 use serde_json::json;
@@ -11,7 +11,7 @@ pub async fn synthesize(
     server_id: String,
     voice: String,
     content: String,
-) -> Result<(), String> {
+) -> Result<(), HttpRequestError> {
     let body = json!({
         "voice": voice,
         "content": content,
@@ -30,12 +30,18 @@ pub async fn synthesize(
 
     log::info!("Synthesize response status: {}", response.status());
 
-    if response.status() == 429 {
+    let status_code = response.status();
+
+    if status_code == 429 {
         return Ok(());
     }
 
-    if !response.status().is_success() {
-        return Err(format!("Request Failed: {}", response.status()));
+    if !status_code.is_success() {
+        return Err(HttpRequestError::RequestFailed {
+            status: status_code.as_u16(),
+            error_response_body_str: None,
+            coco_server_api_error_response_body: None,
+        });
     }
 
     let mut stream = response.bytes_stream();

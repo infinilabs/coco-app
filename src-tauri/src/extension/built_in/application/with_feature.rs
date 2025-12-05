@@ -678,7 +678,7 @@ impl SearchSource for ApplicationSearchSource {
             .expect("tx dropped, the runtime thread is possibly dead")
             .map_err(|pizza_engine_err| {
                 let err_str = pizza_engine_err.to_string();
-                SearchError::InternalError(err_str)
+                SearchError::InternalError { error: err_str }
             })?;
 
         let total_hits = search_result.total_hits;

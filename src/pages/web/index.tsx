@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { isPlainObject } from "lodash-es";
 
 import SearchChat from "@/components/SearchChat";
+import { WINDOW_CENTER_BASELINE_HEIGHT } from "@/constants";
 import { useAppStore } from "@/stores/appStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -41,7 +42,7 @@ interface WebAppProps {
 
 function WebApp({
   width = 680,
-  height = 590,
+  height = WINDOW_CENTER_BASELINE_HEIGHT,
   headers = {
     "X-API-TOKEN": "",
     "APP-INTEGRATION-ID": "",

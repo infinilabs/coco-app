@@ -1,4 +1,5 @@
 use crate::COCO_TAURI_STORE;
+use crate::common::error::{ReportErrorStyle, report_error};
 use crate::common::http::get_response_body_text;
 use crate::common::register::SearchSourceRegistry;
 use crate::common::server::{AuthProvider, Provider, Server, ServerAccessToken, Sso, Version};
@@ -441,7 +442,7 @@ pub async fn refresh_coco_server_info(app_handle: AppHandle, id: String) -> Resu
         Ok(response) => response,
         Err(e) => {
             mark_server_as_offline(app_handle, &id).await;
-            return Err(e);
+            return Err(report_error(&e, ReportErrorStyle::SingleLine));
         }
     };
 
@@ -451,7 +452,9 @@ pub async fn refresh_coco_server_info(app_handle: AppHandle, id: String) -> Resu
     }
 
     // Get body text via helper
-    let body = get_response_body_text(response).await?;
+    let body = get_response_body_text(response)
+        .await
+        .map_err(|e| report_error(&e, ReportErrorStyle::SingleLine))?;
 
     // Deserialize server
     let mut updated_server: Server = serde_json::from_str(&body)
@@ -520,7 +523,9 @@ pub async fn add_coco_server(app_handle: AppHandle, endpoint: String) -> Result<
         return Err("This Coco server is possibly down".into());
     }
 
-    let body = get_response_body_text(response).await?;
+    let body = get_response_body_text(response)
+        .await
+        .map_err(|e| report_error(&e, ReportErrorStyle::SingleLine))?;
 
     let mut server: Server = serde_json::from_str(&body)
         .map_err(|e| format!("Failed to deserialize the response: {}", e))?;

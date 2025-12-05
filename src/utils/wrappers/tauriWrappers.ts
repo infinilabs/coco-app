@@ -1,4 +1,5 @@
 import * as commands from "@/commands";
+import { WINDOW_CENTER_BASELINE_HEIGHT } from "@/constants";
 
 // Window operations
 export const windowWrapper = {
@@ -14,6 +15,9 @@ export const windowWrapper = {
     const window = await this.getCurrentWebviewWindow();
     if (window) {
       await window.setSize(new LogicalSize(width, height));
+      if (height < WINDOW_CENTER_BASELINE_HEIGHT) {
+        await window.center();
+      }
     }
   },
 };

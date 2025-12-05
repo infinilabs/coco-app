@@ -13,3 +13,5 @@ export const SETTINGS_WINDOW_LABEL = "settings";
 export const CHECK_WINDOW_LABEL = "check";
 
 export const CHAT_WINDOW_LABEL = "chat";
+
+export const WINDOW_CENTER_BASELINE_HEIGHT = 590;

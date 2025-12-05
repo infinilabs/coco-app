@@ -41,14 +41,18 @@
 //!
 //!   7. Add the extension to the in-memory extension list.
 
+pub(crate) mod error;
 pub(crate) mod local_extension;
 pub(crate) mod store;
 
 use crate::extension::Extension;
 use crate::extension::PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION;
 use crate::util::platform::Platform;
+use crate::util::version::ParseVersionError;
 use crate::util::version::{COCO_VERSION, parse_coco_semver};
+use serde::Serialize;
 use serde_json::Value as Json;
+use snafu::prelude::*;
 use std::ops::Deref;
 
 use super::THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE;
@@ -121,9 +125,17 @@ pub(crate) fn filter_out_incompatible_sub_extensions(
     }
 }
 
+#[derive(Debug, Snafu, Serialize)]
+pub(crate) enum ParsingMinimumCocoVersionError {
+    #[snafu(display("field 'minimum_coco_version' should be a string, but it is not"))]
+    MismatchType,
+    #[snafu(display("failed to parse field 'minimum_coco_version'"))]
+    ParsingVersionError { source: ParseVersionError },
+}
+
 /// Inspect the "minimum_coco_version" field and see if this extension is
 /// compatible with the current Coco app.
-fn check_compatibility_via_mcv(plugin_json: &Json) -> Result<bool, String> {
+fn check_compatibility_via_mcv(plugin_json: &Json) -> Result<bool, ParsingMinimumCocoVersionError> {
     let Some(mcv_json) = plugin_json.get(PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION) else {
         return Ok(true);
     };
@@ -132,18 +144,10 @@ fn check_compatibility_via_mcv(plugin_json: &Json) -> Result<bool, String> {
     }
 
     let Some(mcv_str) = mcv_json.as_str() else {
-        return Err(format!(
-            "invalid extension: field [{}] should be a string",
-            PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION
-        ));
+        return Err(ParsingMinimumCocoVersionError::MismatchType);
     };
 
-    let Some(mcv) = parse_coco_semver(mcv_str) else {
-        return Err(format!(
-            "invalid extension: [{}] is not a valid version string",
-            PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION
-        ));
-    };
+    let mcv = parse_coco_semver(mcv_str).context(ParsingVersionSnafu)?;
 
     Ok(COCO_VERSION.deref() >= &mcv)
 }
