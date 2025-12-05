@@ -1,28 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  Bot,
-  Copy,
-  Languages,
-  Search,
-  X,
-  Volume2,
-  Pause,
-  Play,
-  FileText,
-} from "lucide-react";
+import { X, Pause, Play } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
-import { Separator } from "@radix-ui/react-separator";
 
 import { useSelectionStore } from "@/stores/selectionStore";
 import { copyToClipboard } from "@/utils";
-import cocoLogoImg from "@/assets/app-icon.png";
 import platformAdapter from "@/utils/platformAdapter";
+import HeaderToolbar from "@/components/Selection/HeaderToolbar";
+import type { ActionConfig } from "@/components/Settings/Advanced/components/Selection/config";
+import { show_coco } from "@/commands";
 
 // Simple animated selection window content
 export default function SelectionWindow() {
   const { t } = useTranslation();
-  
   const [text, setText] = useState("");
   const [visible, setVisible] = useState(false);
   const [animatingOut, setAnimatingOut] = useState(false);
@@ -137,34 +127,27 @@ export default function SelectionWindow() {
     }, 150);
   };
 
-  const openMain = async () => {
-    try {
-      await platformAdapter.commands("show_coco");
-    } catch {
-      await platformAdapter.emitEvent("show-coco");
-      await platformAdapter.showWindow();
-    }
-  };
-
   const handleChatAction = useCallback(
-    async (assistantId?: string) => {
+    async (action: ActionConfig) => {
       const payloadText = (textRef.current || "").trim();
+
       if (!payloadText) return;
 
-      await openMain();
-      await new Promise((r) => setTimeout(r, 120));
+      await show_coco();
+      await new Promise((r) => setTimeout(r, 300));
 
       await platformAdapter.emitEvent("selection-action", {
         action: "chat",
         text: payloadText,
-        assistantId,
+        assistantId: action.assistantId,
+        serverId: action.assistantServerId,
       });
 
       if (!isSpeaking) {
         await close();
       }
     },
-    [openMain, isSpeaking, close]
+    [isSpeaking, close]
   );
 
   const searchMain = useCallback(async () => {
@@ -172,7 +155,7 @@ export default function SelectionWindow() {
     console.log("searchMain payload", payloadText);
     if (!payloadText) return;
 
-    await openMain();
+    await show_coco();
     await new Promise((r) => setTimeout(r, 120));
     await platformAdapter.emitEvent("selection-action", {
       action: "search",
@@ -239,7 +222,7 @@ export default function SelectionWindow() {
       setIsSpeaking(true);
       setIsPaused(false);
     } catch (e) {
-      console.error("TTS 播放失败", e);
+      console.error("TTS play failed:", e);
       stopSpeak();
       scheduleAutoHide();
     }
@@ -258,124 +241,88 @@ export default function SelectionWindow() {
     }
   }, []);
 
-  const getActionHandler = (type: string, assistantId?: string) => {
-    switch (type) {
+  const getActionHandler = (action: ActionConfig) => {
+    switch (action.type) {
       case "ask_ai":
       case "translate":
       case "summary":
-        return () => handleChatAction(assistantId);
+        handleChatAction(action);
+        break;
       case "copy":
-        return handleCopy;
+        handleCopy();
+        break;
       case "search":
-        return searchMain;
+        searchMain();
+        break;
       case "speak":
-        return speak;
+        speak();
+        break;
       default:
-        return () => {};
+        break;
     }
   };
 
-  // Render buttons from store; hide ones requiring assistant without assistantId
-  const toolbarConfig = useSelectionStore((s) => s.toolbarConfig);
   const iconsOnly = useSelectionStore((s) => s.iconsOnly);
-
-  const requiresAssistant = (type?: string) =>
-    type === "ask_ai" || type === "translate" || type === "summary";
+  const toolbarConfig = useSelectionStore((s) => s.toolbarConfig);
+  const toolbarRef = useRef<HTMLDivElement | null>(null);
 
   const visibleButtons = useMemo(
-    () =>
-      (Array.isArray(toolbarConfig) ? toolbarConfig : []).filter((btn: any) => {
-        const type = btn?.action?.type;
-        if (requiresAssistant(type)) {
-          return Boolean(btn?.action?.assistantId);
-        }
-        return true;
-      }),
+    () => (Array.isArray(toolbarConfig) ? toolbarConfig : []),
     [toolbarConfig]
   );
 
-  // Lucide icon map for dynamic rendering
-  const LUCIDE_ICON_MAP: Record<string, any> = {
-    Search,
-    Bot,
-    Languages,
-    FileText,
-    Copy,
-    Volume2,
-  };
+  // Resize window width to fit toolbar content (sum child widths to avoid feedback growth)
+  const resizeToContentWidth = useCallback(async () => {
+    try {
+      if (!visible) return;
+      const el = toolbarRef.current;
+      if (!el) return;
 
-  // Component: render icon (lucide or custom)
-  const IconRenderer = ({ icon }: { icon?: any }) => {
-    // Support lucide icon or custom image
-    if (icon?.type === "lucide") {
-      const Icon =
-        LUCIDE_ICON_MAP[icon?.name as string] || LUCIDE_ICON_MAP.Search;
-      return (
-        <Icon
-          className="size-4 transition-transform duration-150"
-          style={icon?.color ? { color: icon.color } : undefined}
-        />
+      // Robust intrinsic width measurement: clone offscreen to avoid flex shrink/grow feedback.
+      const clone = el.cloneNode(true) as HTMLElement;
+      clone.style.position = "absolute";
+      clone.style.visibility = "hidden";
+      clone.style.left = "-10000px";
+      clone.style.top = "0";
+      clone.style.width = "auto";
+      clone.style.maxWidth = "none";
+      clone.style.overflow = "visible";
+      // prevent wrapping that may change inline width
+      (clone.style as any).whiteSpace = "nowrap";
+      document.body.appendChild(clone);
+      const intrinsicWidth = Math.ceil(clone.getBoundingClientRect().width);
+      clone.remove();
+
+      // Apply small buffer and clamp by mode
+      const PAD = 12;
+      const WIDTH_MIN = iconsOnly ? 160 : 240;
+      const WIDTH_MAX = iconsOnly ? 640 : 960;
+      const desiredWidth = Math.max(
+        WIDTH_MIN,
+        Math.min(WIDTH_MAX, Math.ceil(intrinsicWidth + PAD))
       );
-    }
-    if (icon?.type === "custom" && icon?.dataUrl) {
-      return (
-        <img
-          src={icon.dataUrl}
-          className="size-4 rounded"
-          alt=""
-          style={
-            icon?.color
-              ? { filter: `drop-shadow(0 0 0 ${icon.color})` }
-              : undefined
-          }
-        />
-      );
-    }
-    // default
-    return <Search className="size-4 text-[#6366F1]" />;
-  };
 
-  // Component: single toolbar button
-  const ToolbarButton = ({
-    btn,
-    onClick,
-  }: {
-    btn: any;
-    onClick: () => void;
-  }) => {
-    const label = btn?.labelKey ? t(btn.labelKey) : btn?.label || btn?.id || "";
-    return (
-      <button
-        className="flex items-center gap-1 p-1 rounded-md cursor-pointer whitespace-nowrap transition-all duration-150"
-        onClick={onClick}
-        title={label}
-      >
-        <IconRenderer icon={btn?.icon} />
-        {!iconsOnly && (
-          <span className="text-[12px] transition-opacity duration-150">
-            {label}
-          </span>
-        )}
-      </button>
-    );
-  };
+      const win = await platformAdapter.getCurrentWebviewWindow();
+      const size = await win.innerSize();
+      // Only update width; preserve current height
+      const currentWidth = size.width;
+      if (Math.abs(currentWidth - desiredWidth) >= 2) {
+        await platformAdapter.setWindowSize(desiredWidth, 32);
+      }
+    } catch (e) {
+      console.warn("resizeToContentWidth failed:", e);
+    }
+  }, [visible, iconsOnly]);
 
-  // Component: header logo
-  const HeaderLogo = () => {
-    return (
-      <img
-        src={cocoLogoImg}
-        alt="Coco Logo"
-        className="w-6 h-6"
-        onClick={openMain}
-        onError={(e) => {
-          try {
-            (e.target as HTMLImageElement).src = "/src-tauri/assets/logo.png";
-          } catch {}
-        }}
-      />
-    );
-  };
+  // Recalculate on relevant changes (buttons, labels, speaking state, visibility)
+  useEffect(() => {
+    if (!visible) return;
+    // Ensure DOM updated before measure
+    const id = window.requestAnimationFrame(() => {
+      resizeToContentWidth();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [visibleButtons, iconsOnly, isSpeaking, visible, resizeToContentWidth]);
 
   // Component: selected text preview
   const TextPreview = ({ text }: { text: string }) => {
@@ -484,31 +431,15 @@ export default function SelectionWindow() {
         <TextPreview text={text} />
       </div>
 
-      <div
-        data-tauri-drag-region="false"
-        className="flex items-center gap-1 p-1 flex-nowrap overflow-hidden"
+      <HeaderToolbar
+        buttons={visibleButtons as any}
+        iconsOnly={iconsOnly}
+        onAction={getActionHandler}
+        onLogoClick={show_coco}
+        rootRef={toolbarRef}
       >
-        <HeaderLogo />
-
-        <Separator
-          orientation="vertical"
-          decorative
-          className="mx-2 h-4 w-px bg-gray-300 dark:bg-white/30 shrink-0"
-        />
-
-        {visibleButtons.map((btn: any) => {
-          const { type, assistantId } = btn?.action;
-          return (
-            <ToolbarButton
-              key={btn.id}
-              btn={btn}
-              onClick={getActionHandler(type, assistantId)}
-            />
-          );
-        })}
-
         {isSpeaking && <SpeakControls />}
-      </div>
+      </HeaderToolbar>
     </div>
   );
 }

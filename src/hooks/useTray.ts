@@ -50,52 +50,72 @@ export const useTray = () => {
   };
 
   const getTrayMenu = async () => {
-    const items = await Promise.all([
+    const itemPromises: Promise<any>[] = [];
+
+    itemPromises.push(
       MenuItem.new({
         text: t("tray.showCoco"),
         accelerator: showCocoShortcuts.join("+"),
         action: () => {
           show_coco();
         },
-      }),
-      PredefinedMenuItem.new({ item: "Separator" }),
-      MenuItem.new({
-        text: selectionEnabled
-          ? t("tray.selectionDisable")
-          : t("tray.selectionEnable"),
-        action: async () => {
-          try {
-            await platformAdapter.invokeBackend("set_selection_enabled", { enabled: !selectionEnabled });
-          } catch (e) {
-            console.error("set_selection_enabled invoke failed:", e);
-          }
-        },
-      }),
+      }) 
+    );
+
+    itemPromises.push(PredefinedMenuItem.new({ item: "Separator" }));
+
+    if (isMac) {
+      itemPromises.push(
+        MenuItem.new({
+          text: selectionEnabled
+            ? t("tray.selectionDisable")
+            : t("tray.selectionEnable"),
+          action: async () => {
+            try {
+              await platformAdapter.invokeBackend("set_selection_enabled", {
+                enabled: !selectionEnabled,
+              });
+            } catch (e) {
+              console.error("set_selection_enabled invoke failed:", e);
+            }
+          },
+        })
+      );
+    }
+
+    itemPromises.push(
       MenuItem.new({
         text: t("tray.settings"),
         // accelerator: "CommandOrControl+,",
         action: () => {
           show_settings();
         },
-      }),
+      })
+    );
+
+    itemPromises.push(
       MenuItem.new({
         text: t("tray.checkUpdate"),
         action: async () => {
           await show_check();
-
           platformAdapter.emitEvent("check-update");
         },
-      }),
-      PredefinedMenuItem.new({ item: "Separator" }),
+      })
+    );
+
+    itemPromises.push(PredefinedMenuItem.new({ item: "Separator" }));
+
+    itemPromises.push(
       MenuItem.new({
         text: t("tray.quitCoco"),
         accelerator: "CommandOrControl+Q",
         action: () => {
           exit(0);
         },
-      }),
-    ]);
+      })
+    );
 
+    const items = await Promise.all(itemPromises);
     return Menu.new({ items });
   };
 

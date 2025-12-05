@@ -1,13 +1,15 @@
 import { createBrowserRouter } from "react-router-dom";
+import { Suspense, lazy } from "react";
 
 import Layout from "./layout";
 import ErrorPage from "@/pages/error/index";
-import DesktopApp from "@/pages/main/index";
-import SettingsPage from "@/pages/settings/index";
-import StandaloneChat from "@/pages/chat/index";
-import WebPage from "@/pages/web/index";
-import CheckPage from "@/pages/check/index";
-import SelectionWindow from "@/pages/selection/index";
+
+const DesktopApp = lazy(() => import("@/pages/main/index"));
+const SettingsPage = lazy(() => import("@/pages/settings/index"));
+const StandaloneChat = lazy(() => import("@/pages/chat/index"));
+const WebPage = lazy(() => import("@/pages/web/index"));
+const CheckPage = lazy(() => import("@/pages/check/index"));
+const SelectionWindow = lazy(() => import("@/pages/selection/index"));
 
 const routerOptions = {
   basename: "/",
@@ -24,12 +26,12 @@ export const router = createBrowserRouter(
       element: <Layout />,
       errorElement: <ErrorPage />,
       children: [
-        { path: "/ui", element: <DesktopApp /> },
-        { path: "/ui/settings", element: <SettingsPage /> },
-        { path: "/ui/chat", element: <StandaloneChat /> },
-        { path: "/ui/check", element: <CheckPage /> },
-        { path: "/ui/selection", element: <SelectionWindow /> },
-        { path: "/web", element: <WebPage /> },
+        { path: "/ui", element: (<Suspense fallback={<></>}><DesktopApp /></Suspense>) },
+        { path: "/ui/settings", element: (<Suspense fallback={<></>}><SettingsPage /></Suspense>) },
+        { path: "/ui/chat", element: (<Suspense fallback={<></>}><StandaloneChat /></Suspense>) },
+        { path: "/ui/check", element: (<Suspense fallback={<></>}><CheckPage /></Suspense>) },
+        { path: "/ui/selection", element: (<Suspense fallback={<></>}><SelectionWindow /></Suspense>) },
+        { path: "/web", element: (<Suspense fallback={<></>}><WebPage /></Suspense>) },
       ],
     },
   ],

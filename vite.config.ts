@@ -87,10 +87,20 @@ export default defineConfig(async () => ({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ["react", "react-dom"],
-          katex: ["rehype-katex"],
-          highlight: ["rehype-highlight"],
+          react: ["react", "react-dom"],
+          router: ["react-router-dom"],
+          markdown: [
+            "react-markdown",
+            "remark-gfm",
+            "remark-breaks",
+            "remark-math",
+            "rehype-highlight",
+            "rehype-katex",
+            "mdast-util-gfm-autolink-literal",
+          ],
           mermaid: ["mermaid"],
+          icons: ["lucide-react", "@infinilabs/custom-icons"],
+          utils: ["lodash-es", "dayjs", "uuid", "nanoid", "axios"],
           "tauri-api": [
             "@tauri-apps/api/core",
             "@tauri-apps/api/event",
