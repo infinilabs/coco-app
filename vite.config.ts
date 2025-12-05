@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import { config } from "dotenv";
 import packageJson from "./package.json";
@@ -10,11 +11,11 @@ const host = process.env.TAURI_DEV_HOST;
 // console.log("process.env", process.env)
 
 // https://vitejs.dev/config/
-export default defineConfig(async () => ({
+export default defineConfig({
   define: {
     "process.env.VERSION": JSON.stringify(packageJson.version),
   },
-  plugins: [react()],
+  plugins: [react(), tailwindcss() as any],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -120,4 +121,4 @@ export default defineConfig(async () => ({
     },
     chunkSizeWarningLimit: 600,
   },
-}));
+});

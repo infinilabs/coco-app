@@ -17,6 +17,7 @@ import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore } from "@/stores/appStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useAppearanceStore } from "@/stores/appearanceStore";
+import ShadcnDemo from "./shadcn-demo"
 
 const tabIndexMap: { [key: string]: number } = {
   general: 0,
@@ -87,6 +88,7 @@ function SettingsPage() {
 
   return (
     <div>
+      <ShadcnDemo />
       <div className="min-h-screen pb-8 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
         <div className="max-w-6xl mx-auto p-4">
           <TabGroup
