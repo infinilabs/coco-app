@@ -18,6 +18,7 @@ export const useTray = () => {
   const showCocoShortcuts = useAppStore((state) => state.showCocoShortcuts);
 
   const selectionEnabled = useSelectionStore((state) => state.selectionEnabled);
+  // const setSelectionEnabled = useSelectionStore((state) => state.setSelectionEnabled);
 
   useUpdateEffect(() => {
     if (showCocoShortcuts.length === 0) return;
@@ -64,24 +65,18 @@ export const useTray = () => {
 
     itemPromises.push(PredefinedMenuItem.new({ item: "Separator" }));
 
-    if (isMac) {
-      itemPromises.push(
-        MenuItem.new({
-          text: selectionEnabled
-            ? t("tray.selectionDisable")
-            : t("tray.selectionEnable"),
-          action: async () => {
-            try {
-              await platformAdapter.invokeBackend("set_selection_enabled", {
-                enabled: !selectionEnabled,
-              });
-            } catch (e) {
-              console.error("set_selection_enabled invoke failed:", e);
-            }
-          },
-        })
-      );
-    }
+    // if (isMac) {
+    //   itemPromises.push(
+    //     MenuItem.new({
+    //       text: selectionEnabled
+    //         ? t("tray.selectionDisable")
+    //         : t("tray.selectionEnable"),
+    //       action: async () => {
+    //         setSelectionEnabled(!selectionEnabled);
+    //       },
+    //     })
+    //   );
+    // }
 
     itemPromises.push(
       MenuItem.new({

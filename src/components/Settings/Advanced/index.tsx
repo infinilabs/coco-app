@@ -21,8 +21,8 @@ import SettingsInput from "@/components//Settings/SettingsInput";
 import platformAdapter from "@/utils/platformAdapter";
 import UpdateSettings from "./components/UpdateSettings";
 import SettingsToggle from "../SettingsToggle";
-import SelectionSettings from "./components/Selection";
-import { isMac } from "@/utils/platform";
+// import SelectionSettings from "./components/Selection";
+// import { isMac } from "@/utils/platform";
 
 const Advanced = () => {
   const { t } = useTranslation();
@@ -191,7 +191,7 @@ const Advanced = () => {
         })}
       </div>
 
-      {isMac && <SelectionSettings />}
+      {/* {isMac && <SelectionSettings />} */}
 
       <Shortcuts />
 
