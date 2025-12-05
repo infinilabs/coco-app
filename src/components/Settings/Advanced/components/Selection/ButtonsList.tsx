@@ -251,7 +251,7 @@ const ButtonsList = ({ buttons, setButtons, serverList }: ButtonsListProps) => {
                 {isChat && (
                   <>
                     <select
-                      className="rounded-md border px-2 py-1 text-sm bg-white dark:bg-[#0B1220] w-44"
+                      className="rounded-md px-2 py-1 text-sm bg-white dark:bg-[#0B1220] w-44"
                       value={btn.action.assistantServerId || ""}
                       onChange={(e) => handleServerSelect(btn, e.target.value)}
                       title={t("selection.bind.service")}
@@ -272,7 +272,7 @@ const ButtonsList = ({ buttons, setButtons, serverList }: ButtonsListProps) => {
                       const loading = !!(sid && assistantLoadingByServer[sid]);
                       return (
                         <select
-                          className="rounded-md border px-2 py-1 text-sm bg-white dark:bg-[#0B1220] w-44"
+                          className="rounded-md px-2 py-1 text-sm bg-white dark:bg-[#0B1220] w-44"
                           value={btn.action.assistantId || ""}
                           onChange={(e) =>
                             handleAssistantSelect(btn, e.target.value)

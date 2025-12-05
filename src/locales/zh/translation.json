@@ -688,7 +688,7 @@
     "bind": {
       "service": "选择服务",
       "defaultService": "默认服务",
-      "assistant": "绑定小助手（仅聊天）",
+      "assistant": "绑定小助手",
       "defaultAssistant": "默认小助手"
     },
     "custom": {

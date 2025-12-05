@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import { useSelectionStore } from "@/stores/selectionStore";
 import SettingsToggle from "@/components/Settings/SettingsToggle";
 import SettingsItem from "@/components/Settings/SettingsItem";
-import platformAdapter from "@/utils/platformAdapter";
 import { useEnabledServers } from "@/hooks/useEnabledServers";
 import ButtonsList from "./ButtonsList";
 import HeaderToolbar from "@/components/Selection/HeaderToolbar";
@@ -90,6 +89,7 @@ const SelectionSettings = () => {
   const selectionEnabled = useSelectionStore((state) => state.selectionEnabled);
   const iconsOnly = useSelectionStore((state) => state.iconsOnly);
   const setIconsOnly = useSelectionStore((state) => state.setIconsOnly);
+  const setSelectionEnabled = useSelectionStore((state) => state.setSelectionEnabled);
 
   // Initialize from global store; write back on change for multi-window sync
   const toolbarConfig = useSelectionStore((s) => s.toolbarConfig);
@@ -142,15 +142,7 @@ const SelectionSettings = () => {
       >
         <SettingsToggle
           checked={selectionEnabled}
-          onChange={async (value) => {
-            try {
-              await platformAdapter.invokeBackend("set_selection_enabled", {
-                enabled: value,
-              });
-            } catch (e) {
-              console.error("set_selection_enabled invoke failed:", e);
-            }
-          }}
+          onChange={setSelectionEnabled}
           label={t("settings.ai.toggle")}
         />
       </SettingsItem>

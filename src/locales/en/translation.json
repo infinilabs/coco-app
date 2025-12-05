@@ -689,7 +689,7 @@
     "bind": {
       "service": "Select Service",
       "defaultService": "Default service",
-      "assistant": "Bind Assistant (Chat only)",
+      "assistant": "Bind Assistant",
       "defaultAssistant": "Default assistant"
     },
     "custom": {

@@ -136,7 +136,7 @@ export default function AddChatDialog({
               {t("selection.custom.namePlaceholder")}
             </label>
             <input
-              className="rounded-md border px-2 py-1 text-sm bg-white dark:bg-[#0B1220] w-full"
+              className="rounded-md px-2 py-1 text-sm bg-white dark:bg-[#0B1220] w-full border border-[#E6E8EF] dark:border-[#2E3644]"
               placeholder={t("selection.custom.namePlaceholder")}
               value={label}
               onChange={(e) => setLabel(e.target.value)}
@@ -170,7 +170,7 @@ export default function AddChatDialog({
                 {t("selection.bind.service")}
               </label>
               <select
-                className="h-8 rounded-md border px-2 py-1 text-sm bg-white dark:bg-[#0B1220] w-full"
+                className="h-8 rounded-md px-2 py-1 text-sm bg-white dark:bg-[#0B1220] w-full"
                 value={serverId}
                 onChange={(e) => setServerId(e.target.value)}
               >
@@ -189,7 +189,7 @@ export default function AddChatDialog({
                 {t("selection.bind.assistant")}
               </label>
               <select
-                className="h-8 rounded-md border px-2 py-1 text-sm bg-white dark:bg-[#0B1220] w-full"
+                className="h-8 rounded-md px-2 py-1 text-sm bg-white dark:bg-[#0B1220] w-full"
                 value={assistantId}
                 onChange={(e) => setAssistantId(e.target.value)}
                 disabled={loading || !serverId}
