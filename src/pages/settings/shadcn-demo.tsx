@@ -5,6 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
+import { MultiSelect } from "@/components/ui/multi-select";
 import {
   Dialog,
   DialogTrigger,
@@ -25,6 +27,14 @@ import {
 const ShadcnDemo = () => {
   const [checked, setChecked] = useState(false);
   const [enabled, setEnabled] = useState(false);
+  const [sliderValue, setSliderValue] = useState<number[]>([50]);
+  const [selected, setSelected] = useState<string[]>([]);
+  const options = [
+    { value: "a", label: "选项 A" },
+    { value: "b", label: "选项 B" },
+    { value: "c", label: "选项 C" },
+    { value: "d", label: "选项 D" },
+  ];
 
   return (
     <div className="p-6 space-y-6">
@@ -52,6 +62,19 @@ const ShadcnDemo = () => {
       </div>
 
       <Separator />
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label>多选框</Label>
+          <MultiSelect options={options} value={selected} onChange={setSelected} />
+          <div className="text-sm text-muted-foreground">当前选择：{selected.length ? selected.join(", ") : "无"}</div>
+        </div>
+
+        <div className="space-y-2">
+          <Label>滑块（值：{sliderValue[0]}）</Label>
+          <Slider value={sliderValue} onValueChange={setSliderValue} max={100} step={1} />
+        </div>
+      </div>
 
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2">
@@ -89,4 +112,3 @@ const ShadcnDemo = () => {
 };
 
 export default ShadcnDemo;
-
