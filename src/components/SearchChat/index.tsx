@@ -35,7 +35,7 @@ import {
   visibleSearchBar,
 } from "@/utils";
 import { useTauriFocus } from "@/hooks/useTauriFocus";
-import { POPOVER_PANEL_SELECTOR } from "@/constants";
+import { POPOVER_PANEL_SELECTOR, WINDOW_CENTER_BASELINE_HEIGHT } from "@/constants";
 import { useChatStore } from "@/stores/chatStore";
 import { useSearchStore } from "@/stores/searchStore";
 
@@ -112,7 +112,7 @@ function SearchChat({
     }
 
     const width = 680;
-    let height = 590;
+    let height = WINDOW_CENTER_BASELINE_HEIGHT;
 
     const updateAppDialog = document.querySelector("#update-app-dialog");
     const popoverPanelEl = document.querySelector(POPOVER_PANEL_SELECTOR);
@@ -136,7 +136,7 @@ function SearchChat({
       }
     }
 
-    if (height < 590) {
+    if (height < WINDOW_CENTER_BASELINE_HEIGHT) {
       const { compactModeAutoCollapseDelay } = useConnectStore.getState();
 
       collapseWindowTimer.current = setTimeout(() => {
