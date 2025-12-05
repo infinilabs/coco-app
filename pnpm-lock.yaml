@@ -11,6 +11,9 @@ importers:
       '@headlessui/react':
         specifier: ^2.2.2
         version: 2.2.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@infinilabs/custom-icons':
+        specifier: 0.0.4
+        version: 0.0.4(lucide-react@0.461.0(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-separator':
         specifier: ^1.1.8
         version: 1.1.8(@types/react-dom@18.3.7(@types/react@18.3.26))(@types/react@18.3.26)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -699,6 +702,13 @@ packages:
 
   '@iconify/utils@3.0.2':
     resolution: {integrity: sha512-EfJS0rLfVuRuJRn4psJHtK2A9TqVnkxPpHY6lYHiB9+8eSuudsxbwMiavocG45ujOo6FJ+CIRlRnlOGinzkaGQ==}
+
+  '@infinilabs/custom-icons@0.0.4':
+    resolution: {integrity: sha512-Oz5i06qW5a3wMfbJIZ5LESyO4V9p8njdoKnb/2Mf98ttRjTIedTXqrIWxLz8Tz84OTLi7mKswEQ71lAGeSqlug==}
+    peerDependencies:
+      lucide-react: '>=0.454.0'
+      react: '>=18'
+      react-dom: '>=18'
 
   '@inquirer/checkbox@4.1.5':
     resolution: {integrity: sha512-swPczVU+at65xa5uPfNP9u3qx/alNwiaykiI/ExpsmMSQW55trmZcwhYWzw/7fj+n6Q8z1eENvR7vFfq9oPSAQ==}
@@ -4277,6 +4287,12 @@ snapshots:
       mlly: 1.8.0
     transitivePeerDependencies:
       - supports-color
+
+  '@infinilabs/custom-icons@0.0.4(lucide-react@0.461.0(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      lucide-react: 0.461.0(react@18.3.1)
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
 
   '@inquirer/checkbox@4.1.5(@types/node@22.18.12)':
     dependencies:

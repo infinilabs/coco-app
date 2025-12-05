@@ -1,34 +1,16 @@
 import { create } from 'zustand';
 import { createTauriStore } from '@tauri-store/zustand';
 
-// Types adapted from Selection/index.tsx to ensure compatibility
-export type LucideIconName =
-  | "Search"
-  | "Bot"
-  | "Languages"
-  | "FileText"
-  | "Copy"
-  | "Volume2";
-
 type IconConfig =
-  | { type: "lucide"; name: LucideIconName; color?: string }
+  | { type: "lucide"; name: string; color?: string }
   | { type: "custom"; dataUrl: string; color?: string };
-
-type ActionType =
-  | "search"
-  | "ask_ai"
-  | "translate"
-  | "summary"
-  | "copy"
-  | "speak"
-  | "custom";
 
 export type ButtonConfig = {
   id: string;
   label: string;
   icon: IconConfig;
   action: {
-    type: ActionType;
+    type: string;
     assistantId?: string;
     assistantServerId?: string;
     eventName?: string;

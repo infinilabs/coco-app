@@ -53,13 +53,10 @@ export interface EventPayloads {
   "server-list-changed": Server[];
   "selection-text": string;
   "selection-ask-ai": any;
-  "selection-action": {
-    action: "translate" | "search" | "copy" | "summary";
-    text: string;
-  };
+  "selection-action": any;
   "selection-detected": string;
   "selection-enabled": boolean;
-  "selection-icons-only": { value: boolean };
+  "change-selection-store": any;
 }
 
 // Window operation interface

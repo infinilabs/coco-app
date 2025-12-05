@@ -650,6 +650,10 @@
       "login": "Login"
     }
   },
+  "common": {
+    "loading": "Loading...",
+    "notFound": "Not found"
+  },
   "selection": {
     "title": "Selection Toolbar Settings",
     "actions": {
@@ -658,7 +662,9 @@
       "translate": "Translate",
       "summary": "Summary",
       "copy": "Copy",
-      "speak": "Read Aloud"
+      "speak": "Read Aloud",
+      "delete": "Delete",
+      "addChat": "Add Chat Button"
     },
     "noText": "No text detected",
     "copied": "Copied",
@@ -683,8 +689,24 @@
     "bind": {
       "service": "Select Service",
       "defaultService": "Default service",
-      "assistant": "Bind Assistant (Chat only)",
+      "assistant": "Bind Assistant",
       "defaultAssistant": "Default assistant"
+    },
+    "custom": {
+      "chat": "Custom Chat",
+      "namePlaceholder": "Button name"
+    },
+    "icon": {
+      "type": "Icon Type",
+      "lucide": "Lucide",
+      "custom": "Custom",
+      "pick": "Pick Icon",
+      "color": "Icon Color",
+      "upload": "Upload Icon",
+      "alt": "icon"
+    },
+    "preview": {
+      "readonly": "Preview is read-only"
     }
   }
 }
