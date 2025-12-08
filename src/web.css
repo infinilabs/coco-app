@@ -154,8 +154,7 @@ body,
 }
 
 .input-body {
-  overflow: hidden;
-  border-radius: 0.375rem;
+  @apply rounded-xl overflow-hidden;
 }
 
 .icon {

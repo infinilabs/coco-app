@@ -4,7 +4,7 @@ import logoImg from "@/assets/icon.svg";
 
 const Footer = () => {
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
+    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-white/10">
       <div className="max-w-6xl mx-auto px-4 h-8 flex items-center justify-between">
         <Menu as="div" className="relative">
           <MenuButton className="h-7 flex items-center space-x-2 px-1 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">

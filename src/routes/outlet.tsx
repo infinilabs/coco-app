@@ -39,13 +39,11 @@ export default function LayoutOutlet() {
     i18n.changeLanguage(language);
   }, [language]);
 
-  function updateBodyClass(path: string) {
+  function updateBodyClass(_path: string) {
     const body = document.body;
-    body.classList.remove("input-body");
-
-    if (path === "/ui") {
-      body.classList.add("input-body");
-    }
+    // Ensure rounded corners and clipping are applied to the whole window
+    // Tailwind v4 + Tauri: relying on container radius may not show at window edges
+    body.classList.add("input-body");
   }
 
   useMount(async () => {

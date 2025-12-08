@@ -15,7 +15,8 @@ export default defineConfig({
   define: {
     "process.env.VERSION": JSON.stringify(packageJson.version),
   },
-  plugins: [react(), tailwindcss() as any],
+  // Keep Tailwind first so its scanner runs early and consistently
+  plugins: [tailwindcss() as any, react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

@@ -87,7 +87,7 @@ function SettingsPage() {
   }, [defaultIndex]);
 
   return (
-    <div>
+    <>
       <ShadcnDemo />
       <div className="min-h-screen pb-8 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
         <div className="max-w-6xl mx-auto p-4">
@@ -146,7 +146,7 @@ function SettingsPage() {
         </div>
       </div>
       <Footer />
-    </div>
+    </>
   );
 }
 
