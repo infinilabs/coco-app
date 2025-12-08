@@ -1,5 +1,6 @@
 import { FC, useRef, useCallback, useState } from "react";
-import { Input, Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
 import { Ellipsis } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
@@ -79,7 +80,7 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
       className={clsx(
         "flex items-center mt-1 h-10 rounded-lg cursor-pointer hover:bg-[#EDEDED] dark:hover:bg-[#353F4D] transition",
         {
-          "!bg-[#E5E7EB] dark:!bg-[#2B3444]": isActive,
+          "bg-[#E5E7EB] dark:bg-[#2B3444]": isActive,
         }
       )}
       onClick={() => {
@@ -138,7 +139,7 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
 
           <Popover>
             {isActive && !isEdit && (
-              <PopoverButton ref={moreButtonRef} className="flex gap-2">
+              <PopoverTrigger ref={moreButtonRef} className="flex gap-2">
                 <VisibleKey
                   shortcut="O"
                   onKeyPress={() => {
@@ -147,11 +148,11 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
                 >
                   <Ellipsis className="size-4 text-[#979797]" />
                 </VisibleKey>
-              </PopoverButton>
+              </PopoverTrigger>
             )}
 
-            <PopoverPanel
-              anchor="bottom"
+            <PopoverContent
+              side="bottom"
               className="flex flex-col rounded-lg shadow-md z-100 bg-white dark:bg-[#202126] p-1 border border-black/2 dark:border-white/10"
               onClick={(event) => {
                 event.stopPropagation();
@@ -185,7 +186,7 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
                   </button>
                 );
               })}
-            </PopoverPanel>
+            </PopoverContent>
           </Popover>
         </div>
       </div>

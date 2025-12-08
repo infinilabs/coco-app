@@ -1,5 +1,5 @@
 import { useAppStore } from "@/stores/appStore";
-import { Button } from "@headlessui/react";
+import { Button } from "@/components/ui/button";
 import { SquareArrowOutUpRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 

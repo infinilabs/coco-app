@@ -4,14 +4,6 @@ import animate from "tailwindcss-animate";
 export default {
   theme: {
     extend: {
-      backgroundImage: {
-        chat_bg_light: "url('./assets/chat_bg_light.png')",
-        chat_bg_dark: "url('./assets/chat_bg_dark.png')",
-        search_bg_light: "url('./assets/search_bg_light.png')",
-        search_bg_dark: "url('./assets/search_bg_dark.png')",
-        inputbox_bg_light: "url('./assets/inputbox_bg_light.png')",
-        inputbox_bg_dark: "url('./assets/inputbox_bg_dark.png')",
-      },
       animation: {
         'fade-in': 'fade-in 0.2s ease-in-out',
         typing: 'typing 1.5s ease-in-out infinite',

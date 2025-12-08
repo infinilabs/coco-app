@@ -1,4 +1,4 @@
-import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { useWebConfigStore } from "@/stores/webConfigStore";
 import { LogOut } from "lucide-react";
 import clsx from "clsx";
@@ -24,7 +24,7 @@ const WebLogin: FC<WebLoginProps> = (props) => {
   return (
     <div className="relative">
       <Popover>
-        <PopoverButton>
+        <PopoverTrigger>
           {loginInfo ? (
             <UserAvatar />
           ) : (
@@ -33,11 +33,12 @@ const WebLogin: FC<WebLoginProps> = (props) => {
               className="size-5 text-[#999]"
             />
           )}
-        </PopoverButton>
+        </PopoverTrigger>
 
-        <PopoverPanel
+        <PopoverContent
+          side="bottom"
           className={clsx(
-            "absolute z-50 w-[300px] rounded-xl bg-white dark:bg-[#202126] text-sm/6 text-[#333] dark:text-[#D8D8D8] shadow-lg border dark:border-white/10 -translate-y-2",
+            "z-50 w-[300px] rounded-xl bg-white dark:bg-[#202126] text-sm/6 text-[#333] dark:text-[#D8D8D8] shadow-lg border dark:border-white/10",
             panelClassName
           )}
         >
@@ -53,8 +54,8 @@ const WebLogin: FC<WebLoginProps> = (props) => {
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-3">
                     <UserAvatar
-                      className="!size-12"
-                      icon={{ className: "!size-6" }}
+                      className="h-12 w-12"
+                      icon={{ className: "h-6 w-6" }}
                     />
 
                     <div className="flex flex-col">
@@ -96,7 +97,7 @@ const WebLogin: FC<WebLoginProps> = (props) => {
           <div className="p-3 border-t dark:border-t-white/10">
             <Copyright />
           </div>
-        </PopoverPanel>
+        </PopoverContent>
       </Popover>
     </div>
   );

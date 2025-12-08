@@ -1,4 +1,4 @@
-import { Input } from "@headlessui/react";
+import { Input } from "@/components/ui/input";
 import { debounce } from "lodash-es";
 import { FC, useMemo, useRef, useState } from "react";
 import clsx from "clsx";

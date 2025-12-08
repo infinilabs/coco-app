@@ -1,6 +1,6 @@
 import { useAppStore } from "@/stores/appStore";
 import platformAdapter from "@/utils/platformAdapter";
-import { Button } from "@headlessui/react";
+import { Button } from "@/components/ui/button";
 import clsx from "clsx";
 import { castArray } from "lodash-es";
 import { Folder, SquareArrowOutUpRight, X } from "lucide-react";

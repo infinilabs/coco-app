@@ -1,4 +1,4 @@
-import { Button } from "@headlessui/react";
+import { Button } from "@/components/ui/button";
 import { useMount } from "ahooks";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -83,7 +83,7 @@ const Applications = () => {
       </div>
 
       <Button
-        className="w-full h-8 my-4 text-[#0087FF] border border-[#EEF0F3] hover:!border-[#0087FF] dark:border-gray-700 rounded-[6px] transition"
+        className="w-full h-8 my-4 text-[#0087FF] border border-[#EEF0F3] hover:border-[#0087FF] dark:border-gray-700 rounded-[6px] transition"
         onClick={handleReindex}
       >
         {t("settings.extensions.application.details.reindex")}

@@ -383,11 +383,11 @@ function SearchChat({
     <div
       data-tauri-drag-region={isTauri}
       className={clsx(
-        "m-auto overflow-hidden relative bg-no-repeat bg-white dark:bg-black flex flex-col",
+        "m-auto overflow-hidden relative bg-no-repeat flex flex-col",
         [
           isTransitioned
-            ? "bg-bottom bg-chat_bg_light dark:bg-chat_bg_dark"
-            : "bg-top bg-search_bg_light dark:bg-search_bg_dark",
+            ? "bg-bottom bg-[url('/assets/chat_bg_light.png')] dark:bg-[url('/assets/chat_bg_dark.png')]"
+            : "bg-top bg-[url('/assets/search_bg_light.png')] dark:bg-[url('/assets/search_bg_dark.png')]",
         ],
         {
           "size-full": !isTauri,
@@ -438,7 +438,7 @@ function SearchChat({
         {!hideMiddleBorder && (
           <div
             className={clsx(
-              "pointer-events-none absolute left-0 right-0 h-[1px] bg-[#E6E6E6] dark:bg-[#272626]",
+              "pointer-events-none absolute left-0 right-0 h-px bg-[#E6E6E6] dark:bg-[#272626]",
               isTransitioned ? "top-0" : "bottom-0"
             )}
           />

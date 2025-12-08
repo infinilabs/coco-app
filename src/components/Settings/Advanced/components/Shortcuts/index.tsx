@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Command, RotateCcw } from "lucide-react";
 import { useEffect } from "react";
-import { Button } from "@headlessui/react";
+import { Button } from "@/components/ui/button";
 import clsx from "clsx";
 
 import { formatKey } from "@/utils/keyboardUtils";
@@ -301,7 +301,7 @@ const Shortcuts = () => {
                 >
                   <RotateCcw
                     className={clsx("size-4 text-[#999]", {
-                      "!text-[#0072FF]": !disabled,
+                      "text-[#0072FF]": !disabled,
                     })}
                   />
                 </Button>

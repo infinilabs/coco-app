@@ -1,9 +1,8 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Settings, RefreshCw, Check, Server } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { useKeyPress } from "ahooks";
-import { isNil } from "lodash-es";
 
 import logoImg from "@/assets/icon.svg";
 import ServerIcon from "@/icons/Server";
@@ -61,6 +60,7 @@ export function ServerList({ clearChat }: ServerListProps) {
 
   const popoverRef = useRef<HTMLDivElement>(null);
   const serverListButtonRef = useRef<HTMLButtonElement>(null);
+  const [open, setOpen] = useState(false);
 
   const { refreshServerList } = useServers();
 
@@ -143,7 +143,7 @@ export function ServerList({ clearChat }: ServerListProps) {
     ["uparrow", "downarrow", "enter"],
     async (event, key) => {
       const service = await getCurrentWindowService();
-      const isClose = isNil(serverListButtonRef.current?.dataset["open"]);
+      const isClose = !open;
       const length = serverList.length;
 
       if (isClose || length <= 1) return;
@@ -182,8 +182,9 @@ export function ServerList({ clearChat }: ServerListProps) {
   }, []);
 
   return (
-    <Popover ref={popoverRef} className="relative">
-      <PopoverButton ref={serverListButtonRef} className="flex items-center">
+    <div ref={popoverRef} className="relative">
+      <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger ref={serverListButtonRef} className="flex items-center">
         <VisibleKey
           shortcut={serviceListShortcut}
           onKeyPress={() => {
@@ -192,11 +193,13 @@ export function ServerList({ clearChat }: ServerListProps) {
         >
           <ServerIcon />
         </VisibleKey>
-      </PopoverButton>
+      </PopoverTrigger>
 
-      <PopoverPanel
+      <PopoverContent
+        side="bottom"
+        align="end"
         onMouseMove={handleMouseMove}
-        className="absolute right-0 z-10 mt-2 min-w-[240px] bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+        className="z-10 min-w-[240px] bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
       >
         <div className="p-3">
           <div className="flex items-center justify-between mb-3 whitespace-nowrap">
@@ -297,7 +300,8 @@ export function ServerList({ clearChat }: ServerListProps) {
             )}
           </div>
         </div>
-      </PopoverPanel>
+      </PopoverContent>
     </Popover>
+    </div>
   );
 }

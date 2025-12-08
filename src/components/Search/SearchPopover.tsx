@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { ChevronDownIcon, RefreshCw, Layers, Globe } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
@@ -85,6 +85,7 @@ export default function SearchPopover({
   }, [currentService?.id, debouncedKeyword, getDataSourcesByServer]);
 
   const popoverButtonRef = useRef<HTMLButtonElement>(null);
+  const [open, setOpen] = useState(false);
   const internetSearch = useShortcutsStore((state) => state.internetSearch);
   const internetSearchScope = useShortcutsStore((state) => {
     return state.internetSearchScope;
@@ -174,7 +175,7 @@ export default function SearchPopover({
       className={clsx(
         "flex justify-center items-center gap-1 h-[20px] px-1 rounded-[6px] transition hover:bg-[#EDEDED] dark:hover:bg-[#202126] cursor-pointer",
         {
-          "!bg-[rgba(0,114,255,0.3)]": isSearchActive,
+          "bg-[rgba(0,114,255,0.3)]": isSearchActive,
         }
       )}
       onClick={setIsSearchActive}
@@ -199,8 +200,8 @@ export default function SearchPopover({
             {t("search.input.search")}
           </span>
 
-          <Popover className="relative">
-            <PopoverButton ref={popoverButtonRef} className="flex items-center">
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger ref={popoverButtonRef} className="flex items-center">
               <VisibleKey
                 shortcut={internetSearchScope}
                 onKeyPress={() => {
@@ -215,12 +216,12 @@ export default function SearchPopover({
                   ])}
                 />
               </VisibleKey>
-            </PopoverButton>
+            </PopoverTrigger>
 
-            <PopoverPanel className="absolute z-50 left-0 bottom-6 w-[240px] overflow-y-auto bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+            <PopoverContent side="top" align="start" className="z-50 w-[240px] overflow-y-auto bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
               <div
                 className="text-sm"
-                onClick={(e) => {
+                onClick={(e: React.MouseEvent<HTMLDivElement>) => {
                   e.stopPropagation();
                 }}
               >
@@ -258,7 +259,7 @@ export default function SearchPopover({
                       value={keyword}
                       ref={searchInputRef}
                       className="size-full px-2 rounded-lg border dark:border-white/10 bg-transparent"
-                      onChange={(e) => {
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                         setKeyword(e.target.value);
                       }}
                     />
@@ -347,7 +348,7 @@ export default function SearchPopover({
                   />
                 )}
               </div>
-            </PopoverPanel>
+            </PopoverContent>
           </Popover>
         </>
       )}

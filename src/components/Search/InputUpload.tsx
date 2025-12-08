@@ -2,14 +2,12 @@ import { FC, Fragment, MouseEvent, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronRight, Plus } from "lucide-react";
 import {
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-  Popover,
-  PopoverButton,
-  PopoverPanel,
-} from "@headlessui/react";
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { castArray, find, isNil } from "lodash-es";
 import { nanoid } from "nanoid";
 import { useCreation, useMount, useReactive } from "ahooks";
@@ -198,8 +196,8 @@ const InputUpload: FC<InputUploadProps> = (props) => {
   ]);
 
   return (
-    <Menu>
-      <MenuButton className="flex items-center justify-center h-[20px] px-1 rounded-[6px] transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]">
+    <DropdownMenu>
+      <DropdownMenuTrigger className="flex items-center justify-center h-[20px] px-1 rounded-[6px] transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]">
         <Tooltip
           content={t("search.input.uploadFileHints.tooltip", {
             replace: [
@@ -212,31 +210,36 @@ const InputUpload: FC<InputUploadProps> = (props) => {
             <Plus className="size-3 scale-[1.3]" />
           </VisibleKey>
         </Tooltip>
-      </MenuButton>
+      </DropdownMenuTrigger>
 
-      <MenuItems
-        anchor="bottom start"
-        className="p-1 text-sm bg-white dark:bg-[#202126] rounded-lg shadow-xs border border-gray-200 dark:border-gray-700"
-      >
+      <DropdownMenuContent side="bottom" align="start" className="p-1 text-sm bg-white dark:bg-[#202126] rounded-lg shadow-xs border border-gray-200 dark:border-gray-700">
         {menuItems.map((item) => {
           const { label, children, clickEvent } = item;
 
           return (
-            <MenuItem key={label}>
+            <DropdownMenuItem
+              key={label}
+              onSelect={(e: Event) => {
+                if (children) e.preventDefault();
+              }}
+              className="px-0 py-0"
+            >
               {children ? (
                 <Popover>
-                  <PopoverButton
-                    className="flex items-center justify-between gap-2 px-3 py-2 hover:bg-black/5 hover:dark:bg-white/5 rounded-lg cursor-pointer"
-                    onClick={clickEvent}
-                  >
-                    <span>{label}</span>
+                  <PopoverTrigger asChild>
+                    <div
+                      className="flex items-center justify-between gap-2 px-3 py-2 hover:bg-black/5 hover:dark:bg:white/5 rounded-lg cursor-pointer"
+                      onClick={clickEvent}
+                    >
+                      <span>{label}</span>
 
-                    <ChevronRight className="size-4" />
-                  </PopoverButton>
+                      <ChevronRight className="size-4" />
+                    </div>
+                  </PopoverTrigger>
 
-                  <PopoverPanel
-                    transition
-                    anchor="right"
+                  <PopoverContent
+                    side="right"
+                    align="start"
                     className="p-1 text-sm bg-white dark:bg-[#202126] rounded-lg shadow-xs border border-gray-200 dark:border-gray-700"
                   >
                     {children.map((childItem) => {
@@ -269,7 +272,7 @@ const InputUpload: FC<InputUploadProps> = (props) => {
                         </Fragment>
                       );
                     })}
-                  </PopoverPanel>
+                  </PopoverContent>
                 </Popover>
               ) : (
                 <div
@@ -279,11 +282,11 @@ const InputUpload: FC<InputUploadProps> = (props) => {
                   {label}
                 </div>
               )}
-            </MenuItem>
+            </DropdownMenuItem>
           );
         })}
-      </MenuItems>
-    </Menu>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

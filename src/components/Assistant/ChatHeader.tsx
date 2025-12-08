@@ -95,7 +95,7 @@ export function ChatHeader({
           {isChatPage ? null : (
             <button className="inline-flex" onClick={onOpenChatAI}>
               <VisibleKey shortcut={external} onKeyPress={onOpenChatAI}>
-                <WindowsFullIcon className="rotate-30 scale-x-[-1]" />
+                <WindowsFullIcon className="scale-x-[-1]" />
               </VisibleKey>
             </button>
           )}

@@ -1,6 +1,7 @@
-/* @tailwind base; */
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+/* Tailwind v4: ensure class extraction scans web embed sources */
+@source "../index.html";
+@source "./**/*.{ts,tsx}";
 
 /* Base variables */
 :host,
@@ -154,7 +155,8 @@ body,
 }
 
 .input-body {
-  @apply rounded-xl overflow-hidden;
+  border-radius: 0.75rem; /* match Tailwind rounded-xl */
+  overflow: hidden;
 }
 
 .icon {

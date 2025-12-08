@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { cloneElement, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Input } from "@headlessui/react";
+import { Input } from "@/components/ui/input";
 
 import { useOSKeyPress } from "@/hooks/useOSKeyPress";
 import { useSearchStore } from "@/stores/searchStore";
@@ -292,9 +292,9 @@ const ContextMenu = ({ formatUrl }: ContextMenuProps) => {
           ref={containerRef}
           id={visibleContextMenu ? CONTEXT_MENU_PANEL_ID : ""}
           className={clsx(
-            "absolute bottom-[50px] right-[18px] w-[300px] flex flex-col gap-2 scale-0 transition origin-bottom-right text-sm p-3 pb-0 bg-white dark:bg-black rounded-lg shadow-xs border border-[#EDEDED] dark:border-[#272828] shadow-lg dark:shadow-white/15",
+            "absolute bottom-[50px] right-[18px] w-[300px] flex flex-col gap-2 scale-0 transition origin-bottom-right text-sm p-3 pb-0 bg-white dark:bg-black rounded-lg border border-[#EDEDED] dark:border-[#272828] shadow-lg dark:shadow-white/15",
             {
-              "!scale-100": visibleContextMenu,
+              "scale-100": visibleContextMenu,
             }
           )}
         >

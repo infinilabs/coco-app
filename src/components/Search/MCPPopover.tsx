@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { ChevronDownIcon, RefreshCw, Layers, Hammer } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
@@ -79,6 +79,7 @@ export default function MCPPopover({
   }, [currentService?.id, debouncedKeyword, getMCPByServer]);
 
   const popoverButtonRef = useRef<HTMLButtonElement>(null);
+  const [open, setOpen] = useState(false);
   const mcpSearch = useShortcutsStore((state) => state.mcpSearch);
   const mcpSearchScope = useShortcutsStore((state) => {
     return state.mcpSearchScope;
@@ -168,7 +169,7 @@ export default function MCPPopover({
       className={clsx(
         "flex justify-center items-center gap-1 h-[20px] px-1 rounded-[6px] transition hover:bg-[#EDEDED] dark:hover:bg-[#202126] cursor-pointer",
         {
-          "!bg-[rgba(0,114,255,0.3)]": isMCPActive,
+          "bg-[rgba(0,114,255,0.3)]": isMCPActive,
         }
       )}
       onClick={setIsMCPActive}
@@ -191,8 +192,8 @@ export default function MCPPopover({
             {t("search.input.MCP")}
           </span>
 
-          <Popover className="relative">
-            <PopoverButton ref={popoverButtonRef} className="flex items-center">
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger ref={popoverButtonRef} className="flex items-center">
               <VisibleKey
                 shortcut={mcpSearchScope}
                 onKeyPress={() => {
@@ -207,12 +208,12 @@ export default function MCPPopover({
                   ])}
                 />
               </VisibleKey>
-            </PopoverButton>
+            </PopoverTrigger>
 
-            <PopoverPanel className="absolute z-50 left-0 bottom-6 w-[240px] overflow-y-auto bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+            <PopoverContent side="top" align="start" className="z-50 w-[240px] overflow-y-auto bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
               <div
                 className="text-sm"
-                onClick={(e) => {
+                onClick={(e: React.MouseEvent<HTMLDivElement>) => {
                   e.stopPropagation();
                 }}
               >
@@ -250,7 +251,7 @@ export default function MCPPopover({
                       value={keyword}
                       ref={searchInputRef}
                       className="size-full px-2 rounded-lg border dark:border-white/10 bg-transparent"
-                      onChange={(e) => {
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                         setKeyword(e.target.value);
                       }}
                     />
@@ -339,7 +340,7 @@ export default function MCPPopover({
                   />
                 )}
               </div>
-            </PopoverPanel>
+            </PopoverContent>
           </Popover>
         </>
       )}

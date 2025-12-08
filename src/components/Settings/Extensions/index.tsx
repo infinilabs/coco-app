@@ -5,7 +5,12 @@ import type { LiteralUnion } from "type-fest";
 import { cloneDeep, sortBy } from "lodash-es";
 import clsx from "clsx";
 import { Plus } from "lucide-react";
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 import platformAdapter from "@/utils/platformAdapter";
 import Content from "./components/Content";
@@ -191,57 +196,52 @@ export const Extensions = () => {
               {t("settings.extensions.title")}
             </h2>
 
-            <Menu>
-              <MenuButton className="flex items-center justify-center size-6 border rounded-[6px] dark:border-gray-700 hover:!border-[#0096FB] transition">
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center justify-center h-6 w-6 border rounded-[6px] dark:border-gray-700 hover:border-[#0096FB] transition">
                 <Plus className="size-4 text-[#0096FB]" />
-              </MenuButton>
+              </DropdownMenuTrigger>
 
-              <MenuItems
-                anchor={{ gap: 4 }}
-                className="p-1 text-sm bg-white dark:bg-[#202126] rounded-lg shadow-xs border border-gray-200 dark:border-gray-700"
-              >
-                <MenuItem>
-                  <div
-                    className="px-3 py-2 hover:bg-black/5 hover:dark:bg-white/5 rounded-lg cursor-pointer"
-                    onClick={() => {
-                      platformAdapter.emitEvent("open-extension-store");
-                    }}
-                  >
-                    {t("settings.extensions.menuItem.extensionStore")}
-                  </div>
-                </MenuItem>
-                <MenuItem>
-                  <div
-                    className="px-3 py-2 hover:bg-black/5 hover:dark:bg-white/5 rounded-lg cursor-pointer"
-                    onClick={async () => {
-                      try {
-                        const path = await platformAdapter.openFileDialog({
-                          directory: true,
-                        });
+              <DropdownMenuContent sideOffset={4} className="p-1 text-sm bg-white dark:bg-[#202126] rounded-lg shadow-xs border border-gray-200 dark:border-gray-700">
+                <DropdownMenuItem
+                  className="px-3 py-2 hover:bg-black/5 hover:dark:bg-white/5 rounded-lg"
+                  onSelect={(e: Event) => {
+                    e.preventDefault();
+                    platformAdapter.emitEvent("open-extension-store");
+                  }}
+                >
+                  {t("settings.extensions.menuItem.extensionStore")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="px-3 py-2 hover:bg-black/5 hover:dark:bg-white/5 rounded-lg"
+                  onSelect={async (e: Event) => {
+                    e.preventDefault();
+                    try {
+                      const path = await platformAdapter.openFileDialog({
+                        directory: true,
+                      });
 
-                        if (!path) return;
+                      if (!path) return;
 
-                        await platformAdapter.invokeBackend(
-                          "install_local_extension",
-                          { path }
-                        );
+                      await platformAdapter.invokeBackend(
+                        "install_local_extension",
+                        { path }
+                      );
 
-                        await getExtensions();
+                      await getExtensions();
 
-                        addError(
-                          t("settings.extensions.hints.importSuccess"),
-                          "info"
-                        );
-                      } catch (error) {
-                        installExtensionError(error);
-                      }
-                    }}
-                  >
-                    {t("settings.extensions.menuItem.localExtensionImport")}
-                  </div>
-                </MenuItem>
-              </MenuItems>
-            </Menu>
+                      addError(
+                        t("settings.extensions.hints.importSuccess"),
+                        "info"
+                      );
+                    } catch (error) {
+                      installExtensionError(error);
+                    }
+                  }}
+                >
+                  {t("settings.extensions.menuItem.localExtensionImport")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           <div className="flex justify-between gap-6 my-4">

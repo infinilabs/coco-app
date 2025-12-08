@@ -1,12 +1,12 @@
 import { RefreshCw } from "lucide-react";
 import { FC, useState } from "react";
-import { Button, ButtonProps } from "@headlessui/react";
+import { Button } from "@/components/ui/button";
 import clsx from "clsx";
 
 import { useWebConfigStore } from "@/stores/webConfigStore";
 import VisibleKey from "../Common/VisibleKey";
 
-const RefreshButton: FC<ButtonProps> = (props) => {
+const RefreshButton: FC<React.ComponentProps<typeof Button>> = (props) => {
   const { className, ...rest } = props;
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { onRefresh } = useWebConfigStore();
