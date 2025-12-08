@@ -17,6 +17,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager};
 use tokio::time::{Duration, timeout};
+
 #[named]
 #[tauri::command]
 pub async fn query_coco_fusion(
