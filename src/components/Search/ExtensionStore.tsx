@@ -306,7 +306,7 @@ const ExtensionStore = ({ extensionId }: { extensionId?: string }) => {
                 <div
                   key={id}
                   className={clsx(
-                    "flex justify-between gap-4 h-[40px] px-2 rounded-lg cursor-pointer text-[#333] dark:text-[#d8d8d8] transition",
+                    "flex justify-between gap-4 h-10 px-2 rounded-lg cursor-pointer text-[#333] dark:text-[#d8d8d8] transition",
                     {
                       "bg-black/10 dark:bg-white/15":
                         selectedExtension?.id === id,
