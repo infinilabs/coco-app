@@ -7,11 +7,17 @@ title: "Release Notes"
 
 Information about release notes of Coco App is provided here.
 
-## Latest (In development)  
-### ❌ Breaking changes  
-### 🚀 Features  
-### 🐛 Bug fix  
-### ✈️ Improvements  
+## Latest (In development)
+
+### ❌ Breaking changes
+
+### 🚀 Features
+
+### 🐛 Bug fix
+
+- fix: fix the abnormal input height issue #1006
+
+### ✈️ Improvements
 
 ## 0.9.1 (2025-12-05)
 
