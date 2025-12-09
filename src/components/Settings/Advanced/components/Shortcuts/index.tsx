@@ -1,5 +1,12 @@
 import { useTranslation } from "react-i18next";
 import { Command, RotateCcw } from "lucide-react";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import clsx from "clsx";
@@ -246,21 +253,21 @@ const Shortcuts = () => {
           title={t("settings.advanced.shortcuts.modifierKey.title")}
           description={t("settings.advanced.shortcuts.modifierKey.description")}
         >
-          <select
+          <Select
             value={modifierKey}
-            className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onChange={(event) => {
-              setModifierKey(event.target.value as ModifierKey);
-            }}
+            onValueChange={(v) => setModifierKey(v as ModifierKey)}
           >
-            {modifierKeys.map((item) => {
-              return (
-                <option key={item} value={item}>
+            <SelectTrigger className="h-8 w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {modifierKeys.map((item) => (
+                <SelectItem key={item} value={item}>
                   {formatKey(item)}
-                </option>
-              );
-            })}
-          </select>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </SettingsItem>
 
         {list.map((item) => {

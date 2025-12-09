@@ -36,6 +36,13 @@ import {
 } from "@/commands";
 import platformAdapter from "@/utils/platformAdapter";
 import { useAppearanceStore, WindowMode } from "@/stores/appearanceStore";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function ThemeOption({
   icon: Icon,
@@ -315,20 +322,21 @@ export default function GeneralSettings() {
             description={t("settings.language.description")}
           >
             <div className="flex items-center gap-2">
-              <select
+              <Select
                 value={currentLanguage}
-                onChange={(event) => {
-                  const lang = event.currentTarget.value;
-
+                onValueChange={(lang) => {
                   setLanguage(lang);
-
                   platformAdapter.invokeBackend("update_app_lang", { lang });
                 }}
-                className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="en">{t("settings.language.english")}</option>
-                <option value="zh">{t("settings.language.chinese")}</option>
-              </select>
+                <SelectTrigger className="h-8 w-44">
+                  <SelectValue className="truncate" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">{t("settings.language.english")}</SelectItem>
+                  <SelectItem value="zh">{t("settings.language.chinese")}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </SettingsItem>
 

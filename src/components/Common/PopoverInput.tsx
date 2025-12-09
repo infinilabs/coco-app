@@ -1,4 +1,4 @@
-import type { InputProps } from "react";
+import type { InputProps } from "@/components/ui/input";
 import { Input } from "@/components/ui/input";
 import { useKeyPress } from "ahooks";
 import { forwardRef, useImperativeHandle, useRef } from "react";
