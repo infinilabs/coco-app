@@ -287,23 +287,14 @@ const Shortcuts = () => {
                 />
 
                 <Button
+                  variant="outline"
                   disabled={disabled}
-                  className={clsx(
-                    "flex items-center justify-center size-8 rounded-[6px] border border-black/5 dark:border-white/10 transition",
-                    {
-                      "hover:border-[#0072FF]": !disabled,
-                      "opacity-70 cursor-not-allowed": disabled,
-                    }
-                  )}
+                  size="icon"
                   onClick={() => {
                     handleChange(initialValue, setValue);
                   }}
                 >
-                  <RotateCcw
-                    className={clsx("size-4 text-[#999]", {
-                      "text-[#0072FF]": !disabled,
-                    })}
-                  />
+                  <RotateCcw className={clsx("size-4 opacity-80")} />
                 </Button>
               </div>
             </SettingsItem>
