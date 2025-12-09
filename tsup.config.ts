@@ -45,6 +45,10 @@ export default defineConfig({
   esbuildOptions(options) {
     options.bundle = true;
     options.platform = 'browser';
+    // Enable Tailwind v4 CSS import resolution using the "style" condition
+    // so that `@import "tailwindcss";` in CSS can be resolved by esbuild.
+    // See: https://tailwindcss.com/docs/installation#bundlers
+    (options as any).conditions = ["style", "browser", "module", "default"];
     options.loader = {
       '.css': 'css',
       '.scss': 'css',

@@ -1,6 +1,5 @@
 import animate from "tailwindcss-animate";
 
-// Tailwind v4 兼容的最小化配置：保留必要扩展与插件
 export default {
   theme: {
     extend: {
