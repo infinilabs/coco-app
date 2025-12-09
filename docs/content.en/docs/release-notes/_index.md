@@ -13,6 +13,18 @@ Information about release notes of Coco App is provided here.
 
 ### 🚀 Features
 
+### 🐛 Bug fix
+
+- fix: fix the abnormal input height issue #1006
+
+### ✈️ Improvements
+
+## 0.9.1 (2025-12-05)
+
+### ❌ Breaking changes
+
+### 🚀 Features
+
 - feat: add selection toolbar window for mac #980
 - feat: add a heartbeat worker to check Coco server availability #988
 - feat: selection settings add & delete #992
