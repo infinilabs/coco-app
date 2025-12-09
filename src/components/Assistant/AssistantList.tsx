@@ -1,7 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { ChevronDownIcon, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { useDebounce, useKeyPress, usePagination } from "ahooks";
 import clsx from "clsx";
 
@@ -162,27 +166,28 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
 
   return (
     <div ref={popoverRef} className="relative">
-      <Popover open={open} onOpenChange={(v) => {
+      <Popover
+        open={open}
+        onOpenChange={(v) => {
           setOpen(v);
-        }}>
+        }}
+      >
         <PopoverTrigger
           ref={popoverButtonRef}
-          className="h-6  p-1 px-1.5 flex items-center gap-1 rounded-full bg-white dark:bg-[#202126] text-sm/6 font-semibold text-gray-800 dark:text-[#d8d8d8] border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none"
+          className="h-6 p-1 px-1.5 flex items-center gap-1 rounded-full border border-input bg-background text-sm/6 font-semibold text-foreground hover:bg-accent hover:text-accent-foreground focus:outline-none"
         >
-          <div className="w-4 h-4 flex justify-center items-center rounded-full bg-white border border-[#E6E6E6]">
-            {currentAssistant?._source?.icon?.startsWith("font_") ? (
-              <FontIcon
-                name={currentAssistant._source.icon}
-                className="w-3 h-3"
-              />
-            ) : (
-              <img
-                src={logoImg}
-                className="w-3 h-3"
-                alt={t("assistant.message.logo")}
-              />
-            )}
-          </div>
+          {currentAssistant?._source?.icon?.startsWith("font_") ? (
+            <FontIcon
+              name={currentAssistant._source.icon}
+              className="w-4 h-4"
+            />
+          ) : (
+            <img
+              src={logoImg}
+              className="w-4 h-4"
+              alt={t("assistant.message.logo")}
+            />
+          )}
           <div className="max-w-[100px] truncate">
             {currentAssistant?._source?.name || "Coco AI"}
           </div>
@@ -192,14 +197,14 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
               popoverButtonRef.current?.click();
             }}
           >
-            <ChevronDownIcon className="size-4 text-gray-500 dark:text-gray-400 transition-transform" />
+            <ChevronDownIcon className="size-4 text-muted-foreground transition-transform" />
           </VisibleKey>
         </PopoverTrigger>
 
         <PopoverContent
           side="bottom"
           align="start"
-          className="z-50 w-60 rounded-xl bg-white dark:bg-[#202126] p-3 text-sm/6 text-[#333] dark:text-[#D8D8D8] shadow-lg border dark:border-white/10 focus:outline-none max-h-[calc(100vh-150px)] overflow-y-auto"
+          className="z-50 w-60 rounded-xl p-3 shadow-lg focus:outline-none max-h-[calc(100vh-150px)] overflow-y-auto"
           onMouseMove={handleMouseMove}
         >
           <div className="flex items-center justify-between text-sm font-bold">
@@ -209,7 +214,7 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
 
             <button
               onClick={handleRefresh}
-              className="flex items-center justify-center size-6 bg-white dark:bg-[#202126] rounded-lg border dark:border-white/10"
+              className="flex items-center justify-center size-6 bg-background rounded-lg border border-input"
               disabled={isRefreshing}
             >
               <VisibleKey shortcut="R" onKeyPress={handleRefresh}>
@@ -238,7 +243,7 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
               autoFocus
               value={keyword}
               placeholder={t("assistant.popover.search")}
-              className="w-full h-8 px-2 bg-transparent border rounded-[6px] dark:border-white/10"
+              className="w-full h-8"
               onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 setKeyword(event.target.value);
               }}

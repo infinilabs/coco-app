@@ -218,7 +218,7 @@ export default function SearchPopover({
               </VisibleKey>
             </PopoverTrigger>
 
-            <PopoverContent side="top" align="start" className="z-50 w-[240px] overflow-y-auto bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+            <PopoverContent side="top" align="start" className="z-50 w-[240px] overflow-y-auto rounded-lg shadow-lg">
               <div
                 className="text-sm"
                 onClick={(e: React.MouseEvent<HTMLDivElement>) => {

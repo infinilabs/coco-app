@@ -46,7 +46,7 @@ const DropdownListItem = memo(
             aria-selected={isSelected}
             id={`search-item-${currentIndex}`}
             className={clsx("p-2 transition rounded-lg", {
-              "bg-[#EDEDED] dark:bg-[#202126]": isSelected,
+              "bg-muted": isSelected,
               "!p-0": isAiOverview,
             })}
           >

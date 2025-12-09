@@ -212,7 +212,7 @@ const InputUpload: FC<InputUploadProps> = (props) => {
         </Tooltip>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent side="bottom" align="start" className="p-1 text-sm bg-white dark:bg-[#202126] rounded-lg shadow-xs border border-gray-200 dark:border-gray-700">
+      <DropdownMenuContent side="bottom" align="start" className="p-1 text-sm rounded-lg">
         {menuItems.map((item) => {
           const { label, children, clickEvent } = item;
 
@@ -228,7 +228,7 @@ const InputUpload: FC<InputUploadProps> = (props) => {
                 <Popover>
                   <PopoverTrigger asChild>
                     <div
-                      className="flex items-center justify-between gap-2 px-3 py-2 hover:bg-black/5 hover:dark:bg:white/5 rounded-lg cursor-pointer"
+                      className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg hover:bg-muted cursor-pointer"
                       onClick={clickEvent}
                     >
                       <span>{label}</span>
@@ -240,7 +240,7 @@ const InputUpload: FC<InputUploadProps> = (props) => {
                   <PopoverContent
                     side="right"
                     align="start"
-                    className="p-1 text-sm bg-white dark:bg-[#202126] rounded-lg shadow-xs border border-gray-200 dark:border-gray-700"
+                    className="p-1 text-sm rounded-lg"
                   >
                     {children.map((childItem) => {
                       const { groupName, groupItems } = childItem;
@@ -262,7 +262,7 @@ const InputUpload: FC<InputUploadProps> = (props) => {
                             return (
                               <div
                                 key={id}
-                                className="px-3 py-2 hover:bg-black/5 hover:dark:bg-white/5 rounded-lg cursor-pointer"
+                                className="px-3 py-2 rounded-lg hover:bg-muted cursor-pointer"
                                 onClick={clickEvent}
                               >
                                 {label}
@@ -276,7 +276,7 @@ const InputUpload: FC<InputUploadProps> = (props) => {
                 </Popover>
               ) : (
                 <div
-                  className="px-3 py-2 hover:bg-black/5 hover:dark:bg-white/5 rounded-lg cursor-pointer"
+                  className="px-3 py-2 rounded-lg hover:bg-muted cursor-pointer"
                   onClick={clickEvent}
                 >
                   {label}

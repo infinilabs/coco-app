@@ -41,13 +41,18 @@ const AssistantItem = memo(
       )}
       onClick={onClick}
     >
-      <div className="flex items-center justify-center size-6 bg-white border border-[#E6E6E6] rounded-full overflow-hidden">
-        {_source?.icon?.startsWith("font_") ? (
-          <FontIcon name={_source?.icon} className="size-4" />
-        ) : (
-          <img src={logoImg} className="size-4" alt={name} />
-        )}
-      </div>
+      {_source?.icon?.startsWith("font_") ? (
+        <FontIcon
+          name={_source?.icon}
+          className="w-4 h-4 rounded-full  dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
+        />
+      ) : (
+        <img
+          src={logoImg}
+          className="w-4 h-4 rounded-full  dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
+          alt={name}
+        />
+      )}
       <div className="text-left flex-1 min-w-0">
         <div className="font-medium text-gray-900 dark:text-white truncate">
           {_source?.name || "-"}

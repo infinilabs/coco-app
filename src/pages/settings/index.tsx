@@ -17,7 +17,6 @@ import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore } from "@/stores/appStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useAppearanceStore } from "@/stores/appearanceStore";
-import ShadcnDemo from "./shadcn-demo"
 
 const tabValues = ["general", "extensions", "connect", "advanced", "about"] as const;
 type TabValue = typeof tabValues[number];
@@ -82,11 +81,10 @@ function SettingsPage() {
 
   return (
     <>
-      <ShadcnDemo />
-      <div className="min-h-screen pb-8 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+      <div className="min-h-screen pb-8 bg-background text-foreground">
         <div className="max-w-6xl mx-auto p-4">
           <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as TabValue)}>
-            <TabsList className="flex space-x-1 rounded-xl bg-gray-100 dark:bg-gray-800 p-1">
+            <TabsList className="flex space-x-1 rounded-xl bg-muted p-1">
               {tabs.map((tab) => (
                 <TabsTrigger key={tab.value} value={tab.value} className="w-full flex items-center justify-center space-x-2">
                   <tab.icon className="w-4 h-4" />

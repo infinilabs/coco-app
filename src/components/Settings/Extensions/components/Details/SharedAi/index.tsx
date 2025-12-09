@@ -5,6 +5,13 @@ import { useAsyncEffect, useMount } from "ahooks";
 
 import { AssistantFetcher } from "@/components/Assistant/AssistantFetcher";
 import SettingsSelectPro from "@/components/Settings/SettingsSelectPro";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAppStore } from "@/stores/appStore";
 import { ExtensionId } from "@/components/Settings/Extensions/index";
 import { useConnectStore } from "@/stores/connectStore";
@@ -186,16 +193,31 @@ const SharedAi: FC<SharedAiProps> = (props) => {
           <div key={label} className="mt-4">
             <div className="mb-2 text-[#666] dark:text-white/70">{label}</div>
 
-            <SettingsSelectPro
-              value={value}
-              options={data}
-              searchable={searchable}
-              onChange={onChange}
-              onSearch={onSearch}
-              placeholder={
-                isLoadingAssistants && searchable ? "Loading..." : undefined
-              }
-            />
+            {searchable ? (
+              <SettingsSelectPro
+                value={value}
+                options={data}
+                searchable={searchable}
+                onChange={onChange}
+                onSearch={onSearch}
+                placeholder={
+                  isLoadingAssistants && searchable ? "Loading..." : undefined
+                }
+              />
+            ) : (
+              <Select value={value} onValueChange={(v) => onChange?.(v)}>
+                <SelectTrigger className="h-9 w-full max-w-[480px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {data?.map((opt: any) => (
+                    <SelectItem key={opt.id} value={opt.id}>
+                      {opt.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
         );
       })}

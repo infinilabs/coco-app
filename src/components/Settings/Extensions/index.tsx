@@ -3,7 +3,6 @@ import { useReactive } from "ahooks";
 import { useTranslation } from "react-i18next";
 import type { LiteralUnion } from "type-fest";
 import { cloneDeep, sortBy } from "lodash-es";
-import clsx from "clsx";
 import { Plus } from "lucide-react";
 import {
   DropdownMenu,
@@ -11,12 +10,14 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import platformAdapter from "@/utils/platformAdapter";
 import Content from "./components/Content";
 import Details from "./components/Details";
 import { useExtensionsStore } from "@/stores/extensionsStore";
-import SettingsInput from "../SettingsInput";
 import { useAppStore } from "@/stores/appStore";
 import { installExtensionError } from "@/utils";
 
@@ -190,20 +191,26 @@ export const Extensions = () => {
       }}
     >
       <div className="flex h-[calc(100vh-128px)] -mx-6 gap-4 text-sm">
-        <div className="w-2/3 h-full px-4 border-r dark:border-gray-700 overflow-auto">
+        <div className="w-2/3 h-full px-4 border-r border-border overflow-auto">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
               {t("settings.extensions.title")}
             </h2>
 
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center justify-center h-6 w-6 border rounded-[6px] dark:border-gray-700 hover:border-[#0096FB] transition">
-                <Plus className="size-4 text-[#0096FB]" />
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 focus-visible:ring-0 focus-visible:ring-offset-0"
+                >
+                  <Plus className="h-4 w-4 text-primary" />
+                </Button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent sideOffset={4} className="p-1 text-sm bg-white dark:bg-[#202126] rounded-lg shadow-xs border border-gray-200 dark:border-gray-700">
+              <DropdownMenuContent sideOffset={4} className="p-1 text-sm rounded-lg">
                 <DropdownMenuItem
-                  className="px-3 py-2 hover:bg-black/5 hover:dark:bg-white/5 rounded-lg"
+                  className="px-3 py-2 rounded-lg hover:bg-muted"
                   onSelect={(e: Event) => {
                     e.preventDefault();
                     platformAdapter.emitEvent("open-extension-store");
@@ -212,7 +219,7 @@ export const Extensions = () => {
                   {t("settings.extensions.menuItem.extensionStore")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  className="px-3 py-2 hover:bg-black/5 hover:dark:bg-white/5 rounded-lg"
+                  className="px-3 py-2 rounded-lg hover:bg-muted"
                   onSelect={async (e: Event) => {
                     e.preventDefault();
                     try {
@@ -245,34 +252,32 @@ export const Extensions = () => {
           </div>
 
           <div className="flex justify-between gap-6 my-4">
-            <div className="flex h-8 border dark:border-gray-700 rounded-[6px] overflow-hidden">
-              {state.categories.map((item) => {
-                return (
-                  <div
+            <Tabs
+              value={state.currentCategory}
+              onValueChange={(v) => {
+                state.currentCategory = v as Category;
+              }}
+              className="h-8"
+            >
+              <TabsList className="h-8 p-0 bg-transparent rounded-none border-0">
+                {state.categories.map((item) => (
+                  <TabsTrigger
                     key={item}
-                    className={clsx(
-                      "flex items-center h-full px-4 cursor-pointer",
-                      {
-                        "bg-[#F0F6FE] dark:bg-gray-700":
-                          item === state.currentCategory,
-                      }
-                    )}
-                    onClick={() => {
-                      state.currentCategory = item;
-                    }}
+                    value={item}
+                    className="h-8 min-w-0 px-3 py-1 rounded-md bg-transparent text-muted-foreground hover:text-foreground focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:bg-muted data-[state=active]:text-foreground data-[state=active]:font-medium data-[state=active]:shadow-none"
                   >
                     {item}
-                  </div>
-                );
-              })}
-            </div>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
 
-            <SettingsInput
-              className="flex-1"
+            <Input
+              className="flex-1 h-8 bg-muted border-0 shadow-none placeholder:text-muted-foreground"
               placeholder="Search"
-              value={state.searchValue}
-              onChange={(value) => {
-                state.searchValue = String(value);
+              value={state.searchValue ?? ""}
+              onChange={(e) => {
+                state.searchValue = e.target.value;
               }}
             />
           </div>

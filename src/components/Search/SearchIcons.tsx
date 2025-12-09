@@ -115,7 +115,7 @@ export default function SearchIcons({
     }
 
     return (
-      <div className="flex items-center justify-center pl-2 h-[40px] bg-[#ededed] dark:bg-[#202126]">
+      <div className="flex items-center justify-center pl-2 h-[42px] bg-[#ededed] dark:bg-[#202126]">
         <Search className="w-4 h-4 text-[#ccc] dark:text-[#d8d8d8]" />
       </div>
     );

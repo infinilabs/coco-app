@@ -283,7 +283,7 @@ export default function GeneralSettings() {
                   className={clsx(
                     "p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 flex flex-col items-center justify-center space-y-2 transition-all",
                     {
-                      "!border-blue-500 bg-blue-50 dark:bg-blue-900/20":
+                      "border-blue-500 bg-blue-50 dark:bg-blue-900/20":
                         isSelected,
                     }
                   )}

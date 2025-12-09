@@ -1,7 +1,7 @@
 import { useBoolean, useClickAway, useDebounce } from "ahooks";
 import clsx from "clsx";
 import { FC, useEffect, useMemo, useRef, useState } from "react";
-import SettingsInput from "./SettingsInput";
+import { Input } from "@/components/ui/input";
 import NoDataImage from "../Common/NoDataImage";
 
 interface SettingsSelectProProps {
@@ -47,7 +47,7 @@ const SettingsSelectPro: FC<SettingsSelectProProps> = (props) => {
   return (
     <div ref={containerRef} className="relative">
       <div
-        className="flex items-center h-8 px-3 truncate rounded-[6px] border dark:bg-[#1F2937] bg-white dark:border-[#374151]"
+        className="flex items-center h-9 px-3 truncate rounded-md border border-input bg-background text-foreground shadow-sm"
         onClick={toggle}
       >
         {option?.[labelField] ?? (
@@ -57,7 +57,7 @@ const SettingsSelectPro: FC<SettingsSelectProProps> = (props) => {
 
       <div
         className={clsx(
-          "absolute z-100 top-10 left-0 right-0 rounded-[6px] py-2 border dark:border-[#374151] bg-white dark:bg-[#1F2937] shadow-[0_5px_15px_rgba(0,0,0,0.2)] dark:shadow-[0_5px_10px_rgba(0,0,0,0.3)]",
+          "absolute z-50 top-11 left-0 right-0 rounded-md p-2 border border-input bg-popover text-popover-foreground shadow-md",
           {
             hidden: !open,
           }
@@ -65,12 +65,12 @@ const SettingsSelectPro: FC<SettingsSelectProProps> = (props) => {
       >
         {searchable && (
           <div className="px-2 mb-2">
-            <SettingsInput
+            <Input
               autoFocus
               value={searchValue}
-              className="w-full"
-              onChange={(value) => {
-                setSearchValue(String(value));
+              className="w-full h-8 border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              onChange={(e) => {
+                setSearchValue(String(e.target.value));
               }}
             />
           </div>
@@ -83,9 +83,9 @@ const SettingsSelectPro: FC<SettingsSelectProProps> = (props) => {
                 <div
                   key={item?.[valueField] ?? index}
                   className={clsx(
-                    "h-8 leading-8 px-2 rounded-[6px] hover:bg-[#EDEDED] hover:dark:bg-[#374151] transition cursor-pointer",
+                    "h-8 leading-8 px-2 rounded-md hover:bg-accent hover:text-accent-foreground transition cursor-pointer",
                     {
-                      "bg-[#EDEDED] dark:bg-[#374151]":
+                      "bg-accent text-accent-foreground":
                         value === item?.[valueField],
                     }
                   )}
