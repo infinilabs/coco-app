@@ -315,7 +315,7 @@ export default function ChatInput({
         {visibleSearchBar() && (
           <div
             className={clsx(
-              "relative w-full p-2 bg-[#ededed] dark:bg-[#202126]",
+              "relative w-full p-[7px] bg-[#ededed] dark:bg-[#202126]",
               {
                 "flex items-center gap-2": lineCount === 1,
               }
