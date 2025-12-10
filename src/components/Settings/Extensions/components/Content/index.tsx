@@ -13,6 +13,7 @@ import Shortcut from "../Shortcut";
 import SettingsToggle from "@/components/Settings/SettingsToggle";
 import { platform } from "@/utils/platform";
 import { useExtensionsStore } from "@/stores/extensionsStore";
+import { cn } from "@/lib/utils";
 
 const Content = () => {
   const { rootState } = useContext(ExtensionsContext);
@@ -165,7 +166,9 @@ const Item: FC<ItemProps> = (props) => {
             <SettingsInput
               defaultValue={alias}
               placeholder={t("settings.extensions.hints.addAlias")}
-              className="w-[90%]! h-6! border-transparent! rounded-[4px]"
+              className={cn(
+                "w-[90%] h-6 px-1 py-0 border-none rounded-sm shadow-none bg-transparent placeholder:text-[#999]"
+              )}
               onChange={(value) => {
                 handleChange(String(value));
               }}
