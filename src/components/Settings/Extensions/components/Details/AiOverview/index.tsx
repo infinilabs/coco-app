@@ -72,7 +72,7 @@ const AiOverview = () => {
       />
 
       <>
-        <div className="mt-6 text-[#333] dark:text-white/90">
+        <div className="mt-6">
           {t("settings.extensions.aiOverview.details.aiOverviewTrigger.title")}
         </div>
 
@@ -88,9 +88,7 @@ const AiOverview = () => {
 
             return (
               <div>
-                <div className="mb-2 text-[#666] dark:text-white/70">
-                  {label}
-                </div>
+                <div className="mb-2">{label}</div>
 
                 <SettingsInput
                   type="number"

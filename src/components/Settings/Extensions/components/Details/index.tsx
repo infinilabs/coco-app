@@ -109,11 +109,19 @@ const Details = () => {
         {rootState.activeExtension?.developer && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7 p-0 focus-visible:ring-0 focus-visible:ring-offset-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+              >
                 <Ellipsis className="h-4 w-4 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent side="bottom" align="end" className="p-1 text-sm rounded-lg">
+            <DropdownMenuContent
+              side="bottom"
+              align="end"
+              className="p-1 text-sm rounded-lg"
+            >
               <DropdownMenuItem
                 className="px-3 py-2 text-nowrap text-red-500 rounded-lg hover:bg-muted"
                 onSelect={async (e: Event) => {
@@ -133,7 +141,10 @@ const Details = () => {
                       }),
                     });
 
-                    addError(t("settings.extensions.hints.uninstallSuccess"), "info");
+                    addError(
+                      t("settings.extensions.hints.uninstallSuccess"),
+                      "info"
+                    );
                   } catch (error) {
                     addError(String(error));
                   }
@@ -145,8 +156,6 @@ const Details = () => {
           </DropdownMenu>
         )}
       </div>
-
-      <Separator className="mb-4" />
 
       {!compatible && (
         <div className="-mt-1 mb-3 bg-red-50 p-2 rounded">
