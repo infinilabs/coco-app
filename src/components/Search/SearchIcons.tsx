@@ -1,15 +1,15 @@
 import { useSearchStore } from "@/stores/searchStore";
 import { ChevronLeft, Search } from "lucide-react";
+import { FC } from "react";
+import clsx from "clsx";
 
 import FontIcon from "@/components/Common/Icons/FontIcon";
-import { FC } from "react";
 import lightDefaultIcon from "@/assets/images/source_default.png";
 import darkDefaultIcon from "@/assets/images/source_default_dark.png";
 import { useThemeStore } from "@/stores/themeStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { navigateBack, visibleSearchBar } from "@/utils";
 import VisibleKey from "../Common/VisibleKey";
-import clsx from "clsx";
 
 interface MultilevelWrapperProps {
   title?: string;
@@ -50,7 +50,7 @@ const MultilevelWrapper: FC<MultilevelWrapperProps> = (props) => {
         />
       </VisibleKey>
 
-      <div className="size-5 [&>*]:size-full">{renderIcon()}</div>
+      <div className="size-5 *:size-full">{renderIcon()}</div>
 
       <span className="text-sm whitespace-nowrap">{title}</span>
     </div>

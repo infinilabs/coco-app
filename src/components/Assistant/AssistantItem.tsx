@@ -42,19 +42,19 @@ const AssistantItem = memo(
       onClick={onClick}
     >
       {_source?.icon?.startsWith("font_") ? (
-        <FontIcon
-          name={_source?.icon}
-          className="w-4 h-4 rounded-full  dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
-        />
-      ) : (
-        <img
-          src={logoImg}
-          className="w-4 h-4 rounded-full  dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
-          alt={name}
-        />
-      )}
+          <FontIcon
+            name={_source?.icon}
+            className="w-4 h-4 rounded-full  dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
+          />
+        ) : (
+          <img
+            src={logoImg}
+            className="w-4 h-4 rounded-full  dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
+            alt={name}
+          />
+        )}
       <div className="text-left flex-1 min-w-0">
-        <div className="font-medium text-gray-900 dark:text-white truncate">
+        <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
           {_source?.name || "-"}
         </div>
         <div className="text-xs text-gray-500 dark:text-gray-400 truncate">

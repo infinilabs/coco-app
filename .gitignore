@@ -26,3 +26,5 @@ src/components/web
 *.sln
 *.sw?
 .env
+
+.trae

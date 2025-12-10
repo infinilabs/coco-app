@@ -1,10 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { ChevronDownIcon, RefreshCw, Layers, Hammer } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { useDebounce } from "ahooks";
 
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import CommonIcon from "@/components/Common/Icons/CommonIcon";
 import { useConnectStore } from "@/stores/connectStore";
 import { useSearchStore } from "@/stores/searchStore";
@@ -167,7 +171,7 @@ export default function MCPPopover({
   return (
     <div
       className={clsx(
-        "flex justify-center items-center gap-1 h-[20px] px-1 rounded-[6px] transition hover:bg-[#EDEDED] dark:hover:bg-[#202126] cursor-pointer",
+        "flex justify-center items-center gap-1 h-[20px] px-1 rounded-[6px] transition cursor-pointer",
         {
           "bg-[rgba(0,114,255,0.3)]": isMCPActive,
         }
@@ -193,7 +197,13 @@ export default function MCPPopover({
           </span>
 
           <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger ref={popoverButtonRef} className="flex items-center">
+            <PopoverTrigger
+              ref={popoverButtonRef}
+              className="flex items-center"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
               <VisibleKey
                 shortcut={mcpSearchScope}
                 onKeyPress={() => {
@@ -201,7 +211,7 @@ export default function MCPPopover({
                 }}
               >
                 <ChevronDownIcon
-                  className={clsx("size-3", [
+                  className={clsx("size-3 cursor-pointer", [
                     isMCPActive
                       ? "text-[#0072FF] dark:text-[#0072FF]"
                       : "text-[#333] dark:text-white",
@@ -210,7 +220,11 @@ export default function MCPPopover({
               </VisibleKey>
             </PopoverTrigger>
 
-            <PopoverContent side="top" align="start" className="z-50 w-[240px] overflow-y-auto rounded-lg shadow-lg">
+            <PopoverContent
+              side="top"
+              align="start"
+              className="z-50 w-[240px] overflow-y-auto rounded-lg shadow-lg"
+            >
               <div
                 className="text-sm"
                 onClick={(e: React.MouseEvent<HTMLDivElement>) => {
