@@ -7,7 +7,7 @@
 :host,
 :root,
 .searchbox-container,
-.coco-container {
+  .coco-container {
   --spacing-base: 12px;
   --modal-width: 560px;
   --modal-height: 600px;
@@ -340,7 +340,6 @@ body,
     box-sizing: border-box;
     border-width: 0;
     border-style: solid;
-    border-color: #e5e7eb;
   }
   :before,
   :after {
@@ -527,7 +526,6 @@ body,
   }
   * {
     box-sizing: border-box;
-    border-color: var(--border);
   }
   .settings-input {
     display: block;

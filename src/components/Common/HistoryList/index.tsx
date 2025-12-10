@@ -58,7 +58,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
       )}
     >
       <div className="flex gap-1 p-2 border-b border-input">
-        <div className="flex-1 flex items-center gap-2 px-2 rounded-lg border border-input bg-background transition focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
+        <div className="flex-1 h-8 flex items-center gap-2 px-2 rounded-lg border border-input bg-background transition focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
           <VisibleKey
             shortcut="F"
             onKeyPress={() => {

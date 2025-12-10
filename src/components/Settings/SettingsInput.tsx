@@ -36,7 +36,7 @@ const SettingsInput: FC<SettingsInputProps> = (props) => {
       {...rest}
       autoCorrect="off"
       className={twMerge(
-        "h-8 px-2 rounded-[6px] border bg-transparent border-black/5 dark:border-white/10 hover:border-[#0072FF] focus:border-[#0072FF] transition focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none",
+        "w-44 h-8 px-2 rounded-[6px] border bg-transparent border-black/5 dark:border-white/10 hover:border-[#0072FF] focus:border-[#0072FF] transition focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none",
         className
       )}
       onBlur={handleBlur}

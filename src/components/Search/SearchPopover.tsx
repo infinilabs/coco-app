@@ -231,7 +231,7 @@ export default function SearchPopover({
             <PopoverContent
               side="top"
               align="start"
-              className="z-50 w-[240px] overflow-y-auto rounded-lg shadow-lg"
+              className="z-50 w-[240px] overflow-y-auto rounded-lg shadow-lg p-0"
             >
               <div
                 className="text-sm"
@@ -239,7 +239,7 @@ export default function SearchPopover({
                   e.stopPropagation();
                 }}
               >
-                <div className="p-3">
+                <div className="p-2">
                   <div className="flex justify-between">
                     <span>{t("search.input.searchPopover.title")}</span>
 

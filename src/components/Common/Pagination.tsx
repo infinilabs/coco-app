@@ -19,7 +19,7 @@ function Pagination({
 }: PaginationProps) {
   return (
     <div
-      className={`flex items-center justify-between h-8 px-3 text-muted-foreground border-t border-input ${className}`}
+      className={`flex items-center justify-between h-8 px-2 text-muted-foreground border-t border-input ${className}`}
     >
       <VisibleKey shortcut="leftarrow" onKeyPress={onPrev}>
         <ChevronLeft className="size-4 cursor-pointer" onClick={onPrev} />

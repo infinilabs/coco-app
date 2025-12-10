@@ -4,7 +4,6 @@ import { isArray } from "lodash-es";
 import { useAsyncEffect, useMount } from "ahooks";
 
 import { AssistantFetcher } from "@/components/Assistant/AssistantFetcher";
-import SettingsSelectPro from "@/components/Settings/SettingsSelectPro";
 import {
   Select,
   SelectTrigger,
@@ -187,37 +186,35 @@ const SharedAi: FC<SharedAiProps> = (props) => {
       </div>
 
       {selectList.map((item) => {
-        const { label, value, data, searchable, onChange, onSearch } = item;
+        const { label, value, data, searchable, onChange } = item;
 
         return (
           <div key={label} className="mt-4">
             <div className="mb-2 text-[#666] dark:text-white/70">{label}</div>
 
-            {searchable ? (
-              <SettingsSelectPro
-                value={value}
-                options={data}
-                searchable={searchable}
-                onChange={onChange}
-                onSearch={onSearch}
-                placeholder={
-                  isLoadingAssistants && searchable ? "Loading..." : undefined
-                }
-              />
-            ) : (
-              <Select value={value} onValueChange={(v) => onChange?.(v)}>
-                <SelectTrigger className="h-9 w-full max-w-[480px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {data?.map((opt: any) => (
-                    <SelectItem key={opt.id} value={opt.id}>
-                      {opt.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+            <Select
+              value={value}
+              onValueChange={(v) => onChange?.(v)}
+              disabled={searchable && isLoadingAssistants}
+            >
+              <SelectTrigger className="ml-1 h-9 w-full max-w-[480px]">
+                <SelectValue
+                  className="truncate"
+                  placeholder={
+                    (searchable && isLoadingAssistants
+                      ? (t("common.loading") as string)
+                      : undefined) as string | undefined
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {data?.map((opt: any) => (
+                  <SelectItem key={opt.id} value={opt.id}>
+                    {opt.name || opt.id}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         );
       })}
