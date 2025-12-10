@@ -199,16 +199,15 @@ export const Extensions = () => {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 focus-visible:ring-0 focus-visible:ring-offset-0"
-                >
+                <Button variant="outline" size="icon" className="size-6">
                   <Plus className="h-4 w-4 text-primary" />
                 </Button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent sideOffset={4} className="p-1 text-sm rounded-lg">
+              <DropdownMenuContent
+                sideOffset={4}
+                className="p-1 text-sm rounded-lg"
+              >
                 <DropdownMenuItem
                   className="px-3 py-2 rounded-lg hover:bg-muted"
                   onSelect={(e: Event) => {
@@ -251,21 +250,16 @@ export const Extensions = () => {
             </DropdownMenu>
           </div>
 
-          <div className="flex justify-between gap-6 my-4">
+          <div className="flex items-center justify-between gap-6 my-4">
             <Tabs
               value={state.currentCategory}
               onValueChange={(v) => {
                 state.currentCategory = v as Category;
               }}
-              className="h-8"
             >
-              <TabsList className="h-8 p-0 bg-transparent rounded-none border-0">
+              <TabsList>
                 {state.categories.map((item) => (
-                  <TabsTrigger
-                    key={item}
-                    value={item}
-                    className="h-8 min-w-0 px-3 py-1 rounded-md bg-transparent text-muted-foreground hover:text-foreground focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:bg-muted data-[state=active]:text-foreground data-[state=active]:font-medium data-[state=active]:shadow-none"
-                  >
+                  <TabsTrigger key={item} value={item}>
                     {item}
                   </TabsTrigger>
                 ))}
@@ -273,7 +267,7 @@ export const Extensions = () => {
             </Tabs>
 
             <Input
-              className="flex-1 h-8 bg-muted border-0 shadow-none placeholder:text-muted-foreground"
+              className="flex-1 h-8"
               placeholder="Search"
               value={state.searchValue ?? ""}
               onChange={(e) => {
