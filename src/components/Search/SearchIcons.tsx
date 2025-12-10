@@ -36,7 +36,7 @@ const MultilevelWrapper: FC<MultilevelWrapperProps> = (props) => {
     <div
       data-tauri-drag-region
       className={clsx(
-        "flex items-center h-10 gap-1 px-2 border border-[#EDEDED] dark:border-[#202126] rounded-l-lg",
+        "flex items-center h-10 gap-1 px-2 border border-(--border) rounded-l-lg",
         {
           "justify-center": visibleSearchBar(),
           "w-[calc(100vw-16px)] rounded-r-lg": !visibleSearchBar(),
@@ -115,7 +115,7 @@ export default function SearchIcons({
     }
 
     return (
-      <div className="flex items-center justify-center pl-2 h-10 bg-[#ededed] dark:bg-[#202126]">
+      <div className="h-10 flex items-center justify-center pl-2 bg-[#ededed] dark:bg-[#202126]">
         <Search className="w-4 h-4 text-[#ccc] dark:text-[#d8d8d8]" />
       </div>
     );

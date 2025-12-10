@@ -44,7 +44,7 @@ function WebApp({
   width = 680,
   height = WINDOW_CENTER_BASELINE_HEIGHT,
   headers = {
-    "X-API-TOKEN": "",
+    "X-API-TOKEN": "d4si4m94d9v22546mrcg5u3m5vpb25dpi4ibl8iumpum80d90zepo9bhk1wayqu6lh9kccu2tnbckhk65s3w",
     "APP-INTEGRATION-ID": "",
   },
   serverUrl = "",
@@ -125,7 +125,7 @@ function WebApp({
   return (
     <div
       id="searchChat-container"
-      className={`coco-container relative ${theme}`}
+      className={`coco-container relative ${theme} border border-(--border) rounded-xl`}
       data-theme={theme}
       style={{
         maxWidth: `${width}px`,

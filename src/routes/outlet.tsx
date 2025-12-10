@@ -15,7 +15,7 @@ import { useModifierKeyPress } from "@/hooks/useModifierKeyPress";
 import { useIconfontScript } from "@/hooks/useScript";
 import { Extension } from "@/components/Settings/Extensions";
 import { useExtensionsStore } from "@/stores/extensionsStore";
-import { useSelectionStore } from "@/stores/selectionStore";
+import { useSelectionStore, startSelectionStorePersistence } from "@/stores/selectionStore";
 import { useServers } from "@/hooks/useServers";
 import { useDeepLinkManager } from "@/hooks/useDeepLinkManager";
 // import { useSelectionWindow } from "@/hooks/useSelectionWindow";
@@ -29,6 +29,11 @@ export default function LayoutOutlet() {
 
   // Initialize selection store synchronization
   useSelectionStore();
+
+  // Initialize Tauri-backed persistence for selection store only in desktop mode.
+  useMount(() => {
+    startSelectionStorePersistence();
+  });
 
   // init servers isTauri
   useServers();

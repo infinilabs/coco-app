@@ -15,13 +15,113 @@
   --hit-height: 56px;
   --footer-height: 44px;
   --icon-stroke-width: 1.4;
-  --background: #ffffff;
-  --foreground: #09090b;
-  --border: #e3e3e7;
   --coco-primary-color: rgb(149, 5, 153);
+
+  /* align tokens with desktop main.css */
+  --radius: 0.65rem;
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(222.2 84% 4.9%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(222.2 84% 4.9%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(222.2 84% 4.9%);
+  --primary: hsl(221.2 83.2% 53.3%);
+  --primary-foreground: hsl(210 40% 98%);
+  --secondary: hsl(210 40% 96.1%);
+  --secondary-foreground: hsl(222.2 47.4% 11.2%);
+  --muted: hsl(210 40% 96.1%);
+  --muted-foreground: hsl(215.4 16.3% 46.9%);
+  --accent: hsl(210 40% 96.1%);
+  --accent-foreground: hsl(222.2 47.4% 11.2%);
+  --destructive: hsl(0 84.2% 60.2%);
+  --border: hsl(214.3 31.8% 91.4%);
+  --input: hsl(214.3 31.8% 91.4%);
+  --ring: hsl(221.2 83.2% 53.3%);
+}
+
+/* Tailwind v4 @theme mapping for tokens */
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  /* Base size/spacing scale to restore Tailwind defaults in Web embed */
+  /* Size tokens (used by h-*, w-*, size-*) */
+  --size-px: 1px;
+  --size-0: 0rem;
+  --size-0-5: 0.125rem;
+  --size-1: 0.25rem;
+  --size-1-5: 0.375rem;
+  --size-2: 0.5rem;
+  --size-2-5: 0.625rem;
+  --size-3: 0.75rem;
+  --size-3-5: 0.875rem;
+  --size-4: 1rem;
+  --size-5: 1.25rem;
+  --size-6: 1.5rem;
+  --size-7: 1.75rem;
+  --size-8: 2rem;
+  --size-9: 2.25rem;
+  --size-10: 2.5rem;
+  --size-11: 2.75rem;
+  --size-12: 3rem;
+  --size-14: 3.5rem;
+  --size-16: 4rem;
+  --size-20: 5rem;
+  --size-24: 6rem;
+  --size-28: 7rem;
+  --size-32: 8rem;
+
+  /* Spacing tokens (used by p-*, m-*, gap-*) */
+  --spacing-px: 1px;
+  --spacing-0: 0rem;
+  --spacing-0-5: 0.125rem;
+  --spacing-1: 0.25rem;
+  --spacing-1-5: 0.375rem;
+  --spacing-2: 0.5rem;
+  --spacing-2-5: 0.625rem;
+  --spacing-3: 0.75rem;
+  --spacing-3-5: 0.875rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-7: 1.75rem;
+  --spacing-8: 2rem;
+  --spacing-9: 2.25rem;
+  --spacing-10: 2.5rem;
+  --spacing-11: 2.75rem;
+  --spacing-12: 3rem;
+  --spacing-14: 3.5rem;
+  --spacing-16: 4rem;
+  --spacing-20: 5rem;
+  --spacing-24: 6rem;
+  --spacing-28: 7rem;
+  --spacing-32: 8rem;
+
+  /* Font size scale (used by text-*) */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
 }
 
 /* Light theme */
+[data-theme="light"],
 .light.coco-container {
   --coco-primary-color: rgb(149, 5, 153);
   --coco-text-color: rgb(28, 30, 33);
@@ -50,11 +150,28 @@
 }
 
 /* Dark theme */
+.dark,
+[data-theme="dark"],
 .dark.coco-container {
-  --coco-primary-color: rgb(149, 5, 153);
-  --background: #09090b;
-  --foreground: #f9f9f9;
-  --border: #27272a;
+  /* align with desktop dark tokens */
+  --background: hsl(222.2 84% 4.9%);
+  --foreground: hsl(210 40% 98%);
+  --card: hsl(222.2 84% 4.9%);
+  --card-foreground: hsl(210 40% 98%);
+  --popover: hsl(222.2 84% 4.9%);
+  --popover-foreground: hsl(210 40% 98%);
+  --primary: hsl(221.2 83.2% 53.3%);
+  --primary-foreground: hsl(210 40% 98%);
+  --secondary: hsl(217.2 32.6% 17.5%);
+  --secondary-foreground: hsl(210 40% 98%);
+  --muted: hsl(217.2 32.6% 17.5%);
+  --muted-foreground: hsl(215 20.2% 65.1%);
+  --accent: hsl(217.2 32.6% 17.5%);
+  --accent-foreground: hsl(210 40% 98%);
+  --destructive: hsl(0 62.8% 30.6%);
+  --border: hsl(217.2 32.6% 17.5%);
+  --input: hsl(217.2 32.6% 17.5%);
+  --ring: hsl(221.2 83.2% 53.3%);
   --coco-text-color: rgb(245, 246, 247);
   --coco-modal-container-background: rgba(9, 10, 17, 0.8);
   --coco-modal-background: rgb(21, 23, 42);
@@ -598,18 +715,16 @@ body,
 /* Component styles */
 @layer components {
   .settings-input {
-    @apply block w-full rounded-[6px] border-gray-300 dark:border-gray-600
-        bg-white dark:bg-gray-700
-        text-gray-900 dark:text-gray-100
-        shadow-sm focus:border-blue-500 focus:ring-blue-500
+    @apply block w-full rounded-[6px] border border-border
+        bg-background text-foreground
+        shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
         transition-colors duration-200;
   }
 
   .settings-select {
-    @apply text-sm rounded-[6px] border-gray-300 dark:border-gray-600
-        bg-white dark:bg-gray-700
-        text-gray-900 dark:text-gray-100
-        shadow-sm focus:border-blue-500 focus:ring-blue-500
+    @apply text-sm rounded-[6px] border border-border
+        bg-background text-foreground
+        shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
         transition-colors duration-200;
   }
 }
