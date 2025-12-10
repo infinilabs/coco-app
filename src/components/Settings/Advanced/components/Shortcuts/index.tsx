@@ -286,6 +286,7 @@ const Shortcuts = () => {
                 <span>{formatKey(modifierKey)}</span>
                 <span>+</span>
                 <SettingsInput
+                  className="w-20"
                   value={value}
                   max={1}
                   onChange={(value) => {

@@ -4,7 +4,10 @@ import { FC, FocusEvent, InputHTMLAttributes } from "react";
 import { twMerge } from "tailwind-merge";
 
 interface SettingsInputProps
-  extends Omit<InputHTMLAttributes<HTMLInputElement>, "onChange" | "className"> {
+  extends Omit<
+    InputHTMLAttributes<HTMLInputElement>,
+    "onChange" | "className"
+  > {
   className?: string;
   onChange?: (value?: string | number) => void;
 }
@@ -35,10 +38,7 @@ const SettingsInput: FC<SettingsInputProps> = (props) => {
     <Input
       {...rest}
       autoCorrect="off"
-      className={twMerge(
-        "w-44 h-8 px-2 rounded-[6px] border bg-transparent border-black/5 dark:border-white/10 hover:border-[#0072FF] focus:border-[#0072FF] transition focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none",
-        className
-      )}
+      className={twMerge("w-44 h-8", className)}
       onBlur={handleBlur}
       onChange={(event) => {
         onChange?.(event.target.value);
