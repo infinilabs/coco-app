@@ -187,9 +187,9 @@ const InputControls = ({
           {source?.type === "deep_think" && source?.config?.visible && (
             <button
               className={clsx(
-                "flex items-center justify-center gap-1 h-[20px] px-1 rounded-[6px] transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
+                "flex items-center justify-center gap-1 h-5 px-1 rounded-[6px] transition hover:bg-[#EDEDED] dark:hover:bg-[#202126] cursor-pointer",
                 {
-                  "!bg-[rgba(0,114,255,0.3)]": isDeepThinkActive,
+                  "bg-[rgba(0,114,255,0.3)]!": isDeepThinkActive,
                 }
               )}
               onClick={setIsDeepThinkActive}
@@ -250,7 +250,7 @@ const InputControls = ({
             !visibleExtensionStore && (
               <div
                 className={clsx(
-                  "inline-flex items-center gap-1 h-[20px] px-1 rounded-full hover:!text-[#881c94] cursor-pointer transition",
+                  "inline-flex items-center gap-1 h-5 px-1 rounded-full hover:text-[#881c94]! cursor-pointer transition",
                   [
                     enabledAiOverview
                       ? "text-[#881c94]"
