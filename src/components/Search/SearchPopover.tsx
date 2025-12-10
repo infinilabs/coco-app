@@ -231,7 +231,7 @@ export default function SearchPopover({
             <PopoverContent
               side="top"
               align="start"
-              className="z-50 w-[240px] overflow-y-auto rounded-lg shadow-lg p-0"
+              className="z-50 w-60 overflow-y-auto rounded-lg shadow-lg p-0"
             >
               <div
                 className="text-sm"
@@ -303,7 +303,7 @@ export default function SearchPopover({
                           >
                             <div className="flex items-center gap-2 overflow-hidden">
                               {isAll ? (
-                                <Layers className="size-[16px] text-[#0287FF]" />
+                                <Layers className="size-4 text-[#0287FF]" />
                               ) : (
                                 <CommonIcon
                                   item={item}
@@ -331,7 +331,7 @@ export default function SearchPopover({
                                 }}
                               />
 
-                              <div className="flex justify-center items-center size-[24px]">
+                              <div className="flex justify-center items-center size-6">
                                 <Checkbox
                                   checked={isChecked()}
                                   indeterminate={isAll}

@@ -171,7 +171,7 @@ export default function MCPPopover({
   return (
     <div
       className={clsx(
-        "flex justify-center items-center gap-1 h-[20px] px-1 rounded-[6px] transition cursor-pointer hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
+        "flex justify-center items-center gap-1 h-5 px-1 rounded-[6px] transition cursor-pointer hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
         {
           "bg-[rgba(0,114,255,0.3)]!": isMCPActive,
         }
@@ -223,7 +223,7 @@ export default function MCPPopover({
             <PopoverContent
               side="top"
               align="start"
-              className="z-50 w-[240px] overflow-y-auto rounded-lg shadow-lg p-0"
+              className="z-50 w-60 overflow-y-auto rounded-lg shadow-lg p-0"
             >
               <div
                 className="text-sm"
@@ -323,7 +323,7 @@ export default function MCPPopover({
                                 }}
                               />
 
-                              <div className="flex justify-center items-center size-[24px]">
+                              <div className="flex justify-center items-center size-6">
                                 <Checkbox
                                   checked={isChecked()}
                                   indeterminate={isAll}
