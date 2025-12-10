@@ -245,7 +245,7 @@ export default function SearchPopover({
 
                     <div
                       onClick={handleRefresh}
-                      className="size-[24px] flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10 cursor-pointer"
+                      className="size-6 flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10 cursor-pointer"
                     >
                       <VisibleKey shortcut="R" onKeyPress={handleRefresh}>
                         <RefreshCw

@@ -237,7 +237,7 @@ export default function MCPPopover({
 
                     <div
                       onClick={handleRefresh}
-                      className="size-[24px] flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10 cursor-pointer"
+                      className="size-6 flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10 cursor-pointer"
                     >
                       <VisibleKey shortcut="R" onKeyPress={handleRefresh}>
                         <RefreshCw
@@ -295,7 +295,7 @@ export default function MCPPopover({
                           >
                             <div className="flex items-center gap-2 overflow-hidden">
                               {isAll ? (
-                                <Layers className="size-[16px] text-[#0287FF]" />
+                                <Layers className="min-w-4 min-h-4 size-4 text-[#0287FF]" />
                               ) : (
                                 <CommonIcon
                                   item={item}
@@ -305,7 +305,7 @@ export default function MCPPopover({
                                     "default_icon",
                                   ]}
                                   itemIcon={item.icon}
-                                  className="size-4"
+                                  className="min-w-4 min-h-4 size-4"
                                 />
                               )}
 

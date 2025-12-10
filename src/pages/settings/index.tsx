@@ -18,8 +18,14 @@ import { useAppStore } from "@/stores/appStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useAppearanceStore } from "@/stores/appearanceStore";
 
-const tabValues = ["general", "extensions", "connect", "advanced", "about"] as const;
-type TabValue = typeof tabValues[number];
+const tabValues = [
+  "general",
+  "extensions",
+  "connect",
+  "advanced",
+  "about",
+] as const;
+type TabValue = (typeof tabValues)[number];
 
 function SettingsPage() {
   const { t } = useTranslation();
@@ -76,42 +82,51 @@ function SettingsPage() {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = selectedTab === "extensions" ? "hidden" : "auto";
+    document.body.style.overflow =
+      selectedTab === "extensions" ? "hidden" : "auto";
   }, [selectedTab]);
 
   return (
     <>
       <div className="min-h-screen pb-8 bg-background text-foreground">
         <div className="max-w-6xl mx-auto p-4">
-          <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as TabValue)}>
-            <TabsList className="flex space-x-1 rounded-xl bg-muted p-1">
+          <Tabs
+            value={selectedTab}
+            onValueChange={(v) => setSelectedTab(v as TabValue)}
+          >
+            <TabsList className="flex h-10 rounded-xl">
               {tabs.map((tab) => (
-                <TabsTrigger key={tab.value} value={tab.value} className="w-full flex items-center justify-center space-x-2">
-                  <tab.icon className="w-4 h-4" />
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className="flex-1 gap-2 h-full"
+                >
+                  <tab.icon className="size-4" />
+
                   <span>{tab.name}</span>
                 </TabsTrigger>
               ))}
             </TabsList>
 
-            <TabsContent value="general" className="mt-2">
+            <TabsContent value="general">
               <SettingsPanel title="">
                 <GeneralSettings />
               </SettingsPanel>
             </TabsContent>
-            <TabsContent value="extensions" className="mt-2">
+            <TabsContent value="extensions">
               <SettingsPanel title="">
                 <Extensions />
               </SettingsPanel>
             </TabsContent>
-            <TabsContent value="connect" className="mt-2">
+            <TabsContent value="connect">
               <Cloud />
             </TabsContent>
-            <TabsContent value="advanced" className="mt-2">
+            <TabsContent value="advanced">
               <SettingsPanel title="">
                 <Advanced />
               </SettingsPanel>
             </TabsContent>
-            <TabsContent value="about" className="mt-2">
+            <TabsContent value="about">
               <SettingsPanel title="">
                 <AboutView />
               </SettingsPanel>
