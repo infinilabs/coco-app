@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { ChevronDownIcon, RefreshCw, Layers, Globe } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
@@ -173,7 +177,7 @@ export default function SearchPopover({
   return (
     <div
       className={clsx(
-        "flex justify-center items-center gap-1 h-[20px] px-1 rounded-[6px] transition hover:bg-[#EDEDED] dark:hover:bg-[#202126] cursor-pointer",
+        "flex justify-center items-center gap-1 h-5 px-1 rounded-[6px] transition hover:bg-[#EDEDED] dark:hover:bg-[#202126] cursor-pointer",
         {
           "bg-[rgba(0,114,255,0.3)]": isSearchActive,
         }
@@ -201,7 +205,10 @@ export default function SearchPopover({
           </span>
 
           <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger ref={popoverButtonRef} className="flex items-center">
+            <PopoverTrigger
+              ref={popoverButtonRef}
+              className="flex items-center"
+            >
               <VisibleKey
                 shortcut={internetSearchScope}
                 onKeyPress={() => {
@@ -218,7 +225,11 @@ export default function SearchPopover({
               </VisibleKey>
             </PopoverTrigger>
 
-            <PopoverContent side="top" align="start" className="z-50 w-[240px] overflow-y-auto rounded-lg shadow-lg">
+            <PopoverContent
+              side="top"
+              align="start"
+              className="z-50 w-60 p-0 overflow-y-auto rounded-lg shadow-lg"
+            >
               <div
                 className="text-sm"
                 onClick={(e: React.MouseEvent<HTMLDivElement>) => {
@@ -231,7 +242,7 @@ export default function SearchPopover({
 
                     <div
                       onClick={handleRefresh}
-                      className="size-[24px] flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10 cursor-pointer"
+                      className="size-6 flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10 cursor-pointer"
                     >
                       <VisibleKey shortcut="R" onKeyPress={handleRefresh}>
                         <RefreshCw

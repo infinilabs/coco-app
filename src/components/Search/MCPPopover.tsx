@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { ChevronDownIcon, RefreshCw, Layers, Hammer } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
@@ -167,7 +171,7 @@ export default function MCPPopover({
   return (
     <div
       className={clsx(
-        "flex justify-center items-center gap-1 h-[20px] px-1 rounded-[6px] transition hover:bg-[#EDEDED] dark:hover:bg-[#202126] cursor-pointer",
+        "flex justify-center items-center gap-1 h-5 px-1 rounded-[6px] transition hover:bg-[#EDEDED] dark:hover:bg-[#202126] cursor-pointer",
         {
           "bg-[rgba(0,114,255,0.3)]": isMCPActive,
         }
@@ -193,7 +197,10 @@ export default function MCPPopover({
           </span>
 
           <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger ref={popoverButtonRef} className="flex items-center">
+            <PopoverTrigger
+              ref={popoverButtonRef}
+              className="flex items-center"
+            >
               <VisibleKey
                 shortcut={mcpSearchScope}
                 onKeyPress={() => {
@@ -210,7 +217,11 @@ export default function MCPPopover({
               </VisibleKey>
             </PopoverTrigger>
 
-            <PopoverContent side="top" align="start" className="z-50 w-[240px] overflow-y-auto rounded-lg shadow-lg">
+            <PopoverContent
+              side="top"
+              align="start"
+              className="z-50 w-60 p-0 overflow-y-auto rounded-lg shadow-lg"
+            >
               <div
                 className="text-sm"
                 onClick={(e: React.MouseEvent<HTMLDivElement>) => {
@@ -223,7 +234,7 @@ export default function MCPPopover({
 
                     <div
                       onClick={handleRefresh}
-                      className="size-[24px] flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10 cursor-pointer"
+                      className="size-6 flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10 cursor-pointer"
                     >
                       <VisibleKey shortcut="R" onKeyPress={handleRefresh}>
                         <RefreshCw
@@ -281,7 +292,7 @@ export default function MCPPopover({
                           >
                             <div className="flex items-center gap-2 overflow-hidden">
                               {isAll ? (
-                                <Layers className="size-[16px] text-[#0287FF]" />
+                                <Layers className="min-w-4 min-h-4 size-4 text-[#0287FF]" />
                               ) : (
                                 <CommonIcon
                                   item={item}
@@ -291,7 +302,7 @@ export default function MCPPopover({
                                     "default_icon",
                                   ]}
                                   itemIcon={item.icon}
-                                  className="size-4"
+                                  className="min-w-4 min-h-4 size-4"
                                 />
                               )}
 
