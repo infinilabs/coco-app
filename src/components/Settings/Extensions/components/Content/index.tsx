@@ -165,7 +165,7 @@ const Item: FC<ItemProps> = (props) => {
             <SettingsInput
               defaultValue={alias}
               placeholder={t("settings.extensions.hints.addAlias")}
-              className="!w-[90%] !h-6 !border-transparent rounded-[4px]"
+              className="w-[90%]! h-6! border-transparent! rounded-[4px]"
               onChange={(value) => {
                 handleChange(String(value));
               }}

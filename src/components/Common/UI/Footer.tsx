@@ -117,7 +117,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
     <div
       data-tauri-drag-region={isTauri}
       className={clsx(
-        "px-4 z-999 mx-px h-8 absolute bottom-0 left-0 right-0 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between rounded-[6px] rounded-t-none",
+        "px-4 z-999 mx-px h-8 absolute bottom-0 left-0 right-0 border-t! border-gray-200 dark:border-gray-700 flex items-center justify-between rounded-[6px] rounded-t-none",
         {
           "overflow-hidden": isTauri,
         }

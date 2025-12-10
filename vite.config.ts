@@ -43,6 +43,11 @@ export default defineConfig({
       ignored: ["**/src-tauri/**"],
     },
     proxy: {
+      "/account": {
+        target: process.env.COCO_SERVER_URL,
+        changeOrigin: true,
+        secure: false,
+      },
       "/chat": {
         target: process.env.COCO_SERVER_URL,
         changeOrigin: true,
