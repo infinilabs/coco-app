@@ -7,7 +7,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { castArray, find, isNil } from "lodash-es";
 import { nanoid } from "nanoid";
 import { useCreation, useMount, useReactive } from "ahooks";
@@ -197,7 +201,7 @@ const InputUpload: FC<InputUploadProps> = (props) => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center justify-center h-[20px] px-1 rounded-[6px] transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]">
+      <DropdownMenuTrigger className="flex items-center justify-center h-[20px] px-1 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]">
         <Tooltip
           content={t("search.input.uploadFileHints.tooltip", {
             replace: [
@@ -212,7 +216,11 @@ const InputUpload: FC<InputUploadProps> = (props) => {
         </Tooltip>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent side="bottom" align="start" className="p-1 text-sm rounded-lg">
+      <DropdownMenuContent
+        side="bottom"
+        align="start"
+        className="p-1 text-sm rounded-lg"
+      >
         {menuItems.map((item) => {
           const { label, children, clickEvent } = item;
 

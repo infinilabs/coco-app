@@ -216,14 +216,14 @@
 /* Component styles */
 @layer components {
   .settings-input {
-    @apply block w-full rounded-[6px] border border-border
+    @apply block w-full rounded-md border border-border
         bg-background text-foreground
         shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
         transition-colors duration-200;
   }
 
   .settings-select {
-    @apply text-sm rounded-[6px] border border-border
+    @apply text-sm rounded-md border border-border
         bg-background text-foreground
         shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
         transition-colors duration-200;
