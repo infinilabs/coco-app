@@ -13,6 +13,8 @@ dist-ssr
 *.local
 out
 src/components/web
+SearchChat/
+web.md
 
 # Editor directories and files
 # .vscode/*
