@@ -19,6 +19,8 @@ Information about release notes of Coco App is provided here.
 
 ### ✈️ Improvements
 
+- chore: show error msg (not err code) when installing exts via deeplink fails #1007
+
 ## 0.9.1 (2025-12-05)
 
 ### ❌ Breaking changes
