@@ -24,9 +24,9 @@ const Tooltip2: FC<Tooltip2Props> = (props) => {
       <PopoverContent
         side="top"
         className={clsx(
-          "z-1000 p-2 rounded-[6px] text-xs text-white bg-black/75 hidden",
+          "z-1000 p-2 rounded-md text-xs text-white bg-black/75 hidden",
           {
-            "block": visible,
+            block: visible,
           },
           className
         )}

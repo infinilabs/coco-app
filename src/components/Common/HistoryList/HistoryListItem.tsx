@@ -145,7 +145,7 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
         )}
 
         <div className="flex items-center gap-2">
-          {(!isEdit && isSelected) && (
+          {!isEdit && isSelected && (
             <VisibleKey
               shortcut="↑↓"
               rootClassName="w-6"
@@ -156,13 +156,14 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger
               ref={moreButtonRef}
-              className={clsx(
-                "flex gap-2",
-                {
-                  "opacity-100 pointer-events-auto": !isEdit && (isSelected || isHovered),
-                  "opacity-0 pointer-events-none": !(!isEdit && (isSelected || isHovered)),
-                }
-              )}
+              className={clsx("flex gap-2", {
+                "opacity-100 pointer-events-auto":
+                  !isEdit && (isSelected || isHovered),
+                "opacity-0 pointer-events-none": !(
+                  !isEdit &&
+                  (isSelected || isHovered)
+                ),
+              })}
               onClick={(e) => {
                 e.stopPropagation();
                 setOpen((prev) => !prev);
@@ -200,7 +201,7 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
                 return (
                   <button
                     key={label}
-                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-[6px] hover:bg-[#EDEDED] dark:hover:bg-[#2B2C31] transition"
+                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-[#EDEDED] dark:hover:bg-[#2B2C31] transition"
                     onClick={onClick}
                   >
                     <VisibleKey shortcut={shortcut} onKeyPress={onClick}>

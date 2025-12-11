@@ -195,11 +195,14 @@
 
 /* Base styles (scoped to coco container to avoid global overrides) */
 @layer base {
+  html {
+    @apply overscroll-none;
+  }
   .coco-container * {
     @apply box-border outline-none;
   }
   .coco-container {
-    @apply antialiased rounded-xl bg-background text-foreground;
+    @apply antialiased rounded-xl text-foreground;
   }
   .coco-container .input-body {
     @apply rounded-xl overflow-hidden;
@@ -216,14 +219,14 @@
 /* Component styles */
 @layer components {
   .settings-input {
-    @apply block w-full rounded-[6px] border border-border
+    @apply block w-full rounded-md border border-border
         bg-background text-foreground
         shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
         transition-colors duration-200;
   }
 
   .settings-select {
-    @apply text-sm rounded-[6px] border border-border
+    @apply text-sm rounded-md border border-border
         bg-background text-foreground
         shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
         transition-colors duration-200;

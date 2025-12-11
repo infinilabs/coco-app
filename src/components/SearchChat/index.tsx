@@ -35,7 +35,10 @@ import {
   visibleSearchBar,
 } from "@/utils";
 import { useTauriFocus } from "@/hooks/useTauriFocus";
-import { POPOVER_PANEL_SELECTOR, WINDOW_CENTER_BASELINE_HEIGHT } from "@/constants";
+import {
+  POPOVER_PANEL_SELECTOR,
+  WINDOW_CENTER_BASELINE_HEIGHT,
+} from "@/constants";
 import { useChatStore } from "@/stores/chatStore";
 import { useSearchStore } from "@/stores/searchStore";
 
