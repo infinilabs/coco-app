@@ -177,7 +177,7 @@ export default function SearchPopover({
   return (
     <div
       className={clsx(
-        "flex justify-center items-center gap-1 h-5 px-1 rounded-[6px] transition cursor-pointer hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
+        "flex justify-center items-center gap-1 h-5 px-1 rounded-md transition cursor-pointer hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
         {
           "bg-[rgba(0,114,255,0.3)]!": isSearchActive,
         }

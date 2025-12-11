@@ -1,4 +1,8 @@
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { useWebConfigStore } from "@/stores/webConfigStore";
 import { LogOut } from "lucide-react";
 import clsx from "clsx";
@@ -65,7 +69,7 @@ const WebLogin: FC<WebLoginProps> = (props) => {
                   </div>
 
                   <button
-                    className="flex items-center justify-center size-6 bg-white dark:bg-[#202126] rounded-[8px] border dark:border-white/10"
+                    className="flex items-center justify-center size-6 bg-white dark:bg-[#202126] rounded-lg border dark:border-white/10"
                     onClick={async () => {
                       await Post("/account/logout", void 0);
 
