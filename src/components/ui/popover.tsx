@@ -11,8 +11,18 @@ const PopoverContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content> & {
     panelId?: string;
   }
->(({ className, panelId, side = "bottom", align = "start", sideOffset = 8, ...props }, ref) => (
-  <PopoverPortal>
+>(
+  (
+    {
+      className,
+      panelId,
+      side = "bottom",
+      align = "start",
+      sideOffset = 8,
+      ...props
+    },
+    ref
+  ) => (
     <PopoverPrimitive.Content
       ref={ref}
       side={side}
@@ -26,9 +36,8 @@ const PopoverContent = React.forwardRef<
       id={panelId}
       {...props}
     />
-  </PopoverPortal>
-));
+  )
+);
 PopoverContent.displayName = "PopoverContent";
 
-export { Popover, PopoverTrigger, PopoverContent };
-
+export { Popover, PopoverTrigger, PopoverContent, PopoverPortal };
