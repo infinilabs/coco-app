@@ -195,11 +195,14 @@
 
 /* Base styles (scoped to coco container to avoid global overrides) */
 @layer base {
+  html {
+    @apply overscroll-none;
+  }
   .coco-container * {
     @apply box-border outline-none;
   }
   .coco-container {
-    @apply antialiased rounded-xl bg-background text-foreground;
+    @apply antialiased rounded-xl text-foreground;
   }
   .coco-container .input-body {
     @apply rounded-xl overflow-hidden;
