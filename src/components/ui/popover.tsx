@@ -23,24 +23,21 @@ const PopoverContent = React.forwardRef<
     },
     ref
   ) => (
-    <PopoverPortal>
-      <PopoverPrimitive.Content
-        ref={ref}
-        side={side}
-        align={align}
-        sideOffset={sideOffset}
-        className={cn(
-          "z-50 rounded-lg border border-input bg-background p-1 text-foreground shadow-lg outline-none",
-          className
-        )}
-        data-popover-panel
-        id={panelId}
-        asChild={true}
-        {...props}
-      />
-    </PopoverPortal>
+    <PopoverPrimitive.Content
+      ref={ref}
+      side={side}
+      align={align}
+      sideOffset={sideOffset}
+      className={cn(
+        "z-50 rounded-lg border border-input bg-background p-1 text-foreground shadow-lg outline-none",
+        className
+      )}
+      data-popover-panel
+      id={panelId}
+      {...props}
+    />
   )
 );
 PopoverContent.displayName = "PopoverContent";
 
-export { Popover, PopoverTrigger, PopoverContent };
+export { Popover, PopoverTrigger, PopoverContent, PopoverPortal };
