@@ -1,4 +1,5 @@
 import { useEffect, memo, useRef, useCallback, useState } from "react";
+import clsx from "clsx";
 
 import DropdownList from "./DropdownList";
 import { SearchResults } from "@/components/Search/SearchResults";
@@ -12,7 +13,6 @@ import ExtensionStore from "./ExtensionStore";
 import platformAdapter from "@/utils/platformAdapter";
 import ViewExtension from "./ViewExtension";
 import { visibleFooterBar } from "@/utils";
-import clsx from "clsx";
 
 const SearchResultsPanel = memo<{
   input: string;

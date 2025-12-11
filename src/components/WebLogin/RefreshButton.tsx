@@ -25,8 +25,9 @@ const RefreshButton: FC<React.ComponentProps<typeof Button>> = (props) => {
     <Button
       {...rest}
       onClick={handleRefresh}
+      variant="ghost"
       className={clsx(
-        "flex items-center justify-center size-6 bg-white dark:bg-[#202126] rounded-[8px] border dark:border-white/10",
+        "flex items-center justify-center size-6 bg-white dark:bg-[#202126] rounded-[8px] border border-(--border) dark:border-white/10",
         className
       )}
       disabled={isRefreshing}

@@ -18,7 +18,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   options,
   value,
   onChange,
-  placeholder = "请选择",
+  placeholder = "",
   className,
   disabled,
 }) => {
@@ -68,7 +68,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
       <PopoverPrimitive.Content
         sideOffset={4}
         className={cn(
-          "z-50 w-[var(--radix-popover-trigger-width)] min-w-[220px] rounded-md border border-input bg-popover p-2 text-popover-foreground shadow-md outline-none",
+          "z-50 w-(--radix-popover-trigger-width) min-w-[220px] rounded-md border border-input bg-popover p-2 text-popover-foreground shadow-md outline-none",
           "ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         )}
       >

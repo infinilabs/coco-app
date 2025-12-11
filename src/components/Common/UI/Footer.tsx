@@ -71,7 +71,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
         <div className="flex items-center gap-2">
           <img
             src={selectedExtension.icon}
-            className="h-5 w-5 dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
+            className="h-5 w-5 rounded-full dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
           />
           <span className="text-sm">{selectedExtension.name}</span>
         </div>

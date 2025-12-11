@@ -16,7 +16,7 @@ import { Get } from "@/api/axiosRequest";
 import { useWebConfigStore } from "@/stores/webConfigStore";
 
 import "@/i18n";
-import "@/web.css";
+import "@/main.css";
 
 interface WebAppProps {
   headers?: Record<string, unknown>;
