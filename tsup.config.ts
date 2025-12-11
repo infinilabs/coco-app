@@ -1,6 +1,9 @@
 import { defineConfig } from 'tsup';
-import { writeFileSync, readFileSync, readdirSync, statSync } from 'fs';
+import { writeFileSync, readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { join, resolve } from 'path';
+import postcss from 'postcss';
+import tailwindcssPostcss from '@tailwindcss/postcss';
+import autoprefixer from 'autoprefixer';
 
 const projectPackageJson = JSON.parse(
   readFileSync(join(__dirname, 'package.json'), 'utf-8')
@@ -107,12 +110,12 @@ export default defineConfig({
 
     const packageJson = {
       name: "@infinilabs/search-chat",
-      version: "1.2.46",
+      version: "1.2.54-beat.3",
       main: "index.js",
       module: "index.js",
       type: "module",
       types: "index.d.ts",
-      dependencies: projectPackageJson.dependencies,
+      dependencies: projectPackageJson.dependencies as Record<string, string>,
       peerDependencies: {
         "react": "^18.0.0",
         "react-dom": "^18.0.0"
@@ -156,6 +159,55 @@ export default defineConfig({
       );
     } catch (error) {
       console.error('Failed to copy README.md:', error);
+    }
+
+    // Ensure Tailwind v4 directives (@import, @source, @apply, @theme) are compiled
+    // into a final CSS for the library consumer. Esbuild doesn't process Tailwind,
+    // so we run PostCSS with Tailwind + Autoprefixer here to produce index.css.
+    try {
+      const cssInPath = join(__dirname, 'src/main.css');
+      const cssOutPath = join(__dirname, 'out/search-chat/index.css');
+      const cssIn = readFileSync(cssInPath, 'utf-8');
+
+      const result = await postcss([
+        // Use the Tailwind v4 PostCSS plugin from @tailwindcss/postcss
+        tailwindcssPostcss,
+        autoprefixer,
+      ]).process(cssIn, {
+        from: cssInPath,
+        to: cssOutPath,
+        map: false,
+      });
+
+      // Inline absolute asset URLs as Base64 data URIs to avoid shipping extra files
+      // This fixes consumer bundlers failing to resolve "/assets/*.png" from node_modules
+      const assetRegex = /url\((['"])\/assets\/([^'"\)]+)\1\)/g;
+      const rewrittenCss = result.css.replace(assetRegex, (_m, quote, file) => {
+        const srcAssetPath = join(__dirname, 'src/assets', file);
+        if (!existsSync(srcAssetPath)) {
+          console.warn(`[build:web] Asset not found: ${srcAssetPath}`);
+          return `url(${quote}/assets/${file}${quote})`;
+        }
+        try {
+          const buffer = readFileSync(srcAssetPath);
+          const ext = file.split('.').pop()?.toLowerCase() ?? 'png';
+          const mime = ext === 'svg'
+            ? 'image/svg+xml'
+            : ext === 'jpg' || ext === 'jpeg'
+            ? 'image/jpeg'
+            : 'image/png';
+          const base64 = buffer.toString('base64');
+          const dataUrl = `data:${mime};base64,${base64}`;
+          return `url(${quote}${dataUrl}${quote})`;
+        } catch (err) {
+          console.error(`[build:web] Failed to inline asset ${file}:`, err);
+          return `url(${quote}/assets/${file}${quote})`;
+        }
+      });
+
+      writeFileSync(cssOutPath, rewrittenCss);
+    } catch (error) {
+      console.error('Failed to compile Tailwind CSS with PostCSS:', error);
     }
   }
 });

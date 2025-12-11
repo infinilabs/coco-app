@@ -16,7 +16,7 @@ import { Get } from "@/api/axiosRequest";
 import { useWebConfigStore } from "@/stores/webConfigStore";
 
 import "@/i18n";
-import "@/main.css";
+// Styles are distributed separately in the library build (out/search-chat/index.css)
 
 interface WebAppProps {
   headers?: Record<string, unknown>;

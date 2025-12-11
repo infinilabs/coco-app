@@ -193,26 +193,18 @@
   --coco-icon-color: rgb(255, 255, 255);
 }
 
-/* Base styles */
+/* Base styles (scoped to coco container to avoid global overrides) */
 @layer base {
-  * {
+  .coco-container * {
     @apply box-border outline-none;
   }
-  html {
-    @apply h-full overscroll-none select-none;
+  .coco-container {
+    @apply antialiased rounded-xl bg-background text-foreground;
   }
-  html,
-  body,
-  #root {
-    @apply h-full antialiased rounded-xl;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-  .input-body {
+  .coco-container .input-body {
     @apply rounded-xl overflow-hidden;
   }
-  .icon {
+  .coco-container .icon {
     width: 1em;
     height: 1em;
     vertical-align: -0.15em;
@@ -238,27 +230,27 @@
   }
 }
 
-/* Utility styles */
+/* Utility styles (scoped to coco container where reasonable) */
 @layer utilities {
   /* Fallback for Tailwind v4 class extraction edge-cases: ensure rounded-xl exists */
   .rounded-xl {
     border-radius: 0.75rem;
   }
   /* Scrollbar styles */
-  .custom-scrollbar {
+  .coco-container .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 transparent;
   }
 
-  .custom-scrollbar::-webkit-scrollbar {
+  .coco-container .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-track {
+  .coco-container .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb {
+  .coco-container .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: #cbd5e1;
     border-radius: 3px;
   }
