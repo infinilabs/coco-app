@@ -22,7 +22,7 @@ const WebLogin: FC<PopoverContentProps> = (props) => {
   const { t } = useTranslation();
 
   return (
-    <div className="relative text-sm">
+    <div className="flex items-center relative text-sm">
       <Popover>
         <PopoverTrigger className="cursor-pointer">
           {loginInfo ? (
@@ -40,7 +40,7 @@ const WebLogin: FC<PopoverContentProps> = (props) => {
             <div className="flex items-center justify-between mb-2">
               <span>{t("webLogin.title")}</span>
 
-              <RefreshButton />
+              <RefreshButton className="size-6" />
             </div>
 
             <div className="py-2">
