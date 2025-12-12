@@ -1,8 +1,8 @@
 // manual modification
-// import { createTauriAdapter } from "./tauriAdapter";
-// let platformAdapter = createTauriAdapter();
+import { createTauriAdapter } from "./tauriAdapter";
+let platformAdapter = createTauriAdapter();
 
-import { createWebAdapter } from "./webAdapter";
-let platformAdapter = createWebAdapter();
+// import { createWebAdapter } from "./webAdapter";
+// let platformAdapter = createWebAdapter();
 
 export default platformAdapter;
