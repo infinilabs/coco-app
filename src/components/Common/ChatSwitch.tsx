@@ -2,6 +2,7 @@ import React, { useEffect, useCallback } from "react";
 import { Bot, Search } from "lucide-react";
 
 import platformAdapter from "@/utils/platformAdapter";
+import clsx from "clsx";
 
 interface ChatSwitchProps {
   isChatMode: boolean;
@@ -39,9 +40,10 @@ const ChatSwitch: React.FC<ChatSwitchProps> = ({ isChatMode, onChange }) => {
         {!isChatMode ? <Search className="w-4 h-4 text-white" /> : <div></div>}
       </div>
       <div
-        className={`absolute top-[1px] left-[1px] h-[18px] w-[18px] bg-white rounded-full shadow-md transform transition-transform duration-300 ${
-          isChatMode ? "translate-x-5" : "translate-x-0"
-        }`}
+        className={clsx(
+          `absolute top-px h-4.5 w-4.5 bg-white rounded-full shadow-md transform transition-transform duration-300`,
+          [isChatMode ? "right-px" : "left-px"]
+        )}
       ></div>
     </div>
   );
