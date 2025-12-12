@@ -30,18 +30,29 @@ const ChatSwitch: React.FC<ChatSwitchProps> = ({ isChatMode, onChange }) => {
     <div
       role="switch"
       aria-checked={isChatMode}
-      className={`relative flex items-center justify-between w-10 h-[20px] rounded-full cursor-pointer transition-colors duration-300 ${
-        isChatMode ? "bg-[#0072ff]" : "bg-[var(--coco-primary-color)]"
+      className={`relative flex items-center justify-between w-10 h-5 rounded-full cursor-pointer transition-colors duration-300 ${
+        isChatMode ? "bg-[#0072ff]" : "bg-(--coco-primary-color)"
       }`}
       onClick={handleToggle}
     >
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none flex items-center justify-between px-1">
-        {isChatMode ? <Bot className="w-4 h-4 text-white" /> : <div></div>}
-        {!isChatMode ? <Search className="w-4 h-4 text-white" /> : <div></div>}
-      </div>
       <div
         className={clsx(
-          `absolute top-px h-4.5 w-4.5 bg-white rounded-full shadow-md transform transition-transform duration-300`,
+          "absolute inset-0 pointer-events-none flex items-center px-1 text-white",
+          {
+            "justify-end": !isChatMode,
+          }
+        )}
+      >
+        {isChatMode ? (
+          <Bot className="size-4" />
+        ) : (
+          <Search className="size-4" />
+        )}
+      </div>
+
+      <div
+        className={clsx(
+          "absolute top-px h-4.5 w-4.5 bg-white rounded-full shadow-md",
           [isChatMode ? "right-px" : "left-px"]
         )}
       ></div>
