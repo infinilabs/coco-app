@@ -12,10 +12,7 @@ const LoginButton = () => {
   };
 
   return (
-    <Button
-      className="px-6 h-8 text-white bg-[#0287FF] flex rounded-lg items-center justify-center gap-1"
-      onClick={handleClick}
-    >
+    <Button className="h-8" onClick={handleClick}>
       <span>{t("webLogin.buttons.login")}</span>
 
       <SquareArrowOutUpRight className="size-4" />

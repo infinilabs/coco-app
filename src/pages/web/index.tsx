@@ -16,6 +16,7 @@ import { Get } from "@/api/axiosRequest";
 import { useWebConfigStore } from "@/stores/webConfigStore";
 
 import "@/i18n";
+import { useIconfontScript } from "@/hooks/useScript";
 // Styles are distributed separately in the library build (out/search-chat/index.css)
 
 interface WebAppProps {
@@ -117,6 +118,7 @@ function WebApp({
   useEscape();
   useModifierKeyPress();
   useViewportHeight();
+  useIconfontScript();
 
   useEffect(() => {
     setDisabled(!loginInfo && !integration?.guest?.enabled);

@@ -204,7 +204,7 @@ export function ServerList({ clearChat }: ServerListProps) {
           side="bottom"
           align="end"
           onMouseMove={handleMouseMove}
-          className="z-10 min-w-[240px] rounded-lg shadow-lg"
+          className="z-10 min-w-60 rounded-lg shadow-lg"
         >
           <div className="p-3">
             <div className="flex items-center justify-between mb-3 whitespace-nowrap">

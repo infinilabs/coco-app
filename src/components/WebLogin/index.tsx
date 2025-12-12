@@ -22,9 +22,9 @@ const WebLogin: FC<PopoverContentProps> = (props) => {
   const { t } = useTranslation();
 
   return (
-    <div className="relative">
+    <div className="relative text-sm">
       <Popover>
-        <PopoverTrigger>
+        <PopoverTrigger className="cursor-pointer">
           {loginInfo ? (
             <UserAvatar />
           ) : (
@@ -35,12 +35,7 @@ const WebLogin: FC<PopoverContentProps> = (props) => {
           )}
         </PopoverTrigger>
 
-        <PopoverContent
-          {...props}
-          className={clsx(
-            "z-50 w-[300px] rounded-xl bg-white dark:bg-[#202126] text-sm/6 text-[#333] dark:text-[#D8D8D8] shadow-lg border dark:border-white/10"
-          )}
-        >
+        <PopoverContent {...props} className="p-0">
           <div className="p-3">
             <div className="flex items-center justify-between mb-2">
               <span>{t("webLogin.title")}</span>
@@ -93,7 +88,7 @@ const WebLogin: FC<PopoverContentProps> = (props) => {
             </div>
           </div>
 
-          <div className="p-3 border-t dark:border-t-white/10">
+          <div className="p-3 border-t border-border">
             <Copyright />
           </div>
         </PopoverContent>

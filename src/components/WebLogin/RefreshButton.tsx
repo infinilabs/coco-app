@@ -1,12 +1,12 @@
 import { RefreshCw } from "lucide-react";
 import { FC, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonProps } from "@/components/ui/button";
 import clsx from "clsx";
 
 import { useWebConfigStore } from "@/stores/webConfigStore";
 import VisibleKey from "../Common/VisibleKey";
 
-const RefreshButton: FC<React.ComponentProps<typeof Button>> = (props) => {
+const RefreshButton: FC<ButtonProps> = (props) => {
   const { className, ...rest } = props;
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { onRefresh } = useWebConfigStore();
@@ -25,11 +25,9 @@ const RefreshButton: FC<React.ComponentProps<typeof Button>> = (props) => {
     <Button
       {...rest}
       onClick={handleRefresh}
-      variant="ghost"
-      className={clsx(
-        "flex items-center justify-center size-6 bg-white dark:bg-[#202126] rounded-[8px] border border-(--border) dark:border-white/10",
-        className
-      )}
+      variant="outline"
+      size="icon"
+      className={clsx("size-8", className)}
       disabled={isRefreshing}
     >
       <VisibleKey shortcut="R" onKeyPress={handleRefresh}>

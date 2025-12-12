@@ -37,7 +37,7 @@ export const NoResults = () => {
           <div className="flex gap-2">
             <WebLoginButton />
 
-            <WebRefreshButton className="size-8" />
+            <WebRefreshButton />
           </div>
         </div>
       );
