@@ -132,7 +132,7 @@
 }
 
 /* Light theme extras for coco-specific tokens */
-.coco-container,
+.light.coco-container,
 [data-theme="light"] {
   --coco-primary-color: rgb(149, 5, 153);
   --coco-text-color: rgb(28, 30, 33);
@@ -162,8 +162,7 @@
 
 /* Dark theme tokens mapped for both `.dark` class and `[data-theme="dark"]` */
 
-.dark,
-.coco-container,
+.dark.coco-container,
 [data-theme="dark"] {
   /* shadcn blue theme (dark) */
   --background: hsl(222.2 84% 4.9%);
@@ -289,11 +288,11 @@
     border-radius: 3px;
   }
 
-  .dark .custom-scrollbar {
+  .dark.coco-container .custom-scrollbar {
     scrollbar-color: #475569 transparent;
   }
 
-  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  .dark.coco-container .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: #475569;
   }
 
