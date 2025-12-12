@@ -13,7 +13,7 @@ dist-ssr
 *.local
 out
 src/components/web
-SearchChat/
+SearchChatDemo/
 web.md
 
 # Editor directories and files
