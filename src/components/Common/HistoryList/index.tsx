@@ -9,6 +9,7 @@ import VisibleKey from "../VisibleKey";
 import { Chat } from "@/types/chat";
 import { closeHistoryPanel } from "@/utils";
 import HistoryListContent from "./HistoryListContent";
+import { Button } from "@/components/ui/button";
 
 interface HistoryListProps {
   historyPanelId?: string;
@@ -58,7 +59,7 @@ const HistoryList: FC<HistoryListProps> = (props) => {
       )}
     >
       <div className="flex gap-1 p-2 border-b border-input">
-        <div className="flex-1 h-8 flex items-center gap-2 px-2 rounded-lg border border-input bg-background transition focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
+        <div className="flex-1 h-8 flex items-center px-2 rounded-lg border border-input bg-background transition focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
           <VisibleKey
             shortcut="F"
             onKeyPress={() => {
@@ -79,18 +80,20 @@ const HistoryList: FC<HistoryListProps> = (props) => {
           />
         </div>
 
-        <div
-          className="size-8 flex items-center justify-center rounded-lg border border-input bg-background text-primary hover:bg-accent hover:text-accent-foreground cursor-pointer transition"
+        <Button
+          variant="outline"
+          size="icon"
+          className="size-8"
           onClick={handleRefresh}
         >
           <VisibleKey shortcut="R" onKeyPress={handleRefresh}>
             <RefreshCcw
-              className={clsx("size-4", {
+              className={clsx("size-4 text-[#0287FF]", {
                 "animate-spin": isRefresh,
               })}
             />
           </VisibleKey>
-        </div>
+        </Button>
       </div>
 
       <div className="flex-1 px-2 overflow-auto custom-scrollbar">
