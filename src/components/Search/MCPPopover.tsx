@@ -20,6 +20,7 @@ import NoDataImage from "@/components/Common/NoDataImage";
 import PopoverInput from "@/components/Common/PopoverInput";
 import Pagination from "@/components/Common/Pagination";
 import { SearchQuery } from "@/utils";
+import { Button } from "../ui/button";
 
 interface MCPPopoverProps {
   mcp_servers: any;
@@ -235,9 +236,11 @@ export default function MCPPopover({
                   <div className="flex justify-between">
                     <span>{t("search.input.searchPopover.title")}</span>
 
-                    <div
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="size-6"
                       onClick={handleRefresh}
-                      className="size-6 flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10 cursor-pointer"
                     >
                       <VisibleKey shortcut="R" onKeyPress={handleRefresh}>
                         <RefreshCw
@@ -246,7 +249,7 @@ export default function MCPPopover({
                           }`}
                         />
                       </VisibleKey>
-                    </div>
+                    </Button>
                   </div>
 
                   <div className="relative h-8 my-2">
