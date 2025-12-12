@@ -110,7 +110,7 @@ export default defineConfig({
 
     const packageJson = {
       name: "@infinilabs/search-chat",
-      version: "1.2.54-beat.7",
+      version: "1.2.54-beat.9",
       main: "index.js",
       module: "index.js",
       type: "module",
