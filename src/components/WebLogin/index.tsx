@@ -15,6 +15,7 @@ import LoginButton from "./LoginButton";
 import { FC } from "react";
 import Copyright from "../Common/Copyright";
 import { PopoverContentProps } from "@radix-ui/react-popover";
+import { Button } from "../ui/button";
 
 const WebLogin: FC<PopoverContentProps> = (props) => {
   const { integration, loginInfo, setIntegration, setLoginInfo } =
@@ -45,7 +46,7 @@ const WebLogin: FC<PopoverContentProps> = (props) => {
 
             <div className="py-2">
               {loginInfo ? (
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center gap-3">
                   <div className="flex items-center gap-3">
                     <UserAvatar
                       className="h-12 w-12"
@@ -53,13 +54,15 @@ const WebLogin: FC<PopoverContentProps> = (props) => {
                     />
 
                     <div className="flex flex-col">
-                      <span>{loginInfo.name}</span>
-                      <span className="text-[#999]">{loginInfo.email}</span>
+                      <span>{loginInfo?.name}</span>
+                      <span className="text-[#999]">{loginInfo?.email}</span>
                     </div>
                   </div>
 
-                  <button
-                    className="flex items-center justify-center size-6 bg-white dark:bg-[#202126] rounded-lg border dark:border-white/10"
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="size-6"
                     onClick={async () => {
                       await Post("/account/logout", void 0);
 
@@ -72,7 +75,7 @@ const WebLogin: FC<PopoverContentProps> = (props) => {
                         "size-3 text-[#0287FF] transition-transform duration-1000"
                       )}
                     />
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-3">
