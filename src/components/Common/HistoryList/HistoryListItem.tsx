@@ -8,6 +8,7 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
+  PopoverPortal,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import type { Chat } from "@/types/chat";
@@ -120,7 +121,7 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
           <Input
             autoFocus
             defaultValue={title}
-            className="flex-1 -mx-px outline-none bg-transparent border border-[#0061FF] rounded-[4px]"
+            className="flex-1 -mx-px outline-none bg-transparent border border-[#0061FF] rounded-sm"
             onKeyDown={(event) => {
               if (event.key !== "Enter") return;
 
@@ -179,45 +180,47 @@ const HistoryListItem: FC<HistoryListItemProps> = ({
               </VisibleKey>
             </PopoverTrigger>
 
-            <PopoverContent
-              side="bottom"
-              className="flex flex-col rounded-lg shadow-md z-100 bg-white dark:bg-[#202126] p-1 border border-black/2 dark:border-white/10"
-              onClick={(event) => {
-                event.stopPropagation();
-              }}
-              onMouseLeave={() => {
-                setOpen(false);
-              }}
-            >
-              {menuItems.map((menuItem) => {
-                const {
-                  label,
-                  icon: Icon,
-                  shortcut,
-                  iconColor,
-                  onClick,
-                } = menuItem;
+            <PopoverPortal>
+              <PopoverContent
+                side="bottom"
+                className="flex flex-col rounded-lg shadow-md z-100 bg-white dark:bg-[#202126] p-1 border border-black/2 dark:border-white/10"
+                onClick={(event) => {
+                  event.stopPropagation();
+                }}
+                onMouseLeave={() => {
+                  setOpen(false);
+                }}
+              >
+                {menuItems.map((menuItem) => {
+                  const {
+                    label,
+                    icon: Icon,
+                    shortcut,
+                    iconColor,
+                    onClick,
+                  } = menuItem;
 
-                return (
-                  <button
-                    key={label}
-                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-[#EDEDED] dark:hover:bg-[#2B2C31] transition"
-                    onClick={onClick}
-                  >
-                    <VisibleKey shortcut={shortcut} onKeyPress={onClick}>
-                      <Icon
-                        className="size-4"
-                        style={{
-                          color: iconColor,
-                        }}
-                      />
-                    </VisibleKey>
+                  return (
+                    <button
+                      key={label}
+                      className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-[#EDEDED] dark:hover:bg-[#2B2C31] transition"
+                      onClick={onClick}
+                    >
+                      <VisibleKey shortcut={shortcut} onKeyPress={onClick}>
+                        <Icon
+                          className="size-4"
+                          style={{
+                            color: iconColor,
+                          }}
+                        />
+                      </VisibleKey>
 
-                    <span>{t(label)}</span>
-                  </button>
-                );
-              })}
-            </PopoverContent>
+                      <span>{t(label)}</span>
+                    </button>
+                  );
+                })}
+              </PopoverContent>
+            </PopoverPortal>
           </Popover>
         </div>
       </div>

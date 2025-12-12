@@ -38,7 +38,7 @@ const DeleteDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="flex flex-col justify-between w-[360px] h-[160px] p-3 text-[#333] dark:text-white/90 border border-[#e6e6e6] bg-white dark:bg-[#202126] dark:border-white/10 shadow-xl rounded-lg">
+      <DialogContent className="flex flex-col justify-between w-[360px] h-40 p-3 text-[#333] dark:text-white/90 border border-[#e6e6e6] bg-white dark:bg-[#202126] dark:border-white/10 shadow-xl rounded-lg">
         <DialogHeader className="mb-2">
           <DialogTitle className="text-base font-bold">
             {t("history_list.delete_modal.title")}
@@ -58,11 +58,13 @@ const DeleteDialog = ({
           <VisibleKey
             shortcut="N"
             shortcutClassName="left-[unset] right-0"
-            onKeyPress={() => setIsOpen(false)}
+            onKeyPress={() => {
+              setIsOpen(false);
+            }}
           >
             <Button
+              variant="outline"
               autoFocus
-              className="h-8 px-4 text-sm text-[#666666] bg-[#F8F9FA] dark:text-white dark:bg-[#202126] border border-[#E6E6E6] dark:border-white/10 rounded-lg focus:border-black/30 dark:focus:border-white/50 transition"
               onClick={() => setIsOpen(false)}
               onKeyDown={(event) => {
                 handleEnter(event, () => {
@@ -80,7 +82,8 @@ const DeleteDialog = ({
             onKeyPress={handleRemove}
           >
             <Button
-              className="h-8 px-4 text-sm text-white bg-[#EF4444] rounded-lg border border-[#EF4444] focus:border-black/30 dark:focus:border-white/50 transition"
+              variant="destructive"
+              className="text-white"
               onClick={handleRemove}
               onKeyDown={(event) => {
                 handleEnter(event, handleRemove);
