@@ -137,7 +137,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
           </div>
         </div>
       ) : (
-        <WebLogin panelClassName="bottom-5 left-0" />
+        <WebLogin side="top" align="start" />
       )}
 
       <div className={`flex mobile:hidden items-center gap-3`}>

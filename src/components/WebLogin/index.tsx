@@ -14,13 +14,9 @@ import RefreshButton from "./RefreshButton";
 import LoginButton from "./LoginButton";
 import { FC } from "react";
 import Copyright from "../Common/Copyright";
+import { PopoverContentProps } from "@radix-ui/react-popover";
 
-interface WebLoginProps {
-  panelClassName: string;
-}
-
-const WebLogin: FC<WebLoginProps> = (props) => {
-  const { panelClassName } = props;
+const WebLogin: FC<PopoverContentProps> = (props) => {
   const { integration, loginInfo, setIntegration, setLoginInfo } =
     useWebConfigStore();
   const { t } = useTranslation();
@@ -40,10 +36,9 @@ const WebLogin: FC<WebLoginProps> = (props) => {
         </PopoverTrigger>
 
         <PopoverContent
-          side="bottom"
+          {...props}
           className={clsx(
-            "z-50 w-[300px] rounded-xl bg-white dark:bg-[#202126] text-sm/6 text-[#333] dark:text-[#D8D8D8] shadow-lg border dark:border-white/10",
-            panelClassName
+            "z-50 w-[300px] rounded-xl bg-white dark:bg-[#202126] text-sm/6 text-[#333] dark:text-[#D8D8D8] shadow-lg border dark:border-white/10"
           )}
         >
           <div className="p-3">

@@ -101,7 +101,7 @@ export function ChatHeader({
           )}
         </div>
       ) : (
-        <WebLogin panelClassName="top-8 right-0" />
+        <WebLogin side="bottom" align="end" />
       )}
     </header>
   );
