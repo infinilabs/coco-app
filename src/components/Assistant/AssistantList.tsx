@@ -20,6 +20,7 @@ import { AssistantFetcher } from "./AssistantFetcher";
 import AssistantItem from "./AssistantItem";
 import Pagination from "@/components/Common/Pagination";
 import { useSearchStore } from "@/stores/searchStore";
+import { Button } from "../ui/button";
 
 interface AssistantListProps {
   assistantIDs?: string[];
@@ -212,9 +213,11 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
               {t("assistant.popover.title")}（{pagination.total}）
             </div>
 
-            <button
+            <Button
+              variant="outline"
+              size="icon"
               onClick={handleRefresh}
-              className="flex items-center justify-center size-6 bg-background rounded-lg border border-input"
+              className="size-6"
               disabled={isRefreshing}
             >
               <VisibleKey shortcut="R" onKeyPress={handleRefresh}>
@@ -227,7 +230,7 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
                   )}
                 />
               </VisibleKey>
-            </button>
+            </Button>
           </div>
 
           <VisibleKey
