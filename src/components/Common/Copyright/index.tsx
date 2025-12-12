@@ -8,7 +8,7 @@ const Copyright = () => {
   const renderLogo = () => {
     return (
       <a href="https://coco.rs/" target="_blank">
-        <img src={isDark ? logoDark : logoLight} alt="Logo" className="h-4" />
+        <img src={isDark ? logoDark : logoLight} alt="Logo" className="h-4!" />
       </a>
     );
   };

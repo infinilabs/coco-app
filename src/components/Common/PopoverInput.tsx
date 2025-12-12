@@ -1,4 +1,5 @@
-import { Input, InputProps } from "@headlessui/react";
+import type { InputProps } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import { useKeyPress } from "ahooks";
 import { forwardRef, useImperativeHandle, useRef } from "react";
 
@@ -29,7 +30,7 @@ const PopoverInput = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
     }
   );
 
-  return <Input autoCorrect="off" ref={inputRef} {...props} />;
+  return <Input autoCorrect="off" ref={inputRef} {...(props as any)} />;
 });
 
 export default PopoverInput;

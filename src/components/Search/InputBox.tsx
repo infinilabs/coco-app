@@ -252,7 +252,7 @@ export default function ChatInput({
                 replace: [akiAiTooltipPrefix, askAI.name],
               })}
             </span>
-            <div className="flex items-center justify-center px-1 h-[20px] text-xs rounded-[6px] border border-black/10 dark:border-[#545454]">
+            <div className="flex items-center justify-center px-1 h-[20px] text-xs rounded-md border border-black/10 dark:border-[#545454]">
               {formatKey(modifierKey)} + {formatKey("Enter")}
             </div>
           </div>
@@ -277,7 +277,7 @@ export default function ChatInput({
       <VisibleKey
         shortcut={returnToInput}
         rootClassName="flex-1 flex items-center justify-center"
-        shortcutClassName="!left-0 !translate-x-0"
+        shortcutClassName="!left-auto !right-2 !translate-x-0"
       >
         <AutoResizeTextarea
           ref={textareaRef}
@@ -308,14 +308,14 @@ export default function ChatInput({
     <div className={`w-full relative`}>
       <div
         ref={containerRef}
-        className={`flex items-center dark:text-[#D8D8D8] rounded-[6px] transition-all relative overflow-hidden`}
+        className={`flex items-center dark:text-[#D8D8D8] rounded-md transition-all relative overflow-hidden`}
       >
         {lineCount === 1 && renderSearchIcon()}
 
         {visibleSearchBar() && (
           <div
             className={clsx(
-              "relative w-full p-2 bg-[#ededed] dark:bg-[#202126]",
+              "min-h-10 relative w-full p-[7px] bg-[#ededed] dark:bg-[#202126]",
               {
                 "flex items-center gap-2": lineCount === 1,
               }

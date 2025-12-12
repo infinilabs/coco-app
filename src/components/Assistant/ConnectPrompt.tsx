@@ -28,7 +28,7 @@ const ConnectPrompt = () => {
         <p className="mb-4 w-[388px]">{t("assistant.chat.connect_tip")}</p>
 
         <button
-          className="flex items-center gap-2 px-6 py-2 rounded-[6px] text-[#0072ff] transition-colors"
+          className="flex items-center gap-2 px-6 py-2 rounded-md text-[#0072ff] transition-colors"
           onClick={handleConnect}
         >
           <span>{t("assistant.chat.connect")}</span>

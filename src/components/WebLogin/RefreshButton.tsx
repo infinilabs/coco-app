@@ -1,6 +1,6 @@
 import { RefreshCw } from "lucide-react";
 import { FC, useState } from "react";
-import { Button, ButtonProps } from "@headlessui/react";
+import { Button, ButtonProps } from "@/components/ui/button";
 import clsx from "clsx";
 
 import { useWebConfigStore } from "@/stores/webConfigStore";
@@ -25,10 +25,9 @@ const RefreshButton: FC<ButtonProps> = (props) => {
     <Button
       {...rest}
       onClick={handleRefresh}
-      className={clsx(
-        "flex items-center justify-center size-6 bg-white dark:bg-[#202126] rounded-[8px] border dark:border-white/10",
-        className
-      )}
+      variant="outline"
+      size="icon"
+      className={clsx("size-8", className)}
       disabled={isRefreshing}
     >
       <VisibleKey shortcut="R" onKeyPress={handleRefresh}>

@@ -21,8 +21,15 @@ import SettingsInput from "@/components//Settings/SettingsInput";
 import platformAdapter from "@/utils/platformAdapter";
 import UpdateSettings from "./components/UpdateSettings";
 import SettingsToggle from "../SettingsToggle";
-// import SelectionSettings from "./components/Selection";
-// import { isMac } from "@/utils/platform";
+import SelectionSettings from "./components/Selection";
+import { isMac } from "@/utils/platform";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Advanced = () => {
   const { t } = useTranslation();
@@ -169,29 +176,27 @@ const Advanced = () => {
               title={t(title)}
               description={t(description)}
             >
-              <select
-                value={value}
-                onChange={(event) => {
-                  onChange(event.target.value as never);
-                }}
-                className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {items.map((item) => {
-                  const { label, value } = item;
-
-                  return (
-                    <option key={value} value={value}>
-                      {t(label)}
-                    </option>
-                  );
-                })}
-              </select>
+              <Select value={value as string} onValueChange={(v) => onChange(v as never)}>
+                <SelectTrigger className="h-8 w-44">
+                  <SelectValue className="truncate" />
+                </SelectTrigger>
+                <SelectContent>
+                  {items.map((item) => {
+                    const { label, value } = item;
+                    return (
+                      <SelectItem key={value} value={value as string}>
+                        {t(label)}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
             </SettingsItem>
           );
         })}
       </div>
 
-      {/* {isMac && <SelectionSettings />} */}
+      {isMac && <SelectionSettings />}
 
       <Shortcuts />
 
@@ -278,33 +283,35 @@ const Advanced = () => {
             "settings.advanced.other.localSearchResultWeight.description"
           )}
         >
-          <select
-            value={localSearchResultWeight}
-            onChange={(event) => {
-              const weight = Number(event.target.value);
-
+          <Select
+            value={String(localSearchResultWeight)}
+            onValueChange={(v) => {
+              const weight = Number(v);
               setLocalSearchResultWeight(weight);
-
               platformAdapter.invokeBackend("set_local_query_source_weight", {
                 value: weight,
               });
             }}
-            className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="0.5">
-              {t("settings.advanced.other.localSearchResultWeight.options.low")}
-            </option>
-            <option value="1">
-              {t(
-                "settings.advanced.other.localSearchResultWeight.options.medium"
-              )}
-            </option>
-            <option value="2">
-              {t(
-                "settings.advanced.other.localSearchResultWeight.options.high"
-              )}
-            </option>
-          </select>
+            <SelectTrigger className="h-8 w-44">
+              <SelectValue className="truncate" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0.5">
+                {t("settings.advanced.other.localSearchResultWeight.options.low")}
+              </SelectItem>
+              <SelectItem value="1">
+                {t(
+                  "settings.advanced.other.localSearchResultWeight.options.medium"
+                )}
+              </SelectItem>
+              <SelectItem value="2">
+                {t(
+                  "settings.advanced.other.localSearchResultWeight.options.high"
+                )}
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </SettingsItem>
 
         <SettingsItem

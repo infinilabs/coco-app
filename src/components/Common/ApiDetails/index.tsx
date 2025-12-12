@@ -62,13 +62,13 @@ const ApiDetails: React.FC = () => {
             {logs.map((log, index) => (
               <div
                 key={index}
-                className="p-4 border rounded-[6px] shadow-sm bg-gray-50"
+                className="p-4 border rounded-md shadow-sm bg-gray-50"
               >
                 <h4 className="font-semibold text-gray-800">
                   Latest Request {index + 1}:
                 </h4>
                 <div className="text-sm text-gray-700 mt-1">
-                  <pre className="bg-gray-100 p-2 rounded-[6px] whitespace-pre-wrap">
+                  <pre className="bg-gray-100 p-2 rounded-md whitespace-pre-wrap">
                     {JSON.stringify(log.request, null, 2)}
                   </pre>
                 </div>
@@ -87,7 +87,7 @@ const ApiDetails: React.FC = () => {
                     </h4>
                     {showIndex === index ? (
                       <div className="text-sm text-gray-700 mt-1">
-                        <pre className="bg-green-100 p-2 rounded-[6px] text-green-700 whitespace-pre-wrap">
+                        <pre className="bg-green-100 p-2 rounded-md text-green-700 whitespace-pre-wrap">
                           {JSON.stringify(log.response, null, 2)}
                         </pre>
                       </div>
@@ -98,7 +98,7 @@ const ApiDetails: React.FC = () => {
                   <>
                     <h4 className="font-semibold text-red-800 mt-4">Error:</h4>
                     <div className="text-sm text-gray-700 mt-1">
-                      <pre className="bg-red-100 p-2 rounded-[6px] text-red-700 whitespace-pre-wrap">
+                      <pre className="bg-red-100 p-2 rounded-md text-red-700 whitespace-pre-wrap">
                         {JSON.stringify(log.error, null, 2)}
                       </pre>
                     </div>

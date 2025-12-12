@@ -12,7 +12,7 @@ const UserAvatar: FC<UserAvatarProps> = (props) => {
   return (
     <div
       className={clsx(
-        "flex items-center justify-center size-5 rounded-full border dark:border-white/10 overflow-hidden",
+        "flex items-center justify-center size-5 rounded-full border border-border overflow-hidden",
         className
       )}
     >

@@ -1,7 +1,14 @@
 import { useTranslation } from "react-i18next";
 import { Command, RotateCcw } from "lucide-react";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 import { useEffect } from "react";
-import { Button } from "@headlessui/react";
+import { Button } from "@/components/ui/button";
 import clsx from "clsx";
 
 import { formatKey } from "@/utils/keyboardUtils";
@@ -246,21 +253,21 @@ const Shortcuts = () => {
           title={t("settings.advanced.shortcuts.modifierKey.title")}
           description={t("settings.advanced.shortcuts.modifierKey.description")}
         >
-          <select
+          <Select
             value={modifierKey}
-            className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onChange={(event) => {
-              setModifierKey(event.target.value as ModifierKey);
-            }}
+            onValueChange={(v) => setModifierKey(v as ModifierKey)}
           >
-            {modifierKeys.map((item) => {
-              return (
-                <option key={item} value={item}>
+            <SelectTrigger className="h-8 w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {modifierKeys.map((item) => (
+                <SelectItem key={item} value={item}>
                   {formatKey(item)}
-                </option>
-              );
-            })}
-          </select>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </SettingsItem>
 
         {list.map((item) => {
@@ -279,6 +286,7 @@ const Shortcuts = () => {
                 <span>{formatKey(modifierKey)}</span>
                 <span>+</span>
                 <SettingsInput
+                  className="w-20"
                   value={value}
                   max={1}
                   onChange={(value) => {
@@ -287,23 +295,14 @@ const Shortcuts = () => {
                 />
 
                 <Button
+                  variant="outline"
                   disabled={disabled}
-                  className={clsx(
-                    "flex items-center justify-center size-8 rounded-[6px] border border-black/5 dark:border-white/10 transition",
-                    {
-                      "hover:border-[#0072FF]": !disabled,
-                      "opacity-70 cursor-not-allowed": disabled,
-                    }
-                  )}
+                  size="icon"
                   onClick={() => {
                     handleChange(initialValue, setValue);
                   }}
                 >
-                  <RotateCcw
-                    className={clsx("size-4 text-[#999]", {
-                      "!text-[#0072FF]": !disabled,
-                    })}
-                  />
+                  <RotateCcw className={clsx("size-4 opacity-80")} />
                 </Button>
               </div>
             </SettingsItem>

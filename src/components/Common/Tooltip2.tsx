@@ -1,40 +1,38 @@
-import {
-  Popover,
-  PopoverButton,
-  PopoverPanel,
-  PopoverPanelProps,
-} from "@headlessui/react";
+import { FC, ReactNode } from "react";
 import { useBoolean } from "ahooks";
 import clsx from "clsx";
-import { FC, ReactNode } from "react";
-
-interface Tooltip2Props extends PopoverPanelProps {
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+interface Tooltip2Props {
   content: string;
   children: ReactNode;
+  className?: string;
 }
 
 const Tooltip2: FC<Tooltip2Props> = (props) => {
-  const { content, children, anchor = "top", ...rest } = props;
+  const { content, children, className } = props;
   const [visible, { setTrue, setFalse }] = useBoolean(false);
 
   return (
     <Popover>
-      <PopoverButton onMouseOver={setTrue} onMouseOut={setFalse}>
+      <PopoverTrigger onMouseOver={setTrue} onMouseOut={setFalse}>
         {children}
-      </PopoverButton>
-      <PopoverPanel
-        {...rest}
-        static
-        anchor={anchor}
+      </PopoverTrigger>
+      <PopoverContent
+        side="top"
         className={clsx(
-          "fixed z-1000 p-2 rounded-[6px] text-xs text-white bg-black/75 hidden",
+          "z-1000 p-2 rounded-md text-xs text-white bg-black/75 hidden",
           {
-            "!block": visible,
-          }
+            block: visible,
+          },
+          className
         )}
       >
         {content}
-      </PopoverPanel>
+      </PopoverContent>
     </Popover>
   );
 };

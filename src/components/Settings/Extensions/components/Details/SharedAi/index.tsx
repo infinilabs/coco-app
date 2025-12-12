@@ -4,7 +4,13 @@ import { isArray } from "lodash-es";
 import { useAsyncEffect, useMount } from "ahooks";
 
 import { AssistantFetcher } from "@/components/Assistant/AssistantFetcher";
-import SettingsSelectPro from "@/components/Settings/SettingsSelectPro";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAppStore } from "@/stores/appStore";
 import { ExtensionId } from "@/components/Settings/Extensions/index";
 import { useConnectStore } from "@/stores/connectStore";
@@ -175,27 +181,40 @@ const SharedAi: FC<SharedAiProps> = (props) => {
     <>
       <div className="text-[#999]">{renderDescription()}</div>
 
-      <div className="mt-6 text-[#333] dark:text-white/90">
+      <div className="mt-6">
         {t("settings.extensions.shardAi.details.linkedAssistant.title")}
       </div>
 
       {selectList.map((item) => {
-        const { label, value, data, searchable, onChange, onSearch } = item;
+        const { label, value, data, searchable, onChange } = item;
 
         return (
           <div key={label} className="mt-4">
             <div className="mb-2 text-[#666] dark:text-white/70">{label}</div>
 
-            <SettingsSelectPro
+            <Select
               value={value}
-              options={data}
-              searchable={searchable}
-              onChange={onChange}
-              onSearch={onSearch}
-              placeholder={
-                isLoadingAssistants && searchable ? "Loading..." : undefined
-              }
-            />
+              onValueChange={(v) => onChange?.(v)}
+              disabled={searchable && isLoadingAssistants}
+            >
+              <SelectTrigger className="ml-1 h-9 w-full max-w-[480px]">
+                <SelectValue
+                  className="truncate"
+                  placeholder={
+                    (searchable && isLoadingAssistants
+                      ? (t("common.loading") as string)
+                      : undefined) as string | undefined
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {data?.map((opt: any) => (
+                  <SelectItem key={opt.id} value={opt.id}>
+                    {opt.name || opt.id}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         );
       })}

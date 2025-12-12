@@ -71,7 +71,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
         <div className="flex items-center gap-2">
           <img
             src={selectedExtension.icon}
-            className="size-5 dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
+            className="h-5 w-5 rounded-full dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
           />
           <span className="text-sm">{selectedExtension.name}</span>
         </div>
@@ -81,7 +81,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
     if (visibleExtensionStore) {
       return (
         <div className="flex items-center gap-2">
-          <FontIcon name="font_Store" className="size-5" />
+          <FontIcon name="font_Store" className="h-5 w-5" />
           <span className="text-sm">Extension Store</span>
         </div>
       );
@@ -100,7 +100,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
           {hasUpdate ? (
             <div className="cursor-pointer" onClick={() => setVisible(true)}>
               <span>{t("search.footer.updateAvailable")}</span>
-              <span className="absolute top-0 -right-2 size-1.5 bg-[#FF3434] rounded-full"></span>
+              <span className="absolute top-0 -right-2 h-1.5 w-1.5 bg-[#FF3434] rounded-full"></span>
             </div>
           ) : (
             sourceData?.source?.name ||
@@ -117,7 +117,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
     <div
       data-tauri-drag-region={isTauri}
       className={clsx(
-        "px-4 z-999 mx-[1px] h-8 absolute bottom-0 left-0 right-0 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between rounded-[6px] rounded-t-none",
+        "px-4 z-999 mx-px h-8 absolute bottom-0 left-0 right-0 border-t! border-gray-200 dark:border-gray-700 flex items-center justify-between rounded-md rounded-t-none",
         {
           "overflow-hidden": isTauri,
         }
@@ -137,7 +137,7 @@ export default function Footer({ setIsPinnedWeb }: FooterProps) {
           </div>
         </div>
       ) : (
-        <WebLogin panelClassName="bottom-5 left-0" />
+        <WebLogin side="top" align="start" />
       )}
 
       <div className={`flex mobile:hidden items-center gap-3`}>

@@ -82,7 +82,7 @@ const FileSearch = () => {
         {t("settings.extensions.fileSearch.description")}
       </div>
 
-      <div className="mt-4 mb-2 text-[#666] dark:text-white/70">
+      <div className="mt-4 mb-2">
         {t("settings.extensions.fileSearch.label.searchBy")}
       </div>
 
@@ -99,10 +99,7 @@ const FileSearch = () => {
 
         return (
           <>
-            <div
-              key={label}
-              className="mt-4 mb-2 text-[#666] dark:text-white/70"
-            >
+            <div key={label} className="mt-4 mb-2">
               {label}
             </div>
 
@@ -111,16 +108,16 @@ const FileSearch = () => {
         );
       })}
 
-      <div className="mt-4 mb-2 text-[#666] dark:text-white/70">
+      <div className="mt-4 mb-2">
         {t("settings.extensions.fileSearch.label.searchFileTypes")}
       </div>
 
-      <div className="flex flex-wrap gap-2 p-2 border rounded-[6px] dark:border-gray-700">
+      <div className="flex flex-wrap items-center gap-2 p-2 rounded-lg border border-input bg-background hover:border-[#0072FF] focus-within:border-[#0072FF] transition">
         {config.file_types.map((item) => {
           return (
             <div
               key={item}
-              className="flex items-center gap-1 h-6 px-1 rounded bg-[#f0f0f0] dark:bg-[#444]"
+              className="flex items-center gap-1 h-6 px-2 rounded-full text-xs border border-black/5 dark:border-white/10 bg-black/5 dark:bg-white/10"
             >
               <span>{item}</span>
 
@@ -140,7 +137,7 @@ const FileSearch = () => {
 
         <SettingsInput
           placeholder=".*"
-          className="h-6 border-0 -ml-2"
+          className="h-6 w-24 px-2 border-0 outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
           onKeyDown={(event) => {
             if (event.code !== "Enter") return;
 

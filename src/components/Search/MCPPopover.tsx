@@ -1,10 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { ChevronDownIcon, RefreshCw, Layers, Hammer } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { useDebounce } from "ahooks";
 
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import CommonIcon from "@/components/Common/Icons/CommonIcon";
 import { useConnectStore } from "@/stores/connectStore";
 import { useSearchStore } from "@/stores/searchStore";
@@ -16,6 +20,7 @@ import NoDataImage from "@/components/Common/NoDataImage";
 import PopoverInput from "@/components/Common/PopoverInput";
 import Pagination from "@/components/Common/Pagination";
 import { SearchQuery } from "@/utils";
+import { Button } from "../ui/button";
 
 interface MCPPopoverProps {
   mcp_servers: any;
@@ -79,6 +84,7 @@ export default function MCPPopover({
   }, [currentService?.id, debouncedKeyword, getMCPByServer]);
 
   const popoverButtonRef = useRef<HTMLButtonElement>(null);
+  const [open, setOpen] = useState(false);
   const mcpSearch = useShortcutsStore((state) => state.mcpSearch);
   const mcpSearchScope = useShortcutsStore((state) => {
     return state.mcpSearchScope;
@@ -166,9 +172,9 @@ export default function MCPPopover({
   return (
     <div
       className={clsx(
-        "flex justify-center items-center gap-1 h-[20px] px-1 rounded-[6px] transition hover:bg-[#EDEDED] dark:hover:bg-[#202126] cursor-pointer",
+        "flex justify-center items-center gap-1 h-5 px-1 rounded-md transition cursor-pointer hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
         {
-          "!bg-[rgba(0,114,255,0.3)]": isMCPActive,
+          "bg-[rgba(0,114,255,0.3)]!": isMCPActive,
         }
       )}
       onClick={setIsMCPActive}
@@ -191,8 +197,14 @@ export default function MCPPopover({
             {t("search.input.MCP")}
           </span>
 
-          <Popover className="relative">
-            <PopoverButton ref={popoverButtonRef} className="flex items-center">
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger
+              ref={popoverButtonRef}
+              className="flex items-center"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
               <VisibleKey
                 shortcut={mcpSearchScope}
                 onKeyPress={() => {
@@ -200,29 +212,35 @@ export default function MCPPopover({
                 }}
               >
                 <ChevronDownIcon
-                  className={clsx("size-3", [
+                  className={clsx("size-3 cursor-pointer", [
                     isMCPActive
                       ? "text-[#0072FF] dark:text-[#0072FF]"
                       : "text-[#333] dark:text-white",
                   ])}
                 />
               </VisibleKey>
-            </PopoverButton>
+            </PopoverTrigger>
 
-            <PopoverPanel className="absolute z-50 left-0 bottom-6 w-[240px] overflow-y-auto bg-white dark:bg-[#202126] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+            <PopoverContent
+              side="top"
+              align="start"
+              className="z-50 w-60 overflow-y-auto rounded-lg shadow-lg p-0"
+            >
               <div
                 className="text-sm"
-                onClick={(e) => {
+                onClick={(e: React.MouseEvent<HTMLDivElement>) => {
                   e.stopPropagation();
                 }}
               >
-                <div className="p-3">
+                <div className="p-2">
                   <div className="flex justify-between">
                     <span>{t("search.input.searchPopover.title")}</span>
 
-                    <div
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="size-6"
                       onClick={handleRefresh}
-                      className="size-[24px] flex justify-center items-center rounded-lg border border-black/10 dark:border-white/10 cursor-pointer"
                     >
                       <VisibleKey shortcut="R" onKeyPress={handleRefresh}>
                         <RefreshCw
@@ -231,7 +249,7 @@ export default function MCPPopover({
                           }`}
                         />
                       </VisibleKey>
-                    </div>
+                    </Button>
                   </div>
 
                   <div className="relative h-8 my-2">
@@ -250,7 +268,7 @@ export default function MCPPopover({
                       value={keyword}
                       ref={searchInputRef}
                       className="size-full px-2 rounded-lg border dark:border-white/10 bg-transparent"
-                      onChange={(e) => {
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                         setKeyword(e.target.value);
                       }}
                     />
@@ -280,7 +298,7 @@ export default function MCPPopover({
                           >
                             <div className="flex items-center gap-2 overflow-hidden">
                               {isAll ? (
-                                <Layers className="size-[16px] text-[#0287FF]" />
+                                <Layers className="min-w-4 min-h-4 size-4 text-[#0287FF]" />
                               ) : (
                                 <CommonIcon
                                   item={item}
@@ -290,7 +308,7 @@ export default function MCPPopover({
                                     "default_icon",
                                   ]}
                                   itemIcon={item.icon}
-                                  className="size-4"
+                                  className="min-w-4 min-h-4 size-4"
                                 />
                               )}
 
@@ -308,7 +326,7 @@ export default function MCPPopover({
                                 }}
                               />
 
-                              <div className="flex justify-center items-center size-[24px]">
+                              <div className="flex justify-center items-center size-6">
                                 <Checkbox
                                   checked={isChecked()}
                                   indeterminate={isAll}
@@ -339,7 +357,7 @@ export default function MCPPopover({
                   />
                 )}
               </div>
-            </PopoverPanel>
+            </PopoverContent>
           </Popover>
         </>
       )}

@@ -1,13 +1,16 @@
-import { Menu, MenuButton } from "@headlessui/react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import logoImg from "@/assets/icon.svg";
 
 const Footer = () => {
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
+    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-white/10">
       <div className="max-w-6xl mx-auto px-4 h-8 flex items-center justify-between">
-        <Menu as="div" className="relative">
-          <MenuButton className="h-7 flex items-center space-x-2 px-1 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+        <DropdownMenu>
+          <DropdownMenuTrigger className="h-7 flex items-center space-x-2 px-1 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
             <img
               src={logoImg}
               className="w-5 h-5 text-gray-600 dark:text-gray-400"
@@ -16,7 +19,7 @@ const Footer = () => {
               Coco
             </span>
             {/* <ChevronUp className="w-4 h-4 text-gray-500 dark:text-gray-400" /> */}
-          </MenuButton>
+          </DropdownMenuTrigger>
 
           {/* <MenuItems className="absolute bottom-full mb-2 left-0 w-64 rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
             <div className="p-1">
@@ -27,7 +30,7 @@ const Footer = () => {
                       active
                         ? "bg-gray-100 dark:bg-gray-700"
                         : "text-gray-900 dark:text-gray-100"
-                    } group flex w-full items-center rounded-[6px] px-3 py-2 text-sm`}
+                    } group flex w-full items-center rounded-md px-3 py-2 text-sm`}
                   >
                     <Home className="w-4 h-4 mr-2" />
                     <Link to={`/`}>Home</Link>
@@ -41,7 +44,7 @@ const Footer = () => {
                       active
                         ? "bg-gray-100 dark:bg-gray-700"
                         : "text-gray-900 dark:text-gray-100"
-                    } group flex w-full items-center rounded-[6px] px-3 py-2 text-sm`}
+                    } group flex w-full items-center rounded-md px-3 py-2 text-sm`}
                   >
                     <User className="w-4 h-4 mr-2" />
                     Profile
@@ -55,7 +58,7 @@ const Footer = () => {
                       active
                         ? "bg-gray-100 dark:bg-gray-700"
                         : "text-gray-900 dark:text-gray-100"
-                    } group flex w-full items-center rounded-[6px] px-3 py-2 text-sm`}
+                    } group flex w-full items-center rounded-md px-3 py-2 text-sm`}
                   >
                     <Settings className="w-4 h-4 mr-2" />
                     <Link to={`settings`}>Settings</Link>
@@ -70,7 +73,7 @@ const Footer = () => {
                       active
                         ? "bg-gray-100 dark:bg-gray-700"
                         : "text-gray-900 dark:text-gray-100"
-                    } group flex w-full items-center rounded-[6px] px-3 py-2 text-sm`}
+                    } group flex w-full items-center rounded-md px-3 py-2 text-sm`}
                   >
                     <LogOut className="w-4 h-4 mr-2" />
                     Sign Out
@@ -79,7 +82,7 @@ const Footer = () => {
               </MenuItem>
             </div>
           </MenuItems> */}
-        </Menu>
+        </DropdownMenu>
 
         <div className="flex items-center space-x-4">
           <span className="text-xs text-gray-500 dark:text-gray-400">

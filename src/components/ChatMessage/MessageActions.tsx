@@ -107,7 +107,7 @@ export const MessageActions = ({
         <button
           id={copyButtonId}
           onClick={handleCopy}
-          className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
+          className="p-1 rounded-lg hover:bg-muted transition-colors"
         >
           {copied ? (
             <Check
@@ -131,7 +131,7 @@ export const MessageActions = ({
       {!isRefreshOnly && (
         <button
           onClick={handleLike}
-          className={`p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors ${
+          className={`p-1 rounded-lg hover:bg-muted transition-colors ${
             liked ? "animate-shake" : ""
           }`}
         >
@@ -151,7 +151,7 @@ export const MessageActions = ({
       {!isRefreshOnly && (
         <button
           onClick={handleDislike}
-          className={`p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors ${
+          className={`p-1 rounded-lg hover:bg-muted transition-colors ${
             disliked ? "animate-shake" : ""
           }`}
         >
@@ -172,7 +172,7 @@ export const MessageActions = ({
         <>
           <button
             onClick={handleSpeak}
-            className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
+            className="p-1 rounded-lg hover:bg-muted transition-colors"
           >
             <Volume2
               className={`w-4 h-4 ${
@@ -191,7 +191,7 @@ export const MessageActions = ({
       {question && (
         <button
           onClick={handleResend}
-          className={`p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors ${
+          className={`p-1 rounded-lg hover:bg-muted transition-colors ${
             isResending ? "animate-spin" : ""
           }`}
         >

@@ -40,7 +40,7 @@ const AiOverview: FC<AiSummaryProps> = (props) => {
         )}
       >
         <div
-          className="absolute top-2 right-2 flex items-center justify-center size-[20px] border rounded-[6px] cursor-pointer dark:border-[#282828]"
+          className="absolute top-2 right-2 flex items-center justify-center size-[20px] border rounded-md cursor-pointer dark:border-[#282828]"
           onClick={() => {
             setVisible(false);
           }}

@@ -122,7 +122,7 @@ const Splash = ({ assistantIDs = [], startPage }: SplashProps) => {
             return (
               <li key={id} className="mobile:w-full w-1/2 p-1">
                 <div
-                  className="group h-[74px] px-3 py-2 text-sm rounded-xl border dark:border-[#262626] bg-white dark:bg-black cursor-pointer transition hover:!border-[#0087FF]"
+                  className="group h-[74px] px-3 py-2 text-sm rounded-xl border border-input bg-white dark:bg-black cursor-pointer transition hover:border-[#0087FF]!"
                   onClick={() => {
                     setCurrentAssistant(item);
 

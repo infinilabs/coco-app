@@ -41,7 +41,7 @@ function UniversalIcon({
   icon,
   defaultIcon = File,
   appIcon = false,
-  className = "w-5 h-5 flex-shrink-0",
+  className = "w-5 h-5 shrink-0",
   onClick = () => {},
   wrapWithIconWrapper = true,
 }: UniversalIconProps) {
@@ -51,7 +51,7 @@ function UniversalIcon({
   const renderImageIcon = (src: string) => {
     const img = (
       <img
-        className={`dark:drop-shadow-[0_0_6px_rgb(255,255,255)] ${className}`}
+        className={`rounded-full dark:drop-shadow-[0_0_6px_rgb(255,255,255)] ${className}`}
         src={src}
         alt="icon"
       />
@@ -69,7 +69,7 @@ function UniversalIcon({
   const renderAppIcon = (src: string) => {
     const img = (
       <img
-        className={`dark:drop-shadow-[0_0_6px_rgb(255,255,255)] ${className}`}
+        className={`rounded-full dark:drop-shadow-[0_0_6px_rgb(255,255,255)] ${className}`}
         src={platformAdapter.convertFileSrc(src)}
         alt="icon"
       />
