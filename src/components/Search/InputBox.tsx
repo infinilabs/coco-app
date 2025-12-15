@@ -276,7 +276,6 @@ export default function ChatInput({
     return (
       <VisibleKey
         shortcut={returnToInput}
-        rootClassName="flex-1 flex items-center justify-center"
         shortcutClassName="!left-auto !right-2 !translate-x-0"
       >
         <AutoResizeTextarea
