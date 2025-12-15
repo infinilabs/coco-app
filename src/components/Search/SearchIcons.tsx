@@ -10,6 +10,7 @@ import { useThemeStore } from "@/stores/themeStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { navigateBack, visibleSearchBar } from "@/utils";
 import VisibleKey from "../Common/VisibleKey";
+import { cn } from "@/lib/utils";
 
 interface MultilevelWrapperProps {
   title?: string;
@@ -115,7 +116,14 @@ export default function SearchIcons({
     }
 
     return (
-      <div className="h-10 flex items-center justify-center pl-2 bg-[#ededed] dark:bg-[#202126]">
+      <div
+        className={cn(
+          "flex items-center justify-center bg-[#ededed] dark:bg-[#202126]",
+          {
+            "pl-2 h-10": lineCount === 1,
+          }
+        )}
+      >
         <Search className="w-4 h-4 text-[#ccc] dark:text-[#d8d8d8]" />
       </div>
     );

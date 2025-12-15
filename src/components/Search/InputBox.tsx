@@ -252,7 +252,7 @@ export default function ChatInput({
                 replace: [akiAiTooltipPrefix, askAI.name],
               })}
             </span>
-            <div className="flex items-center justify-center px-1 h-[20px] text-xs rounded-md border border-black/10 dark:border-[#545454]">
+            <div className="flex items-center justify-center px-1 h-5 text-xs rounded-md border border-black/10 dark:border-[#545454]">
               {formatKey(modifierKey)} + {formatKey("Enter")}
             </div>
           </div>
