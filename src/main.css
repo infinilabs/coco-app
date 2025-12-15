@@ -73,8 +73,6 @@
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.708 0 0);
-
-  --tw-border-style: solid;
 }
 
 @theme {
@@ -105,7 +103,7 @@
   --color-chart-5: var(--chart-5);
 }
 
-#searchChat-container{
+#searchChat-container {
   /* Map tokens directly; they are oklch(...) or other full values */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
