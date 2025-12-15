@@ -15,7 +15,7 @@ use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 /// Global toggle: selection monitoring disabled for this release.
-static SELECTION_ENABLED: AtomicBool = AtomicBool::new(false);
+static SELECTION_ENABLED: AtomicBool = AtomicBool::new(true);
 
 /// Ensure we only start the monitor thread once. Allows delayed start after
 /// Accessibility permission is granted post-launch.

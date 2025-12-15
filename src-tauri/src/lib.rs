@@ -2,12 +2,14 @@ mod assistant;
 mod autostart;
 mod common;
 mod extension;
+mod macos;
 mod search;
 mod selection_monitor;
 mod server;
 mod settings;
 mod setup;
 mod shortcut;
+
 // We need this in main.rs, so it has to be pub
 pub mod util;
 
@@ -204,6 +206,10 @@ pub fn run() {
             util::logging::app_log_dir,
             selection_monitor::set_selection_enabled,
             selection_monitor::get_selection_enabled,
+            macos::permissions::check_accessibility_trusted,
+            macos::permissions::open_accessibility_settings,
+            macos::permissions::open_screen_recording_settings,
+            macos::permissions::open_microphone_settings,
         ])
         .setup(|app| {
             #[cfg(target_os = "macos")]

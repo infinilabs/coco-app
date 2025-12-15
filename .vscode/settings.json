@@ -55,6 +55,7 @@
     "screenshotable",
     "serde",
     "swatinem",
+    "systempreferences",
     "tailwindcss",
     "tauri",
     "thiserror",
