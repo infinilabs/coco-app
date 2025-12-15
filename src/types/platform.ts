@@ -57,6 +57,14 @@ export interface EventPayloads {
   "selection-detected": string;
   "selection-enabled": boolean;
   "change-selection-store": any;
+  "selection-permission-required": boolean;
+  "selection-permission-info": {
+    bundle_id: string;
+    exe_path: string;
+    in_applications: boolean;
+    is_dmg: boolean;
+    is_dev_guess: boolean;
+  };
 }
 
 // Window operation interface

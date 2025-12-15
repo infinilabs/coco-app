@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMount } from "ahooks";
 import { ShieldCheck, Monitor, Mic, RotateCcw } from "lucide-react";
@@ -19,6 +19,7 @@ const Permissions = () => {
       platformAdapter.checkScreenRecordingPermission(),
       platformAdapter.checkMicrophonePermission(),
     ]);
+    console.info("[permissions] refreshed", { accessibility: ax, screenRecording: sr, microphone: mic });
     setAccessibilityAuthorized(ax);
     setScreenAuthorized(sr);
     setMicrophoneAuthorized(mic);
@@ -29,12 +30,15 @@ const Permissions = () => {
   const openAccessibilitySettings = async () => {
     const window = await platformAdapter.getCurrentWebviewWindow();
     await window.setAlwaysOnTop(false);
+    console.info("[permissions] open accessibility settings");
     await platformAdapter.invokeBackend("open_accessibility_settings");
+    await refresh();
   };
 
   const requestScreenRecording = async () => {
     const window = await platformAdapter.getCurrentWebviewWindow();
     await window.setAlwaysOnTop(false);
+    console.info("[permissions] request screen recording");
     await platformAdapter.requestScreenRecordingPermission();
     await platformAdapter.invokeBackend("open_screen_recording_settings");
     await refresh();
@@ -43,6 +47,7 @@ const Permissions = () => {
   const requestMicrophone = async () => {
     const window = await platformAdapter.getCurrentWebviewWindow();
     await window.setAlwaysOnTop(false);
+    console.info("[permissions] request microphone");
     await platformAdapter.requestMicrophonePermission();
     await platformAdapter.invokeBackend("open_microphone_settings");
     await refresh();
@@ -58,6 +63,21 @@ const Permissions = () => {
       setRefreshing(false);
     }
   };
+
+  useEffect(() => {
+    const unlisten1 = platformAdapter.listenEvent("selection-permission-required", async () => {
+      console.info("[permissions] selection-permission-required received");
+      await refresh();
+    });
+    const unlisten2 = platformAdapter.listenEvent("selection-permission-info", async (evt: any) => {
+      console.info("[permissions] selection-permission-info", evt?.payload);
+      await refresh();
+    });
+    return () => {
+      unlisten1.then((fn) => fn());
+      unlisten2.then((fn) => fn());
+    };
+  }, []);
 
   return (
     <>

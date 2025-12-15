@@ -110,6 +110,7 @@ pub(crate) async fn backend_setup(tauri_app_handle: AppHandle, app_lang: String)
     // Start system-wide selection monitor (macOS-only currently)
     #[cfg(target_os = "macos")]
     {
+        log::info!("backend_setup: starting system-wide selection monitor");
         crate::selection_monitor::start_selection_monitor(tauri_app_handle.clone());
     }
 
