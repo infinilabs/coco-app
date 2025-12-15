@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/appStore";
 import { useWebConfigStore } from "@/stores/webConfigStore";
 import { useBoolean } from "ahooks";
@@ -37,6 +38,7 @@ const AutoResizeTextarea = forwardRef<
       setInput,
       handleKeyDown,
       chatPlaceholder,
+      lineCount,
       onLineCountChange,
       firstLineMaxWidth,
     },
@@ -115,7 +117,12 @@ const AutoResizeTextarea = forwardRef<
           autoComplete="off"
           autoCapitalize="none"
           spellCheck="false"
-          className="auto-resize-textarea text-base flex-1 outline-none w-full min-w-[200px] text-[#333] dark:text-[#d8d8d8] placeholder-text-xs placeholder-[#999] dark:placeholder-gray-500 bg-transparent custom-scrollbar resize-none overflow-y-auto"
+          className={cn(
+            "auto-resize-textarea text-base flex-1 outline-none w-full min-w-[200px] text-[#333] dark:text-[#d8d8d8] placeholder-text-xs placeholder-[#999] dark:placeholder-gray-500 bg-transparent custom-scrollbar resize-none overflow-y-auto",
+            {
+              "overflow-y-hidden": lineCount === 1,
+            }
+          )}
           placeholder={chatPlaceholder || t("search.textarea.placeholder")}
           aria-label={t("search.textarea.ariaLabel")}
           value={input}
