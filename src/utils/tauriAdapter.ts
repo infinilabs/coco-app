@@ -34,6 +34,11 @@ export interface TauriPlatformAdapter extends BasePlatformAdapter {
   isWindowResizable: () => Promise<boolean>;
   getWindowSize: () => Promise<{ width: number; height: number }>;
   setWindowFullscreen: (enable: boolean) => Promise<void>;
+  isWindowMaximized: () => Promise<boolean>;
+  setWindowMaximized: (enable: boolean) => Promise<void>;
+  getWindowPosition: () => Promise<{ x: number; y: number }>;
+  setWindowPosition: (x: number, y: number) => Promise<void>;
+  centerWindow: () => Promise<void>;
 }
 
 // Create Tauri adapter functions
@@ -53,6 +58,21 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
     async setWindowFullscreen(enable) {
       return windowWrapper.setFullscreen(enable);
+    },
+    async isWindowMaximized() {
+      return windowWrapper.isMaximized();
+    },
+    async setWindowMaximized(enable) {
+      return windowWrapper.setMaximized(enable);
+    },
+    async getWindowPosition() {
+      return windowWrapper.getPosition();
+    },
+    async setWindowPosition(x, y) {
+      return windowWrapper.setPosition(x, y);
+    },
+    async centerWindow() {
+      return windowWrapper.center();
     },
 
     async hideWindow() {

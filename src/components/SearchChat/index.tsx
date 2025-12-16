@@ -107,6 +107,10 @@ function SearchChat({
   let collapseWindowTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const setWindowSize = useCallback(() => {
+    const { viewExtensionOpened } = useSearchStore.getState();
+    if (viewExtensionOpened != null) {
+      return;
+    }
     if (collapseWindowTimer.current) {
       clearTimeout(collapseWindowTimer.current);
     }
@@ -173,6 +177,18 @@ function SearchChat({
   useTauriFocus({
     onFocus: debouncedSetWindowSize,
   });
+
+  useEffect(() => {
+    const unlisten = platformAdapter.listenEvent(
+      "refresh-window-size",
+      () => {
+        debouncedSetWindowSize();
+      }
+    );
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, [debouncedSetWindowSize]);
 
   useEffect(() => {
     dispatch({

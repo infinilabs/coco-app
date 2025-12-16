@@ -80,7 +80,6 @@ function DropdownList({
         setSelectedSearchContent(item);
       },
       onItemClick: (item: SearchDocument) => {
-        console.log(11111, item, formatUrl);
         platformAdapter.openSearchItem(item, formatUrl);
       },
       goToTwoPage: (item: SearchDocument) => {

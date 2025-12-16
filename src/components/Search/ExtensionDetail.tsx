@@ -13,11 +13,6 @@ import { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import platformAdapter from "@/utils/platformAdapter";
-import {
-  ExtensionPermission,
-  ViewExtensionUISettings,
-} from "@/components/Settings/Extensions";
-
 import { useSearchStore } from "@/stores/searchStore";
 import DeleteDialog from "../Common/DeleteDialog";
 import PreviewImage from "../Common/PreviewImage";
@@ -37,53 +32,8 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
     setIsOpen(false);
   };
 
-  const handleOpen = async () => {
-    if (!selectedExtension?.installed) return;
-    try {
-      type InstalledExtension = {
-        id: string;
-        developer?: string;
-        name: string;
-        icon: string;
-        type: string;
-        page?: string;
-        ui?: ViewExtensionUISettings | null;
-        settings?: Record<string, unknown> | null;
-        permission?: ExtensionPermission | null;
-      };
-      const list = await platformAdapter.invokeBackend<InstalledExtension[]>(
-        "list_extensions",
-        {
-          query: selectedExtension.name,
-          listEnabled: false,
-        }
-      );
-      const target = (list || []).find(
-        (ext) =>
-          ext.id === selectedExtension.id &&
-          ext.developer === selectedExtension.developer.id
-      );
-      if (!target) return;
-      if (target.type !== "View") return;
-      const onOpened = {
-        Extension: {
-          ty: {
-            View: {
-              name: target.name,
-              icon: target.icon,
-              page: target.page ?? "",
-              ui: target.ui ?? null,
-            },
-          },
-          settings: target.settings ?? null,
-          permission: target.permission ?? null,
-        },
-      };
-      await platformAdapter.invokeBackend("open", {
-        onOpened,
-        extraArgs: null,
-      });
-    } catch (_e) {}
+  const handleOpen = async (item: any) => {
+    platformAdapter.openSearchItem(item);
   };
 
   const handleDelete = () => {
@@ -125,8 +75,8 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
             {selectedExtension.installed ? (
               <div className="flex items-center gap-2">
                 <Button
-                  className="flex justify-center items-center w-14 h-6 rounded-full bg-[#007BFF] text-white"
-                  onClick={handleOpen}
+                  className="hidden flex justify-center items-center w-14 h-6 rounded-full bg-[#007BFF] text-white"
+                  onClick={() => handleOpen(selectedExtension)}
                 >
                   {t("search.footer.open")}
                 </Button>
