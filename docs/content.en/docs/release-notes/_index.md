@@ -19,6 +19,8 @@ Information about release notes of Coco App is provided here.
 
 ### ✈️ Improvements
 
+- refactor: replace legacy components with shadcn/ui components #1002
+
 ## 0.9.1 (2025-12-05)
 
 ### ❌ Breaking changes
