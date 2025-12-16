@@ -108,11 +108,11 @@ function SearchChat({
 
   const setWindowSize = useCallback(() => {
     const { viewExtensionOpened } = useSearchStore.getState();
-    if (viewExtensionOpened != null) {
-      return;
-    }
     if (collapseWindowTimer.current) {
       clearTimeout(collapseWindowTimer.current);
+    }
+    if (viewExtensionOpened != null) {
+      return;
     }
 
     const width = 680;

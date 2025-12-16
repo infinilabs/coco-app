@@ -191,8 +191,7 @@ const ViewExtension: React.FC = () => {
   const ui: ViewExtensionUISettings | undefined = useMemo(() => {
     return viewExtensionOpened[4] as ViewExtensionUISettings | undefined;
   }, [viewExtensionOpened]);
-  // const resizable = ui?.resizable === true;
-  const resizable = true;
+  const resizable = ui?.resizable === true;
   console.log("resizable", ui);
   const applyFullscreen = useCallback(
     async (next: boolean) => {
@@ -220,30 +219,15 @@ const ViewExtension: React.FC = () => {
         if (!isMac) {
           await platformAdapter.setWindowFullscreen(false);
         }
-        if (fullscreenPrevRef.current) {
-          const prev = fullscreenPrevRef.current;
-          await platformAdapter.setWindowSize(prev.width, prev.height);
-          await platformAdapter.setWindowResizable(prev.resizable);
-          await platformAdapter.setWindowPosition(prev.x, prev.y);
-          fullscreenPrevRef.current = null;
-        } else {
-          const nextWidth =
-            ui && typeof ui.width === "number" ? ui.width : DEFAULT_VIEW_WIDTH;
-          const nextHeight =
-            ui && typeof ui.height === "number" ? ui.height : DEFAULT_VIEW_HEIGHT;
-          const nextResizable =
-            ui && typeof ui.resizable === "boolean" ? ui.resizable : true;
-          await platformAdapter.setWindowSize(nextWidth, nextHeight);
-          await platformAdapter.setWindowResizable(nextResizable);
-          if (prevWindowRef.current) {
-            await platformAdapter.setWindowPosition(
-              prevWindowRef.current.x,
-              prevWindowRef.current.y
-            );
-          } else {
-            await platformAdapter.centerWindow();
-          }
-        }
+        const nextWidth =
+          ui && typeof ui.width === "number" ? ui.width : DEFAULT_VIEW_WIDTH;
+        const nextHeight =
+          ui && typeof ui.height === "number" ? ui.height : DEFAULT_VIEW_HEIGHT;
+        const nextResizable =
+          ui && typeof ui.resizable === "boolean" ? ui.resizable : true;
+        await platformAdapter.setWindowSize(nextWidth, nextHeight);
+        await platformAdapter.setWindowResizable(nextResizable);
+        await platformAdapter.centerWindow();
       }
     },
     [ui]
