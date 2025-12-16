@@ -337,7 +337,7 @@ const Item: FC<ItemProps> = (props) => {
                 ) : (
                   <img
                     src={platformAdapter.convertFileSrc(icon)}
-                    className="size-full rounded-full dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
+                    className="size-full dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
                   />
                 )}
               </div>
