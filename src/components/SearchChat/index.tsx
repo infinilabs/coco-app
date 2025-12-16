@@ -186,7 +186,17 @@ function SearchChat({
       }
     );
     return () => {
-      unlisten.then((fn) => fn());
+      unlisten
+        .then((fn) => {
+          try {
+            typeof fn === "function" && fn();
+          } catch {
+            // ignore
+          }
+        })
+        .catch(() => {
+          // ignore
+        });
     };
   }, [debouncedSetWindowSize]);
 
