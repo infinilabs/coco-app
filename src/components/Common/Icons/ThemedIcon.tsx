@@ -26,7 +26,7 @@ function ThemedIcon({ component: Component, className = "" }: ThemedIconProps) {
 
   return (
     <Component
-      className={`rounded-full dark:drop-shadow-[0_0_6px_rgb(255,255,255)] ${className}`}
+      className={`dark:drop-shadow-[0_0_6px_rgb(255,255,255)] ${className}`}
       color={color}
     />
   );

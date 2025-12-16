@@ -51,7 +51,7 @@ function UniversalIcon({
   const renderImageIcon = (src: string) => {
     const img = (
       <img
-        className={`rounded-full dark:drop-shadow-[0_0_6px_rgb(255,255,255)] ${className}`}
+        className={`dark:drop-shadow-[0_0_6px_rgb(255,255,255)] ${className}`}
         src={src}
         alt="icon"
       />
@@ -69,7 +69,7 @@ function UniversalIcon({
   const renderAppIcon = (src: string) => {
     const img = (
       <img
-        className={`rounded-full dark:drop-shadow-[0_0_6px_rgb(255,255,255)] ${className}`}
+        className={`dark:drop-shadow-[0_0_6px_rgb(255,255,255)] ${className}`}
         src={platformAdapter.convertFileSrc(src)}
         alt="icon"
       />

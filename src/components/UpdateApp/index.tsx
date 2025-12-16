@@ -146,6 +146,7 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
       }}
     >
       <DialogContent
+        overlayClassName={clsx("bg-transparent backdrop-blur-0 rounded-xl")}
         className={clsx(
           isCheckPage
             ? "inset-0 left-0 top-0 translate-x-0 translate-y-0 w-full h-screen max-w-none rounded-none border-none bg-background text-foreground p-0"
