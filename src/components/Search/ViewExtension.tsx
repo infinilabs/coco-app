@@ -11,6 +11,7 @@ import {
 } from "../Settings/Extensions";
 import platformAdapter from "@/utils/platformAdapter";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
+import { isMac } from "@/utils/platform";
 
 const ViewExtension: React.FC = () => {
   const { viewExtensionOpened } = useSearchStore();
@@ -20,6 +21,13 @@ const ViewExtension: React.FC = () => {
   const { t } = useTranslation();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const prevWindowRef = useRef<{
+    width: number;
+    height: number;
+    resizable: boolean;
+    x: number;
+    y: number;
+  } | null>(null);
+  const fullscreenPrevRef = useRef<{
     width: number;
     height: number;
     resizable: boolean;
@@ -180,42 +188,61 @@ const ViewExtension: React.FC = () => {
   }, [reversedApis, permission]); // Add apiPermissions as dependency
 
   const fileUrl = viewExtensionOpened[2];
-  const ui: ViewExtensionUISettings = useMemo(() => {
-    return {
-      detachable: false,
-      filter_bar: false,
-      footer: false,
-      height: 800,
-      resizable: true,
-      search_bar: false,
-      width: 1000,
-    };
-  }, []);
-  const resizable = ui?.resizable === true;
+  const ui: ViewExtensionUISettings | undefined = useMemo(() => {
+    return viewExtensionOpened[4] as ViewExtensionUISettings | undefined;
+  }, [viewExtensionOpened]);
+  // const resizable = ui?.resizable === true;
+  const resizable = true;
+  console.log("resizable", ui);
   const applyFullscreen = useCallback(
     async (next: boolean) => {
       if (next) {
-        await platformAdapter.setWindowResizable(true);
-        const maxWidth = window.screen.availWidth;
-        const maxHeight = window.screen.availHeight;
-        await platformAdapter.setWindowSize(maxWidth, maxHeight);
-        await platformAdapter.setWindowPosition(0, 0);
-      } else {
-        const nextWidth =
-          ui && typeof ui.width === "number" ? ui.width : DEFAULT_VIEW_WIDTH;
-        const nextHeight =
-          ui && typeof ui.height === "number" ? ui.height : DEFAULT_VIEW_HEIGHT;
-        const nextResizable =
-          ui && typeof ui.resizable === "boolean" ? ui.resizable : true;
-        await platformAdapter.setWindowSize(nextWidth, nextHeight);
-        await platformAdapter.setWindowResizable(nextResizable);
-        if (prevWindowRef.current) {
-          await platformAdapter.setWindowPosition(
-            prevWindowRef.current.x,
-            prevWindowRef.current.y
-          );
+        const size = await platformAdapter.getWindowSize();
+        const resizable = await platformAdapter.isWindowResizable();
+        const pos = await platformAdapter.getWindowPosition();
+        fullscreenPrevRef.current = {
+          width: size.width,
+          height: size.height,
+          resizable,
+          x: pos.x,
+          y: pos.y,
+        };
+        if (isMac) {
+          await platformAdapter.setWindowResizable(true);
+          const maxWidth = window.screen.availWidth;
+          const maxHeight = window.screen.availHeight;
+          await platformAdapter.setWindowSize(maxWidth, maxHeight);
+          await platformAdapter.setWindowPosition(0, 0);
         } else {
-          await platformAdapter.centerWindow();
+          await platformAdapter.setWindowFullscreen(true);
+        }
+      } else {
+        if (!isMac) {
+          await platformAdapter.setWindowFullscreen(false);
+        }
+        if (fullscreenPrevRef.current) {
+          const prev = fullscreenPrevRef.current;
+          await platformAdapter.setWindowSize(prev.width, prev.height);
+          await platformAdapter.setWindowResizable(prev.resizable);
+          await platformAdapter.setWindowPosition(prev.x, prev.y);
+          fullscreenPrevRef.current = null;
+        } else {
+          const nextWidth =
+            ui && typeof ui.width === "number" ? ui.width : DEFAULT_VIEW_WIDTH;
+          const nextHeight =
+            ui && typeof ui.height === "number" ? ui.height : DEFAULT_VIEW_HEIGHT;
+          const nextResizable =
+            ui && typeof ui.resizable === "boolean" ? ui.resizable : true;
+          await platformAdapter.setWindowSize(nextWidth, nextHeight);
+          await platformAdapter.setWindowResizable(nextResizable);
+          if (prevWindowRef.current) {
+            await platformAdapter.setWindowPosition(
+              prevWindowRef.current.x,
+              prevWindowRef.current.y
+            );
+          } else {
+            await platformAdapter.centerWindow();
+          }
         }
       }
     },
