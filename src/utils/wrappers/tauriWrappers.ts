@@ -20,6 +20,33 @@ export const windowWrapper = {
       }
     }
   },
+  async getSize() {
+    const window = await this.getCurrentWebviewWindow();
+    if (window) {
+      const size = await window.innerSize();
+      return { width: size.width, height: size.height };
+    }
+    return { width: 0, height: 0 };
+  },
+  async setResizable(resizable: boolean) {
+    const window = await this.getCurrentWebviewWindow();
+    if (window) {
+      return window.setResizable(resizable);
+    }
+  },
+  async isResizable() {
+    const window = await this.getCurrentWebviewWindow();
+    if (window) {
+      return window.isResizable();
+    }
+    return false;
+  },
+  async setFullscreen(enable: boolean) {
+    const window = await this.getCurrentWebviewWindow();
+    if (window) {
+      return window.setFullscreen(enable);
+    }
+  },
 };
 
 // Event handling
