@@ -135,7 +135,9 @@ pub struct Extension {
     /// It is only for third-party extensions. Built-in extensions should always
     /// set this field to `None`.
     #[serde(deserialize_with = "deserialize_coco_semver")]
-    #[serde(default)] // None if this field is missing
+    #[serde(serialize_with = "serialize_coco_semver")]
+    // None if this field is missing, required as we use custom deserilize method.
+    #[serde(default)]
     minimum_coco_version: Option<SemVer>,
 
     /*
@@ -417,6 +419,37 @@ where
     };
 
     Ok(Some(semver))
+}
+
+/// Serialize Coco SemVer to a string.
+///
+/// For a `SemVer`, there are 2 possible input cases, guarded by `to_semver()`:
+///
+/// 1. "x.y.z" => "x.y.z"
+/// 2. "x.y.z-SNAPSHOT.2560" => "x.y.z-SNAPSHOT-2560"
+fn serialize_coco_semver<S>(version: &Option<SemVer>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    match version {
+        Some(v) => {
+            assert!(v.build.is_empty());
+
+            let s = if v.pre.is_empty() {
+                format!("{}.{}.{}", v.major, v.minor, v.patch)
+            } else {
+                format!(
+                    "{}.{}.{}-{}",
+                    v.major,
+                    v.minor,
+                    v.patch,
+                    v.pre.as_str().replace('.', "-")
+                )
+            };
+            serializer.serialize_str(&s)
+        }
+        None => serializer.serialize_none(),
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
@@ -2149,5 +2182,32 @@ mod tests {
         let serialized = serde_json::to_string(&original).unwrap();
         let deserialized: FileSystemAccess = serde_json::from_str(&serialized).unwrap();
         assert_eq!(original, deserialized);
+    }
+
+    #[test]
+    fn test_serialize_coco_semver_none() {
+        let version: Option<SemVer> = None;
+        let mut serializer = serde_json::Serializer::new(Vec::new());
+        serialize_coco_semver(&version, &mut serializer).unwrap();
+        let serialized = String::from_utf8(serializer.into_inner()).unwrap();
+        assert_eq!(serialized, "null");
+    }
+
+    #[test]
+    fn test_serialize_coco_semver_simple() {
+        let version: Option<SemVer> = Some(SemVer::parse("1.2.3").unwrap());
+        let mut serializer = serde_json::Serializer::new(Vec::new());
+        serialize_coco_semver(&version, &mut serializer).unwrap();
+        let serialized = String::from_utf8(serializer.into_inner()).unwrap();
+        assert_eq!(serialized, "\"1.2.3\"");
+    }
+
+    #[test]
+    fn test_serialize_coco_semver_with_pre() {
+        let version: Option<SemVer> = Some(SemVer::parse("1.2.3-SNAPSHOT.1234").unwrap());
+        let mut serializer = serde_json::Serializer::new(Vec::new());
+        serialize_coco_semver(&version, &mut serializer).unwrap();
+        let serialized = String::from_utf8(serializer.into_inner()).unwrap();
+        assert_eq!(serialized, "\"1.2.3-SNAPSHOT-1234\"");
     }
 }

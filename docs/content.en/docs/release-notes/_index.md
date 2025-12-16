@@ -16,6 +16,7 @@ Information about release notes of Coco App is provided here.
 ### 🐛 Bug fix
 
 - fix: fix the abnormal input height issue #1006
+- fix: implement custom serialization for Extension.minimum_coco_version #1010
 
 ### ✈️ Improvements
 
