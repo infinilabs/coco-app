@@ -27,6 +27,7 @@ const ViewExtension: React.FC = () => {
     y: number;
   } | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
   const DEFAULT_VIEW_WIDTH = 1200;
   const DEFAULT_VIEW_HEIGHT = 900;
 
@@ -278,9 +279,27 @@ const ViewExtension: React.FC = () => {
       window.removeEventListener("keydown", handleKeyDown, { capture: true } as any);
     };
   }, [isFullscreen, applyFullscreen]);
+  useEffect(() => {
+    if (isFullscreen) {
+      overlayRef.current?.focus();
+    }
+  }, [isFullscreen]);
 
   return (
     <div className="relative w-full h-full">
+      {isFullscreen && (
+        <div
+          ref={overlayRef}
+          tabIndex={0}
+          className="absolute inset-0 outline-none pointer-events-none"
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              applyFullscreen(false);
+              setIsFullscreen(false);
+            }
+          }}
+        />
+      )}
       {resizable && (
         <button
           aria-label={isFullscreen ? t("viewExtension.fullscreen.exit") : t("viewExtension.fullscreen.enter")}
@@ -289,6 +308,9 @@ const ViewExtension: React.FC = () => {
             const next = !isFullscreen;
             await applyFullscreen(next);
             setIsFullscreen(next);
+            if (next) {
+              overlayRef.current?.focus();
+            }
           }}
         >
           {isFullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
