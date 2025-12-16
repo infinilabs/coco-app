@@ -244,7 +244,7 @@ const ExtensionStore = ({ extensionId }: { extensionId?: string }) => {
         "info"
       );
     } catch (error) {
-      installExtensionError(String(error));
+      installExtensionError(error);
     } finally {
       const { installingExtensions } = useSearchStore.getState();
 

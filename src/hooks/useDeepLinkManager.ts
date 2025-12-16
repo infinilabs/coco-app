@@ -12,6 +12,7 @@ import platformAdapter from "@/utils/platformAdapter";
 import { useTranslation } from "react-i18next";
 import { MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL } from "@/constants";
 import { useAsyncEffect, useEventListener } from "ahooks";
+import { installExtensionError } from "@/utils";
 
 export interface DeepLinkHandler {
   pattern: string;
@@ -78,7 +79,7 @@ export function useDeepLinkManager() {
       addError(t("deepLink.extensionInstallSuccessfully"), "info");
       console.log("Extension installed successfully:", extensionId);
     } catch (error) {
-      addError(String(error));
+      installExtensionError(error)
     }
   }, []);
 
