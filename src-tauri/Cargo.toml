@@ -122,6 +122,7 @@ actix-web = "4.11.0"
 tauri-plugin-clipboard-manager = "2"
 tauri-plugin-zustand = "1"
 snafu = "0.8.9"
+serde-inline-default = "1.0.0"
 
 [dev-dependencies]
 tempfile = "3.23.0"

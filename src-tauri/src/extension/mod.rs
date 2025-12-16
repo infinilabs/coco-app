@@ -150,24 +150,30 @@ pub struct Extension {
 }
 
 /// Settings that control the built-in UI Components
+#[serde_inline_default::serde_inline_default]
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct ViewExtensionUISettings {
     /// Show the search bar
+    #[serde_inline_default(true)]
     search_bar: bool,
     /// Show the filter bar
+    #[serde_inline_default(true)]
     filter_bar: bool,
     /// Show the footer
+    #[serde_inline_default(true)]
     footer: bool,
     /// The recommended width of the window for this extension
     width: Option<u32>,
     /// The recommended heigh of the window for this extension
     height: Option<u32>,
     /// Is the extension window's size adjustable?
+    #[serde_inline_default(false)]
     resizable: bool,
     /// Detch the extension window from Coco's main window.
     ///
     /// If true, user can click the detach button to open this
     /// extension in a seprate window.
+    #[serde_inline_default(false)]
     detachable: bool,
 }
 
