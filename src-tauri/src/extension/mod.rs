@@ -160,6 +160,17 @@ pub(crate) struct ViewExtensionUISettings {
     filter_bar: bool,
     /// Show the footer
     footer: bool,
+    /// The recommended width of the window for this extension
+    width: Option<u32>,
+    /// The recommended heigh of the window for this extension
+    height: Option<u32>,
+    /// Is the extension window's size adjustable?
+    resizable: bool,
+    /// Detch the extension window from Coco's main window.
+    ///
+    /// If true, user can click the detach button to open this
+    /// extension in a seprate window.
+    detachable: bool,
 }
 
 /// Bundle ID uniquely identifies an extension.
