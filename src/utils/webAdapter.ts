@@ -12,6 +12,10 @@ export interface WebPlatformAdapter extends BasePlatformAdapter {
   getWindowTheme: () => Promise<string>;
   setWindowTheme: (theme: string | null) => Promise<void>;
   getAllWindows: () => Promise<any[]>;
+  setWindowResizable: (resizable: boolean) => Promise<void>;
+  isWindowResizable: () => Promise<boolean>;
+  getWindowSize: () => Promise<{ width: number; height: number }>;
+  setWindowFullscreen: (enable: boolean) => Promise<void>;
 }
 
 // Create Web adapter functions
@@ -34,6 +38,18 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     async setWindowSize(width, height) {
       console.log(`Web mode simulated window resize: ${width}x${height}`);
       // No actual operation needed in web environment
+    },
+    async getWindowSize() {
+      return { width: window.innerWidth, height: window.innerHeight };
+    },
+    async setWindowResizable(resizable) {
+      console.log("Web mode simulated set window resizable:", resizable);
+    },
+    async isWindowResizable() {
+      return true;
+    },
+    async setWindowFullscreen(enable) {
+      console.log("Web mode simulated set window fullscreen:", enable);
     },
 
     async hideWindow() {
