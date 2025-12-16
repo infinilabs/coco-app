@@ -258,7 +258,9 @@ export const navigateBack = () => {
   }
 
   if (viewExtensionOpened) {
-    return setViewExtensionOpened(void 0);
+    setViewExtensionOpened(void 0);
+    platformAdapter.emitEvent("refresh-window-size");
+    return;
   }
 
   setSourceData(void 0);

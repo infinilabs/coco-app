@@ -1,10 +1,13 @@
 import React from "react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import { Maximize2, Minimize2 } from "lucide-react";
 
 import { useSearchStore } from "@/stores/searchStore";
 import {
   ExtensionFileSystemPermission,
   FileSystemAccess,
+  ViewExtensionUISettings,
 } from "../Settings/Extensions";
 import platformAdapter from "@/utils/platformAdapter";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
@@ -14,6 +17,18 @@ const ViewExtension: React.FC = () => {
   // Complete list of the backend APIs, grouped by their category.
   const [apis, setApis] = useState<Map<string, string[]> | null>(null);
   const { setModifierKeyPressed } = useShortcutsStore();
+  const { t } = useTranslation();
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const prevWindowRef = useRef<{
+    width: number;
+    height: number;
+    resizable: boolean;
+    x: number;
+    y: number;
+  } | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const DEFAULT_VIEW_WIDTH = 1200;
+  const DEFAULT_VIEW_HEIGHT = 900;
 
   if (viewExtensionOpened == null) {
     // When this view gets loaded, this state should not be NULL.
@@ -164,15 +179,130 @@ const ViewExtension: React.FC = () => {
   }, [reversedApis, permission]); // Add apiPermissions as dependency
 
   const fileUrl = viewExtensionOpened[2];
+  const ui: ViewExtensionUISettings = useMemo(() => {
+    return {
+      detachable: false,
+      filter_bar: false,
+      footer: false,
+      height: 800,
+      resizable: true,
+      search_bar: false,
+      width: 1000,
+    };
+  }, []);
+  const resizable = ui?.resizable === true;
+  const applyFullscreen = useCallback(
+    async (next: boolean) => {
+      if (next) {
+        await platformAdapter.setWindowResizable(true);
+        const maxWidth = window.screen.availWidth;
+        const maxHeight = window.screen.availHeight;
+        await platformAdapter.setWindowSize(maxWidth, maxHeight);
+        await platformAdapter.setWindowPosition(0, 0);
+      } else {
+        const nextWidth =
+          ui && typeof ui.width === "number" ? ui.width : DEFAULT_VIEW_WIDTH;
+        const nextHeight =
+          ui && typeof ui.height === "number" ? ui.height : DEFAULT_VIEW_HEIGHT;
+        const nextResizable =
+          ui && typeof ui.resizable === "boolean" ? ui.resizable : true;
+        await platformAdapter.setWindowSize(nextWidth, nextHeight);
+        await platformAdapter.setWindowResizable(nextResizable);
+        if (prevWindowRef.current) {
+          await platformAdapter.setWindowPosition(
+            prevWindowRef.current.x,
+            prevWindowRef.current.y
+          );
+        } else {
+          await platformAdapter.centerWindow();
+        }
+      }
+    },
+    [ui]
+  );
+  useEffect(() => {
+    const applyWindowSettings = async () => {
+      if (viewExtensionOpened != null) {
+        const size = await platformAdapter.getWindowSize();
+        const resizable = await platformAdapter.isWindowResizable();
+        const pos = await platformAdapter.getWindowPosition();
+        prevWindowRef.current = {
+          width: size.width,
+          height: size.height,
+          resizable,
+          x: pos.x,
+          y: pos.y,
+        };
+
+        const nextWidth =
+          ui && typeof ui.width === "number" ? ui.width : DEFAULT_VIEW_WIDTH;
+        const nextHeight =
+          ui && typeof ui.height === "number" ? ui.height : DEFAULT_VIEW_HEIGHT;
+        const nextResizable =
+          ui && typeof ui.resizable === "boolean" ? ui.resizable : true;
+
+        await platformAdapter.setWindowSize(nextWidth, nextHeight);
+        await platformAdapter.setWindowResizable(nextResizable);
+        await platformAdapter.centerWindow();
+      } else {
+        if (prevWindowRef.current) {
+          const prev = prevWindowRef.current;
+          await platformAdapter.setWindowSize(prev.width, prev.height);
+          await platformAdapter.setWindowResizable(prev.resizable);
+          await platformAdapter.setWindowPosition(prev.x, prev.y);
+          prevWindowRef.current = null;
+        }
+      }
+    };
+
+    applyWindowSettings();
+    return () => {
+      if (prevWindowRef.current) {
+        const prev = prevWindowRef.current;
+        platformAdapter.setWindowSize(prev.width, prev.height);
+        platformAdapter.setWindowResizable(prev.resizable);
+        platformAdapter.setWindowPosition(prev.x, prev.y);
+        prevWindowRef.current = null;
+      }
+    };
+  }, [viewExtensionOpened]);
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isFullscreen) {
+        applyFullscreen(false);
+        setIsFullscreen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown, { capture: true });
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown, { capture: true } as any);
+    };
+  }, [isFullscreen, applyFullscreen]);
 
   return (
-    <iframe
-      src={fileUrl}
-      className="w-full h-full border-0"
-      onLoad={(event) => {
-        event.currentTarget.focus();
-      }}
-    />
+    <div className="relative w-full h-full">
+      {resizable && (
+        <button
+          aria-label={isFullscreen ? t("viewExtension.fullscreen.exit") : t("viewExtension.fullscreen.enter")}
+          className="absolute top-2 right-2 z-10 rounded-md bg-black/40 text-white p-2 hover:bg-black/60 focus:outline-none"
+          onClick={async () => {
+            const next = !isFullscreen;
+            await applyFullscreen(next);
+            setIsFullscreen(next);
+          }}
+        >
+          {isFullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
+        </button>
+      )}
+      <iframe
+        ref={iframeRef}
+        src={fileUrl}
+        className="w-full h-full border-0"
+        onLoad={(event) => {
+          event.currentTarget.focus();
+        }}
+      />
+    </div>
   );
 };
 

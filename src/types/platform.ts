@@ -12,6 +12,7 @@ import { ViewExtensionOpened } from "@/stores/searchStore";
 export interface EventPayloads {
   "theme-changed": string;
   "tauri://focus": void;
+  "refresh-window-size": void;
   "endpoint-changed": {
     endpoint: string;
     endpoint_http: string;

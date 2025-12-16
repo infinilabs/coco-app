@@ -47,6 +47,44 @@ export const windowWrapper = {
       return window.setFullscreen(enable);
     }
   },
+  async center() {
+    const window = await this.getCurrentWebviewWindow();
+    if (window) {
+      return window.center();
+    }
+  },
+  async setPosition(x: number, y: number) {
+    const { LogicalPosition } = await import("@tauri-apps/api/dpi");
+    const window = await this.getCurrentWebviewWindow();
+    if (window) {
+      return window.setPosition(new LogicalPosition(x, y));
+    }
+  },
+  async getPosition() {
+    const window = await this.getCurrentWebviewWindow();
+    if (window) {
+      const pos = await window.outerPosition();
+      return { x: pos.x, y: pos.y };
+    }
+    return { x: 0, y: 0 };
+  },
+  async isMaximized() {
+    const window = await this.getCurrentWebviewWindow();
+    if (window) {
+      return window.isMaximized();
+    }
+    return false;
+  },
+  async setMaximized(enable: boolean) {
+    const window = await this.getCurrentWebviewWindow();
+    if (window) {
+      if (enable) {
+        return window.maximize();
+      } else {
+        return window.unmaximize();
+      }
+    }
+  },
 };
 
 // Event handling

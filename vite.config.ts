@@ -83,6 +83,23 @@ export default defineConfig(async () => ({
       },
     },
   },
+  optimizeDeps: {
+    exclude: [
+      "@tauri-apps/api",
+      "@tauri-apps/api/core",
+      "@tauri-apps/api/event",
+      "@tauri-apps/api/window",
+      "@tauri-apps/api/dpi",
+      "@tauri-apps/api/webviewWindow",
+      "@tauri-apps/plugin-dialog",
+      "@tauri-apps/plugin-process",
+      "tauri-plugin-fs-pro-api",
+      "tauri-plugin-macos-permissions-api",
+      "tauri-plugin-screenshots-api",
+      "tauri-plugin-windows-version-api",
+    ],
+    force: true,
+  },
   build: {
     rollupOptions: {
       output: {
