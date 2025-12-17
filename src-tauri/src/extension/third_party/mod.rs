@@ -906,7 +906,12 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
         let opt_data_source = query
             .query_strings
             .get("datasource")
-            .map(|owned_str| owned_str.to_string());
+            .map(|str| str.to_string());
+
+        let opt_main_extension_id = query
+            .query_strings
+            .get("main_extension_id")
+            .map(|str| str.to_string());
 
         let query_lower = query_string.to_lowercase();
         let inner_clone = Arc::clone(&self.inner);
@@ -916,10 +921,22 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
             let extensions_read_lock =
                 futures::executor::block_on(async { inner_clone.extensions.read().await });
 
+            let main_extension_filter_closure = |ext: &&Extension| -> bool {
+                // field minimum_coco_extension is only set for main
+                // extensions, so we only check main extensions.
+                let condition1 = ext.enabled && is_extension_compatible(Extension::clone(ext));
+                let condition2 = if let Some(ref main_extension_id) = opt_main_extension_id {
+                    &ext.id == main_extension_id
+                } else {
+                    true
+                };
+
+                condition1 && condition2
+            };
+
             for extension in extensions_read_lock
                 .iter()
-                // field minimum_coco_extension is only set for main extensions.
-                .filter(|ext| ext.enabled && is_extension_compatible(Extension::clone(ext)))
+                .filter(main_extension_filter_closure)
             {
                 if extension.r#type.contains_sub_items() {
                     let opt_main_extension_lowercase_name =
@@ -1029,7 +1046,7 @@ pub(crate) async fn uninstall_extension(
 /// This argument is needed as an "extension" type extension should return all its
 /// sub-extensions when the query string matches its name. To do this, we pass the
 /// extension name, score it and take that into account.
-pub(crate) fn extension_to_hit(
+fn extension_to_hit(
     extension: &Extension,
     query_lower: &str,
     opt_data_source: Option<&str>,

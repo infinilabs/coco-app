@@ -17,6 +17,20 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager};
 use tokio::time::{Duration, timeout};
+
+/// Available `query_strings`:
+///
+/// * "querysource": the query/search source to search
+/// * "datasource": the data source to search. If this is provided, then
+///   "querysource" has to be specified as well.
+/// * "main_extension_id": Currently, only the "extensions" query source
+///   supports this. If you set
+///
+///   ```
+///   {"querysource": "extension", "main_extension_id"}
+///   ```
+///
+///   then only the extension with this ID will be returned, if exists.
 #[named]
 #[tauri::command]
 pub async fn query_coco_fusion(
@@ -26,6 +40,10 @@ pub async fn query_coco_fusion(
     query_strings: HashMap<String, String>,
     query_timeout: u64,
 ) -> Result<MultiSourceQueryResponse, SearchError> {
+    if query_strings.contains_key("datasource") && !query_strings.contains_key("querysource") {
+        panic!("[querysource] has to be provided if [datasource] is set")
+    }
+
     let opt_query_source_id = query_strings.get("querysource");
     let search_sources = tauri_app_handle.state::<SearchSourceRegistry>();
     let query_source_list = search_sources.get_sources().await;
