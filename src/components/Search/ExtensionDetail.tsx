@@ -67,7 +67,7 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
                   </div>
                   <div className="flex items-center gap-1">
                     <FolderDown className="size-4" />
-                    <span>{selectedExtension.stats.installs}</span>
+                    <span>{selectedExtension.stats?.installs ?? 0}</span>
                   </div>
                 </div>
               </div>

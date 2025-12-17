@@ -341,7 +341,7 @@ const ExtensionStore = ({ extensionId }: { extensionId?: string }) => {
 
                     <div className="flex items-center gap-1 text-[#999]">
                       <FolderDown className="size-4" />
-                      <span>{stats.installs}</span>
+                      <span>{stats?.installs ?? 0}</span>
                     </div>
                   </div>
                 </div>
