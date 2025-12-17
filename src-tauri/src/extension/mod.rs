@@ -706,7 +706,30 @@ fn filter_out_extensions(
 
         extensions.retain(|ext| {
             let ty = ext.r#type;
-            ty == ExtensionType::Group || ty == ExtensionType::Extension || ty == extension_type
+
+            if ty.contains_sub_items() {
+                /*
+                 * We should not filter out group/extension extensions, with 2
+                 * exceptions: "Applications" and "File Search". They contains
+                 * no sub-extensions, so we treat them as normal extensions.
+                 *
+                 * When `extenison_type` is "Application", we return the "Applications"
+                 * extension as well because it is the entry to access the application
+                 * list.
+                 */
+                if ext.developer.is_none()
+                    && ext.id == built_in::application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME
+                {
+                    ty == extension_type || extension_type == ExtensionType::Application
+                } else if ext.developer.is_none() && ext.id == built_in::file_search::EXTENSION_ID {
+                    ty == extension_type
+                } else {
+                    // We should not filter out group/extension extensions
+                    true
+                }
+            } else {
+                ty == extension_type
+            }
         });
 
         // Filter sub-extensions to only include the requested type
@@ -726,19 +749,6 @@ fn filter_out_extensions(
                 }
             }
         }
-
-        // Application is special, technically, it should never be filtered out by
-        // this condition. But if our users will be surprising if they choose a
-        // non-Application type and see it in the results. So we do this to remedy the
-        // issue
-        if let Some(idx) = extensions.iter().position(|ext| {
-            ext.developer.is_none()
-                && ext.id == built_in::application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME
-        }) {
-            if extension_type != ExtensionType::Application {
-                extensions.remove(idx);
-            }
-        }
     }
 
     // apply query filter
@@ -754,8 +764,23 @@ fn filter_out_extensions(
 
         extensions.retain(|ext| {
             if ext.r#type.contains_sub_items() {
-                // Keep all group/extension types
-                true
+                /*
+                 * We should keep all the group/extension extensions. But we
+                 * have 2 exceptions: "Applications" and "File Search". Even
+                 * though they are of type group/extension, they do not contain
+                 * sub-extensions, so they are more like commands, apply the
+                 * `match_closure` here
+                 */
+                if ext.developer.is_none()
+                    && (ext.id
+                        == built_in::application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME
+                        || ext.id == built_in::file_search::EXTENSION_ID)
+                {
+                    match_closure(ext)
+                } else {
+                    // Keep all group/extension types
+                    true
+                }
             } else {
                 // Apply filter to non-group/extension types
                 match_closure(ext)
@@ -812,7 +837,8 @@ pub(crate) async fn list_extensions(
 
     // Cleanup after filtering extensions, don't do it if filter is not performed.
     //
-    // Remove parent extensions (Group/Extension types) that have no sub-items after filtering
+    // Remove parent extensions (Group/Extension types) that have no sub-items
+    // after filtering
     let filter_performed = query.is_some() || extension_type.is_some() || list_enabled;
     if filter_performed {
         extensions.retain(|ext| {
@@ -820,11 +846,20 @@ pub(crate) async fn list_extensions(
                 return true;
             }
 
-            // We don't do this filter to applications since it is always empty, load at runtime.
-            if ext.developer.is_none()
-                && ext.id == built_in::application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME
-            {
-                return true;
+            /*
+             * Two exceptions: "Applications" and "File Search"
+             *
+             * They are of type group/extension, but they contain no sub
+             * extensions, which means technically, we should filter them
+             * out. However, we sould not do this because they are not real
+             * group/extension extensions.
+             */
+            if ext.developer.is_none() {
+                if ext.id == built_in::application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME
+                    || ext.id == built_in::file_search::EXTENSION_ID
+                {
+                    return true;
+                }
             }
 
             let has_commands = ext
