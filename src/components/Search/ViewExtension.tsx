@@ -191,7 +191,8 @@ const ViewExtension: React.FC = () => {
   const ui: ViewExtensionUISettings | undefined = useMemo(() => {
     return viewExtensionOpened[4] as ViewExtensionUISettings | undefined;
   }, [viewExtensionOpened]);
-  const resizable = ui?.resizable === true;
+  // const resizable = ui?.resizable === true;
+  const resizable = true;
   console.log("resizable", ui);
   const applyFullscreen = useCallback(
     async (next: boolean) => {
@@ -208,10 +209,9 @@ const ViewExtension: React.FC = () => {
         };
         if (isMac) {
           await platformAdapter.setWindowResizable(true);
-          const maxWidth = window.screen.availWidth;
-          const maxHeight = window.screen.availHeight;
-          await platformAdapter.setWindowSize(maxWidth, maxHeight);
-          await platformAdapter.setWindowPosition(0, 0);
+          const monitor = await platformAdapter.getCurrentMonitor();
+          await platformAdapter.setWindowSize(monitor.width, monitor.height);
+          await platformAdapter.setWindowPosition(monitor.x, monitor.y);
         } else {
           await platformAdapter.setWindowFullscreen(true);
         }
@@ -227,7 +227,7 @@ const ViewExtension: React.FC = () => {
           ui && typeof ui.resizable === "boolean" ? ui.resizable : true;
         await platformAdapter.setWindowSize(nextWidth, nextHeight);
         await platformAdapter.setWindowResizable(nextResizable);
-        await platformAdapter.centerWindow();
+        await platformAdapter.centerOnCurrentMonitor(nextWidth, nextHeight);
       }
     },
     [ui]
@@ -255,13 +255,13 @@ const ViewExtension: React.FC = () => {
 
         await platformAdapter.setWindowSize(nextWidth, nextHeight);
         await platformAdapter.setWindowResizable(nextResizable);
-        await platformAdapter.centerWindow();
+        await platformAdapter.centerOnCurrentMonitor(nextWidth, nextHeight);
       } else {
         if (prevWindowRef.current) {
           const prev = prevWindowRef.current;
           await platformAdapter.setWindowSize(prev.width, prev.height);
           await platformAdapter.setWindowResizable(prev.resizable);
-          await platformAdapter.setWindowPosition(prev.x, prev.y);
+          await platformAdapter.centerOnCurrentMonitor(prev.width, prev.height);
           prevWindowRef.current = null;
         }
       }
@@ -273,7 +273,7 @@ const ViewExtension: React.FC = () => {
         const prev = prevWindowRef.current;
         platformAdapter.setWindowSize(prev.width, prev.height);
         platformAdapter.setWindowResizable(prev.resizable);
-        platformAdapter.setWindowPosition(prev.x, prev.y);
+        platformAdapter.centerOnCurrentMonitor(prev.width, prev.height);
         prevWindowRef.current = null;
       }
     };

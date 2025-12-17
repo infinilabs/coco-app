@@ -24,7 +24,8 @@ export const windowWrapper = {
     const window = await this.getCurrentWebviewWindow();
     if (window) {
       const size = await window.innerSize();
-      return { width: size.width, height: size.height };
+      const scale = await window.scaleFactor();
+      return { width: Math.round(size.width / scale), height: Math.round(size.height / scale) };
     }
     return { width: 0, height: 0 };
   },
@@ -42,16 +43,25 @@ export const windowWrapper = {
     return false;
   },
   async setFullscreen(enable: boolean) {
-    const window = await this.getCurrentWebviewWindow();
-    if (window) {
-      return window.setFullscreen(enable);
-    }
+    const { getCurrentWindow } = await import("@tauri-apps/api/window");
+    const win = getCurrentWindow();
+    return win.setFullscreen(enable);
   },
   async center() {
     const window = await this.getCurrentWebviewWindow();
     if (window) {
       return window.center();
     }
+  },
+  async currentMonitor() {
+    const { currentMonitor } = await import("@tauri-apps/api/window");
+    const monitor = await currentMonitor();
+    if (monitor) {
+      const pos = monitor.position;
+      const size = monitor.size;
+      return { x: pos.x, y: pos.y, width: size.width, height: size.height };
+    }
+    return { x: 0, y: 0, width: 0, height: 0 };
   },
   async setPosition(x: number, y: number) {
     const { LogicalPosition } = await import("@tauri-apps/api/dpi");
@@ -64,9 +74,22 @@ export const windowWrapper = {
     const window = await this.getCurrentWebviewWindow();
     if (window) {
       const pos = await window.outerPosition();
-      return { x: pos.x, y: pos.y };
+      const scale = await window.scaleFactor();
+      return { x: Math.round(pos.x / scale), y: Math.round(pos.y / scale) };
     }
     return { x: 0, y: 0 };
+  },
+  async centerOnMonitor(width: number, height: number) {
+    const { LogicalPosition } = await import("@tauri-apps/api/dpi");
+    const window = await this.getCurrentWebviewWindow();
+    if (!window) return;
+    const monitor = await this.currentMonitor();
+    const margin = 20;
+    const w = Math.max(100, Math.min(monitor.width - margin * 2, width));
+    const h = Math.max(60, Math.min(monitor.height - margin * 2, height));
+    const x = monitor.x + Math.max(margin, Math.floor((monitor.width - w) / 2));
+    const y = monitor.y + Math.max(margin, Math.floor((monitor.height - h) / 2));
+    return window.setPosition(new LogicalPosition(x, y));
   },
   async isMaximized() {
     const window = await this.getCurrentWebviewWindow();
