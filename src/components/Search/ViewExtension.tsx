@@ -191,9 +191,10 @@ const ViewExtension: React.FC = () => {
   const ui: ViewExtensionUISettings | undefined = useMemo(() => {
     return viewExtensionOpened[4] as ViewExtensionUISettings | undefined;
   }, [viewExtensionOpened]);
-  // const resizable = ui?.resizable === true;
-  const resizable = true;
+  const resizable = ui?.resizable;
+
   console.log("resizable", ui);
+
   const applyFullscreen = useCallback(
     async (next: boolean) => {
       if (next) {
@@ -207,11 +208,22 @@ const ViewExtension: React.FC = () => {
           x: pos.x,
           y: pos.y,
         };
+
         if (isMac) {
+          const monitor = await platformAdapter.getMonitorFromCursor();
+
+          if (!monitor) return;
+          const window = await platformAdapter.getCurrentWebviewWindow();
+          const factor = await window.scaleFactor();
+
+          const { size, position } = monitor;
+
+          const { width, height } = size.toLogical(factor);
+          const { x, y } = position.toLogical(factor);
+
+          await platformAdapter.setWindowSize(width, height);
+          await platformAdapter.setWindowPosition(x, y);
           await platformAdapter.setWindowResizable(true);
-          const monitor = await platformAdapter.getCurrentMonitor();
-          await platformAdapter.setWindowSize(monitor.width, monitor.height);
-          await platformAdapter.setWindowPosition(monitor.x, monitor.y);
         } else {
           await platformAdapter.setWindowFullscreen(true);
         }
@@ -227,11 +239,12 @@ const ViewExtension: React.FC = () => {
           ui && typeof ui.resizable === "boolean" ? ui.resizable : true;
         await platformAdapter.setWindowSize(nextWidth, nextHeight);
         await platformAdapter.setWindowResizable(nextResizable);
-        await platformAdapter.centerOnCurrentMonitor(nextWidth, nextHeight);
+        await platformAdapter.centerOnCurrentMonitor();
       }
     },
     [ui]
   );
+
   useEffect(() => {
     const applyWindowSettings = async () => {
       if (viewExtensionOpened != null) {
@@ -255,13 +268,13 @@ const ViewExtension: React.FC = () => {
 
         await platformAdapter.setWindowSize(nextWidth, nextHeight);
         await platformAdapter.setWindowResizable(nextResizable);
-        await platformAdapter.centerOnCurrentMonitor(nextWidth, nextHeight);
+        await platformAdapter.centerOnCurrentMonitor();
       } else {
         if (prevWindowRef.current) {
           const prev = prevWindowRef.current;
           await platformAdapter.setWindowSize(prev.width, prev.height);
           await platformAdapter.setWindowResizable(prev.resizable);
-          await platformAdapter.centerOnCurrentMonitor(prev.width, prev.height);
+          await platformAdapter.centerOnCurrentMonitor();
           prevWindowRef.current = null;
         }
       }
@@ -273,7 +286,7 @@ const ViewExtension: React.FC = () => {
         const prev = prevWindowRef.current;
         platformAdapter.setWindowSize(prev.width, prev.height);
         platformAdapter.setWindowResizable(prev.resizable);
-        platformAdapter.centerOnCurrentMonitor(prev.width, prev.height);
+        platformAdapter.centerOnCurrentMonitor();
         prevWindowRef.current = null;
       }
     };
@@ -287,7 +300,9 @@ const ViewExtension: React.FC = () => {
     };
     window.addEventListener("keydown", handleKeyDown, { capture: true });
     return () => {
-      window.removeEventListener("keydown", handleKeyDown, { capture: true } as any);
+      window.removeEventListener("keydown", handleKeyDown, {
+        capture: true,
+      } as any);
     };
   }, [isFullscreen, applyFullscreen]);
   useEffect(() => {
@@ -313,7 +328,11 @@ const ViewExtension: React.FC = () => {
       )}
       {resizable && (
         <button
-          aria-label={isFullscreen ? t("viewExtension.fullscreen.exit") : t("viewExtension.fullscreen.enter")}
+          aria-label={
+            isFullscreen
+              ? t("viewExtension.fullscreen.exit")
+              : t("viewExtension.fullscreen.enter")
+          }
           className="absolute top-2 right-2 z-10 rounded-md bg-black/40 text-white p-2 hover:bg-black/60 focus:outline-none"
           onClick={async () => {
             const next = !isFullscreen;
@@ -324,7 +343,11 @@ const ViewExtension: React.FC = () => {
             }
           }}
         >
-          {isFullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
+          {isFullscreen ? (
+            <Minimize2 className="size-4" />
+          ) : (
+            <Maximize2 className="size-4" />
+          )}
         </button>
       )}
       <iframe

@@ -16,7 +16,7 @@ export interface WebPlatformAdapter extends BasePlatformAdapter {
   isWindowResizable: () => Promise<boolean>;
   getWindowSize: () => Promise<{ width: number; height: number }>;
   setWindowFullscreen: (enable: boolean) => Promise<void>;
-  getCurrentMonitor: () => Promise<{ x: number; y: number; width: number; height: number }>;
+  getMonitorFromCursor: () => Promise<null>;
   centerOnCurrentMonitor: (width: number, height: number) => Promise<void>;
 }
 
@@ -53,9 +53,9 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     async setWindowFullscreen(enable) {
       console.log("Web mode simulated fullscreen:", enable);
     },
-    async getCurrentMonitor() {
+    async getMonitorFromCursor() {
       // Approximate single-screen geometry in web mode
-      return { x: 0, y: 0, width: window.innerWidth, height: window.innerHeight };
+      return null;
     },
     async centerOnCurrentMonitor(_width, _height) {
       // Not applicable in web mode

@@ -1,5 +1,6 @@
 import * as commands from "@/commands";
 import { WINDOW_CENTER_BASELINE_HEIGHT } from "@/constants";
+import platformAdapter from "../platformAdapter";
 
 // Window operations
 export const windowWrapper = {
@@ -10,7 +11,7 @@ export const windowWrapper = {
     return getCurrentWebviewWindow();
   },
 
-  async setSize(width: number, height: number) {
+  async setLogicalSize(width: number, height: number) {
     const { LogicalSize } = await import("@tauri-apps/api/dpi");
     const window = await this.getCurrentWebviewWindow();
     if (window) {
@@ -20,12 +21,15 @@ export const windowWrapper = {
       }
     }
   },
-  async getSize() {
+  async getLogicalSize() {
     const window = await this.getCurrentWebviewWindow();
     if (window) {
       const size = await window.innerSize();
       const scale = await window.scaleFactor();
-      return { width: Math.round(size.width / scale), height: Math.round(size.height / scale) };
+      return {
+        width: Math.round(size.width / scale),
+        height: Math.round(size.height / scale),
+      };
     }
     return { width: 0, height: 0 };
   },
@@ -53,24 +57,15 @@ export const windowWrapper = {
       return window.center();
     }
   },
-  async currentMonitor() {
-    const { currentMonitor } = await import("@tauri-apps/api/window");
-    const monitor = await currentMonitor();
-    if (monitor) {
-      const pos = monitor.position;
-      const size = monitor.size;
-      return { x: pos.x, y: pos.y, width: size.width, height: size.height };
-    }
-    return { x: 0, y: 0, width: 0, height: 0 };
-  },
-  async setPosition(x: number, y: number) {
+
+  async setLogicalPosition(x: number, y: number) {
     const { LogicalPosition } = await import("@tauri-apps/api/dpi");
     const window = await this.getCurrentWebviewWindow();
     if (window) {
       return window.setPosition(new LogicalPosition(x, y));
     }
   },
-  async getPosition() {
+  async getLogicalPosition() {
     const window = await this.getCurrentWebviewWindow();
     if (window) {
       const pos = await window.outerPosition();
@@ -79,17 +74,24 @@ export const windowWrapper = {
     }
     return { x: 0, y: 0 };
   },
-  async centerOnMonitor(width: number, height: number) {
-    const { LogicalPosition } = await import("@tauri-apps/api/dpi");
+  async centerOnMonitor() {
+    const { PhysicalPosition } = await import("@tauri-apps/api/dpi");
+
+    const monitor = await platformAdapter.getMonitorFromCursor();
+
+    if (!monitor) return;
+
     const window = await this.getCurrentWebviewWindow();
-    if (!window) return;
-    const monitor = await this.currentMonitor();
-    const margin = 20;
-    const w = Math.max(100, Math.min(monitor.width - margin * 2, width));
-    const h = Math.max(60, Math.min(monitor.height - margin * 2, height));
-    const x = monitor.x + Math.max(margin, Math.floor((monitor.width - w) / 2));
-    const y = monitor.y + Math.max(margin, Math.floor((monitor.height - h) / 2));
-    return window.setPosition(new LogicalPosition(x, y));
+
+    const { x: monitorX, y: monitorY } = monitor.position;
+    const { width: monitorWidth, height: monitorHeight } = monitor.size;
+
+    const windowSize = await window.innerSize();
+
+    const x = monitorX + (monitorWidth - windowSize.width) / 2;
+    const y = monitorY + (monitorHeight - windowSize.height) / 2;
+
+    return window.setPosition(new PhysicalPosition(x, y));
   },
   async isMaximized() {
     const window = await this.getCurrentWebviewWindow();

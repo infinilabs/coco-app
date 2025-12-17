@@ -16,8 +16,16 @@ import { useAppearanceStore } from "@/stores/appearanceStore";
 import { copyToClipboard, dispatchEvent, OpenURLWithBrowser } from ".";
 import { useAppStore } from "@/stores/appStore";
 import { unrequitable } from "@/utils";
-import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { Theme } from "@tauri-apps/api/window";
+import {
+  getCurrentWebviewWindow,
+  WebviewWindow,
+} from "@tauri-apps/api/webviewWindow";
+import {
+  cursorPosition,
+  Monitor,
+  monitorFromPoint,
+  Theme,
+} from "@tauri-apps/api/window";
 
 export interface TauriPlatformAdapter extends BasePlatformAdapter {
   openFileDialog: (
@@ -39,18 +47,18 @@ export interface TauriPlatformAdapter extends BasePlatformAdapter {
   getWindowPosition: () => Promise<{ x: number; y: number }>;
   setWindowPosition: (x: number, y: number) => Promise<void>;
   centerWindow: () => Promise<void>;
-  getCurrentMonitor: () => Promise<{ x: number; y: number; width: number; height: number }>;
-  centerOnCurrentMonitor: (width: number, height: number) => Promise<void>;
+  getMonitorFromCursor: () => Promise<Monitor | null>;
+  centerOnCurrentMonitor: () => Promise<unknown>;
 }
 
 // Create Tauri adapter functions
 export const createTauriAdapter = (): TauriPlatformAdapter => {
   return {
     async setWindowSize(width, height) {
-      return windowWrapper.setSize(width, height);
+      return windowWrapper.setLogicalSize(width, height);
     },
     async getWindowSize() {
-      return windowWrapper.getSize();
+      return windowWrapper.getLogicalSize();
     },
     async setWindowResizable(resizable) {
       return windowWrapper.setResizable(resizable);
@@ -68,19 +76,27 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       return windowWrapper.setMaximized(enable);
     },
     async getWindowPosition() {
-      return windowWrapper.getPosition();
+      return windowWrapper.getLogicalPosition();
     },
     async setWindowPosition(x, y) {
-      return windowWrapper.setPosition(x, y);
+      return windowWrapper.setLogicalPosition(x, y);
     },
     async centerWindow() {
       return windowWrapper.center();
     },
-    async getCurrentMonitor() {
-      return windowWrapper.currentMonitor();
+
+    async getMonitorFromCursor() {
+      const appWindow = getCurrentWebviewWindow();
+      const factor = await appWindow.scaleFactor();
+
+      const point = await cursorPosition();
+      const { x, y } = point.toLogical(factor);
+
+      return monitorFromPoint(x, y);
     },
-    async centerOnCurrentMonitor(width, height) {
-      return windowWrapper.centerOnMonitor(width, height);
+
+    async centerOnCurrentMonitor() {
+      return windowWrapper.centerOnMonitor();
     },
 
     async hideWindow() {
