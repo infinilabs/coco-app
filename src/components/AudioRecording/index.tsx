@@ -104,7 +104,7 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
 
     interval = setInterval(() => {
       if (state.countdown <= 0) {
-        // handleOk();
+        handleOk();
       }
 
       state.countdown--;
