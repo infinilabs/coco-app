@@ -104,7 +104,7 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
 
     interval = setInterval(() => {
       if (state.countdown <= 0) {
-        handleOk();
+        // handleOk();
       }
 
       state.countdown--;
@@ -173,7 +173,7 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
 
       <div
         className={clsx(
-          "absolute -inset-2 flex items-center gap-1 px-1 rounded translate-x-full transition-all bg-[#ededed] dark:bg-[#202126]",
+          "absolute inset-0 flex items-center gap-1 px-1 rounded translate-x-full transition-all bg-[#ededed] dark:bg-[#202126]",
           {
             "!translate-x-0": state.isRecording || state.converting,
           }
