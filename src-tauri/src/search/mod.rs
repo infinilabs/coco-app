@@ -26,7 +26,7 @@ use tokio::time::{Duration, timeout};
 /// * "main_extension_id": Currently, only the "extensions" query source
 ///   supports this. If you set
 ///
-///   ```
+///   ```text
 ///   {"querysource": "extension", "main_extension_id"}
 ///   ```
 ///
