@@ -406,4 +406,7 @@
   }
 }
 
-/* Removed global border on all elements to avoid unintended outlines */
+/* Hide the waveform visualization for speech-to-text (only appears in production with two waveforms) */
+::part(progress) {
+  display: none;
+}

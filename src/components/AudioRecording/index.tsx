@@ -34,7 +34,7 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
   const state = useReactive({ ...INITIAL_STATE });
   const containerRef = useRef<HTMLDivElement>(null);
   const recordRef = useRef<RecordPlugin>();
-  const { withVisibility, addError } = useAppStore();
+  const { addError } = useAppStore();
   const { currentService } = useConnectStore();
 
   const { wavesurfer } = useWavesurfer({
@@ -146,7 +146,7 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
   };
 
   const startRecording = async () => {
-    await withVisibility(checkPermission);
+    await checkPermission();
     state.isRecording = true;
     recordRef.current?.startRecording();
   };
