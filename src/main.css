@@ -410,3 +410,7 @@
 ::part(progress) {
   display: none;
 }
+
+::part(scroll) {
+  overflow: hidden;
+}

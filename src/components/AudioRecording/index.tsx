@@ -175,7 +175,7 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
         className={clsx(
           "absolute inset-0 flex items-center gap-1 px-1 rounded translate-x-full transition-all bg-[#ededed] dark:bg-[#202126]",
           {
-            "!translate-x-0": state.isRecording || state.converting,
+            "translate-x-0!": state.isRecording || state.converting,
           }
         )}
       >
@@ -184,7 +184,7 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
           className={clsx(
             "flex items-center justify-center size-6 bg-white dark:bg-black rounded-full transition cursor-pointer",
             {
-              "!cursor-not-allowed opacity-50": state.converting,
+              "cursor-not-allowed! opacity-50": state.converting,
             }
           )}
           onClick={() => resetState()}
@@ -192,7 +192,7 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
           <X className="size-4 text-[#0C0C0C] dark:text-[#999999]" />
         </button>
 
-        <div className="flex items-center gap-1 flex-1 h-6 px-2 bg-white dark:bg-black rounded-full transition overflow-hidden">
+        <div className="flex items-center gap-1 flex-1 h-6 px-2 bg-white dark:bg-black rounded-full transition">
           <div ref={containerRef} className="flex-1"></div>
 
           <span className="text-xs text-[#333] dark:text-[#999]">
