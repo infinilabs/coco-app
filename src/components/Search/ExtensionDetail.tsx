@@ -33,6 +33,7 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
   };
 
   const handleOpen = async (item: any) => {
+    console.log(111111111, item);
     platformAdapter.openSearchItem(item);
   };
 
@@ -75,7 +76,7 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
             {selectedExtension.installed ? (
               <div className="flex items-center gap-2">
                 <Button
-                  className="hidden flex justify-center items-center w-14 h-6 rounded-full bg-[#007BFF] text-white"
+                  className="flex justify-center items-center w-14 h-6 rounded-full bg-[#007BFF] text-white"
                   onClick={() => handleOpen(selectedExtension)}
                 >
                   {t("search.footer.open")}
