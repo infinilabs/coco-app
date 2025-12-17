@@ -99,7 +99,7 @@ const Details = () => {
   };
 
   return (
-    <div className="flex-1 h-full pr-4 pb-4 overflow-auto">
+    <div className="flex-1 h-full p-4 overflow-auto">
       <div className="flex items-start justify-between gap-4 mb-2">
         <h2 className="m-0 text-lg font-semibold text-gray-900 dark:text-white">
           {rootState.activeExtension?.name}

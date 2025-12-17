@@ -190,7 +190,7 @@ export const Extensions = () => {
         rootState: state,
       }}
     >
-      <div className="flex h-[calc(100vh-128px)] -mx-6 gap-4 text-sm">
+      <div className="flex h-[calc(100vh-128px)] -mx-6 text-sm">
         <div className="w-2/3 h-full px-4 border-r border-border overflow-auto">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
