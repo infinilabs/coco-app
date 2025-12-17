@@ -192,7 +192,7 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
           <X className="size-4 text-[#0C0C0C] dark:text-[#999999]" />
         </button>
 
-        <div className="flex items-center gap-1 flex-1 h-6 px-2 bg-white dark:bg-black rounded-full transition">
+        <div className="flex items-center gap-1 flex-1 h-6 px-2 bg-white dark:bg-black rounded-full transition overflow-hidden">
           <div ref={containerRef} className="flex-1"></div>
 
           <span className="text-xs text-[#333] dark:text-[#999]">
