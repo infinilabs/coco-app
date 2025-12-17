@@ -37,6 +37,15 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
     setIsOpen(false);
   };
 
+  const handleOpen = async (item: any) => {
+    console.log(111111111, item);
+    if (item.type === "group" || item.type === "extension") {
+      //
+    } else {
+      //
+    }
+  };
+
   const renderDivider = () => {
     return <div className="my-4 h-px bg-[#E6E6E6] dark:bg-[#262626]"></div>;
   };
@@ -69,6 +78,12 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
             <div className="pt-2">
               {selectedExtension.installed ? (
                 <div className="flex items-center gap-2">
+                  <Button
+                    className="flex justify-center items-center w-14 h-6 rounded-full bg-[#007BFF] text-white"
+                    onClick={() => handleOpen(selectedExtension)}
+                  >
+                    {t("search.footer.open")}
+                  </Button>
                   <Trash2
                     className="size-4 text-red-500 cursor-pointer"
                     onClick={() => {
@@ -170,8 +185,9 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
         <DeleteDialog
           reverseButtonPosition
           isOpen={isOpen}
-          title={`${t("extensionDetail.deleteDialog.title")} ${selectedExtension.name
-            }`}
+          title={`${t("extensionDetail.deleteDialog.title")} ${
+            selectedExtension.name
+          }`}
           description={t("extensionDetail.deleteDialog.description")}
           cancelButtonProps={{
             className:
