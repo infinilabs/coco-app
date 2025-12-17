@@ -88,6 +88,11 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         rich_category: sourceData?.rich_categories[0]?.key,
       };
     }
+    if (sourceData?.main_extension_id) {
+      queryStrings.main_extension_id = sourceData?.main_extension_id
+    }
+
+    console.log(222222, sourceData);
 
     let response: any;
     if (isTauri) {

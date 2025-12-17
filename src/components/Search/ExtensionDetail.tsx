@@ -23,7 +23,14 @@ interface ExtensionDetailProps {
 
 const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
   const { onInstall, onUninstall } = props;
-  const { selectedExtension, installingExtensions } = useSearchStore();
+  const {
+    selectedExtension,
+    installingExtensions,
+    setVisibleExtensionStore,
+    setVisibleExtensionDetail,
+    setSourceData,
+    setSearchValue,
+  } = useSearchStore();
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
 
@@ -37,10 +44,26 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
     setIsOpen(false);
   };
 
+  const extensionOpen = (item: any) => {
+    setVisibleExtensionStore(false);
+    setVisibleExtensionDetail(false);
+
+    setSourceData({
+      source: {
+        id: item.id,
+        name: item.name,
+      },
+      main_extension_id: item.id,
+    });
+    setSearchValue(item.name || "");
+  };
+
   const handleOpen = async (item: any) => {
     console.log(111111111, item);
+    if (!item) return;
+
     if (item.type === "group" || item.type === "extension") {
-      //
+      extensionOpen(item);
     } else {
       //
     }
