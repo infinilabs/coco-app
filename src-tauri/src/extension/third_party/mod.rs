@@ -16,6 +16,7 @@ use crate::common::search::QueryResponse;
 use crate::common::search::QuerySource;
 use crate::common::search::SearchQuery;
 use crate::common::traits::SearchSource;
+use crate::extension::_extension_on_opened;
 use crate::extension::ExtensionBundleIdBorrowed;
 use crate::extension::ExtensionType;
 use crate::extension::PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION;
@@ -407,7 +408,7 @@ impl ThirdPartyExtensionsSearchSource {
     ) -> Result<(), String> {
         if extension.supports_alias_hotkey() {
             if let Some(ref hotkey) = extension.hotkey {
-                let on_opened = extension.on_opened().unwrap_or_else(|| panic!( "extension has hotkey, but on_open() returns None, extension ID [{}], extension type [{:?}]", extension.id, extension.r#type));
+                let on_opened = _extension_on_opened(extension).unwrap_or_else(|| panic!( "extension has hotkey, but on_open() returns None, extension ID [{}], extension type [{:?}]", extension.id, extension.r#type));
                 let extension_id_clone = extension.id.clone();
 
                 tauri_app_handle
@@ -681,7 +682,7 @@ impl ThirdPartyExtensionsSearchSource {
         )?;
 
         // Set hotkey
-        let on_opened = extension.on_opened().unwrap_or_else(|| panic!(
+        let on_opened = _extension_on_opened(extension).unwrap_or_else(|| panic!(
             "setting hotkey for an extension that cannot be opened, extension ID [{:?}], extension type [{:?}]", bundle_id, extension.r#type,
         ));
 
@@ -1098,7 +1099,7 @@ fn extension_to_hit(
 
     // Only include if there's some relevance (score is meaningfully positive)
     if total_score > 0.01 {
-        let on_opened = extension.on_opened().unwrap_or_else(|| {
+        let on_opened = _extension_on_opened(extension).unwrap_or_else(|| {
             panic!(
                 "extension (id [{}], type [{:?}]) is searchable, and should have a valid on_opened",
                 extension.id, extension.r#type
