@@ -51,16 +51,17 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
 
     setSourceData({
       source: {
-        id: item.id,
         name: item.name,
       },
+      querySource: {
+        id: 'extensions'
+      }, 
       main_extension_id: item.id,
     });
     setSearchValue(item.name || "");
   };
 
   const handleOpen = async (item: any) => {
-    console.log(111111111, item);
     if (!item) return;
 
     if (item.type === "group" || item.type === "extension") {
