@@ -1,11 +1,11 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./dropdown-menu";
-import { Check } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface Option {
@@ -22,14 +22,11 @@ export interface MultiSelectProps {
 
 const MultiSelect: FC<MultiSelectProps> = (props) => {
   const { value, options, placeholder, onChange } = props;
+  const [open, setOpen] = useState(false);
 
   const renderTrigger = () => {
     if (value.length === 0) {
-      return (
-        <div className="text-muted-foreground leading-5.5 px-1">
-          {placeholder}
-        </div>
-      );
+      return <div className="text-muted-foreground px-1">{placeholder}</div>;
     }
 
     return (
@@ -44,10 +41,16 @@ const MultiSelect: FC<MultiSelectProps> = (props) => {
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <div className="border border-border min-h-8 rounded-lg p-1">
+        <div className="flex items-center justify-between border border-border min-h-8 rounded-lg p-1">
           {renderTrigger()}
+
+          <ChevronDown
+            className={cn("size-4 min-w-4 text-muted-foreground transition", {
+              "rotate-180": open,
+            })}
+          />
         </div>
       </DropdownMenuTrigger>
 
