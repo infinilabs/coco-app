@@ -124,7 +124,9 @@ const SearchResultsPanel = memo<{
 
   // If state gets updated, render the UI
   if (visibleExtensionStore) {
-    return <ExtensionStore extensionId={extensionId} />;
+    return (
+      <ExtensionStore extensionId={extensionId} changeInput={changeInput} />
+    );
   }
 
   // Render the view extension

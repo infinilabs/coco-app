@@ -16,15 +16,15 @@ import { useSearchStore } from "@/stores/searchStore";
 import DeleteDialog from "../Common/DeleteDialog";
 import PreviewImage from "../Common/PreviewImage";
 import platformAdapter from "@/utils/platformAdapter";
-import { invoke } from "@tauri-apps/api/core";
 
 interface ExtensionDetailProps {
   onInstall: () => void;
   onUninstall: () => void;
+  changeInput: (value: string) => void;
 }
 
 const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
-  const { onInstall, onUninstall } = props;
+  const { onInstall, onUninstall, changeInput } = props;
   const {
     selectedExtension,
     installingExtensions,
@@ -47,41 +47,48 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
   };
 
   const extensionOpen = (item: any) => {
-    setVisibleExtensionStore(false);
-    setVisibleExtensionDetail(false);
-
     setSourceData({
       source: {
         name: item.name,
       },
       querySource: {
-        id: 'extensions'
-      }, 
+        id: "extensions",
+      },
       main_extension_id: item.id,
     });
     setSearchValue(item.name || "");
   };
 
+  const otherExtensionOpen = (item: any) => {
+    changeInput("");
+    //
+    const extension = { ...item };
+
+    let developerId = extension.developer.id;
+    let extensionId = extension.id;
+
+    const bundleId = {
+      developer: developerId,
+      extension_id: extensionId,
+      sub_extension_id: null,
+    };
+
+    platformAdapter.invokeBackend("open_third_party_extension", {
+      bundleId,
+    });
+  };
+
   const handleOpen = async (item: any) => {
     if (!item) return;
 
+    // close extension store
+    setVisibleExtensionStore(false);
+    setVisibleExtensionDetail(false);
+    //
     if (item.type === "group" || item.type === "extension") {
       extensionOpen(item);
     } else {
-      const extension = { ...item };
-
-      let developerId = extension.developer.id;
-      let extensionId = extension.id;
-      
-      const bundleId = {
-        developer: developerId,
-        extension_id: extensionId,
-        sub_extension_id: null,
-      }
-
-      invoke("open_third_party_extension", {
-        bundleId
-      });
+      otherExtensionOpen(item);
     }
   };
 
