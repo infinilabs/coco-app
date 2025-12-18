@@ -59,7 +59,7 @@ const MultiSelect: FC<MultiSelectProps> = (props) => {
 
           return (
             <DropdownMenuItem
-              className="flex items-center gap-2"
+              className={"flex items-center justify-between gap-2"}
               key={itemValue}
               onSelect={(event) => {
                 event.preventDefault();
@@ -71,13 +71,13 @@ const MultiSelect: FC<MultiSelectProps> = (props) => {
                 }
               }}
             >
+              <span>{label}</span>
+
               <Check
                 className={cn("size-4 text-muted-foreground", {
                   "opacity-0": !value.includes(itemValue),
                 })}
               />
-
-              <span>{label}</span>
             </DropdownMenuItem>
           );
         })}

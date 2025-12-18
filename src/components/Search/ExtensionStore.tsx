@@ -332,7 +332,7 @@ const ExtensionStore = ({
                   }}
                 >
                   <div className="flex items-center gap-2 overflow-hidden">
-                    <img src={icon} className="size-[20px]" />
+                    <img src={icon} className="size-5" />
                     <span className="whitespace-nowrap">{name}</span>
                     <span className="truncate text-[#999]">{description}</span>
                   </div>
