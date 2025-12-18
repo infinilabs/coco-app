@@ -14,7 +14,7 @@ export type ViewExtensionOpened = [
   // HTML file URL
   string,
   ExtensionPermission | null,
-  ViewExtensionUISettings | null,
+  ViewExtensionUISettings | null
 ];
 
 export type ISearchStore = {
@@ -64,7 +64,15 @@ export type ISearchStore = {
   // When we open a View extension, we set this to a non-null value.
   viewExtensionOpened?: ViewExtensionOpened;
   setViewExtensionOpened: (showViewExtension?: ViewExtensionOpened) => void;
+
+  enabledFuzzyMatch: boolean;
+  setEnabledFuzzyMatch: (enabledFuzzyMatch: boolean) => void;
+
+  fuzziness: number;
+  setFuzziness: (fuzziness: number) => void;
 };
+
+export const DEFAULT_FUZZINESS = 5;
 
 export const useSearchStore = create<ISearchStore>()(
   persist(
@@ -138,11 +146,20 @@ export const useSearchStore = create<ISearchStore>()(
       setViewExtensionOpened: (viewExtensionOpened) => {
         return set({ viewExtensionOpened });
       },
+      enabledFuzzyMatch: false,
+      setEnabledFuzzyMatch: (enabledFuzzyMatch) => {
+        return set({ enabledFuzzyMatch });
+      },
+      fuzziness: DEFAULT_FUZZINESS,
+      setFuzziness: (fuzziness) => {
+        return set({ fuzziness });
+      },
     }),
     {
       name: "search-store",
       partialize: (state) => ({
         sourceData: state.sourceData,
+        fuzziness: state.fuzziness,
       }),
     }
   )

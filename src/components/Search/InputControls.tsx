@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { Brain, Sparkles } from "lucide-react";
+import { Brain, RotateCcw, ScanSearch, Sparkles } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
@@ -12,11 +12,13 @@ import { useConnectStore } from "@/stores/connectStore";
 import VisibleKey from "@/components/Common/VisibleKey";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useAppStore } from "@/stores/appStore";
-import { useSearchStore } from "@/stores/searchStore";
+import { DEFAULT_FUZZINESS, useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { parseSearchQuery, SearchQuery } from "@/utils";
 import InputUpload from "./InputUpload";
 import Copyright from "../Common/Copyright";
+import TimeFilter from "./TimeFilter";
+import { Slider } from "../ui/slider";
 
 interface InputControlsProps {
   isChatMode: boolean;
@@ -161,7 +163,13 @@ const InputControls = ({
     return state.aiOverviewAssistant;
   });
   const aiOverviewShortcut = useShortcutsStore((state) => state.aiOverview);
-  const { visibleExtensionStore } = useSearchStore();
+  const {
+    visibleExtensionStore,
+    enabledFuzzyMatch,
+    setEnabledFuzzyMatch,
+    fuzziness,
+    setFuzziness,
+  } = useSearchStore();
 
   return (
     <div
@@ -242,7 +250,10 @@ const InputControls = ({
             )}
         </div>
       ) : (
-        <div data-tauri-drag-region className="w-28 flex gap-2 relative">
+        <div
+          data-tauri-drag-region
+          className="w-28 flex gap-2 items-center relative"
+        >
           {!disabledExtensions.includes("AIOverview") &&
             isTauri &&
             aiOverviewServer &&
@@ -274,12 +285,64 @@ const InputControls = ({
                 </VisibleKey>
 
                 <span
-                  className={clsx("text-xs", { hidden: !enabledAiOverview })}
+                  className={clsx("text-xs truncate", {
+                    hidden: !enabledAiOverview,
+                  })}
                 >
                   AI Overview
                 </span>
               </div>
             )}
+
+          <div
+            className={clsx(
+              "inline-flex items-center gap-1 h-5 px-1 rounded-full hover:text-[#881c94]! cursor-pointer transition",
+              [
+                enabledFuzzyMatch
+                  ? "text-[#881c94]"
+                  : "text-[#333] dark:text-[#d8d8d8]",
+              ],
+              {
+                "bg-[#881C94]/20 dark:bg-[#202126]": enabledFuzzyMatch,
+              }
+            )}
+            onClick={() => {
+              setEnabledFuzzyMatch(!enabledFuzzyMatch);
+            }}
+          >
+            <ScanSearch className="size-3" />
+
+            {enabledFuzzyMatch && (
+              <>
+                <span className={clsx("text-xs truncate")}>Fuzzy Match</span>
+
+                <Slider
+                  value={[fuzziness]}
+                  max={5}
+                  className="w-20"
+                  onValueChange={(value) => {
+                    setFuzziness(value[0]);
+                  }}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                  }}
+                />
+
+                <RotateCcw
+                  className="size-3"
+                  onClick={(event) => {
+                    event.stopPropagation();
+
+                    setFuzziness(DEFAULT_FUZZINESS);
+                  }}
+                />
+              </>
+            )}
+          </div>
+
+          <div className="inline-flex items-center gap-1 h-5 px-1 rounded-full hover:text-[#881c94]! cursor-pointer transition">
+            <TimeFilter />
+          </div>
         </div>
       )}
 
