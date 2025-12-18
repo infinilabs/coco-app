@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { ListFilter, ChevronRight, BrushCleaning } from "lucide-react";
-import { DatePicker, Select } from "antd";
+import { DatePicker } from "antd";
 
 import {
   DropdownMenu,
@@ -14,6 +14,7 @@ import {
   PopoverPortal,
   PopoverTrigger,
 } from "../ui/popover";
+import { MultiSelect } from "../ui/multi-select";
 
 const TimeFilter = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -132,7 +133,7 @@ const TimeFilter = () => {
         </PopoverTrigger>
 
         <PopoverPortal container={triggerRef.current}>
-          <PopoverContent className="w-100 p-4">
+          <PopoverContent className="w-100 p-4 text-sm">
             <div className="flex items-center gap-2 text-sm">
               <span className="font-bold">Filters</span>
 
@@ -143,19 +144,17 @@ const TimeFilter = () => {
             <DatePicker.RangePicker />
 
             <div className="pt-4 pb-2 text-[#999]">Type</div>
-            <Select
-              mode="multiple"
-              allowClear
-              className="w-full"
+            <MultiSelect
+              value={[]}
+              className="h-8"
               placeholder="Please select type"
               options={typeOptions}
             />
 
             <div className="pt-4 pb-2 text-[#999]">Source</div>
-            <Select
-              mode="multiple"
-              allowClear
-              className="w-full"
+            <MultiSelect
+              value={[]}
+              className="h-8"
               placeholder="Please select source"
               options={sourceOptions}
             />
