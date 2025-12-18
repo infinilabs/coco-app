@@ -13,6 +13,7 @@ Information about release notes of Coco App is provided here.
 
 ### 🚀 Features
 
+- feat: resizable extension UI #1009
 - feat: add open button to launch installed extension #1013
 
 ### 🐛 Bug fix
