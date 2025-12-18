@@ -891,6 +891,9 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
         }
     }
 
+    // query main_extension_id querysource
+    // main_extension_id querysource
+    // query querysource datasource
     async fn search(
         &self,
         _tauri_app_handle: AppHandle,
@@ -898,12 +901,17 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
     ) -> Result<QueryResponse, SearchError> {
         println!("DBG: {:?}", query.query_strings);
 
-        let Some(query_string) = query.query_strings.get("query") else {
-            return Ok(QueryResponse {
-                source: self.get_type(),
-                hits: Vec::new(),
-                total_hits: 0,
-            });
+        let opt_lowercase_query_string: Option<String> = {
+            match query.query_strings.get("query") {
+                Some(query_string) => {
+                    if query_string.is_empty() {
+                        None
+                    } else {
+                        Some(query_string.to_lowercase())
+                    }
+                }
+                None => None,
+            }
         };
 
         let opt_data_source = query
@@ -916,7 +924,6 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
             .get("main_extension_id")
             .map(|str| str.to_string());
 
-        let query_lower = query_string.to_lowercase();
         let inner_clone = Arc::clone(&self.inner);
 
         let closure = move || {
@@ -954,7 +961,7 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
                         for command in commands.iter().filter(|cmd| cmd.enabled) {
                             if let Some(hit) = extension_to_hit(
                                 command,
-                                &query_lower,
+                                opt_lowercase_query_string.as_deref(),
                                 opt_data_source.as_deref(),
                                 opt_main_extension_lowercase_name.as_deref(),
                             ) {
@@ -967,7 +974,7 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
                         for script in scripts.iter().filter(|script| script.enabled) {
                             if let Some(hit) = extension_to_hit(
                                 script,
-                                &query_lower,
+                                opt_lowercase_query_string.as_deref(),
                                 opt_data_source.as_deref(),
                                 opt_main_extension_lowercase_name.as_deref(),
                             ) {
@@ -980,7 +987,7 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
                         for quicklink in quicklinks.iter().filter(|link| link.enabled) {
                             if let Some(hit) = extension_to_hit(
                                 quicklink,
-                                &query_lower,
+                                opt_lowercase_query_string.as_deref(),
                                 opt_data_source.as_deref(),
                                 opt_main_extension_lowercase_name.as_deref(),
                             ) {
@@ -993,7 +1000,7 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
                         for view in views.iter().filter(|view| view.enabled) {
                             if let Some(hit) = extension_to_hit(
                                 view,
-                                &query_lower,
+                                opt_lowercase_query_string.as_deref(),
                                 opt_data_source.as_deref(),
                                 opt_main_extension_lowercase_name.as_deref(),
                             ) {
@@ -1002,14 +1009,23 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
                         }
                     }
                 } else {
-                    if let Some(hit) =
-                        extension_to_hit(extension, &query_lower, opt_data_source.as_deref(), None)
-                    {
+                    if let Some(hit) = extension_to_hit(
+                        extension,
+                        opt_lowercase_query_string.as_deref(),
+                        opt_data_source.as_deref(),
+                        None,
+                    ) {
                         hits.push(hit);
                     }
                 }
             }
 
+            println!(
+                "DBG: hits {:?}",
+                hits.iter()
+                    .map(|(doc, _)| doc.title.as_ref())
+                    .collect::<Vec<_>>()
+            );
             hits
         };
 
@@ -1051,7 +1067,7 @@ pub(crate) async fn uninstall_extension(
 /// extension name, score it and take that into account.
 fn extension_to_hit(
     extension: &Extension,
-    query_lower: &str,
+    opt_lowercase_query_string: Option<&str>,
     opt_data_source: Option<&str>,
     opt_main_extension_lowercase_name: Option<&str>,
 ) -> Option<(Document, f64)> {
@@ -1070,64 +1086,66 @@ fn extension_to_hit(
     }
 
     let mut total_score = 0.0;
-
-    // Score based on title match
-    // Title is considered more important, so it gets a higher weight.
-    if let Some(title_score) =
-        calculate_text_similarity(&query_lower, &extension.name.to_lowercase())
-    {
-        total_score += title_score;
-    }
-
-    // Score based on alias match if available
-    // Alias is considered less important than title, so it gets a lower weight.
-    if let Some(alias) = &extension.alias {
-        if let Some(alias_score) = calculate_text_similarity(&query_lower, &alias.to_lowercase()) {
-            total_score += alias_score;
-        }
-    }
-
-    // An "extension" type extension should return all its
-    // sub-extensions when the query string matches its ID.
-    // To do this, we score the extension ID and take that
-    // into account.
-    if let Some(main_extension_lowercase_id) = opt_main_extension_lowercase_name {
-        if let Some(main_extension_score) =
-            calculate_text_similarity(&query_lower, main_extension_lowercase_id)
+    if let Some(query_lower) = opt_lowercase_query_string {
+        // Score based on title match
+        // Title is considered more important, so it gets a higher weight.
+        if let Some(title_score) =
+            calculate_text_similarity(query_lower, &extension.name.to_lowercase())
         {
-            total_score += main_extension_score;
+            total_score += title_score;
+        }
+
+        // Score based on alias match if available
+        // Alias is considered less important than title, so it gets a lower weight.
+        if let Some(alias) = &extension.alias {
+            if let Some(alias_score) = calculate_text_similarity(query_lower, &alias.to_lowercase())
+            {
+                total_score += alias_score;
+            }
+        }
+
+        // An "extension" type extension should return all its
+        // sub-extensions when the query string matches its ID.
+        // To do this, we score the extension ID and take that
+        // into account.
+        if let Some(main_extension_lowercase_id) = opt_main_extension_lowercase_name {
+            if let Some(main_extension_score) =
+                calculate_text_similarity(query_lower, main_extension_lowercase_id)
+            {
+                total_score += main_extension_score;
+            }
+        }
+
+        // Only filter by score if query string is set
+        if total_score == 0.0 {
+            return None;
         }
     }
 
-    // Only include if there's some relevance (score is meaningfully positive)
-    if total_score > 0.01 {
-        let on_opened = _extension_on_opened(extension).unwrap_or_else(|| {
-            panic!(
-                "extension (id [{}], type [{:?}]) is searchable, and should have a valid on_opened",
-                extension.id, extension.r#type
-            )
-        });
-        let url = on_opened.url();
+    let on_opened = _extension_on_opened(extension).unwrap_or_else(|| {
+        panic!(
+            "extension (id [{}], type [{:?}]) is searchable, and should have a valid on_opened",
+            extension.id, extension.r#type
+        )
+    });
+    let url = on_opened.url();
 
-        let document = Document {
-            id: extension.id.clone(),
-            title: Some(extension.name.clone()),
-            icon: Some(extension.icon.clone()),
-            on_opened: Some(on_opened),
-            url: Some(url),
-            category: Some(extension_type_string.clone()),
-            source: Some(DataSourceReference {
-                id: Some(extension_type_string.clone()),
-                name: Some(extension_type_string.clone()),
-                icon: None,
-                r#type: Some(extension_type_string),
-            }),
+    let document = Document {
+        id: extension.id.clone(),
+        title: Some(extension.name.clone()),
+        icon: Some(extension.icon.clone()),
+        on_opened: Some(on_opened),
+        url: Some(url),
+        category: Some(extension_type_string.clone()),
+        source: Some(DataSourceReference {
+            id: Some(extension_type_string.clone()),
+            name: Some(extension_type_string.clone()),
+            icon: None,
+            r#type: Some(extension_type_string),
+        }),
 
-            ..Default::default()
-        };
+        ..Default::default()
+    };
 
-        Some((document, total_score))
-    } else {
-        None
-    }
+    Some((document, total_score))
 }
