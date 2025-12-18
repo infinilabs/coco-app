@@ -17,6 +17,13 @@ export type ViewExtensionOpened = [
   ViewExtensionUISettings | null
 ];
 
+export interface AggregateFilter {
+  update_time_start?: string;
+  update_time_end?: string;
+  type?: string[];
+  source?: string[];
+}
+
 export type ISearchStore = {
   sourceData: any;
   setSourceData: (sourceData: any) => void;
@@ -70,6 +77,9 @@ export type ISearchStore = {
 
   fuzziness: number;
   setFuzziness: (fuzziness: number) => void;
+
+  aggregateFilter: AggregateFilter;
+  setAggregateFilter: (aggregateFilter: AggregateFilter) => void;
 };
 
 export const DEFAULT_FUZZINESS = 5;
@@ -153,6 +163,10 @@ export const useSearchStore = create<ISearchStore>()(
       fuzziness: DEFAULT_FUZZINESS,
       setFuzziness: (fuzziness) => {
         return set({ fuzziness });
+      },
+      aggregateFilter: {},
+      setAggregateFilter: (aggregateFilter) => {
+        return set({ aggregateFilter });
       },
     }),
     {

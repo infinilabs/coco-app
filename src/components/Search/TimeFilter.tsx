@@ -14,12 +14,14 @@ import {
   PopoverPortal,
   PopoverTrigger,
 } from "../ui/popover";
-import { MultiSelect } from "../ui/multi-select";
+import { useSearchStore } from "@/stores/searchStore";
+import MultiSelect from "../ui/multi-select";
 
 const TimeFilter = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
+  const { aggregateFilter, setAggregateFilter } = useSearchStore();
 
   const dropdownMenuItems = [
     {
@@ -92,7 +94,7 @@ const TimeFilter = () => {
   console.log("triggerRef", triggerRef.current);
 
   return (
-    <>
+    <div>
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
         <DropdownMenuTrigger asChild>
           <div ref={triggerRef} className="relative">
@@ -145,23 +147,33 @@ const TimeFilter = () => {
 
             <div className="pt-4 pb-2 text-[#999]">Type</div>
             <MultiSelect
-              value={[]}
-              className="h-8"
+              value={aggregateFilter.type ?? []}
               placeholder="Please select type"
               options={typeOptions}
+              onChange={(value) => {
+                setAggregateFilter({
+                  ...aggregateFilter,
+                  type: value,
+                });
+              }}
             />
 
             <div className="pt-4 pb-2 text-[#999]">Source</div>
             <MultiSelect
-              value={[]}
-              className="h-8"
+              value={aggregateFilter.source ?? []}
               placeholder="Please select source"
               options={sourceOptions}
+              onChange={(value) => {
+                setAggregateFilter({
+                  ...aggregateFilter,
+                  source: value,
+                });
+              }}
             />
           </PopoverContent>
         </PopoverPortal>
       </Popover>
-    </>
+    </div>
   );
 };
 
