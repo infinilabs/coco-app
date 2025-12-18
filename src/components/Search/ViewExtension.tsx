@@ -1,7 +1,7 @@
 import React from "react";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Maximize2, Minimize2 } from "lucide-react";
+import { Maximize2, Minimize2, Focus } from "lucide-react";
 
 import { useSearchStore } from "@/stores/searchStore";
 import {
@@ -35,9 +35,9 @@ const ViewExtension: React.FC = () => {
     y: number;
   } | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const overlayRef = useRef<HTMLDivElement | null>(null);
   const DEFAULT_VIEW_WIDTH = 1200;
   const DEFAULT_VIEW_HEIGHT = 900;
+  const [scale, setScale] = useState(1);
 
   if (viewExtensionOpened == null) {
     // When this view gets loaded, this state should not be NULL.
@@ -180,7 +180,6 @@ const ViewExtension: React.FC = () => {
       }
     };
     window.addEventListener("message", messageHandler);
-    console.info("Coco extension API listener is up");
 
     return () => {
       window.removeEventListener("message", messageHandler);
@@ -193,7 +192,18 @@ const ViewExtension: React.FC = () => {
   }, [viewExtensionOpened]);
   const resizable = ui?.resizable;
 
-  console.log("resizable", ui);
+  const baseWidth = useMemo(() => {
+    return ui && typeof ui?.width === "number" ? ui.width : DEFAULT_VIEW_WIDTH;
+  }, [ui]);
+  const baseHeight = useMemo(() => {
+    return ui && typeof ui?.height === "number" ? ui.height : DEFAULT_VIEW_HEIGHT;
+  }, [ui]);
+
+  const recomputeScale = useCallback(async () => {
+    const size = await platformAdapter.getWindowSize();
+    const nextScale = Math.min(size.width / baseWidth, size.height / baseHeight);
+    setScale(Math.max(nextScale, 0.1));
+  }, [baseWidth, baseHeight]);
 
   const applyFullscreen = useCallback(
     async (next: boolean) => {
@@ -224,8 +234,10 @@ const ViewExtension: React.FC = () => {
           await platformAdapter.setWindowSize(width, height);
           await platformAdapter.setWindowPosition(x, y);
           await platformAdapter.setWindowResizable(true);
+          await recomputeScale();
         } else {
           await platformAdapter.setWindowFullscreen(true);
+          await recomputeScale();
         }
       } else {
         if (!isMac) {
@@ -240,9 +252,16 @@ const ViewExtension: React.FC = () => {
         await platformAdapter.setWindowSize(nextWidth, nextHeight);
         await platformAdapter.setWindowResizable(nextResizable);
         await platformAdapter.centerOnCurrentMonitor();
+        await recomputeScale();
+        setTimeout(() => {
+          iframeRef.current?.focus();
+          try {
+            iframeRef.current?.contentWindow?.focus();
+          } catch {}
+        }, 0);
       }
     },
-    [ui]
+    [ui, recomputeScale]
   );
 
   useEffect(() => {
@@ -269,6 +288,13 @@ const ViewExtension: React.FC = () => {
         await platformAdapter.setWindowSize(nextWidth, nextHeight);
         await platformAdapter.setWindowResizable(nextResizable);
         await platformAdapter.centerOnCurrentMonitor();
+        await recomputeScale();
+        setTimeout(() => {
+          iframeRef.current?.focus();
+          try {
+            iframeRef.current?.contentWindow?.focus();
+          } catch {}
+        }, 0);
       } else {
         if (prevWindowRef.current) {
           const prev = prevWindowRef.current;
@@ -276,6 +302,10 @@ const ViewExtension: React.FC = () => {
           await platformAdapter.setWindowResizable(prev.resizable);
           await platformAdapter.centerOnCurrentMonitor();
           prevWindowRef.current = null;
+          await recomputeScale();
+          setTimeout(() => {
+            iframeRef.current?.focus();
+          }, 0);
         }
       }
     };
@@ -305,27 +335,10 @@ const ViewExtension: React.FC = () => {
       } as any);
     };
   }, [isFullscreen, applyFullscreen]);
-  useEffect(() => {
-    if (isFullscreen) {
-      overlayRef.current?.focus();
-    }
-  }, [isFullscreen]);
 
   return (
     <div className="relative w-full h-full">
-      {isFullscreen && (
-        <div
-          ref={overlayRef}
-          tabIndex={0}
-          className="absolute inset-0 outline-none pointer-events-none"
-          onKeyDown={(e) => {
-            if (e.key === "Escape") {
-              applyFullscreen(false);
-              setIsFullscreen(false);
-            }
-          }}
-        />
-      )}
+      {isFullscreen && <div className="absolute inset-0 pointer-events-none" />}
       {resizable && (
         <button
           aria-label={
@@ -339,7 +352,10 @@ const ViewExtension: React.FC = () => {
             await applyFullscreen(next);
             setIsFullscreen(next);
             if (next) {
-              overlayRef.current?.focus();
+              iframeRef.current?.focus();
+              try {
+                iframeRef.current?.contentWindow?.focus();
+              } catch {}
             }
           }}
         >
@@ -350,14 +366,53 @@ const ViewExtension: React.FC = () => {
           )}
         </button>
       )}
-      <iframe
-        ref={iframeRef}
-        src={fileUrl}
-        className="w-full h-full border-0"
-        onLoad={(event) => {
-          event.currentTarget.focus();
+      {/* Focus helper button */}
+      <button
+        aria-label={t("viewExtension.focus")}
+        className="absolute top-2 right-12 z-10 rounded-md bg-black/40 text-white p-2 hover:bg-black/60 focus:outline-none"
+        onClick={() => {
+          iframeRef.current?.focus();
+          try {
+            iframeRef.current?.contentWindow?.focus();
+          } catch {}
         }}
-      />
+      >
+        <Focus className="size-4"/>
+      </button>
+      <div
+        className="w-full h-full flex items-center justify-center"
+        onMouseDownCapture={() => {
+          iframeRef.current?.focus();
+        }}
+        onPointerDown={() => {
+          iframeRef.current?.focus();
+        }}
+        onClickCapture={() => {
+          iframeRef.current?.focus();
+        }}
+      >
+        <iframe
+          ref={iframeRef}
+          src={fileUrl}
+          className="border-0"
+          style={{
+            width: `${baseWidth}px`,
+            height: `${baseHeight}px`,
+            transform: `scale(${scale})`,
+            transformOrigin: "center center",
+            outline: "none",
+          }}
+          allow="fullscreen; pointer-lock; gamepad"
+          allowFullScreen
+          tabIndex={-1}
+          onLoad={(event) => {
+            event.currentTarget.focus();
+            try {
+              iframeRef.current?.contentWindow?.focus();
+            } catch {}
+          }}
+        />
+      </div>
     </div>
   );
 };

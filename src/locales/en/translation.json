@@ -633,7 +633,8 @@
     "fullscreen": {
       "enter": "Enter Full Screen",
       "exit": "Exit Full Screen"
-    }
+    },
+    "focus": "Focus"
   },
   "deleteDialog": {
     "button": {

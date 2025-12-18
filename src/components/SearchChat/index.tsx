@@ -412,7 +412,7 @@ function SearchChat({
     <div
       data-tauri-drag-region={isTauri}
       className={clsx(
-        "m-auto overflow-hidden relative bg-no-repeat flex flex-col",
+        "m-auto overflow-hidden relative bg-no-repeat flex flex-col bg-cover",
         [
           isTransitioned
             ? "bg-bottom bg-[url('/assets/chat_bg_light.png')] dark:bg-[url('/assets/chat_bg_dark.png')]"
@@ -427,7 +427,7 @@ function SearchChat({
         }
       )}
       style={{
-        backgroundSize: "auto 590px",
+        backgroundSize: "100% 590px",
         opacity: blurred ? blurOpacity / 100 : normalOpacity / 100,
       }}
     >
