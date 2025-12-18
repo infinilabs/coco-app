@@ -295,10 +295,10 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   return (
     <div
       className={`border-r border-gray-200 dark:border-gray-700 flex flex-col h-full overflow-x-hidden ${
-        viewMode === "list" ? "w-[100%]" : "w-[50%]"
+        viewMode === "list" ? "w-full" : "w-[50%]"
       }`}
     >
-      <div className="px-2 flex-shrink-0">
+      <div className="px-2 shrink-0">
         <SearchHeader
           total={total}
           viewMode={viewMode}

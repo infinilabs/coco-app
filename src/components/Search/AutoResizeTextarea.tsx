@@ -81,8 +81,10 @@ const AutoResizeTextarea = forwardRef<
       let height = lineHeight;
       let minHeight = lineHeight;
       const hasNewline = /[\r\n]/.test(input);
+      const hasContent = input.length > 0;
       const firstLineExceeds =
-        calcRef.current?.offsetWidth >= firstLineMaxWidth - 32;
+        hasContent &&
+        (calcRef.current?.offsetWidth ?? 0) >= Math.max(firstLineMaxWidth - 32, 0);
 
       if (hasNewline || firstLineExceeds) {
         minHeight = lineHeight * 2;
