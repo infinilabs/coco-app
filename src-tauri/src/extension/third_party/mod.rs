@@ -16,6 +16,8 @@ use crate::common::search::QueryResponse;
 use crate::common::search::QuerySource;
 use crate::common::search::SearchQuery;
 use crate::common::traits::SearchSource;
+use crate::extension::_extension_on_opened;
+use crate::extension::ExtensionBundleId;
 use crate::extension::ExtensionBundleIdBorrowed;
 use crate::extension::ExtensionType;
 use crate::extension::PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION;
@@ -26,11 +28,13 @@ use crate::util::platform::Platform;
 use crate::util::version::COCO_VERSION;
 use crate::util::version::parse_coco_semver;
 use async_trait::async_trait;
+use borrowme::Borrow;
 use borrowme::ToOwned;
 use check::general_check;
 use function_name::named;
 use semver::Version as SemVer;
 use serde_json::Value as Json;
+use snafu::prelude::*;
 use std::io::ErrorKind;
 use std::ops::Deref;
 use std::path::Path;
@@ -44,6 +48,7 @@ use tauri_plugin_global_shortcut::GlobalShortcutExt;
 use tauri_plugin_global_shortcut::ShortcutState;
 use tokio::fs::read_dir;
 use tokio::sync::RwLock;
+use tokio::sync::RwLockReadGuard;
 use tokio::sync::RwLockWriteGuard;
 
 pub(crate) fn get_third_party_extension_directory(tauri_app_handle: &AppHandle) -> PathBuf {
@@ -393,6 +398,26 @@ impl ThirdPartyExtensionsSearchSource {
         extension.get_sub_extension_mut(sub_extension_id)
     }
 
+    /// Return an immutable reference to the extension specified by `bundle_id` if it exists.
+    fn get_extension<'lock, 'extensions>(
+        extensions_read_lock: &'lock RwLockReadGuard<'extensions, Vec<Extension>>,
+        bundle_id: &ExtensionBundleIdBorrowed<'_>,
+    ) -> Option<&'lock Extension> {
+        let index = extensions_read_lock.iter().position(|ext| {
+            ext.id == bundle_id.extension_id && ext.developer.as_deref() == bundle_id.developer
+        })?;
+
+        let extension = extensions_read_lock
+            .get(index)
+            .expect("just checked this extension exists");
+
+        let Some(sub_extension_id) = bundle_id.sub_extension_id else {
+            return Some(extension);
+        };
+
+        extension.get_sub_extension(sub_extension_id)
+    }
+
     /// Difference between this function and `enable_extension()`
     ///
     /// This function does the actual job, i.e., to enable/activate the extension.
@@ -407,7 +432,7 @@ impl ThirdPartyExtensionsSearchSource {
     ) -> Result<(), String> {
         if extension.supports_alias_hotkey() {
             if let Some(ref hotkey) = extension.hotkey {
-                let on_opened = extension.on_opened().unwrap_or_else(|| panic!( "extension has hotkey, but on_open() returns None, extension ID [{}], extension type [{:?}]", extension.id, extension.r#type));
+                let on_opened = _extension_on_opened(extension).unwrap_or_else(|| panic!( "extension has hotkey, but on_open() returns None, extension ID [{}], extension type [{:?}]", extension.id, extension.r#type));
                 let extension_id_clone = extension.id.clone();
 
                 tauri_app_handle
@@ -681,7 +706,7 @@ impl ThirdPartyExtensionsSearchSource {
         )?;
 
         // Set hotkey
-        let on_opened = extension.on_opened().unwrap_or_else(|| panic!(
+        let on_opened = _extension_on_opened(extension).unwrap_or_else(|| panic!(
             "setting hotkey for an extension that cannot be opened, extension ID [{:?}], extension type [{:?}]", bundle_id, extension.r#type,
         ));
 
@@ -867,6 +892,59 @@ impl ThirdPartyExtensionsSearchSource {
     pub(crate) async fn extensions_snapshot(&self) -> Vec<Extension> {
         self.inner.extensions.read().await.clone()
     }
+
+    /// Open the specified third-party extension.
+    async fn open(
+        &self,
+        tauri_app_handle: AppHandle,
+        bundle_id: &ExtensionBundleIdBorrowed<'_>,
+    ) -> Result<(), OpenThirdPartyExtensionError> {
+        let extensions_read_lock = self.inner.extensions.read().await;
+        let Some(ext) = Self::get_extension(&extensions_read_lock, bundle_id) else {
+            log::warn!(
+                "trying to open() a third-party extension [{:?}] that does not exist",
+                bundle_id
+            );
+            return Err(OpenThirdPartyExtensionError::ExtensionNotFound {
+                bundle_id: bundle_id.to_owned(),
+            });
+        };
+
+        let Some(on_opened) = _extension_on_opened(ext) else {
+            log::warn!("third-party extension [{:?}] cannot be opened", bundle_id);
+            return Err(OpenThirdPartyExtensionError::ExtensionCannotBeOpened {
+                bundle_id: bundle_id.to_owned(),
+            });
+        };
+
+        crate::common::document::open(tauri_app_handle, on_opened, None)
+            .await
+            .map_err(|err_msg| OpenThirdPartyExtensionError::OnOpenedOpenError { msg: err_msg })?;
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Snafu, serde::Serialize)]
+pub(crate) enum OpenThirdPartyExtensionError {
+    #[snafu(display("extension '{:?}' does not exist", bundle_id))]
+    ExtensionNotFound { bundle_id: ExtensionBundleId },
+    #[snafu(display("extension '{:?}' cannot be opened", bundle_id))]
+    ExtensionCannotBeOpened { bundle_id: ExtensionBundleId },
+    #[snafu(display("executing open(OnOpened) failed: '{}'", msg))]
+    OnOpenedOpenError { msg: String },
+}
+
+#[tauri::command]
+pub(crate) async fn open_third_party_extension(
+    tauri_app_handle: AppHandle,
+    bundle_id: ExtensionBundleId,
+) -> Result<(), OpenThirdPartyExtensionError> {
+    THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE
+        .get()
+        .unwrap_or_else(|| panic!("THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE is not set"))
+        .open(tauri_app_handle, &bundle_id.borrow())
+        .await
 }
 
 pub(crate) static THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE: OnceLock<ThirdPartyExtensionsSearchSource> =
@@ -890,25 +968,37 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
         }
     }
 
+    // query main_extension_id querysource
+    // main_extension_id querysource
+    // query querysource datasource
     async fn search(
         &self,
         _tauri_app_handle: AppHandle,
         query: SearchQuery,
     ) -> Result<QueryResponse, SearchError> {
-        let Some(query_string) = query.query_strings.get("query") else {
-            return Ok(QueryResponse {
-                source: self.get_type(),
-                hits: Vec::new(),
-                total_hits: 0,
-            });
+        let opt_lowercase_query_string: Option<String> = {
+            match query.query_strings.get("query") {
+                Some(query_string) => {
+                    if query_string.is_empty() {
+                        None
+                    } else {
+                        Some(query_string.to_lowercase())
+                    }
+                }
+                None => None,
+            }
         };
 
         let opt_data_source = query
             .query_strings
             .get("datasource")
-            .map(|owned_str| owned_str.to_string());
+            .map(|str| str.to_string());
 
-        let query_lower = query_string.to_lowercase();
+        let opt_main_extension_id = query
+            .query_strings
+            .get("main_extension_id")
+            .map(|str| str.to_string());
+
         let inner_clone = Arc::clone(&self.inner);
 
         let closure = move || {
@@ -916,10 +1006,22 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
             let extensions_read_lock =
                 futures::executor::block_on(async { inner_clone.extensions.read().await });
 
+            let main_extension_filter_closure = |ext: &&Extension| -> bool {
+                // field minimum_coco_extension is only set for main
+                // extensions, so we only check main extensions.
+                let condition1 = ext.enabled && is_extension_compatible(Extension::clone(ext));
+                let condition2 = if let Some(ref main_extension_id) = opt_main_extension_id {
+                    &ext.id == main_extension_id
+                } else {
+                    true
+                };
+
+                condition1 && condition2
+            };
+
             for extension in extensions_read_lock
                 .iter()
-                // field minimum_coco_extension is only set for main extensions.
-                .filter(|ext| ext.enabled && is_extension_compatible(Extension::clone(ext)))
+                .filter(main_extension_filter_closure)
             {
                 if extension.r#type.contains_sub_items() {
                     let opt_main_extension_lowercase_name =
@@ -934,7 +1036,7 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
                         for command in commands.iter().filter(|cmd| cmd.enabled) {
                             if let Some(hit) = extension_to_hit(
                                 command,
-                                &query_lower,
+                                opt_lowercase_query_string.as_deref(),
                                 opt_data_source.as_deref(),
                                 opt_main_extension_lowercase_name.as_deref(),
                             ) {
@@ -947,7 +1049,7 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
                         for script in scripts.iter().filter(|script| script.enabled) {
                             if let Some(hit) = extension_to_hit(
                                 script,
-                                &query_lower,
+                                opt_lowercase_query_string.as_deref(),
                                 opt_data_source.as_deref(),
                                 opt_main_extension_lowercase_name.as_deref(),
                             ) {
@@ -960,7 +1062,7 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
                         for quicklink in quicklinks.iter().filter(|link| link.enabled) {
                             if let Some(hit) = extension_to_hit(
                                 quicklink,
-                                &query_lower,
+                                opt_lowercase_query_string.as_deref(),
                                 opt_data_source.as_deref(),
                                 opt_main_extension_lowercase_name.as_deref(),
                             ) {
@@ -973,7 +1075,7 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
                         for view in views.iter().filter(|view| view.enabled) {
                             if let Some(hit) = extension_to_hit(
                                 view,
-                                &query_lower,
+                                opt_lowercase_query_string.as_deref(),
                                 opt_data_source.as_deref(),
                                 opt_main_extension_lowercase_name.as_deref(),
                             ) {
@@ -982,9 +1084,12 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
                         }
                     }
                 } else {
-                    if let Some(hit) =
-                        extension_to_hit(extension, &query_lower, opt_data_source.as_deref(), None)
-                    {
+                    if let Some(hit) = extension_to_hit(
+                        extension,
+                        opt_lowercase_query_string.as_deref(),
+                        opt_data_source.as_deref(),
+                        None,
+                    ) {
                         hits.push(hit);
                     }
                 }
@@ -1029,9 +1134,9 @@ pub(crate) async fn uninstall_extension(
 /// This argument is needed as an "extension" type extension should return all its
 /// sub-extensions when the query string matches its name. To do this, we pass the
 /// extension name, score it and take that into account.
-pub(crate) fn extension_to_hit(
+fn extension_to_hit(
     extension: &Extension,
-    query_lower: &str,
+    opt_lowercase_query_string: Option<&str>,
     opt_data_source: Option<&str>,
     opt_main_extension_lowercase_name: Option<&str>,
 ) -> Option<(Document, f64)> {
@@ -1050,64 +1155,66 @@ pub(crate) fn extension_to_hit(
     }
 
     let mut total_score = 0.0;
-
-    // Score based on title match
-    // Title is considered more important, so it gets a higher weight.
-    if let Some(title_score) =
-        calculate_text_similarity(&query_lower, &extension.name.to_lowercase())
-    {
-        total_score += title_score;
-    }
-
-    // Score based on alias match if available
-    // Alias is considered less important than title, so it gets a lower weight.
-    if let Some(alias) = &extension.alias {
-        if let Some(alias_score) = calculate_text_similarity(&query_lower, &alias.to_lowercase()) {
-            total_score += alias_score;
-        }
-    }
-
-    // An "extension" type extension should return all its
-    // sub-extensions when the query string matches its ID.
-    // To do this, we score the extension ID and take that
-    // into account.
-    if let Some(main_extension_lowercase_id) = opt_main_extension_lowercase_name {
-        if let Some(main_extension_score) =
-            calculate_text_similarity(&query_lower, main_extension_lowercase_id)
+    if let Some(query_lower) = opt_lowercase_query_string {
+        // Score based on title match
+        // Title is considered more important, so it gets a higher weight.
+        if let Some(title_score) =
+            calculate_text_similarity(query_lower, &extension.name.to_lowercase())
         {
-            total_score += main_extension_score;
+            total_score += title_score;
+        }
+
+        // Score based on alias match if available
+        // Alias is considered less important than title, so it gets a lower weight.
+        if let Some(alias) = &extension.alias {
+            if let Some(alias_score) = calculate_text_similarity(query_lower, &alias.to_lowercase())
+            {
+                total_score += alias_score;
+            }
+        }
+
+        // An "extension" type extension should return all its
+        // sub-extensions when the query string matches its ID.
+        // To do this, we score the extension ID and take that
+        // into account.
+        if let Some(main_extension_lowercase_id) = opt_main_extension_lowercase_name {
+            if let Some(main_extension_score) =
+                calculate_text_similarity(query_lower, main_extension_lowercase_id)
+            {
+                total_score += main_extension_score;
+            }
+        }
+
+        // Only filter by score if query string is set
+        if total_score == 0.0 {
+            return None;
         }
     }
 
-    // Only include if there's some relevance (score is meaningfully positive)
-    if total_score > 0.01 {
-        let on_opened = extension.on_opened().unwrap_or_else(|| {
-            panic!(
-                "extension (id [{}], type [{:?}]) is searchable, and should have a valid on_opened",
-                extension.id, extension.r#type
-            )
-        });
-        let url = on_opened.url();
+    let on_opened = _extension_on_opened(extension).unwrap_or_else(|| {
+        panic!(
+            "extension (id [{}], type [{:?}]) is searchable, and should have a valid on_opened",
+            extension.id, extension.r#type
+        )
+    });
+    let url = on_opened.url();
 
-        let document = Document {
-            id: extension.id.clone(),
-            title: Some(extension.name.clone()),
-            icon: Some(extension.icon.clone()),
-            on_opened: Some(on_opened),
-            url: Some(url),
-            category: Some(extension_type_string.clone()),
-            source: Some(DataSourceReference {
-                id: Some(extension_type_string.clone()),
-                name: Some(extension_type_string.clone()),
-                icon: None,
-                r#type: Some(extension_type_string),
-            }),
+    let document = Document {
+        id: extension.id.clone(),
+        title: Some(extension.name.clone()),
+        icon: Some(extension.icon.clone()),
+        on_opened: Some(on_opened),
+        url: Some(url),
+        category: Some(extension_type_string.clone()),
+        source: Some(DataSourceReference {
+            id: Some(extension_type_string.clone()),
+            name: Some(extension_type_string.clone()),
+            icon: None,
+            r#type: Some(extension_type_string),
+        }),
 
-            ..Default::default()
-        };
+        ..Default::default()
+    };
 
-        Some((document, total_score))
-    } else {
-        None
-    }
+    Some((document, total_score))
 }

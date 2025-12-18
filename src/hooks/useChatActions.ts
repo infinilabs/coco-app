@@ -302,30 +302,34 @@ export function useChatActions(
   );
 
   const getChatHistory = useCallback(async () => {
-    let response: any;
-    if (isTauri) {
-      if (await unrequitable()) {
-        return setChats([]);
+    try {
+      let response: any;
+      if (isTauri) {
+        if (await unrequitable()) {
+          return setChats([]);
+        }
+
+        response = await platformAdapter.commands("chat_history", {
+          serverId: currentService?.id,
+          from: 0,
+          size: 100,
+          query: keyword,
+        });
+
+        response = response ? JSON.parse(response) : null;
+      } else {
+        const [_error, res] = await Get(`/chat/_history`, {
+          from: 0,
+          size: 100,
+        });
+        response = res;
       }
 
-      response = await platformAdapter.commands("chat_history", {
-        serverId: currentService?.id,
-        from: 0,
-        size: 100,
-        query: keyword,
-      });
-
-      response = response ? JSON.parse(response) : null;
-    } else {
-      const [_error, res] = await Get(`/chat/_history`, {
-        from: 0,
-        size: 100,
-      });
-      response = res;
+      const hits = response?.hits?.hits || [];
+      setChats(hits);
+    } catch (error) {
+      console.error("getChatHistory error:", error);
     }
-
-    const hits = response?.hits?.hits || [];
-    setChats(hits);
   }, [
     currentService?.id,
     keyword,

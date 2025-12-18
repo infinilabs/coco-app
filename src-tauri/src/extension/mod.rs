@@ -235,112 +235,117 @@ impl<'ext> PartialEq<ExtensionBundleId> for ExtensionBundleIdBorrowed<'ext> {
     }
 }
 
+#[tauri::command]
+pub(crate) fn extension_on_opened(extension: Extension) -> Option<OnOpened> {
+    _extension_on_opened(&extension)
+}
+
+/// Return what will happen when we open this extension.
+///
+/// `None` if it cannot be opened.
+pub(crate) fn _extension_on_opened(extension: &Extension) -> Option<OnOpened> {
+    let settings = extension.settings.clone();
+    let permission = extension.permission.clone();
+
+    match extension.r#type {
+        // This function, at the time of writing this comment, is primarily
+        // used by third-party extensions.
+        //
+        // Built-in extensions don't use this as they are technically not
+        // "struct Extension"s.  Typically, they directly construct a
+        // "struct Document" from their own type.
+        ExtensionType::Calculator => unreachable!("this is handled by frontend"),
+        ExtensionType::AiExtension => unreachable!(
+            "currently, all AI extensions we have are non-searchable, so we won't open them"
+        ),
+        ExtensionType::Application => {
+            // We can have a impl like:
+            //
+            // Some(OnOpened::Application { app_path: self.id.clone() })
+            //
+            // but it won't be used.
+
+            unreachable!(
+                "Applications are not \"struct Extension\" under the hood, they won't call this method"
+            )
+        }
+
+        // These 2 types of extensions cannot be opened
+        ExtensionType::Group => return None,
+        ExtensionType::Extension => return None,
+
+        ExtensionType::Command => {
+            let ty = ExtensionOnOpenedType::Command {
+              action: extension.action.clone().unwrap_or_else(|| {
+                panic!(
+                  "Command extension [{}]'s [action] field is not set, something wrong with your extension validity check", extension.id
+                )
+              }),
+          };
+
+            let extension_on_opened = ExtensionOnOpened {
+                ty,
+                settings,
+                permission,
+            };
+
+            Some(OnOpened::Extension(extension_on_opened))
+        }
+        ExtensionType::Quicklink => {
+            let quicklink = extension.quicklink.clone().unwrap_or_else(|| {
+              panic!(
+                "Quicklink extension [{}]'s [quicklink] field is not set, something wrong with your extension validity check", extension.id
+              )
+            });
+
+            let ty = ExtensionOnOpenedType::Quicklink {
+                link: quicklink.link,
+                open_with: quicklink.open_with,
+            };
+
+            let extension_on_opened = ExtensionOnOpened {
+                ty,
+                settings,
+                permission,
+            };
+
+            Some(OnOpened::Extension(extension_on_opened))
+        }
+        ExtensionType::Script => todo!("not supported yet"),
+        ExtensionType::Setting => todo!("not supported yet"),
+        ExtensionType::View => {
+            let name = extension.name.clone();
+            let icon = extension.icon.clone();
+            let page = extension.page.as_ref().unwrap_or_else(|| {
+                panic!("View extension [{}]'s [page] field is not set, something wrong with your extension validity check", extension.id);
+            }).clone();
+            let ui = extension.ui.clone();
+
+            let extension_on_opened_type = ExtensionOnOpenedType::View {
+                name,
+                icon,
+                page,
+                ui,
+            };
+            let extension_on_opened = ExtensionOnOpened {
+                ty: extension_on_opened_type,
+                settings,
+                permission,
+            };
+            let on_opened = OnOpened::Extension(extension_on_opened);
+
+            Some(on_opened)
+        }
+        ExtensionType::Unknown => {
+            unreachable!("Extensions of type [Unknown] should never be opened")
+        }
+    }
+}
+
 impl Extension {
     /// Whether this extension could be searched.
     pub(crate) fn searchable(&self) -> bool {
-        self.on_opened().is_some()
-    }
-
-    /// Return what will happen when we open this extension.
-    ///
-    /// `None` if it cannot be opened.
-    pub(crate) fn on_opened(&self) -> Option<OnOpened> {
-        let settings = self.settings.clone();
-        let permission = self.permission.clone();
-
-        match self.r#type {
-            // This function, at the time of writing this comment, is primarily
-            // used by third-party extensions.
-            //
-            // Built-in extensions don't use this as they are technically not
-            // "struct Extension"s.  Typically, they directly construct a
-            // "struct Document" from their own type.
-            ExtensionType::Calculator => unreachable!("this is handled by frontend"),
-            ExtensionType::AiExtension => unreachable!(
-                "currently, all AI extensions we have are non-searchable, so we won't open them"
-            ),
-            ExtensionType::Application => {
-                // We can have a impl like:
-                //
-                // Some(OnOpened::Application { app_path: self.id.clone() })
-                //
-                // but it won't be used.
-
-                unreachable!(
-                    "Applications are not \"struct Extension\" under the hood, they won't call this method"
-                )
-            }
-
-            // These 2 types of extensions cannot be opened
-            ExtensionType::Group => return None,
-            ExtensionType::Extension => return None,
-
-            ExtensionType::Command => {
-                let ty = ExtensionOnOpenedType::Command {
-                  action: self.action.clone().unwrap_or_else(|| {
-                    panic!(
-                      "Command extension [{}]'s [action] field is not set, something wrong with your extension validity check", self.id
-                    )
-                  }),
-              };
-
-                let extension_on_opened = ExtensionOnOpened {
-                    ty,
-                    settings,
-                    permission,
-                };
-
-                Some(OnOpened::Extension(extension_on_opened))
-            }
-            ExtensionType::Quicklink => {
-                let quicklink = self.quicklink.clone().unwrap_or_else(|| {
-                  panic!(
-                    "Quicklink extension [{}]'s [quicklink] field is not set, something wrong with your extension validity check", self.id
-                  )
-                });
-
-                let ty = ExtensionOnOpenedType::Quicklink {
-                    link: quicklink.link,
-                    open_with: quicklink.open_with,
-                };
-
-                let extension_on_opened = ExtensionOnOpened {
-                    ty,
-                    settings,
-                    permission,
-                };
-
-                Some(OnOpened::Extension(extension_on_opened))
-            }
-            ExtensionType::Script => todo!("not supported yet"),
-            ExtensionType::Setting => todo!("not supported yet"),
-            ExtensionType::View => {
-                let name = self.name.clone();
-                let icon = self.icon.clone();
-                let page = self.page.as_ref().unwrap_or_else(|| {
-                    panic!("View extension [{}]'s [page] field is not set, something wrong with your extension validity check", self.id);
-                }).clone();
-                let ui = self.ui.clone();
-
-                let extension_on_opened_type = ExtensionOnOpenedType::View {
-                    name,
-                    icon,
-                    page,
-                    ui,
-                };
-                let extension_on_opened = ExtensionOnOpened {
-                    ty: extension_on_opened_type,
-                    settings,
-                    permission,
-                };
-                let on_opened = OnOpened::Extension(extension_on_opened);
-
-                Some(on_opened)
-            }
-            ExtensionType::Unknown => {
-                unreachable!("Extensions of type [Unknown] should never be opened")
-            }
-        }
+        _extension_on_opened(self).is_some()
     }
 
     pub(crate) fn get_sub_extension(&self, sub_extension_id: &str) -> Option<&Self> {
