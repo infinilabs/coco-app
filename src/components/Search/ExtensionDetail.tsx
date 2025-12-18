@@ -1,4 +1,5 @@
 import { Button } from "@headlessui/react";
+import { invoke } from "@tauri-apps/api/core";
 import dayjs from "dayjs";
 import {
   CircleCheck,
@@ -42,7 +43,14 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
     if (item.type === "group" || item.type === "extension") {
       //
     } else {
-      //
+      // Remove the "developer" fieldd from the plugin.json object as
+      // it does not adhere our "struct Extension" definition, see
+      // `install_extension_from_store()` (src-tauri/src/extension/third_party/install/store.rs)
+      delete item.developer;
+      const onOpened = await invoke("extension_on_opened", { extension: item });
+      if (onOpened) {
+        await invoke("open", { onOpened, extraArgs: null });
+      }
     }
   };
 

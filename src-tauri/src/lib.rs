@@ -177,6 +177,7 @@ pub fn run() {
             extension::enable_extension,
             extension::disable_extension,
             extension::set_extension_alias,
+            extension::extension_on_opened,
             extension::register_extension_hotkey,
             extension::unregister_extension_hotkey,
             extension::is_extension_enabled,
