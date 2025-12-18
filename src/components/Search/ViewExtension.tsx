@@ -12,9 +12,13 @@ import {
 import platformAdapter from "@/utils/platformAdapter";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { isMac } from "@/utils/platform";
+import { useAppStore } from "@/stores/appStore";
 
 const ViewExtension: React.FC = () => {
   const { viewExtensionOpened } = useSearchStore();
+
+  const isTauri = useAppStore((state) => state.isTauri);
+  
   // Complete list of the backend APIs, grouped by their category.
   const [apis, setApis] = useState<Map<string, string[]> | null>(null);
   const { setModifierKeyPressed } = useShortcutsStore();
@@ -219,7 +223,7 @@ const ViewExtension: React.FC = () => {
           y: pos.y,
         };
 
-        if (isMac) {
+        if (isMac && isTauri) {
           const monitor = await platformAdapter.getMonitorFromCursor();
 
           if (!monitor) return;
