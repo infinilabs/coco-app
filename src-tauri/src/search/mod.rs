@@ -40,6 +40,8 @@ pub async fn query_coco_fusion(
     query_strings: HashMap<String, String>,
     query_timeout: u64,
 ) -> Result<MultiSourceQueryResponse, SearchError> {
+    println!("DBG: querystrings {:?}", query_strings);
+
     if query_strings.contains_key("datasource") && !query_strings.contains_key("querysource") {
         panic!("[querysource] has to be provided if [datasource] is set")
     }
