@@ -34,7 +34,7 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
   const state = useReactive({ ...INITIAL_STATE });
   const containerRef = useRef<HTMLDivElement>(null);
   const recordRef = useRef<RecordPlugin>();
-  const { withVisibility, addError } = useAppStore();
+  const { addError } = useAppStore();
   const { currentService } = useConnectStore();
 
   const { wavesurfer } = useWavesurfer({
@@ -146,7 +146,7 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
   };
 
   const startRecording = async () => {
-    await withVisibility(checkPermission);
+    await checkPermission();
     state.isRecording = true;
     recordRef.current?.startRecording();
   };
@@ -173,9 +173,9 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
 
       <div
         className={clsx(
-          "absolute -inset-2 flex items-center gap-1 px-1 rounded translate-x-full transition-all bg-[#ededed] dark:bg-[#202126]",
+          "absolute inset-0 flex items-center gap-1 px-1 rounded translate-x-full transition-all bg-[#ededed] dark:bg-[#202126]",
           {
-            "!translate-x-0": state.isRecording || state.converting,
+            "translate-x-0!": state.isRecording || state.converting,
           }
         )}
       >
@@ -184,7 +184,7 @@ const AudioRecording: FC<AudioRecordingProps> = (props) => {
           className={clsx(
             "flex items-center justify-center size-6 bg-white dark:bg-black rounded-full transition cursor-pointer",
             {
-              "!cursor-not-allowed opacity-50": state.converting,
+              "cursor-not-allowed! opacity-50": state.converting,
             }
           )}
           onClick={() => resetState()}

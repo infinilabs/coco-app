@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import { config } from "dotenv";
 import packageJson from "./package.json";
@@ -10,11 +11,12 @@ const host = process.env.TAURI_DEV_HOST;
 // console.log("process.env", process.env)
 
 // https://vitejs.dev/config/
-export default defineConfig(async () => ({
+export default defineConfig({
   define: {
     "process.env.VERSION": JSON.stringify(packageJson.version),
   },
-  plugins: [react()],
+  // Keep Tailwind first so its scanner runs early and consistently
+  plugins: [tailwindcss() as any, react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -41,6 +43,11 @@ export default defineConfig(async () => ({
       ignored: ["**/src-tauri/**"],
     },
     proxy: {
+      "/account": {
+        target: process.env.COCO_SERVER_URL,
+        changeOrigin: true,
+        secure: false,
+      },
       "/chat": {
         target: process.env.COCO_SERVER_URL,
         changeOrigin: true,
@@ -120,4 +127,4 @@ export default defineConfig(async () => ({
     },
     chunkSizeWarningLimit: 600,
   },
-}));
+});

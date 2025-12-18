@@ -1,6 +1,6 @@
 import { useAppStore } from "@/stores/appStore";
 import platformAdapter from "@/utils/platformAdapter";
-import { Button } from "@headlessui/react";
+import { Button } from "@/components/ui/button";
 import clsx from "clsx";
 import { castArray } from "lodash-es";
 import { Folder, SquareArrowOutUpRight, X } from "lucide-react";
@@ -82,7 +82,7 @@ const DirectoryScope: FC<DirectoryScopeProps> = (props) => {
             return (
               <div
                 key={item}
-                className="flex items-center justify-between gap-2"
+                className="flex items-center justify-between gap-2 text-[#666] dark:text-white/70"
               >
                 <div className="flex items-center gap-1 flex-1 overflow-hidden">
                   <Folder className="size-4" />
@@ -112,7 +112,9 @@ const DirectoryScope: FC<DirectoryScopeProps> = (props) => {
       )}
 
       <Button
-        className="w-full h-8 text-[#0087FF] border border-[#EEF0F3] hover:!border-[#0087FF] dark:border-gray-700 rounded-[6px] transition"
+        variant="outline"
+        className="w-full"
+        size="sm"
         onClick={handleAdd}
       >
         {t("settings.extensions.directoryScope.button.addDirectories")}
