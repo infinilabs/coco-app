@@ -427,7 +427,6 @@ function SearchChat({
         }
       )}
       style={{
-        backgroundSize: "100% 590px",
         opacity: blurred ? blurOpacity / 100 : normalOpacity / 100,
       }}
     >
