@@ -20,6 +20,7 @@ Information about release notes of Coco App is provided here.
 
 ### ✈️ Improvements
 
+- refactor: replace legacy components with shadcn/ui components #1002
 - chore: show error msg (not err code) when installing exts via deeplink fails #1007
 - refactor: treat Applications and File Search as normal extensions #1012
 

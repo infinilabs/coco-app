@@ -1,5 +1,4 @@
-import { Button } from "@headlessui/react";
-import { invoke } from "@tauri-apps/api/core";
+import { Button } from "@/components/ui/button";
 import dayjs from "dayjs";
 import {
   CircleCheck,
@@ -16,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { useSearchStore } from "@/stores/searchStore";
 import DeleteDialog from "../Common/DeleteDialog";
 import PreviewImage from "../Common/PreviewImage";
+import platformAdapter from "@/utils/platformAdapter";
 
 interface ExtensionDetailProps {
   onInstall: () => void;
@@ -71,9 +71,9 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
       // it does not adhere our "struct Extension" definition, see
       // `install_extension_from_store()` (src-tauri/src/extension/third_party/install/store.rs)
       delete item.developer;
-      const onOpened = await invoke("extension_on_opened", { extension: item });
+      const onOpened = await platformAdapter.invokeBackend("extension_on_opened", { extension: item });
       if (onOpened) {
-        await invoke("open", { onOpened, extraArgs: null });
+        await platformAdapter.invokeBackend("open", { onOpened, extraArgs: null });
       }
     }
   };

@@ -1,4 +1,4 @@
-import { Button } from "@headlessui/react";
+import { Button } from "@/components/ui/button";
 import { useMount } from "ahooks";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -35,15 +35,13 @@ const Applications = () => {
 
   return (
     <>
-      <div className="text-[#999]">
-        <p className="font-bold mb-2">
-          {t("settings.extensions.application.details.searchScope")}
-        </p>
+      <p className="mb-2">
+        {t("settings.extensions.application.details.searchScope")}
+      </p>
 
-        <p>
-          {t("settings.extensions.application.details.searchScopeDescription")}
-        </p>
-      </div>
+      <p className="text-[#999]">
+        {t("settings.extensions.application.details.searchScopeDescription")}
+      </p>
 
       <DirectoryScope
         paths={paths}
@@ -72,18 +70,18 @@ const Applications = () => {
         }}
       />
 
-      <div className="text-[#999] mt-4">
-        <p className="font-bold mb-2">
-          {t("settings.extensions.application.details.rebuildIndex")}
-        </p>
+      <p className="mt-4 mb-2">
+        {t("settings.extensions.application.details.rebuildIndex")}
+      </p>
 
-        <p>
-          {t("settings.extensions.application.details.rebuildIndexDescription")}
-        </p>
-      </div>
+      <p className="text-[#999]">
+        {t("settings.extensions.application.details.rebuildIndexDescription")}
+      </p>
 
       <Button
-        className="w-full h-8 my-4 text-[#0087FF] border border-[#EEF0F3] hover:!border-[#0087FF] dark:border-gray-700 rounded-[6px] transition"
+        variant="outline"
+        className="w-full my-4"
+        // className="w-full h-8 my-4 text-[#0087FF] border border-[#EEF0F3] hover:border-[#0087FF] dark:border-gray-700 rounded-md transition"
         onClick={handleReindex}
       >
         {t("settings.extensions.application.details.reindex")}

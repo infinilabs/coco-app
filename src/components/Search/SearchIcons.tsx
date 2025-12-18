@@ -1,15 +1,16 @@
 import { useSearchStore } from "@/stores/searchStore";
 import { ChevronLeft, Search } from "lucide-react";
+import { FC } from "react";
+import clsx from "clsx";
 
 import FontIcon from "@/components/Common/Icons/FontIcon";
-import { FC } from "react";
 import lightDefaultIcon from "@/assets/images/source_default.png";
 import darkDefaultIcon from "@/assets/images/source_default_dark.png";
 import { useThemeStore } from "@/stores/themeStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { navigateBack, visibleSearchBar } from "@/utils";
 import VisibleKey from "../Common/VisibleKey";
-import clsx from "clsx";
+import { cn } from "@/lib/utils";
 
 interface MultilevelWrapperProps {
   title?: string;
@@ -36,7 +37,7 @@ const MultilevelWrapper: FC<MultilevelWrapperProps> = (props) => {
     <div
       data-tauri-drag-region
       className={clsx(
-        "flex items-center h-10 gap-1 px-2 border border-[#EDEDED] dark:border-[#202126] rounded-l-lg",
+        "flex items-center h-10 gap-1 px-2 border border-(--border) rounded-l-lg",
         {
           "justify-center": visibleSearchBar(),
           "w-[calc(100vw-16px)] rounded-r-lg": !visibleSearchBar(),
@@ -50,7 +51,7 @@ const MultilevelWrapper: FC<MultilevelWrapperProps> = (props) => {
         />
       </VisibleKey>
 
-      <div className="size-5 [&>*]:size-full">{renderIcon()}</div>
+      <div className="size-5 *:size-full">{renderIcon()}</div>
 
       <span className="text-sm whitespace-nowrap">{title}</span>
     </div>
@@ -115,7 +116,14 @@ export default function SearchIcons({
     }
 
     return (
-      <div className="flex items-center justify-center pl-2 h-10 bg-[#ededed] dark:bg-[#202126]">
+      <div
+        className={cn(
+          "flex items-center justify-center bg-[#ededed] dark:bg-[#202126]",
+          {
+            "pl-2 h-10": lineCount === 1,
+          }
+        )}
+      >
         <Search className="w-4 h-4 text-[#ccc] dark:text-[#d8d8d8]" />
       </div>
     );

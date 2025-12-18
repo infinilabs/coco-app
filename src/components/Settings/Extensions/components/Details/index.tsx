@@ -9,7 +9,13 @@ import AiOverview from "./AiOverview";
 import Calculator from "./Calculator";
 import FileSearch from "./FileSearch";
 import { Ellipsis, Info } from "lucide-react";
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+  DropdownMenuContent,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore } from "@/stores/appStore";
 import { useTranslation } from "react-i18next";
@@ -93,58 +99,60 @@ const Details = () => {
   };
 
   return (
-    <div className="flex-1 h-full pr-4 pb-4 overflow-auto">
-      <div className="flex items-start justify-between gap-4 mb-4">
+    <div className="flex-1 h-full p-4 overflow-auto">
+      <div className="flex items-start justify-between gap-4 mb-2">
         <h2 className="m-0 text-lg font-semibold text-gray-900 dark:text-white">
           {rootState.activeExtension?.name}
         </h2>
 
         {rootState.activeExtension?.developer && (
-          <Menu>
-            <MenuButton className="h-7">
-              <Ellipsis className="size-5 text-[#999]" />
-            </MenuButton>
-
-            <MenuItems
-              anchor="bottom end"
-              className="p-1 text-sm bg-white dark:bg-[#202126] rounded-lg shadow-xs border border-gray-200 dark:border-gray-700"
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+              >
+                <Ellipsis className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              side="bottom"
+              align="end"
+              className="p-1 text-sm rounded-lg"
             >
-              <MenuItem>
-                <div
-                  className="px-3 py-2 text-nowrap text-red-500 hover:bg-black/5 hover:dark:bg-white/5 rounded-lg cursor-pointer"
-                  onClick={async () => {
-                    try {
-                      const { id, developer } = rootState.activeExtension!;
+              <DropdownMenuItem
+                className="px-3 py-2 text-nowrap text-red-500 rounded-lg hover:bg-muted"
+                onSelect={async (e: Event) => {
+                  e.preventDefault();
+                  try {
+                    const { id, developer } = rootState.activeExtension!;
 
-                      await platformAdapter.invokeBackend(
-                        "uninstall_extension",
-                        {
-                          extensionId: id,
-                          developer: developer,
-                        }
-                      );
+                    await platformAdapter.invokeBackend("uninstall_extension", {
+                      extensionId: id,
+                      developer: developer,
+                    });
 
-                      Object.assign(rootState, {
-                        activeExtension: void 0,
-                        extensions: rootState.extensions.filter((item) => {
-                          return item.id !== id;
-                        }),
-                      });
+                    Object.assign(rootState, {
+                      activeExtension: void 0,
+                      extensions: rootState.extensions.filter((item) => {
+                        return item.id !== id;
+                      }),
+                    });
 
-                      addError(
-                        t("settings.extensions.hints.uninstallSuccess"),
-                        "info"
-                      );
-                    } catch (error) {
-                      addError(String(error));
-                    }
-                  }}
-                >
-                  {t("settings.extensions.hints.uninstall")}
-                </div>
-              </MenuItem>
-            </MenuItems>
-          </Menu>
+                    addError(
+                      t("settings.extensions.hints.uninstallSuccess"),
+                      "info"
+                    );
+                  } catch (error) {
+                    addError(String(error));
+                  }
+                }}
+              >
+                {t("settings.extensions.hints.uninstall")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </div>
 
