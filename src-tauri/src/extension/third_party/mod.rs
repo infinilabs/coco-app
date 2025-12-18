@@ -976,8 +976,6 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
         _tauri_app_handle: AppHandle,
         query: SearchQuery,
     ) -> Result<QueryResponse, SearchError> {
-        println!("DBG: {:?}", query.query_strings);
-
         let opt_lowercase_query_string: Option<String> = {
             match query.query_strings.get("query") {
                 Some(query_string) => {
@@ -1097,12 +1095,6 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
                 }
             }
 
-            println!(
-                "DBG: hits {:?}",
-                hits.iter()
-                    .map(|(doc, _)| doc.title.as_ref())
-                    .collect::<Vec<_>>()
-            );
             hits
         };
 
