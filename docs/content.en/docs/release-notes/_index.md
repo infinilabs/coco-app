@@ -13,6 +13,8 @@ Information about release notes of Coco App is provided here.
 
 ### 🚀 Features
 
+- feat: add open button to launch installed extension #1013
+
 ### 🐛 Bug fix
 
 - fix: fix the abnormal input height issue #1006
