@@ -896,6 +896,8 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
         _tauri_app_handle: AppHandle,
         query: SearchQuery,
     ) -> Result<QueryResponse, SearchError> {
+        println!("DBG: {:?}", query.query_strings);
+
         let Some(query_string) = query.query_strings.get("query") else {
             return Ok(QueryResponse {
                 source: self.get_type(),
