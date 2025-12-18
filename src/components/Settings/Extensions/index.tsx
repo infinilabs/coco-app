@@ -3,15 +3,21 @@ import { useReactive } from "ahooks";
 import { useTranslation } from "react-i18next";
 import type { LiteralUnion } from "type-fest";
 import { cloneDeep, sortBy } from "lodash-es";
-import clsx from "clsx";
 import { Plus } from "lucide-react";
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import platformAdapter from "@/utils/platformAdapter";
 import Content from "./components/Content";
 import Details from "./components/Details";
 import { useExtensionsStore } from "@/stores/extensionsStore";
-import SettingsInput from "../SettingsInput";
 import { useAppStore } from "@/stores/appStore";
 import { installExtensionError } from "@/utils";
 
@@ -188,95 +194,88 @@ export const Extensions = () => {
         rootState: state,
       }}
     >
-      <div className="flex h-[calc(100vh-128px)] -mx-6 gap-4 text-sm">
-        <div className="w-2/3 h-full px-4 border-r dark:border-gray-700 overflow-auto">
+      <div className="flex h-[calc(100vh-128px)] -mx-6 text-sm">
+        <div className="w-2/3 h-full px-4 border-r border-border overflow-auto">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
               {t("settings.extensions.title")}
             </h2>
 
-            <Menu>
-              <MenuButton className="flex items-center justify-center size-6 border rounded-[6px] dark:border-gray-700 hover:!border-[#0096FB] transition">
-                <Plus className="size-4 text-[#0096FB]" />
-              </MenuButton>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="size-6">
+                  <Plus className="h-4 w-4 text-primary" />
+                </Button>
+              </DropdownMenuTrigger>
 
-              <MenuItems
-                anchor={{ gap: 4 }}
-                className="p-1 text-sm bg-white dark:bg-[#202126] rounded-lg shadow-xs border border-gray-200 dark:border-gray-700"
+              <DropdownMenuContent
+                sideOffset={4}
+                className="p-1 text-sm rounded-lg"
               >
-                <MenuItem>
-                  <div
-                    className="px-3 py-2 hover:bg-black/5 hover:dark:bg-white/5 rounded-lg cursor-pointer"
-                    onClick={() => {
-                      platformAdapter.emitEvent("open-extension-store");
-                    }}
-                  >
-                    {t("settings.extensions.menuItem.extensionStore")}
-                  </div>
-                </MenuItem>
-                <MenuItem>
-                  <div
-                    className="px-3 py-2 hover:bg-black/5 hover:dark:bg-white/5 rounded-lg cursor-pointer"
-                    onClick={async () => {
-                      try {
-                        const path = await platformAdapter.openFileDialog({
-                          directory: true,
-                        });
+                <DropdownMenuItem
+                  className="px-3 py-2 rounded-lg hover:bg-muted"
+                  onSelect={(e: Event) => {
+                    e.preventDefault();
+                    platformAdapter.emitEvent("open-extension-store");
+                  }}
+                >
+                  {t("settings.extensions.menuItem.extensionStore")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="px-3 py-2 rounded-lg hover:bg-muted"
+                  onSelect={async (e: Event) => {
+                    e.preventDefault();
+                    try {
+                      const path = await platformAdapter.openFileDialog({
+                        directory: true,
+                      });
 
-                        if (!path) return;
+                      if (!path) return;
 
-                        await platformAdapter.invokeBackend(
-                          "install_local_extension",
-                          { path }
-                        );
+                      await platformAdapter.invokeBackend(
+                        "install_local_extension",
+                        { path }
+                      );
 
-                        await getExtensions();
+                      await getExtensions();
 
-                        addError(
-                          t("settings.extensions.hints.importSuccess"),
-                          "info"
-                        );
-                      } catch (error) {
-                        installExtensionError(error);
-                      }
-                    }}
-                  >
-                    {t("settings.extensions.menuItem.localExtensionImport")}
-                  </div>
-                </MenuItem>
-              </MenuItems>
-            </Menu>
+                      addError(
+                        t("settings.extensions.hints.importSuccess"),
+                        "info"
+                      );
+                    } catch (error) {
+                      installExtensionError(error);
+                    }
+                  }}
+                >
+                  {t("settings.extensions.menuItem.localExtensionImport")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
-          <div className="flex justify-between gap-6 my-4">
-            <div className="flex h-8 border dark:border-gray-700 rounded-[6px] overflow-hidden">
-              {state.categories.map((item) => {
-                return (
-                  <div
-                    key={item}
-                    className={clsx(
-                      "flex items-center h-full px-4 cursor-pointer",
-                      {
-                        "bg-[#F0F6FE] dark:bg-gray-700":
-                          item === state.currentCategory,
-                      }
-                    )}
-                    onClick={() => {
-                      state.currentCategory = item;
-                    }}
-                  >
+          <div className="flex items-center justify-between gap-6 my-4">
+            <Tabs
+              value={state.currentCategory}
+              onValueChange={(v) => {
+                state.currentCategory = v as Category;
+              }}
+            >
+              <TabsList>
+                {state.categories.map((item) => (
+                  <TabsTrigger key={item} value={item}>
                     {item}
-                  </div>
-                );
-              })}
-            </div>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
 
-            <SettingsInput
-              className="flex-1"
+            <Input
+              className="flex-1 h-8"
               placeholder="Search"
-              value={state.searchValue}
-              onChange={(value) => {
-                state.searchValue = String(value);
+              value={state.searchValue ?? ""}
+              onChange={(e) => {
+                state.searchValue = e.target.value;
               }}
             />
           </div>

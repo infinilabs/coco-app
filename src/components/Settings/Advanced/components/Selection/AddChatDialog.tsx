@@ -6,6 +6,13 @@ import { nanoid } from "nanoid";
 
 import { AssistantFetcher } from "@/components/Assistant/AssistantFetcher";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 import { ButtonConfig } from "./config";
 import { useThemeStore } from "@/stores/themeStore";
 import { useAppStore } from "@/stores/appStore";
@@ -169,43 +176,58 @@ export default function AddChatDialog({
               <label className="text-sm font-medium text-muted-foreground">
                 {t("selection.bind.service")}
               </label>
-              <select
-                className="h-8 rounded-md px-2 py-1 text-sm bg-white dark:bg-[#0B1220] w-full"
+              <Select
                 value={serverId}
-                onChange={(e) => setServerId(e.target.value)}
+                onValueChange={(v) => setServerId(v === "__default__" ? "" : v)}
               >
-                <option value="" disabled>
-                  {t("selection.bind.defaultService")}
-                </option>
-                {serverList.map((s: any) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name || s.endpoint || s.id}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="h-8 w-full">
+                  <SelectValue className="truncate" placeholder={t("selection.bind.defaultService") as string} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__default__" disabled>
+                    {t("selection.bind.defaultService")}
+                  </SelectItem>
+                  {serverList.map((s: any) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name || s.endpoint || s.id}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">
                 {t("selection.bind.assistant")}
               </label>
-              <select
-                className="h-8 rounded-md px-2 py-1 text-sm bg-white dark:bg-[#0B1220] w-full"
+              <Select
                 value={assistantId}
-                onChange={(e) => setAssistantId(e.target.value)}
+                onValueChange={(v) => setAssistantId(v === "__default__" ? "" : v)}
                 disabled={loading || !serverId}
               >
-                <option value="" disabled>
-                  {loading
-                    ? t("common.loading")
-                    : t("selection.bind.defaultAssistant")}
-                </option>
-                {!loading &&
-                  assistantList.map((a: any) => (
-                    <option key={a._id} value={a._id}>
-                      {a._source?.name || a._id}
-                    </option>
-                  ))}
-              </select>
+                <SelectTrigger className="h-8 w-full">
+                  <SelectValue
+                    className="truncate"
+                    placeholder={
+                      (loading
+                        ? t("common.loading")
+                        : t("selection.bind.defaultAssistant")) as string
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {!loading && (
+                    <SelectItem value="__default__">
+                      {t("selection.bind.defaultAssistant")}
+                    </SelectItem>
+                  )}
+                  {!loading &&
+                    assistantList.map((a: any) => (
+                      <SelectItem key={a._id} value={a._id}>
+                        {a._source?.name || a._id}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>

@@ -117,7 +117,7 @@ const SelectionSettings = () => {
         <h2 className="text-lg font-semibold">{t("selection.title")}</h2>
       </div>
 
-      <div className="relative rounded-xl p-4 bg-gradient-to-r from-[#E6F0FA] to-[#FFF1F1]">
+      <div className="relative rounded-xl p-4 bg-linear-to-r from-[#E6F0FA] to-[#FFF1F1] dark:from-[#0B1220] dark:to-[#1A2234] dark:border dark:border-gray-800 dark:shadow-sm transition-colors">
         <div className="flex items-center flex-col" aria-hidden="true">
           <div className="rounded-xl border border-gray-200 bg-white/70 shadow-sm dark:border-gray-700 dark:bg-gray-900/40">
             <HeaderToolbar
@@ -148,7 +148,7 @@ const SelectionSettings = () => {
       </SettingsItem>
 
       {selectionEnabled && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <SettingsItem
             icon={Sparkles}
             title={t("selection.display.title")}

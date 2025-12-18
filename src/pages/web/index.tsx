@@ -16,7 +16,8 @@ import { Get } from "@/api/axiosRequest";
 import { useWebConfigStore } from "@/stores/webConfigStore";
 
 import "@/i18n";
-import "@/web.css";
+import { useIconfontScript } from "@/hooks/useScript";
+// Styles are distributed separately in the library build (out/search-chat/index.css)
 
 interface WebAppProps {
   headers?: Record<string, unknown>;
@@ -117,6 +118,7 @@ function WebApp({
   useEscape();
   useModifierKeyPress();
   useViewportHeight();
+  useIconfontScript();
 
   useEffect(() => {
     setDisabled(!loginInfo && !integration?.guest?.enabled);
@@ -125,7 +127,7 @@ function WebApp({
   return (
     <div
       id="searchChat-container"
-      className={`coco-container relative ${theme}`}
+      className={`coco-container relative ${theme} border! border-(--border) rounded-xl`}
       data-theme={theme}
       style={{
         maxWidth: `${width}px`,
