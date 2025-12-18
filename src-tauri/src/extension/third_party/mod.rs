@@ -17,6 +17,7 @@ use crate::common::search::QuerySource;
 use crate::common::search::SearchQuery;
 use crate::common::traits::SearchSource;
 use crate::extension::_extension_on_opened;
+use crate::extension::ExtensionBundleId;
 use crate::extension::ExtensionBundleIdBorrowed;
 use crate::extension::ExtensionType;
 use crate::extension::PLUGIN_JSON_FIELD_MINIMUM_COCO_VERSION;
@@ -27,11 +28,13 @@ use crate::util::platform::Platform;
 use crate::util::version::COCO_VERSION;
 use crate::util::version::parse_coco_semver;
 use async_trait::async_trait;
+use borrowme::Borrow;
 use borrowme::ToOwned;
 use check::general_check;
 use function_name::named;
 use semver::Version as SemVer;
 use serde_json::Value as Json;
+use snafu::prelude::*;
 use std::io::ErrorKind;
 use std::ops::Deref;
 use std::path::Path;
@@ -45,6 +48,7 @@ use tauri_plugin_global_shortcut::GlobalShortcutExt;
 use tauri_plugin_global_shortcut::ShortcutState;
 use tokio::fs::read_dir;
 use tokio::sync::RwLock;
+use tokio::sync::RwLockReadGuard;
 use tokio::sync::RwLockWriteGuard;
 
 pub(crate) fn get_third_party_extension_directory(tauri_app_handle: &AppHandle) -> PathBuf {
@@ -392,6 +396,26 @@ impl ThirdPartyExtensionsSearchSource {
         };
 
         extension.get_sub_extension_mut(sub_extension_id)
+    }
+
+    /// Return an immutable reference to the extension specified by `bundle_id` if it exists.
+    fn get_extension<'lock, 'extensions>(
+        extensions_read_lock: &'lock RwLockReadGuard<'extensions, Vec<Extension>>,
+        bundle_id: &ExtensionBundleIdBorrowed<'_>,
+    ) -> Option<&'lock Extension> {
+        let index = extensions_read_lock.iter().position(|ext| {
+            ext.id == bundle_id.extension_id && ext.developer.as_deref() == bundle_id.developer
+        })?;
+
+        let extension = extensions_read_lock
+            .get(index)
+            .expect("just checked this extension exists");
+
+        let Some(sub_extension_id) = bundle_id.sub_extension_id else {
+            return Some(extension);
+        };
+
+        extension.get_sub_extension(sub_extension_id)
     }
 
     /// Difference between this function and `enable_extension()`
@@ -868,6 +892,59 @@ impl ThirdPartyExtensionsSearchSource {
     pub(crate) async fn extensions_snapshot(&self) -> Vec<Extension> {
         self.inner.extensions.read().await.clone()
     }
+
+    /// Open the specified third-party extension.
+    async fn open(
+        &self,
+        tauri_app_handle: AppHandle,
+        bundle_id: &ExtensionBundleIdBorrowed<'_>,
+    ) -> Result<(), OpenThirdPartyExtensionError> {
+        let extensions_read_lock = self.inner.extensions.read().await;
+        let Some(ext) = Self::get_extension(&extensions_read_lock, bundle_id) else {
+            log::warn!(
+                "trying to open() a third-party extension [{:?}] that does not exist",
+                bundle_id
+            );
+            return Err(OpenThirdPartyExtensionError::ExtensionNotFound {
+                bundle_id: bundle_id.to_owned(),
+            });
+        };
+
+        let Some(on_opened) = _extension_on_opened(ext) else {
+            log::warn!("third-party extension [{:?}] cannot be opened", bundle_id);
+            return Err(OpenThirdPartyExtensionError::ExtensionCannotBeOpened {
+                bundle_id: bundle_id.to_owned(),
+            });
+        };
+
+        crate::common::document::open(tauri_app_handle, on_opened, None)
+            .await
+            .map_err(|err_msg| OpenThirdPartyExtensionError::OnOpenedOpenError { msg: err_msg })?;
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Snafu, serde::Serialize)]
+pub(crate) enum OpenThirdPartyExtensionError {
+    #[snafu(display("extension '{:?}' does not exist", bundle_id))]
+    ExtensionNotFound { bundle_id: ExtensionBundleId },
+    #[snafu(display("extension '{:?}' cannot be opened", bundle_id))]
+    ExtensionCannotBeOpened { bundle_id: ExtensionBundleId },
+    #[snafu(display("executing open(OnOpened) failed: '{}'", msg))]
+    OnOpenedOpenError { msg: String },
+}
+
+#[tauri::command]
+pub(crate) async fn open_third_party_extension(
+    tauri_app_handle: AppHandle,
+    bundle_id: ExtensionBundleId,
+) -> Result<(), OpenThirdPartyExtensionError> {
+    THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE
+        .get()
+        .unwrap_or_else(|| panic!("THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE is not set"))
+        .open(tauri_app_handle, &bundle_id.borrow())
+        .await
 }
 
 pub(crate) static THIRD_PARTY_EXTENSIONS_SEARCH_SOURCE: OnceLock<ThirdPartyExtensionsSearchSource> =

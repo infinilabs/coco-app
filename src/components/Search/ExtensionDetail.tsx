@@ -16,6 +16,7 @@ import { useSearchStore } from "@/stores/searchStore";
 import DeleteDialog from "../Common/DeleteDialog";
 import PreviewImage from "../Common/PreviewImage";
 import platformAdapter from "@/utils/platformAdapter";
+import { invoke } from "@tauri-apps/api/core";
 
 interface ExtensionDetailProps {
   onInstall: () => void;
@@ -67,14 +68,20 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
     if (item.type === "group" || item.type === "extension") {
       extensionOpen(item);
     } else {
-      // Remove the "developer" fieldd from the plugin.json object as
-      // it does not adhere our "struct Extension" definition, see
-      // `install_extension_from_store()` (src-tauri/src/extension/third_party/install/store.rs)
-      delete item.developer;
-      const onOpened = await platformAdapter.invokeBackend("extension_on_opened", { extension: item });
-      if (onOpened) {
-        await platformAdapter.invokeBackend("open", { onOpened, extraArgs: null });
+      const extension = { ...item };
+
+      let developerId = extension.developer.id;
+      let extensionId = extension.id;
+      
+      const bundleId = {
+        developer: developerId,
+        extension_id: extensionId,
+        sub_extension_id: null,
       }
+
+      invoke("open_third_party_extension", {
+        bundleId
+      });
     }
   };
 
