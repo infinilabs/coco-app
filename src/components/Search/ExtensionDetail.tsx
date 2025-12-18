@@ -50,6 +50,7 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
     setSourceData({
       source: {
         name: item.name,
+        icon: item.icon,
       },
       querySource: {
         id: "extensions",
