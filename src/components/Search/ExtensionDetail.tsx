@@ -8,6 +8,7 @@ import {
   Loader,
   Trash2,
   User,
+  SquareArrowOutUpRight,
 } from "lucide-react";
 import { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -126,18 +127,18 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
               {selectedExtension.installed ? (
                 <div className="flex items-center gap-2">
                   <Button
-                    className="flex justify-center items-center w-14 h-6 rounded-full bg-[#007BFF] text-white"
+                    className="flex justify-center items-center h-6 px-3 rounded-full bg-[#007BFF] hover:bg-[#007BFF] text-white ring-0 ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 outline-none"
                     onClick={() => handleOpen(selectedExtension)}
                   >
-                    {t("search.footer.open")}
+                    <SquareArrowOutUpRight className="size-4" />
                   </Button>
-                  <Trash2
-                    className="size-4 text-red-500 cursor-pointer"
-                    onClick={() => {
-                      setIsOpen(true);
-                    }}
-                  />
-                  <div className="flex items-center gap-1 h-6 px-2 rounded-full text-[#22C461] bg-[#22C461]/20">
+                  <Button
+                    className="flex justify-center items-center h-6 px-3 rounded-full bg-[#FFE2E2] hover:bg-[#FFE2E2] text-red-500 ring-0 ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 outline-none"
+                    onClick={() => setIsOpen(true)}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                  <div className="flex items-center gap-1 h-6 px-2 rounded-full text-[#999999] bg-[#E6E6E6]">
                     <CircleCheck className="size-4" />
                     <span>{t("extensionDetail.hints.installed")}</span>
                   </div>
