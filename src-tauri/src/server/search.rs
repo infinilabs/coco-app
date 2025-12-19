@@ -90,7 +90,7 @@ fn convert_query_string(key: &str, value: &str) -> Option<String> {
 
         // multi-value filters (value string may already contain any(...))
         "type" => Some(format!("filter=type:{}", value)),
-        "source" => Some(format!("filter=source.id:{}", value)),
+        "source.id" => Some(format!("filter=source.id:{}", value)),
         "category" => Some(format!("filter=category:{}", value)),
         "subcategory" => Some(format!("filter=subcategory:{}", value)),
         "lang" => Some(format!("filter=lang:{}", value)),
@@ -138,6 +138,7 @@ impl SearchSource for CocoSearchSource {
                 query_params.push(param);
             }
         }
+        println!("DBG: query params\n{:?}", query_params);
 
         let request_body = r#"
  {
