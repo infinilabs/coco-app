@@ -106,6 +106,7 @@ impl SearchSource for CocoSearchSource {
         // Add from/size as number values
         query_params.push(format!("from={}", query.from));
         query_params.push(format!("size={}", query.size));
+        query_params.push("v2=true".into());
 
         // Add query strings
         for (key, value) in query.query_strings {
