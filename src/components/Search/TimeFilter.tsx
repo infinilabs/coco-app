@@ -16,6 +16,8 @@ import {
 } from "../ui/popover";
 import { useSearchStore } from "@/stores/searchStore";
 import MultiSelect from "../ui/multi-select";
+import { Calendar } from "../ui/calendar";
+import { DateRange } from "react-day-picker";
 
 const TimeFilter = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -91,8 +93,6 @@ const TimeFilter = () => {
     },
   ];
 
-  console.log("triggerRef", triggerRef.current);
-
   return (
     <div>
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
@@ -143,7 +143,16 @@ const TimeFilter = () => {
             </div>
 
             <div className="pt-4 pb-2 text-[#999]">Date range</div>
-            <DatePicker.RangePicker />
+            <Popover>
+              <PopoverTrigger asChild>
+                <div>选择日期</div>
+              </PopoverTrigger>
+
+              <PopoverContent>
+                <Calendar mode="range" numberOfMonths={2} />
+              </PopoverContent>
+            </Popover>
+            {/* <DatePicker.RangePicker /> */}
 
             <div className="pt-4 pb-2 text-[#999]">Type</div>
             <MultiSelect
