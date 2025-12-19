@@ -1,12 +1,5 @@
 import { useState, useCallback, useMemo, useRef } from "react";
-import {
-  debounce,
-  fromPairs,
-  isPlainObject,
-  orderBy,
-  sortBy,
-  toPairs,
-} from "lodash-es";
+import { debounce, fromPairs, orderBy, sortBy, toPairs } from "lodash-es";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -209,10 +202,12 @@ export function useSearch() {
           }
         }
 
-        for (const [key, value] of Object.entries(aggregateFilter)) {
-          if (value.length === 0) continue;
+        if (aggregateFilter) {
+          for (const [key, value] of Object.entries(aggregateFilter)) {
+            if (value.length === 0) continue;
 
-          queryStrings[key] = `any(${value.join(",")})`;
+            queryStrings[key] = `any(${value.join(",")})`;
+          }
         }
 
         console.log("queryStrings", queryStrings);
@@ -251,14 +246,20 @@ export function useSearch() {
 
       console.log("_suggest", searchInput, response);
 
-      if (isTauri && isPlainObject(response?.aggregations)) {
-        const { setAggregations } = useSearchStore.getState();
+      if (isTauri) {
+        const { setAggregations, setAggregateFilter } =
+          useSearchStore.getState();
 
-        const sortedAggregations = fromPairs(
-          sortBy(toPairs(response.aggregations), ([key]) => key)
-        );
+        if (response?.aggregations) {
+          const sortedAggregations = fromPairs(
+            sortBy(toPairs(response.aggregations), ([key]) => key)
+          );
 
-        setAggregations(sortedAggregations);
+          setAggregations(sortedAggregations);
+        } else {
+          setAggregations(void 0);
+          setAggregateFilter(void 0);
+        }
       }
 
       if (timerRef.current) {

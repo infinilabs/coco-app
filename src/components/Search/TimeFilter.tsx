@@ -73,10 +73,12 @@ const TimeFilter = () => {
       count += 1;
     }
 
-    for (const item of Object.values(aggregateFilter)) {
-      if (item.length === 0) continue;
+    if (aggregateFilter) {
+      for (const item of Object.values(aggregateFilter)) {
+        if (item.length === 0) continue;
 
-      count += 1;
+        count += 1;
+      }
     }
 
     return count;
@@ -152,7 +154,7 @@ const TimeFilter = () => {
               onClick={() => {
                 setFilterDateRange(void 0);
 
-                setAggregateFilter({});
+                setAggregateFilter(void 0);
               }}
             >
               <BrushCleaning className="size-3 text-[#6000FF]" />
@@ -174,7 +176,7 @@ const TimeFilter = () => {
                   </div>
 
                   <MultiSelect
-                    value={aggregateFilter[key] ?? []}
+                    value={aggregateFilter?.[key] ?? []}
                     placeholder={`Please select ${key}`}
                     options={value.buckets.map((bucket) => ({
                       label: bucket.label ?? bucket.key,

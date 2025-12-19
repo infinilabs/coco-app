@@ -80,8 +80,8 @@ export type ISearchStore = {
   filterDateRange?: DateRange;
   setFilterDateRange: (filterDateRange?: DateRange) => void;
 
-  aggregateFilter: AggregateFilter;
-  setAggregateFilter: (aggregateFilter: AggregateFilter) => void;
+  aggregateFilter?: AggregateFilter;
+  setAggregateFilter: (aggregateFilter?: AggregateFilter) => void;
 
   aggregations?: Aggregations;
   setAggregations: (aggregations?: Aggregations) => void;
@@ -172,7 +172,6 @@ export const useSearchStore = create<ISearchStore>()(
       setFilterDateRange(filterDateRange) {
         return set({ filterDateRange });
       },
-      aggregateFilter: {},
       setAggregateFilter: (aggregateFilter) => {
         return set({ aggregateFilter });
       },
