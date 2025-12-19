@@ -11,6 +11,7 @@ pub struct SearchResponse<T> {
     pub timed_out: Option<bool>,
     pub _shards: Option<Shards>,
     pub hits: Hits<T>,
+    pub aggregations: Option<Aggregations>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -122,11 +123,30 @@ pub struct FailedRequest {
     pub reason: Option<String>,
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Aggregation {
+    buckets: Vec<AggBucket>,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct AggBucket {
+    doc_count: usize,
+    key: String,
+}
+
+pub type Aggregations = HashMap<String, Aggregation>;
+
+/// Merge the buckets in `from` to `to`.
+pub(crate) fn merge_aggregations(to: &mut Option<Aggregations>, from: Aggregations) {
+    todo!()
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct QueryResponse {
     pub source: QuerySource,
     pub hits: Vec<(Document, f64)>,
     pub total_hits: usize,
+    pub aggregations: Option<Aggregations>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -134,4 +154,5 @@ pub struct MultiSourceQueryResponse {
     pub failed: Vec<FailedRequest>,
     pub hits: Vec<QueryHits>,
     pub total_hits: usize,
+    pub aggregations: Option<Aggregations>,
 }

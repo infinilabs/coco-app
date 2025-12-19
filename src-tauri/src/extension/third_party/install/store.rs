@@ -69,6 +69,8 @@ impl SearchSource for ExtensionStore {
                 source: self.get_type(),
                 hits: Vec::new(),
                 total_hits: 0,
+                // Local search source does not support aggregations
+                aggregations: None,
             });
         };
 
@@ -94,12 +96,16 @@ impl SearchSource for ExtensionStore {
                 source: self.get_type(),
                 hits: vec![(doc, SCORE)],
                 total_hits: 1,
+                // Local search source does not support aggregations
+                aggregations: None,
             })
         } else {
             Ok(QueryResponse {
                 source: self.get_type(),
                 hits: Vec::new(),
                 total_hits: 0,
+                // Local search source does not support aggregations
+                aggregations: None,
             })
         }
     }

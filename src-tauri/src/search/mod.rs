@@ -123,6 +123,7 @@ async fn query_coco_fusion_single_query_source(
             failed: Vec::new(),
             hits: Vec::new(),
             total_hits: 0,
+            aggregations: None,
         });
     };
 
@@ -134,6 +135,7 @@ async fn query_coco_fusion_single_query_source(
     let mut failed_requests: Vec<FailedRequest> = Vec::new();
     let mut hits = Vec::new();
     let mut total_hits = 0;
+    let mut aggregations = None;
 
     match timeout_result {
         // Ignore the `_timeout` variable as it won't provide any useful debugging information.
@@ -146,6 +148,7 @@ async fn query_coco_fusion_single_query_source(
         Ok(query_result) => match query_result {
             Ok(response) => {
                 total_hits = response.total_hits;
+                aggregations = response.aggregations;
 
                 for (document, score) in response.hits {
                     log::debug!(
@@ -181,6 +184,7 @@ async fn query_coco_fusion_single_query_source(
         failed: failed_requests,
         hits,
         total_hits,
+        aggregations,
     })
 }
 

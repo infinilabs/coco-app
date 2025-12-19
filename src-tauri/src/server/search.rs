@@ -99,6 +99,7 @@ impl SearchSource for CocoSearchSource {
         let url = "/query/_search";
         let mut total_hits = 0;
         let mut hits: Vec<(Document, f64)> = Vec::new();
+        let mut aggregations = None;
 
         let mut query_params = Vec::new();
 
@@ -156,6 +157,8 @@ impl SearchSource for CocoSearchSource {
                     hits.push((document, score));
                 }
             }
+
+            aggregations = parsed.aggregations;
         }
 
         // Return the final result
@@ -163,6 +166,7 @@ impl SearchSource for CocoSearchSource {
             source: self.get_type(),
             hits,
             total_hits,
+            aggregations,
         })
     }
 }

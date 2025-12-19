@@ -39,6 +39,8 @@ impl SearchSource for ApplicationSearchSource {
             source: self.get_type(),
             hits: Vec::new(),
             total_hits: 0,
+            // Local search source does not support aggregations
+            aggregations: None,
         })
     }
 }

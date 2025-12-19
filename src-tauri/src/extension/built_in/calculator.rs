@@ -131,6 +131,8 @@ impl SearchSource for CalculatorSource {
                 source: self.get_type(),
                 hits: Vec::new(),
                 total_hits: 0,
+                // Local search source does not support aggregations
+                aggregations: None,
             });
         };
 
@@ -143,6 +145,8 @@ impl SearchSource for CalculatorSource {
                 source: self.get_type(),
                 hits: Vec::new(),
                 total_hits: 0,
+                // Local search source does not support aggregations
+                aggregations: None,
             });
         }
 
@@ -156,6 +160,8 @@ impl SearchSource for CalculatorSource {
                     source: query_source,
                     hits: Vec::new(),
                     total_hits: 0,
+                    // Local search source does not support aggregations
+                    aggregations: None,
                 };
             };
             // If it is only a number, no need to evaluate it as the result is
@@ -167,6 +173,8 @@ impl SearchSource for CalculatorSource {
                     source: query_source,
                     hits: Vec::new(),
                     total_hits: 0,
+                    // Local search source does not support aggregations
+                    aggregations: None,
                 };
             }
 
@@ -199,12 +207,16 @@ impl SearchSource for CalculatorSource {
                         source: query_source,
                         hits: vec![(doc, base_score)],
                         total_hits: 1,
+                        // Local search source does not support aggregations
+                        aggregations: None,
                     }
                 }
                 Err(_) => QueryResponse {
                     source: query_source,
                     hits: Vec::new(),
                     total_hits: 0,
+                    // Local search source does not support aggregations
+                    aggregations: None,
                 },
             }
         };
