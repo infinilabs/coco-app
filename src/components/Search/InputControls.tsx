@@ -325,6 +325,10 @@ const InputControls = ({
                       value={[fuzziness]}
                       max={5}
                       className="w-20"
+                      classNames={{
+                        range: "bg-[#881C94]",
+                        thumb: "border-[#881C94] focus-visible:ring-[#881C94]",
+                      }}
                       onValueChange={(value) => {
                         setFuzziness(value[0]);
                       }}
