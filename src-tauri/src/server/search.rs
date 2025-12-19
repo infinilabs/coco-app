@@ -112,9 +112,49 @@ impl SearchSource for CocoSearchSource {
             query_params.push(format!("{}={}", key, value));
         }
 
-        let response = HttpClient::get(&self.server.id, &url, Some(query_params))
-            .await
-            .context(HttpSnafu)?;
+        let request_body = r#"
+ {
+  "aggs": {
+    "category": {
+      "terms": {
+        "field": "category"
+      }
+    },
+    "lang": {
+      "terms": {
+        "field": "lang"
+      }
+    },
+    "source.id": {
+      "terms": {
+        "field": "source.id"
+      },
+      "aggs": {
+        "top": {
+          "top_hits": {
+            "size": 1,
+            "_source": [
+              "source.name"
+            ]
+          }
+        }
+      }
+    },
+    "type": {
+      "terms": {
+        "field": "type"
+      }
+    }
+  }
+}"#;
+        let response = HttpClient::post(
+            &self.server.id,
+            url,
+            Some(query_params),
+            Some(request_body.into()),
+        )
+        .await
+        .context(HttpSnafu)?;
         let status_code = response.status();
 
         if ![StatusCode::OK, StatusCode::CREATED].contains(&status_code) {

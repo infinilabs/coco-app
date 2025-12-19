@@ -63,7 +63,7 @@ pub async fn query_coco_fusion(
     );
 
     // Dispatch to different `query_coco_fusion_xxx()` functions.
-    if let Some(query_source_id) = opt_query_source_id {
+    let res = if let Some(query_source_id) = opt_query_source_id {
         query_coco_fusion_single_query_source(
             tauri_app_handle,
             query_source_list,
@@ -80,7 +80,13 @@ pub async fn query_coco_fusion(
             search_query,
         )
         .await
+    };
+
+    if let Ok(ref res) = res {
+        println!("DBG: aggregations\n {:#?}", res.aggregations);
     }
+
+    res
 }
 
 /// Query only 1 query source.
