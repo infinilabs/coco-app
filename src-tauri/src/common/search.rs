@@ -1,6 +1,7 @@
 use crate::common::document::Document;
 use crate::common::http::get_response_body_text;
 use reqwest::Response;
+use serde::de::Deserializer;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::error::Error;
@@ -130,10 +131,70 @@ pub struct Aggregation {
 
 /// A bucket's fields contain more than just "doc_count" and "key", but we only
 /// need them. Serde can deserialize this as we don't `deny_unknown_fields`.
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone)]
 pub struct AggBucket {
     doc_count: usize,
     key: String,
+    /// Optional human label extracted from `top.hits.hits[0]._source.source.name`.
+    label: Option<String>,
+}
+
+impl<'de> Deserialize<'de> for AggBucket {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct Wrapper {
+            doc_count: usize,
+            key: String,
+            #[serde(default)]
+            top: Option<Top>,
+        }
+
+        #[derive(Deserialize)]
+        struct Top {
+            hits: TopHits,
+        }
+
+        #[derive(Deserialize)]
+        struct TopHits {
+            hits: Vec<TopHit>,
+        }
+
+        #[derive(Deserialize)]
+        struct TopHit {
+            #[serde(default)]
+            _source: Option<TopSource>,
+        }
+
+        #[derive(Deserialize)]
+        struct TopSource {
+            #[serde(default)]
+            source: Option<SourceLabel>,
+        }
+
+        #[derive(Deserialize)]
+        struct SourceLabel {
+            #[serde(default)]
+            name: Option<String>,
+        }
+
+        let wrapper = Wrapper::deserialize(deserializer)?;
+
+        let label = wrapper
+            .top
+            .and_then(|top| top.hits.hits.into_iter().next())
+            .and_then(|hit| hit._source)
+            .and_then(|src| src.source)
+            .and_then(|lbl| lbl.name);
+
+        Ok(AggBucket {
+            doc_count: wrapper.doc_count,
+            key: wrapper.key,
+            label,
+        })
+    }
 }
 
 /// Coco server aggregation result.
@@ -222,12 +283,14 @@ pub struct MultiSourceQueryResponse {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json;
 
-    /// Helper function to create an `AggBUcket`, used in tests.
+    /// Helper function to create an `AggBucket`, used in tests.
     fn bucket(key: &str, doc_count: usize) -> AggBucket {
         AggBucket {
             key: key.to_string(),
             doc_count,
+            label: None,
         }
     }
 
@@ -287,5 +350,48 @@ mod tests {
         let lang = to.as_ref().unwrap().get("lang").unwrap();
         assert_eq!(get_doc_count(lang, "zh"), 3);
         assert_eq!(get_doc_count(lang, "en"), 5);
+    }
+
+    #[test]
+    fn deserialize_bucket_with_label() {
+        let json = r#"
+                {
+                    "doc_count": 251,
+                    "key": "d23ek9gqlqbcd9e3uiig",
+                    "top": {
+                        "hits": {
+                            "hits": [
+                                {
+                                    "_source": {
+                                        "source": {
+                                            "name": "INFINI Easysearch"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+                "#;
+
+        let bucket: AggBucket = serde_json::from_str(json).unwrap();
+        assert_eq!(bucket.doc_count, 251);
+        assert_eq!(bucket.key, "d23ek9gqlqbcd9e3uiig");
+        assert_eq!(bucket.label.as_deref(), Some("INFINI Easysearch"));
+    }
+
+    #[test]
+    fn deserialize_bucket_without_top_sets_label_none() {
+        let json = r#"
+                {
+                    "doc_count": 10,
+                    "key": "no-top"
+                }
+                "#;
+
+        let bucket: AggBucket = serde_json::from_str(json).unwrap();
+        assert_eq!(bucket.doc_count, 10);
+        assert_eq!(bucket.key, "no-top");
+        assert_eq!(bucket.label, None);
     }
 }
