@@ -17,7 +17,6 @@ import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore } from "@/stores/appStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useAppearanceStore } from "@/stores/appearanceStore";
-import { Calendar } from "@/components/ui/calendar";
 
 const tabValues = [
   "general",
@@ -86,8 +85,6 @@ function SettingsPage() {
     document.body.style.overflow =
       selectedTab === "extensions" ? "hidden" : "auto";
   }, [selectedTab]);
-
-  const [date, setDate] = useState<Date | undefined>(new Date());
 
   return (
     <>
