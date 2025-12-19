@@ -126,7 +126,9 @@ pub struct FailedRequest {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Aggregation {
-    buckets: Vec<AggBucket>,
+    // Frontend code needs to this to not be NULL, so we `clean_aggregations()`
+    // in query_coco_fusion() to ensure this.
+    pub buckets: Option<Vec<AggBucket>>,
 }
 
 /// A bucket's fields contain more than just "doc_count" and "key", but we only
@@ -243,15 +245,23 @@ pub(crate) fn merge_aggregations(to: &mut Option<Aggregations>, from: Aggregatio
                     Entry::Occupied(mut occ) => {
                         let to_agg = occ.get_mut();
 
-                        for bucket in agg.buckets {
-                            if let Some(existing) = to_agg
-                                .buckets
-                                .iter_mut()
-                                .find(|existing| existing.key == bucket.key)
-                            {
-                                existing.doc_count += bucket.doc_count;
-                            } else {
-                                to_agg.buckets.push(bucket);
+                        if let Some(from_buckets) = agg.buckets {
+                            match &mut to_agg.buckets {
+                                Some(to_buckets) => {
+                                    for bucket in from_buckets {
+                                        if let Some(existing) = to_buckets
+                                            .iter_mut()
+                                            .find(|existing| existing.key == bucket.key)
+                                        {
+                                            existing.doc_count += bucket.doc_count;
+                                        } else {
+                                            to_buckets.push(bucket);
+                                        }
+                                    }
+                                }
+                                None => {
+                                    to_agg.buckets = Some(from_buckets);
+                                }
                             }
                         }
                     }
@@ -296,18 +306,18 @@ mod tests {
 
     /// Helper function to create an `Aggregation`, used in tests.
     fn agg_with_buckets(buckets: Vec<AggBucket>) -> Aggregation {
-        Aggregation { buckets }
+        Aggregation {
+            buckets: Some(buckets),
+        }
     }
 
-    /// Helper function to get `doc_count` from the bucket specified by `key`.
-    ///
-    /// Utility for assertion.
-    fn get_doc_count(agg: &Aggregation, key: &str) -> usize {
+    /// Helper to get `doc_count` from the bucket specified by `key`.
+    /// Returns `None` when buckets are absent or the key is missing.
+    fn get_doc_count(agg: &Aggregation, key: &str) -> Option<usize> {
         agg.buckets
-            .iter()
-            .find(|b| b.key == key)
+            .as_ref()
+            .and_then(|buckets| buckets.iter().find(|b| b.key == key))
             .map(|b| b.doc_count)
-            .unwrap()
     }
 
     #[test]
@@ -319,7 +329,7 @@ mod tests {
         merge_aggregations(&mut to, from);
 
         let terms = to.unwrap().get("terms").cloned().unwrap();
-        assert_eq!(get_doc_count(&terms, "a"), 2);
+        assert_eq!(get_doc_count(&terms, "a"), Some(2));
     }
 
     #[test]
@@ -344,12 +354,12 @@ mod tests {
         merge_aggregations(&mut to, from);
 
         let terms = to.as_ref().unwrap().get("terms").unwrap();
-        assert_eq!(get_doc_count(terms, "a"), 4);
-        assert_eq!(get_doc_count(terms, "b"), 2);
-        assert_eq!(get_doc_count(terms, "c"), 5);
+        assert_eq!(get_doc_count(terms, "a"), Some(4));
+        assert_eq!(get_doc_count(terms, "b"), Some(2));
+        assert_eq!(get_doc_count(terms, "c"), Some(5));
         let lang = to.as_ref().unwrap().get("lang").unwrap();
-        assert_eq!(get_doc_count(lang, "zh"), 3);
-        assert_eq!(get_doc_count(lang, "en"), 5);
+        assert_eq!(get_doc_count(lang, "zh"), Some(3));
+        assert_eq!(get_doc_count(lang, "en"), Some(5));
     }
 
     #[test]

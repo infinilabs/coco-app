@@ -1,7 +1,7 @@
 use crate::common::error::{ReportErrorStyle, SearchError, report_error};
 use crate::common::register::SearchSourceRegistry;
 use crate::common::search::{
-    FailedRequest, MultiSourceQueryResponse, QueryHits, QuerySource, SearchQuery,
+    Aggregations, FailedRequest, MultiSourceQueryResponse, QueryHits, QuerySource, SearchQuery,
     merge_aggregations,
 };
 use crate::common::traits::SearchSource;
@@ -18,6 +18,20 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager};
 use tokio::time::{Duration, timeout};
+
+/// Helper function to drop empty aggregations and normalize `Option` state.
+fn clean_aggregations(aggs: &mut Option<Aggregations>) {
+    if let Some(map) = aggs {
+        map.retain(|_, agg| match &agg.buckets {
+            Some(buckets) => !buckets.is_empty(),
+            None => false,
+        });
+
+        if map.is_empty() {
+            *aggs = None;
+        }
+    }
+}
 
 /// Available `query_strings`:
 ///
@@ -63,7 +77,7 @@ pub async fn query_coco_fusion(
     );
 
     // Dispatch to different `query_coco_fusion_xxx()` functions.
-    let res = if let Some(query_source_id) = opt_query_source_id {
+    let mut res_response = if let Some(query_source_id) = opt_query_source_id {
         query_coco_fusion_single_query_source(
             tauri_app_handle,
             query_source_list,
@@ -82,11 +96,11 @@ pub async fn query_coco_fusion(
         .await
     };
 
-    if let Ok(ref res) = res {
-        println!("DBG: aggregations\n {:#?}", res.aggregations);
+    if let Ok(ref mut response) = res_response {
+        clean_aggregations(&mut response.aggregations);
     }
 
-    res
+    res_response
 }
 
 /// Query only 1 query source.
