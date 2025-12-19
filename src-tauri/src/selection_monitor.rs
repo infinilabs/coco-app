@@ -281,12 +281,19 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
         let mut stable_text = String::new();
         let mut stable_count = 0;
         let mut empty_count = 0;
+        let mut loop_idx: u64 = 0;
 
         loop {
+            loop_idx = loop_idx.wrapping_add(1);
+            let verbose = loop_idx % 50 == 0; // Log roughly every 1.5s (30ms * 50)
+
             std::thread::sleep(Duration::from_millis(30));
 
             // If disabled: do not read AX / do not show popup; hide if currently visible.
             if !is_selection_enabled() {
+                if verbose {
+                    println!("[SelectionMonitor] Disabled");
+                }
                 if popup_visible {
                     let _ = app_handle.emit("selection-detected", "");
                     popup_visible = false;
@@ -301,6 +308,13 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
             // system-wide focused element belongs to this process.
             let front_is_me = is_frontmost_app_me() || is_focused_element_me();
 
+            if verbose {
+                println!(
+                    "[SelectionMonitor] Loop heartbeat. front_is_me={}",
+                    front_is_me
+                );
+            }
+
             // When Coco is frontmost, disable detection but do NOT hide the popup.
             // Users may be clicking the popup; we must keep it visible.
             if front_is_me {
@@ -313,8 +327,15 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
             // Lightweight retries to smooth out transient AX focus instability.
             let selected_text = {
                 // Up to 2 retries, 35ms apart.
-                read_selected_text_with_retries(2, 35)
+                read_selected_text_with_retries(2, 35, verbose)
             };
+
+            if verbose {
+                println!(
+                    "[SelectionMonitor] read_selected_text result: {:?}",
+                    selected_text
+                );
+            }
 
             match selected_text {
                 Some(text) if !text.is_empty() => {
@@ -425,6 +446,7 @@ fn ensure_accessibility_permission(app_handle: &tauri::AppHandle) -> bool {
     }
 
     // Still not trusted — notify frontend and deep-link to settings.
+    println!("[SelectionMonitor] Accessibility permission NOT granted. Opening System Settings...");
     let _ = app_handle.emit("selection-permission-required", true);
     log::debug!(target: "coco_lib::selection_monitor", "selection-permission-required emitted");
 
@@ -563,11 +585,15 @@ fn is_focused_element_me() -> bool {
 /// Read the selected text of the frontmost application (without using the clipboard).
 /// macOS only. Returns `None` when the frontmost app is Coco to avoid false empties.
 #[cfg(target_os = "macos")]
-fn read_selected_text() -> Option<String> {
+fn read_selected_text(verbose: bool) -> Option<String> {
     use objc2_app_kit::NSWorkspace;
     use objc2_application_services::{AXError, AXUIElement};
     use objc2_core_foundation::{CFRetained, CFString, CFType};
     use std::ptr::NonNull;
+
+    if verbose {
+        println!("[SelectionMonitor] read_selected_text: Attempting to read...");
+    }
 
     // Prefer system-wide focused element; if unavailable, fall back to app/window focused element.
     let mut focused_ui_ptr: *const CFType = std::ptr::null();
@@ -583,12 +609,23 @@ fn read_selected_text() -> Option<String> {
                 .copy_attribute_value(&focused_attr, NonNull::new(&mut focused_ui_ptr).unwrap())
         };
         if err != AXError::Success {
+            if verbose {
+                println!(
+                    "[SelectionMonitor] Failed to get AXFocusedUIElement from system wide element: {:?}",
+                    err
+                );
+            }
             focused_ui_ptr = std::ptr::null();
         }
+    } else if verbose {
+        println!("[SelectionMonitor] AXUIElementCreateSystemWide returned null");
     }
 
     // Fallback to the frontmost app's focused/window element.
     if focused_ui_ptr.is_null() {
+        if verbose {
+            println!("[SelectionMonitor] System-wide focus not found, trying frontmost app...");
+        }
         let workspace = unsafe { NSWorkspace::sharedWorkspace() };
         let frontmost_app = unsafe { workspace.frontmostApplication() }?;
         let pid = unsafe { frontmost_app.processIdentifier() };
@@ -596,6 +633,9 @@ fn read_selected_text() -> Option<String> {
         // Skip if frontmost is Coco (this process).
         let my_pid = std::process::id() as i32;
         if pid == my_pid {
+            if verbose {
+                println!("[SelectionMonitor] Frontmost app is Coco, skipping.");
+            }
             return None;
         }
 
@@ -605,6 +645,12 @@ fn read_selected_text() -> Option<String> {
                 .copy_attribute_value(&focused_attr, NonNull::new(&mut focused_ui_ptr).unwrap())
         };
         if err != AXError::Success || focused_ui_ptr.is_null() {
+            if verbose {
+                println!(
+                    "[SelectionMonitor] Failed to get AXFocusedUIElement from app (pid={}), trying AXFocusedWindow...",
+                    pid
+                );
+            }
             // Try `AXFocusedWindow` as a lightweight fallback.
             let mut focused_window_ptr: *const CFType = std::ptr::null();
             let focused_window_attr = CFString::from_static_str("AXFocusedWindow");
@@ -615,9 +661,41 @@ fn read_selected_text() -> Option<String> {
                 )
             };
             if w_err != AXError::Success || focused_window_ptr.is_null() {
+                if verbose {
+                    println!(
+                        "[SelectionMonitor] Failed to get AXFocusedWindow from app (pid={})",
+                        pid
+                    );
+                }
                 return None;
             }
             focused_ui_ptr = focused_window_ptr;
+            let focused_window_elem: CFRetained<AXUIElement> = unsafe {
+                CFRetained::from_raw(
+                    NonNull::new(focused_window_ptr.cast::<AXUIElement>().cast_mut()).unwrap(),
+                )
+            };
+            let mut inner_focused_ptr: *const CFType = std::ptr::null();
+            let w_focused_err = unsafe {
+                focused_window_elem.copy_attribute_value(
+                    &focused_attr,
+                    NonNull::new(&mut inner_focused_ptr).unwrap(),
+                )
+            };
+            if w_focused_err == AXError::Success && !inner_focused_ptr.is_null() {
+                if verbose {
+                    println!(
+                        "[SelectionMonitor] Resolved AXFocusedUIElement via AXFocusedWindow (pid={})",
+                        pid
+                    );
+                }
+                focused_ui_ptr = inner_focused_ptr;
+            } else if verbose {
+                println!(
+                    "[SelectionMonitor] Failed to get AXFocusedUIElement from focused window (pid={}), err={:?}",
+                    pid, w_focused_err
+                );
+            }
         }
     }
 
@@ -635,6 +713,12 @@ fn read_selected_text() -> Option<String> {
         )
     };
     if err != AXError::Success || selected_text_ptr.is_null() {
+        if verbose {
+            println!(
+                "[SelectionMonitor] Failed to get AXSelectedText (err={:?})",
+                err
+            );
+        }
         return None;
     }
 
@@ -643,27 +727,40 @@ fn read_selected_text() -> Option<String> {
         CFRetained::from_raw(NonNull::new(selected_text_ptr.cast::<CFString>().cast_mut()).unwrap())
     };
 
-    Some(selected_cfstr.to_string())
+    let s = selected_cfstr.to_string();
+    if verbose {
+        println!("[SelectionMonitor] Success! Found text length: {}", s.len());
+    }
+    Some(s)
 }
 
 /// Read selected text with lightweight retries to handle transient AX focus instability.
 #[cfg(target_os = "macos")]
-fn read_selected_text_with_retries(retries: u32, delay_ms: u64) -> Option<String> {
+fn read_selected_text_with_retries(retries: u32, delay_ms: u64, verbose: bool) -> Option<String> {
     use std::thread;
     use std::time::Duration;
     for attempt in 0..=retries {
-        if let Some(text) = read_selected_text() {
+        if let Some(text) = read_selected_text(verbose) {
             if !text.is_empty() {
                 if attempt > 0 {
-                    // log::info!(
-                    //     "read_selected_text: 第{}次重试成功，获取到选中文本",
-                    //     attempt
-                    // );
+                    log::info!(
+                        "read_selected_text: 第{}次重试成功，获取到选中文本",
+                        attempt
+                    );
+                    if verbose {
+                        println!("[SelectionMonitor] Retry success on attempt {}", attempt);
+                    }
                 }
                 return Some(text);
             }
         }
         if attempt < retries {
+            if verbose {
+                println!(
+                    "[SelectionMonitor] Attempt {} failed/empty, retrying...",
+                    attempt
+                );
+            }
             thread::sleep(Duration::from_millis(delay_ms));
         }
     }
