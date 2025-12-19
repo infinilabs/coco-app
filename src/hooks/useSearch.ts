@@ -67,7 +67,7 @@ export function useSearch() {
   });
 
   const { querySourceTimeout, searchDelay } = useConnectStore();
-  const { aggregateFilter, filterDateRange } = useSearchStore();
+  const { aggregateFilter, filterDateRange, fuzziness } = useSearchStore();
 
   const [searchState, setSearchState] = useState<SearchState>({
     isError: [],
@@ -189,11 +189,13 @@ export function useSearch() {
 
       let response: MultiSourceQueryResponse;
       if (isTauri) {
+        const { fuzziness, aggregateFilter, filterDateRange } =
+          useSearchStore.getState();
+
         const queryStrings: Record<string, string> = {
+          fuzziness: String(fuzziness),
           query: searchInput,
         };
-
-        const { aggregateFilter, filterDateRange } = useSearchStore.getState();
 
         if (filterDateRange) {
           const { from, to } = filterDateRange;
@@ -218,9 +220,7 @@ export function useSearch() {
         response = await platformAdapter.commands("query_coco_fusion", {
           from: 0,
           size: 10,
-          queryStrings: {
-            query: searchInput,
-          },
+          queryStrings,
           queryTimeout: querySourceTimeout,
         });
       } else {
@@ -279,6 +279,7 @@ export function useSearch() {
       aiOverviewMinQuantity,
       aggregateFilter,
       filterDateRange,
+      fuzziness,
     ]
   );
 
