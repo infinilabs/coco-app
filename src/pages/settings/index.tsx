@@ -89,9 +89,15 @@ function SettingsPage() {
 
   return (
     <>
-      <div className="p-10">
+      <div className="flex flex-col gap-4 p-10">
         <Calendar
           captionLayout="dropdown"
+          className="rounded-md border border-border shadow-sm"
+        />
+
+        <Calendar
+          mode="range"
+          numberOfMonths={2}
           className="rounded-md border border-border shadow-sm"
         />
       </div>
