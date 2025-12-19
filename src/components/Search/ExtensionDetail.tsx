@@ -243,7 +243,7 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
           }}
           deleteButtonProps={{
             className:
-              "!text-[#FF4949] bg-[#F8F9FA] dark:text-white dark:bg-[#202126] border-[#E6E6E6] dark:border-white/10",
+              "text-white bg-[#FF4949] hover:bg-[#FF4949] border-[#E6E6E6] dark:border-white/10",
           }}
           setIsOpen={setIsOpen}
           onCancel={handleCancel}
