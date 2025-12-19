@@ -210,11 +210,7 @@ export function useSearch() {
         for (const [key, value] of Object.entries(aggregateFilter)) {
           if (value.length === 0) continue;
 
-          if (value.length === 1) {
-            queryStrings[key] = value[0];
-          } else {
-            queryStrings[key] = `any(${value.join(",")})`;
-          }
+          queryStrings[key] = `any(${value.join(",")})`;
         }
 
         console.log("queryStrings", queryStrings);
