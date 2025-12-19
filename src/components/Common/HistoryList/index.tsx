@@ -1,4 +1,4 @@
-import { Input } from "@headlessui/react";
+import { Input } from "@/components/ui/input";
 import { debounce } from "lodash-es";
 import { FC, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
@@ -9,6 +9,7 @@ import VisibleKey from "../VisibleKey";
 import { Chat } from "@/types/chat";
 import { closeHistoryPanel } from "@/utils";
 import HistoryListContent from "./HistoryListContent";
+import { Button } from "@/components/ui/button";
 
 interface HistoryListProps {
   historyPanelId?: string;
@@ -57,21 +58,21 @@ const HistoryList: FC<HistoryListProps> = (props) => {
         "flex flex-col h-screen text-sm bg-[#F3F4F6] dark:bg-[#1F2937]"
       )}
     >
-      <div className="flex gap-1 p-2 border-b dark:border-[#343D4D]">
-        <div className="flex-1 flex items-center gap-2 px-2 rounded-lg border transition border-[#E6E6E6] bg-[#F8F9FA] dark:bg-[#2B3444] dark:border-[#343D4D] focus-within:border-[#0061FF]">
+      <div className="flex gap-1 p-2 border-b border-input">
+        <div className="flex-1 h-8 flex items-center px-2 rounded-lg border border-input bg-background transition focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
           <VisibleKey
             shortcut="F"
             onKeyPress={() => {
               searchInputRef.current?.focus();
             }}
           >
-            <Search className="size-4 text-[#6B7280]" />
+            <Search className="size-4 text-muted-foreground" />
           </VisibleKey>
 
           <Input
             autoFocus
             ref={searchInputRef}
-            className="w-full bg-transparent outline-none"
+            className="w-full h-8 bg-transparent border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
             placeholder={t("history_list.search.placeholder")}
             onChange={(event) => {
               debouncedSearch(event.target.value);
@@ -79,18 +80,20 @@ const HistoryList: FC<HistoryListProps> = (props) => {
           />
         </div>
 
-        <div
-          className="size-8 flex items-center justify-center rounded-lg border text-[#0072FF] border-[#E6E6E6] bg-[#F3F4F6] dark:border-[#343D4D] dark:bg-[#1F2937] hover:bg-[#F8F9FA] dark:hover:bg-[#353F4D] cursor-pointer transition"
+        <Button
+          variant="outline"
+          size="icon"
+          className="size-8"
           onClick={handleRefresh}
         >
           <VisibleKey shortcut="R" onKeyPress={handleRefresh}>
             <RefreshCcw
-              className={clsx("size-4", {
+              className={clsx("size-4 text-[#0287FF]", {
                 "animate-spin": isRefresh,
               })}
             />
           </VisibleKey>
-        </div>
+        </Button>
       </div>
 
       <div className="flex-1 px-2 overflow-auto custom-scrollbar">
@@ -104,10 +107,10 @@ const HistoryList: FC<HistoryListProps> = (props) => {
       </div>
 
       {historyPanelId && (
-        <div className="flex justify-end p-2 border-t dark:border-[#343D4D]">
+        <div className="flex justify-end p-2 border-t border-input">
           <VisibleKey shortcut="Esc" shortcutClassName="w-7">
             <PanelLeftClose
-              className="size-4 text-black/80 dark:text-white/80 cursor-pointer"
+              className="size-4 text-muted-foreground cursor-pointer"
               onClick={closeHistoryPanel}
             />
           </VisibleKey>

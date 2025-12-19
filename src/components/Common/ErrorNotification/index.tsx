@@ -57,13 +57,13 @@ const ErrorNotification = ({
       >
         <div className="flex items-center">
           {visibleError.type === "error" && (
-            <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
+            <AlertCircle className="size-5 shrink-0 text-red-500 mr-2" />
           )}
           {visibleError.type === "warning" && (
-            <AlertTriangle className="w-5 h-5 text-yellow-500 mr-2" />
+            <AlertTriangle className="size-5 shrink-0 text-yellow-500 mr-2" />
           )}
           {visibleError.type === "info" && (
-            <Info className="w-5 h-5 text-blue-500 mr-2" />
+            <Info className="size-5 shrink-0 text-blue-500 mr-2" />
           )}
 
           <span className="text-sm text-gray-700 dark:text-gray-200">
@@ -78,7 +78,7 @@ const ErrorNotification = ({
         </div>
 
         <X
-          className="w-5 h-5 ml-4 cursor-pointer text-gray-400 hover:text-gray-600"
+          className="size-5 shrink-0 ml-4 cursor-pointer text-gray-400 hover:text-gray-600"
           onClick={() => removeError(visibleError.id)}
         />
       </div>

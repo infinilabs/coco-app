@@ -388,7 +388,7 @@ const ChatAI = memo(
           <div
             data-tauri-drag-region
             data-chat-instance={instanceId}
-            className={`flex flex-col rounded-[6px] h-full overflow-hidden relative`}
+            className={`flex flex-col rounded-md h-full overflow-hidden relative`}
           >
             <ChatHeader
               clearChat={clearChat}

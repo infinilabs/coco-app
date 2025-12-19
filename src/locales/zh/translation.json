@@ -653,6 +653,13 @@
       "description": "这将删除与该扩展相关的所有数据和命令。"
     }
   },
+  "viewExtension": {
+    "fullscreen": {
+      "enter": "进入全屏",
+      "exit": "退出全屏"
+    },
+    "focus": "聚焦"
+  },
   "deleteDialog": {
     "button": {
       "cancel": "取消",

@@ -88,6 +88,9 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         rich_category: sourceData?.rich_categories[0]?.key,
       };
     }
+    if (sourceData?.main_extension_id) {
+      queryStrings.main_extension_id = sourceData?.main_extension_id
+    }
 
     let response: any;
     if (isTauri) {
@@ -178,7 +181,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     {
       target: containerRef,
       isNoMore: (d) => !d?.hasMore,
-      reloadDeps: [input?.trim(), JSON.stringify(sourceData)],
+      reloadDeps: [input, JSON.stringify(sourceData)],
       onFinally: (data) => {
         if (data?.page === 1) return;
         if (selectedItem === null) return;
@@ -211,7 +214,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       list: [],
     }));
     loadingFromRef.current = -1;
-  }, [input]);
+  }, [input, JSON.stringify(sourceData)]);
 
   const { visibleContextMenu } = useSearchStore();
 
@@ -292,10 +295,10 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   return (
     <div
       className={`border-r border-gray-200 dark:border-gray-700 flex flex-col h-full overflow-x-hidden ${
-        viewMode === "list" ? "w-[100%]" : "w-[50%]"
+        viewMode === "list" ? "w-full" : "w-[50%]"
       }`}
     >
-      <div className="px-2 flex-shrink-0">
+      <div className="px-2 shrink-0">
         <SearchHeader
           total={total}
           viewMode={viewMode}
@@ -306,6 +309,10 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       <Scrollbar className="flex-1 overflow-auto pr-0.5" ref={containerRef}>
         {data?.list && data.list.length > 0 && (
           <div>
+            {(() => {
+              console.log("Rendering list with items:", data.list.length);
+              return null;
+            })()}
             {data.list.map((hit, index) => (
               <SearchListItem
                 key={hit.document.id + index}

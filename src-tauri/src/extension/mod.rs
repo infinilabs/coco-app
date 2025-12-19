@@ -135,7 +135,9 @@ pub struct Extension {
     /// It is only for third-party extensions. Built-in extensions should always
     /// set this field to `None`.
     #[serde(deserialize_with = "deserialize_coco_semver")]
-    #[serde(default)] // None if this field is missing
+    #[serde(serialize_with = "serialize_coco_semver")]
+    // None if this field is missing, required as we use custom deserilize method.
+    #[serde(default)]
     minimum_coco_version: Option<SemVer>,
 
     /*
@@ -150,14 +152,31 @@ pub struct Extension {
 }
 
 /// Settings that control the built-in UI Components
+#[serde_inline_default::serde_inline_default]
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct ViewExtensionUISettings {
     /// Show the search bar
+    #[serde_inline_default(true)]
     search_bar: bool,
     /// Show the filter bar
+    #[serde_inline_default(true)]
     filter_bar: bool,
     /// Show the footer
+    #[serde_inline_default(true)]
     footer: bool,
+    /// The recommended width of the window for this extension
+    width: Option<u32>,
+    /// The recommended heigh of the window for this extension
+    height: Option<u32>,
+    /// Is the extension window's size adjustable?
+    #[serde_inline_default(false)]
+    resizable: bool,
+    /// Detch the extension window from Coco's main window.
+    ///
+    /// If true, user can click the detach button to open this
+    /// extension in a seprate window.
+    #[serde_inline_default(false)]
+    detachable: bool,
 }
 
 /// Bundle ID uniquely identifies an extension.
@@ -216,112 +235,117 @@ impl<'ext> PartialEq<ExtensionBundleId> for ExtensionBundleIdBorrowed<'ext> {
     }
 }
 
+#[tauri::command]
+pub(crate) fn extension_on_opened(extension: Extension) -> Option<OnOpened> {
+    _extension_on_opened(&extension)
+}
+
+/// Return what will happen when we open this extension.
+///
+/// `None` if it cannot be opened.
+pub(crate) fn _extension_on_opened(extension: &Extension) -> Option<OnOpened> {
+    let settings = extension.settings.clone();
+    let permission = extension.permission.clone();
+
+    match extension.r#type {
+        // This function, at the time of writing this comment, is primarily
+        // used by third-party extensions.
+        //
+        // Built-in extensions don't use this as they are technically not
+        // "struct Extension"s.  Typically, they directly construct a
+        // "struct Document" from their own type.
+        ExtensionType::Calculator => unreachable!("this is handled by frontend"),
+        ExtensionType::AiExtension => unreachable!(
+            "currently, all AI extensions we have are non-searchable, so we won't open them"
+        ),
+        ExtensionType::Application => {
+            // We can have a impl like:
+            //
+            // Some(OnOpened::Application { app_path: self.id.clone() })
+            //
+            // but it won't be used.
+
+            unreachable!(
+                "Applications are not \"struct Extension\" under the hood, they won't call this method"
+            )
+        }
+
+        // These 2 types of extensions cannot be opened
+        ExtensionType::Group => return None,
+        ExtensionType::Extension => return None,
+
+        ExtensionType::Command => {
+            let ty = ExtensionOnOpenedType::Command {
+              action: extension.action.clone().unwrap_or_else(|| {
+                panic!(
+                  "Command extension [{}]'s [action] field is not set, something wrong with your extension validity check", extension.id
+                )
+              }),
+          };
+
+            let extension_on_opened = ExtensionOnOpened {
+                ty,
+                settings,
+                permission,
+            };
+
+            Some(OnOpened::Extension(extension_on_opened))
+        }
+        ExtensionType::Quicklink => {
+            let quicklink = extension.quicklink.clone().unwrap_or_else(|| {
+              panic!(
+                "Quicklink extension [{}]'s [quicklink] field is not set, something wrong with your extension validity check", extension.id
+              )
+            });
+
+            let ty = ExtensionOnOpenedType::Quicklink {
+                link: quicklink.link,
+                open_with: quicklink.open_with,
+            };
+
+            let extension_on_opened = ExtensionOnOpened {
+                ty,
+                settings,
+                permission,
+            };
+
+            Some(OnOpened::Extension(extension_on_opened))
+        }
+        ExtensionType::Script => todo!("not supported yet"),
+        ExtensionType::Setting => todo!("not supported yet"),
+        ExtensionType::View => {
+            let name = extension.name.clone();
+            let icon = extension.icon.clone();
+            let page = extension.page.as_ref().unwrap_or_else(|| {
+                panic!("View extension [{}]'s [page] field is not set, something wrong with your extension validity check", extension.id);
+            }).clone();
+            let ui = extension.ui.clone();
+
+            let extension_on_opened_type = ExtensionOnOpenedType::View {
+                name,
+                icon,
+                page,
+                ui,
+            };
+            let extension_on_opened = ExtensionOnOpened {
+                ty: extension_on_opened_type,
+                settings,
+                permission,
+            };
+            let on_opened = OnOpened::Extension(extension_on_opened);
+
+            Some(on_opened)
+        }
+        ExtensionType::Unknown => {
+            unreachable!("Extensions of type [Unknown] should never be opened")
+        }
+    }
+}
+
 impl Extension {
     /// Whether this extension could be searched.
     pub(crate) fn searchable(&self) -> bool {
-        self.on_opened().is_some()
-    }
-
-    /// Return what will happen when we open this extension.
-    ///
-    /// `None` if it cannot be opened.
-    pub(crate) fn on_opened(&self) -> Option<OnOpened> {
-        let settings = self.settings.clone();
-        let permission = self.permission.clone();
-
-        match self.r#type {
-            // This function, at the time of writing this comment, is primarily
-            // used by third-party extensions.
-            //
-            // Built-in extensions don't use this as they are technically not
-            // "struct Extension"s.  Typically, they directly construct a
-            // "struct Document" from their own type.
-            ExtensionType::Calculator => unreachable!("this is handled by frontend"),
-            ExtensionType::AiExtension => unreachable!(
-                "currently, all AI extensions we have are non-searchable, so we won't open them"
-            ),
-            ExtensionType::Application => {
-                // We can have a impl like:
-                //
-                // Some(OnOpened::Application { app_path: self.id.clone() })
-                //
-                // but it won't be used.
-
-                unreachable!(
-                    "Applications are not \"struct Extension\" under the hood, they won't call this method"
-                )
-            }
-
-            // These 2 types of extensions cannot be opened
-            ExtensionType::Group => return None,
-            ExtensionType::Extension => return None,
-
-            ExtensionType::Command => {
-                let ty = ExtensionOnOpenedType::Command {
-                  action: self.action.clone().unwrap_or_else(|| {
-                    panic!(
-                      "Command extension [{}]'s [action] field is not set, something wrong with your extension validity check", self.id
-                    )
-                  }),
-              };
-
-                let extension_on_opened = ExtensionOnOpened {
-                    ty,
-                    settings,
-                    permission,
-                };
-
-                Some(OnOpened::Extension(extension_on_opened))
-            }
-            ExtensionType::Quicklink => {
-                let quicklink = self.quicklink.clone().unwrap_or_else(|| {
-                  panic!(
-                    "Quicklink extension [{}]'s [quicklink] field is not set, something wrong with your extension validity check", self.id
-                  )
-                });
-
-                let ty = ExtensionOnOpenedType::Quicklink {
-                    link: quicklink.link,
-                    open_with: quicklink.open_with,
-                };
-
-                let extension_on_opened = ExtensionOnOpened {
-                    ty,
-                    settings,
-                    permission,
-                };
-
-                Some(OnOpened::Extension(extension_on_opened))
-            }
-            ExtensionType::Script => todo!("not supported yet"),
-            ExtensionType::Setting => todo!("not supported yet"),
-            ExtensionType::View => {
-                let name = self.name.clone();
-                let icon = self.icon.clone();
-                let page = self.page.as_ref().unwrap_or_else(|| {
-                    panic!("View extension [{}]'s [page] field is not set, something wrong with your extension validity check", self.id);
-                }).clone();
-                let ui = self.ui.clone();
-
-                let extension_on_opened_type = ExtensionOnOpenedType::View {
-                    name,
-                    icon,
-                    page,
-                    ui,
-                };
-                let extension_on_opened = ExtensionOnOpened {
-                    ty: extension_on_opened_type,
-                    settings,
-                    permission,
-                };
-                let on_opened = OnOpened::Extension(extension_on_opened);
-
-                Some(on_opened)
-            }
-            ExtensionType::Unknown => {
-                unreachable!("Extensions of type [Unknown] should never be opened")
-            }
-        }
+        _extension_on_opened(self).is_some()
     }
 
     pub(crate) fn get_sub_extension(&self, sub_extension_id: &str) -> Option<&Self> {
@@ -417,6 +441,37 @@ where
     };
 
     Ok(Some(semver))
+}
+
+/// Serialize Coco SemVer to a string.
+///
+/// For a `SemVer`, there are 2 possible input cases, guarded by `to_semver()`:
+///
+/// 1. "x.y.z" => "x.y.z"
+/// 2. "x.y.z-SNAPSHOT.2560" => "x.y.z-SNAPSHOT-2560"
+fn serialize_coco_semver<S>(version: &Option<SemVer>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    match version {
+        Some(v) => {
+            assert!(v.build.is_empty());
+
+            let s = if v.pre.is_empty() {
+                format!("{}.{}.{}", v.major, v.minor, v.patch)
+            } else {
+                format!(
+                    "{}.{}.{}-{}",
+                    v.major,
+                    v.minor,
+                    v.patch,
+                    v.pre.as_str().replace('.', "-")
+                )
+            };
+            serializer.serialize_str(&s)
+        }
+        None => serializer.serialize_none(),
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
@@ -673,7 +728,30 @@ fn filter_out_extensions(
 
         extensions.retain(|ext| {
             let ty = ext.r#type;
-            ty == ExtensionType::Group || ty == ExtensionType::Extension || ty == extension_type
+
+            if ty.contains_sub_items() {
+                /*
+                 * We should not filter out group/extension extensions, with 2
+                 * exceptions: "Applications" and "File Search". They contains
+                 * no sub-extensions, so we treat them as normal extensions.
+                 *
+                 * When `extenison_type` is "Application", we return the "Applications"
+                 * extension as well because it is the entry to access the application
+                 * list.
+                 */
+                if ext.developer.is_none()
+                    && ext.id == built_in::application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME
+                {
+                    ty == extension_type || extension_type == ExtensionType::Application
+                } else if ext.developer.is_none() && ext.id == built_in::file_search::EXTENSION_ID {
+                    ty == extension_type
+                } else {
+                    // We should not filter out group/extension extensions
+                    true
+                }
+            } else {
+                ty == extension_type
+            }
         });
 
         // Filter sub-extensions to only include the requested type
@@ -693,19 +771,6 @@ fn filter_out_extensions(
                 }
             }
         }
-
-        // Application is special, technically, it should never be filtered out by
-        // this condition. But if our users will be surprising if they choose a
-        // non-Application type and see it in the results. So we do this to remedy the
-        // issue
-        if let Some(idx) = extensions.iter().position(|ext| {
-            ext.developer.is_none()
-                && ext.id == built_in::application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME
-        }) {
-            if extension_type != ExtensionType::Application {
-                extensions.remove(idx);
-            }
-        }
     }
 
     // apply query filter
@@ -721,8 +786,23 @@ fn filter_out_extensions(
 
         extensions.retain(|ext| {
             if ext.r#type.contains_sub_items() {
-                // Keep all group/extension types
-                true
+                /*
+                 * We should keep all the group/extension extensions. But we
+                 * have 2 exceptions: "Applications" and "File Search". Even
+                 * though they are of type group/extension, they do not contain
+                 * sub-extensions, so they are more like commands, apply the
+                 * `match_closure` here
+                 */
+                if ext.developer.is_none()
+                    && (ext.id
+                        == built_in::application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME
+                        || ext.id == built_in::file_search::EXTENSION_ID)
+                {
+                    match_closure(ext)
+                } else {
+                    // Keep all group/extension types
+                    true
+                }
             } else {
                 // Apply filter to non-group/extension types
                 match_closure(ext)
@@ -779,7 +859,8 @@ pub(crate) async fn list_extensions(
 
     // Cleanup after filtering extensions, don't do it if filter is not performed.
     //
-    // Remove parent extensions (Group/Extension types) that have no sub-items after filtering
+    // Remove parent extensions (Group/Extension types) that have no sub-items
+    // after filtering
     let filter_performed = query.is_some() || extension_type.is_some() || list_enabled;
     if filter_performed {
         extensions.retain(|ext| {
@@ -787,11 +868,20 @@ pub(crate) async fn list_extensions(
                 return true;
             }
 
-            // We don't do this filter to applications since it is always empty, load at runtime.
-            if ext.developer.is_none()
-                && ext.id == built_in::application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME
-            {
-                return true;
+            /*
+             * Two exceptions: "Applications" and "File Search"
+             *
+             * They are of type group/extension, but they contain no sub
+             * extensions, which means technically, we should filter them
+             * out. However, we sould not do this because they are not real
+             * group/extension extensions.
+             */
+            if ext.developer.is_none() {
+                if ext.id == built_in::application::QUERYSOURCE_ID_DATASOURCE_ID_DATASOURCE_NAME
+                    || ext.id == built_in::file_search::EXTENSION_ID
+                {
+                    return true;
+                }
             }
 
             let has_commands = ext
@@ -2149,5 +2239,32 @@ mod tests {
         let serialized = serde_json::to_string(&original).unwrap();
         let deserialized: FileSystemAccess = serde_json::from_str(&serialized).unwrap();
         assert_eq!(original, deserialized);
+    }
+
+    #[test]
+    fn test_serialize_coco_semver_none() {
+        let version: Option<SemVer> = None;
+        let mut serializer = serde_json::Serializer::new(Vec::new());
+        serialize_coco_semver(&version, &mut serializer).unwrap();
+        let serialized = String::from_utf8(serializer.into_inner()).unwrap();
+        assert_eq!(serialized, "null");
+    }
+
+    #[test]
+    fn test_serialize_coco_semver_simple() {
+        let version: Option<SemVer> = Some(SemVer::parse("1.2.3").unwrap());
+        let mut serializer = serde_json::Serializer::new(Vec::new());
+        serialize_coco_semver(&version, &mut serializer).unwrap();
+        let serialized = String::from_utf8(serializer.into_inner()).unwrap();
+        assert_eq!(serialized, "\"1.2.3\"");
+    }
+
+    #[test]
+    fn test_serialize_coco_semver_with_pre() {
+        let version: Option<SemVer> = Some(SemVer::parse("1.2.3-SNAPSHOT.1234").unwrap());
+        let mut serializer = serde_json::Serializer::new(Vec::new());
+        serialize_coco_semver(&version, &mut serializer).unwrap();
+        let serialized = String::from_utf8(serializer.into_inner()).unwrap();
+        assert_eq!(serialized, "\"1.2.3-SNAPSHOT-1234\"");
     }
 }

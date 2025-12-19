@@ -31,6 +31,11 @@
     "core:window:deny-internal-toggle-maximize",
     "core:window:allow-set-shadow",
     "core:window:allow-set-position",
+    "core:window:allow-set-theme",
+    "core:window:allow-unminimize",
+    "core:window:allow-set-fullscreen",
+    "core:window:allow-set-resizable",
+    "core:window:allow-maximize",
     "core:app:allow-set-app-theme",
     "shell:default",
     "http:default",
@@ -65,12 +70,10 @@
     "fs-pro:default",
     "macos-permissions:default",
     "screenshots:default",
-    "core:window:allow-set-theme",
     "process:default",
     "updater:default",
     "windows-version:default",
     "log:default",
-    "opener:default",
-    "core:window:allow-unminimize"
+    "opener:default"
   ]
 }

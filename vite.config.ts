@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import { config } from "dotenv";
 import packageJson from "./package.json";
@@ -10,11 +11,12 @@ const host = process.env.TAURI_DEV_HOST;
 // console.log("process.env", process.env)
 
 // https://vitejs.dev/config/
-export default defineConfig(async () => ({
+export default defineConfig({
   define: {
     "process.env.VERSION": JSON.stringify(packageJson.version),
   },
-  plugins: [react()],
+  // Keep Tailwind first so its scanner runs early and consistently
+  plugins: [tailwindcss() as any, react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -41,6 +43,11 @@ export default defineConfig(async () => ({
       ignored: ["**/src-tauri/**"],
     },
     proxy: {
+      "/account": {
+        target: process.env.COCO_SERVER_URL,
+        changeOrigin: true,
+        secure: false,
+      },
       "/chat": {
         target: process.env.COCO_SERVER_URL,
         changeOrigin: true,
@@ -83,6 +90,34 @@ export default defineConfig(async () => ({
       },
     },
   },
+  optimizeDeps: {
+    exclude: [
+      "@tauri-apps/api",
+      "@tauri-apps/api/core",
+      "@tauri-apps/api/event",
+      "@tauri-apps/api/window",
+      "@tauri-apps/api/dpi",
+      "@tauri-apps/api/webviewWindow",
+      "@tauri-apps/plugin-dialog",
+      "@tauri-apps/plugin-process",
+      "@tauri-apps/plugin-autostart",
+      "@tauri-apps/plugin-clipboard-manager",
+      "@tauri-apps/plugin-deep-link",
+      "@tauri-apps/plugin-global-shortcut",
+      "@tauri-apps/plugin-http",
+      "@tauri-apps/plugin-log",
+      "@tauri-apps/plugin-opener",
+      "@tauri-apps/plugin-os",
+      "@tauri-apps/plugin-shell",
+      "@tauri-apps/plugin-updater",
+      "@tauri-apps/plugin-window",
+      "@tauri-store/zustand",
+      "tauri-plugin-fs-pro-api",
+      "tauri-plugin-macos-permissions-api",
+      "tauri-plugin-screenshots-api",
+      "tauri-plugin-windows-version-api",
+    ],
+  },
   build: {
     rollupOptions: {
       output: {
@@ -102,6 +137,7 @@ export default defineConfig(async () => ({
           icons: ["lucide-react", "@infinilabs/custom-icons"],
           utils: ["lodash-es", "dayjs", "uuid", "nanoid", "axios"],
           "tauri-api": [
+            "@tauri-apps/api",
             "@tauri-apps/api/core",
             "@tauri-apps/api/event",
             "@tauri-apps/api/window",
@@ -111,13 +147,26 @@ export default defineConfig(async () => ({
           "tauri-plugins": [
             "@tauri-apps/plugin-dialog",
             "@tauri-apps/plugin-process",
+            "@tauri-apps/plugin-autostart",
+            "@tauri-apps/plugin-clipboard-manager",
+            "@tauri-apps/plugin-deep-link",
+            "@tauri-apps/plugin-global-shortcut",
+            "@tauri-apps/plugin-http",
+            "@tauri-apps/plugin-log",
+            "@tauri-apps/plugin-opener",
+            "@tauri-apps/plugin-os",
+            "@tauri-apps/plugin-shell",
+            "@tauri-apps/plugin-updater",
+            "@tauri-apps/plugin-window",
+            "@tauri-store/zustand",
             "tauri-plugin-fs-pro-api",
             "tauri-plugin-macos-permissions-api",
             "tauri-plugin-screenshots-api",
+            "tauri-plugin-windows-version-api",
           ],
         },
       },
     },
     chunkSizeWarningLimit: 600,
   },
-}));
+});

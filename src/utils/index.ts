@@ -258,7 +258,9 @@ export const navigateBack = () => {
   }
 
   if (viewExtensionOpened) {
-    return setViewExtensionOpened(void 0);
+    setViewExtensionOpened(void 0);
+    platformAdapter.emitEvent("refresh-window-size");
+    return;
   }
 
   setSourceData(void 0);
@@ -305,10 +307,10 @@ export const visibleSearchBar = () => {
 };
 
 export const visibleFilterBar = () => {
-  const { viewExtensionOpened, visibleExtensionDetail } =
+  const { viewExtensionOpened, visibleExtensionDetail, goAskAi } =
     useSearchStore.getState();
 
-  if (visibleExtensionDetail) return false;
+  if (visibleExtensionDetail || goAskAi) return false;
 
   if (isNil(viewExtensionOpened)) return true;
 
@@ -329,7 +331,7 @@ export const visibleFooterBar = () => {
 
 export const installExtensionError = (error: any) => {
   console.log(error);
-   
+
   const { addError } = useAppStore.getState();
 
   let message = "settings.extensions.hints.importFailed";
@@ -338,8 +340,7 @@ export const installExtensionError = (error: any) => {
     message = "settings.extensions.hints.extensionAlreadyImported";
   }
 
-  if ( isObject(error) && "IncompatiblePlatform" in error
-  ) {
+  if (isObject(error) && "IncompatiblePlatform" in error) {
     message = "settings.extensions.hints.platformIncompatibleExtension";
   }
 
@@ -367,27 +368,30 @@ export const installExtensionError = (error: any) => {
       } else if ("InvalidPluginJson" in source) {
         const innerSource = (source as any).InvalidPluginJson.source;
         const kind = innerSource.kind;
-        
+
         if (isObject(kind)) {
-            if ("DuplicateSubExtensionId" in kind) {
-                message = "settings.extensions.hints.duplicateSubExtensionId";
-                options = (kind as any).DuplicateSubExtensionId;
-            } else if ("FieldsNotAllowed" in kind) {
-                message = "settings.extensions.hints.fieldsNotAllowed";
-                options = (kind as any).FieldsNotAllowed;
-            } else if ("FieldsNotAllowedForSubExtension" in kind) {
-                message = "settings.extensions.hints.fieldsNotAllowedForSubExtension";
-                options = (kind as any).FieldsNotAllowedForSubExtension;
-            } else if ("TypesNotAllowedForSubExtension" in kind) {
-                message = "settings.extensions.hints.typesNotAllowedForSubExtension";
-                options = (kind as any).TypesNotAllowedForSubExtension;
-            } else if ("SubExtensionHasMoreSupportedPlatforms" in kind) {
-                message = "settings.extensions.hints.subExtensionHasMoreSupportedPlatforms";
-                options = (kind as any).SubExtensionHasMoreSupportedPlatforms;
-            } else if ("FieldRequired" in kind) {
-                message = "settings.extensions.hints.fieldRequired";
-                options = (kind as any).FieldRequired;
-            }
+          if ("DuplicateSubExtensionId" in kind) {
+            message = "settings.extensions.hints.duplicateSubExtensionId";
+            options = (kind as any).DuplicateSubExtensionId;
+          } else if ("FieldsNotAllowed" in kind) {
+            message = "settings.extensions.hints.fieldsNotAllowed";
+            options = (kind as any).FieldsNotAllowed;
+          } else if ("FieldsNotAllowedForSubExtension" in kind) {
+            message =
+              "settings.extensions.hints.fieldsNotAllowedForSubExtension";
+            options = (kind as any).FieldsNotAllowedForSubExtension;
+          } else if ("TypesNotAllowedForSubExtension" in kind) {
+            message =
+              "settings.extensions.hints.typesNotAllowedForSubExtension";
+            options = (kind as any).TypesNotAllowedForSubExtension;
+          } else if ("SubExtensionHasMoreSupportedPlatforms" in kind) {
+            message =
+              "settings.extensions.hints.subExtensionHasMoreSupportedPlatforms";
+            options = (kind as any).SubExtensionHasMoreSupportedPlatforms;
+          } else if ("FieldRequired" in kind) {
+            message = "settings.extensions.hints.fieldRequired";
+            options = (kind as any).FieldRequired;
+          }
         }
       }
     } else if (source === "MissingPluginJson") {

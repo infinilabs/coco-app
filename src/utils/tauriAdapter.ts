@@ -16,8 +16,16 @@ import { useAppearanceStore } from "@/stores/appearanceStore";
 import { copyToClipboard, dispatchEvent, OpenURLWithBrowser } from ".";
 import { useAppStore } from "@/stores/appStore";
 import { unrequitable } from "@/utils";
-import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { Theme } from "@tauri-apps/api/window";
+import {
+  getCurrentWebviewWindow,
+  WebviewWindow,
+} from "@tauri-apps/api/webviewWindow";
+import {
+  cursorPosition,
+  Monitor,
+  monitorFromPoint,
+  Theme,
+} from "@tauri-apps/api/window";
 
 export interface TauriPlatformAdapter extends BasePlatformAdapter {
   openFileDialog: (
@@ -30,13 +38,65 @@ export interface TauriPlatformAdapter extends BasePlatformAdapter {
   getWindowTheme: () => Promise<Theme | null>;
   setWindowTheme: (theme: Theme | null) => Promise<void>;
   getAllWindows: () => Promise<WebviewWindow[]>;
+  setWindowResizable: (resizable: boolean) => Promise<void>;
+  isWindowResizable: () => Promise<boolean>;
+  getWindowSize: () => Promise<{ width: number; height: number }>;
+  setWindowFullscreen: (enable: boolean) => Promise<void>;
+  isWindowMaximized: () => Promise<boolean>;
+  setWindowMaximized: (enable: boolean) => Promise<void>;
+  getWindowPosition: () => Promise<{ x: number; y: number }>;
+  setWindowPosition: (x: number, y: number) => Promise<void>;
+  centerWindow: () => Promise<void>;
+  getMonitorFromCursor: () => Promise<Monitor | null>;
+  centerOnCurrentMonitor: () => Promise<unknown>;
 }
 
 // Create Tauri adapter functions
 export const createTauriAdapter = (): TauriPlatformAdapter => {
   return {
     async setWindowSize(width, height) {
-      return windowWrapper.setSize(width, height);
+      return windowWrapper.setLogicalSize(width, height);
+    },
+    async getWindowSize() {
+      return windowWrapper.getLogicalSize();
+    },
+    async setWindowResizable(resizable) {
+      return windowWrapper.setResizable(resizable);
+    },
+    async isWindowResizable() {
+      return windowWrapper.isResizable();
+    },
+    async setWindowFullscreen(enable) {
+      return windowWrapper.setFullscreen(enable);
+    },
+    async isWindowMaximized() {
+      return windowWrapper.isMaximized();
+    },
+    async setWindowMaximized(enable) {
+      return windowWrapper.setMaximized(enable);
+    },
+    async getWindowPosition() {
+      return windowWrapper.getLogicalPosition();
+    },
+    async setWindowPosition(x, y) {
+      return windowWrapper.setLogicalPosition(x, y);
+    },
+    async centerWindow() {
+      return windowWrapper.center();
+    },
+
+    async getMonitorFromCursor() {
+      const appWindow = getCurrentWebviewWindow();
+      const factor = await appWindow.scaleFactor();
+
+      const point = await cursorPosition();
+      const { x, y } = point.toLogical(factor);
+
+      return monitorFromPoint(x, y);
+    },
+
+    async centerOnCurrentMonitor() {
+      return windowWrapper.centerOnMonitor();
     },
 
     async hideWindow() {

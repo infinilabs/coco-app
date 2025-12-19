@@ -77,7 +77,7 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
 
         {/* Document Summary */}
         {document?.summary && (
-          <div className="mb-4 text-xs text-[rgba(153,153,153,1)] dark:text-[#D8D8D8] whitespace-pre-wrap break-words">
+          <div className="mb-4 text-xs text-[rgba(153,153,153,1)] dark:text-[#D8D8D8] whitespace-pre-wrap wrap-break-word">
             {document.summary}
           </div>
         )}

@@ -18,7 +18,9 @@ const ServiceHeader = memo(
   ({ refreshLoading, refreshClick }: ServiceHeaderProps) => {
     const { t } = useTranslation();
 
-    const cloudSelectService = useConnectStore((state) => state.cloudSelectService);
+    const cloudSelectService = useConnectStore(
+      (state) => state.cloudSelectService
+    );
 
     const { enableServer, removeServer } = useServers();
 
@@ -46,7 +48,7 @@ const ServiceHeader = memo(
           />
 
           <button
-            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-[6px] bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
+            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-md bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
             onClick={() =>
               OpenURLWithBrowser(cloudSelectService?.provider?.website)
             }
@@ -54,7 +56,7 @@ const ServiceHeader = memo(
             <Globe className="w-3.5 h-3.5" />
           </button>
           <button
-            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-[6px] bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
+            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-md bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
             onClick={() => refreshClick(cloudSelectService?.id)}
           >
             <RefreshCcw
@@ -63,7 +65,7 @@ const ServiceHeader = memo(
           </button>
           {!cloudSelectService?.builtin && (
             <button
-              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-[6px] bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
+              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-md bg-white dark:bg-gray-800 border border-[rgba(228,229,239,1)] dark:border-gray-700"
               onClick={() => removeServer(cloudSelectService?.id)}
             >
               <Trash2 className="w-3.5 h-3.5 text-[#ff4747]" />

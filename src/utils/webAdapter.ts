@@ -12,6 +12,14 @@ export interface WebPlatformAdapter extends BasePlatformAdapter {
   getWindowTheme: () => Promise<string>;
   setWindowTheme: (theme: string | null) => Promise<void>;
   getAllWindows: () => Promise<any[]>;
+  setWindowResizable: (resizable: boolean) => Promise<void>;
+  isWindowResizable: () => Promise<boolean>;
+  getWindowSize: () => Promise<{ width: number; height: number }>;
+  setWindowFullscreen: (enable: boolean) => Promise<void>;
+  getMonitorFromCursor: () => Promise<any>;
+  centerOnCurrentMonitor: () => Promise<void>;
+  getWindowPosition: () => Promise<{ x: number; y: number }>;
+  setWindowPosition: (x: number, y: number) => Promise<void>;
 }
 
 // Create Web adapter functions
@@ -34,6 +42,46 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     async setWindowSize(width, height) {
       console.log(`Web mode simulated window resize: ${width}x${height}`);
       // No actual operation needed in web environment
+    },
+    async getWindowSize() {
+      return { width: window.innerWidth, height: window.innerHeight };
+    },
+    async setWindowResizable(resizable) {
+      console.log("Web mode simulated set window resizable:", resizable);
+    },
+    async isWindowResizable() {
+      return true;
+    },
+    async setWindowFullscreen(enable) {
+      console.log("Web mode simulated fullscreen:", enable);
+    },
+    async getMonitorFromCursor() {
+      return {
+        size: {
+          toLogical: (factor: number) => ({
+            width: window.innerWidth / factor,
+            height: window.innerHeight / factor,
+          }),
+        },
+        position: {
+          toLogical: (factor: number) => ({
+            x: window.screenX / factor,
+            y: window.screenY / factor,
+          }),
+        },
+      };
+    },
+    async centerOnCurrentMonitor() {
+      // Not applicable in web mode
+      return;
+    },
+
+    async getWindowPosition() {
+      return { x: window.screenX, y: window.screenY };
+    },
+
+    async setWindowPosition(x, y) {
+      console.log(`Web mode simulated set window position: ${x}, ${y}`);
     },
 
     async hideWindow() {

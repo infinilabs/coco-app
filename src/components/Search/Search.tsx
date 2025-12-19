@@ -1,4 +1,5 @@
 import { useEffect, memo, useRef, useCallback, useState } from "react";
+import clsx from "clsx";
 
 import DropdownList from "./DropdownList";
 import { SearchResults } from "@/components/Search/SearchResults";
@@ -12,7 +13,6 @@ import ExtensionStore from "./ExtensionStore";
 import platformAdapter from "@/utils/platformAdapter";
 import ViewExtension from "./ViewExtension";
 import { visibleFooterBar } from "@/utils";
-import clsx from "clsx";
 
 const SearchResultsPanel = memo<{
   input: string;
@@ -124,7 +124,9 @@ const SearchResultsPanel = memo<{
 
   // If state gets updated, render the UI
   if (visibleExtensionStore) {
-    return <ExtensionStore extensionId={extensionId} />;
+    return (
+      <ExtensionStore extensionId={extensionId} changeInput={changeInput} />
+    );
   }
 
   // Render the view extension
@@ -133,11 +135,14 @@ const SearchResultsPanel = memo<{
   }
 
   if (goAskAi) return <AskAi isChatMode={isChatMode} />;
+
+  if (sourceData) {
+    return <SearchResults input={input} isChatMode={isChatMode} />;
+  }
+
   if (suggests.length === 0) return <NoResults />;
 
-  return sourceData ? (
-    <SearchResults input={input} isChatMode={isChatMode} />
-  ) : (
+  return (
     <DropdownList
       suggests={suggests}
       searchData={searchData}

@@ -14,7 +14,7 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
-import { parseSearchQuery, SearchQuery } from "@/utils";
+import { parseSearchQuery, SearchQuery, canNavigateBack } from "@/utils";
 import InputUpload from "./InputUpload";
 import Copyright from "../Common/Copyright";
 
@@ -187,9 +187,9 @@ const InputControls = ({
           {source?.type === "deep_think" && source?.config?.visible && (
             <button
               className={clsx(
-                "flex items-center justify-center gap-1 h-[20px] px-1 rounded-[6px] transition hover:bg-[#EDEDED] dark:hover:bg-[#202126]",
+                "flex items-center justify-center gap-1 h-5 px-1 rounded-md transition hover:bg-[#EDEDED] dark:hover:bg-[#202126] cursor-pointer",
                 {
-                  "!bg-[rgba(0,114,255,0.3)]": isDeepThinkActive,
+                  "bg-[rgba(0,114,255,0.3)]!": isDeepThinkActive,
                 }
               )}
               onClick={setIsDeepThinkActive}
@@ -250,7 +250,7 @@ const InputControls = ({
             !visibleExtensionStore && (
               <div
                 className={clsx(
-                  "inline-flex items-center gap-1 h-[20px] px-1 rounded-full hover:!text-[#881c94] cursor-pointer transition",
+                  "inline-flex items-center gap-1 h-5 px-1 rounded-full hover:text-[#881c94]! cursor-pointer transition",
                   [
                     enabledAiOverview
                       ? "text-[#881c94]"
@@ -283,7 +283,7 @@ const InputControls = ({
         </div>
       )}
 
-      {isChatPage || hasModules?.length !== 2 ? null : (
+      {isChatPage || hasModules?.length !== 2 || canNavigateBack() ? null : (
         <div className="relative w-16 flex justify-end items-center">
           <div className="absolute right-[52px] -top-2 z-10">
             <VisibleKey

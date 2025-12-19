@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { createTauriStore } from '@tauri-store/zustand';
+import { create } from "zustand";
+import platformAdapter from "@/utils/platformAdapter";
 
 type IconConfig =
   | { type: "lucide"; name: string; color?: string }
@@ -37,9 +37,18 @@ export const useSelectionStore = create<SelectionStore>((set) => ({
   setSelectionEnabled: (selectionEnabled) => set({ selectionEnabled }),
 }));
 
-// A handle to the Tauri plugin.
-// We will need this to start the store.
-export const tauriHandler = createTauriStore('selection-store', useSelectionStore, {
-  saveOnChange: true,
-  autoStart: true,
-});
+/**
+ * Initialize Selection store persistence on Tauri only.
+ * In Web mode, this is a no-op to avoid loading Tauri-specific plugins.
+ *
+ * Returns a promise that resolves when persistence has been started on Tauri.
+ */
+export async function startSelectionStorePersistence(): Promise<void> {
+  if (!platformAdapter.isTauri()) return;
+
+  const { createTauriStore } = await import("@tauri-store/zustand");
+  createTauriStore("selection-store", useSelectionStore, {
+    saveOnChange: true,
+    autoStart: true,
+  });
+}
