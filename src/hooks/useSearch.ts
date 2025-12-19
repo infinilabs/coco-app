@@ -177,7 +177,14 @@ export function useSearch() {
   const performSearch = useCallback(
     async (searchInput: string) => {
       if (!searchInput) {
-        return setSearchState((prev) => ({ ...prev, suggests: [] }));
+        const { setAggregations, setAggregateFilter } =
+          useSearchStore.getState();
+
+        setSearchState((prev) => ({ ...prev, suggests: [] }));
+        setAggregations(void 0);
+        setAggregateFilter(void 0);
+
+        return;
       }
 
       let response: MultiSourceQueryResponse;
