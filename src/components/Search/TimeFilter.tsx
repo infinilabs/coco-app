@@ -15,6 +15,7 @@ import { camelCase, upperFirst } from "lodash-es";
 import dayjs from "dayjs";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
+import { useTranslation } from "react-i18next";
 
 const TimeFilter = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -26,16 +27,17 @@ const TimeFilter = () => {
     setAggregateFilter,
     aggregations,
   } = useSearchStore();
+  const { t } = useTranslation();
 
   const dropdownMenuItems = [
     {
       key: "all-time",
-      label: "All Time",
+      label: t("search.filers.allTime"),
       value: void 0,
     },
     {
       key: "7-day",
-      label: "7 Day",
+      label: t("search.filers.past7Days"),
       value: {
         from: dayjs().subtract(7, "day").toDate(),
         to: dayjs().toDate(),
@@ -43,7 +45,7 @@ const TimeFilter = () => {
     },
     {
       key: "90-day",
-      label: "90 Day",
+      label: t("search.filers.past90Days"),
       value: {
         from: dayjs().subtract(90, "day").toDate(),
         to: dayjs().toDate(),
@@ -51,7 +53,7 @@ const TimeFilter = () => {
     },
     {
       key: "1-year",
-      label: "1 Year",
+      label: t("search.filers.past1year"),
       value: {
         from: dayjs().subtract(1, "year").toDate(),
         to: dayjs().toDate(),
@@ -59,7 +61,7 @@ const TimeFilter = () => {
     },
     {
       key: "more",
-      label: "More",
+      label: t("search.filers.more"),
       onClick: () => {
         setPopoverOpen(true);
       },
@@ -101,7 +103,9 @@ const TimeFilter = () => {
 
             {filterCount > 0 && (
               <>
-                <span>Filters</span>
+                <div className="whitespace-nowrap">
+                  {t("search.filers.filters")}
+                </div>
 
                 <div className="inline-flex items-center justify-center size-4 rounded-full text-white bg-[#881c94]">
                   {filterCount}
@@ -145,7 +149,7 @@ const TimeFilter = () => {
 
         <PopoverContent className="w-100 p-4 text-sm">
           <div className="flex items-center justify-between text-sm">
-            <span className="font-bold">Filters</span>
+            <span className="font-bold">{t("search.filers.filters")}</span>
 
             <Button
               size="icon"
@@ -161,7 +165,9 @@ const TimeFilter = () => {
             </Button>
           </div>
 
-          <div className="pt-4 pb-2 text-[#999]">Date range</div>
+          <div className="pt-4 pb-2 text-[#999]">
+            {t("search.filers.dateRange")}
+          </div>
           <DatePickerRange
             selected={filterDateRange}
             onSelect={setFilterDateRange}

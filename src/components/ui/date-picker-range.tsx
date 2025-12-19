@@ -5,9 +5,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 import { Calendar } from "./calendar";
 import { CalendarIcon } from "lucide-react";
 import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 
 const DatePickerRange: FC<Partial<PropsRange>> = (props) => {
   const { selected } = props;
+  const { t } = useTranslation();
 
   return (
     <Popover>
@@ -20,7 +22,9 @@ const DatePickerRange: FC<Partial<PropsRange>> = (props) => {
               <span>{dayjs(selected.to).format("YYYY-MM-DD")}</span>
             </div>
           ) : (
-            <div className="text-muted-foreground">选择日期</div>
+            <div className="text-muted-foreground">
+              {t("search.filers.selectDateRange")}
+            </div>
           )}
 
           <CalendarIcon className="size-4 text-muted-foreground" />

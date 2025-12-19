@@ -442,6 +442,19 @@
       "placeholder": "Ask More",
       "continueInChat": "Continue in chat",
       "copy": "Copy"
+    },
+    "fuzziness": {
+      "fuzzyMatch": "Fuzzy Match"
+    },
+    "filers": {
+      "allTime": "All Time",
+      "past7Days": "Past 7 Days",
+      "past90Days": "Past 90 Days",
+      "past1year": "Past 1 Year",
+      "more": "More",
+      "dateRange": "Date Range",
+      "selectDateRange": "Select Date Range",
+      "filters": "Filters"
     }
   },
   "assistant": {

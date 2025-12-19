@@ -318,7 +318,7 @@ const InputControls = ({
                 {enabledFuzzyMatch && (
                   <>
                     <span className={clsx("text-xs truncate")}>
-                      Fuzzy Match
+                      {t("search.fuzziness.fuzzyMatch")}
                     </span>
 
                     <Slider
