@@ -83,7 +83,7 @@ pub async fn query_coco_fusion(
     };
 
     if let Ok(ref res) = res {
-        println!("DBG: aggregations\n {:#?}", res);
+        println!("DBG: aggregations\n {:#?}", res.aggregations);
     }
 
     res
