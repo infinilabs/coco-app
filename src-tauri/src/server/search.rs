@@ -133,6 +133,7 @@ impl SearchSource for CocoSearchSource {
 
         // Check if the response body is empty
         if !response_body.is_empty() {
+            println!("DBG: response body string\n{}", response_body);
             // log::info!("Search response body: {}", &response_body);
 
             // Parse the search response from the body text
