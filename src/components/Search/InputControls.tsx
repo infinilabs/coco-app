@@ -345,9 +345,7 @@ const InputControls = ({
                 )}
               </div>
 
-              <div className="inline-flex items-center gap-1 h-5 px-1 rounded-full hover:text-[#881c94]! cursor-pointer transition">
-                <TimeFilter />
-              </div>
+              <TimeFilter />
             </>
           )}
         </div>

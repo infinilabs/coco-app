@@ -1,4 +1,4 @@
-import { useState, Fragment } from "react";
+import { useState, Fragment, useMemo } from "react";
 import { ListFilter, ChevronRight, BrushCleaning } from "lucide-react";
 
 import {
@@ -13,6 +13,8 @@ import MultiSelect from "../ui/multi-select";
 import DatePickerRange from "../ui/date-picker-range";
 import { camelCase, upperFirst } from "lodash-es";
 import dayjs from "dayjs";
+import { cn } from "@/lib/utils";
+import { Button } from "../ui/button";
 
 const TimeFilter = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -64,11 +66,47 @@ const TimeFilter = () => {
     },
   ];
 
+  const filterCount = useMemo(() => {
+    let count = 0;
+
+    if (filterDateRange) {
+      count += 1;
+    }
+
+    for (const item of Object.values(aggregateFilter)) {
+      if (item.length === 0) continue;
+
+      count += 1;
+    }
+
+    return count;
+  }, [filterDateRange, aggregateFilter]);
+
   return (
     <div>
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
         <DropdownMenuTrigger asChild>
-          <ListFilter className="size-3" />
+          <div
+            className={cn(
+              "inline-flex items-center gap-1 h-5 px-1 text-xs rounded-full hover:text-[#881c94]! cursor-pointer transition",
+              {
+                "bg-[#881C94]/20 dark:bg-[#202126] text-[#881c94]":
+                  filterCount > 0,
+              }
+            )}
+          >
+            <ListFilter className="size-3" />
+
+            {filterCount > 0 && (
+              <>
+                <span>Filters</span>
+
+                <div className="inline-flex items-center justify-center size-4 rounded-full text-white bg-[#881c94]">
+                  {filterCount}
+                </div>
+              </>
+            )}
+          </div>
         </DropdownMenuTrigger>
 
         <DropdownMenuContent>
@@ -104,10 +142,21 @@ const TimeFilter = () => {
         </PopoverTrigger>
 
         <PopoverContent className="w-100 p-4 text-sm">
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center justify-between text-sm">
             <span className="font-bold">Filters</span>
 
-            <BrushCleaning className="size-4 text-[#6000FF]" />
+            <Button
+              size="icon"
+              variant="outline"
+              className="size-6"
+              onClick={() => {
+                setFilterDateRange(void 0);
+
+                setAggregateFilter({});
+              }}
+            >
+              <BrushCleaning className="size-3 text-[#6000FF]" />
+            </Button>
           </div>
 
           <div className="pt-4 pb-2 text-[#999]">Date range</div>
