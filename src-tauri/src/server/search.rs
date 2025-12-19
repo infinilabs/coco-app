@@ -106,16 +106,55 @@ impl SearchSource for CocoSearchSource {
         // Add from/size as number values
         query_params.push(format!("from={}", query.from));
         query_params.push(format!("size={}", query.size));
-        query_params.push("v2=true".into());
 
         // Add query strings
         for (key, value) in query.query_strings {
             query_params.push(format!("{}={}", key, value));
         }
 
-        let response = HttpClient::get(&self.server.id, &url, Some(query_params))
-            .await
-            .context(HttpSnafu)?;
+        let request_body = r#"
+ {
+  "aggs": {
+    "category": {
+      "terms": {
+        "field": "category"
+      }
+    },
+    "lang": {
+      "terms": {
+        "field": "lang"
+      }
+    },
+    "source.id": {
+      "terms": {
+        "field": "source.id"
+      },
+      "aggs": {
+        "top": {
+          "top_hits": {
+            "size": 1,
+            "_source": [
+              "source.name"
+            ]
+          }
+        }
+      }
+    },
+    "type": {
+      "terms": {
+        "field": "type"
+      }
+    }
+  }
+}"#;
+        let response = HttpClient::post(
+            &self.server.id,
+            url,
+            Some(query_params),
+            Some(request_body.into()),
+        )
+        .await
+        .context(HttpSnafu)?;
         let status_code = response.status();
 
         if ![StatusCode::OK, StatusCode::CREATED].contains(&status_code) {
@@ -133,7 +172,6 @@ impl SearchSource for CocoSearchSource {
 
         // Check if the response body is empty
         if !response_body.is_empty() {
-            println!("DBG: response body string\n{}", response_body);
             // log::info!("Search response body: {}", &response_body);
 
             // Parse the search response from the body text
