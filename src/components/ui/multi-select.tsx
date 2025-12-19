@@ -33,7 +33,9 @@ const MultiSelect: FC<MultiSelectProps> = (props) => {
       <div className="flex flex-wrap gap-1">
         {value.map((item) => (
           <div className="inline-flex items-center gap-1 h-5.5 px-2 bg-muted rounded-md text-muted-foreground">
-            <span>{item}</span>
+            <span>
+              {options.find((option) => option.value === item)?.label ?? value}
+            </span>
           </div>
         ))}
       </div>
