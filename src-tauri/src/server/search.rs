@@ -75,6 +75,31 @@ pub struct CocoSearchSource {
     server: Server,
 }
 
+/// Convert frontend query string key/value into coco server query param.
+/// Returns `None` when the key is not recognized.
+fn convert_query_string(key: &str, value: &str) -> Option<String> {
+    match key {
+        // existing single-value params
+        "querysource" | "datasource" | "query" | "fuzziness" => Some(format!("{}={}", key, value)),
+
+        // time range filters (single value)
+        "update_time_start" => Some(format!("filter=updated>={}", value)),
+        "update_time_end" => Some(format!("filter=updated<={}", value)),
+        "create_time_start" => Some(format!("filter=created>={}", value)),
+        "create_time_end" => Some(format!("filter=created<={}", value)),
+
+        // multi-value filters (value string may already contain any(...))
+        "type" => Some(format!("filter=type:{}", value)),
+        "source" => Some(format!("filter=source:{}", value)),
+        "category" => Some(format!("filter=category:{}", value)),
+        "subcategory" => Some(format!("filter=subcategory:{}", value)),
+        "lang" => Some(format!("filter=lang:{}", value)),
+        "tag" => Some(format!("filter=tag:{}", value)),
+
+        _ => None,
+    }
+}
+
 impl CocoSearchSource {
     pub fn new(server: Server) -> Self {
         CocoSearchSource { server }
@@ -109,7 +134,9 @@ impl SearchSource for CocoSearchSource {
 
         // Add query strings
         for (key, value) in query.query_strings {
-            query_params.push(format!("{}={}", key, value));
+            if let Some(param) = convert_query_string(&key, &value) {
+                query_params.push(param);
+            }
         }
 
         let request_body = r#"
