@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { useStreamChat } from "@/hooks/useStreamChat";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { ChatMessage } from "../ChatMessage";
+import { Button } from "../ui/button";
 
 interface AiSummaryProps {
   message: string;
@@ -33,20 +34,22 @@ const AiOverview: FC<AiSummaryProps> = (props) => {
     <div className={clsx({ "p-2": visible })}>
       <div
         className={clsx(
-          "flex flex-col gap-2 relative max-h-[210px] px-4 py-3 rounded-[4px] text-[#333] dark:text-[#D8D8D8] bg-white dark:bg-[#141414] shadow-[0_4px_8px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_rgba(255,255,255,0.2)]",
+          "flex flex-col gap-2 relative max-h-[210px] px-4 py-3 rounded text-[#333] dark:text-[#D8D8D8] bg-white dark:bg-[#141414] shadow-[0_4px_8px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_rgba(255,255,255,0.2)]",
           {
             hidden: !visible,
           }
         )}
       >
-        <div
-          className="absolute top-2 right-2 flex items-center justify-center size-[20px] border rounded-md cursor-pointer dark:border-[#282828]"
+        <Button
+          size="icon"
+          variant="outline"
+          className="absolute top-2 right-2 size-5"
           onClick={() => {
             setVisible(false);
           }}
         >
-          <X className="size-4" />
-        </div>
+          <X className="size-3" />
+        </Button>
 
         <div className="flex item-center gap-1">
           <Sparkles className="size-4 text-[#881c94]" />
