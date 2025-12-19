@@ -59,7 +59,7 @@ export function DataSourceItem({ name, icon, connector }: DataSourceItemProps) {
           {icon?.startsWith("font_") ? (
             <FontIcon name={icon} className="size-6" />
           ) : (
-            <img src={getTypeIcon()} alt={name} className="size-6 dark:drop-shadow-[0_0_6px_rgb(255,255,255)]" />
+            <img src={getTypeIcon()} alt={name} className="size-6 rounded-full dark:drop-shadow-[0_0_6px_rgb(255,255,255)]" />
           )}
 
           <span className="font-medium text-gray-900 dark:text-white">

@@ -7,6 +7,13 @@ import { AssistantFetcher } from "@/components/Assistant/AssistantFetcher";
 import { setCurrentWindowService } from "@/commands/windowService";
 import { AddChatButton } from "./AddChatButton";
 import { ButtonConfig, resolveLucideIcon } from "./config";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 
 const ASSISTANT_CACHE_KEY = "assistant_list_cache";
 
@@ -250,50 +257,58 @@ const ButtonsList = ({ buttons, setButtons, serverList }: ButtonsListProps) => {
               <div className="ml-auto flex items-center gap-2">
                 {isChat && (
                   <>
-                    <select
-                      className="rounded-md px-2 py-1 text-sm bg-white dark:bg-[#0B1220] w-44"
+                    <Select
                       value={btn.action.assistantServerId || ""}
-                      onChange={(e) => handleServerSelect(btn, e.target.value)}
-                      title={t("selection.bind.service")}
+                      onValueChange={(v) =>
+                        handleServerSelect(btn, v === "__default__" ? "" : v)
+                      }
                     >
-                      <option value="">
-                        {t("selection.bind.defaultService")}
-                      </option>
-                      {serverList.map((s: any) => (
-                        <option key={s.id} value={s.id}>
-                          {s.name || s.endpoint || s.id}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="h-8 w-60">
+                        <SelectValue className="truncate" placeholder={t("selection.bind.defaultService") as string} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__default__">
+                          {t("selection.bind.defaultService")}
+                        </SelectItem>
+                        {serverList.map((s: any) => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.name || s.endpoint || s.id}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
                     {(() => {
                       const sid = btn.action.assistantServerId;
                       const list = (sid && assistantByServer[sid]) || [];
                       const loading = !!(sid && assistantLoadingByServer[sid]);
                       return (
-                        <select
-                          className="rounded-md px-2 py-1 text-sm bg-white dark:bg-[#0B1220] w-44"
+                        <Select
                           value={btn.action.assistantId || ""}
-                          onChange={(e) =>
-                            handleAssistantSelect(btn, e.target.value)
+                          onValueChange={(v) =>
+                            handleAssistantSelect(
+                              btn,
+                              v === "__default__" ? "" : v
+                            )
                           }
-                          title={t("selection.bind.assistant")}
                           disabled={loading}
                         >
-                          <option value="">
-                            {t("selection.bind.defaultAssistant")}
-                          </option>
-                          {loading && (
-                            <option value="" disabled>
-                              {t("common.loading")}
-                            </option>
-                          )}
-                          {list.map((a: any) => (
-                            <option key={a._id} value={a._id}>
-                              {a._source?.name || a._id}
-                            </option>
-                          ))}
-                        </select>
+                          <SelectTrigger className="h-8 w-60">
+                            <SelectValue className="truncate" placeholder={t("selection.bind.defaultAssistant") as string} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {!loading && (
+                              <SelectItem value="__default__">
+                                {t("selection.bind.defaultAssistant")}
+                              </SelectItem>
+                            )}
+                            {list.map((a: any) => (
+                              <SelectItem key={a._id} value={a._id}>
+                                {a._source?.name || a._id}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       );
                     })()}
                   </>

@@ -73,7 +73,13 @@ export interface SearchExtensionItem {
   }>;
 }
 
-const ExtensionStore = ({ extensionId }: { extensionId?: string }) => {
+const ExtensionStore = ({
+  extensionId,
+  changeInput,
+}: {
+  extensionId?: string;
+  changeInput: (value: string) => void;
+}) => {
   const {
     searchValue,
     selectedExtension,
@@ -295,6 +301,7 @@ const ExtensionStore = ({ extensionId }: { extensionId?: string }) => {
         <ExtensionDetail
           onInstall={handleInstall}
           onUninstall={handleUnInstall}
+          changeInput={changeInput}
         />
       ) : (
         <>
@@ -341,7 +348,7 @@ const ExtensionStore = ({ extensionId }: { extensionId?: string }) => {
 
                     <div className="flex items-center gap-1 text-[#999]">
                       <FolderDown className="size-4" />
-                      <span>{stats.installs}</span>
+                      <span>{stats?.installs ?? 0}</span>
                     </div>
                   </div>
                 </div>

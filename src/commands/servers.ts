@@ -81,14 +81,24 @@ async function invokeWithErrorHandler<T>(
 
     return result;
   } catch (error: any) {
-    const errorMessage = error || "Command execution failed";
+    console.log(error);
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : typeof error === "object"
+        ? JSON.stringify(error)
+        : String(error || "Command execution failed");
     // 401 Unauthorized
     if (errorMessage.includes("Unauthorized")) {
       handleLogout();
     } else {
       addError(command + ":" + errorMessage, "error");
     }
-    throw error;
+    
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error(errorMessage);
   }
 }
 

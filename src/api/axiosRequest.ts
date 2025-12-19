@@ -12,7 +12,7 @@ import {
   handleNetworkError,
 } from "./tools";
 
-type Fn = (data: FcResponse<any>) => unknown;
+type Fn = (data: FcResponse<unknown>) => unknown;
 
 interface IAnyObj {
   [index: string]: unknown;
@@ -85,8 +85,26 @@ export const Get = <T>(
   new Promise((resolve) => {
     const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
 
-    let baseURL = appStore.state?.endpoint_http;
-    if (!baseURL || baseURL === "undefined") {
+    // In Vite dev, prefer using the proxy by keeping requests relative
+    const isDev = (import.meta as any).env?.DEV === true;
+    const PROXY_PREFIXES: readonly string[] = [
+      "account",
+      "chat",
+      "query",
+      "connector",
+      "integration",
+      "assistant",
+      "datasource",
+      "settings",
+      "mcp_server",
+    ];
+    const shouldProxy =
+      isDev &&
+      url.startsWith("/") &&
+      PROXY_PREFIXES.some((p) => url.startsWith(`/${p}`));
+
+    let baseURL: string = appStore.state?.endpoint_http as string;
+    if (!baseURL || baseURL === "undefined" || shouldProxy) {
       baseURL = "";
     }
 
@@ -117,8 +135,25 @@ export const Post = <T>(
   return new Promise((resolve) => {
     const appStore = JSON.parse(localStorage.getItem("app-store") || "{}");
 
-    let baseURL = appStore.state?.endpoint_http;
-    if (!baseURL || baseURL === "undefined") {
+    const isDev = (import.meta as any).env?.DEV === true;
+    const PROXY_PREFIXES: readonly string[] = [
+      "account",
+      "chat",
+      "query",
+      "connector",
+      "integration",
+      "assistant",
+      "datasource",
+      "settings",
+      "mcp_server",
+    ];
+    const shouldProxy =
+      isDev &&
+      url.startsWith("/") &&
+      PROXY_PREFIXES.some((p) => url.startsWith(`/${p}`));
+
+    let baseURL: string = appStore.state?.endpoint_http as string;
+    if (!baseURL || baseURL === "undefined" || shouldProxy) {
       baseURL = "";
     }
 

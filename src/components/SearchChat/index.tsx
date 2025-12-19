@@ -35,7 +35,10 @@ import {
   visibleSearchBar,
 } from "@/utils";
 import { useTauriFocus } from "@/hooks/useTauriFocus";
-import { POPOVER_PANEL_SELECTOR, WINDOW_CENTER_BASELINE_HEIGHT } from "@/constants";
+import {
+  POPOVER_PANEL_SELECTOR,
+  WINDOW_CENTER_BASELINE_HEIGHT,
+} from "@/constants";
 import { useChatStore } from "@/stores/chatStore";
 import { useSearchStore } from "@/stores/searchStore";
 
@@ -107,8 +110,12 @@ function SearchChat({
   let collapseWindowTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const setWindowSize = useCallback(() => {
+    const { viewExtensionOpened } = useSearchStore.getState();
     if (collapseWindowTimer.current) {
       clearTimeout(collapseWindowTimer.current);
+    }
+    if (viewExtensionOpened != null) {
+      return;
     }
 
     const width = 680;
@@ -173,6 +180,28 @@ function SearchChat({
   useTauriFocus({
     onFocus: debouncedSetWindowSize,
   });
+
+  useEffect(() => {
+    const unlisten = platformAdapter.listenEvent(
+      "refresh-window-size",
+      () => {
+        debouncedSetWindowSize();
+      }
+    );
+    return () => {
+      unlisten
+        .then((fn) => {
+          try {
+            typeof fn === "function" && fn();
+          } catch {
+            // ignore
+          }
+        })
+        .catch(() => {
+          // ignore
+        });
+    };
+  }, [debouncedSetWindowSize]);
 
   useEffect(() => {
     dispatch({
@@ -383,11 +412,11 @@ function SearchChat({
     <div
       data-tauri-drag-region={isTauri}
       className={clsx(
-        "m-auto overflow-hidden relative bg-no-repeat bg-white dark:bg-black flex flex-col",
+        "m-auto overflow-hidden relative bg-no-repeat flex flex-col bg-cover",
         [
           isTransitioned
-            ? "bg-bottom bg-chat_bg_light dark:bg-chat_bg_dark"
-            : "bg-top bg-search_bg_light dark:bg-search_bg_dark",
+            ? "bg-bottom bg-[url('/assets/chat_bg_light.png')] dark:bg-[url('/assets/chat_bg_dark.png')]"
+            : "bg-top bg-[url('/assets/search_bg_light.png')] dark:bg-[url('/assets/search_bg_dark.png')]",
         ],
         {
           "size-full": !isTauri,
@@ -398,7 +427,6 @@ function SearchChat({
         }
       )}
       style={{
-        backgroundSize: "auto 590px",
         opacity: blurred ? blurOpacity / 100 : normalOpacity / 100,
       }}
     >
@@ -438,7 +466,7 @@ function SearchChat({
         {!hideMiddleBorder && (
           <div
             className={clsx(
-              "pointer-events-none absolute left-0 right-0 h-[1px] bg-[#E6E6E6] dark:bg-[#272626]",
+              "pointer-events-none absolute left-0 right-0 h-px bg-[#E6E6E6] dark:bg-[#272626]",
               isTransitioned ? "top-0" : "bottom-0"
             )}
           />

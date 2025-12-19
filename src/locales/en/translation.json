@@ -626,8 +626,15 @@
     },
     "deleteDialog": {
       "title": "Uninstall",
-      "description": "This will remove all the data and commands associated with this extension."
+      "description": "This will delete all data and commands related to the extension."
     }
+  },
+  "viewExtension": {
+    "fullscreen": {
+      "enter": "Enter Full Screen",
+      "exit": "Exit Full Screen"
+    },
+    "focus": "Focus"
   },
   "deleteDialog": {
     "button": {

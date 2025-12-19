@@ -11,6 +11,9 @@ const useEscape = () => {
   const setVisibleContextMenu = useSearchStore((state) => {
     return state.setVisibleContextMenu;
   });
+  const viewExtensionOpened = useSearchStore((state) => {
+    return state.viewExtensionOpened;
+  });
 
   useKeyPress("esc", (event) => {
     event.preventDefault();
@@ -33,6 +36,9 @@ const useEscape = () => {
       return closeHistoryPanel();
     }
 
+    if (viewExtensionOpened != null) {
+      return;
+    }
     platformAdapter.hideWindow();
   });
 };

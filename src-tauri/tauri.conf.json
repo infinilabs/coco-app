@@ -20,7 +20,7 @@
         "width": 680,
         "decorations": false,
         "minimizable": false,
-        "maximizable": false,
+        "maximizable": true,
         "skipTaskbar": true,
         "resizable": false,
         "acceptFirstMouse": true,

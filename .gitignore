@@ -28,4 +28,5 @@ web.md
 *.sln
 *.sw?
 .env
+
 .trae

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useEffect } from "react";
-import { Button, Dialog, DialogPanel } from "@headlessui/react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
-import { noop } from "lodash-es";
 import { LoaderCircle, X } from "lucide-react";
 import { useInterval, useReactive } from "ahooks";
 import clsx from "clsx";
@@ -141,117 +141,107 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
   return (
     <Dialog
       open={isCheckPage ? true : visible}
-      as="div"
-      id="update-app-dialog"
-      className="relative z-10 focus:outline-none"
-      onClose={noop}
+      onOpenChange={(v) => {
+        if (!isCheckPage) setVisible(v);
+      }}
     >
-      <div
-        className={`fixed inset-0 z-10 w-screen overflow-y-auto ${
+      <DialogContent
+        id="update-app-dialog"
+        overlayClassName={clsx("bg-transparent backdrop-blur-0 rounded-xl")}
+        className={clsx(
           isCheckPage
-            ? "rounded-lg bg-white dark:bg-[#333] border border-[#EDEDED]  dark:border-black/20 shadow-md"
-            : ""
-        }`}
+            ? "inset-0 left-0 top-0 translate-x-0 translate-y-0 w-full h-screen max-w-none rounded-lg border-none bg-background text-foreground p-0"
+            : "w-[340px] py-8 flex flex-col items-center rounded-lg border border-input bg-background text-foreground shadow-md"
+        )}
       >
         <div
           data-tauri-drag-region
           className={clsx(
-            "flex min-h-full items-center justify-center",
-            !isCheckPage && "p-4"
+            "w-full flex flex-col items-center justify-center px-6",
+            isCheckPage && "h-full"
           )}
         >
-          <DialogPanel
-            transition
-            className={clsx(
-              "relative w-[340px] py-8 flex flex-col items-center",
-              {
-                "rounded-lg bg-white dark:bg-[#333] border border-[#EDEDED]  dark:border-black/20 shadow-md":
-                  !isCheckPage,
-              }
-            )}
-          >
-            {!isCheckPage && isOptional && (
-              <X
-                className={clsx(
-                  "absolute size-5 top-3 right-3 text-[#999] dark:text-[#D8D8D8]",
-                  cursorClassName
-                )}
-                onClick={handleCancel}
-                role="button"
-                aria-label="Close dialog"
-                tabIndex={0}
-              />
-            )}
-
-            <img src={isDark ? darkIcon : lightIcon} className="h-6" />
-
-            <div className="text-[#333] text-sm leading-5 py-2 dark:text-[#D8D8D8] text-center">
-              {updateInfo ? (
-                isOptional ? (
-                  t("update.optional_description")
-                ) : (
-                  <>
-                    <p>{t("update.force_description1")}</p>
-                    <p>{t("update.force_description2")}</p>
-                  </>
-                )
-              ) : (
-                t("update.date")
-              )}
-            </div>
-
-            {updateInfo ? (
-              <div
-                className="text-xs text-[#0072FF] cursor-pointer"
-                onClick={() =>
-                  OpenURLWithBrowser(
-                    "https://docs.infinilabs.com/coco-app/main/docs/release-notes"
-                  )
-                }
-              >
-                v{updateInfo.version} {t("update.releaseNotes")}
-              </div>
-            ) : (
-              <div className={clsx("text-xs text-[#999]", cursorClassName)}>
-                {t("update.latest", {
-                  replace: [
-                    updateInfo?.version || process.env.VERSION || "N/A",
-                  ],
-                })}
-              </div>
-            )}
-
-            <Button
+          {!isCheckPage && isOptional && (
+            <X
               className={clsx(
-                "mb-3 mt-6 bg-[#0072FF] text-white text-sm px-[14px] py-[8px] rounded-lg",
-                cursorClassName,
-                state.loading && "opacity-50"
+                "absolute h-5 w-5 top-3 right-3 text-muted-foreground",
+                cursorClassName
               )}
-              onClick={updateInfo ? handleDownload : handleSkip}
-            >
-              {state.loading ? (
-                <div className="flex justify-center items-center gap-2">
-                  <LoaderCircle className="animate-spin size-5" />
-                  {percent}%
-                </div>
-              ) : updateInfo ? (
-                t("update.button.install")
-              ) : (
-                t("update.button.ok")
-              )}
-            </Button>
+              onClick={handleCancel}
+              role="button"
+              aria-label="Close dialog"
+              tabIndex={0}
+            />
+          )}
 
-            {updateInfo && isOptional && (
-              <div
-                className={clsx("text-xs text-[#999]", cursorClassName)}
-                onClick={handleSkip}
-              >
-                {t("update.skip_version")}
-              </div>
+          <img src={isDark ? darkIcon : lightIcon} className="h-6" />
+
+          <div className="text-sm leading-5 py-2 text-foreground text-center">
+            {updateInfo ? (
+              isOptional ? (
+                t("update.optional_description")
+              ) : (
+                <>
+                  <p>{t("update.force_description1")}</p>
+                  <p>{t("update.force_description2")}</p>
+                </>
+              )
+            ) : (
+              t("update.date")
             )}
-          </DialogPanel>
+          </div>
+
+          {updateInfo ? (
+            <div
+              className="text-xs text-primary cursor-pointer"
+              onClick={() =>
+                OpenURLWithBrowser(
+                  "https://docs.infinilabs.com/coco-app/main/docs/release-notes"
+                )
+              }
+            >
+              v{updateInfo.version} {t("update.releaseNotes")}
+            </div>
+          ) : (
+            <div
+              className={clsx("text-xs text-muted-foreground", cursorClassName)}
+            >
+              {t("update.latest", {
+                replace: [updateInfo?.version || process.env.VERSION || "N/A"],
+              })}
+            </div>
+          )}
+
+          <Button
+            className={clsx(
+              "mb-3 mt-6 bg-primary text-primary-foreground text-sm px-[14px] py-[8px] rounded-lg",
+              cursorClassName,
+              state.loading && "opacity-50"
+            )}
+            onClick={updateInfo ? handleDownload : handleSkip}
+          >
+            {state.loading ? (
+              <div className="flex justify-center items-center gap-2">
+                <LoaderCircle className="animate-spin h-5 w-5" />
+                {percent}%
+              </div>
+            ) : updateInfo ? (
+              t("update.button.install")
+            ) : (
+              t("update.button.ok")
+            )}
+          </Button>
+
+          {updateInfo && isOptional && (
+            <div
+              className={clsx("text-xs text-muted-foreground", cursorClassName)}
+              onClick={handleSkip}
+            >
+              {t("update.skip_version")}
+            </div>
+          )}
         </div>
-      </div>
+      </DialogContent>
     </Dialog>
   );
 };

@@ -1,4 +1,4 @@
-import { Button } from "@headlessui/react";
+import { Button } from "@/components/ui/button";
 import dayjs from "dayjs";
 import {
   CircleCheck,
@@ -8,6 +8,7 @@ import {
   Loader,
   Trash2,
   User,
+  SquareArrowOutUpRight,
 } from "lucide-react";
 import { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,15 +16,24 @@ import { useTranslation } from "react-i18next";
 import { useSearchStore } from "@/stores/searchStore";
 import DeleteDialog from "../Common/DeleteDialog";
 import PreviewImage from "../Common/PreviewImage";
+import platformAdapter from "@/utils/platformAdapter";
 
 interface ExtensionDetailProps {
   onInstall: () => void;
   onUninstall: () => void;
+  changeInput: (value: string) => void;
 }
 
 const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
-  const { onInstall, onUninstall } = props;
-  const { selectedExtension, installingExtensions } = useSearchStore();
+  const { onInstall, onUninstall, changeInput } = props;
+  const {
+    selectedExtension,
+    installingExtensions,
+    setVisibleExtensionStore,
+    setVisibleExtensionDetail,
+    setSourceData,
+    setSearchValue,
+  } = useSearchStore();
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
 
@@ -35,6 +45,53 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
     onUninstall();
 
     setIsOpen(false);
+  };
+
+  const extensionOpen = (item: any) => {
+    setSourceData({
+      source: {
+        name: item.name,
+        icon: item.icon,
+      },
+      querySource: {
+        id: "extensions",
+      },
+      main_extension_id: item.id,
+    });
+    setSearchValue(item.name || "");
+  };
+
+  const otherExtensionOpen = (item: any) => {
+    changeInput("");
+    //
+    const extension = { ...item };
+
+    let developerId = extension.developer.id;
+    let extensionId = extension.id;
+
+    const bundleId = {
+      developer: developerId,
+      extension_id: extensionId,
+      sub_extension_id: null,
+    };
+
+    platformAdapter.invokeBackend("open_third_party_extension", {
+      bundleId,
+    });
+  };
+
+  const handleOpen = async (item: any) => {
+    if (!item) return;
+
+    // close extension store
+    setVisibleExtensionStore(false);
+    setVisibleExtensionDetail(false);
+    //
+    if (item.type === "group" || item.type === "extension") {
+      extensionOpen(item);
+    } else {
+      otherExtensionOpen(item);
+    }
   };
 
   const renderDivider = () => {
@@ -61,7 +118,7 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
                   </div>
                   <div className="flex items-center gap-1">
                     <FolderDown className="size-4" />
-                    <span>{selectedExtension.stats.installs}</span>
+                    <span>{selectedExtension.stats?.installs ?? 0}</span>
                   </div>
                 </div>
               </div>
@@ -69,13 +126,19 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
             <div className="pt-2">
               {selectedExtension.installed ? (
                 <div className="flex items-center gap-2">
-                  <Trash2
-                    className="size-4 text-red-500 cursor-pointer"
-                    onClick={() => {
-                      setIsOpen(true);
-                    }}
-                  />
-                  <div className="flex items-center gap-1 h-6 px-2 rounded-full text-[#22C461] bg-[#22C461]/20">
+                  <Button
+                    className="flex justify-center items-center h-6 px-3 rounded-full bg-[#007BFF] hover:bg-[#007BFF] text-white ring-0 ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 outline-none"
+                    onClick={() => handleOpen(selectedExtension)}
+                  >
+                    <SquareArrowOutUpRight className="size-4" />
+                  </Button>
+                  <Button
+                    className="flex justify-center items-center h-6 px-3 rounded-full bg-[#FFE2E2] hover:bg-[#FFE2E2] text-red-500 ring-0 ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 outline-none"
+                    onClick={() => setIsOpen(true)}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                  <div className="flex items-center gap-1 h-6 px-2 rounded-full text-[#999999] bg-[#E6E6E6]">
                     <CircleCheck className="size-4" />
                     <span>{t("extensionDetail.hints.installed")}</span>
                   </div>
@@ -170,8 +233,9 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
         <DeleteDialog
           reverseButtonPosition
           isOpen={isOpen}
-          title={`${t("extensionDetail.deleteDialog.title")} ${selectedExtension.name
-            }`}
+          title={`${t("extensionDetail.deleteDialog.title")} ${
+            selectedExtension.name
+          }`}
           description={t("extensionDetail.deleteDialog.description")}
           cancelButtonProps={{
             className:
