@@ -14,7 +14,7 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
-import { parseSearchQuery, SearchQuery } from "@/utils";
+import { parseSearchQuery, SearchQuery, canNavigateBack } from "@/utils";
 import InputUpload from "./InputUpload";
 import Copyright from "../Common/Copyright";
 
@@ -283,7 +283,7 @@ const InputControls = ({
         </div>
       )}
 
-      {isChatPage || hasModules?.length !== 2 ? null : (
+      {isChatPage || hasModules?.length !== 2 || canNavigateBack() ? null : (
         <div className="relative w-16 flex justify-end items-center">
           <div className="absolute right-[52px] -top-2 z-10">
             <VisibleKey

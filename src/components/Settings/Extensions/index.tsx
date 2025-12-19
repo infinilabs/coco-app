@@ -75,6 +75,10 @@ export interface ViewExtensionUISettings {
   search_bar: boolean;
   filter_bar: boolean;
   footer: boolean;
+  width: number | null;
+  height: number | null;
+  resizable: boolean;
+  detachable: boolean;
 }
 
 export interface Extension {

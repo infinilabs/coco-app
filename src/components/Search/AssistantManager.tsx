@@ -1,5 +1,6 @@
 import { useCallback, useRef, useMemo, useState, useEffect } from "react";
 import { cloneDeep, isEmpty } from "lodash-es";
+import { useKeyPress } from "ahooks";
 
 import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
@@ -8,7 +9,6 @@ import { Get } from "@/api/axiosRequest";
 import type { Assistant } from "@/types/chat";
 import { useAppStore } from "@/stores/appStore";
 import { canNavigateBack, navigateBack } from "@/utils";
-import { useKeyPress } from "ahooks";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 interface AssistantManagerProps {
@@ -167,7 +167,7 @@ export function useAssistantManager({
     const { selectedSearchContent, visibleExtensionStore } =
       useSearchStore.getState();
 
-    console.log("selectedSearchContent", selectedSearchContent);
+    // console.log("selectedSearchContent", selectedSearchContent);
 
     const { id, type, category } = selectedSearchContent ?? {};
 

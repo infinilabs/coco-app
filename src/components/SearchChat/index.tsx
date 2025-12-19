@@ -110,8 +110,12 @@ function SearchChat({
   let collapseWindowTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const setWindowSize = useCallback(() => {
+    const { viewExtensionOpened } = useSearchStore.getState();
     if (collapseWindowTimer.current) {
       clearTimeout(collapseWindowTimer.current);
+    }
+    if (viewExtensionOpened != null) {
+      return;
     }
 
     const width = 680;
@@ -176,6 +180,28 @@ function SearchChat({
   useTauriFocus({
     onFocus: debouncedSetWindowSize,
   });
+
+  useEffect(() => {
+    const unlisten = platformAdapter.listenEvent(
+      "refresh-window-size",
+      () => {
+        debouncedSetWindowSize();
+      }
+    );
+    return () => {
+      unlisten
+        .then((fn) => {
+          try {
+            typeof fn === "function" && fn();
+          } catch {
+            // ignore
+          }
+        })
+        .catch(() => {
+          // ignore
+        });
+    };
+  }, [debouncedSetWindowSize]);
 
   useEffect(() => {
     dispatch({
@@ -386,7 +412,7 @@ function SearchChat({
     <div
       data-tauri-drag-region={isTauri}
       className={clsx(
-        "m-auto overflow-hidden relative bg-no-repeat flex flex-col",
+        "m-auto overflow-hidden relative bg-no-repeat flex flex-col bg-cover",
         [
           isTransitioned
             ? "bg-bottom bg-[url('/assets/chat_bg_light.png')] dark:bg-[url('/assets/chat_bg_dark.png')]"
@@ -401,7 +427,6 @@ function SearchChat({
         }
       )}
       style={{
-        backgroundSize: "auto 590px",
         opacity: blurred ? blurOpacity / 100 : normalOpacity / 100,
       }}
     >

@@ -32,7 +32,7 @@ pub fn platform(
     let panel = main_window.to_panel::<NsPanel>().unwrap();
 
     // set level
-    panel.set_level(PanelLevel::Utility.value());
+    panel.set_level(PanelLevel::Dock.value());
 
     // Do not steal focus from other windows
     panel.set_style_mask(StyleMask::empty().nonactivating_panel().into());
