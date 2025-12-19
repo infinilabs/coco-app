@@ -180,11 +180,10 @@ export function useSearch() {
         const { setAggregations, setAggregateFilter } =
           useSearchStore.getState();
 
-        setSearchState((prev) => ({ ...prev, suggests: [] }));
         setAggregations(void 0);
         setAggregateFilter(void 0);
 
-        return;
+        return setSearchState((prev) => ({ ...prev, suggests: [] }));
       }
 
       let response: MultiSourceQueryResponse;
