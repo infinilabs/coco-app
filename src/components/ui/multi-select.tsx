@@ -62,8 +62,8 @@ const MultiSelect: FC<MultiSelectProps> = (props) => {
 
           return (
             <DropdownMenuItem
-              className={"flex items-center justify-between gap-2"}
               key={itemValue}
+              className={"flex items-center justify-between gap-2"}
               onSelect={(event) => {
                 event.preventDefault();
 

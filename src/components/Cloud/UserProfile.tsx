@@ -2,6 +2,7 @@ import { User, LogOut } from "lucide-react";
 
 import { UserProfile as UserInfo } from "@/types/server";
 import { useState } from "react";
+import { Button } from "../ui/button";
 
 interface UserProfileProps {
   server: string; //server's id
@@ -38,12 +39,14 @@ export function UserProfile({ server, userInfo, onLogout }: UserProfileProps) {
             <span className="font-medium text-gray-900 dark:text-white">
               {userInfo?.name || "-"}
             </span>
-            <button
+            <Button
+              variant="outline"
+              size="icon"
               onClick={handleLogout}
-              className="flex items-center p-1 text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 border border-[rgba(228,229,239,1)] dark:border-gray-700"
+              className="size-7 text-red-500!"
             >
-              <LogOut className="w-4 h-4" />
-            </button>
+              <LogOut className="size-4" />
+            </Button>
           </div>
           <span className="text-sm text-gray-500 dark:text-gray-400">
             {userInfo?.email || "-"}
