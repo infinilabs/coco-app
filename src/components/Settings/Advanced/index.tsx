@@ -11,6 +11,13 @@ import {
 } from "lucide-react";
 import { useMount } from "ahooks";
 import { isNil } from "lodash-es";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 
 import Shortcuts from "./components/Shortcuts";
 import SettingsItem from "../SettingsItem";
@@ -23,13 +30,8 @@ import UpdateSettings from "./components/UpdateSettings";
 import SettingsToggle from "../SettingsToggle";
 import SelectionSettings from "./components/Selection";
 import { isMac } from "@/utils/platform";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "@/components/ui/select";
+import Permissions from "./components/Permissions";
+
 
 const Advanced = () => {
   const { t } = useTranslation();
@@ -195,6 +197,8 @@ const Advanced = () => {
           );
         })}
       </div>
+
+      {isMac && <Permissions />}
 
       {isMac && <SelectionSettings />}
 

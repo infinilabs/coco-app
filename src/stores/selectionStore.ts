@@ -33,7 +33,7 @@ export const useSelectionStore = create<SelectionStore>((set) => ({
   setIconsOnly: (iconsOnly) => set({ iconsOnly }),
   toolbarConfig: [],
   setToolbarConfig: (toolbarConfig) => set({ toolbarConfig }),
-  selectionEnabled: false,
+  selectionEnabled: true,
   setSelectionEnabled: (selectionEnabled) => set({ selectionEnabled }),
 }));
 

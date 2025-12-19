@@ -59,6 +59,7 @@
     "serde",
     "Shadcn",
     "swatinem",
+    "systempreferences",
     "tailwindcss",
     "tauri",
     "thiserror",

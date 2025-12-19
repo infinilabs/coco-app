@@ -187,6 +187,21 @@
           "description": "Get early access to new features. May be unstable."
         }
       },
+      "permissions": {
+        "title": "Permissions",
+        "accessibility": {
+          "title": "Accessibility",
+          "description": "Required to read selected text in the foreground app. Grant in System Settings → Privacy & Security → Accessibility."
+        },
+        "screenRecording": {
+          "title": "Screen Recording",
+          "description": "Required for window/screen screenshots and sharing. Grant in System Settings → Privacy & Security → Screen Recording."
+        },
+        "microphone": {
+          "title": "Microphone",
+          "description": "Required for voice input and recording. Grant in System Settings → Privacy & Security → Microphone."
+        }
+      },
       "other": {
         "title": "Other Settings",
         "connectionTimeout": {
@@ -228,6 +243,16 @@
       "about": "About",
       "extensionsContent": "Extensions settings content",
       "advancedContent": "Advanced Settings content"
+    },
+    "common": {
+      "status": {
+        "authorized": "Authorized",
+        "notAuthorized": "Not Authorized"
+      },
+      "actions": {
+        "openNow": "Open Settings",
+        "refresh": "Refresh"
+      }
     },
     "extensions": {
       "title": "Extensions",

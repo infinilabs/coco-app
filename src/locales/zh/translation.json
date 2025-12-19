@@ -187,6 +187,21 @@
           "description": "抢先体验新功能，可能不稳定。"
         }
       },
+      "permissions": {
+        "title": "权限设置",
+        "accessibility": {
+          "title": "辅助功能（Accessibility）",
+          "description": "用于读取前台应用的选中文本，需在「隐私与安全 → 辅助功能」中授权。"
+        },
+        "screenRecording": {
+          "title": "屏幕录制",
+          "description": "用于窗口/屏幕截图与共享，需要在「隐私与安全 → 屏幕录制」中授权。"
+        },
+        "microphone": {
+          "title": "麦克风",
+          "description": "用于语音输入与录音功能，需要在「隐私与安全 → 麦克风」中授权。"
+        }
+      },
       "other": {
         "title": "其它设置",
         "connectionTimeout": {
@@ -228,6 +243,16 @@
       "about": "关于",
       "extensionsContent": "扩展设置内容",
       "advancedContent": "高级设置内容"
+    },
+    "common": {
+      "status": {
+        "authorized": "已授权",
+        "notAuthorized": "未授权"
+      },
+      "actions": {
+        "openNow": "去授权",
+        "refresh": "刷新状态"
+      }
     },
     "extensions": {
       "title": "扩展",

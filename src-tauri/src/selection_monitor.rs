@@ -2,6 +2,7 @@
 /// Coordinates use logical (Quartz) points with a top-left origin.
 /// Note: `y` is flipped on the backend to match the frontend’s usage.
 use tauri::Emitter;
+use tauri::Manager;
 
 #[derive(serde::Serialize, Clone)]
 struct SelectionEventPayload {
@@ -14,8 +15,8 @@ use once_cell::sync::Lazy;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-/// Global toggle: selection monitoring disabled for this release.
-static SELECTION_ENABLED: AtomicBool = AtomicBool::new(false);
+/// Global toggle: selection monitoring enabled for this release.
+static SELECTION_ENABLED: AtomicBool = AtomicBool::new(true);
 
 /// Ensure we only start the monitor thread once. Allows delayed start after
 /// Accessibility permission is granted post-launch.
@@ -24,6 +25,9 @@ static MONITOR_THREAD_STARTED: AtomicBool = AtomicBool::new(false);
 /// Guard to avoid spawning multiple permission watcher threads.
 #[cfg(target_os = "macos")]
 static PERMISSION_WATCHER_STARTED: AtomicBool = AtomicBool::new(false);
+/// Guard to avoid spawning multiple selection store watcher threads.
+#[cfg(target_os = "macos")]
+static SELECTION_STORE_WATCHER_STARTED: AtomicBool = AtomicBool::new(false);
 
 /// Session flags for controlling macOS Accessibility prompts.
 #[cfg(target_os = "macos")]
@@ -31,6 +35,8 @@ static SEEN_ACCESSIBILITY_TRUSTED_ONCE: AtomicBool = AtomicBool::new(false);
 #[cfg(target_os = "macos")]
 static LAST_ACCESSIBILITY_PROMPT: Lazy<Mutex<Option<std::time::Instant>>> =
     Lazy::new(|| Mutex::new(None));
+#[cfg(target_os = "macos")]
+static LAST_READ_WARN: Lazy<Mutex<Option<std::time::Instant>>> = Lazy::new(|| Mutex::new(None));
 
 #[derive(serde::Serialize, Clone)]
 struct SelectionEnabledPayload {
@@ -95,7 +101,19 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
     use tauri::Emitter;
 
     // Sync initial enabled state to the frontend on startup.
-    set_selection_enabled_internal(&app_handle, is_selection_enabled());
+    // Prefer disk-persisted Zustand store if present
+    #[cfg(target_os = "macos")]
+    ensure_selection_store_bootstrap(&app_handle);
+    if let Some(enabled) = read_selection_enabled_from_store(&app_handle) {
+        log::info!(target: "coco_lib::selection_monitor", "initial selection-enabled loaded from store: {}", enabled);
+        set_selection_enabled_internal(&app_handle, enabled);
+    } else {
+        log::warn!(target: "coco_lib::selection_monitor", "initial selection-enabled not found in store, falling back to in-memory flag");
+        set_selection_enabled_internal(&app_handle, is_selection_enabled());
+    }
+    // Start a light watcher to keep SELECTION_ENABLED in sync with disk
+    start_selection_store_watcher(app_handle.clone());
+    log::info!(target: "coco_lib::selection_monitor", "selection store watcher started");
 
     // Accessibility permission is required to read selected text in the foreground app.
     // If not granted, prompt the user once; if still not granted, skip starting the watcher.
@@ -287,6 +305,7 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
 
             // If disabled: do not read AX / do not show popup; hide if currently visible.
             if !is_selection_enabled() {
+                log::debug!(target: "coco_lib::selection_monitor", "monitor loop: selection disabled");
                 if popup_visible {
                     let _ = app_handle.emit("selection-detected", "");
                     popup_visible = false;
@@ -442,6 +461,118 @@ fn ensure_accessibility_permission(app_handle: &tauri::AppHandle) -> bool {
     }
 
     false
+}
+
+/// Resolve the path to the zustand store file `selection-store.json`.
+#[cfg(target_os = "macos")]
+fn selection_store_path(app_handle: &tauri::AppHandle) -> std::path::PathBuf {
+    let mut dir = app_handle
+        .path()
+        .app_data_dir()
+        .expect("failed to find the local dir");
+    dir.push("zustand");
+    dir.push("selection-store.json");
+    log::debug!(target: "coco_lib::selection_monitor", "selection_store_path resolved: {}", dir.display());
+    dir
+}
+
+#[cfg(target_os = "macos")]
+fn ensure_selection_store_bootstrap(app_handle: &tauri::AppHandle) {
+    use std::fs;
+    use std::io::Write;
+    let mut dir = app_handle
+        .path()
+        .app_data_dir()
+        .expect("failed to find the local dir");
+    dir.push("zustand");
+    let _ = fs::create_dir_all(&dir);
+    let file = dir.join("selection-store.json");
+    if !file.exists() {
+        let initial = serde_json::json!({
+            "selectionEnabled": true,
+            "iconsOnly": false,
+            "toolbarConfig": []
+        });
+        if let Ok(mut f) = fs::File::create(&file) {
+            let _ = f.write_all(
+                serde_json::to_string(&initial)
+                    .unwrap_or_else(|_| "{}".to_string())
+                    .as_bytes(),
+            );
+            log::info!(target: "coco_lib::selection_monitor", "bootstrap selection-store.json created: {}", file.display());
+        }
+    }
+}
+
+/// Read `selectionEnabled` from the persisted zustand store.
+/// Returns Some(bool) if read succeeds; None otherwise.
+#[cfg(target_os = "macos")]
+fn read_selection_enabled_from_store(app_handle: &tauri::AppHandle) -> Option<bool> {
+    use std::fs;
+    let path = selection_store_path(app_handle);
+    match fs::read_to_string(&path) {
+        Ok(content) => match serde_json::from_str::<serde_json::Value>(&content) {
+            Ok(v) => {
+                let val = v.get("selectionEnabled").and_then(|b| b.as_bool());
+                log::info!(target: "coco_lib::selection_monitor", "read_selection_enabled_from_store: {} -> {:?}", path.display(), val);
+                val
+            }
+            Err(e) => {
+                log::warn!(target: "coco_lib::selection_monitor", "read_selection_enabled_from_store: JSON parse failed for {}: {}", path.display(), e);
+                None
+            }
+        },
+        Err(e) => {
+            use std::time::Duration;
+            use std::time::Instant;
+            let mut last = LAST_READ_WARN.lock().unwrap();
+            let now = Instant::now();
+            let allow = match *last {
+                Some(ts) => now.duration_since(ts) > Duration::from_secs(30),
+                None => true,
+            };
+            if allow {
+                log::warn!(target: "coco_lib::selection_monitor", "read_selection_enabled_from_store: read failed for {}: {}", path.display(), e);
+                *last = Some(now);
+            } else {
+                log::debug!(target: "coco_lib::selection_monitor", "read_selection_enabled_from_store: read failed suppressed for {}", path.display());
+            }
+            None
+        }
+    }
+}
+
+/// Spawn a background watcher to sync `SELECTION_ENABLED` with disk every ~1s.
+#[cfg(target_os = "macos")]
+fn start_selection_store_watcher(app_handle: tauri::AppHandle) {
+    if SELECTION_STORE_WATCHER_STARTED.swap(true, Ordering::Relaxed) {
+        return;
+    }
+    std::thread::Builder::new()
+        .name("selection-store-watcher".into())
+        .spawn(move || {
+            use std::time::{Duration, Instant};
+            let mut last_check = Instant::now();
+            let mut last_val: Option<bool> = None;
+            loop {
+                // Check approximately every second
+                if last_check.elapsed() >= Duration::from_secs(1) {
+                    let current = read_selection_enabled_from_store(&app_handle);
+                    if current.is_some() && current != last_val {
+                        let enabled = current.unwrap();
+                        set_selection_enabled_internal(&app_handle, enabled);
+                        log::info!(target: "coco_lib::selection_monitor", "selection-store-watcher: detected change, enabled={}", enabled);
+                        last_val = current;
+                    }
+                    last_check = Instant::now();
+                }
+                std::thread::sleep(Duration::from_millis(200));
+            }
+        })
+        .unwrap_or_else(|e| {
+            SELECTION_STORE_WATCHER_STARTED.store(false, Ordering::Relaxed);
+            panic!("selection-store-watcher: failed to spawn: {}", e);
+        });
 }
 
 #[cfg(target_os = "macos")]
