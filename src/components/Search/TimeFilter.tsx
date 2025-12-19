@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { ListFilter, ChevronRight, BrushCleaning } from "lucide-react";
 
 import {
@@ -11,6 +11,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { useSearchStore } from "@/stores/searchStore";
 import MultiSelect from "../ui/multi-select";
 import DatePickerRange from "../ui/date-picker-range";
+import { camelCase, upperFirst } from "lodash-es";
+import dayjs from "dayjs";
 
 const TimeFilter = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -20,28 +22,38 @@ const TimeFilter = () => {
     setFilterDateRange,
     aggregateFilter,
     setAggregateFilter,
+    aggregations,
   } = useSearchStore();
 
   const dropdownMenuItems = [
     {
       key: "all-time",
       label: "All Time",
-      value: null,
+      value: void 0,
     },
     {
       key: "7-day",
       label: "7 Day",
-      value: 7,
+      value: {
+        from: dayjs().subtract(7, "day").toDate(),
+        to: dayjs().toDate(),
+      },
     },
     {
       key: "90-day",
       label: "90 Day",
-      value: 90,
+      value: {
+        from: dayjs().subtract(90, "day").toDate(),
+        to: dayjs().toDate(),
+      },
     },
     {
       key: "1-year",
       label: "1 Year",
-      value: 365,
+      value: {
+        from: dayjs().subtract(1, "year").toDate(),
+        to: dayjs().toDate(),
+      },
     },
     {
       key: "more",
@@ -49,44 +61,6 @@ const TimeFilter = () => {
       onClick: () => {
         setPopoverOpen(true);
       },
-    },
-  ];
-
-  const typeOptions = [
-    {
-      label: "Web Page",
-      value: "web_page",
-    },
-    {
-      label: "PDF",
-      value: "pdf",
-    },
-    {
-      label: "Images",
-      value: "images",
-    },
-  ];
-
-  const sourceOptions = [
-    {
-      label: "INFINI Gateway",
-      value: "INFINI Gateway",
-    },
-    {
-      label: "INFINI Labs Blog",
-      value: "INFINI Labs Blog",
-    },
-    {
-      label: "Coco 官网",
-      value: "Coco 官网",
-    },
-    {
-      label: "INFINI Labs 中文官网",
-      value: "INFINI Labs 中文官网",
-    },
-    {
-      label: "INFINI Labs blog",
-      value: "INFINI Labs blog",
     },
   ];
 
@@ -99,7 +73,7 @@ const TimeFilter = () => {
 
         <DropdownMenuContent>
           {dropdownMenuItems.map((item) => {
-            const { key, label, onClick } = item;
+            const { key, label, value, onClick } = item;
 
             return (
               <DropdownMenuItem
@@ -109,7 +83,7 @@ const TimeFilter = () => {
                   if (onClick) {
                     onClick();
                   } else {
-                    console.log("key", key);
+                    setFilterDateRange(value);
                   }
                 }}
               >
@@ -142,31 +116,31 @@ const TimeFilter = () => {
             onSelect={setFilterDateRange}
           />
 
-          <div className="pt-4 pb-2 text-[#999]">Type</div>
-          <MultiSelect
-            value={aggregateFilter.type ?? []}
-            placeholder="Please select type"
-            options={typeOptions}
-            onChange={(value) => {
-              setAggregateFilter({
-                ...aggregateFilter,
-                type: value,
-              });
-            }}
-          />
+          {aggregations &&
+            Object.entries(aggregations).map(([key, value]) => {
+              return (
+                <Fragment key={key}>
+                  <div className="pt-4 pb-2 text-[#999]">
+                    {upperFirst(camelCase(key))}
+                  </div>
 
-          <div className="pt-4 pb-2 text-[#999]">Source</div>
-          <MultiSelect
-            value={aggregateFilter.source ?? []}
-            placeholder="Please select source"
-            options={sourceOptions}
-            onChange={(value) => {
-              setAggregateFilter({
-                ...aggregateFilter,
-                source: value,
-              });
-            }}
-          />
+                  <MultiSelect
+                    value={aggregateFilter[key] ?? []}
+                    placeholder={`Please select ${key}`}
+                    options={value.buckets.map((bucket) => ({
+                      label: bucket.label ?? bucket.key,
+                      value: bucket.key,
+                    }))}
+                    onChange={(value) => {
+                      setAggregateFilter({
+                        ...aggregateFilter,
+                        [key]: value,
+                      });
+                    }}
+                  />
+                </Fragment>
+              );
+            })}
         </PopoverContent>
       </Popover>
     </div>

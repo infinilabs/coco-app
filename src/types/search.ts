@@ -71,8 +71,21 @@ export interface FailedRequest {
   reason?: string;
 }
 
+export interface Aggregation {
+  buckets: Array<{
+    key: string;
+    label?: string;
+    doc_count: number;
+  }>;
+}
+
+export interface Aggregations {
+  [key: string]: Aggregation;
+}
+
 export interface MultiSourceQueryResponse {
   failed: FailedRequest[];
   hits: QueryHits[];
   total_hits: number;
+  aggregations?: Aggregations;
 }

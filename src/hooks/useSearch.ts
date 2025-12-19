@@ -1,5 +1,16 @@
 import { useState, useCallback, useMemo, useRef } from "react";
-import { debounce, orderBy } from "lodash-es";
+import {
+  debounce,
+  fromPairs,
+  isPlainObject,
+  orderBy,
+  sortBy,
+  toPairs,
+} from "lodash-es";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+import advancedFormat from "dayjs/plugin/advancedFormat";
 
 import type {
   QueryHits,
@@ -13,6 +24,10 @@ import { useConnectStore } from "@/stores/connectStore";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(advancedFormat);
 
 interface SearchState {
   isError: FailedRequest[];
@@ -52,6 +67,7 @@ export function useSearch() {
   });
 
   const { querySourceTimeout, searchDelay } = useConnectStore();
+  const { aggregateFilter, filterDateRange } = useSearchStore();
 
   const [searchState, setSearchState] = useState<SearchState>({
     isError: [],
@@ -60,6 +76,14 @@ export function useSearch() {
     isSearchComplete: false,
     globalItemIndexMap: {},
   });
+
+  const toEasySearchTime = (date: Date) => {
+    return (
+      dayjs(date).format("YYYY-MM-DDTHH:mm:ss.SSS") +
+      "000" +
+      dayjs(date).format("Z")
+    );
+  };
 
   const handleSearchResponse = (
     response: MultiSourceQueryResponse,
@@ -160,16 +184,47 @@ export function useSearch() {
   const performSearch = useCallback(
     async (searchInput: string) => {
       if (!searchInput) {
-        setSearchState((prev) => ({ ...prev, suggests: [] }));
-        return;
+        return setSearchState((prev) => ({ ...prev, suggests: [] }));
       }
 
       let response: MultiSourceQueryResponse;
       if (isTauri) {
+        const queryStrings: Record<string, string> = {
+          query: searchInput,
+        };
+
+        const { aggregateFilter, filterDateRange } = useSearchStore.getState();
+
+        if (filterDateRange) {
+          const { from, to } = filterDateRange;
+
+          if (from) {
+            queryStrings["update_time_start"] = toEasySearchTime(from);
+          }
+
+          if (to) {
+            queryStrings["update_time_end"] = toEasySearchTime(to);
+          }
+        }
+
+        for (const [key, value] of Object.entries(aggregateFilter)) {
+          if (value.length === 0) continue;
+
+          if (value.length === 1) {
+            queryStrings[key] = value[0];
+          } else {
+            queryStrings[key] = `any(${value.join(",")})`;
+          }
+        }
+
+        console.log("queryStrings", queryStrings);
+
         response = await platformAdapter.commands("query_coco_fusion", {
           from: 0,
           size: 10,
-          queryStrings: { query: searchInput },
+          queryStrings: {
+            query: searchInput,
+          },
           queryTimeout: querySourceTimeout,
         });
       } else {
@@ -200,6 +255,16 @@ export function useSearch() {
 
       console.log("_suggest", searchInput, response);
 
+      if (isTauri && isPlainObject(response?.aggregations)) {
+        const { setAggregations } = useSearchStore.getState();
+
+        const sortedAggregations = fromPairs(
+          sortBy(toPairs(response.aggregations), ([key]) => key)
+        );
+
+        setAggregations(sortedAggregations);
+      }
+
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }
@@ -216,6 +281,8 @@ export function useSearch() {
       aiOverviewCharLen,
       aiOverviewDelay,
       aiOverviewMinQuantity,
+      aggregateFilter,
+      filterDateRange,
     ]
   );
 

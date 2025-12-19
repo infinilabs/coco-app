@@ -3,6 +3,7 @@ import {
   ExtensionPermission,
   ViewExtensionUISettings,
 } from "@/components/Settings/Extensions";
+import { Aggregations } from "@/types/search";
 import { DateRange } from "react-day-picker";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -81,6 +82,9 @@ export type ISearchStore = {
 
   aggregateFilter: AggregateFilter;
   setAggregateFilter: (aggregateFilter: AggregateFilter) => void;
+
+  aggregations?: Aggregations;
+  setAggregations: (aggregations?: Aggregations) => void;
 };
 
 export const DEFAULT_FUZZINESS = 5;
@@ -171,6 +175,9 @@ export const useSearchStore = create<ISearchStore>()(
       aggregateFilter: {},
       setAggregateFilter: (aggregateFilter) => {
         return set({ aggregateFilter });
+      },
+      setAggregations: (aggregations) => {
+        return set({ aggregations });
       },
     }),
     {
