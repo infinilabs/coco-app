@@ -3,6 +3,7 @@ import {
   ExtensionPermission,
   ViewExtensionUISettings,
 } from "@/components/Settings/Extensions";
+import { DateRange } from "react-day-picker";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -18,10 +19,7 @@ export type ViewExtensionOpened = [
 ];
 
 export interface AggregateFilter {
-  update_time_start?: string;
-  update_time_end?: string;
-  type?: string[];
-  source?: string[];
+  [key: string]: string[];
 }
 
 export type ISearchStore = {
@@ -77,6 +75,9 @@ export type ISearchStore = {
 
   fuzziness: number;
   setFuzziness: (fuzziness: number) => void;
+
+  filterDateRange?: DateRange;
+  setFilterDateRange: (filterDateRange?: DateRange) => void;
 
   aggregateFilter: AggregateFilter;
   setAggregateFilter: (aggregateFilter: AggregateFilter) => void;
@@ -163,6 +164,9 @@ export const useSearchStore = create<ISearchStore>()(
       fuzziness: DEFAULT_FUZZINESS,
       setFuzziness: (fuzziness) => {
         return set({ fuzziness });
+      },
+      setFilterDateRange(filterDateRange) {
+        return set({ filterDateRange });
       },
       aggregateFilter: {},
       setAggregateFilter: (aggregateFilter) => {
