@@ -80,7 +80,7 @@ const AiOverview: FC<AiSummaryProps> = (props) => {
         </div>
 
         <div
-          className={clsx("min-h-[20px]", {
+          className={clsx("min-h-5", {
             hidden: isTyping,
           })}
         />
