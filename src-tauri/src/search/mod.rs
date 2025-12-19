@@ -2,6 +2,7 @@ use crate::common::error::{ReportErrorStyle, SearchError, report_error};
 use crate::common::register::SearchSourceRegistry;
 use crate::common::search::{
     FailedRequest, MultiSourceQueryResponse, QueryHits, QuerySource, SearchQuery,
+    merge_aggregations,
 };
 use crate::common::traits::SearchSource;
 use crate::extension::LOCAL_QUERY_SOURCE_TYPE;
@@ -233,6 +234,7 @@ async fn query_coco_fusion_multi_query_sources(
     let mut total_hits = 0;
     let mut failed_requests = Vec::new();
     let mut all_hits_grouped_by_query_source: HashMap<QuerySource, Vec<QueryHits>> = HashMap::new();
+    let mut aggregations = None;
 
     while let Some((query_source, timeout_result)) = futures.next().await {
         match timeout_result {
@@ -246,6 +248,9 @@ async fn query_coco_fusion_multi_query_sources(
             Ok(query_result) => match query_result {
                 Ok(response) => {
                     total_hits += response.total_hits;
+                    if let Some(from) = response.aggregations {
+                        merge_aggregations(&mut aggregations, from);
+                    }
 
                     for (document, score) in response.hits {
                         log::debug!(
@@ -288,6 +293,7 @@ async fn query_coco_fusion_multi_query_sources(
             failed: Vec::new(),
             hits: Vec::new(),
             total_hits: 0,
+            aggregations: None,
         });
     }
 
@@ -429,6 +435,7 @@ async fn query_coco_fusion_multi_query_sources(
         failed: failed_requests,
         hits: final_hits,
         total_hits,
+        aggregations,
     })
 }
 
