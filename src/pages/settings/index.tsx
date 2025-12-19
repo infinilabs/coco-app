@@ -87,12 +87,17 @@ function SettingsPage() {
       selectedTab === "extensions" ? "hidden" : "auto";
   }, [selectedTab]);
 
+  const [date, setDate] = useState<Date | undefined>(new Date())
+
   return (
     <>
       <div className="flex flex-col gap-4 p-10">
         <Calendar
+          mode="single"
+          selected={date}
+          onSelect={setDate}
+          className="rounded-md border shadow-sm"
           captionLayout="dropdown"
-          className="rounded-md border border-border shadow-sm"
         />
 
         <Calendar
