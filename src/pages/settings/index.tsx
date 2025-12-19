@@ -17,6 +17,7 @@ import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore } from "@/stores/appStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useAppearanceStore } from "@/stores/appearanceStore";
+import { Calendar } from "@/components/ui/calendar";
 
 const tabValues = [
   "general",
@@ -88,6 +89,8 @@ function SettingsPage() {
 
   return (
     <>
+      <Calendar mode="range" numberOfMonths={2} />
+
       <div className="min-h-screen pb-8 bg-background text-foreground">
         <div className="max-w-6xl mx-auto p-4">
           <Tabs

@@ -1,6 +1,5 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { ListFilter, ChevronRight, BrushCleaning } from "lucide-react";
-import { DatePicker } from "antd";
 
 import {
   DropdownMenu,
@@ -8,21 +7,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import {
-  Popover,
-  PopoverContent,
-  PopoverPortal,
-  PopoverTrigger,
-} from "../ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { useSearchStore } from "@/stores/searchStore";
 import MultiSelect from "../ui/multi-select";
-import { Calendar } from "../ui/calendar";
+import DatePickerRange from "../ui/date-picker-range";
 import { DateRange } from "react-day-picker";
 
 const TimeFilter = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const triggerRef = useRef<HTMLDivElement>(null);
   const { aggregateFilter, setAggregateFilter } = useSearchStore();
 
   const dropdownMenuItems = [
@@ -93,13 +86,16 @@ const TimeFilter = () => {
     },
   ];
 
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(2025, 5, 12),
+    to: new Date(2025, 6, 15),
+  });
+
   return (
     <div>
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
         <DropdownMenuTrigger asChild>
-          <div ref={triggerRef} className="relative">
-            <ListFilter className="size-3" />
-          </div>
+          <ListFilter className="size-3" />
         </DropdownMenuTrigger>
 
         <DropdownMenuContent>
@@ -134,53 +130,42 @@ const TimeFilter = () => {
           <div />
         </PopoverTrigger>
 
-        <PopoverPortal container={triggerRef.current}>
-          <PopoverContent className="w-100 p-4 text-sm">
-            <div className="flex items-center gap-2 text-sm">
-              <span className="font-bold">Filters</span>
+        <PopoverContent className="w-100 p-4 text-sm">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="font-bold">Filters</span>
 
-              <BrushCleaning className="size-4 text-[#6000FF]" />
-            </div>
+            <BrushCleaning className="size-4 text-[#6000FF]" />
+          </div>
 
-            <div className="pt-4 pb-2 text-[#999]">Date range</div>
-            <Popover>
-              <PopoverTrigger asChild>
-                <div>选择日期</div>
-              </PopoverTrigger>
+          <div className="pt-4 pb-2 text-[#999]">Date range</div>
+          <DatePickerRange selected={dateRange} onSelect={setDateRange} />
 
-              <PopoverContent>
-                <Calendar mode="range" numberOfMonths={2} />
-              </PopoverContent>
-            </Popover>
-            {/* <DatePicker.RangePicker /> */}
+          <div className="pt-4 pb-2 text-[#999]">Type</div>
+          <MultiSelect
+            value={aggregateFilter.type ?? []}
+            placeholder="Please select type"
+            options={typeOptions}
+            onChange={(value) => {
+              setAggregateFilter({
+                ...aggregateFilter,
+                type: value,
+              });
+            }}
+          />
 
-            <div className="pt-4 pb-2 text-[#999]">Type</div>
-            <MultiSelect
-              value={aggregateFilter.type ?? []}
-              placeholder="Please select type"
-              options={typeOptions}
-              onChange={(value) => {
-                setAggregateFilter({
-                  ...aggregateFilter,
-                  type: value,
-                });
-              }}
-            />
-
-            <div className="pt-4 pb-2 text-[#999]">Source</div>
-            <MultiSelect
-              value={aggregateFilter.source ?? []}
-              placeholder="Please select source"
-              options={sourceOptions}
-              onChange={(value) => {
-                setAggregateFilter({
-                  ...aggregateFilter,
-                  source: value,
-                });
-              }}
-            />
-          </PopoverContent>
-        </PopoverPortal>
+          <div className="pt-4 pb-2 text-[#999]">Source</div>
+          <MultiSelect
+            value={aggregateFilter.source ?? []}
+            placeholder="Please select source"
+            options={sourceOptions}
+            onChange={(value) => {
+              setAggregateFilter({
+                ...aggregateFilter,
+                source: value,
+              });
+            }}
+          />
+        </PopoverContent>
       </Popover>
     </div>
   );

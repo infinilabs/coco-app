@@ -294,55 +294,62 @@ const InputControls = ({
               </div>
             )}
 
-          <div
-            className={clsx(
-              "inline-flex items-center gap-1 h-5 px-1 rounded-full hover:text-[#881c94]! cursor-pointer transition",
-              [
-                enabledFuzzyMatch
-                  ? "text-[#881c94]"
-                  : "text-[#333] dark:text-[#d8d8d8]",
-              ],
-              {
-                "bg-[#881C94]/20 dark:bg-[#202126]": enabledFuzzyMatch,
-              }
-            )}
-            onClick={() => {
-              setEnabledFuzzyMatch(!enabledFuzzyMatch);
-            }}
-          >
-            <ScanSearch className="size-3" />
+          {/* app search filter */}
+          {isTauri && (
+            <>
+              <div
+                className={clsx(
+                  "inline-flex items-center gap-1 h-5 px-1 rounded-full hover:text-[#881c94]! cursor-pointer transition",
+                  [
+                    enabledFuzzyMatch
+                      ? "text-[#881c94]"
+                      : "text-[#333] dark:text-[#d8d8d8]",
+                  ],
+                  {
+                    "bg-[#881C94]/20 dark:bg-[#202126]": enabledFuzzyMatch,
+                  }
+                )}
+                onClick={() => {
+                  setEnabledFuzzyMatch(!enabledFuzzyMatch);
+                }}
+              >
+                <ScanSearch className="size-3" />
 
-            {enabledFuzzyMatch && (
-              <>
-                <span className={clsx("text-xs truncate")}>Fuzzy Match</span>
+                {enabledFuzzyMatch && (
+                  <>
+                    <span className={clsx("text-xs truncate")}>
+                      Fuzzy Match
+                    </span>
 
-                <Slider
-                  value={[fuzziness]}
-                  max={5}
-                  className="w-20"
-                  onValueChange={(value) => {
-                    setFuzziness(value[0]);
-                  }}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                  }}
-                />
+                    <Slider
+                      value={[fuzziness]}
+                      max={5}
+                      className="w-20"
+                      onValueChange={(value) => {
+                        setFuzziness(value[0]);
+                      }}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                      }}
+                    />
 
-                <RotateCcw
-                  className="size-3"
-                  onClick={(event) => {
-                    event.stopPropagation();
+                    <RotateCcw
+                      className="size-3"
+                      onClick={(event) => {
+                        event.stopPropagation();
 
-                    setFuzziness(DEFAULT_FUZZINESS);
-                  }}
-                />
-              </>
-            )}
-          </div>
+                        setFuzziness(DEFAULT_FUZZINESS);
+                      }}
+                    />
+                  </>
+                )}
+              </div>
 
-          <div className="inline-flex items-center gap-1 h-5 px-1 rounded-full hover:text-[#881c94]! cursor-pointer transition">
-            <TimeFilter />
-          </div>
+              <div className="inline-flex items-center gap-1 h-5 px-1 rounded-full hover:text-[#881c94]! cursor-pointer transition">
+                <TimeFilter />
+              </div>
+            </>
+          )}
         </div>
       )}
 

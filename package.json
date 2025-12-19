@@ -48,7 +48,6 @@
     "@tauri-store/zustand": "^1.1.0",
     "@wavesurfer/react": "^1.0.11",
     "ahooks": "^3.8.4",
-    "antd": "^6.1.1",
     "axios": "^1.12.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
