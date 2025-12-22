@@ -1,7 +1,7 @@
+export const POPOVER_PANEL_SELECTOR = "[data-radix-popper-content-wrapper]";
+
 export const OPENED_POPOVER_TRIGGER_SELECTOR =
   "[aria-haspopup='dialog'][aria-expanded='true'][data-state='open']";
-
-export const POPOVER_PANEL_SELECTOR = "[data-radix-popper-content-wrapper]";
 
 export const HISTORY_PANEL_ID = "popover-panel:history-panel";
 
