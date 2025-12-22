@@ -1,8 +1,11 @@
-export const POPOVER_PANEL_SELECTOR = '[data-popover-panel]';
+export const OPENED_POPOVER_TRIGGER_SELECTOR =
+  "[aria-haspopup='dialog'][aria-expanded='true'][data-state='open']";
 
-export const HISTORY_PANEL_ID = "headlessui-popover-panel:history-panel";
+export const POPOVER_PANEL_SELECTOR = "[data-radix-popper-content-wrapper]";
 
-export const CONTEXT_MENU_PANEL_ID = "headlessui-popover-panel:context-menu";
+export const HISTORY_PANEL_ID = "popover-panel:history-panel";
+
+export const CONTEXT_MENU_PANEL_ID = "popover-panel:context-menu";
 
 export const DEFAULT_COCO_SERVER_ID = "default_coco_server";
 

@@ -15,12 +15,12 @@ import { useConnectStore } from "@/stores/connectStore";
 import FontIcon from "@/components/Common/Icons/FontIcon";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import NoDataImage from "@/components/Common/NoDataImage";
-import PopoverInput from "@/components/Common/PopoverInput";
 import { AssistantFetcher } from "./AssistantFetcher";
 import AssistantItem from "./AssistantItem";
 import Pagination from "@/components/Common/Pagination";
 import { useSearchStore } from "@/stores/searchStore";
 import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 
 interface AssistantListProps {
   assistantIDs?: string[];
@@ -241,9 +241,10 @@ export function AssistantList({ assistantIDs = [] }: AssistantListProps) {
               searchInputRef.current?.focus();
             }}
           >
-            <PopoverInput
+            <Input
               ref={searchInputRef}
               autoFocus
+              autoCorrect="off"
               value={keyword}
               placeholder={t("assistant.popover.search")}
               className="w-full h-8"

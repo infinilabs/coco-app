@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import { cn } from "@/lib/utils";
+import { OPENED_POPOVER_TRIGGER_SELECTOR } from "@/constants";
 
 const Popover = PopoverPrimitive.Root;
 const PopoverTrigger = PopoverPrimitive.Trigger;
@@ -34,6 +35,24 @@ const PopoverContent = React.forwardRef<
       )}
       data-popover-panel
       id={panelId}
+      onEscapeKeyDown={(event) => {
+        event.stopPropagation();
+
+        event.preventDefault();
+
+        if (
+          document.activeElement instanceof HTMLInputElement ||
+          document.activeElement instanceof HTMLTextAreaElement
+        ) {
+          return document.activeElement.blur();
+        }
+
+        const el = document.querySelector(OPENED_POPOVER_TRIGGER_SELECTOR);
+
+        if (el instanceof HTMLElement) {
+          el.click();
+        }
+      }}
       {...props}
     />
   )
