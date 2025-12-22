@@ -433,10 +433,8 @@ const ViewExtension: React.FC = () => {
         <iframe
           ref={iframeRef}
           src={fileUrl}
-          className="border-0"
+          className="border-0 w-full h-full"
           style={{
-            width: `${baseWidth}px`,
-            height: `${baseHeight - 56}px`,
             transform: `scale(${scale})`,
             transformOrigin: "center center",
             outline: "none",
