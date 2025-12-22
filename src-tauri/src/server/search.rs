@@ -77,6 +77,20 @@ pub struct CocoSearchSource {
 
 /// Convert frontend query string key/value into coco server query param.
 /// Returns `None` when the key is not recognized.
+///
+/// # Query strings that are exclusive to Coco server query source:
+///
+/// * fuzziness
+/// * update_time_start
+/// * update_time_end
+/// * create_time_start
+/// * create_time_end
+/// * type
+/// * source.id
+/// * category
+/// * subcategory
+/// * lang
+/// * tag
 fn convert_query_string(key: &str, value: &str) -> Option<String> {
     match key {
         // existing single-value params

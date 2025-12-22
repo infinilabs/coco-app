@@ -46,6 +46,9 @@ fn clean_aggregations(aggs: &mut Option<Aggregations>) {
 ///   ```
 ///
 ///   then only the extension with this ID will be returned, if exists.
+/// 
+/// * Some query string that are exclusive to Coco server, see `convert_query_string()`
+///   in `src-tauri/src/server/search.rs`
 #[named]
 #[tauri::command]
 pub async fn query_coco_fusion(
