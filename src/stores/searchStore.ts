@@ -87,7 +87,7 @@ export type ISearchStore = {
   setAggregations: (aggregations?: Aggregations) => void;
 };
 
-export const DEFAULT_FUZZINESS = 5;
+export const DEFAULT_FUZZINESS = 3;
 
 export const useSearchStore = create<ISearchStore>()(
   persist(

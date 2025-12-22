@@ -1,5 +1,5 @@
 import { useState, Fragment, useMemo } from "react";
-import { ListFilter, ChevronRight, BrushCleaning } from "lucide-react";
+import { ListFilter, ChevronRight, BrushCleaning, Check } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { useSearchStore } from "@/stores/searchStore";
+import { AggregateFilter, useSearchStore } from "@/stores/searchStore";
 import MultiSelect from "../ui/multi-select";
 import DatePickerRange from "../ui/date-picker-range";
 import { camelCase, upperFirst } from "lodash-es";
@@ -28,45 +28,50 @@ const TimeFilter = () => {
     aggregations,
   } = useSearchStore();
   const { t } = useTranslation();
+  const [tempAggregateFilter, setTempAggregateFilter] = useState<
+    AggregateFilter | undefined
+  >(aggregateFilter);
 
-  const dropdownMenuItems = [
-    {
-      key: "all-time",
-      label: t("search.filers.allTime"),
-      value: void 0,
-    },
-    {
-      key: "7-day",
-      label: t("search.filers.past7Days"),
-      value: {
-        from: dayjs().subtract(7, "day").toDate(),
-        to: dayjs().toDate(),
+  const dropdownMenuItems = useMemo(() => {
+    return [
+      {
+        key: "all-time",
+        label: t("search.filers.allTime"),
+        value: void 0,
       },
-    },
-    {
-      key: "90-day",
-      label: t("search.filers.past90Days"),
-      value: {
-        from: dayjs().subtract(90, "day").toDate(),
-        to: dayjs().toDate(),
+      {
+        key: "7-day",
+        label: t("search.filers.past7Days"),
+        value: {
+          from: dayjs().subtract(7, "day").toDate(),
+          to: dayjs().toDate(),
+        },
       },
-    },
-    {
-      key: "1-year",
-      label: t("search.filers.past1year"),
-      value: {
-        from: dayjs().subtract(1, "year").toDate(),
-        to: dayjs().toDate(),
+      {
+        key: "90-day",
+        label: t("search.filers.past90Days"),
+        value: {
+          from: dayjs().subtract(90, "day").toDate(),
+          to: dayjs().toDate(),
+        },
       },
-    },
-    {
-      key: "more",
-      label: t("search.filers.more"),
-      onClick: () => {
-        setPopoverOpen(true);
+      {
+        key: "1-year",
+        label: t("search.filers.past1year"),
+        value: {
+          from: dayjs().subtract(1, "year").toDate(),
+          to: dayjs().toDate(),
+        },
       },
-    },
-  ];
+      {
+        key: "more",
+        label: t("search.filers.more"),
+        onClick: () => {
+          setPopoverOpen(true);
+        },
+      },
+    ];
+  }, [t]);
 
   const filterCount = useMemo(() => {
     let count = 0;
@@ -119,10 +124,14 @@ const TimeFilter = () => {
           {dropdownMenuItems.map((item) => {
             const { key, label, value, onClick } = item;
 
+            const isSame =
+              dayjs(filterDateRange?.from).isSame(dayjs(value?.from), "day") &&
+              dayjs(filterDateRange?.to).isSame(dayjs(value?.to), "day");
+
             return (
               <DropdownMenuItem
                 key={key}
-                className="flex justify-between"
+                className={cn("flex justify-between")}
                 onClick={() => {
                   if (onClick) {
                     onClick();
@@ -133,8 +142,14 @@ const TimeFilter = () => {
               >
                 <span>{label}</span>
 
-                {key === "more" && (
+                {key === "more" ? (
                   <ChevronRight className="size-4 text-muted-foreground" />
+                ) : (
+                  <Check
+                    className={cn("size-4 text-muted-foreground opacity-0", {
+                      "opacity-100": isSame,
+                    })}
+                  />
                 )}
               </DropdownMenuItem>
             );
@@ -159,6 +174,8 @@ const TimeFilter = () => {
                 setFilterDateRange(void 0);
 
                 setAggregateFilter(void 0);
+
+                setTempAggregateFilter(void 0);
               }}
             >
               <BrushCleaning className="size-3 text-[#6000FF]" />
@@ -166,7 +183,7 @@ const TimeFilter = () => {
           </div>
 
           <div className="pt-4 pb-2 text-[#999]">
-            {t("search.filers.dateRange")}
+            {t("search.filers.updateTime")}
           </div>
           <DatePickerRange
             selected={filterDateRange}
@@ -182,17 +199,25 @@ const TimeFilter = () => {
                   </div>
 
                   <MultiSelect
-                    value={aggregateFilter?.[key] ?? []}
+                    value={tempAggregateFilter?.[key] ?? []}
                     placeholder={`Please select ${key}`}
                     options={value.buckets.map((bucket) => ({
                       label: bucket.label ?? bucket.key,
                       value: bucket.key,
                     }))}
+                    classNames={{
+                      dropdownMenuContent: "max-h-60 overflow-auto",
+                    }}
                     onChange={(value) => {
-                      setAggregateFilter({
-                        ...aggregateFilter,
+                      setTempAggregateFilter({
+                        ...tempAggregateFilter,
                         [key]: value,
                       });
+                    }}
+                    onOpenChange={(value) => {
+                      if (value) return;
+
+                      setAggregateFilter(tempAggregateFilter);
                     }}
                   />
                 </Fragment>
