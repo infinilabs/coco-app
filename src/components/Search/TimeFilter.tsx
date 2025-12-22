@@ -159,7 +159,7 @@ const TimeFilter = () => {
           <div />
         </PopoverTrigger>
 
-        <PopoverContent className="w-100 p-4 text-sm">
+        <PopoverContent className="w-100 max-h-110 overflow-auto p-4 text-sm">
           <div className="flex items-center justify-between text-sm">
             <span className="font-bold">{t("search.filers.filters")}</span>
 
@@ -186,7 +186,7 @@ const TimeFilter = () => {
           />
 
           {aggregations &&
-            Object.entries(aggregations).map(([key, value]) => {
+            Object.entries(aggregations).map(([key, value], index) => {
               let selectValue = aggregateFilter?.[key] ?? [];
 
               if (selectValue.length > 0) {
@@ -214,8 +214,9 @@ const TimeFilter = () => {
                       label: bucket.label ?? bucket.key,
                       value: bucket.key,
                     }))}
-                    classNames={{
-                      dropdownMenuContent: "max-h-60 overflow-auto",
+                    dropdownMenuContent={{
+                      className: "max-h-60 overflow-auto",
+                      side: index > 2 ? "top" : void 0,
                     }}
                     onChange={(value) => {
                       setAggregateFilter({

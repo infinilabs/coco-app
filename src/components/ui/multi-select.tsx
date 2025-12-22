@@ -7,6 +7,7 @@ import {
 } from "./dropdown-menu";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DropdownMenuContentProps } from "@radix-ui/react-dropdown-menu";
 
 export interface Option {
   label: string;
@@ -17,14 +18,12 @@ export interface MultiSelectProps {
   value: string[];
   options: Option[];
   placeholder?: string;
-  classNames?: {
-    dropdownMenuContent?: string;
-  };
+  dropdownMenuContent?: DropdownMenuContentProps;
   onChange?: (value: string[]) => void;
 }
 
 const MultiSelect: FC<MultiSelectProps> = (props) => {
-  const { value, options, placeholder, classNames, onChange } = props;
+  const { value, options, placeholder, dropdownMenuContent, onChange } = props;
   const [open, setOpen] = useState(false);
 
   const renderTrigger = () => {
@@ -59,7 +58,7 @@ const MultiSelect: FC<MultiSelectProps> = (props) => {
         </div>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className={cn(classNames?.dropdownMenuContent)}>
+      <DropdownMenuContent {...dropdownMenuContent}>
         {options.map((item) => {
           const { label, value: itemValue } = item;
 
