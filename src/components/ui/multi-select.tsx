@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./dropdown-menu";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DropdownMenuContentProps } from "@radix-ui/react-dropdown-menu";
 
@@ -26,6 +26,10 @@ const MultiSelect: FC<MultiSelectProps> = (props) => {
   const { value, options, placeholder, dropdownMenuContent, onChange } = props;
   const [open, setOpen] = useState(false);
 
+  const handleRemove = (item: string) => {
+    onChange?.(value.filter((i) => i !== item));
+  };
+
   const renderTrigger = () => {
     if (value.length === 0) {
       return <div className="text-muted-foreground px-1">{placeholder}</div>;
@@ -34,10 +38,25 @@ const MultiSelect: FC<MultiSelectProps> = (props) => {
     return (
       <div className="flex flex-wrap gap-1">
         {value.map((item) => (
-          <div className="inline-flex items-center gap-1 h-5.5 px-2 bg-muted rounded-md text-muted-foreground">
+          <div
+            key={item}
+            className="inline-flex items-center gap-1 h-5.5 px-2 bg-muted rounded-md text-muted-foreground"
+          >
             <span>
               {options.find((option) => option.value === item)?.label ?? value}
             </span>
+
+            <X
+              className="size-3 text-muted-foreground hover:text-red-500 transition cursor-pointer"
+              onPointerDown={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                if (event.button === 0) {
+                  handleRemove(item);
+                }
+              }}
+            />
           </div>
         ))}
       </div>
