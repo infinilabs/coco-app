@@ -349,7 +349,7 @@ fn move_window_to_active_monitor(window: &WebviewWindow) {
             };
 
             let window_width = window_size.width as i32;
-            let window_height = window_size.height as i32;
+            let window_height = 590 * scale_factor as i32;
 
             // Horizontal center uses actual width, vertical center uses 590 baseline
             let window_x = monitor_position.x + (monitor_size.width as i32 - window_width) / 2;
