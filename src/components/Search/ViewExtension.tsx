@@ -376,7 +376,6 @@ const ViewExtension: React.FC = () => {
 
   return (
     <div className="relative w-full h-full">
-      {isFullscreen && <div className="absolute inset-0 pointer-events-none" />}
       {resizable && (
         <button
           aria-label={
@@ -437,7 +436,7 @@ const ViewExtension: React.FC = () => {
           className="border-0"
           style={{
             width: `${baseWidth}px`,
-            height: `${baseHeight - 60}px`,
+            height: `${baseHeight - 56}px`,
             transform: `scale(${scale})`,
             transformOrigin: "center center",
             outline: "none",
