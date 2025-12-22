@@ -17,10 +17,10 @@ import Checkbox from "@/components/Common/Checkbox";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import VisibleKey from "@/components/Common/VisibleKey";
 import NoDataImage from "@/components/Common/NoDataImage";
-import PopoverInput from "@/components/Common/PopoverInput";
 import Pagination from "@/components/Common/Pagination";
 import { SearchQuery } from "@/utils";
 import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 
 interface MCPPopoverProps {
   mcp_servers: any;
@@ -263,8 +263,9 @@ export default function MCPPopover({
                       />
                     </div>
 
-                    <PopoverInput
+                    <Input
                       autoFocus
+                      autoCorrect="off"
                       value={keyword}
                       ref={searchInputRef}
                       className="size-full px-2 rounded-lg border dark:border-white/10 bg-transparent"

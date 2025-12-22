@@ -1,9 +1,11 @@
 import { FC, HTMLAttributes, useEffect, useRef, useState } from "react";
 import { useKeyPress } from "ahooks";
 import clsx from "clsx";
-import { last } from "lodash-es";
 
-import { POPOVER_PANEL_SELECTOR } from "@/constants";
+import {
+  OPENED_POPOVER_TRIGGER_SELECTOR,
+  POPOVER_PANEL_SELECTOR,
+} from "@/constants";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useAppStore } from "@/stores/appStore";
 import { KeyType } from "ahooks/lib/useKeyPress";
@@ -43,22 +45,21 @@ const VisibleKey: FC<VisibleKeyProps> = (props) => {
   const [visibleShortcut, setVisibleShortcut] = useState<boolean>();
 
   useEffect(() => {
-    const popoverPanelEls = document.querySelectorAll(POPOVER_PANEL_SELECTOR);
-
-    const popoverPanelEl = last(popoverPanelEls);
+    const popoverPanelEl = document.querySelector(POPOVER_PANEL_SELECTOR);
+    const openedPopoverTriggerEl = document.querySelector(
+      OPENED_POPOVER_TRIGGER_SELECTOR
+    );
 
     if (!openPopover || !popoverPanelEl) {
       return setVisibleShortcut(modifierKeyPressed);
     }
 
-    const popoverButtonEl = document.querySelector(
-      `[aria-controls="${popoverPanelEl.id}"]`
+    const isChildInPanel = popoverPanelEl?.contains(childrenRef.current);
+    const isChildInTrigger = openedPopoverTriggerEl?.contains(
+      childrenRef.current
     );
 
-    const isChildInPanel = popoverPanelEl?.contains(childrenRef.current);
-    const isChildInButton = popoverButtonEl?.contains(childrenRef.current);
-
-    const isChildInPopover = isChildInPanel || isChildInButton;
+    const isChildInPopover = isChildInPanel || isChildInTrigger;
 
     setVisibleShortcut(isChildInPopover && modifierKeyPressed);
   }, [openPopover, modifierKeyPressed]);
@@ -111,7 +112,7 @@ const VisibleKey: FC<VisibleKeyProps> = (props) => {
       {showTooltip && visibleShortcut ? (
         <div
           className={clsx(
-            "size-4 flex items-center justify-center font-normal text-xs text-[#333] leading-[14px] bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+            "size-4 flex items-center justify-center font-normal text-xs text-[#333] leading-3.5 bg-[#ccc] dark:bg-[#6B6B6B] rounded-md shadow-[-6px_0px_6px_2px_#fff] dark:shadow-[-6px_0px_6px_2px_#000] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
             shortcutClassName
           )}
         >

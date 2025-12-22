@@ -5,19 +5,14 @@ import { HISTORY_PANEL_ID } from "@/constants";
 import { closeHistoryPanel } from "@/utils";
 
 const useEscape = () => {
-  const visibleContextMenu = useSearchStore((state) => {
-    return state.visibleContextMenu;
-  });
-  const setVisibleContextMenu = useSearchStore((state) => {
-    return state.setVisibleContextMenu;
-  });
-  const viewExtensionOpened = useSearchStore((state) => {
-    return state.viewExtensionOpened;
-  });
+  const { setVisibleContextMenu } = useSearchStore();
 
   useKeyPress("esc", (event) => {
     event.preventDefault();
     event.stopPropagation();
+
+    const { visibleContextMenu, viewExtensionOpened } =
+      useSearchStore.getState();
 
     if (
       document.activeElement instanceof HTMLInputElement ||
@@ -39,6 +34,7 @@ const useEscape = () => {
     if (viewExtensionOpened != null) {
       return;
     }
+
     platformAdapter.hideWindow();
   });
 };

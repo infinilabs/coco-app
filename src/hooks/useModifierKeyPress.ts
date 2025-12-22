@@ -16,8 +16,9 @@ export const useModifierKeyPress = () => {
   useKeyPress(
     modifierKey,
     (event) => {
-      const popoverPanelEl = document.querySelector(POPOVER_PANEL_SELECTOR);
-      setOpenPopover(Boolean(popoverPanelEl));
+      const el = document.querySelector(POPOVER_PANEL_SELECTOR);
+
+      setOpenPopover(Boolean(el));
 
       setModifierKeyPressed(event.type === "keydown");
     },

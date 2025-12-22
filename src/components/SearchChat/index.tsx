@@ -182,12 +182,9 @@ function SearchChat({
   });
 
   useEffect(() => {
-    const unlisten = platformAdapter.listenEvent(
-      "refresh-window-size",
-      () => {
-        debouncedSetWindowSize();
-      }
-    );
+    const unlisten = platformAdapter.listenEvent("refresh-window-size", () => {
+      debouncedSetWindowSize();
+    });
     return () => {
       unlisten
         .then((fn) => {
