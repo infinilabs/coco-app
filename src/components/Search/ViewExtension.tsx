@@ -7,7 +7,7 @@ import { useSearchStore } from "@/stores/searchStore";
 import {
   ExtensionFileSystemPermission,
   FileSystemAccess,
-  ViewExtensionUISettings,
+  ViewExtensionUISettingsOrNull,
 } from "../Settings/Extensions";
 import platformAdapter from "@/utils/platformAdapter";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
@@ -196,8 +196,8 @@ const ViewExtension: React.FC = () => {
   }, [reversedApis, permission]); // Add apiPermissions as dependency
 
   const fileUrl = viewExtensionOpened[2];
-  const ui: ViewExtensionUISettings | undefined = useMemo(() => {
-    return viewExtensionOpened[4] as ViewExtensionUISettings | undefined;
+  const ui: ViewExtensionUISettingsOrNull = useMemo(() => {
+    return viewExtensionOpened[4] as ViewExtensionUISettingsOrNull;
   }, [viewExtensionOpened]);
   const resizable = ui?.resizable;
 
