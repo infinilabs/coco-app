@@ -174,6 +174,8 @@ export function useSearch() {
     });
   };
 
+  const [prevSearchInput, setPrevSearchInput] = useState("");
+
   const performSearch = useCallback(
     async (searchInput: string) => {
       if (!searchInput) {
@@ -252,7 +254,7 @@ export function useSearch() {
 
       console.log("_suggest", searchInput, response);
 
-      if (isTauri) {
+      if (isTauri && prevSearchInput !== searchInput) {
         const { setAggregations, setAggregateFilter } =
           useSearchStore.getState();
 
@@ -266,6 +268,8 @@ export function useSearch() {
           setAggregations(void 0);
           setAggregateFilter(void 0);
         }
+
+        setPrevSearchInput(searchInput);
       }
 
       if (timerRef.current) {

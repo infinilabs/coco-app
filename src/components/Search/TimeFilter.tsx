@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { AggregateFilter, useSearchStore } from "@/stores/searchStore";
+import { useSearchStore } from "@/stores/searchStore";
 import MultiSelect from "../ui/multi-select";
 import DatePickerRange from "../ui/date-picker-range";
 import { camelCase, upperFirst } from "lodash-es";
@@ -28,9 +28,6 @@ const TimeFilter = () => {
     aggregations,
   } = useSearchStore();
   const { t } = useTranslation();
-  const [tempAggregateFilter, setTempAggregateFilter] = useState<
-    AggregateFilter | undefined
-  >(aggregateFilter);
 
   const dropdownMenuItems = useMemo(() => {
     return [
@@ -174,8 +171,6 @@ const TimeFilter = () => {
                 setFilterDateRange(void 0);
 
                 setAggregateFilter(void 0);
-
-                setTempAggregateFilter(void 0);
               }}
             >
               <BrushCleaning className="size-3 text-[#6000FF]" />
@@ -192,6 +187,20 @@ const TimeFilter = () => {
 
           {aggregations &&
             Object.entries(aggregations).map(([key, value]) => {
+              let selectValue = aggregateFilter?.[key] ?? [];
+
+              if (selectValue.length > 0) {
+                for (const item of selectValue) {
+                  const matched = value.buckets.find((bucket) => {
+                    return bucket.key === item;
+                  });
+
+                  if (matched) continue;
+
+                  selectValue = selectValue.filter((i) => i !== item);
+                }
+              }
+
               return (
                 <Fragment key={key}>
                   <div className="pt-4 pb-2 text-[#999]">
@@ -199,7 +208,7 @@ const TimeFilter = () => {
                   </div>
 
                   <MultiSelect
-                    value={tempAggregateFilter?.[key] ?? []}
+                    value={selectValue}
                     placeholder={`Please select ${key}`}
                     options={value.buckets.map((bucket) => ({
                       label: bucket.label ?? bucket.key,
@@ -209,15 +218,10 @@ const TimeFilter = () => {
                       dropdownMenuContent: "max-h-60 overflow-auto",
                     }}
                     onChange={(value) => {
-                      setTempAggregateFilter({
-                        ...tempAggregateFilter,
+                      setAggregateFilter({
+                        ...aggregateFilter,
                         [key]: value,
                       });
-                    }}
-                    onOpenChange={(value) => {
-                      if (value) return;
-
-                      setAggregateFilter(tempAggregateFilter);
                     }}
                   />
                 </Fragment>

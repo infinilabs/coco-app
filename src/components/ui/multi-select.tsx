@@ -21,12 +21,10 @@ export interface MultiSelectProps {
     dropdownMenuContent?: string;
   };
   onChange?: (value: string[]) => void;
-  onOpenChange?: (open: boolean) => void;
 }
 
 const MultiSelect: FC<MultiSelectProps> = (props) => {
-  const { value, options, placeholder, classNames, onChange, onOpenChange } =
-    props;
+  const { value, options, placeholder, classNames, onChange } = props;
   const [open, setOpen] = useState(false);
 
   const renderTrigger = () => {
@@ -48,13 +46,7 @@ const MultiSelect: FC<MultiSelectProps> = (props) => {
   };
 
   return (
-    <DropdownMenu
-      onOpenChange={(value) => {
-        setOpen(value);
-
-        onOpenChange?.(value);
-      }}
-    >
+    <DropdownMenu onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <div className="flex items-center justify-between border border-border min-h-8 rounded-lg p-1">
           {renderTrigger()}
