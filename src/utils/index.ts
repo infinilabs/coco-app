@@ -430,11 +430,11 @@ export const getQueryStrings = (queryStrings: Record<string, string>) => {
     const { from, to } = filterDateRange;
 
     if (from) {
-      nextQueryStrings["update_time_start"] = dayjs(from).format("YYYY-MM-DD");
+      nextQueryStrings["update_time_start"] = dayjs(from).startOf('day').toISOString();
     }
 
     if (to) {
-      nextQueryStrings["update_time_end"] = dayjs(to).format("YYYY-MM-DD");
+      nextQueryStrings["update_time_end"] = dayjs(to).endOf('day').toISOString();
     }
   }
 
