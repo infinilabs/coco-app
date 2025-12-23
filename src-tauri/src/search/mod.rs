@@ -19,20 +19,6 @@ use std::sync::Arc;
 use tauri::{AppHandle, Manager};
 use tokio::time::{Duration, timeout};
 
-/// Helper function to drop empty aggregations and normalize `Option` state.
-fn clean_aggregations(aggs: &mut Option<Aggregations>) {
-    if let Some(map) = aggs {
-        map.retain(|_, agg| match &agg.buckets {
-            Some(buckets) => !buckets.is_empty(),
-            None => false,
-        });
-
-        if map.is_empty() {
-            *aggs = None;
-        }
-    }
-}
-
 /// Available `query_strings`:
 ///
 /// * "querysource": the query/search source to search

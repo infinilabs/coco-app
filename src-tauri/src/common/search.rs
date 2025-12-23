@@ -126,21 +126,27 @@ pub struct FailedRequest {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Aggregation {
-    // Frontend code needs to this to not be NULL, so we `clean_aggregations()`
-    // in query_coco_fusion() to ensure this.
+    // Frontend code needs this field to not be NULL, so we call
+    // `clean_aggregations()` in query_coco_fusion() to ensure this.
     pub buckets: Option<Vec<AggBucket>>,
 }
 
-/// A bucket's fields contain more than just "doc_count" and "key", but we only
-/// need them. Serde can deserialize this as we don't `deny_unknown_fields`.
+/// An aggregation bucket.
 #[derive(Debug, Serialize, Clone)]
 pub struct AggBucket {
+    /// The number of documents contained in this bucket
     doc_count: usize,
+    /// Bucket key, the field's value.
     key: String,
+    /// In the cases where `key` is not human-readable, `label` should be Some.
+    ///
     /// Optional human label extracted from `top.hits.hits[0]._source.source.name`.
     label: Option<String>,
 }
 
+/// An aggregation bucket does not have a `label` field, it is extracted from
+/// `top.hits.hits[0]._source.source.name`. We manually implement Deserialize
+/// to do this extraction job.
 impl<'de> Deserialize<'de> for AggBucket {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -226,6 +232,20 @@ impl<'de> Deserialize<'de> for AggBucket {
 /// }
 /// ```
 pub type Aggregations = HashMap<String, Aggregation>;
+
+/// Helper function to drop empty aggregations and normalize `Option` state.
+pub(crate) fn clean_aggregations(aggs: &mut Option<Aggregations>) {
+    if let Some(map) = aggs {
+        map.retain(|_, agg| match &agg.buckets {
+            Some(buckets) => !buckets.is_empty(),
+            None => false,
+        });
+
+        if map.is_empty() {
+            *aggs = None;
+        }
+    }
+}
 
 /// Merge the buckets in `from` to `to`.
 pub(crate) fn merge_aggregations(to: &mut Option<Aggregations>, from: Aggregations) {
