@@ -266,13 +266,22 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   }, [isChatMode, input]);
 
   useEffect(() => {
+    if (filterMultiSelectOpened) return;
+
     setTotal(0);
     setData((prev) => ({
       ...prev,
       list: [],
     }));
     loadingFromRef.current = -1;
-  }, [input, JSON.stringify(sourceData)]);
+  }, [
+    input,
+    JSON.stringify(sourceData),
+    aggregateFilter,
+    filterDateRange,
+    fuzziness,
+    filterMultiSelectOpened,
+  ]);
 
   const { visibleContextMenu } = useSearchStore();
 

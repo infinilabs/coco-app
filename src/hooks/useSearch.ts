@@ -18,6 +18,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { updateAggregations } from "@/utils";
+import { useCanNavigateBack } from "./useCanNavigateBack";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -172,6 +173,8 @@ export function useSearch() {
     });
   };
 
+  const { canNavigateBack } = useCanNavigateBack();
+
   const performSearch = useCallback(
     async (searchInput: string) => {
       const {
@@ -181,7 +184,7 @@ export function useSearch() {
         filterMultiSelectOpened,
       } = useSearchStore.getState();
 
-      if (filterMultiSelectOpened) return;
+      if (filterMultiSelectOpened || canNavigateBack) return;
 
       if (!searchInput) {
         const { setAggregations, setAggregateFilter } =
@@ -279,6 +282,7 @@ export function useSearch() {
       filterDateRange,
       fuzziness,
       filterMultiSelectOpened,
+      canNavigateBack,
     ]
   );
 
