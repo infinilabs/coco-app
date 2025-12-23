@@ -70,14 +70,6 @@ export function useSearch() {
     globalItemIndexMap: {},
   });
 
-  const toEasySearchTime = (date: Date) => {
-    return (
-      dayjs(date).format("YYYY-MM-DDTHH:mm:ss.SSS") +
-      "000" +
-      dayjs(date).format("Z")
-    );
-  };
-
   const handleSearchResponse = (
     response: MultiSourceQueryResponse,
     searchInput: string
