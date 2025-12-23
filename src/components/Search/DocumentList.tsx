@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { useInfiniteScroll } from "ahooks";
+import { useDebounce, useInfiniteScroll } from "ahooks";
 import { useTranslation } from "react-i18next";
 import { Data } from "ahooks/lib/useInfiniteScroll/types";
 import { nanoid } from "nanoid";
@@ -58,6 +58,10 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
   const querySourceTimeoutRef = useRef(querySourceTimeout);
 
+  const { searchDelay } = useConnectStore();
+
+  const debouncedInput = useDebounce(input, { wait: searchDelay });
+
   const {
     aggregateFilter,
     filterDateRange,
@@ -90,7 +94,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       useSearchStore.getState();
 
     let queryStrings: any = {
-      query: input,
+      query: debouncedInput,
       datasource: sourceData?.source?.id,
       querysource: sourceData?.querySource?.id,
       fuzziness: String(fuzziness),
@@ -98,7 +102,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
     if (sourceData?.rich_categories) {
       queryStrings = {
-        query: input,
+        query: debouncedInput,
         rich_category: sourceData?.rich_categories[0]?.key,
       };
     }
@@ -128,8 +132,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         queryStrings[key] = `any(${result})`;
       }
     }
-
-    console.log("DocumentList queryStrings", queryStrings);
 
     let response: any;
     if (isTauri) {
@@ -188,8 +190,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       }));
     }
 
-    console.log("DocumentList response", response);
-
     updateAggregations(response);
 
     return {
@@ -201,8 +201,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const { loading } = useInfiniteScroll(
     (data) => {
       const { filterMultiSelectOpened } = useSearchStore.getState();
-
-      console.log("filterMultiSelectOpened", filterMultiSelectOpened);
 
       if (filterMultiSelectOpened) {
         return Promise.resolve({ list: data?.list ?? [], hasMore: false });
@@ -233,7 +231,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       target: containerRef,
       isNoMore: (d) => !d?.hasMore,
       reloadDeps: [
-        input,
+        debouncedInput,
         JSON.stringify(sourceData),
         aggregateFilter,
         filterDateRange,
@@ -263,7 +261,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   useEffect(() => {
     setSelectedItem(null);
     setIsKeyboardMode(false);
-  }, [isChatMode, input]);
+  }, [isChatMode, debouncedInput]);
 
   useEffect(() => {
     if (filterMultiSelectOpened) return;
@@ -275,7 +273,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     }));
     loadingFromRef.current = -1;
   }, [
-    input,
+    debouncedInput,
     JSON.stringify(sourceData),
     aggregateFilter,
     filterDateRange,
