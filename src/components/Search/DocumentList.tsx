@@ -15,8 +15,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useConnectStore } from "@/stores/connectStore";
 import SearchEmpty from "../Common/SearchEmpty";
 import Scrollbar from "@/components/Common/Scrollbar";
-import dayjs from "dayjs";
-import { updateAggregations } from "@/utils";
+import { getQueryStrings, updateAggregations } from "@/utils";
 
 interface DocumentListProps {
   onSelectDocument: (id: string) => void;
@@ -90,14 +89,10 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const getData = async (taskId: string, data?: Data) => {
     const from = data?.list?.length || 0;
 
-    const { fuzziness, aggregateFilter, filterDateRange } =
-      useSearchStore.getState();
-
     let queryStrings: any = {
       query: debouncedInput,
       datasource: sourceData?.source?.id,
       querysource: sourceData?.querySource?.id,
-      fuzziness: String(fuzziness),
     };
 
     if (sourceData?.rich_categories) {
@@ -111,27 +106,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       queryStrings.main_extension_id = sourceData?.main_extension_id;
     }
 
-    if (filterDateRange) {
-      const { from, to } = filterDateRange;
-
-      if (from) {
-        queryStrings["update_time_start"] = dayjs(from).format("YYYY-MM-DD");
-      }
-
-      if (to) {
-        queryStrings["update_time_end"] = dayjs(to).format("YYYY-MM-DD");
-      }
-    }
-
-    if (aggregateFilter) {
-      for (const [key, value] of Object.entries(aggregateFilter)) {
-        if (value.length === 0) continue;
-
-        const result = value.map((item) => item.key).join(",");
-
-        queryStrings[key] = `any(${result})`;
-      }
-    }
+    queryStrings = getQueryStrings(queryStrings);
 
     let response: any;
     if (isTauri) {

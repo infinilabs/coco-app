@@ -17,7 +17,7 @@ import { useConnectStore } from "@/stores/connectStore";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
-import { updateAggregations } from "@/utils";
+import { getQueryStrings, updateAggregations } from "@/utils";
 import { useCanNavigateBack } from "./useCanNavigateBack";
 
 dayjs.extend(utc);
@@ -177,12 +177,7 @@ export function useSearch() {
 
   const performSearch = useCallback(
     async (searchInput: string) => {
-      const {
-        fuzziness,
-        aggregateFilter,
-        filterDateRange,
-        filterMultiSelectOpened,
-      } = useSearchStore.getState();
+      const { filterMultiSelectOpened } = useSearchStore.getState();
 
       if (filterMultiSelectOpened || canNavigateBack) return;
 
@@ -198,33 +193,9 @@ export function useSearch() {
 
       let response: MultiSourceQueryResponse;
       if (isTauri) {
-        const queryStrings: Record<string, string> = {
-          fuzziness: String(fuzziness),
+        const queryStrings = getQueryStrings({
           query: searchInput,
-        };
-
-        if (filterDateRange) {
-          const { from, to } = filterDateRange;
-
-          if (from) {
-            queryStrings["update_time_start"] =
-              dayjs(from).format("YYYY-MM-DD");
-          }
-
-          if (to) {
-            queryStrings["update_time_end"] = dayjs(to).format("YYYY-MM-DD");
-          }
-        }
-
-        if (aggregateFilter) {
-          for (const [key, value] of Object.entries(aggregateFilter)) {
-            if (value.length === 0) continue;
-
-            const result = value.map((item) => item.key).join(",");
-
-            queryStrings[key] = `any(${result})`;
-          }
-        }
+        });
 
         response = await platformAdapter.commands("query_coco_fusion", {
           from: 0,

@@ -18,6 +18,7 @@ import { useChatStore } from "@/stores/chatStore";
 import { getCurrentWindowService } from "@/commands/windowService";
 import { useSearchStore } from "@/stores/searchStore";
 import { MultiSourceQueryResponse } from "@/types/search";
+import dayjs from "dayjs";
 
 export async function copyToClipboard(text: string, noTip = false) {
   const addError = useAppStore.getState().addError;
@@ -414,6 +415,40 @@ export const installExtensionError = (error: any) => {
   }
 
   addError(i18next.t(message));
+};
+
+export const getQueryStrings = (queryStrings: Record<string, string>) => {
+  const { fuzziness, aggregateFilter, filterDateRange } =
+    useSearchStore.getState();
+
+  const nextQueryStrings: Record<string, string> = {
+    ...queryStrings,
+    fuzziness: String(fuzziness),
+  };
+
+  if (filterDateRange) {
+    const { from, to } = filterDateRange;
+
+    if (from) {
+      nextQueryStrings["update_time_start"] = dayjs(from).format("YYYY-MM-DD");
+    }
+
+    if (to) {
+      nextQueryStrings["update_time_end"] = dayjs(to).format("YYYY-MM-DD");
+    }
+  }
+
+  if (aggregateFilter) {
+    for (const [key, value] of Object.entries(aggregateFilter)) {
+      if (value.length === 0) continue;
+
+      const result = value.map((item) => item.key).join(",");
+
+      queryStrings[key] = `any(${result})`;
+    }
+  }
+
+  return nextQueryStrings;
 };
 
 export const updateAggregations = (result?: MultiSourceQueryResponse) => {
