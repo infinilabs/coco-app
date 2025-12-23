@@ -152,7 +152,6 @@ impl SearchSource for CocoSearchSource {
                 query_params.push(param);
             }
         }
-        println!("DBG: query params\n{:?}", query_params);
 
         let request_body = r#"
  {

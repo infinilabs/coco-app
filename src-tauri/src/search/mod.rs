@@ -46,7 +46,7 @@ fn clean_aggregations(aggs: &mut Option<Aggregations>) {
 ///   ```
 ///
 ///   then only the extension with this ID will be returned, if exists.
-/// 
+///
 /// * Some query string that are exclusive to Coco server, see `convert_query_string()`
 ///   in `src-tauri/src/server/search.rs`
 #[named]
@@ -58,8 +58,6 @@ pub async fn query_coco_fusion(
     query_strings: HashMap<String, String>,
     query_timeout: u64,
 ) -> Result<MultiSourceQueryResponse, SearchError> {
-    println!("DBG: querystrings {:?}", query_strings);
-
     if query_strings.contains_key("datasource") && !query_strings.contains_key("querysource") {
         panic!("[querysource] has to be provided if [datasource] is set")
     }
