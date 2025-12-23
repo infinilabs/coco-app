@@ -156,13 +156,13 @@ pub struct Extension {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct ViewExtensionUISettings {
     /// Show the search bar
-    #[serde_inline_default(true)]
+    #[serde_inline_default(false)]
     search_bar: bool,
     /// Show the filter bar
-    #[serde_inline_default(true)]
+    #[serde_inline_default(false)]
     filter_bar: bool,
     /// Show the footer
-    #[serde_inline_default(true)]
+    #[serde_inline_default(false)]
     footer: bool,
     /// The recommended width of the window for this extension
     width: Option<u32>,

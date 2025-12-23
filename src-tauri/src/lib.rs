@@ -29,7 +29,6 @@ use tauri_plugin_autostart::MacosLauncher;
 
 /// Tauri store name
 pub(crate) const COCO_TAURI_STORE: &str = "coco_tauri_store";
-pub(crate) const WINDOW_CENTER_BASELINE_HEIGHT: i32 = 590;
 
 lazy_static! {
     static ref PREVIOUS_MONITOR_NAME: Mutex<Option<String>> = Mutex::new(None);
@@ -43,37 +42,6 @@ lazy_static! {
 /// avoided. If you do need it, always be careful that it may not be set() when
 /// you access it.
 pub(crate) static GLOBAL_TAURI_APP_HANDLE: OnceLock<AppHandle> = OnceLock::new();
-
-#[tauri::command]
-async fn change_window_height(handle: AppHandle, height: u32) {
-    let window: WebviewWindow = handle.get_webview_window(MAIN_WINDOW_LABEL).unwrap();
-
-    let mut size = window.outer_size().unwrap();
-    size.height = height;
-    window.set_size(size).unwrap();
-
-    // Center the window horizontally and vertically based on the baseline height of 590
-    let monitor = window.primary_monitor().ok().flatten().or_else(|| {
-        window
-            .available_monitors()
-            .ok()
-            .and_then(|ms| ms.into_iter().next())
-    });
-    if let Some(monitor) = monitor {
-        let monitor_position = monitor.position();
-        let monitor_size = monitor.size();
-
-        let outer_size = window.outer_size().unwrap();
-        let window_width = outer_size.width as i32;
-
-        let x = monitor_position.x + (monitor_size.width as i32 - window_width) / 2;
-
-        let y =
-            monitor_position.y + (monitor_size.height as i32 - WINDOW_CENTER_BASELINE_HEIGHT) / 2;
-
-        let _ = window.set_position(PhysicalPosition::new(x, y));
-    }
-}
 
 // Removed unused Payload to avoid unnecessary serde derive macro invocations
 
@@ -123,7 +91,6 @@ pub fn run() {
 
     let app = app_builder
         .invoke_handler(tauri::generate_handler![
-            change_window_height,
             shortcut::change_shortcut,
             shortcut::unregister_shortcut,
             shortcut::get_current_shortcut,
@@ -380,12 +347,13 @@ fn move_window_to_active_monitor(window: &WebviewWindow) {
                     return;
                 }
             };
+
             let window_width = window_size.width as i32;
+            let window_height = 590 * scale_factor as i32;
 
             // Horizontal center uses actual width, vertical center uses 590 baseline
             let window_x = monitor_position.x + (monitor_size.width as i32 - window_width) / 2;
-            let window_y = monitor_position.y
-                + (monitor_size.height as i32 - WINDOW_CENTER_BASELINE_HEIGHT) / 2;
+            let window_y = monitor_position.y + (monitor_size.height as i32 - window_height) / 2;
 
             if let Err(e) = window.set_position(PhysicalPosition::new(window_x, window_y)) {
                 log::error!("Failed to move window: {}", e);

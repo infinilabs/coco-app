@@ -7,7 +7,7 @@ import { useSearchStore } from "@/stores/searchStore";
 import {
   ExtensionFileSystemPermission,
   FileSystemAccess,
-  ViewExtensionUISettings,
+  ViewExtensionUISettingsOrNull,
 } from "../Settings/Extensions";
 import platformAdapter from "@/utils/platformAdapter";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
@@ -18,7 +18,7 @@ const ViewExtension: React.FC = () => {
   const { viewExtensionOpened } = useSearchStore();
 
   const isTauri = useAppStore((state) => state.isTauri);
-  
+
   // Complete list of the backend APIs, grouped by their category.
   const [apis, setApis] = useState<Map<string, string[]> | null>(null);
   const { setModifierKeyPressed } = useShortcutsStore();
@@ -39,9 +39,14 @@ const ViewExtension: React.FC = () => {
     y: number;
   } | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const DEFAULT_VIEW_WIDTH = 1200;
-  const DEFAULT_VIEW_HEIGHT = 900;
   const [scale, setScale] = useState(1);
+  const [fallbackViewSize, setFallbackViewSize] = useState<{
+    width: number;
+    height: number;
+  } | null>(() => {
+    if (typeof window === "undefined") return null;
+    return { width: window.innerWidth, height: window.innerHeight };
+  });
 
   if (viewExtensionOpened == null) {
     // When this view gets loaded, this state should not be NULL.
@@ -191,23 +196,38 @@ const ViewExtension: React.FC = () => {
   }, [reversedApis, permission]); // Add apiPermissions as dependency
 
   const fileUrl = viewExtensionOpened[2];
-  const ui: ViewExtensionUISettings | undefined = useMemo(() => {
-    return viewExtensionOpened[4] as ViewExtensionUISettings | undefined;
+  const ui: ViewExtensionUISettingsOrNull = useMemo(() => {
+    return viewExtensionOpened[4] as ViewExtensionUISettingsOrNull;
   }, [viewExtensionOpened]);
   const resizable = ui?.resizable;
 
+  const uiWidth = ui && typeof ui.width === "number" ? ui.width : null;
+  const uiHeight = ui && typeof ui.height === "number" ? ui.height : null;
+  const hasExplicitWindowSize = uiWidth != null && uiHeight != null;
+
   const baseWidth = useMemo(() => {
-    return ui && typeof ui?.width === "number" ? ui.width : DEFAULT_VIEW_WIDTH;
-  }, [ui]);
+    if (uiWidth != null) return uiWidth;
+    if (fallbackViewSize != null) return fallbackViewSize.width;
+    return 0;
+  }, [uiWidth, fallbackViewSize]);
   const baseHeight = useMemo(() => {
-    return ui && typeof ui?.height === "number" ? ui.height : DEFAULT_VIEW_HEIGHT;
-  }, [ui]);
+    if (uiHeight != null) return uiHeight;
+    if (fallbackViewSize != null) return fallbackViewSize.height;
+    return 0;
+  }, [uiHeight, fallbackViewSize]);
 
   const recomputeScale = useCallback(async () => {
+    if (!hasExplicitWindowSize) {
+      setScale(1);
+      return;
+    }
     const size = await platformAdapter.getWindowSize();
-    const nextScale = Math.min(size.width / baseWidth, size.height / baseHeight);
+    const nextScale = Math.min(
+      size.width / baseWidth,
+      size.height / baseHeight
+    );
     setScale(Math.max(nextScale, 0.1));
-  }, [baseWidth, baseHeight]);
+  }, [hasExplicitWindowSize, baseWidth, baseHeight]);
 
   const applyFullscreen = useCallback(
     async (next: boolean) => {
@@ -247,16 +267,23 @@ const ViewExtension: React.FC = () => {
         if (!isMac) {
           await platformAdapter.setWindowFullscreen(false);
         }
-        const nextWidth =
-          ui && typeof ui.width === "number" ? ui.width : DEFAULT_VIEW_WIDTH;
-        const nextHeight =
-          ui && typeof ui.height === "number" ? ui.height : DEFAULT_VIEW_HEIGHT;
-        const nextResizable =
-          ui && typeof ui.resizable === "boolean" ? ui.resizable : true;
-        await platformAdapter.setWindowSize(nextWidth, nextHeight);
-        await platformAdapter.setWindowResizable(nextResizable);
-        await platformAdapter.centerOnCurrentMonitor();
-        await recomputeScale();
+        if (fullscreenPrevRef.current) {
+          const prev = fullscreenPrevRef.current;
+          await platformAdapter.setWindowSize(prev.width, prev.height);
+          await platformAdapter.setWindowResizable(prev.resizable);
+          await platformAdapter.setWindowPosition(prev.x, prev.y);
+          fullscreenPrevRef.current = null;
+          await recomputeScale();
+        } else if (hasExplicitWindowSize) {
+          const nextResizable =
+            ui && typeof ui.resizable === "boolean" ? ui.resizable : true;
+          await platformAdapter.setWindowSize(uiWidth, uiHeight);
+          await platformAdapter.setWindowResizable(nextResizable);
+          await platformAdapter.centerOnCurrentMonitor();
+          await recomputeScale();
+        } else {
+          await recomputeScale();
+        }
         setTimeout(() => {
           iframeRef.current?.focus();
           try {
@@ -274,6 +301,7 @@ const ViewExtension: React.FC = () => {
         const size = await platformAdapter.getWindowSize();
         const resizable = await platformAdapter.isWindowResizable();
         const pos = await platformAdapter.getWindowPosition();
+        setFallbackViewSize({ width: size.width, height: size.height });
         prevWindowRef.current = {
           width: size.width,
           height: size.height,
@@ -282,17 +310,16 @@ const ViewExtension: React.FC = () => {
           y: pos.y,
         };
 
-        const nextWidth =
-          ui && typeof ui.width === "number" ? ui.width : DEFAULT_VIEW_WIDTH;
-        const nextHeight =
-          ui && typeof ui.height === "number" ? ui.height : DEFAULT_VIEW_HEIGHT;
-        const nextResizable =
-          ui && typeof ui.resizable === "boolean" ? ui.resizable : true;
-
-        await platformAdapter.setWindowSize(nextWidth, nextHeight);
-        await platformAdapter.setWindowResizable(nextResizable);
-        await platformAdapter.centerOnCurrentMonitor();
-        await recomputeScale();
+        if (hasExplicitWindowSize) {
+          const nextResizable =
+            ui && typeof ui.resizable === "boolean" ? ui.resizable : true;
+          await platformAdapter.setWindowSize(uiWidth, uiHeight);
+          await platformAdapter.setWindowResizable(nextResizable);
+          await platformAdapter.centerOnCurrentMonitor();
+          await recomputeScale();
+        } else {
+          await recomputeScale();
+        }
         setTimeout(() => {
           iframeRef.current?.focus();
           try {
@@ -324,7 +351,14 @@ const ViewExtension: React.FC = () => {
         prevWindowRef.current = null;
       }
     };
-  }, [viewExtensionOpened]);
+  }, [
+    viewExtensionOpened,
+    ui,
+    hasExplicitWindowSize,
+    uiWidth,
+    uiHeight,
+    recomputeScale,
+  ]);
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isFullscreen) {
@@ -342,7 +376,6 @@ const ViewExtension: React.FC = () => {
 
   return (
     <div className="relative w-full h-full">
-      {isFullscreen && <div className="absolute inset-0 pointer-events-none" />}
       {resizable && (
         <button
           aria-label={
@@ -371,18 +404,20 @@ const ViewExtension: React.FC = () => {
         </button>
       )}
       {/* Focus helper button */}
-      <button
-        aria-label={t("viewExtension.focus")}
-        className="absolute top-2 right-12 z-10 rounded-md bg-black/40 text-white p-2 hover:bg-black/60 focus:outline-none"
-        onClick={() => {
-          iframeRef.current?.focus();
-          try {
-            iframeRef.current?.contentWindow?.focus();
-          } catch {}
-        }}
-      >
-        <Focus className="size-4"/>
-      </button>
+      {resizable && (
+        <button
+          aria-label={t("viewExtension.focus")}
+          className="absolute top-2 right-12 z-10 rounded-md bg-black/40 text-white p-2 hover:bg-black/60 focus:outline-none"
+          onClick={() => {
+            iframeRef.current?.focus();
+            try {
+              iframeRef.current?.contentWindow?.focus();
+            } catch {}
+          }}
+        >
+          <Focus className="size-4" />
+        </button>
+      )}
       <div
         className="w-full h-full flex items-center justify-center"
         onMouseDownCapture={() => {
@@ -398,10 +433,8 @@ const ViewExtension: React.FC = () => {
         <iframe
           ref={iframeRef}
           src={fileUrl}
-          className="border-0"
+          className="border-0 w-full h-full"
           style={{
-            width: `${baseWidth}px`,
-            height: `${baseHeight}px`,
             transform: `scale(${scale})`,
             transformOrigin: "center center",
             outline: "none",

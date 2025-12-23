@@ -81,6 +81,8 @@ export interface ViewExtensionUISettings {
   detachable: boolean;
 }
 
+export type ViewExtensionUISettingsOrNull = ViewExtensionUISettings | null | undefined;
+
 export interface Extension {
   id: ExtensionId;
   type: ExtensionType;

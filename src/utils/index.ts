@@ -303,7 +303,7 @@ export const visibleSearchBar = () => {
 
   const ui = viewExtensionOpened[4];
 
-  return ui?.search_bar ?? true;
+  return ui?.search_bar ?? false;
 };
 
 export const visibleFilterBar = () => {
@@ -316,7 +316,7 @@ export const visibleFilterBar = () => {
 
   const ui = viewExtensionOpened[4];
 
-  return ui?.filter_bar ?? true;
+  return ui?.filter_bar ?? false;
 };
 
 export const visibleFooterBar = () => {
@@ -326,7 +326,7 @@ export const visibleFooterBar = () => {
 
   const ui = viewExtensionOpened[4];
 
-  return ui?.footer ?? true;
+  return ui?.footer ?? false;
 };
 
 export const installExtensionError = (error: any) => {
