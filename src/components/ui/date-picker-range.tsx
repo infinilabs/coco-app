@@ -23,7 +23,7 @@ const DatePickerRange: FC<Partial<PropsRange>> = (props) => {
             </div>
           ) : (
             <div className="text-muted-foreground">
-              {t("search.filers.selectDateRange")}
+              {t("search.filters.selectDateRange")}
             </div>
           )}
 

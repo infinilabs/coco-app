@@ -33,12 +33,12 @@ const TimeFilter = () => {
     return [
       {
         key: "all-time",
-        label: t("search.filers.allTime"),
+        label: t("search.filters.allTime"),
         value: void 0,
       },
       {
         key: "7-day",
-        label: t("search.filers.past7Days"),
+        label: t("search.filters.past7Days"),
         value: {
           from: dayjs().subtract(7, "day").toDate(),
           to: dayjs().toDate(),
@@ -46,7 +46,7 @@ const TimeFilter = () => {
       },
       {
         key: "90-day",
-        label: t("search.filers.past90Days"),
+        label: t("search.filters.past90Days"),
         value: {
           from: dayjs().subtract(90, "day").toDate(),
           to: dayjs().toDate(),
@@ -54,7 +54,7 @@ const TimeFilter = () => {
       },
       {
         key: "1-year",
-        label: t("search.filers.past1year"),
+        label: t("search.filters.past1year"),
         value: {
           from: dayjs().subtract(1, "year").toDate(),
           to: dayjs().toDate(),
@@ -62,7 +62,7 @@ const TimeFilter = () => {
       },
       {
         key: "more",
-        label: t("search.filers.more"),
+        label: t("search.filters.more"),
         onClick: () => {
           setPopoverOpen(true);
         },
@@ -106,7 +106,7 @@ const TimeFilter = () => {
             {filterCount > 0 && (
               <>
                 <div className="whitespace-nowrap">
-                  {t("search.filers.filters")}
+                  {t("search.filters.filters")}
                 </div>
 
                 <div className="inline-flex items-center justify-center size-4 rounded-full text-white bg-[#881c94]">
@@ -161,7 +161,7 @@ const TimeFilter = () => {
 
         <PopoverContent className="w-100 max-h-110 overflow-auto p-4 text-sm">
           <div className="flex items-center justify-between text-sm">
-            <span className="font-bold">{t("search.filers.filters")}</span>
+            <span className="font-bold">{t("search.filters.filters")}</span>
 
             <Button
               size="icon"
@@ -178,7 +178,7 @@ const TimeFilter = () => {
           </div>
 
           <div className="pt-4 pb-2 text-[#999]">
-            {t("search.filers.updateTime")}
+            {t("search.filters.updateTime")}
           </div>
           <DatePickerRange
             selected={filterDateRange}

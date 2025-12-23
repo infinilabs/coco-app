@@ -446,7 +446,7 @@
     "fuzziness": {
       "fuzzyMatch": "模糊匹配"
     },
-    "filers": {
+    "filters": {
       "allTime": "全部时间",
       "past7Days": "过去 7 天",
       "past90Days": "过去 90 天",

@@ -446,7 +446,7 @@
     "fuzziness": {
       "fuzzyMatch": "Fuzzy Match"
     },
-    "filers": {
+    "filters": {
       "allTime": "All Time",
       "past7Days": "Past 7 Days",
       "past90Days": "Past 90 Days",
