@@ -1,7 +1,7 @@
 use crate::common::error::{ReportErrorStyle, SearchError, report_error};
 use crate::common::register::SearchSourceRegistry;
 use crate::common::search::{
-    Aggregations, FailedRequest, MultiSourceQueryResponse, QueryHits, QuerySource, SearchQuery,
+    FailedRequest, MultiSourceQueryResponse, QueryHits, QuerySource, SearchQuery,
     merge_aggregations,
 };
 use crate::common::traits::SearchSource;
@@ -84,7 +84,7 @@ pub async fn query_coco_fusion(
     };
 
     if let Ok(ref mut response) = res_response {
-        clean_aggregations(&mut response.aggregations);
+        crate::common::search::clean_aggregations(&mut response.aggregations);
     }
 
     res_response
