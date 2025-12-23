@@ -421,8 +421,6 @@ export const updateAggregations = (result?: MultiSourceQueryResponse) => {
 
   if (!isTauri) return;
 
-  console.log("updateAggregations result", result);
-
   const { setAggregations, setAggregateFilter } = useSearchStore.getState();
 
   if (result?.aggregations) {

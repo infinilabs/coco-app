@@ -61,7 +61,12 @@ export function useSearch() {
   });
 
   const { querySourceTimeout, searchDelay } = useConnectStore();
-  const { aggregateFilter, filterDateRange, fuzziness } = useSearchStore();
+  const {
+    aggregateFilter,
+    filterDateRange,
+    fuzziness,
+    filterMultiSelectOpened,
+  } = useSearchStore();
 
   const [searchState, setSearchState] = useState<SearchState>({
     isError: [],
@@ -169,8 +174,14 @@ export function useSearch() {
 
   const performSearch = useCallback(
     async (searchInput: string) => {
-      const { fuzziness, aggregateFilter, filterDateRange } =
-        useSearchStore.getState();
+      const {
+        fuzziness,
+        aggregateFilter,
+        filterDateRange,
+        filterMultiSelectOpened,
+      } = useSearchStore.getState();
+
+      if (filterMultiSelectOpened) return;
 
       if (!searchInput) {
         const { setAggregations, setAggregateFilter } =
@@ -212,8 +223,6 @@ export function useSearch() {
           }
         }
 
-        console.log("queryStrings", queryStrings);
-
         response = await platformAdapter.commands("query_coco_fusion", {
           from: 0,
           size: 10,
@@ -246,7 +255,7 @@ export function useSearch() {
         }
       }
 
-      console.log("_suggest", searchInput, response);
+      // console.log("_suggest", searchInput, response);
 
       updateAggregations(response);
 
@@ -269,6 +278,7 @@ export function useSearch() {
       aggregateFilter,
       filterDateRange,
       fuzziness,
+      filterMultiSelectOpened,
     ]
   );
 

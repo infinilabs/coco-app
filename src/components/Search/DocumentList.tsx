@@ -58,7 +58,12 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
   const querySourceTimeoutRef = useRef(querySourceTimeout);
 
-  const { aggregateFilter, filterDateRange, fuzziness } = useSearchStore();
+  const {
+    aggregateFilter,
+    filterDateRange,
+    fuzziness,
+    filterMultiSelectOpened,
+  } = useSearchStore();
 
   useEffect(() => {
     querySourceTimeoutRef.current = querySourceTimeout;
@@ -124,6 +129,8 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       }
     }
 
+    console.log("DocumentList queryStrings", queryStrings);
+
     let response: any;
     if (isTauri) {
       response = await platformAdapter.commands("query_coco_fusion", {
@@ -181,6 +188,8 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       }));
     }
 
+    console.log("DocumentList response", response);
+
     updateAggregations(response);
 
     return {
@@ -191,6 +200,14 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
   const { loading } = useInfiniteScroll(
     (data) => {
+      const { filterMultiSelectOpened } = useSearchStore.getState();
+
+      console.log("filterMultiSelectOpened", filterMultiSelectOpened);
+
+      if (filterMultiSelectOpened) {
+        return Promise.resolve({ list: data?.list ?? [], hasMore: false });
+      }
+
       // Prevent repeated requests for the same from value
       const currentFrom = data?.list?.length || 0;
 
@@ -221,6 +238,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         aggregateFilter,
         filterDateRange,
         fuzziness,
+        filterMultiSelectOpened,
       ],
       onFinally: (data) => {
         if (data?.page === 1) return;
@@ -254,13 +272,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       list: [],
     }));
     loadingFromRef.current = -1;
-  }, [
-    input,
-    JSON.stringify(sourceData),
-    aggregateFilter,
-    filterDateRange,
-    fuzziness,
-  ]);
+  }, [input, JSON.stringify(sourceData)]);
 
   const { visibleContextMenu } = useSearchStore();
 
@@ -355,10 +367,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       <Scrollbar className="flex-1 overflow-auto pr-0.5" ref={containerRef}>
         {data?.list && data.list.length > 0 && (
           <div>
-            {(() => {
-              console.log("Rendering list with items:", data.list.length);
-              return null;
-            })()}
             {data.list.map((hit, index) => (
               <SearchListItem
                 key={hit.document.id + index}

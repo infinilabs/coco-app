@@ -85,6 +85,9 @@ export type ISearchStore = {
 
   aggregations?: Aggregations;
   setAggregations: (aggregations?: Aggregations) => void;
+
+  filterMultiSelectOpened: boolean;
+  setFilterMultiSelectOpened: (filterMultiSelectOpened: boolean) => void;
 };
 
 export const DEFAULT_FUZZINESS = 3;
@@ -177,6 +180,10 @@ export const useSearchStore = create<ISearchStore>()(
       },
       setAggregations: (aggregations) => {
         return set({ aggregations });
+      },
+      filterMultiSelectOpened: false,
+      setFilterMultiSelectOpened: (filterMultiSelectOpened) => {
+        return set({ filterMultiSelectOpened });
       },
     }),
     {

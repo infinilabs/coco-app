@@ -26,6 +26,7 @@ const TimeFilter = () => {
     aggregateFilter,
     setAggregateFilter,
     aggregations,
+    setFilterMultiSelectOpened,
   } = useSearchStore();
   const { t } = useTranslation();
 
@@ -87,9 +88,6 @@ const TimeFilter = () => {
 
     return count;
   }, [filterDateRange, aggregateFilter]);
-
-  const [tempAggregateFilter, setTempAggregateFilter] =
-    useState(aggregateFilter);
 
   return (
     <div>
@@ -190,7 +188,7 @@ const TimeFilter = () => {
 
           {aggregations &&
             Object.entries(aggregations).map(([key, value], index) => {
-              let selectedValue = tempAggregateFilter?.[key] ?? [];
+              let selectedValue = aggregateFilter?.[key] ?? [];
               const buckets = cloneDeep(value.buckets);
 
               if (selectedValue.length > 0) {
@@ -225,16 +223,12 @@ const TimeFilter = () => {
                         return value.includes(bucket.key);
                       });
 
-                      setTempAggregateFilter({
-                        ...tempAggregateFilter,
+                      setAggregateFilter({
+                        ...aggregateFilter,
                         [key]: data,
                       });
                     }}
-                    onOpenChange={(value) => {
-                      if (value) return;
-
-                      setAggregateFilter({ ...tempAggregateFilter });
-                    }}
+                    onOpenChange={setFilterMultiSelectOpened}
                   />
                 </Fragment>
               );
