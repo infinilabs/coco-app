@@ -15,6 +15,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useConnectStore } from "@/stores/connectStore";
 import SearchEmpty from "../Common/SearchEmpty";
 import Scrollbar from "@/components/Common/Scrollbar";
+import dayjs from "dayjs";
 
 interface DocumentListProps {
   onSelectDocument: (id: string) => void;
@@ -55,6 +56,9 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const loadingFromRef = useRef<number>(-1);
 
   const querySourceTimeoutRef = useRef(querySourceTimeout);
+
+  const { aggregateFilter, filterDateRange, fuzziness } = useSearchStore();
+
   useEffect(() => {
     querySourceTimeoutRef.current = querySourceTimeout;
   }, [querySourceTimeout]);
@@ -76,10 +80,14 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const getData = async (taskId: string, data?: Data) => {
     const from = data?.list?.length || 0;
 
+    const { fuzziness, aggregateFilter, filterDateRange } =
+      useSearchStore.getState();
+
     let queryStrings: any = {
       query: input,
       datasource: sourceData?.source?.id,
       querysource: sourceData?.querySource?.id,
+      fuzziness: String(fuzziness),
     };
 
     if (sourceData?.rich_categories) {
@@ -88,8 +96,29 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         rich_category: sourceData?.rich_categories[0]?.key,
       };
     }
+
     if (sourceData?.main_extension_id) {
-      queryStrings.main_extension_id = sourceData?.main_extension_id
+      queryStrings.main_extension_id = sourceData?.main_extension_id;
+    }
+
+    if (filterDateRange) {
+      const { from, to } = filterDateRange;
+
+      if (from) {
+        queryStrings["update_time_start"] = dayjs(from).format("YYYY-MM-DD");
+      }
+
+      if (to) {
+        queryStrings["update_time_end"] = dayjs(to).format("YYYY-MM-DD");
+      }
+    }
+
+    if (aggregateFilter) {
+      for (const [key, value] of Object.entries(aggregateFilter)) {
+        if (value.length === 0) continue;
+
+        queryStrings[key] = `any(${value.join(",")})`;
+      }
     }
 
     let response: any;
@@ -181,7 +210,13 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     {
       target: containerRef,
       isNoMore: (d) => !d?.hasMore,
-      reloadDeps: [input, JSON.stringify(sourceData)],
+      reloadDeps: [
+        input,
+        JSON.stringify(sourceData),
+        aggregateFilter,
+        filterDateRange,
+        fuzziness,
+      ],
       onFinally: (data) => {
         if (data?.page === 1) return;
         if (selectedItem === null) return;
@@ -214,7 +249,13 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       list: [],
     }));
     loadingFromRef.current = -1;
-  }, [input, JSON.stringify(sourceData)]);
+  }, [
+    input,
+    JSON.stringify(sourceData),
+    aggregateFilter,
+    filterDateRange,
+    fuzziness,
+  ]);
 
   const { visibleContextMenu } = useSearchStore();
 
