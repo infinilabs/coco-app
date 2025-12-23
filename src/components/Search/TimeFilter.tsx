@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { useSearchStore } from "@/stores/searchStore";
 import MultiSelect from "../ui/multi-select";
 import DatePickerRange from "../ui/date-picker-range";
-import { camelCase, upperFirst } from "lodash-es";
+import { camelCase, cloneDeep, differenceBy, upperFirst } from "lodash-es";
 import dayjs from "dayjs";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
@@ -87,6 +87,9 @@ const TimeFilter = () => {
 
     return count;
   }, [filterDateRange, aggregateFilter]);
+
+  const [tempAggregateFilter, setTempAggregateFilter] =
+    useState(aggregateFilter);
 
   return (
     <div>
@@ -187,18 +190,17 @@ const TimeFilter = () => {
 
           {aggregations &&
             Object.entries(aggregations).map(([key, value], index) => {
-              let selectValue = aggregateFilter?.[key] ?? [];
+              let selectedValue = tempAggregateFilter?.[key] ?? [];
+              const buckets = cloneDeep(value.buckets);
 
-              if (selectValue.length > 0) {
-                for (const item of selectValue) {
-                  const matched = value.buckets.find((bucket) => {
-                    return bucket.key === item;
-                  });
+              if (selectedValue.length > 0) {
+                const missingBuckets = differenceBy(
+                  selectedValue,
+                  buckets,
+                  "key"
+                );
 
-                  if (matched) continue;
-
-                  selectValue = selectValue.filter((i) => i !== item);
-                }
+                buckets.push(...missingBuckets);
               }
 
               return (
@@ -208,10 +210,10 @@ const TimeFilter = () => {
                   </div>
 
                   <MultiSelect
-                    value={selectValue}
+                    value={selectedValue.map((item) => item.key)}
                     placeholder={`Please select ${key}`}
-                    options={value.buckets.map((bucket) => ({
-                      label: bucket.label ?? bucket.key,
+                    options={buckets.map((bucket) => ({
+                      label: bucket.label,
                       value: bucket.key,
                     }))}
                     dropdownMenuContent={{
@@ -219,10 +221,19 @@ const TimeFilter = () => {
                       side: index > 2 ? "top" : void 0,
                     }}
                     onChange={(value) => {
-                      setAggregateFilter({
-                        ...aggregateFilter,
-                        [key]: value,
+                      const data = buckets.filter((bucket) => {
+                        return value.includes(bucket.key);
                       });
+
+                      setTempAggregateFilter({
+                        ...tempAggregateFilter,
+                        [key]: data,
+                      });
+                    }}
+                    onOpenChange={(value) => {
+                      if (value) return;
+
+                      setAggregateFilter({ ...tempAggregateFilter });
                     }}
                   />
                 </Fragment>

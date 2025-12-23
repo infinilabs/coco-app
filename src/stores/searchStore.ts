@@ -3,7 +3,7 @@ import {
   ExtensionPermission,
   ViewExtensionUISettings,
 } from "@/components/Settings/Extensions";
-import { Aggregations } from "@/types/search";
+import { AggregationBucket, Aggregations } from "@/types/search";
 import { DateRange } from "react-day-picker";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -20,7 +20,7 @@ export type ViewExtensionOpened = [
 ];
 
 export interface AggregateFilter {
-  [key: string]: string[];
+  [key: string]: AggregationBucket[];
 }
 
 export type ISearchStore = {

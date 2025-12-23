@@ -16,6 +16,7 @@ import { useConnectStore } from "@/stores/connectStore";
 import SearchEmpty from "../Common/SearchEmpty";
 import Scrollbar from "@/components/Common/Scrollbar";
 import dayjs from "dayjs";
+import { updateAggregations } from "@/utils";
 
 interface DocumentListProps {
   onSelectDocument: (id: string) => void;
@@ -117,7 +118,9 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       for (const [key, value] of Object.entries(aggregateFilter)) {
         if (value.length === 0) continue;
 
-        queryStrings[key] = `any(${value.join(",")})`;
+        const result = value.map((item) => item.key).join(",");
+
+        queryStrings[key] = `any(${result})`;
       }
     }
 
@@ -177,6 +180,8 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         list: prev.list.concat(list),
       }));
     }
+
+    updateAggregations(response);
 
     return {
       list: list,

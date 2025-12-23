@@ -71,12 +71,14 @@ export interface FailedRequest {
   reason?: string;
 }
 
+export interface AggregationBucket {
+  key: string;
+  label: string;
+  doc_count: number;
+}
+
 export interface Aggregation {
-  buckets: Array<{
-    key: string;
-    label?: string;
-    doc_count: number;
-  }>;
+  buckets: AggregationBucket[];
 }
 
 export interface Aggregations {

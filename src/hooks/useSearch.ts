@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useRef } from "react";
-import { debounce, fromPairs, orderBy, sortBy, toPairs } from "lodash-es";
+import { debounce, orderBy } from "lodash-es";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -17,6 +17,7 @@ import { useConnectStore } from "@/stores/connectStore";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
+import { updateAggregations } from "@/utils";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -166,10 +167,11 @@ export function useSearch() {
     });
   };
 
-  const [prevSearchInput, setPrevSearchInput] = useState("");
-
   const performSearch = useCallback(
     async (searchInput: string) => {
+      const { fuzziness, aggregateFilter, filterDateRange } =
+        useSearchStore.getState();
+
       if (!searchInput) {
         const { setAggregations, setAggregateFilter } =
           useSearchStore.getState();
@@ -182,9 +184,6 @@ export function useSearch() {
 
       let response: MultiSourceQueryResponse;
       if (isTauri) {
-        const { fuzziness, aggregateFilter, filterDateRange } =
-          useSearchStore.getState();
-
         const queryStrings: Record<string, string> = {
           fuzziness: String(fuzziness),
           query: searchInput,
@@ -207,7 +206,9 @@ export function useSearch() {
           for (const [key, value] of Object.entries(aggregateFilter)) {
             if (value.length === 0) continue;
 
-            queryStrings[key] = `any(${value.join(",")})`;
+            const result = value.map((item) => item.key).join(",");
+
+            queryStrings[key] = `any(${result})`;
           }
         }
 
@@ -247,23 +248,7 @@ export function useSearch() {
 
       console.log("_suggest", searchInput, response);
 
-      if (isTauri && prevSearchInput !== searchInput) {
-        const { setAggregations, setAggregateFilter } =
-          useSearchStore.getState();
-
-        if (response?.aggregations) {
-          const sortedAggregations = fromPairs(
-            sortBy(toPairs(response.aggregations), ([key]) => key)
-          );
-
-          setAggregations(sortedAggregations);
-        } else {
-          setAggregations(void 0);
-          setAggregateFilter(void 0);
-        }
-
-        setPrevSearchInput(searchInput);
-      }
+      updateAggregations(response);
 
       if (timerRef.current) {
         clearTimeout(timerRef.current);

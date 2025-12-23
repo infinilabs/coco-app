@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { isArray, isNil, isObject, isString } from "lodash-es";
+import {
+  fromPairs,
+  isArray,
+  isNil,
+  isObject,
+  isString,
+  sortBy,
+  toPairs,
+} from "lodash-es";
 import { filesize as filesizeLib } from "filesize";
 import i18next from "i18next";
 
@@ -9,6 +17,7 @@ import { DEFAULT_COCO_SERVER_ID, HISTORY_PANEL_ID } from "@/constants";
 import { useChatStore } from "@/stores/chatStore";
 import { getCurrentWindowService } from "@/commands/windowService";
 import { useSearchStore } from "@/stores/searchStore";
+import { MultiSourceQueryResponse } from "@/types/search";
 
 export async function copyToClipboard(text: string, noTip = false) {
   const addError = useAppStore.getState().addError;
@@ -405,4 +414,33 @@ export const installExtensionError = (error: any) => {
   }
 
   addError(i18next.t(message));
+};
+
+export const updateAggregations = (result?: MultiSourceQueryResponse) => {
+  const { isTauri } = useAppStore.getState();
+
+  if (!isTauri) return;
+
+  console.log("updateAggregations result", result);
+
+  const { setAggregations, setAggregateFilter } = useSearchStore.getState();
+
+  if (result?.aggregations) {
+    const sortedAggregations = fromPairs(
+      sortBy(toPairs(result.aggregations), ([key]) => key)
+    );
+
+    for (const [key, value] of Object.entries(sortedAggregations)) {
+      sortedAggregations[key].buckets = value.buckets.map((item) => ({
+        ...item,
+        label: item.label ?? item.key,
+      }));
+    }
+
+    setAggregations(sortedAggregations);
+  } else {
+    setAggregations(void 0);
+
+    setAggregateFilter(void 0);
+  }
 };
