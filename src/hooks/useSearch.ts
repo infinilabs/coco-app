@@ -202,11 +202,12 @@ export function useSearch() {
           const { from, to } = filterDateRange;
 
           if (from) {
-            queryStrings["update_time_start"] = toEasySearchTime(from);
+            queryStrings["update_time_start"] =
+              dayjs(from).format("YYYY-MM-DD");
           }
 
           if (to) {
-            queryStrings["update_time_end"] = toEasySearchTime(to);
+            queryStrings["update_time_end"] = dayjs(to).format("YYYY-MM-DD");
           }
         }
 

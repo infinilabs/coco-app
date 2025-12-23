@@ -305,10 +305,14 @@ export const visibleSearchBar = () => {
 };
 
 export const visibleFilterBar = () => {
-  const { viewExtensionOpened, visibleExtensionDetail, goAskAi } =
-    useSearchStore.getState();
+  const {
+    viewExtensionOpened,
+    visibleExtensionStore,
+    visibleExtensionDetail,
+    goAskAi,
+  } = useSearchStore.getState();
 
-  if (visibleExtensionDetail || goAskAi) return false;
+  if (visibleExtensionStore || visibleExtensionDetail || goAskAi) return false;
 
   if (isNil(viewExtensionOpened)) return true;
 
