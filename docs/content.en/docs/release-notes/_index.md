@@ -13,6 +13,8 @@ Information about release notes of Coco App is provided here.
 
 ### 🚀 Features
 
+- feat: support app search even if Spotlight is disabled #1028
+
 ### 🐛 Bug fix
 
 ### ✈️ Improvements
