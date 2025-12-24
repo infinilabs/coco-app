@@ -1,11 +1,11 @@
 import { useContext, useMemo, useState } from "react";
-import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 import { useAsyncEffect } from "ahooks";
 
 import platformAdapter from "@/utils/platformAdapter";
 import { ExtensionsContext } from "../../../index";
 import { filesize } from "@/utils";
+import { formatDateToLocal } from "@/utils/date";
 
 interface Metadata {
   name: string;
@@ -62,15 +62,15 @@ const App = () => {
       },
       {
         label: t("settings.extensions.application.details.created"),
-        value: dayjs(created).format("YYYY/MM/DD HH:mm:ss"),
+        value: formatDateToLocal(created),
       },
       {
         label: t("settings.extensions.application.details.modified"),
-        value: dayjs(modified).format("YYYY/MM/DD HH:mm:ss"),
+        value: formatDateToLocal(modified),
       },
       {
         label: t("settings.extensions.application.details.lastOpened"),
-        value: dayjs(lastOpened).format("YYYY/MM/DD HH:mm:ss"),
+        value: formatDateToLocal(lastOpened),
       },
     ];
   }, [appMetadata]);

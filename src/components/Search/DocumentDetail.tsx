@@ -6,6 +6,7 @@ import { formatter } from "@/utils/index";
 import CommonIcon from "@/components/Common/Icons/CommonIcon";
 import defaultThumbnail from "@/assets/coconut-tree.png";
 import { RichCategories } from "./ListRight";
+import { formatDateToLocal } from "@/utils/date";
 
 interface DocumentDetailProps {
   document: any;
@@ -148,7 +149,7 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
         {document?.created && (
           <DetailItem
             label={t("search.document.createdAt")}
-            value={document.created}
+            value={formatDateToLocal(document.created)}
           />
         )}
 
@@ -180,7 +181,7 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
         {document?.updated && (
           <DetailItem
             label={t("search.document.updatedAt")}
-            value={document?.updated || "-"}
+            value={formatDateToLocal(document.updated)}
           />
         )}
 
