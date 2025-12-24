@@ -12,7 +12,7 @@ export const formatDateToLocal = (date?: ConfigType) => {
 
   // Fall back if it is invalid
   if (!d.isValid()) {
-    return fallback; 
+    return fallback;
   }
 
   return d.format("YYYY/MM/DD HH:mm:ss");
