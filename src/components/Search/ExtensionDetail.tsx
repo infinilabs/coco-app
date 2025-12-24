@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import dayjs from "dayjs";
 import {
   CircleCheck,
   Download,
@@ -17,6 +16,7 @@ import { useSearchStore } from "@/stores/searchStore";
 import DeleteDialog from "../Common/DeleteDialog";
 import PreviewImage from "../Common/PreviewImage";
 import platformAdapter from "@/utils/platformAdapter";
+import { formatDateToLocal } from "@/utils/date";
 
 interface ExtensionDetailProps {
   onInstall: () => void;
@@ -226,7 +226,7 @@ const ExtensionDetail: FC<ExtensionDetailProps> = (props) => {
             {t("extensionDetail.label.lastUpdate")}
           </div>
           <p>
-            {dayjs(selectedExtension.updated).format("YYYY-MM-DD HH:mm:ss")}
+            {formatDateToLocal(selectedExtension.updated)}
           </p>
         </div>
 
