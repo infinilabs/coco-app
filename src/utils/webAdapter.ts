@@ -19,6 +19,7 @@ export interface WebPlatformAdapter extends BasePlatformAdapter {
   getMonitorFromCursor: () => Promise<any>;
   getWindowPosition: () => Promise<{ x: number; y: number }>;
   setWindowPosition: (x: number, y: number) => Promise<void>;
+  centerOnCurrentMonitor: () => Promise<void>;
 }
 
 // Create Web adapter functions
@@ -69,6 +70,11 @@ export const createWebAdapter = (): WebPlatformAdapter => {
           }),
         },
       };
+    },
+
+    async centerOnCurrentMonitor() {
+      // Not applicable in web mode
+      return;
     },
 
     async getWindowPosition() {
