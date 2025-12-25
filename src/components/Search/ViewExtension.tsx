@@ -279,7 +279,6 @@ const ViewExtension: React.FC = () => {
             ui && typeof ui.resizable === "boolean" ? ui.resizable : true;
           await platformAdapter.setWindowSize(uiWidth, uiHeight);
           await platformAdapter.setWindowResizable(nextResizable);
-          await platformAdapter.centerOnCurrentMonitor();
           await recomputeScale();
         } else {
           await recomputeScale();
@@ -315,7 +314,6 @@ const ViewExtension: React.FC = () => {
             ui && typeof ui.resizable === "boolean" ? ui.resizable : true;
           await platformAdapter.setWindowSize(uiWidth, uiHeight);
           await platformAdapter.setWindowResizable(nextResizable);
-          await platformAdapter.centerOnCurrentMonitor();
           await recomputeScale();
         } else {
           await recomputeScale();
@@ -331,7 +329,6 @@ const ViewExtension: React.FC = () => {
           const prev = prevWindowRef.current;
           await platformAdapter.setWindowSize(prev.width, prev.height);
           await platformAdapter.setWindowResizable(prev.resizable);
-          await platformAdapter.centerOnCurrentMonitor();
           prevWindowRef.current = null;
           await recomputeScale();
           setTimeout(() => {
@@ -347,7 +344,8 @@ const ViewExtension: React.FC = () => {
         const prev = prevWindowRef.current;
         platformAdapter.setWindowSize(prev.width, prev.height);
         platformAdapter.setWindowResizable(prev.resizable);
-        platformAdapter.centerOnCurrentMonitor();
+        platformAdapter.setWindowPosition(prev.x, prev.y);
+
         prevWindowRef.current = null;
       }
     };

@@ -46,9 +46,7 @@ export interface TauriPlatformAdapter extends BasePlatformAdapter {
   setWindowMaximized: (enable: boolean) => Promise<void>;
   getWindowPosition: () => Promise<{ x: number; y: number }>;
   setWindowPosition: (x: number, y: number) => Promise<void>;
-  centerWindow: () => Promise<void>;
   getMonitorFromCursor: () => Promise<Monitor | null>;
-  centerOnCurrentMonitor: () => Promise<unknown>;
 }
 
 // Create Tauri adapter functions
@@ -81,9 +79,6 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     async setWindowPosition(x, y) {
       return windowWrapper.setLogicalPosition(x, y);
     },
-    async centerWindow() {
-      return windowWrapper.center();
-    },
 
     async getMonitorFromCursor() {
       const appWindow = getCurrentWebviewWindow();
@@ -93,10 +88,6 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       const { x, y } = point.toLogical(factor);
 
       return monitorFromPoint(x, y);
-    },
-
-    async centerOnCurrentMonitor() {
-      return windowWrapper.centerOnMonitor();
     },
 
     async hideWindow() {
