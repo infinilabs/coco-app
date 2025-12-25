@@ -14,6 +14,7 @@ Information about release notes of Coco App is provided here.
 ### 🚀 Features
 
 - feat: support app search even if Spotlight is disabled #1028
+- feat: read localized names from root InfoPlist.strings #1029
 
 ### 🐛 Bug fix
 
