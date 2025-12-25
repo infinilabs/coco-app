@@ -2,6 +2,7 @@ use crate::common::error::{ReportErrorStyle, SearchError, report_error};
 use crate::common::register::SearchSourceRegistry;
 use crate::common::search::{
     FailedRequest, MultiSourceQueryResponse, QueryHits, QuerySource, SearchQuery,
+    merge_aggregations,
 };
 use crate::common::traits::SearchSource;
 use crate::extension::LOCAL_QUERY_SOURCE_TYPE;
@@ -31,6 +32,9 @@ use tokio::time::{Duration, timeout};
 ///   ```
 ///
 ///   then only the extension with this ID will be returned, if exists.
+///
+/// * Some query string that are exclusive to Coco server, see `convert_query_string()`
+///   in `src-tauri/src/server/search.rs`
 #[named]
 #[tauri::command]
 pub async fn query_coco_fusion(
@@ -60,7 +64,7 @@ pub async fn query_coco_fusion(
     );
 
     // Dispatch to different `query_coco_fusion_xxx()` functions.
-    if let Some(query_source_id) = opt_query_source_id {
+    let mut res_response = if let Some(query_source_id) = opt_query_source_id {
         query_coco_fusion_single_query_source(
             tauri_app_handle,
             query_source_list,
@@ -77,7 +81,13 @@ pub async fn query_coco_fusion(
             search_query,
         )
         .await
+    };
+
+    if let Ok(ref mut response) = res_response {
+        crate::common::search::clean_aggregations(&mut response.aggregations);
     }
+
+    res_response
 }
 
 /// Query only 1 query source.
@@ -121,6 +131,7 @@ async fn query_coco_fusion_single_query_source(
             failed: Vec::new(),
             hits: Vec::new(),
             total_hits: 0,
+            aggregations: None,
         });
     };
 
@@ -132,6 +143,7 @@ async fn query_coco_fusion_single_query_source(
     let mut failed_requests: Vec<FailedRequest> = Vec::new();
     let mut hits = Vec::new();
     let mut total_hits = 0;
+    let mut aggregations = None;
 
     match timeout_result {
         // Ignore the `_timeout` variable as it won't provide any useful debugging information.
@@ -144,6 +156,7 @@ async fn query_coco_fusion_single_query_source(
         Ok(query_result) => match query_result {
             Ok(response) => {
                 total_hits = response.total_hits;
+                aggregations = response.aggregations;
 
                 for (document, score) in response.hits {
                     log::debug!(
@@ -179,6 +192,7 @@ async fn query_coco_fusion_single_query_source(
         failed: failed_requests,
         hits,
         total_hits,
+        aggregations,
     })
 }
 
@@ -227,6 +241,7 @@ async fn query_coco_fusion_multi_query_sources(
     let mut total_hits = 0;
     let mut failed_requests = Vec::new();
     let mut all_hits_grouped_by_query_source: HashMap<QuerySource, Vec<QueryHits>> = HashMap::new();
+    let mut aggregations = None;
 
     while let Some((query_source, timeout_result)) = futures.next().await {
         match timeout_result {
@@ -240,6 +255,9 @@ async fn query_coco_fusion_multi_query_sources(
             Ok(query_result) => match query_result {
                 Ok(response) => {
                     total_hits += response.total_hits;
+                    if let Some(from) = response.aggregations {
+                        merge_aggregations(&mut aggregations, from);
+                    }
 
                     for (document, score) in response.hits {
                         log::debug!(
@@ -282,6 +300,7 @@ async fn query_coco_fusion_multi_query_sources(
             failed: Vec::new(),
             hits: Vec::new(),
             total_hits: 0,
+            aggregations: None,
         });
     }
 
@@ -423,6 +442,7 @@ async fn query_coco_fusion_multi_query_sources(
         failed: failed_requests,
         hits: final_hits,
         total_hits,
+        aggregations,
     })
 }
 

@@ -41,7 +41,7 @@ export type IAppStore = {
 
   blurred: boolean;
   setBlurred: (blurred: boolean) => void;
-  
+
   suppressErrors: boolean;
   setSuppressErrors: (suppressErrors: boolean) => void;
 };

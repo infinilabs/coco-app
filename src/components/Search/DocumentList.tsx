@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { useInfiniteScroll } from "ahooks";
+import { useDebounce, useInfiniteScroll } from "ahooks";
 import { useTranslation } from "react-i18next";
 import { Data } from "ahooks/lib/useInfiniteScroll/types";
 import { nanoid } from "nanoid";
@@ -15,6 +15,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useConnectStore } from "@/stores/connectStore";
 import SearchEmpty from "../Common/SearchEmpty";
 import Scrollbar from "@/components/Common/Scrollbar";
+import { getQueryStrings, updateAggregations } from "@/utils";
 
 interface DocumentListProps {
   onSelectDocument: (id: string) => void;
@@ -55,6 +56,18 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   const loadingFromRef = useRef<number>(-1);
 
   const querySourceTimeoutRef = useRef(querySourceTimeout);
+
+  const { searchDelay } = useConnectStore();
+
+  const debouncedInput = useDebounce(input, { wait: searchDelay });
+
+  const {
+    aggregateFilter,
+    filterDateRange,
+    fuzziness,
+    filterMultiSelectOpened,
+  } = useSearchStore();
+
   useEffect(() => {
     querySourceTimeoutRef.current = querySourceTimeout;
   }, [querySourceTimeout]);
@@ -77,20 +90,23 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     const from = data?.list?.length || 0;
 
     let queryStrings: any = {
-      query: input,
+      query: debouncedInput,
       datasource: sourceData?.source?.id,
       querysource: sourceData?.querySource?.id,
     };
 
     if (sourceData?.rich_categories) {
       queryStrings = {
-        query: input,
+        query: debouncedInput,
         rich_category: sourceData?.rich_categories[0]?.key,
       };
     }
+
     if (sourceData?.main_extension_id) {
-      queryStrings.main_extension_id = sourceData?.main_extension_id
+      queryStrings.main_extension_id = sourceData?.main_extension_id;
     }
+
+    queryStrings = getQueryStrings(queryStrings);
 
     let response: any;
     if (isTauri) {
@@ -149,6 +165,8 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       }));
     }
 
+    updateAggregations(response);
+
     return {
       list: list,
       hasMore: list.length === PAGE_SIZE && from + list.length < allTotal,
@@ -157,6 +175,12 @@ export const DocumentList: React.FC<DocumentListProps> = ({
 
   const { loading } = useInfiniteScroll(
     (data) => {
+      const { filterMultiSelectOpened } = useSearchStore.getState();
+
+      if (filterMultiSelectOpened) {
+        return Promise.resolve({ list: data?.list ?? [], hasMore: false });
+      }
+
       // Prevent repeated requests for the same from value
       const currentFrom = data?.list?.length || 0;
 
@@ -181,7 +205,14 @@ export const DocumentList: React.FC<DocumentListProps> = ({
     {
       target: containerRef,
       isNoMore: (d) => !d?.hasMore,
-      reloadDeps: [input, JSON.stringify(sourceData)],
+      reloadDeps: [
+        debouncedInput,
+        JSON.stringify(sourceData),
+        aggregateFilter,
+        filterDateRange,
+        fuzziness,
+        filterMultiSelectOpened,
+      ],
       onFinally: (data) => {
         if (data?.page === 1) return;
         if (selectedItem === null) return;
@@ -205,16 +236,25 @@ export const DocumentList: React.FC<DocumentListProps> = ({
   useEffect(() => {
     setSelectedItem(null);
     setIsKeyboardMode(false);
-  }, [isChatMode, input]);
+  }, [isChatMode, debouncedInput]);
 
   useEffect(() => {
+    if (filterMultiSelectOpened) return;
+
     setTotal(0);
     setData((prev) => ({
       ...prev,
       list: [],
     }));
     loadingFromRef.current = -1;
-  }, [input, JSON.stringify(sourceData)]);
+  }, [
+    debouncedInput,
+    JSON.stringify(sourceData),
+    aggregateFilter,
+    filterDateRange,
+    fuzziness,
+    filterMultiSelectOpened,
+  ]);
 
   const { visibleContextMenu } = useSearchStore();
 
@@ -309,10 +349,6 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       <Scrollbar className="flex-1 overflow-auto pr-0.5" ref={containerRef}>
         {data?.list && data.list.length > 0 && (
           <div>
-            {(() => {
-              console.log("Rendering list with items:", data.list.length);
-              return null;
-            })()}
             {data.list.map((hit, index) => (
               <SearchListItem
                 key={hit.document.id + index}

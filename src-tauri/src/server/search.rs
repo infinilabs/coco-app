@@ -75,6 +75,45 @@ pub struct CocoSearchSource {
     server: Server,
 }
 
+/// Convert frontend query string key/value into coco server query param.
+/// Returns `None` when the key is not recognized.
+///
+/// # Query strings that are exclusive to Coco server query source:
+///
+/// * fuzziness
+/// * update_time_start
+/// * update_time_end
+/// * create_time_start
+/// * create_time_end
+/// * type
+/// * source.id
+/// * category
+/// * subcategory
+/// * lang
+/// * tag
+fn convert_query_string(key: &str, value: &str) -> Option<String> {
+    match key {
+        // existing single-value params
+        "querysource" | "datasource" | "query" | "fuzziness" => Some(format!("{}={}", key, value)),
+
+        // time range filters (single value)
+        "update_time_start" => Some(format!("filter=updated>={}", value)),
+        "update_time_end" => Some(format!("filter=updated<={}", value)),
+        "create_time_start" => Some(format!("filter=created>={}", value)),
+        "create_time_end" => Some(format!("filter=created<={}", value)),
+
+        // multi-value filters (value string may already contain any(...))
+        "type" => Some(format!("filter=type:{}", value)),
+        "source.id" => Some(format!("filter=source.id:{}", value)),
+        "category" => Some(format!("filter=category:{}", value)),
+        "subcategory" => Some(format!("filter=subcategory:{}", value)),
+        "lang" => Some(format!("filter=lang:{}", value)),
+        "tag" => Some(format!("filter=tag:{}", value)),
+
+        _ => None,
+    }
+}
+
 impl CocoSearchSource {
     pub fn new(server: Server) -> Self {
         CocoSearchSource { server }
@@ -99,6 +138,7 @@ impl SearchSource for CocoSearchSource {
         let url = "/query/_search";
         let mut total_hits = 0;
         let mut hits: Vec<(Document, f64)> = Vec::new();
+        let mut aggregations = None;
 
         let mut query_params = Vec::new();
 
@@ -108,12 +148,54 @@ impl SearchSource for CocoSearchSource {
 
         // Add query strings
         for (key, value) in query.query_strings {
-            query_params.push(format!("{}={}", key, value));
+            if let Some(param) = convert_query_string(&key, &value) {
+                query_params.push(param);
+            }
         }
 
-        let response = HttpClient::get(&self.server.id, &url, Some(query_params))
-            .await
-            .context(HttpSnafu)?;
+        let request_body = r#"
+ {
+  "aggs": {
+    "category": {
+      "terms": {
+        "field": "category"
+      }
+    },
+    "lang": {
+      "terms": {
+        "field": "lang"
+      }
+    },
+    "source.id": {
+      "terms": {
+        "field": "source.id"
+      },
+      "aggs": {
+        "top": {
+          "top_hits": {
+            "size": 1,
+            "_source": [
+              "source.name"
+            ]
+          }
+        }
+      }
+    },
+    "type": {
+      "terms": {
+        "field": "type"
+      }
+    }
+  }
+}"#;
+        let response = HttpClient::post(
+            &self.server.id,
+            url,
+            Some(query_params),
+            Some(request_body.into()),
+        )
+        .await
+        .context(HttpSnafu)?;
         let status_code = response.status();
 
         if ![StatusCode::OK, StatusCode::CREATED].contains(&status_code) {
@@ -156,6 +238,8 @@ impl SearchSource for CocoSearchSource {
                     hits.push((document, score));
                 }
             }
+
+            aggregations = parsed.aggregations;
         }
 
         // Return the final result
@@ -163,6 +247,7 @@ impl SearchSource for CocoSearchSource {
             source: self.get_type(),
             hits,
             total_hits,
+            aggregations,
         })
     }
 }

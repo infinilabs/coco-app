@@ -1110,6 +1110,8 @@ impl SearchSource for ThirdPartyExtensionsSearchSource {
             source: self.get_type(),
             hits,
             total_hits,
+            // Local search source does not support aggregations
+            aggregations: None,
         })
     }
 }

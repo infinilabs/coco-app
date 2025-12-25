@@ -21,7 +21,7 @@ interface DetailItemProps {
 
 const DetailItem: React.FC<DetailItemProps> = ({ label, value, icon }) => (
   <div className="flex justify-between flex-wrap font-normal text-xs mb-2.5 border-t border-[rgba(238,240,243,1)] dark:border-[#272626] pt-2.5">
-    <div className="text-[rgba(153,153,153,1)] dark:text-[#666] min-w-[80px]">
+    <div className="text-[rgba(153,153,153,1)] dark:text-[#666] min-w-20">
       {label}
     </div>
     <div
@@ -67,7 +67,12 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
             />
           ) : (
             <CommonIcon
-              renderOrder={["special_icon", "item_icon", "connector_icon", "default_icon"]}
+              renderOrder={[
+                "special_icon",
+                "item_icon",
+                "connector_icon",
+                "default_icon",
+              ]}
               item={document}
               itemIcon={document?.icon}
               defaultIcon={File}
@@ -115,7 +120,7 @@ export const DocumentDetail: React.FC<DocumentDetailProps> = ({ document }) => {
           <DetailItem
             label={t("search.document.richCategories")}
             value={
-              <div className="min-w-[160px] flex items-center justify-end w-full text-[12px] relative">
+              <div className="min-w-40 flex items-center justify-end w-full text-[12px] relative">
                 <RichCategories item={document} isSelected={false} />
               </div>
             }

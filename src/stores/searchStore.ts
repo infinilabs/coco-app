@@ -3,6 +3,8 @@ import {
   ExtensionPermission,
   ViewExtensionUISettings,
 } from "@/components/Settings/Extensions";
+import { AggregationBucket, Aggregations } from "@/types/search";
+import { DateRange } from "react-day-picker";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -14,8 +16,12 @@ export type ViewExtensionOpened = [
   // HTML file URL
   string,
   ExtensionPermission | null,
-  ViewExtensionUISettings | null,
+  ViewExtensionUISettings | null
 ];
+
+export interface AggregateFilter {
+  [key: string]: AggregationBucket[];
+}
 
 export type ISearchStore = {
   sourceData: any;
@@ -64,7 +70,27 @@ export type ISearchStore = {
   // When we open a View extension, we set this to a non-null value.
   viewExtensionOpened?: ViewExtensionOpened;
   setViewExtensionOpened: (showViewExtension?: ViewExtensionOpened) => void;
+
+  enabledFuzzyMatch: boolean;
+  setEnabledFuzzyMatch: (enabledFuzzyMatch: boolean) => void;
+
+  fuzziness: number;
+  setFuzziness: (fuzziness: number) => void;
+
+  filterDateRange?: DateRange;
+  setFilterDateRange: (filterDateRange?: DateRange) => void;
+
+  aggregateFilter?: AggregateFilter;
+  setAggregateFilter: (aggregateFilter?: AggregateFilter) => void;
+
+  aggregations?: Aggregations;
+  setAggregations: (aggregations?: Aggregations) => void;
+
+  filterMultiSelectOpened: boolean;
+  setFilterMultiSelectOpened: (filterMultiSelectOpened: boolean) => void;
 };
+
+export const DEFAULT_FUZZINESS = 3;
 
 export const useSearchStore = create<ISearchStore>()(
   persist(
@@ -138,11 +164,33 @@ export const useSearchStore = create<ISearchStore>()(
       setViewExtensionOpened: (viewExtensionOpened) => {
         return set({ viewExtensionOpened });
       },
+      enabledFuzzyMatch: false,
+      setEnabledFuzzyMatch: (enabledFuzzyMatch) => {
+        return set({ enabledFuzzyMatch });
+      },
+      fuzziness: DEFAULT_FUZZINESS,
+      setFuzziness: (fuzziness) => {
+        return set({ fuzziness });
+      },
+      setFilterDateRange(filterDateRange) {
+        return set({ filterDateRange });
+      },
+      setAggregateFilter: (aggregateFilter) => {
+        return set({ aggregateFilter });
+      },
+      setAggregations: (aggregations) => {
+        return set({ aggregations });
+      },
+      filterMultiSelectOpened: false,
+      setFilterMultiSelectOpened: (filterMultiSelectOpened) => {
+        return set({ filterMultiSelectOpened });
+      },
     }),
     {
       name: "search-store",
       partialize: (state) => ({
         sourceData: state.sourceData,
+        fuzziness: state.fuzziness,
       }),
     }
   )

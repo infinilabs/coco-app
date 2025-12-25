@@ -51,6 +51,8 @@ impl SearchSource for FileSearchExtensionSearchSource {
                 source: self.get_type(),
                 hits: Vec::new(),
                 total_hits: 0,
+                // Local search source does not support aggregations
+                aggregations: None,
             });
         };
         let from = usize::try_from(query.from).expect("from too big");
@@ -62,6 +64,8 @@ impl SearchSource for FileSearchExtensionSearchSource {
                 source: self.get_type(),
                 hits: Vec::new(),
                 total_hits: 0,
+                // Local search source does not support aggregations
+                aggregations: None,
             });
         }
 
@@ -77,6 +81,8 @@ impl SearchSource for FileSearchExtensionSearchSource {
                 source: self.get_type(),
                 hits: Vec::new(),
                 total_hits: 0,
+                // Local search source does not support aggregations
+                aggregations: None,
             });
         }
 
@@ -92,6 +98,8 @@ impl SearchSource for FileSearchExtensionSearchSource {
             source: query_source,
             hits,
             total_hits,
+            // Local search source does not support aggregations
+            aggregations: None,
         })
     }
 }

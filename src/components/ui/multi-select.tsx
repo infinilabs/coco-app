@@ -1,97 +1,129 @@
-import * as React from "react";
-import * as PopoverPrimitive from "@radix-ui/react-popover";
+import { FC, useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./dropdown-menu";
+import { Check, ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Checkbox } from "@/components/ui/checkbox";
+import { DropdownMenuContentProps } from "@radix-ui/react-dropdown-menu";
 
-type Option = { value: string; label: string };
-
-export interface MultiSelectProps {
-  options: Option[];
-  value: string[];
-  onChange?: (next: string[]) => void;
-  placeholder?: string;
-  className?: string;
-  disabled?: boolean;
+export interface Option {
+  label: string;
+  value: string;
 }
 
-export const MultiSelect: React.FC<MultiSelectProps> = ({
-  options,
-  value,
-  onChange,
-  placeholder = "",
-  className,
-  disabled,
-}) => {
-  const [open, setOpen] = React.useState(false);
-  const values = React.useMemo(() => new Set(value), [value]);
+export interface MultiSelectProps {
+  value: string[];
+  options: Option[];
+  placeholder?: string;
+  dropdownMenuContent?: DropdownMenuContentProps;
+  onChange?: (value: string[]) => void;
+  onOpenChange?: (open: boolean) => void;
+}
 
-  const toggle = (v: string) => {
-    const next = new Set(values);
-    if (next.has(v)) next.delete(v);
-    else next.add(v);
-    onChange?.(Array.from(next));
+const MultiSelect: FC<MultiSelectProps> = (props) => {
+  const {
+    value,
+    options,
+    placeholder,
+    dropdownMenuContent,
+    onChange,
+    onOpenChange,
+  } = props;
+  const [open, setOpen] = useState(false);
+
+  const handleRemove = (item: string) => {
+    onChange?.(value.filter((i) => i !== item));
   };
 
-  const display = React.useMemo(() => {
-    if (values.size === 0) return placeholder;
-    const labels = options
-      .filter((o) => values.has(o.value))
-      .map((o) => o.label);
-    return labels.join(", ");
-  }, [options, values, placeholder]);
+  const renderTrigger = () => {
+    if (value.length === 0) {
+      return <div className="text-muted-foreground px-1">{placeholder}</div>;
+    }
+
+    return (
+      <div className="flex flex-wrap gap-1">
+        {value.map((item) => (
+          <div
+            key={item}
+            className="inline-flex items-center gap-1 h-5.5 px-2 bg-muted rounded-md text-muted-foreground"
+          >
+            <span>
+              {options.find((option) => option.value === item)?.label ?? value}
+            </span>
+
+            <X
+              className="size-3 text-muted-foreground hover:text-red-500 transition cursor-pointer"
+              onPointerDown={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                if (event.button === 0) {
+                  handleRemove(item);
+                }
+              }}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
-    <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
-      <PopoverPrimitive.Trigger asChild>
-        <button
-          type="button"
-          disabled={disabled}
-          className={cn(
-            "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-            className
-          )}
-        >
-          <span className={cn(values.size === 0 && "text-muted-foreground")}>{display}</span>
-          <svg
-            className="h-4 w-4 opacity-70"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </button>
-      </PopoverPrimitive.Trigger>
-      <PopoverPrimitive.Content
-        sideOffset={4}
-        className={cn(
-          "z-50 w-(--radix-popover-trigger-width) min-w-[220px] rounded-md border border-input bg-popover p-2 text-popover-foreground shadow-md outline-none",
-          "ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        )}
-      >
-        <div className="max-h-48 overflow-y-auto space-y-1">
-          {options.map((opt) => {
-            const checked = values.has(opt.value) ? "checked" : "unchecked";
-            return (
-              <label
-                key={opt.value}
-                className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-accent hover:text-accent-foreground"
-                onClick={(e) => {
-                  e.preventDefault();
-                  toggle(opt.value);
-                }}
-              >
-                <Checkbox checked={checked === "checked"} className="h-4 w-4" />
-                <span className="text-sm">{opt.label}</span>
-              </label>
-            );
-          })}
+    <DropdownMenu
+      onOpenChange={(open) => {
+        setOpen(open);
+
+        onOpenChange?.(open);
+      }}
+    >
+      <DropdownMenuTrigger asChild>
+        <div className="flex items-center justify-between border border-border min-h-8 rounded-lg p-1">
+          {renderTrigger()}
+
+          <ChevronDown
+            className={cn("size-4 min-w-4 text-muted-foreground transition", {
+              "rotate-180": open,
+            })}
+          />
         </div>
-      </PopoverPrimitive.Content>
-    </PopoverPrimitive.Root>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent {...dropdownMenuContent}>
+        {options.map((item) => {
+          const { label, value: itemValue } = item;
+
+          const included = value.includes(itemValue);
+
+          return (
+            <DropdownMenuItem
+              key={itemValue}
+              className={"flex items-center justify-between gap-2"}
+              onSelect={(event) => {
+                event.preventDefault();
+
+                if (included) {
+                  onChange?.(value.filter((item) => item !== itemValue));
+                } else {
+                  onChange?.([...value, itemValue]);
+                }
+              }}
+            >
+              <span>{label}</span>
+
+              <Check
+                className={cn("size-4 text-muted-foreground", {
+                  "opacity-0": !value.includes(itemValue),
+                })}
+              />
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
+export default MultiSelect;

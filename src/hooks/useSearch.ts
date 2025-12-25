@@ -1,5 +1,9 @@
 import { useState, useCallback, useMemo, useRef } from "react";
 import { debounce, orderBy } from "lodash-es";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+import advancedFormat from "dayjs/plugin/advancedFormat";
 
 import type {
   QueryHits,
@@ -13,6 +17,12 @@ import { useConnectStore } from "@/stores/connectStore";
 import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
+import { getQueryStrings, updateAggregations } from "@/utils";
+import { useCanNavigateBack } from "./useCanNavigateBack";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(advancedFormat);
 
 interface SearchState {
   isError: FailedRequest[];
@@ -52,6 +62,12 @@ export function useSearch() {
   });
 
   const { querySourceTimeout, searchDelay } = useConnectStore();
+  const {
+    aggregateFilter,
+    filterDateRange,
+    fuzziness,
+    filterMultiSelectOpened,
+  } = useSearchStore();
 
   const [searchState, setSearchState] = useState<SearchState>({
     isError: [],
@@ -157,19 +173,34 @@ export function useSearch() {
     });
   };
 
+  const { canNavigateBack } = useCanNavigateBack();
+
   const performSearch = useCallback(
     async (searchInput: string) => {
+      const { filterMultiSelectOpened } = useSearchStore.getState();
+
+      if (filterMultiSelectOpened || canNavigateBack) return;
+
       if (!searchInput) {
-        setSearchState((prev) => ({ ...prev, suggests: [] }));
-        return;
+        const { setAggregations, setAggregateFilter } =
+          useSearchStore.getState();
+
+        setAggregations(void 0);
+        setAggregateFilter(void 0);
+
+        return setSearchState((prev) => ({ ...prev, suggests: [] }));
       }
 
       let response: MultiSourceQueryResponse;
       if (isTauri) {
+        const queryStrings = getQueryStrings({
+          query: searchInput,
+        });
+
         response = await platformAdapter.commands("query_coco_fusion", {
           from: 0,
           size: 10,
-          queryStrings: { query: searchInput },
+          queryStrings,
           queryTimeout: querySourceTimeout,
         });
       } else {
@@ -198,7 +229,9 @@ export function useSearch() {
         }
       }
 
-      //console.log("_suggest", searchInput, response);
+      // console.log("_suggest", searchInput, response);
+
+      updateAggregations(response);
 
       if (timerRef.current) {
         clearTimeout(timerRef.current);
@@ -216,6 +249,11 @@ export function useSearch() {
       aiOverviewCharLen,
       aiOverviewDelay,
       aiOverviewMinQuantity,
+      aggregateFilter,
+      filterDateRange,
+      fuzziness,
+      filterMultiSelectOpened,
+      canNavigateBack,
     ]
   );
 

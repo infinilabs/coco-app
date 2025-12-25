@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { isArray, isNil, isObject, isString } from "lodash-es";
+import {
+  fromPairs,
+  isArray,
+  isNil,
+  isObject,
+  isString,
+  sortBy,
+  toPairs,
+} from "lodash-es";
 import { filesize as filesizeLib } from "filesize";
 import i18next from "i18next";
 
@@ -9,6 +17,8 @@ import { DEFAULT_COCO_SERVER_ID, HISTORY_PANEL_ID } from "@/constants";
 import { useChatStore } from "@/stores/chatStore";
 import { getCurrentWindowService } from "@/commands/windowService";
 import { useSearchStore } from "@/stores/searchStore";
+import { MultiSourceQueryResponse } from "@/types/search";
+import dayjs from "dayjs";
 
 export async function copyToClipboard(text: string, noTip = false) {
   const addError = useAppStore.getState().addError;
@@ -307,10 +317,14 @@ export const visibleSearchBar = () => {
 };
 
 export const visibleFilterBar = () => {
-  const { viewExtensionOpened, visibleExtensionDetail, goAskAi } =
-    useSearchStore.getState();
+  const {
+    viewExtensionOpened,
+    visibleExtensionStore,
+    visibleExtensionDetail,
+    goAskAi,
+  } = useSearchStore.getState();
 
-  if (visibleExtensionDetail || goAskAi) return false;
+  if (visibleExtensionStore || visibleExtensionDetail || goAskAi) return false;
 
   if (isNil(viewExtensionOpened)) return true;
 
@@ -403,4 +417,65 @@ export const installExtensionError = (error: any) => {
   }
 
   addError(i18next.t(message));
+};
+
+export const getQueryStrings = (queryStrings: Record<string, string>) => {
+  const { fuzziness, aggregateFilter, filterDateRange } =
+    useSearchStore.getState();
+
+  const nextQueryStrings: Record<string, string> = {
+    ...queryStrings,
+    fuzziness: String(fuzziness),
+  };
+
+  if (filterDateRange) {
+    const { from, to } = filterDateRange;
+
+    if (from) {
+      nextQueryStrings["update_time_start"] = dayjs(from).startOf('day').format('YYYY-MM-DD[T]HH:mm:ss.SSSZ');
+    }
+
+    if (to) {
+      nextQueryStrings["update_time_end"] = dayjs(to).endOf('day').format('YYYY-MM-DD[T]HH:mm:ss.SSSZ');
+    }
+  }
+
+  if (aggregateFilter) {
+    for (const [key, value] of Object.entries(aggregateFilter)) {
+      if (value.length === 0) continue;
+
+      const result = value.map((item) => item.key).join(",");
+
+      queryStrings[key] = `any(${result})`;
+    }
+  }
+
+  return nextQueryStrings;
+};
+
+export const updateAggregations = (result?: MultiSourceQueryResponse) => {
+  const { isTauri } = useAppStore.getState();
+
+  if (!isTauri) return;
+
+  const { setAggregations, setAggregateFilter } = useSearchStore.getState();
+
+  if (result?.aggregations) {
+    const sortedAggregations = fromPairs(
+      sortBy(toPairs(result.aggregations), ([key]) => key)
+    );
+
+    for (const [key, value] of Object.entries(sortedAggregations)) {
+      sortedAggregations[key].buckets = value.buckets.map((item) => ({
+        ...item,
+        label: item.label ?? item.key,
+      }));
+    }
+
+    setAggregations(sortedAggregations);
+  } else {
+    setAggregations(void 0);
+
+    setAggregateFilter(void 0);
+  }
 };

@@ -1,6 +1,7 @@
 use crate::common::document::Document;
 use crate::common::http::get_response_body_text;
 use reqwest::Response;
+use serde::de::Deserializer;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::error::Error;
@@ -11,6 +12,7 @@ pub struct SearchResponse<T> {
     pub timed_out: Option<bool>,
     pub _shards: Option<Shards>,
     pub hits: Hits<T>,
+    pub aggregations: Option<Aggregations>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -122,11 +124,182 @@ pub struct FailedRequest {
     pub reason: Option<String>,
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Aggregation {
+    // Frontend code needs this field to not be NULL, so we call
+    // `clean_aggregations()` in query_coco_fusion() to ensure this.
+    pub buckets: Option<Vec<AggBucket>>,
+}
+
+/// An aggregation bucket.
+#[derive(Debug, Serialize, Clone)]
+pub struct AggBucket {
+    /// The number of documents contained in this bucket
+    doc_count: usize,
+    /// Bucket key, the field's value.
+    key: String,
+    /// In the cases where `key` is not human-readable, `label` should be Some.
+    ///
+    /// Optional human label extracted from `top.hits.hits[0]._source.source.name`.
+    label: Option<String>,
+}
+
+/// An aggregation bucket does not have a `label` field, it is extracted from
+/// `top.hits.hits[0]._source.source.name`. We manually implement Deserialize
+/// to do this extraction job.
+impl<'de> Deserialize<'de> for AggBucket {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct Wrapper {
+            doc_count: usize,
+            key: String,
+            #[serde(default)]
+            top: Option<Top>,
+        }
+
+        #[derive(Deserialize)]
+        struct Top {
+            hits: TopHits,
+        }
+
+        #[derive(Deserialize)]
+        struct TopHits {
+            hits: Vec<TopHit>,
+        }
+
+        #[derive(Deserialize)]
+        struct TopHit {
+            #[serde(default)]
+            _source: Option<TopSource>,
+        }
+
+        #[derive(Deserialize)]
+        struct TopSource {
+            #[serde(default)]
+            source: Option<SourceLabel>,
+        }
+
+        #[derive(Deserialize)]
+        struct SourceLabel {
+            #[serde(default)]
+            name: Option<String>,
+        }
+
+        let wrapper = Wrapper::deserialize(deserializer)?;
+
+        let label = wrapper
+            .top
+            .and_then(|top| top.hits.hits.into_iter().next())
+            .and_then(|hit| hit._source)
+            .and_then(|src| src.source)
+            .and_then(|lbl| lbl.name);
+
+        Ok(AggBucket {
+            doc_count: wrapper.doc_count,
+            key: wrapper.key,
+            label,
+        })
+    }
+}
+
+/// Coco server aggregation result.
+///
+/// ```json
+/// {
+///   "type": {
+///     "buckets": [
+///       {
+///         "doc_count": 26,
+///         "key": "web_page"
+///       },
+///       {
+///         "doc_count": 1,
+///         "key": "pdf"
+///       }
+///     ]
+///   },
+///   "lang": {
+///     "buckets": [
+///       {
+///         "doc_count": 30,
+///         "key": "en"
+///       }
+///     ]
+///   }
+/// }
+/// ```
+pub type Aggregations = HashMap<String, Aggregation>;
+
+/// Helper function to drop empty aggregations and normalize `Option` state.
+pub(crate) fn clean_aggregations(aggs: &mut Option<Aggregations>) {
+    if let Some(map) = aggs {
+        map.retain(|_, agg| match &agg.buckets {
+            Some(buckets) => !buckets.is_empty(),
+            None => false,
+        });
+
+        if map.is_empty() {
+            *aggs = None;
+        }
+    }
+}
+
+/// Merge the buckets in `from` to `to`.
+pub(crate) fn merge_aggregations(to: &mut Option<Aggregations>, from: Aggregations) {
+    use std::collections::hash_map::Entry;
+
+    if from.is_empty() {
+        return;
+    }
+
+    match to {
+        None => {
+            *to = Some(from);
+        }
+        Some(to_map) => {
+            for (agg_name, agg) in from {
+                match to_map.entry(agg_name) {
+                    Entry::Occupied(mut occ) => {
+                        let to_agg = occ.get_mut();
+
+                        if let Some(from_buckets) = agg.buckets {
+                            match &mut to_agg.buckets {
+                                Some(to_buckets) => {
+                                    for bucket in from_buckets {
+                                        if let Some(existing) = to_buckets
+                                            .iter_mut()
+                                            .find(|existing| existing.key == bucket.key)
+                                        {
+                                            existing.doc_count += bucket.doc_count;
+                                        } else {
+                                            to_buckets.push(bucket);
+                                        }
+                                    }
+                                }
+                                None => {
+                                    to_agg.buckets = Some(from_buckets);
+                                }
+                            }
+                        }
+                    }
+                    Entry::Vacant(vacant) => {
+                        vacant.insert(agg);
+                    }
+                };
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct QueryResponse {
     pub source: QuerySource,
     pub hits: Vec<(Document, f64)>,
     pub total_hits: usize,
+    pub aggregations: Option<Aggregations>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -134,4 +307,121 @@ pub struct MultiSourceQueryResponse {
     pub failed: Vec<FailedRequest>,
     pub hits: Vec<QueryHits>,
     pub total_hits: usize,
+    pub aggregations: Option<Aggregations>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json;
+
+    /// Helper function to create an `AggBucket`, used in tests.
+    fn bucket(key: &str, doc_count: usize) -> AggBucket {
+        AggBucket {
+            key: key.to_string(),
+            doc_count,
+            label: None,
+        }
+    }
+
+    /// Helper function to create an `Aggregation`, used in tests.
+    fn agg_with_buckets(buckets: Vec<AggBucket>) -> Aggregation {
+        Aggregation {
+            buckets: Some(buckets),
+        }
+    }
+
+    /// Helper to get `doc_count` from the bucket specified by `key`.
+    /// Returns `None` when buckets are absent or the key is missing.
+    fn get_doc_count(agg: &Aggregation, key: &str) -> Option<usize> {
+        agg.buckets
+            .as_ref()
+            .and_then(|buckets| buckets.iter().find(|b| b.key == key))
+            .map(|b| b.doc_count)
+    }
+
+    #[test]
+    fn merge_into_none_initializes() {
+        let mut to: Option<Aggregations> = None;
+        let mut from = Aggregations::new();
+        from.insert("terms".to_string(), agg_with_buckets(vec![bucket("a", 2)]));
+
+        merge_aggregations(&mut to, from);
+
+        let terms = to.unwrap().get("terms").cloned().unwrap();
+        assert_eq!(get_doc_count(&terms, "a"), Some(2));
+    }
+
+    #[test]
+    fn merge_sums_and_appends_buckets() {
+        let mut to_inner = Aggregations::new();
+        to_inner.insert(
+            "terms".to_string(),
+            agg_with_buckets(vec![bucket("a", 1), bucket("b", 2)]),
+        );
+        let mut to = Some(to_inner);
+
+        let mut from = Aggregations::new();
+        from.insert(
+            "terms".to_string(),
+            agg_with_buckets(vec![bucket("a", 3), bucket("c", 5)]),
+        );
+        from.insert(
+            "lang".to_string(),
+            agg_with_buckets(vec![bucket("zh", 3), bucket("en", 5)]),
+        );
+
+        merge_aggregations(&mut to, from);
+
+        let terms = to.as_ref().unwrap().get("terms").unwrap();
+        assert_eq!(get_doc_count(terms, "a"), Some(4));
+        assert_eq!(get_doc_count(terms, "b"), Some(2));
+        assert_eq!(get_doc_count(terms, "c"), Some(5));
+        let lang = to.as_ref().unwrap().get("lang").unwrap();
+        assert_eq!(get_doc_count(lang, "zh"), Some(3));
+        assert_eq!(get_doc_count(lang, "en"), Some(5));
+    }
+
+    #[test]
+    fn deserialize_bucket_with_label() {
+        let json = r#"
+                {
+                    "doc_count": 251,
+                    "key": "d23ek9gqlqbcd9e3uiig",
+                    "top": {
+                        "hits": {
+                            "hits": [
+                                {
+                                    "_source": {
+                                        "source": {
+                                            "name": "INFINI Easysearch"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+                "#;
+
+        let bucket: AggBucket = serde_json::from_str(json).unwrap();
+        assert_eq!(bucket.doc_count, 251);
+        assert_eq!(bucket.key, "d23ek9gqlqbcd9e3uiig");
+        assert_eq!(bucket.label.as_deref(), Some("INFINI Easysearch"));
+    }
+
+    #[test]
+    fn deserialize_bucket_without_top_sets_label_none() {
+        let json = r#"
+                {
+                    "doc_count": 10,
+                    "key": "no-top"
+                }
+                "#;
+
+        let bucket: AggBucket = serde_json::from_str(json).unwrap();
+        assert_eq!(bucket.doc_count, 10);
+        assert_eq!(bucket.key, "no-top");
+        assert_eq!(bucket.label, None);
+    }
 }
