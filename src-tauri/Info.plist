@@ -36,6 +36,8 @@
   <string>Coco AI needs access to your microphone for voice input and audio recording features.</string>
   <key>NSCameraUsageDescription</key>
   <string>Coco AI requires camera access for scanning documents and capturing images.</string>
+  <key>NSCameraUseContinuityCameraDeviceType</key>
+  <true/>
   <key>NSSpeechRecognitionUsageDescription</key>
   <string>Coco AI uses speech recognition to convert your voice into text for a hands-free experience.</string>
   <key>NSAppleEventsUsageDescription</key>
