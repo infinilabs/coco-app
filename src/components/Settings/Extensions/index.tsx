@@ -75,6 +75,7 @@ export interface ViewExtensionUISettings {
   search_bar: boolean;
   filter_bar: boolean;
   footer: boolean;
+  hide_scrollbar: boolean;
   width: number | null;
   height: number | null;
   resizable: boolean;
