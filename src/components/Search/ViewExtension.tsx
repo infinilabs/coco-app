@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Maximize2, Minimize2, Focus } from "lucide-react";
 
@@ -7,46 +7,18 @@ import { useSearchStore } from "@/stores/searchStore";
 import {
   ExtensionFileSystemPermission,
   FileSystemAccess,
-  ViewExtensionUISettingsOrNull,
 } from "../Settings/Extensions";
 import platformAdapter from "@/utils/platformAdapter";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
-import { isMac } from "@/utils/platform";
-import { useAppStore } from "@/stores/appStore";
+import { useViewExtensionWindow } from "@/hooks/useViewExtensionWindow";
 
 const ViewExtension: React.FC = () => {
   const { viewExtensionOpened } = useSearchStore();
-
-  const isTauri = useAppStore((state) => state.isTauri);
 
   // Complete list of the backend APIs, grouped by their category.
   const [apis, setApis] = useState<Map<string, string[]> | null>(null);
   const { setModifierKeyPressed } = useShortcutsStore();
   const { t } = useTranslation();
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const prevWindowRef = useRef<{
-    width: number;
-    height: number;
-    resizable: boolean;
-    x: number;
-    y: number;
-  } | null>(null);
-  const fullscreenPrevRef = useRef<{
-    width: number;
-    height: number;
-    resizable: boolean;
-    x: number;
-    y: number;
-  } | null>(null);
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const [scale, setScale] = useState(1);
-  const [fallbackViewSize, setFallbackViewSize] = useState<{
-    width: number;
-    height: number;
-  } | null>(() => {
-    if (typeof window === "undefined") return null;
-    return { width: window.innerWidth, height: window.innerHeight };
-  });
 
   if (viewExtensionOpened == null) {
     // When this view gets loaded, this state should not be NULL.
@@ -196,183 +168,15 @@ const ViewExtension: React.FC = () => {
   }, [reversedApis, permission]); // Add apiPermissions as dependency
 
   const fileUrl = viewExtensionOpened[2];
-  const ui: ViewExtensionUISettingsOrNull = useMemo(() => {
-    return viewExtensionOpened[4] as ViewExtensionUISettingsOrNull;
-  }, [viewExtensionOpened]);
-  const resizable = ui?.resizable;
-
-  const uiWidth = ui && typeof ui.width === "number" ? ui.width : null;
-  const uiHeight = ui && typeof ui.height === "number" ? ui.height : null;
-  const hasExplicitWindowSize = uiWidth != null && uiHeight != null;
-
-  const baseWidth = useMemo(() => {
-    if (uiWidth != null) return uiWidth;
-    if (fallbackViewSize != null) return fallbackViewSize.width;
-    return 0;
-  }, [uiWidth, fallbackViewSize]);
-  const baseHeight = useMemo(() => {
-    if (uiHeight != null) return uiHeight;
-    if (fallbackViewSize != null) return fallbackViewSize.height;
-    return 0;
-  }, [uiHeight, fallbackViewSize]);
-
-  const recomputeScale = useCallback(async () => {
-    if (!hasExplicitWindowSize) {
-      setScale(1);
-      return;
-    }
-    const size = await platformAdapter.getWindowSize();
-    const nextScale = Math.min(
-      size.width / baseWidth,
-      size.height / baseHeight
-    );
-    setScale(Math.max(nextScale, 0.1));
-  }, [hasExplicitWindowSize, baseWidth, baseHeight]);
-
-  const applyFullscreen = useCallback(
-    async (next: boolean) => {
-      if (next) {
-        const size = await platformAdapter.getWindowSize();
-        const resizable = await platformAdapter.isWindowResizable();
-        const pos = await platformAdapter.getWindowPosition();
-        fullscreenPrevRef.current = {
-          width: size.width,
-          height: size.height,
-          resizable,
-          x: pos.x,
-          y: pos.y,
-        };
-
-        if (isMac && isTauri) {
-          const monitor = await platformAdapter.getMonitorFromCursor();
-
-          if (!monitor) return;
-          const window = await platformAdapter.getCurrentWebviewWindow();
-          const factor = await window.scaleFactor();
-
-          const { size, position } = monitor;
-
-          const { width, height } = size.toLogical(factor);
-          const { x, y } = position.toLogical(factor);
-
-          await platformAdapter.setWindowSize(width, height);
-          await platformAdapter.setWindowPosition(x, y);
-          await platformAdapter.setWindowResizable(true);
-          await recomputeScale();
-        } else {
-          await platformAdapter.setWindowFullscreen(true);
-          await recomputeScale();
-        }
-      } else {
-        if (!isMac) {
-          await platformAdapter.setWindowFullscreen(false);
-        }
-        if (fullscreenPrevRef.current) {
-          const prev = fullscreenPrevRef.current;
-          await platformAdapter.setWindowSize(prev.width, prev.height);
-          await platformAdapter.setWindowResizable(prev.resizable);
-          await platformAdapter.setWindowPosition(prev.x, prev.y);
-          fullscreenPrevRef.current = null;
-          await recomputeScale();
-        } else if (hasExplicitWindowSize) {
-          const nextResizable =
-            ui && typeof ui.resizable === "boolean" ? ui.resizable : true;
-          await platformAdapter.setWindowSize(uiWidth, uiHeight);
-          await platformAdapter.setWindowResizable(nextResizable);
-          await platformAdapter.centerOnCurrentMonitor();
-          await recomputeScale();
-        } else {
-          await recomputeScale();
-        }
-        setTimeout(() => {
-          iframeRef.current?.focus();
-          try {
-            iframeRef.current?.contentWindow?.focus();
-          } catch {}
-        }, 0);
-      }
-    },
-    [ui, recomputeScale]
-  );
-
-  useEffect(() => {
-    const applyWindowSettings = async () => {
-      if (viewExtensionOpened != null) {
-        const size = await platformAdapter.getWindowSize();
-        const resizable = await platformAdapter.isWindowResizable();
-        const pos = await platformAdapter.getWindowPosition();
-        setFallbackViewSize({ width: size.width, height: size.height });
-        prevWindowRef.current = {
-          width: size.width,
-          height: size.height,
-          resizable,
-          x: pos.x,
-          y: pos.y,
-        };
-
-        if (hasExplicitWindowSize) {
-          const nextResizable =
-            ui && typeof ui.resizable === "boolean" ? ui.resizable : true;
-          await platformAdapter.setWindowSize(uiWidth, uiHeight);
-          await platformAdapter.setWindowResizable(nextResizable);
-          await platformAdapter.centerOnCurrentMonitor();
-          await recomputeScale();
-        } else {
-          await recomputeScale();
-        }
-        setTimeout(() => {
-          iframeRef.current?.focus();
-          try {
-            iframeRef.current?.contentWindow?.focus();
-          } catch {}
-        }, 0);
-      } else {
-        if (prevWindowRef.current) {
-          const prev = prevWindowRef.current;
-          await platformAdapter.setWindowSize(prev.width, prev.height);
-          await platformAdapter.setWindowResizable(prev.resizable);
-          await platformAdapter.centerOnCurrentMonitor();
-          prevWindowRef.current = null;
-          await recomputeScale();
-          setTimeout(() => {
-            iframeRef.current?.focus();
-          }, 0);
-        }
-      }
-    };
-
-    applyWindowSettings();
-    return () => {
-      if (prevWindowRef.current) {
-        const prev = prevWindowRef.current;
-        platformAdapter.setWindowSize(prev.width, prev.height);
-        platformAdapter.setWindowResizable(prev.resizable);
-        platformAdapter.centerOnCurrentMonitor();
-        prevWindowRef.current = null;
-      }
-    };
-  }, [
-    viewExtensionOpened,
-    ui,
-    hasExplicitWindowSize,
-    uiWidth,
-    uiHeight,
-    recomputeScale,
-  ]);
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isFullscreen) {
-        applyFullscreen(false);
-        setIsFullscreen(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown, { capture: true });
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown, {
-        capture: true,
-      } as any);
-    };
-  }, [isFullscreen, applyFullscreen]);
+  
+  const {
+    resizable,
+    scale,
+    iframeRef,
+    isFullscreen,
+    toggleFullscreen,
+    focusIframe,
+  } = useViewExtensionWindow();
 
   return (
     <div className="relative w-full h-full">
@@ -384,17 +188,7 @@ const ViewExtension: React.FC = () => {
               : t("viewExtension.fullscreen.enter")
           }
           className="absolute top-2 right-2 z-10 rounded-md bg-black/40 text-white p-2 hover:bg-black/60 focus:outline-none"
-          onClick={async () => {
-            const next = !isFullscreen;
-            await applyFullscreen(next);
-            setIsFullscreen(next);
-            if (next) {
-              iframeRef.current?.focus();
-              try {
-                iframeRef.current?.contentWindow?.focus();
-              } catch {}
-            }
-          }}
+          onClick={toggleFullscreen}
         >
           {isFullscreen ? (
             <Minimize2 className="size-4" />
@@ -408,27 +202,16 @@ const ViewExtension: React.FC = () => {
         <button
           aria-label={t("viewExtension.focus")}
           className="absolute top-2 right-12 z-10 rounded-md bg-black/40 text-white p-2 hover:bg-black/60 focus:outline-none"
-          onClick={() => {
-            iframeRef.current?.focus();
-            try {
-              iframeRef.current?.contentWindow?.focus();
-            } catch {}
-          }}
+          onClick={focusIframe}
         >
           <Focus className="size-4" />
         </button>
       )}
       <div
-        className="w-full h-full flex items-center justify-center"
-        onMouseDownCapture={() => {
-          iframeRef.current?.focus();
-        }}
-        onPointerDown={() => {
-          iframeRef.current?.focus();
-        }}
-        onClickCapture={() => {
-          iframeRef.current?.focus();
-        }}
+        className="w-full h-full flex items-center justify-center overflow-hidden"
+        onMouseDownCapture={focusIframe}
+        onPointerDown={focusIframe}
+        onClickCapture={focusIframe}
       >
         <iframe
           ref={iframeRef}

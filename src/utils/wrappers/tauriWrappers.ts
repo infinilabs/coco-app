@@ -1,5 +1,4 @@
 import * as commands from "@/commands";
-import { WINDOW_CENTER_BASELINE_HEIGHT } from "@/constants";
 import platformAdapter from "../platformAdapter";
 
 // Window operations
@@ -16,9 +15,6 @@ export const windowWrapper = {
     const window = await this.getCurrentWebviewWindow();
     if (window) {
       await window.setSize(new LogicalSize(width, height));
-      if (height < WINDOW_CENTER_BASELINE_HEIGHT) {
-        await window.center();
-      }
     }
   },
   async getLogicalSize() {
@@ -50,12 +46,6 @@ export const windowWrapper = {
     const { getCurrentWindow } = await import("@tauri-apps/api/window");
     const win = getCurrentWindow();
     return win.setFullscreen(enable);
-  },
-  async center() {
-    const window = await this.getCurrentWebviewWindow();
-    if (window) {
-      return window.center();
-    }
   },
 
   async setLogicalPosition(x: number, y: number) {
