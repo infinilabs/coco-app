@@ -18,6 +18,8 @@ Information about release notes of Coco App is provided here.
 
 ### 🐛 Bug fix
 
+- fix: avoid recentering when resizing to compact after leaving extension #1030
+
 ### ✈️ Improvements
 
 - refactor: add a timeout to open() #1025

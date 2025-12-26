@@ -300,6 +300,32 @@
     background-color: #475569;
   }
 
+  .coco-container .auto-resize-textarea::placeholder {
+    color: #999;
+    opacity: 1;
+    -webkit-text-fill-color: #999;
+  }
+
+  .dark.coco-container .auto-resize-textarea::placeholder,
+  [data-theme="dark"] .coco-container .auto-resize-textarea::placeholder {
+    color: #6b7280;
+    opacity: 1;
+    -webkit-text-fill-color: #6b7280;
+  }
+
+  .coco-container .auto-resize-textarea:disabled::placeholder {
+    color: #999;
+    opacity: 1;
+    -webkit-text-fill-color: #999;
+  }
+
+  .dark.coco-container .auto-resize-textarea:disabled::placeholder,
+  [data-theme="dark"] .coco-container .auto-resize-textarea:disabled::placeholder {
+    color: #6b7280;
+    opacity: 1;
+    -webkit-text-fill-color: #6b7280;
+  }
+
   /* Background styles */
   .bg-100 {
     background-size: 100% 100%;
