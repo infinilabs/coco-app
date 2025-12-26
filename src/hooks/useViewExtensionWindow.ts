@@ -28,6 +28,7 @@ export function useViewExtensionWindow() {
     return viewExtensionOpened[4] as ViewExtensionUISettingsOrNull;
   }, [viewExtensionOpened]);
   const resizable = ui?.resizable;
+  const hideScrollbar = ui?.hide_scrollbar ?? true;
 
   const uiWidth = ui && typeof ui.width === "number" ? ui.width : null;
   const uiHeight = ui && typeof ui.height === "number" ? ui.height : null;
@@ -233,6 +234,7 @@ export function useViewExtensionWindow() {
   return {
     ui,
     resizable,
+    hideScrollbar,
     scale,
     iframeRef,
     isFullscreen,
@@ -240,4 +242,3 @@ export function useViewExtensionWindow() {
     focusIframe,
   };
 }
-

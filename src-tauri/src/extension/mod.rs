@@ -166,7 +166,7 @@ pub(crate) struct ViewExtensionUISettings {
     footer: bool,
     /// If true, scrollbars will be hidden
     #[serde_inline_default(true)]
-    hide_scorllbar: bool,
+    hide_scrollbar: bool,
     /// The recommended width of the window for this extension
     width: Option<u32>,
     /// The recommended heigh of the window for this extension

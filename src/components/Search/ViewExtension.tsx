@@ -4,13 +4,11 @@ import { useTranslation } from "react-i18next";
 import { Maximize2, Minimize2, Focus } from "lucide-react";
 
 import { useSearchStore } from "@/stores/searchStore";
-import {
-  ExtensionFileSystemPermission,
-  FileSystemAccess,
-} from "../Settings/Extensions";
 import platformAdapter from "@/utils/platformAdapter";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useViewExtensionWindow } from "@/hooks/useViewExtensionWindow";
+import ViewExtensionIframe from "./ViewExtensionIframe";
+import { apiPermissionCheck, fsPermissionCheck } from "./viewExtensionPermissions";
 
 const ViewExtension: React.FC = () => {
   const { viewExtensionOpened } = useSearchStore();
@@ -168,9 +166,10 @@ const ViewExtension: React.FC = () => {
   }, [reversedApis, permission]); // Add apiPermissions as dependency
 
   const fileUrl = viewExtensionOpened[2];
-  
+
   const {
     resizable,
+    hideScrollbar,
     scale,
     iframeRef,
     isFullscreen,
@@ -207,95 +206,15 @@ const ViewExtension: React.FC = () => {
           <Focus className="size-4" />
         </button>
       )}
-      <div
-        className="w-full h-full flex items-center justify-center overflow-hidden"
-        onMouseDownCapture={focusIframe}
-        onPointerDown={focusIframe}
-        onClickCapture={focusIframe}
-      >
-        <iframe
-          ref={iframeRef}
-          src={fileUrl}
-          className="border-0 w-full h-full"
-          style={{
-            transform: `scale(${scale})`,
-            transformOrigin: "center center",
-            outline: "none",
-          }}
-          allow="fullscreen; pointer-lock; gamepad"
-          allowFullScreen
-          tabIndex={-1}
-          onLoad={(event) => {
-            event.currentTarget.focus();
-            try {
-              iframeRef.current?.contentWindow?.focus();
-            } catch {}
-          }}
-        />
-      </div>
+      <ViewExtensionIframe
+        fileUrl={fileUrl}
+        scale={scale}
+        iframeRef={iframeRef}
+        hideScrollbar={hideScrollbar}
+        focusIframe={focusIframe}
+      />
     </div>
   );
 };
 
 export default ViewExtension;
-
-// Permission check function - TypeScript translation of Rust function
-const apiPermissionCheck = (
-  category: string,
-  api: string,
-  allowedApis: string[] | null
-): boolean => {
-  if (!allowedApis) {
-    return false;
-  }
-
-  const qualifiedApi = `${category}:${api}`;
-  return allowedApis.some((a) => a === qualifiedApi);
-};
-
-const extractFsAccessPattern = (
-  command: string,
-  requestPayload: any
-): [string, FileSystemAccess] => {
-  switch (command) {
-    case "read_dir": {
-      const { path } = requestPayload;
-
-      return [path, ["read"]];
-    }
-    default: {
-      throw new Error(`unknown command ${command}`);
-    }
-  }
-};
-
-const fsPermissionCheck = async (
-  command: string,
-  requestPayload: any,
-  fsPermission: ExtensionFileSystemPermission[] | null
-): Promise<boolean> => {
-  if (!fsPermission) {
-    return false;
-  }
-
-  const [path, access] = extractFsAccessPattern(command, requestPayload);
-  const clean_path = await platformAdapter.invokeBackend("path_absolute", {
-    path: path,
-  });
-
-  // Walk through fsPermission array to find matching paths
-  for (const permission of fsPermission) {
-    if (permission.path === clean_path) {
-      // Check if all required access permissions are included in the permission's access array
-      const hasAllRequiredAccess = access.every((requiredAccess) =>
-        permission.access.includes(requiredAccess)
-      );
-
-      if (hasAllRequiredAccess) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-};
