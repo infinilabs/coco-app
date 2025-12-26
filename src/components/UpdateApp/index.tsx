@@ -1,5 +1,10 @@
 import { useCallback, useMemo, useEffect } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { LoaderCircle, X } from "lucide-react";
@@ -161,6 +166,7 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
             isCheckPage && "h-full"
           )}
         >
+          <DialogTitle className="sr-only">{t("update.title")}</DialogTitle>
           {!isCheckPage && isOptional && (
             <X
               className={clsx(
@@ -176,7 +182,7 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
 
           <img src={isDark ? darkIcon : lightIcon} className="h-6" />
 
-          <div className="text-sm leading-5 py-2 text-foreground text-center">
+          <DialogDescription className="text-sm leading-5 py-2 text-foreground text-center">
             {updateInfo ? (
               isOptional ? (
                 t("update.optional_description")
@@ -189,7 +195,7 @@ const UpdateApp = ({ isCheckPage }: UpdateAppProps) => {
             ) : (
               t("update.date")
             )}
-          </div>
+          </DialogDescription>
 
           {updateInfo ? (
             <div
