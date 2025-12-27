@@ -319,6 +319,17 @@ async fn query_coco_fusion_multi_query_sources(
     }
 
     /*
+     * Temporary patch
+     *
+     * Extensions should have a higher weight than query results.
+     */
+    for (query_source, hits) in all_hits_grouped_by_query_source.iter_mut() {
+        if query_source.r#type == LOCAL_QUERY_SOURCE_TYPE && query_source.id == "extensions" {
+            hits.iter_mut().for_each(|hit| hit.score = hit.score * 1.5);
+        }
+    }
+
+    /*
      * Sort hits within each source by score (descending) in case data sources
      * do not sort them
      */
