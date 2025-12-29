@@ -41,6 +41,7 @@ import {
 } from "@/constants";
 import { useChatStore } from "@/stores/chatStore";
 import { useSearchStore } from "@/stores/searchStore";
+import { PhysicalPosition } from "@tauri-apps/api/dpi";
 
 interface SearchChatProps {
   isTauri?: boolean;
@@ -108,6 +109,15 @@ function SearchChat({
 
   const setSuppressErrors = useAppStore((state) => state.setSuppressErrors);
   let collapseWindowTimer = useRef<ReturnType<typeof setTimeout>>();
+  const windowPositionRef = useRef<PhysicalPosition>();
+
+  useTauriFocus({
+    async onBlur() {
+      const window = await platformAdapter.getCurrentWebviewWindow();
+
+      windowPositionRef.current = await window.outerPosition();
+    },
+  });
 
   const setWindowSize = useCallback(() => {
     const { viewExtensionOpened } = useSearchStore.getState();
@@ -146,7 +156,7 @@ function SearchChat({
     if (height < WINDOW_CENTER_BASELINE_HEIGHT) {
       const { compactModeAutoCollapseDelay } = useConnectStore.getState();
 
-      collapseWindowTimer.current = setTimeout(() => {
+      collapseWindowTimer.current = setTimeout(async () => {
         setHideMiddleBorder(true);
         setSuppressErrors(true);
 
@@ -156,7 +166,19 @@ function SearchChat({
           textarea.focus();
         }
 
-        platformAdapter.setWindowSize(width, height);
+        await platformAdapter.setWindowSize(width, height);
+
+        const window = await platformAdapter.getCurrentWebviewWindow();
+
+        const visible = await window.isVisible();
+
+        console.log("visible", visible);
+
+        if (!visible && windowPositionRef.current) {
+          const { x, y } = windowPositionRef.current;
+
+          window.setPosition(new PhysicalPosition(x, y));
+        }
       }, compactModeAutoCollapseDelay * 1000);
     } else {
       platformAdapter.setWindowSize(width, height);
