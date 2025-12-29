@@ -32,8 +32,14 @@ export function useKeyboardNavigation({
   formatUrl,
   searchData,
 }: UseKeyboardNavigationProps) {
-  const { openPopover, modifierKey } = useShortcutsStore();
-  const { visibleContextMenu, setSelectedSearchContent } = useSearchStore();
+  const openPopover = useShortcutsStore((state) => state.openPopover);
+  const modifierKey = useShortcutsStore((state) => state.modifierKey);
+  const visibleContextMenu = useSearchStore((state) => {
+    return state.visibleContextMenu;
+  });
+  const setSelectedSearchContent = useSearchStore((state) => {
+    return state.setSelectedSearchContent;
+  });
 
   const getModifierKeyPressed = (event: KeyboardEvent) => {
     const metaKeyPressed = event.metaKey && modifierKey === "meta";
