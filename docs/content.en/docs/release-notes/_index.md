@@ -7,7 +7,7 @@ title: "Release Notes"
 
 Information about release notes of Coco App is provided here.
 
-## Latest (In development)  
+## Latest (In development)
 
 ### ❌ Breaking changes
 
@@ -19,6 +19,8 @@ Information about release notes of Coco App is provided here.
 ### 🐛 Bug fix
 
 - fix: avoid recentering when resizing to compact after leaving extension #1030
+- fix: fix incorrect window position after hiding #1034
+- fix: fix arrow keys not working after closing the context menu #1035
 
 ### ✈️ Improvements
 
