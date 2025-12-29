@@ -32,14 +32,8 @@ export function useKeyboardNavigation({
   formatUrl,
   searchData,
 }: UseKeyboardNavigationProps) {
-  const openPopover = useShortcutsStore((state) => state.openPopover);
-  const visibleContextMenu = useSearchStore((state) => {
-    return state.visibleContextMenu;
-  });
-  const modifierKey = useShortcutsStore((state) => {
-    return state.modifierKey;
-  });
-  const { setSelectedSearchContent } = useSearchStore();
+  const { openPopover, modifierKey } = useShortcutsStore();
+  const { visibleContextMenu, setSelectedSearchContent } = useSearchStore();
 
   const getModifierKeyPressed = (event: KeyboardEvent) => {
     const metaKeyPressed = event.metaKey && modifierKey === "meta";
@@ -65,6 +59,9 @@ export function useKeyboardNavigation({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      const { openPopover } = useShortcutsStore.getState();
+      const { visibleContextMenu } = useSearchStore.getState();
+
       if (isChatMode || !suggests.length || openPopover || visibleContextMenu) {
         return;
       }
@@ -74,6 +71,8 @@ export function useKeyboardNavigation({
       const indexes = suggests.map((item) => item.document.index!);
 
       if (e.key === "ArrowUp") {
+        console.log("ArrowUp pressed");
+
         e.preventDefault();
 
         let nextIndex: number | undefined = void 0;
@@ -105,6 +104,8 @@ export function useKeyboardNavigation({
           return Math.max(...indexes);
         });
       } else if (e.key === "ArrowDown") {
+        console.log("ArrowDown pressed");
+
         e.preventDefault();
 
         let nextIndex: number | undefined = void 0;
@@ -163,7 +164,14 @@ export function useKeyboardNavigation({
         platformAdapter.openSearchItem(item, formatUrl);
       }
     },
-    [suggests, selectedIndex, showIndex, globalItemIndexMap, openPopover]
+    [
+      suggests,
+      selectedIndex,
+      showIndex,
+      globalItemIndexMap,
+      openPopover,
+      visibleContextMenu,
+    ]
   );
 
   const handleKeyUp = useCallback(
