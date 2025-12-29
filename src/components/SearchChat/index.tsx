@@ -172,8 +172,6 @@ function SearchChat({
 
         const visible = await window.isVisible();
 
-        console.log("visible", visible);
-
         if (!visible && windowPositionRef.current) {
           const { x, y } = windowPositionRef.current;
 
