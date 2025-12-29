@@ -71,8 +71,6 @@ export function useKeyboardNavigation({
       const indexes = suggests.map((item) => item.document.index!);
 
       if (e.key === "ArrowUp") {
-        console.log("ArrowUp pressed");
-
         e.preventDefault();
 
         let nextIndex: number | undefined = void 0;
@@ -104,8 +102,6 @@ export function useKeyboardNavigation({
           return Math.max(...indexes);
         });
       } else if (e.key === "ArrowDown") {
-        console.log("ArrowDown pressed");
-
         e.preventDefault();
 
         let nextIndex: number | undefined = void 0;
