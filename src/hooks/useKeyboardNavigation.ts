@@ -33,13 +33,13 @@ export function useKeyboardNavigation({
   searchData,
 }: UseKeyboardNavigationProps) {
   const openPopover = useShortcutsStore((state) => state.openPopover);
+  const modifierKey = useShortcutsStore((state) => state.modifierKey);
   const visibleContextMenu = useSearchStore((state) => {
     return state.visibleContextMenu;
   });
-  const modifierKey = useShortcutsStore((state) => {
-    return state.modifierKey;
+  const setSelectedSearchContent = useSearchStore((state) => {
+    return state.setSelectedSearchContent;
   });
-  const { setSelectedSearchContent } = useSearchStore();
 
   const getModifierKeyPressed = (event: KeyboardEvent) => {
     const metaKeyPressed = event.metaKey && modifierKey === "meta";
@@ -65,6 +65,9 @@ export function useKeyboardNavigation({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      const { openPopover } = useShortcutsStore.getState();
+      const { visibleContextMenu } = useSearchStore.getState();
+
       if (isChatMode || !suggests.length || openPopover || visibleContextMenu) {
         return;
       }
@@ -163,7 +166,14 @@ export function useKeyboardNavigation({
         platformAdapter.openSearchItem(item, formatUrl);
       }
     },
-    [suggests, selectedIndex, showIndex, globalItemIndexMap, openPopover]
+    [
+      suggests,
+      selectedIndex,
+      showIndex,
+      globalItemIndexMap,
+      openPopover,
+      visibleContextMenu,
+    ]
   );
 
   const handleKeyUp = useCallback(
