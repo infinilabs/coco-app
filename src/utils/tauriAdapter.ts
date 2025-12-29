@@ -24,6 +24,7 @@ import {
   cursorPosition,
   Monitor,
   monitorFromPoint,
+  PhysicalPosition,
   Theme,
 } from "@tauri-apps/api/window";
 
@@ -48,6 +49,7 @@ export interface TauriPlatformAdapter extends BasePlatformAdapter {
   setWindowPosition: (x: number, y: number) => Promise<void>;
   getMonitorFromCursor: () => Promise<Monitor | null>;
   centerOnCurrentMonitor: () => Promise<unknown>;
+  setWindowPhysicalPosition: (x: number, y: number) => Promise<void>;
 }
 
 // Create Tauri adapter functions
@@ -79,6 +81,11 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
     async setWindowPosition(x, y) {
       return windowWrapper.setLogicalPosition(x, y);
+    },
+    async setWindowPhysicalPosition(x: number, y: number) {
+      const appWindow = getCurrentWebviewWindow();
+
+      return appWindow.setPosition(new PhysicalPosition(x, y));
     },
 
     async getMonitorFromCursor() {
