@@ -41,7 +41,6 @@ import {
 } from "@/constants";
 import { useChatStore } from "@/stores/chatStore";
 import { useSearchStore } from "@/stores/searchStore";
-import { PhysicalPosition } from "@tauri-apps/api/dpi";
 
 interface SearchChatProps {
   isTauri?: boolean;
@@ -109,7 +108,7 @@ function SearchChat({
 
   const setSuppressErrors = useAppStore((state) => state.setSuppressErrors);
   let collapseWindowTimer = useRef<ReturnType<typeof setTimeout>>();
-  const windowPositionRef = useRef<PhysicalPosition>();
+  const windowPositionRef = useRef<{ x: number; y: number }>();
 
   useTauriFocus({
     async onBlur() {
@@ -175,7 +174,7 @@ function SearchChat({
         if (!visible && windowPositionRef.current) {
           const { x, y } = windowPositionRef.current;
 
-          window.setPosition(new PhysicalPosition(x, y));
+          platformAdapter.setWindowPhysicalPosition(x, y);
         }
       }, compactModeAutoCollapseDelay * 1000);
     } else {
