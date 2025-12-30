@@ -21,6 +21,7 @@ Information about release notes of Coco App is provided here.
 - fix: avoid recentering when resizing to compact after leaving extension #1030
 - fix: fix incorrect window position after hiding #1034
 - fix: fix arrow keys not working after closing the context menu #1035
+- fix: fix some filter fields not working #1037
 
 ### ✈️ Improvements
 
