@@ -416,7 +416,7 @@ async fn query_coco_fusion_multi_query_sources(
     }
 
     let mut final_hits = Vec::new();
-    for (_source_id, hits) in final_hits_grouped_by_query_source {
+    for (_source, hits) in final_hits_grouped_by_query_source {
         final_hits.extend(hits);
     }
 
