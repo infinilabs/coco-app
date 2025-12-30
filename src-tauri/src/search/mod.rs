@@ -324,14 +324,13 @@ async fn query_coco_fusion_multi_query_sources(
      */
     let mut final_hits_grouped_by_query_source: HashMap<QuerySource, Vec<QueryHits>> =
         HashMap::new();
-    // HashMap<query source ID, hits>
-    let mut pruned: HashMap<&str, &[QueryHits]> = HashMap::new();
+    let mut pruned: HashMap<&QuerySource, &[QueryHits]> = HashMap::new();
 
     // Include at least 2 hits from each query source
     let max_hits_per_source = (size as usize / n_sources).max(2);
     for (query_source, hits) in all_hits_grouped_by_query_source.iter() {
         let hits_taken = if hits.len() > max_hits_per_source {
-            pruned.insert(&query_source.id, &hits[max_hits_per_source..]);
+            pruned.insert(&query_source, &hits[max_hits_per_source..]);
             hits[0..max_hits_per_source].to_vec()
         } else {
             hits.clone()
@@ -345,7 +344,7 @@ async fn query_coco_fusion_multi_query_sources(
         .fold(0, |acc: usize, (_source, hits)| acc + hits.len());
     let pruned_len = pruned
         .iter()
-        .fold(0, |acc: usize, (_source_id, hits)| acc + hits.len());
+        .fold(0, |acc: usize, (_source, hits)| acc + hits.len());
 
     /*
      * If we still need more hits, take the highest-scoring from `pruned`
@@ -359,8 +358,8 @@ async fn query_coco_fusion_multi_query_sources(
         let n_take = n_have.min(n_need);
 
         for _ in 0..n_take {
-            let mut highest_score_hit: Option<(&str, &QueryHits)> = None;
-            for (source_id, sorted_hits) in pruned.iter_mut() {
+            let mut highest_score_hit: Option<(&QuerySource, &QueryHits)> = None;
+            for (source, sorted_hits) in pruned.iter_mut() {
                 if sorted_hits.is_empty() {
                     continue;
                 }
@@ -375,7 +374,7 @@ async fn query_coco_fusion_multi_query_sources(
                 };
 
                 if have_higher_score_hit {
-                    highest_score_hit = Some((*source_id, hit));
+                    highest_score_hit = Some((*source, hit));
 
                     // Advance sorted_hits by 1 element, if have
                     if sorted_hits.len() == 1 {
@@ -386,12 +385,11 @@ async fn query_coco_fusion_multi_query_sources(
                 }
             }
 
-            let (source_id, hit) = highest_score_hit.expect("`pruned` should contain at least `n_take` elements so `highest_score_hit` should be set");
+            let (source, hit) = highest_score_hit.expect("`pruned` should contain at least `n_take` elements so `highest_score_hit` should be set");
 
             final_hits_grouped_by_query_source
-                .iter_mut().find(|(query_source, _hits)| query_source.id == source_id)
-                .expect("all the source_ids stored in `pruned` come from `final_hits_grouped_by_source_id`, so it should exist")
-                .1
+                .get_mut(source)
+                .expect("all the source_ids stored in `pruned` come from `final_hits_grouped_by_query_source`, so it should exist")
                 .push(hit.clone());
         }
     }
@@ -454,11 +452,11 @@ use strsim::levenshtein;
 
 fn boosted_levenshtein_rerank(
     query: &str,
-    all_hits_grouped_by_source_id: &mut HashMap<QuerySource, Vec<QueryHits>>,
+    final_hits_grouped_by_query_source: &mut HashMap<QuerySource, Vec<QueryHits>>,
 ) {
     let query_lower = query.to_lowercase();
 
-    for (source, hits) in all_hits_grouped_by_source_id.iter_mut() {
+    for (source, hits) in final_hits_grouped_by_query_source.iter_mut() {
         // Skip special sources like calculator
         if source.id == crate::extension::built_in::calculator::DATA_SOURCE_ID {
             continue;
