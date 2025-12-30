@@ -432,11 +432,15 @@ export const getQueryStrings = (queryStrings: Record<string, string>) => {
     const { from, to } = filterDateRange;
 
     if (from) {
-      nextQueryStrings["update_time_start"] = dayjs(from).startOf('day').format('YYYY-MM-DD[T]HH:mm:ss.SSSZ');
+      nextQueryStrings["update_time_start"] = dayjs(from)
+        .startOf("day")
+        .format("YYYY-MM-DD[T]HH:mm:ss.SSSZ");
     }
 
     if (to) {
-      nextQueryStrings["update_time_end"] = dayjs(to).endOf('day').format('YYYY-MM-DD[T]HH:mm:ss.SSSZ');
+      nextQueryStrings["update_time_end"] = dayjs(to)
+        .endOf("day")
+        .format("YYYY-MM-DD[T]HH:mm:ss.SSSZ");
     }
   }
 
@@ -446,7 +450,7 @@ export const getQueryStrings = (queryStrings: Record<string, string>) => {
 
       const result = value.map((item) => item.key).join(",");
 
-      queryStrings[key] = `any(${result})`;
+      nextQueryStrings[key] = `any(${result})`;
     }
   }
 
