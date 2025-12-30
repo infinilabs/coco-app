@@ -305,20 +305,6 @@ async fn query_coco_fusion_multi_query_sources(
     }
 
     /*
-     * Apply settings: local query source weight
-     */
-    let local_query_source_weight: f64 = get_local_query_source_weight(tauri_app_handle);
-    // Scores remain unchanged if it is 1.0
-    if local_query_source_weight != 1.0 {
-        for (query_source, hits) in all_hits_grouped_by_query_source.iter_mut() {
-            if query_source.r#type == LOCAL_QUERY_SOURCE_TYPE {
-                hits.iter_mut()
-                    .for_each(|hit| hit.score = hit.score * local_query_source_weight);
-            }
-        }
-    }
-
-    /*
      * Sort hits within each source by score (descending) in case data sources
      * do not sort them
      */
@@ -336,7 +322,9 @@ async fn query_coco_fusion_multi_query_sources(
      * 1. All sources have hits returned
      * 2. Query sources with many hits won't dominate
      */
-    let mut final_hits_grouped_by_source_id: HashMap<String, Vec<QueryHits>> = HashMap::new();
+    let mut final_hits_grouped_by_query_source: HashMap<QuerySource, Vec<QueryHits>> =
+        HashMap::new();
+    // HashMap<query source ID, hits>
     let mut pruned: HashMap<&str, &[QueryHits]> = HashMap::new();
 
     // Include at least 2 hits from each query source
@@ -349,12 +337,12 @@ async fn query_coco_fusion_multi_query_sources(
             hits.clone()
         };
 
-        final_hits_grouped_by_source_id.insert(query_source.id.clone(), hits_taken);
+        final_hits_grouped_by_query_source.insert(query_source.clone(), hits_taken);
     }
 
-    let final_hits_len = final_hits_grouped_by_source_id
+    let final_hits_len = final_hits_grouped_by_query_source
         .iter()
-        .fold(0, |acc: usize, (_source_id, hits)| acc + hits.len());
+        .fold(0, |acc: usize, (_source, hits)| acc + hits.len());
     let pruned_len = pruned
         .iter()
         .fold(0, |acc: usize, (_source_id, hits)| acc + hits.len());
@@ -400,22 +388,37 @@ async fn query_coco_fusion_multi_query_sources(
 
             let (source_id, hit) = highest_score_hit.expect("`pruned` should contain at least `n_take` elements so `highest_score_hit` should be set");
 
-            final_hits_grouped_by_source_id
-                .get_mut(source_id)
+            final_hits_grouped_by_query_source
+                .iter_mut().find(|(query_source, _hits)| query_source.id == source_id)
                 .expect("all the source_ids stored in `pruned` come from `final_hits_grouped_by_source_id`, so it should exist")
+                .1
                 .push(hit.clone());
         }
     }
 
     /*
-     * Re-rank the final hits
+     * Re-rank (re-score) the final hits
      */
     if n_sources > 1 {
-        boosted_levenshtein_rerank(&query_keyword, &mut final_hits_grouped_by_source_id);
+        boosted_levenshtein_rerank(&query_keyword, &mut final_hits_grouped_by_query_source);
+    }
+
+    /*
+     * Apply settings "local search results weight" to the scores
+     */
+    let local_query_source_weight: f64 = get_local_query_source_weight(tauri_app_handle);
+    // Scores remain unchanged if it is 1.0
+    if local_query_source_weight != 1.0 {
+        for (query_source, hits) in final_hits_grouped_by_query_source.iter_mut() {
+            if query_source.r#type == LOCAL_QUERY_SOURCE_TYPE {
+                hits.iter_mut()
+                    .for_each(|hit| hit.score = hit.score * local_query_source_weight);
+            }
+        }
     }
 
     let mut final_hits = Vec::new();
-    for (_source_id, hits) in final_hits_grouped_by_source_id {
+    for (_source_id, hits) in final_hits_grouped_by_query_source {
         final_hits.extend(hits);
     }
 
@@ -451,13 +454,13 @@ use strsim::levenshtein;
 
 fn boosted_levenshtein_rerank(
     query: &str,
-    all_hits_grouped_by_source_id: &mut HashMap<String, Vec<QueryHits>>,
+    all_hits_grouped_by_source_id: &mut HashMap<QuerySource, Vec<QueryHits>>,
 ) {
     let query_lower = query.to_lowercase();
 
-    for (source_id, hits) in all_hits_grouped_by_source_id.iter_mut() {
+    for (source, hits) in all_hits_grouped_by_source_id.iter_mut() {
         // Skip special sources like calculator
-        if source_id == crate::extension::built_in::calculator::DATA_SOURCE_ID {
+        if source.id == crate::extension::built_in::calculator::DATA_SOURCE_ID {
             continue;
         }
 
