@@ -38,6 +38,7 @@ import { useTauriFocus } from "@/hooks/useTauriFocus";
 import {
   POPOVER_PANEL_SELECTOR,
   WINDOW_CENTER_BASELINE_HEIGHT,
+  HISTORY_PANEL_ID,
 } from "@/constants";
 import { useChatStore } from "@/stores/chatStore";
 import { useSearchStore } from "@/stores/searchStore";
@@ -132,6 +133,7 @@ function SearchChat({
 
     const updateAppDialog = document.querySelector("#update-app-dialog");
     const popoverPanelEl = document.querySelector(POPOVER_PANEL_SELECTOR);
+    const historyPanel = document.getElementById(HISTORY_PANEL_ID);
 
     const { hasActiveChat } = useChatStore.getState();
 
@@ -140,6 +142,7 @@ function SearchChat({
       canNavigateBack() ||
       inputRef.current ||
       popoverPanelEl ||
+      historyPanel ||
       (isChatModeRef.current && hasActiveChat)
     ) {
       setHideMiddleBorder(false);
