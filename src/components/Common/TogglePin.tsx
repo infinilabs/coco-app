@@ -1,13 +1,14 @@
-import { useAppStore } from "@/stores/appStore";
-import { useShortcutsStore } from "@/stores/shortcutsStore";
-import clsx from "clsx";
-import VisibleKey from "./VisibleKey";
 import { FC, HTMLAttributes, useState } from "react";
+import { useMount } from "ahooks";
+import clsx from "clsx";
+
+import VisibleKey from "./VisibleKey";
 import PinOffIcon from "@/icons/PinOff";
 import PinIcon from "@/icons/Pin";
 import platformAdapter from "@/utils/platformAdapter";
-import { useMount } from "ahooks";
 import { MAIN_WINDOW_LABEL } from "@/constants";
+import { useAppStore } from "@/stores/appStore";
+import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 interface TogglePinProps extends HTMLAttributes<HTMLButtonElement> {
   setIsPinnedWeb?: (value: boolean) => void;
