@@ -2,6 +2,7 @@ import { memo } from "react";
 import { PackageOpen, GitFork, CalendarSync } from "lucide-react";
 
 import { useConnectStore } from "@/stores/connectStore";
+import { formatDateToLocal } from "@/utils/date";
 
 interface ServiceMetadataProps {}
 
@@ -20,7 +21,7 @@ const ServiceMetadata = memo(({}: ServiceMetadataProps) => {
         </span>
         <span className="mx-4">|</span>
         <span className="flex items-center gap-1">
-          <CalendarSync className="w-4 h-4" /> {cloudSelectService?.updated}
+          <CalendarSync className="w-4 h-4" /> {formatDateToLocal(cloudSelectService?.updated)}
         </span>
       </div>
       <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
