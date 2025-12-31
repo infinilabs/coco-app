@@ -31,9 +31,8 @@ import type { StartPage } from "@/types/chat";
 import {
   canNavigateBack,
   hasUploadingAttachment,
-  visibleFilterBar,
-  visibleSearchBar,
 } from "@/utils";
+import { useVisibleSearchBar, useVisibleFilterBar } from "@/hooks/useViewExtensionUI";
 import { useTauriFocus } from "@/hooks/useTauriFocus";
 import {
   POPOVER_PANEL_SELECTOR,
@@ -42,6 +41,7 @@ import {
 } from "@/constants";
 import { useChatStore } from "@/stores/chatStore";
 import { useSearchStore } from "@/stores/searchStore";
+import { useExtensionStore } from "@/stores/extensionStore";
 
 interface SearchChatProps {
   isTauri?: boolean;
@@ -78,6 +78,8 @@ function SearchChat({
   formatUrl,
 }: SearchChatProps) {
   const currentAssistant = useConnectStore((state) => state.currentAssistant);
+  const isVisibleSearchBar = useVisibleSearchBar();
+  const isVisibleFilterBar = useVisibleFilterBar();
 
   const source = currentAssistant?._source;
 
@@ -118,9 +120,11 @@ function SearchChat({
       windowPositionRef.current = await window.outerPosition();
     },
   });
-
+  
   const setWindowSize = useCallback(() => {
-    const { viewExtensionOpened } = useSearchStore.getState();
+    const { viewExtensions } = useExtensionStore.getState();
+    const viewExtensionOpened = viewExtensions.length > 0 ? viewExtensions[viewExtensions.length - 1] : undefined;
+
     if (collapseWindowTimer.current) {
       clearTimeout(collapseWindowTimer.current);
     }
@@ -478,7 +482,7 @@ function SearchChat({
         className={clsx(
           "relative p-2 w-full flex justify-center transition-all duration-500",
           {
-            "min-h-[84px]": visibleSearchBar() && visibleFilterBar(),
+            "min-h-[84px]": isVisibleSearchBar && isVisibleFilterBar,
           }
         )}
       >

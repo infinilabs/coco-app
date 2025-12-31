@@ -16,6 +16,7 @@ import { useIconfontScript } from "@/hooks/useScript";
 import { Extension } from "@/components/Settings/Extensions";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useSelectionStore, startSelectionStorePersistence } from "@/stores/selectionStore";
+import { startExtensionStorePersistence } from "@/stores/extensionStore";
 import { useServers } from "@/hooks/useServers";
 import { useDeepLinkManager } from "@/hooks/useDeepLinkManager";
 // import { useSelectionWindow } from "@/hooks/useSelectionWindow";
@@ -33,6 +34,9 @@ export default function LayoutOutlet() {
   // Initialize Tauri-backed persistence for selection store only in desktop mode.
   useMount(() => {
     startSelectionStorePersistence();
+  });
+  useMount(() => {
+    startExtensionStorePersistence();
   });
 
   // init servers isTauri

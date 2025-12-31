@@ -4,6 +4,7 @@ import clsx from "clsx";
 import DropdownList from "./DropdownList";
 import { SearchResults } from "@/components/Search/SearchResults";
 import { useSearchStore } from "@/stores/searchStore";
+import { useExtensionStore } from "@/stores/extensionStore";
 import ContextMenu from "./ContextMenu";
 import { NoResults } from "@/components/Common/UI/NoResults";
 import Footer from "@/components/Common/UI/Footer";
@@ -12,7 +13,7 @@ import { useSearch } from "@/hooks/useSearch";
 import ExtensionStore from "./ExtensionStore";
 import platformAdapter from "@/utils/platformAdapter";
 import ViewExtension from "./ViewExtension";
-import { visibleFooterBar } from "@/utils";
+import { useVisibleFooterBar } from "@/hooks/useViewExtensionUI";
 
 const SearchResultsPanel = memo<{
   input: string;
@@ -52,9 +53,11 @@ const SearchResultsPanel = memo<{
   const {
     setSelectedAssistant,
     selectedSearchContent,
-    visibleExtensionStore,
-    viewExtensionOpened,
+    visibleExtensionStore
   } = useSearchStore();
+  const viewExtensionOpened = useExtensionStore((state) => 
+    state.viewExtensions.length > 0 ? state.viewExtensions[state.viewExtensions.length - 1] : undefined
+  );
 
   useEffect(() => {
     if (selectedSearchContent?.type === "AI Assistant") {
@@ -173,12 +176,13 @@ function Search({
   formatUrl,
 }: SearchProps) {
   const mainWindowRef = useRef<HTMLDivElement>(null);
+  const isVisibleFooterBar = useVisibleFooterBar();
 
   return (
     <div
       ref={mainWindowRef}
       className={clsx("h-full w-full relative", {
-        "pb-8": visibleFooterBar(),
+        "pb-8": isVisibleFooterBar,
       })}
     >
       <SearchResultsPanel
@@ -189,7 +193,7 @@ function Search({
         formatUrl={formatUrl}
       />
 
-      {visibleFooterBar() && <Footer setIsPinnedWeb={setIsPinned} />}
+      {isVisibleFooterBar && <Footer setIsPinnedWeb={setIsPinned} />}
 
       <ContextMenu formatUrl={formatUrl} />
     </div>

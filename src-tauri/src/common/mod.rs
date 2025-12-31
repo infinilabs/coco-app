@@ -14,3 +14,4 @@ pub mod traits;
 pub static MAIN_WINDOW_LABEL: &str = "main";
 pub static SETTINGS_WINDOW_LABEL: &str = "settings";
 pub static CHECK_WINDOW_LABEL: &str = "check";
+pub static VIEW_EXTENSION_WINDOW_LABEL: &str = "view_extension";

@@ -646,7 +646,8 @@
       "enter": "进入全屏",
       "exit": "退出全屏"
     },
-    "focus": "聚焦"
+    "focus": "聚焦",
+    "detach": "分离"
   },
   "deleteDialog": {
     "button": {

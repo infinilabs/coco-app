@@ -7,7 +7,7 @@ import { AppTheme } from "@/types/index";
 import { SearchDocument } from "./search";
 import { IAppStore } from "@/stores/appStore";
 import type { Server } from "@/types/server";
-import { ViewExtensionOpened } from "@/stores/searchStore";
+import { ViewExtensionOpened } from "@/stores/extensionStore";
 
 export interface EventPayloads {
   "theme-changed": string;

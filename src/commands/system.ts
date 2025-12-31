@@ -28,6 +28,10 @@ export function show_settings(): Promise<void> {
   return invoke('show_settings');
 }
 
+export function show_view_extension(): Promise<void> {
+  return invoke('show_view_extension');
+}
+
 export function show_check(): Promise<void> {
   return invoke('show_check');
 }

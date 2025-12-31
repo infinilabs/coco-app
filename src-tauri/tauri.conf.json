@@ -80,6 +80,24 @@
         }
       },
       {
+        "label": "view_extension",
+        "title": "View Extension",
+        "url": "/ui/view-extension",
+        "width": 1000,
+        "minWidth": 800,
+        "height": 800,
+        "minHeight": 600,
+        "center": true,
+        "decorations": true,
+        "transparent": false,
+        "maximizable": true,
+        "skipTaskbar": false,
+        "dragDropEnabled": false,
+        "hiddenTitle": true,
+        "visible": false,
+        "resizable": true
+      },
+      {
         "label": "selection",
         "title": "Selection",
         "alwaysOnTop": true,
