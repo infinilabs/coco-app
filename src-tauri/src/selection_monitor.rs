@@ -375,7 +375,7 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
 }
 
 /// Ensure macOS Accessibility permission with double-checking and session throttling.
-/// Returns true when trusted; otherwise triggers prompt/settings link and emits
+/// Returns true when trusted; otherwise triggers prompt and emits
 /// `selection-permission-required` to the frontend, then returns false.
 #[cfg(target_os = "macos")]
 fn ensure_accessibility_permission(app_handle: &tauri::AppHandle) -> bool {
@@ -424,7 +424,7 @@ fn ensure_accessibility_permission(app_handle: &tauri::AppHandle) -> bool {
         log::warn!(target: "coco_lib::selection_monitor", "ensure_accessibility_permission: still not trusted after prompt");
     }
 
-    // Still not trusted — notify frontend and deep-link to settings.
+    // Still not trusted — notify frontend.
     let _ = app_handle.emit("selection-permission-required", true);
     log::debug!(target: "coco_lib::selection_monitor", "selection-permission-required emitted");
 
@@ -433,13 +433,6 @@ fn ensure_accessibility_permission(app_handle: &tauri::AppHandle) -> bool {
     log::info!(target: "coco_lib::selection_monitor", "selection-permission-info: bundle_id={}, exe_path={}, in_applications={}, is_dmg={}, is_dev_guess={}",
         info.bundle_id, info.exe_path, info.in_applications, info.is_dmg, info.is_dev_guess);
     let _ = app_handle.emit("selection-permission-info", info);
-    #[allow(unused_must_use)]
-    {
-        use std::process::Command;
-        Command::new("open")
-            .arg("x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
-            .status();
-    }
 
     false
 }

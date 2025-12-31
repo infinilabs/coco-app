@@ -27,6 +27,7 @@ Information about release notes of Coco App is provided here.
 ### ✈️ Improvements
 
 - refactor: add a timeout to open() #1025
+- refactor: format Coco server update time in settings #1040
 
 ## 0.10.0 (2025-12-19)
 
