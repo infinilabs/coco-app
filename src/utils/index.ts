@@ -232,13 +232,13 @@ export const canNavigateBack = () => {
     visibleExtensionDetail,
     sourceData,
   } = useSearchStore.getState();
-  const { viewExtensionOpened } = useExtensionStore.getState();
+  const { viewExtensions } = useExtensionStore.getState();
 
   return (
     goAskAi ||
     visibleExtensionStore ||
     visibleExtensionDetail ||
-    viewExtensionOpened ||
+    viewExtensions.length > 0 ||
     sourceData
   );
 };
@@ -254,7 +254,7 @@ export const navigateBack = () => {
     setSourceData,
   } = useSearchStore.getState();
 
-  const { viewExtensionOpened, setViewExtensionOpened } = useExtensionStore.getState();
+  const { viewExtensions, closeViewExtension } = useExtensionStore.getState();
 
   if (goAskAi) {
     return setGoAskAi(false);
@@ -268,8 +268,8 @@ export const navigateBack = () => {
     return setVisibleExtensionStore(false);
   }
 
-  if (viewExtensionOpened) {
-    setViewExtensionOpened(void 0);
+  if (viewExtensions.length > 0) {
+    closeViewExtension();
     platformAdapter.emitEvent("refresh-window-size");
     return;
   }
@@ -302,48 +302,6 @@ export const dispatchEvent = (
   });
 
   target.dispatchEvent(event);
-};
-
-export const visibleSearchBar = () => {
-  const { visibleExtensionDetail } = useSearchStore.getState();
-
-  const { viewExtensionOpened } = useExtensionStore.getState();
-
-  if (visibleExtensionDetail) return false;
-
-  if (isNil(viewExtensionOpened)) return true;
-
-  const ui = viewExtensionOpened[4];
-
-  return ui?.search_bar ?? false;
-};
-
-export const visibleFilterBar = () => {
-  const {
-    visibleExtensionStore,
-    visibleExtensionDetail,
-    goAskAi,
-  } = useSearchStore.getState();
-
-  const { viewExtensionOpened } = useExtensionStore.getState();
-
-  if (visibleExtensionStore || visibleExtensionDetail || goAskAi) return false;
-
-  if (isNil(viewExtensionOpened)) return true;
-
-  const ui = viewExtensionOpened[4];
-
-  return ui?.filter_bar ?? false;
-};
-
-export const visibleFooterBar = () => {
-  const { viewExtensionOpened } = useExtensionStore.getState();
-
-  if (isNil(viewExtensionOpened)) return true;
-
-  const ui = viewExtensionOpened[4];
-
-  return ui?.footer ?? false;
 };
 
 export const installExtensionError = (error: any) => {

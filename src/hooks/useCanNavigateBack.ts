@@ -11,7 +11,8 @@ export const useCanNavigateBack = () => {
     sourceData,
   } = useSearchStore();
   
-  const { viewExtensionOpened } = useExtensionStore.getState();
+  const { viewExtensions } = useExtensionStore.getState();
+  const viewExtensionOpened = viewExtensions.length > 0 ? viewExtensions[viewExtensions.length - 1] : undefined;
 
   const canNavigateBack = useMemo(() => {
     return (

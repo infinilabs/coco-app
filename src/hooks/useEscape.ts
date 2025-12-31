@@ -8,7 +8,9 @@ import { closeHistoryPanel } from "@/utils";
 
 const useEscape = () => {
   const { setVisibleContextMenu } = useSearchStore();
-  const viewExtensionOpened = useExtensionStore((state) => state.viewExtensionOpened);
+  const viewExtensionOpened = useExtensionStore((state) =>
+    state.viewExtensions.length > 0 ? state.viewExtensions[state.viewExtensions.length - 1] : undefined
+  );
 
   useKeyPress("esc", (event) => {
     event.preventDefault();

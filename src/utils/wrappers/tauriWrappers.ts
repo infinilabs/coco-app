@@ -48,6 +48,12 @@ export const windowWrapper = {
     return win.setFullscreen(enable);
   },
 
+  async isFullscreen() {
+    const { getCurrentWindow } = await import("@tauri-apps/api/window");
+    const win = getCurrentWindow();
+    return win.isFullscreen();
+  },
+
   async setLogicalPosition(x: number, y: number) {
     const { LogicalPosition } = await import("@tauri-apps/api/dpi");
     const window = await this.getCurrentWebviewWindow();

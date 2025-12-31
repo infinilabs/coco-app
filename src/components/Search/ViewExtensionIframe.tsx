@@ -44,10 +44,24 @@ type ViewExtensionIframeProps = {
   iframeRef: React.MutableRefObject<HTMLIFrameElement | null>;
   hideScrollbar: boolean;
   focusIframe: () => void;
+  onLoaded?: (success: boolean) => void;
+  onContentSize?: (size: { width: number; height: number }) => void;
+  baseWidth?: number;
+  baseHeight?: number;
 };
 
 export default function ViewExtensionIframe(props: ViewExtensionIframeProps) {
-  const { fileUrl, scale, iframeRef, hideScrollbar, focusIframe } = props;
+  const {
+    fileUrl,
+    scale,
+    iframeRef,
+    hideScrollbar,
+    focusIframe,
+    onLoaded,
+    onContentSize,
+    baseWidth,
+    baseHeight,
+  } = props;
 
   const isSameOrigin = () => {
     try {
@@ -84,6 +98,8 @@ export default function ViewExtensionIframe(props: ViewExtensionIframeProps) {
         className="border-0 w-full h-full"
         scrolling={hideScrollbar ? "no" : "auto"}
         style={{
+          width: baseWidth ? `${baseWidth}px` : undefined,
+          height: baseHeight ? `${baseHeight}px` : undefined,
           transform: `scale(${scale})`,
           transformOrigin: "center center",
           outline: "none",
@@ -98,7 +114,31 @@ export default function ViewExtensionIframe(props: ViewExtensionIframeProps) {
               iframeRef.current?.contentWindow?.focus();
             } catch {}
             applyHideScrollbarToIframe(event.currentTarget, hideScrollbar);
+            try {
+              const doc = event.currentTarget.contentDocument!;
+              const root = doc.documentElement;
+              const body = doc.body;
+              const width = Math.max(
+                root?.scrollWidth ?? 0,
+                body?.scrollWidth ?? 0,
+                root?.clientWidth ?? 0,
+                body?.clientWidth ?? 0
+              );
+              const height = Math.max(
+                root?.scrollHeight ?? 0,
+                body?.scrollHeight ?? 0,
+                root?.clientHeight ?? 0,
+                body?.clientHeight ?? 0
+              );
+              if (width > 0 && height > 0) {
+                onContentSize?.({ width, height });
+              }
+            } catch {}
           }
+          onLoaded?.(true);
+        }}
+        onError={() => {
+          onLoaded?.(false);
         }}
       />
     </div>

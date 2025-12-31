@@ -3,27 +3,34 @@ import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Focus, ExternalLink } from "lucide-react";
 
-import { useExtensionStore } from "@/stores/extensionStore";
+import { useExtensionStore, type ViewExtensionOpened } from "@/stores/extensionStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useViewExtensionWindow } from "@/hooks/useViewExtensionWindow";
 import ViewExtensionIframe from "./ViewExtensionIframe";
-import { apiPermissionCheck, fsPermissionCheck } from "./viewExtensionPermissions";
+import {
+  apiPermissionCheck,
+  fsPermissionCheck,
+} from "./viewExtensionPermissions";
 
 type ControlsProps = {
   showFullscreen?: boolean;
   showDetach?: boolean;
   showFocus?: boolean;
   forceResizable?: boolean;
+  initialViewExtensionOpened?: ViewExtensionOpened | null;
 };
 
 const ViewExtensionContent: React.FC<ControlsProps> = ({
-  showFullscreen = true,
   showDetach = true,
   showFocus = true,
   forceResizable = false,
+  initialViewExtensionOpened = null,
 }) => {
-  const viewExtensionOpened = useExtensionStore((state) => state.viewExtensionOpened);
+  const storeView = useExtensionStore((state) => 
+    state.viewExtensions.length > 0 ? state.viewExtensions[state.viewExtensions.length - 1] : undefined
+  );
+  const viewExtensionOpened = initialViewExtensionOpened ?? storeView;
 
   // Complete list of the backend APIs, grouped by their category.
   const [apis, setApis] = useState<Map<string, string[]> | null>(null);
@@ -177,45 +184,70 @@ const ViewExtensionContent: React.FC<ControlsProps> = ({
     detachable,
     hideScrollbar,
     scale,
+    baseWidth,
+    baseHeight,
     iframeRef,
     focusIframe,
+    setBaseSize,
   } = useViewExtensionWindow({ forceResizable });
 
+  const [iframeReady, setIframeReady] = useState(false);
+
   return (
-    <div className="relative w-full h-full">
-      <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
-        {resizable && showFocus && (
-          <button
-            aria-label={t("viewExtension.focus")}
-            className="rounded-md bg-black/40 text-white p-2 hover:bg-black/60 focus:outline-none"
-            onClick={focusIframe}
-          >
-            <Focus className="size-4" />
-          </button>
-        )}
-        {((detachable && showDetach) || (resizable && showFullscreen)) && (
-          <button
-            aria-label={t("viewExtension.detach")}
-            className="rounded-md bg-black/40 text-white p-2 hover:bg-black/60 focus:outline-none"
-            onClick={() => platformAdapter.invokeBackend("show_view_extension")}
-          >
-            <ExternalLink className="size-4" />
-          </button>
-        )}
-      </div>
+    <div className="relative w-full h-full overflow-hidden">
+      {iframeReady && (
+        <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
+          {resizable && showFocus && (
+            <button
+              aria-label={t("viewExtension.focus")}
+              className="rounded-md bg-black/40 text-white p-2 hover:bg-black/60 focus:outline-none"
+              onClick={focusIframe}
+            >
+              <Focus className="size-4" />
+            </button>
+          )}
+          {detachable && showDetach && (
+            <button
+              aria-label={t("viewExtension.detach")}
+              className="rounded-md bg-black/40 text-white p-2 hover:bg-black/60 focus:outline-none"
+              onClick={() => {
+                const ext = viewExtensionOpened!;
+                const name = ext[0] || "extension";
+                const safe = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+                const label = `view_extension_${safe}_${Date.now()}`;
+                const payload = btoa(encodeURIComponent(JSON.stringify(ext)));
+                platformAdapter.invokeBackend("show_view_extension", {
+                  label,
+                  query: `?ext=${payload}`,
+                  width: baseWidth,
+                  height: baseHeight,
+                });
+              }}
+            >
+              <ExternalLink className="size-4" />
+            </button>
+          )}
+        </div>
+      )}
       <ViewExtensionIframe
         fileUrl={fileUrl}
         scale={scale}
+        baseWidth={baseWidth}
+        baseHeight={baseHeight}
         iframeRef={iframeRef}
         hideScrollbar={hideScrollbar}
         focusIframe={focusIframe}
+        onLoaded={(ok) => setIframeReady(ok)}
+        onContentSize={(size) => setBaseSize(size.width, size.height)}
       />
     </div>
   );
 };
 
 const ViewExtension: React.FC<ControlsProps> = (props) => {
-  const viewExtensionOpened = useExtensionStore((state) => state.viewExtensionOpened);
+  const viewExtensionOpened = useExtensionStore(
+    (state) => state.viewExtensions.length > 0 ? state.viewExtensions[state.viewExtensions.length - 1] : undefined
+  );
 
   if (viewExtensionOpened == null) {
     return (

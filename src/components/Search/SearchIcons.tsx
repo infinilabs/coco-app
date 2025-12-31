@@ -9,7 +9,8 @@ import { useThemeStore } from "@/stores/themeStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useExtensionStore } from "@/stores/extensionStore";
 import platformAdapter from "@/utils/platformAdapter";
-import { navigateBack, visibleSearchBar } from "@/utils";
+import { navigateBack } from "@/utils";
+import { useVisibleSearchBar } from "@/hooks/useViewExtensionUI";
 import VisibleKey from "../Common/VisibleKey";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,7 @@ interface MultilevelWrapperProps {
 const MultilevelWrapper: FC<MultilevelWrapperProps> = (props) => {
   const { icon, title = "" } = props;
   const { isDark } = useThemeStore();
+  const isVisibleSearchBar = useVisibleSearchBar();
 
   const renderIcon = () => {
     if (!icon) {
@@ -40,8 +42,8 @@ const MultilevelWrapper: FC<MultilevelWrapperProps> = (props) => {
       className={clsx(
         "flex items-center h-10 gap-1 px-2 border border-(--border) rounded-l-lg",
         {
-          "justify-center": visibleSearchBar(),
-          "w-[calc(100vw-16px)] rounded-r-lg": !visibleSearchBar(),
+          "justify-center": isVisibleSearchBar,
+          "w-[calc(100vw-16px)] rounded-r-lg": !isVisibleSearchBar,
         }
       )}
     >
@@ -78,7 +80,9 @@ export default function SearchIcons({
     selectedExtension
   } = useSearchStore();
   
-  const viewExtensionOpened = useExtensionStore((state) => state.viewExtensionOpened);
+  const viewExtensionOpened = useExtensionStore((state) => 
+    state.viewExtensions.length > 0 ? state.viewExtensions[state.viewExtensions.length - 1] : undefined
+  );
 
   if (isChatMode) {
     return null;

@@ -12,7 +12,7 @@ import platformAdapter from "@/utils/platformAdapter";
 function MainApp() {
   const { setIsTauri } = useAppStore();
   
-  const setViewExtensionOpened = useExtensionStore((state) => state.setViewExtensionOpened);
+  const addViewExtension = useExtensionStore((state) => state.addViewExtension);
 
   useEffect(() => {
     setIsTauri(true);
@@ -24,7 +24,7 @@ function MainApp() {
     platformAdapter.listenEvent("open_view_extension", async ({ payload }) => {
       await platformAdapter.showWindow();
 
-      setViewExtensionOpened(payload);
+      addViewExtension(payload);
     });
   }, []);
 

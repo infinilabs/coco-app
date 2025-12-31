@@ -399,11 +399,17 @@ async fn show_settings(app_handle: AppHandle) {
 }
 
 #[tauri::command]
-async fn show_view_extension(app_handle: AppHandle) {
+async fn show_view_extension(
+    app_handle: AppHandle,
+    label: Option<String>,
+    query: Option<String>,
+    width: Option<f64>,
+    height: Option<f64>,
+) {
     log::debug!("view extension menu item was clicked");
-    let label = VIEW_EXTENSION_WINDOW_LABEL;
+    let window_label = label.unwrap_or_else(|| VIEW_EXTENSION_WINDOW_LABEL.to_string());
 
-    if let Some(window) = app_handle.get_webview_window(label) {
+    if let Some(window) = app_handle.get_webview_window(&window_label) {
         window.show().unwrap();
         window.unminimize().unwrap();
         window.set_focus().unwrap();
@@ -411,13 +417,18 @@ async fn show_view_extension(app_handle: AppHandle) {
     }
 
     // If window doesn't exist (e.g. was closed), create it
-    let url = WebviewUrl::App("/ui/view-extension".into());
-    let build_result = WebviewWindowBuilder::new(&app_handle, label, url)
+    let url_suffix = query.unwrap_or_else(|| "".to_string());
+    let url = WebviewUrl::App(format!("/ui/view-extension{}", url_suffix).into());
+    let w = width.unwrap_or(1000.0);
+    let h = height.unwrap_or(800.0);
+
+    let build_result = WebviewWindowBuilder::new(&app_handle, &window_label, url)
         .title("View Extension")
-        .inner_size(1000.0, 800.0)
+        .inner_size(w, h)
         .min_inner_size(800.0, 600.0)
         .resizable(true)
-        .visible(true)
+        .center()
+        .visible(false)
         .build();
 
     match build_result {
