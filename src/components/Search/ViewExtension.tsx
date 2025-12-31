@@ -1,29 +1,34 @@
 import React from "react";
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Maximize2, Minimize2, Focus } from "lucide-react";
+import { Focus, ExternalLink } from "lucide-react";
 
-import { useSearchStore } from "@/stores/searchStore";
+import { useExtensionStore } from "@/stores/extensionStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useViewExtensionWindow } from "@/hooks/useViewExtensionWindow";
 import ViewExtensionIframe from "./ViewExtensionIframe";
 import { apiPermissionCheck, fsPermissionCheck } from "./viewExtensionPermissions";
 
-const ViewExtension: React.FC = () => {
-  const { viewExtensionOpened } = useSearchStore();
+type ControlsProps = {
+  showFullscreen?: boolean;
+  showDetach?: boolean;
+  showFocus?: boolean;
+  forceResizable?: boolean;
+};
+
+const ViewExtensionContent: React.FC<ControlsProps> = ({
+  showFullscreen = true,
+  showDetach = true,
+  showFocus = true,
+  forceResizable = false,
+}) => {
+  const viewExtensionOpened = useExtensionStore((state) => state.viewExtensionOpened);
 
   // Complete list of the backend APIs, grouped by their category.
   const [apis, setApis] = useState<Map<string, string[]> | null>(null);
   const { setModifierKeyPressed } = useShortcutsStore();
   const { t } = useTranslation();
-
-  if (viewExtensionOpened == null) {
-    // When this view gets loaded, this state should not be NULL.
-    throw new Error(
-      "ViewExtension Error: viewExtensionOpened is null. This should not happen."
-    );
-  }
 
   // invoke `apis()` and set the state
   useEffect(() => {
@@ -44,7 +49,7 @@ const ViewExtension: React.FC = () => {
   }, []);
 
   // White list of the permission entries
-  const permission = viewExtensionOpened[3];
+  const permission = viewExtensionOpened![3];
 
   // apis is in format {"category": ["api1", "api2"]}, to make the permission check
   // easier, reverse the map key values: {"api1": "category", "api2": "category"}
@@ -165,47 +170,39 @@ const ViewExtension: React.FC = () => {
     };
   }, [reversedApis, permission]); // Add apiPermissions as dependency
 
-  const fileUrl = viewExtensionOpened[2];
+  const fileUrl = viewExtensionOpened![2];
 
   const {
     resizable,
+    detachable,
     hideScrollbar,
     scale,
     iframeRef,
-    isFullscreen,
-    toggleFullscreen,
     focusIframe,
-  } = useViewExtensionWindow();
+  } = useViewExtensionWindow({ forceResizable });
 
   return (
     <div className="relative w-full h-full">
-      {resizable && (
-        <button
-          aria-label={
-            isFullscreen
-              ? t("viewExtension.fullscreen.exit")
-              : t("viewExtension.fullscreen.enter")
-          }
-          className="absolute top-2 right-2 z-10 rounded-md bg-black/40 text-white p-2 hover:bg-black/60 focus:outline-none"
-          onClick={toggleFullscreen}
-        >
-          {isFullscreen ? (
-            <Minimize2 className="size-4" />
-          ) : (
-            <Maximize2 className="size-4" />
-          )}
-        </button>
-      )}
-      {/* Focus helper button */}
-      {resizable && (
-        <button
-          aria-label={t("viewExtension.focus")}
-          className="absolute top-2 right-12 z-10 rounded-md bg-black/40 text-white p-2 hover:bg-black/60 focus:outline-none"
-          onClick={focusIframe}
-        >
-          <Focus className="size-4" />
-        </button>
-      )}
+      <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
+        {resizable && showFocus && (
+          <button
+            aria-label={t("viewExtension.focus")}
+            className="rounded-md bg-black/40 text-white p-2 hover:bg-black/60 focus:outline-none"
+            onClick={focusIframe}
+          >
+            <Focus className="size-4" />
+          </button>
+        )}
+        {((detachable && showDetach) || (resizable && showFullscreen)) && (
+          <button
+            aria-label={t("viewExtension.detach")}
+            className="rounded-md bg-black/40 text-white p-2 hover:bg-black/60 focus:outline-none"
+            onClick={() => platformAdapter.invokeBackend("show_view_extension")}
+          >
+            <ExternalLink className="size-4" />
+          </button>
+        )}
+      </div>
       <ViewExtensionIframe
         fileUrl={fileUrl}
         scale={scale}
@@ -215,6 +212,20 @@ const ViewExtension: React.FC = () => {
       />
     </div>
   );
+};
+
+const ViewExtension: React.FC<ControlsProps> = (props) => {
+  const viewExtensionOpened = useExtensionStore((state) => state.viewExtensionOpened);
+
+  if (viewExtensionOpened == null) {
+    return (
+      <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+        Loading...
+      </div>
+    );
+  }
+
+  return <ViewExtensionContent {...props} />;
 };
 
 export default ViewExtension;

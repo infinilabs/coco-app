@@ -647,7 +647,8 @@
       "enter": "Enter Full Screen",
       "exit": "Exit Full Screen"
     },
-    "focus": "Focus"
+    "focus": "Focus",
+    "detach": "Detach"
   },
   "deleteDialog": {
     "button": {

@@ -4,6 +4,7 @@ import clsx from "clsx";
 import DropdownList from "./DropdownList";
 import { SearchResults } from "@/components/Search/SearchResults";
 import { useSearchStore } from "@/stores/searchStore";
+import { useExtensionStore } from "@/stores/extensionStore";
 import ContextMenu from "./ContextMenu";
 import { NoResults } from "@/components/Common/UI/NoResults";
 import Footer from "@/components/Common/UI/Footer";
@@ -52,9 +53,9 @@ const SearchResultsPanel = memo<{
   const {
     setSelectedAssistant,
     selectedSearchContent,
-    visibleExtensionStore,
-    viewExtensionOpened,
+    visibleExtensionStore
   } = useSearchStore();
+  const viewExtensionOpened = useExtensionStore((state) => state.viewExtensionOpened);
 
   useEffect(() => {
     if (selectedSearchContent?.type === "AI Assistant") {

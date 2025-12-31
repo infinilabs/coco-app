@@ -1,17 +1,20 @@
+import { useKeyPress } from "ahooks";
+
 import platformAdapter from "@/utils/platformAdapter";
 import { useSearchStore } from "@/stores/searchStore";
-import { useKeyPress } from "ahooks";
+import { useExtensionStore } from "@/stores/extensionStore";
 import { HISTORY_PANEL_ID } from "@/constants";
 import { closeHistoryPanel } from "@/utils";
 
 const useEscape = () => {
   const { setVisibleContextMenu } = useSearchStore();
+  const viewExtensionOpened = useExtensionStore((state) => state.viewExtensionOpened);
 
   useKeyPress("esc", (event) => {
     event.preventDefault();
     event.stopPropagation();
 
-    const { visibleContextMenu, viewExtensionOpened } =
+    const { visibleContextMenu } =
       useSearchStore.getState();
 
     if (

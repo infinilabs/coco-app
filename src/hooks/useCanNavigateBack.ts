@@ -1,14 +1,17 @@
-import { useSearchStore } from "@/stores/searchStore";
 import { useMemo } from "react";
+
+import { useSearchStore } from "@/stores/searchStore";
+import { useExtensionStore } from "@/stores/extensionStore";
 
 export const useCanNavigateBack = () => {
   const {
     goAskAi,
     visibleExtensionStore,
     visibleExtensionDetail,
-    viewExtensionOpened,
     sourceData,
   } = useSearchStore();
+  
+  const { viewExtensionOpened } = useExtensionStore.getState();
 
   const canNavigateBack = useMemo(() => {
     return (

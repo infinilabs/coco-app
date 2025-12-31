@@ -41,6 +41,7 @@ import {
 } from "@/constants";
 import { useChatStore } from "@/stores/chatStore";
 import { useSearchStore } from "@/stores/searchStore";
+import { useExtensionStore } from "@/stores/extensionStore";
 
 interface SearchChatProps {
   isTauri?: boolean;
@@ -117,9 +118,10 @@ function SearchChat({
       windowPositionRef.current = await window.outerPosition();
     },
   });
-
+  
   const setWindowSize = useCallback(() => {
-    const { viewExtensionOpened } = useSearchStore.getState();
+    const { viewExtensionOpened } = useExtensionStore.getState();
+
     if (collapseWindowTimer.current) {
       clearTimeout(collapseWindowTimer.current);
     }

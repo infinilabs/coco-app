@@ -49,8 +49,24 @@ type ViewExtensionIframeProps = {
 export default function ViewExtensionIframe(props: ViewExtensionIframeProps) {
   const { fileUrl, scale, iframeRef, hideScrollbar, focusIframe } = props;
 
+  const isSameOrigin = () => {
+    try {
+      const target = new URL(fileUrl);
+      const current = new URL(window.location.href);
+      return (
+        target.protocol === current.protocol &&
+        target.hostname === current.hostname &&
+        target.port === current.port
+      );
+    } catch {
+      return false;
+    }
+  };
+
   useEffect(() => {
-    applyHideScrollbarToIframe(iframeRef.current, hideScrollbar);
+    if (isSameOrigin()) {
+      applyHideScrollbarToIframe(iframeRef.current, hideScrollbar);
+    }
   }, [hideScrollbar, iframeRef]);
 
   return (
@@ -77,10 +93,12 @@ export default function ViewExtensionIframe(props: ViewExtensionIframeProps) {
         tabIndex={-1}
         onLoad={(event) => {
           event.currentTarget.focus();
-          try {
-            iframeRef.current?.contentWindow?.focus();
-          } catch {}
-          applyHideScrollbarToIframe(event.currentTarget, hideScrollbar);
+          if (isSameOrigin()) {
+            try {
+              iframeRef.current?.contentWindow?.focus();
+            } catch {}
+            applyHideScrollbarToIframe(event.currentTarget, hideScrollbar);
+          }
         }}
       />
     </div>

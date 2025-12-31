@@ -10,6 +10,7 @@ import {
 } from "lodash-es";
 import { filesize as filesizeLib } from "filesize";
 import i18next from "i18next";
+import dayjs from "dayjs";
 
 import platformAdapter from "./platformAdapter";
 import { useAppStore } from "@/stores/appStore";
@@ -17,8 +18,8 @@ import { DEFAULT_COCO_SERVER_ID, HISTORY_PANEL_ID } from "@/constants";
 import { useChatStore } from "@/stores/chatStore";
 import { getCurrentWindowService } from "@/commands/windowService";
 import { useSearchStore } from "@/stores/searchStore";
+import { useExtensionStore } from "@/stores/extensionStore";
 import { MultiSourceQueryResponse } from "@/types/search";
-import dayjs from "dayjs";
 
 export async function copyToClipboard(text: string, noTip = false) {
   const addError = useAppStore.getState().addError;
@@ -229,9 +230,9 @@ export const canNavigateBack = () => {
     goAskAi,
     visibleExtensionStore,
     visibleExtensionDetail,
-    viewExtensionOpened,
     sourceData,
   } = useSearchStore.getState();
+  const { viewExtensionOpened } = useExtensionStore.getState();
 
   return (
     goAskAi ||
@@ -247,13 +248,13 @@ export const navigateBack = () => {
     goAskAi,
     visibleExtensionStore,
     visibleExtensionDetail,
-    viewExtensionOpened,
     setGoAskAi,
     setVisibleExtensionDetail,
     setVisibleExtensionStore,
     setSourceData,
-    setViewExtensionOpened,
   } = useSearchStore.getState();
+
+  const { viewExtensionOpened, setViewExtensionOpened } = useExtensionStore.getState();
 
   if (goAskAi) {
     return setGoAskAi(false);
@@ -304,8 +305,9 @@ export const dispatchEvent = (
 };
 
 export const visibleSearchBar = () => {
-  const { viewExtensionOpened, visibleExtensionDetail } =
-    useSearchStore.getState();
+  const { visibleExtensionDetail } = useSearchStore.getState();
+
+  const { viewExtensionOpened } = useExtensionStore.getState();
 
   if (visibleExtensionDetail) return false;
 
@@ -318,11 +320,12 @@ export const visibleSearchBar = () => {
 
 export const visibleFilterBar = () => {
   const {
-    viewExtensionOpened,
     visibleExtensionStore,
     visibleExtensionDetail,
     goAskAi,
   } = useSearchStore.getState();
+
+  const { viewExtensionOpened } = useExtensionStore.getState();
 
   if (visibleExtensionStore || visibleExtensionDetail || goAskAi) return false;
 
@@ -334,7 +337,7 @@ export const visibleFilterBar = () => {
 };
 
 export const visibleFooterBar = () => {
-  const { viewExtensionOpened } = useSearchStore.getState();
+  const { viewExtensionOpened } = useExtensionStore.getState();
 
   if (isNil(viewExtensionOpened)) return true;
 

@@ -4,7 +4,7 @@ import platformAdapter from "@/utils/platformAdapter";
 import { isMac } from "@/utils/platform";
 import type { ViewExtensionUISettingsOrNull } from "@/components/Settings/Extensions";
 import { useAppStore } from "@/stores/appStore";
-import { useSearchStore } from "@/stores/searchStore";
+import { useExtensionStore } from "@/stores/extensionStore";
 
 type WindowSnapshot = {
   width: number;
@@ -14,9 +14,9 @@ type WindowSnapshot = {
   y: number;
 };
 
-export function useViewExtensionWindow() {
+export function useViewExtensionWindow(opts?: { forceResizable?: boolean }) {
   const isTauri = useAppStore((state) => state.isTauri);
-  const viewExtensionOpened = useSearchStore((state) => state.viewExtensionOpened);
+  const viewExtensionOpened = useExtensionStore((state) => state.viewExtensionOpened);
 
   if (viewExtensionOpened == null) {
     throw new Error(
@@ -27,8 +27,9 @@ export function useViewExtensionWindow() {
   const ui: ViewExtensionUISettingsOrNull = useMemo(() => {
     return viewExtensionOpened[4] as ViewExtensionUISettingsOrNull;
   }, [viewExtensionOpened]);
-  const resizable = ui?.resizable;
+  const resizable = opts?.forceResizable ? true : ui?.resizable;
   const hideScrollbar = ui?.hide_scrollbar ?? true;
+  const detachable = ui?.detachable ?? false;
 
   const uiWidth = ui && typeof ui.width === "number" ? ui.width : null;
   const uiHeight = ui && typeof ui.height === "number" ? ui.height : null;
@@ -181,7 +182,11 @@ export function useViewExtensionWindow() {
 
       if (hasExplicitWindowSize) {
         const nextResizable =
-          ui && typeof ui.resizable === "boolean" ? ui.resizable : true;
+          opts?.forceResizable
+            ? true
+            : ui && typeof ui.resizable === "boolean"
+            ? ui.resizable
+            : true;
         await platformAdapter.setWindowSize(uiWidth, uiHeight);
         await platformAdapter.setWindowResizable(nextResizable);
         await platformAdapter.centerOnCurrentMonitor();
@@ -234,6 +239,7 @@ export function useViewExtensionWindow() {
   return {
     ui,
     resizable,
+    detachable,
     hideScrollbar,
     scale,
     iframeRef,

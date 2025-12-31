@@ -1,4 +1,3 @@
-import { useSearchStore } from "@/stores/searchStore";
 import { ChevronLeft, Search } from "lucide-react";
 import { FC } from "react";
 import clsx from "clsx";
@@ -7,6 +6,8 @@ import FontIcon from "@/components/Common/Icons/FontIcon";
 import lightDefaultIcon from "@/assets/images/source_default.png";
 import darkDefaultIcon from "@/assets/images/source_default_dark.png";
 import { useThemeStore } from "@/stores/themeStore";
+import { useSearchStore } from "@/stores/searchStore";
+import { useExtensionStore } from "@/stores/extensionStore";
 import platformAdapter from "@/utils/platformAdapter";
 import { navigateBack, visibleSearchBar } from "@/utils";
 import VisibleKey from "../Common/VisibleKey";
@@ -74,9 +75,10 @@ export default function SearchIcons({
     goAskAi,
     visibleExtensionStore,
     visibleExtensionDetail,
-    selectedExtension,
-    viewExtensionOpened,
+    selectedExtension
   } = useSearchStore();
+  
+  const viewExtensionOpened = useExtensionStore((state) => state.viewExtensionOpened);
 
   if (isChatMode) {
     return null;

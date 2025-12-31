@@ -6,12 +6,13 @@ import { useSyncStore } from "@/hooks/useSyncStore";
 import UpdateApp from "@/components/UpdateApp";
 import Synthesize from "@/components/Assistant/Synthesize";
 import { useChatStore } from "@/stores/chatStore";
-import { useSearchStore } from "@/stores/searchStore";
+import { useExtensionStore } from "@/stores/extensionStore";
 import platformAdapter from "@/utils/platformAdapter";
 
 function MainApp() {
   const { setIsTauri } = useAppStore();
-  const { setViewExtensionOpened } = useSearchStore();
+  
+  const setViewExtensionOpened = useExtensionStore((state) => state.setViewExtensionOpened);
 
   useEffect(() => {
     setIsTauri(true);
