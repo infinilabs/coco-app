@@ -375,7 +375,6 @@ pub fn start_selection_monitor(app_handle: tauri::AppHandle) {
 }
 
 /// Ensure macOS Accessibility permission with double-checking and session throttling.
-/// Returns true when trusted; otherwise triggers prompt/settings link and emits
 /// `selection-permission-required` to the frontend, then returns false.
 #[cfg(target_os = "macos")]
 fn ensure_accessibility_permission(app_handle: &tauri::AppHandle) -> bool {
