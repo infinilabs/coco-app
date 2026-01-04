@@ -292,9 +292,13 @@ pub(crate) async fn open(
                             to_value(ui).unwrap(),
                         ];
                         use crate::common::MAIN_WINDOW_LABEL;
-                        tauri_app_handle
-                            .emit_to(MAIN_WINDOW_LABEL, "open_view_extension", view_extension_opened)
-                            .unwrap();
+                        if let Err(e) = tauri_app_handle.emit_to(
+                            MAIN_WINDOW_LABEL,
+                            "open_view_extension",
+                            view_extension_opened,
+                        ) {
+                            log::error!("Failed to emit open_view_extension event: {}", e);
+                        }
                     }
                 }
             }
