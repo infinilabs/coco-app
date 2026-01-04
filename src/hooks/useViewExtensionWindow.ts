@@ -17,10 +17,11 @@ export function useViewExtensionWindow(opts?: {
   forceResizable?: boolean;
   ignoreExplicitSize?: boolean;
   viewExtension?: ViewExtensionOpened | null;
+  isStandalone?: boolean;
 }) {
     const isTauri = useAppStore((state) => state.isTauri);
     const storeViewExtension = useExtensionStore((state) => 
-      state.viewExtensions.length > 0 ? state.viewExtensions[state.viewExtensions.length - 1] : undefined
+      opts?.viewExtension ? undefined : (state.viewExtensions.length > 0 ? state.viewExtensions[state.viewExtensions.length - 1] : undefined)
     );
     const viewExtensionOpened = opts?.viewExtension ?? storeViewExtension;
   
@@ -126,7 +127,8 @@ export function useViewExtensionWindow(opts?: {
       
       // If we are in the standalone view extension window (not the preview in main window),
       // we need to show the window explicitly because it is created hidden to avoid flickering.
-      if (window.location.pathname.includes("/ui/view-extension")) {
+      // This ensures the window only becomes visible after the initial resize and setup are complete.
+      if (opts?.isStandalone) {
         await platformAdapter.showWindow();
       }
       

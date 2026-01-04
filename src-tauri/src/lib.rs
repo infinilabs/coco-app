@@ -407,6 +407,13 @@ async fn show_view_extension(
     height: Option<f64>,
 ) {
     log::debug!("view extension menu item was clicked");
+    if query
+        .as_ref()
+        .map(|q| !(q.contains("manual=1") && q.contains("ext=")))
+        .unwrap_or(true)
+    {
+        return;
+    }
     let window_label = label.unwrap_or_else(|| VIEW_EXTENSION_WINDOW_LABEL.to_string());
 
     if let Some(window) = app_handle.get_webview_window(&window_label) {

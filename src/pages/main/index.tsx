@@ -22,8 +22,6 @@ function MainApp() {
     // Events will be sent when users try to open a View extension via hotkey,
     // whose payload contains the needed information to load the View page.
     platformAdapter.listenEvent("open_view_extension", async ({ payload }) => {
-      await platformAdapter.showWindow();
-
       addViewExtension(payload);
     });
   }, []);

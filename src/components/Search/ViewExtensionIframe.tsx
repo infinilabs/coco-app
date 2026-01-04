@@ -23,15 +23,15 @@ const applyHideScrollbarToIframe = (
     const style = doc.createElement("style");
     style.id = HIDE_SCROLLBAR_STYLE_ID;
     style.textContent = `
-* {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-*::-webkit-scrollbar {
-  width: 0px;
-  height: 0px;
-}
-`;
+      * {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      *::-webkit-scrollbar {
+        width: 0px;
+        height: 0px;
+      }
+      `;
 
     const parent = doc.head ?? doc.documentElement;
     parent?.appendChild(style);

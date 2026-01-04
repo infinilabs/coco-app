@@ -19,6 +19,7 @@ type ControlsProps = {
   showFocus?: boolean;
   forceResizable?: boolean;
   initialViewExtensionOpened?: ViewExtensionOpened | null;
+  isStandalone?: boolean;
 };
 
 const ViewExtensionContent: React.FC<ControlsProps> = ({
@@ -26,9 +27,10 @@ const ViewExtensionContent: React.FC<ControlsProps> = ({
   showFocus = true,
   forceResizable = false,
   initialViewExtensionOpened = null,
+  isStandalone = false,
 }) => {
   const storeView = useExtensionStore((state) => 
-    state.viewExtensions.length > 0 ? state.viewExtensions[state.viewExtensions.length - 1] : undefined
+    initialViewExtensionOpened ? undefined : (state.viewExtensions.length > 0 ? state.viewExtensions[state.viewExtensions.length - 1] : undefined)
   );
   const viewExtensionOpened = initialViewExtensionOpened ?? storeView;
 
@@ -189,7 +191,7 @@ const ViewExtensionContent: React.FC<ControlsProps> = ({
     iframeRef,
     focusIframe,
     setBaseSize,
-  } = useViewExtensionWindow({ forceResizable });
+  } = useViewExtensionWindow({ forceResizable, viewExtension: viewExtensionOpened, isStandalone });
 
   const [iframeReady, setIframeReady] = useState(false);
 
@@ -214,11 +216,11 @@ const ViewExtensionContent: React.FC<ControlsProps> = ({
                 const ext = viewExtensionOpened!;
                 const name = ext[0] || "extension";
                 const safe = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-                const label = `view_extension_${safe}_${Date.now()}`;
+                const label = `view_extension_${safe}`;
                 const payload = btoa(encodeURIComponent(JSON.stringify(ext)));
                 platformAdapter.invokeBackend("show_view_extension", {
                   label,
-                  query: `?ext=${payload}`,
+                  query: `?manual=1&ext=${payload}`,
                   width: baseWidth,
                   height: baseHeight,
                 });
@@ -245,9 +247,11 @@ const ViewExtensionContent: React.FC<ControlsProps> = ({
 };
 
 const ViewExtension: React.FC<ControlsProps> = (props) => {
-  const viewExtensionOpened = useExtensionStore(
-    (state) => state.viewExtensions.length > 0 ? state.viewExtensions[state.viewExtensions.length - 1] : undefined
+  const storeView = useExtensionStore(
+    (state) => props.initialViewExtensionOpened ? undefined : (state.viewExtensions.length > 0 ? state.viewExtensions[state.viewExtensions.length - 1] : undefined)
   );
+
+  const viewExtensionOpened = props.initialViewExtensionOpened ?? storeView;
 
   if (viewExtensionOpened == null) {
     return (

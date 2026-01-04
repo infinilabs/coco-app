@@ -291,8 +291,9 @@ pub(crate) async fn open(
                             to_value(permission).unwrap(),
                             to_value(ui).unwrap(),
                         ];
+                        use crate::common::MAIN_WINDOW_LABEL;
                         tauri_app_handle
-                            .emit("open_view_extension", view_extension_opened)
+                            .emit_to(MAIN_WINDOW_LABEL, "open_view_extension", view_extension_opened)
                             .unwrap();
                     }
                 }
