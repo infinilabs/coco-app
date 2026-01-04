@@ -1,12 +1,12 @@
 import {
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   useCallback,
   MouseEvent,
   useMemo,
 } from "react";
-import { useDebounceFn } from "ahooks";
 import { useTranslation } from "react-i18next";
 
 import { useSearchStore } from "@/stores/searchStore";
@@ -114,18 +114,16 @@ function DropdownList({
     }
   }, [isChatMode]);
 
-  const { run: initializeSelection } = useDebounceFn(
-    () => {
+  useLayoutEffect(() => {
+    if (isChatMode) return;
+    if (suggests.length > 0) {
       setSelectedIndex(0);
-      setSelectedSearchContent(suggests[0]?.document || null);
-    },
-    { wait: 200 }
-  );
-
-  useEffect(() => {
-    setSelectedIndex(null);
-    initializeSelection();
-  }, [searchData]);
+      setSelectedSearchContent(suggests[0].document);
+    } else {
+      setSelectedIndex(null);
+      setSelectedSearchContent(undefined);
+    }
+  }, [searchData, suggests, isChatMode]);
 
   useEffect(() => {
     return () => {
