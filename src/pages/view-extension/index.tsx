@@ -16,7 +16,9 @@ const ViewExtensionPage: React.FC = () => {
       try {
         const json = decodeURIComponent(atob(encoded));
         return JSON.parse(json) as ViewExtensionOpened;
-      } catch {}
+      } catch (error) {
+        console.error("Failed to parse 'ext' query parameter for ViewExtensionPage:", error);
+      }
     }
     return null;
   }, [encoded]);

@@ -58,7 +58,7 @@ const ViewExtensionContent: React.FC<ControlsProps> = ({
   }, []);
 
   // White list of the permission entries
-  const permission = viewExtensionOpened![3];
+  const permission = viewExtensionOpened?.[3];
 
   // apis is in format {"category": ["api1", "api2"]}, to make the permission check
   // easier, reverse the map key values: {"api1": "category", "api2": "category"}
@@ -181,7 +181,7 @@ const ViewExtensionContent: React.FC<ControlsProps> = ({
     };
   }, [reversedApis, permission]); // Add apiPermissions as dependency
 
-  const fileUrl = viewExtensionOpened![2];
+  const fileUrl = viewExtensionOpened?.[2] ?? "";
 
   const {
     resizable,
@@ -197,7 +197,7 @@ const ViewExtensionContent: React.FC<ControlsProps> = ({
     forceResizable, 
     viewExtension: viewExtensionOpened, 
     isStandalone,
-    padding: 8,
+    padding: isStandalone ? 0 : 8,
     containerRef: isStandalone ? undefined : containerRef
   });
 
@@ -226,13 +226,17 @@ const ViewExtensionContent: React.FC<ControlsProps> = ({
                 const safe = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
                 const label = `view_extension_${safe}`;
                 const payload = btoa(encodeURIComponent(JSON.stringify(ext)));
-                platformAdapter.invokeBackend("show_view_extension", {
-                  label,
-                  query: `?manual=1&ext=${payload}`,
-                  width: baseWidth,
-                  height: baseHeight,
-                  title: name,
-                });
+                try {
+                  platformAdapter.invokeBackend("show_view_extension", {
+                    label,
+                    query: `?manual=1&ext=${payload}`,
+                    width: baseWidth,
+                    height: baseHeight,
+                    title: name,
+                  });
+                } catch (error) {
+                  console.error("Failed to detach view extension:", error);
+                }
               }}
             >
               <ExternalLink className="size-4" />

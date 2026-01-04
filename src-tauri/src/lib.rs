@@ -406,14 +406,13 @@ async fn show_view_extension(
     width: Option<f64>,
     height: Option<f64>,
     title: Option<String>,
-) {
+) -> Result<(), String> {
     log::debug!("view extension menu item was clicked");
     if query
         .as_ref()
-        .map(|q| !(q.contains("manual=1") && q.contains("ext=")))
-        .unwrap_or(true)
+        .map_or(true, |q| !(q.contains("manual=1") && q.contains("ext=")))
     {
-        return;
+        return Ok(());
     }
     let window_label = label.unwrap_or_else(|| VIEW_EXTENSION_WINDOW_LABEL.to_string());
 
@@ -421,7 +420,7 @@ async fn show_view_extension(
         window.show().unwrap();
         window.unminimize().unwrap();
         window.set_focus().unwrap();
-        return;
+        return Ok(());
     }
 
     // If window doesn't exist (e.g. was closed), create it
@@ -442,8 +441,12 @@ async fn show_view_extension(
     match build_result {
         Ok(win) => {
             let _ = win.set_focus();
+            Ok(())
         }
-        Err(e) => log::error!("Failed to create view extension window: {}", e),
+        Err(e) => {
+            log::error!("Failed to create view extension window: {}", e);
+            Err(e.to_string())
+        }
     }
 }
 

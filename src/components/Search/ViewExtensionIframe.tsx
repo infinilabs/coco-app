@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 
 const HIDE_SCROLLBAR_STYLE_ID = "coco-view-extension-hide-scrollbar";
 
@@ -63,7 +63,7 @@ export default function ViewExtensionIframe(props: ViewExtensionIframeProps) {
     baseHeight,
   } = props;
 
-  const isSameOrigin = () => {
+  const isSameOrigin = useCallback(() => {
     try {
       const target = new URL(fileUrl);
       const current = new URL(window.location.href);
@@ -75,13 +75,13 @@ export default function ViewExtensionIframe(props: ViewExtensionIframeProps) {
     } catch {
       return false;
     }
-  };
+  }, [fileUrl]);
 
   useEffect(() => {
     if (isSameOrigin()) {
       applyHideScrollbarToIframe(iframeRef.current, hideScrollbar);
     }
-  }, [hideScrollbar, iframeRef]);
+  }, [hideScrollbar, iframeRef, isSameOrigin]);
 
   return (
     <div

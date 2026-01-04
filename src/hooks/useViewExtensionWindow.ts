@@ -140,8 +140,8 @@ export function useViewExtensionWindow(opts?: {
             ? ui.resizable
             : true;
         
-        const targetWidth = uiWidth! + (isStandalone ? padding : 0);
-        const targetHeight = uiHeight! + (isStandalone ? padding : 0);
+        const targetWidth = uiWidth! + padding;
+        const targetHeight = uiHeight! + padding;
         await platformAdapter.setWindowSize(targetWidth, targetHeight);
         await platformAdapter.setWindowResizable(nextResizable);
         await platformAdapter.centerOnCurrentMonitor();
