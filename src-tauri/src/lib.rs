@@ -405,6 +405,7 @@ async fn show_view_extension(
     query: Option<String>,
     width: Option<f64>,
     height: Option<f64>,
+    title: Option<String>,
 ) {
     log::debug!("view extension menu item was clicked");
     if query
@@ -430,7 +431,7 @@ async fn show_view_extension(
     let h = height.unwrap_or(800.0);
 
     let build_result = WebviewWindowBuilder::new(&app_handle, &window_label, url)
-        .title("View Extension")
+        .title(title.unwrap_or_else(|| "View Extension".to_string()))
         .inner_size(w, h)
         .min_inner_size(800.0, 600.0)
         .resizable(true)

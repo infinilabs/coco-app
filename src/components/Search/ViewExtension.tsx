@@ -231,6 +231,7 @@ const ViewExtensionContent: React.FC<ControlsProps> = ({
                   query: `?manual=1&ext=${payload}`,
                   width: baseWidth,
                   height: baseHeight,
+                  title: name,
                 });
               }}
             >
