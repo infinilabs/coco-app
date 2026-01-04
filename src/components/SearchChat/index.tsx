@@ -489,7 +489,7 @@ function SearchChat({
         {!hideMiddleBorder && (
           <div
             className={clsx(
-              "pointer-events-none absolute left-0 right-0 h-px bg-[#E6E6E6] dark:bg-[#272626]",
+              "pointer-events-none absolute left-0 right-0 h-px bg-[#E6E6E6] dark:bg-[#272626] mx-0.5",
               isTransitioned ? "top-0" : "bottom-0"
             )}
           />

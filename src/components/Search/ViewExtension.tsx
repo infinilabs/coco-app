@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Focus, ExternalLink } from "lucide-react";
 
@@ -75,6 +75,8 @@ const ViewExtensionContent: React.FC<ControlsProps> = ({
     }
     return reversed;
   }, [apis]);
+  
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Watch for events from iframes - only set up listener when reversedApis is ready
   useEffect(() => {
@@ -191,12 +193,18 @@ const ViewExtensionContent: React.FC<ControlsProps> = ({
     iframeRef,
     focusIframe,
     setBaseSize,
-  } = useViewExtensionWindow({ forceResizable, viewExtension: viewExtensionOpened, isStandalone });
+  } = useViewExtensionWindow({ 
+    forceResizable, 
+    viewExtension: viewExtensionOpened, 
+    isStandalone,
+    padding: 8,
+    containerRef: isStandalone ? undefined : containerRef
+  });
 
   const [iframeReady, setIframeReady] = useState(false);
 
   return (
-    <div className="relative w-full h-full overflow-hidden">
+    <div ref={containerRef} className="relative w-full h-full overflow-hidden">
       {iframeReady && (
         <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
           {resizable && showFocus && (

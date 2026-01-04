@@ -18,14 +18,25 @@ export function useViewExtensionWindow(opts?: {
   ignoreExplicitSize?: boolean;
   viewExtension?: ViewExtensionOpened | null;
   isStandalone?: boolean;
+  padding?: number;
+  containerRef?: React.RefObject<HTMLElement>;
 }) {
-    const isTauri = useAppStore((state) => state.isTauri);
-    const storeViewExtension = useExtensionStore((state) => 
-      opts?.viewExtension ? undefined : (state.viewExtensions.length > 0 ? state.viewExtensions[state.viewExtensions.length - 1] : undefined)
-    );
-    const viewExtensionOpened = opts?.viewExtension ?? storeViewExtension;
-  
-    if (viewExtensionOpened == null) {
+  const {
+    forceResizable = false,
+    ignoreExplicitSize = false,
+    viewExtension = null,
+    isStandalone = false,
+    padding = 0,
+    containerRef,
+  } = opts || {};
+
+  const isTauri = useAppStore((state) => state.isTauri);
+  const storeViewExtension = useExtensionStore((state) => 
+    viewExtension ? undefined : (state.viewExtensions.length > 0 ? state.viewExtensions[state.viewExtensions.length - 1] : undefined)
+  );
+  const viewExtensionOpened = viewExtension ?? storeViewExtension;
+
+  if (viewExtensionOpened == null) {
     throw new Error(
       "ViewExtension Error: viewExtensionOpened is null. This should not happen."
     );
@@ -34,14 +45,14 @@ export function useViewExtensionWindow(opts?: {
   const ui: ViewExtensionUISettingsOrNull = useMemo(() => {
     return viewExtensionOpened[4] as ViewExtensionUISettingsOrNull;
   }, [viewExtensionOpened]);
-  const resizable = opts?.forceResizable ? true : ui?.resizable;
+  const resizable = forceResizable ? true : ui?.resizable;
   const hideScrollbar = ui?.hide_scrollbar ?? true;
   const detachable = ui?.detachable ?? false;
 
   const uiWidth = ui && typeof ui.width === "number" ? ui.width : null;
   const uiHeight = ui && typeof ui.height === "number" ? ui.height : null;
   const hasExplicitWindowSize =
-    uiWidth != null && uiHeight != null && !opts?.ignoreExplicitSize;
+    uiWidth != null && uiHeight != null && !ignoreExplicitSize;
 
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const prevWindowRef = useRef<WindowSnapshot | null>(null);
@@ -83,25 +94,36 @@ export function useViewExtensionWindow(opts?: {
       setScale(1);
       return;
     }
-    const size = await platformAdapter.getWindowSize();
-    const ratioW = size.width / baseWidth;
-    const ratioH = size.height / baseHeight;
+    
+    let availableWidth: number;
+    let availableHeight: number;
+
+    if (containerRef?.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      availableWidth = Math.max(0, rect.width - padding);
+      availableHeight = Math.max(0, rect.height - padding);
+    } else {
+      const size = await platformAdapter.getWindowSize();
+      availableWidth = Math.max(0, size.width - padding);
+      availableHeight = Math.max(0, size.height - padding);
+    }
+
+    const ratioW = availableWidth / baseWidth;
+    const ratioH = availableHeight / baseHeight;
     const nextScale = Math.min(ratioW, ratioH);
     setScale(Math.max(nextScale, 0.1));
-  }, [baseHeight, baseWidth, hasExplicitWindowSize]);
-
-
+  }, [baseHeight, baseWidth, hasExplicitWindowSize, padding, containerRef]);
 
   useEffect(() => {
     const applyWindowSettings = async () => {
       const size = await platformAdapter.getWindowSize();
-      const resizable = await platformAdapter.isWindowResizable();
+      const windowResizable = await platformAdapter.isWindowResizable();
       const pos = await platformAdapter.getWindowPosition();
       setFallbackViewSize({ width: size.width, height: size.height });
       prevWindowRef.current = {
         width: size.width,
         height: size.height,
-        resizable,
+        resizable: windowResizable,
         x: pos.x,
         y: pos.y,
       };
@@ -112,12 +134,15 @@ export function useViewExtensionWindow(opts?: {
 
       if (hasExplicitWindowSize) {
         const nextResizable =
-          opts?.forceResizable
+          forceResizable
             ? true
             : ui && typeof ui.resizable === "boolean"
             ? ui.resizable
             : true;
-        await platformAdapter.setWindowSize(uiWidth, uiHeight);
+        
+        const targetWidth = uiWidth! + (isStandalone ? padding : 0);
+        const targetHeight = uiHeight! + (isStandalone ? padding : 0);
+        await platformAdapter.setWindowSize(targetWidth, targetHeight);
         await platformAdapter.setWindowResizable(nextResizable);
         await platformAdapter.centerOnCurrentMonitor();
         await recomputeScale();
@@ -125,11 +150,11 @@ export function useViewExtensionWindow(opts?: {
         await recomputeScale();
       }
       
-      // If we are in the standalone view extension window (not the preview in main window),
-      // we need to show the window explicitly because it is created hidden to avoid flickering.
-      // This ensures the window only becomes visible after the initial resize and setup are complete.
-      if (opts?.isStandalone) {
+      if (isStandalone) {
         await platformAdapter.showWindow();
+        // Force window to top
+        await platformAdapter.setAlwaysOnTop(true);
+        await platformAdapter.setAlwaysOnTop(false);
       }
       
       focusIframeSoon();
@@ -153,6 +178,10 @@ export function useViewExtensionWindow(opts?: {
     ui,
     uiHeight,
     uiWidth,
+    isStandalone,
+    padding,
+    forceResizable,
+    isTauri
   ]);
 
   useEffect(() => {
@@ -161,11 +190,22 @@ export function useViewExtensionWindow(opts?: {
         recomputeScale();
       }
     };
+    
     window.addEventListener("resize", handleResize);
+    
+    let observer: ResizeObserver | null = null;
+    if (containerRef?.current) {
+        observer = new ResizeObserver(() => {
+            handleResize();
+        });
+        observer.observe(containerRef.current);
+    }
+
     return () => {
       window.removeEventListener("resize", handleResize);
+      observer?.disconnect();
     };
-  }, [hasExplicitWindowSize, recomputeScale]);
+  }, [hasExplicitWindowSize, recomputeScale, containerRef]);
 
   return {
     ui,
