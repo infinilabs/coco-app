@@ -412,7 +412,8 @@ async fn show_view_extension(
         .as_ref()
         .map_or(true, |q| !(q.contains("manual=1") && q.contains("ext=")))
     {
-        return Ok(());
+        log::error!("Invalid query for view extension: manual=1 and ext= required");
+        return Err("invalid argument: manual=1 and ext= should be provided".into());
     }
     let window_label = label.unwrap_or_else(|| VIEW_EXTENSION_WINDOW_LABEL.to_string());
 
