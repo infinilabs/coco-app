@@ -19,7 +19,7 @@ markup:
     renderer:
       unsafe: true
   tableOfContents:
-    startLevel: 1
+    startLevel: 2
 
 # Multi-lingual mode config
 # There are different options to translate files
@@ -31,7 +31,6 @@ languages:
     languageName: English
     contentDir: content.en
     weight: 3
-
 
 menu:
   before: []
@@ -56,7 +55,7 @@ params:
 
   # (Optional, default none) Set leaf bundle to render as side menu
   # When not specified file structure and weights will be used
-#  BookMenuBundle: /menu
+  #  BookMenuBundle: /menu
 
   # (Optional, default docs) Specify root page to render child pages as menu.
   # Page is resoled by .GetPage function: https://gohugo.io/functions/getpage/
