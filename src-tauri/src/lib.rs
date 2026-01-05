@@ -401,6 +401,7 @@ async fn show_check(app_handle: AppHandle) {
         .get_webview_window(CHECK_WINDOW_LABEL)
         .expect("we have a check window");
 
+    window.center().unwrap();
     window.show().unwrap();
     window.unminimize().unwrap();
     window.set_focus().unwrap();
