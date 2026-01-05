@@ -64,7 +64,7 @@
         "minWidth": 340,
         "height": 260,
         "minHeight": 260,
-        "center": false,
+        "center": true,
         "decorations": false,
         "transparent": true,
         "maximizable": false,
