@@ -402,16 +402,13 @@ async fn show_settings(app_handle: AppHandle) {
 async fn show_view_extension(
     app_handle: AppHandle,
     label: Option<String>,
-    query: Option<String>,
+    query: String,
     width: Option<f64>,
     height: Option<f64>,
     title: Option<String>,
 ) -> Result<(), String> {
     log::debug!("view extension menu item was clicked");
-    if query
-        .as_ref()
-        .map_or(true, |q| !(q.contains("manual=1") && q.contains("ext=")))
-    {
+    if !(query.contains("manual=1") && query.contains("ext=")) {
         log::error!("Invalid query for view extension: manual=1 and ext= required");
         return Err("invalid argument: manual=1 and ext= should be provided".into());
     }
@@ -425,7 +422,7 @@ async fn show_view_extension(
     }
 
     // If window doesn't exist (e.g. was closed), create it
-    let url_suffix = query.unwrap_or_else(|| "".to_string());
+    let url_suffix = query;
     let url = WebviewUrl::App(format!("/ui/view-extension{}", url_suffix).into());
     let w = width.unwrap_or(1000.0);
     let h = height.unwrap_or(800.0);
