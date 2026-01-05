@@ -6,12 +6,13 @@ import { useSyncStore } from "@/hooks/useSyncStore";
 import UpdateApp from "@/components/UpdateApp";
 import Synthesize from "@/components/Assistant/Synthesize";
 import { useChatStore } from "@/stores/chatStore";
-import { useSearchStore } from "@/stores/searchStore";
+import { useExtensionStore } from "@/stores/extensionStore";
 import platformAdapter from "@/utils/platformAdapter";
 
 function MainApp() {
   const { setIsTauri } = useAppStore();
-  const { setViewExtensionOpened } = useSearchStore();
+  
+  const addViewExtension = useExtensionStore((state) => state.addViewExtension);
 
   useEffect(() => {
     setIsTauri(true);
@@ -21,9 +22,7 @@ function MainApp() {
     // Events will be sent when users try to open a View extension via hotkey,
     // whose payload contains the needed information to load the View page.
     platformAdapter.listenEvent("open_view_extension", async ({ payload }) => {
-      await platformAdapter.showWindow();
-
-      setViewExtensionOpened(payload);
+      addViewExtension(payload);
     });
   }, []);
 

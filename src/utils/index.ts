@@ -10,6 +10,7 @@ import {
 } from "lodash-es";
 import { filesize as filesizeLib } from "filesize";
 import i18next from "i18next";
+import dayjs from "dayjs";
 
 import platformAdapter from "./platformAdapter";
 import { useAppStore } from "@/stores/appStore";
@@ -17,8 +18,8 @@ import { DEFAULT_COCO_SERVER_ID, HISTORY_PANEL_ID } from "@/constants";
 import { useChatStore } from "@/stores/chatStore";
 import { getCurrentWindowService } from "@/commands/windowService";
 import { useSearchStore } from "@/stores/searchStore";
+import { useExtensionStore } from "@/stores/extensionStore";
 import { MultiSourceQueryResponse } from "@/types/search";
-import dayjs from "dayjs";
 
 export async function copyToClipboard(text: string, noTip = false) {
   const addError = useAppStore.getState().addError;
@@ -229,15 +230,15 @@ export const canNavigateBack = () => {
     goAskAi,
     visibleExtensionStore,
     visibleExtensionDetail,
-    viewExtensionOpened,
     sourceData,
   } = useSearchStore.getState();
+  const { viewExtensions } = useExtensionStore.getState();
 
   return (
     goAskAi ||
     visibleExtensionStore ||
     visibleExtensionDetail ||
-    viewExtensionOpened ||
+    viewExtensions.length > 0 ||
     sourceData
   );
 };
@@ -247,13 +248,13 @@ export const navigateBack = () => {
     goAskAi,
     visibleExtensionStore,
     visibleExtensionDetail,
-    viewExtensionOpened,
     setGoAskAi,
     setVisibleExtensionDetail,
     setVisibleExtensionStore,
     setSourceData,
-    setViewExtensionOpened,
   } = useSearchStore.getState();
+
+  const { viewExtensions, closeViewExtension } = useExtensionStore.getState();
 
   if (goAskAi) {
     return setGoAskAi(false);
@@ -267,8 +268,8 @@ export const navigateBack = () => {
     return setVisibleExtensionStore(false);
   }
 
-  if (viewExtensionOpened) {
-    setViewExtensionOpened(void 0);
+  if (viewExtensions.length > 0) {
+    closeViewExtension();
     platformAdapter.emitEvent("refresh-window-size");
     return;
   }
@@ -301,46 +302,6 @@ export const dispatchEvent = (
   });
 
   target.dispatchEvent(event);
-};
-
-export const visibleSearchBar = () => {
-  const { viewExtensionOpened, visibleExtensionDetail } =
-    useSearchStore.getState();
-
-  if (visibleExtensionDetail) return false;
-
-  if (isNil(viewExtensionOpened)) return true;
-
-  const ui = viewExtensionOpened[4];
-
-  return ui?.search_bar ?? false;
-};
-
-export const visibleFilterBar = () => {
-  const {
-    viewExtensionOpened,
-    visibleExtensionStore,
-    visibleExtensionDetail,
-    goAskAi,
-  } = useSearchStore.getState();
-
-  if (visibleExtensionStore || visibleExtensionDetail || goAskAi) return false;
-
-  if (isNil(viewExtensionOpened)) return true;
-
-  const ui = viewExtensionOpened[4];
-
-  return ui?.filter_bar ?? false;
-};
-
-export const visibleFooterBar = () => {
-  const { viewExtensionOpened } = useSearchStore.getState();
-
-  if (isNil(viewExtensionOpened)) return true;
-
-  const ui = viewExtensionOpened[4];
-
-  return ui?.footer ?? false;
 };
 
 export const installExtensionError = (error: any) => {

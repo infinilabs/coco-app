@@ -1,23 +1,10 @@
 import { SearchExtensionItem } from "@/components/Search/ExtensionStore";
-import {
-  ExtensionPermission,
-  ViewExtensionUISettings,
-} from "@/components/Settings/Extensions";
 import { AggregationBucket, Aggregations } from "@/types/search";
 import { DateRange } from "react-day-picker";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type ViewExtensionOpened = [
-  // Extension name
-  string,
-  // An absolute path to the extension icon or a font code.
-  string,
-  // HTML file URL
-  string,
-  ExtensionPermission | null,
-  ViewExtensionUISettings | null
-];
+
 
 export interface AggregateFilter {
   [key: string]: AggregationBucket[];
@@ -66,10 +53,6 @@ export type ISearchStore = {
   setUninstallingExtensions: (uninstallingExtensions: string[]) => void;
   visibleExtensionDetail: boolean;
   setVisibleExtensionDetail: (visibleExtensionDetail: boolean) => void;
-
-  // When we open a View extension, we set this to a non-null value.
-  viewExtensionOpened?: ViewExtensionOpened;
-  setViewExtensionOpened: (showViewExtension?: ViewExtensionOpened) => void;
 
   enabledFuzzyMatch: boolean;
   setEnabledFuzzyMatch: (enabledFuzzyMatch: boolean) => void;
@@ -160,9 +143,6 @@ export const useSearchStore = create<ISearchStore>()(
       visibleExtensionDetail: false,
       setVisibleExtensionDetail: (visibleExtensionDetail) => {
         return set({ visibleExtensionDetail });
-      },
-      setViewExtensionOpened: (viewExtensionOpened) => {
-        return set({ viewExtensionOpened });
       },
       enabledFuzzyMatch: false,
       setEnabledFuzzyMatch: (enabledFuzzyMatch) => {

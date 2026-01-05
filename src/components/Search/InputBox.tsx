@@ -22,9 +22,8 @@ import {
   canNavigateBack,
   getUploadedAttachmentsId,
   isDefaultServer,
-  visibleFilterBar,
-  visibleSearchBar,
 } from "@/utils";
+import { useVisibleSearchBar, useVisibleFilterBar } from "@/hooks/useViewExtensionUI";
 import { useTauriFocus } from "@/hooks/useTauriFocus";
 import { SendMessageParams } from "../Assistant/Chat";
 import { isEmpty } from "lodash-es";
@@ -92,6 +91,8 @@ export default function ChatInput({
   getFileIcon,
 }: ChatInputProps) {
   const { t } = useTranslation();
+  const isVisibleSearchBar = useVisibleSearchBar();
+  const isVisibleFilterBar = useVisibleFilterBar();
 
   const { currentAssistant } = useConnectStore();
 
@@ -311,7 +312,7 @@ export default function ChatInput({
         className={`flex items-center dark:text-[#D8D8D8] rounded-md transition-all relative overflow-hidden`}
       >
         {lineCount === 1 && renderSearchIcon()}
-        {visibleSearchBar() && (
+        {isVisibleSearchBar && (
           <div
             className={clsx(
               "min-h-10 w-full p-[7px] bg-[#ededed] dark:bg-[#202126]",
@@ -335,7 +336,7 @@ export default function ChatInput({
         )}
       </div>
 
-      {visibleFilterBar() && (
+      {isVisibleFilterBar && (
         <InputControls
           isChatMode={isChatMode}
           isChatPage={isChatPage}

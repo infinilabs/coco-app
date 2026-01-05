@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import platformAdapter from "@/utils/platformAdapter";
-import { isMac } from "@/utils/platform";
 import type { ViewExtensionUISettingsOrNull } from "@/components/Settings/Extensions";
 import { useAppStore } from "@/stores/appStore";
-import { useSearchStore } from "@/stores/searchStore";
+import { useExtensionStore, type ViewExtensionOpened } from "@/stores/extensionStore";
 
 type WindowSnapshot = {
   width: number;
@@ -14,9 +13,28 @@ type WindowSnapshot = {
   y: number;
 };
 
-export function useViewExtensionWindow() {
+export function useViewExtensionWindow(opts?: {
+  forceResizable?: boolean;
+  ignoreExplicitSize?: boolean;
+  viewExtension?: ViewExtensionOpened | null;
+  isStandalone?: boolean;
+  padding?: number;
+  containerRef?: React.RefObject<HTMLElement>;
+}) {
+  const {
+    forceResizable = false,
+    ignoreExplicitSize = false,
+    viewExtension = null,
+    isStandalone = false,
+    padding = 0,
+    containerRef,
+  } = opts || {};
+
   const isTauri = useAppStore((state) => state.isTauri);
-  const viewExtensionOpened = useSearchStore((state) => state.viewExtensionOpened);
+  const storeViewExtension = useExtensionStore((state) => 
+    viewExtension ? undefined : (state.viewExtensions.length > 0 ? state.viewExtensions[state.viewExtensions.length - 1] : undefined)
+  );
+  const viewExtensionOpened = viewExtension ?? storeViewExtension;
 
   if (viewExtensionOpened == null) {
     throw new Error(
@@ -27,17 +45,17 @@ export function useViewExtensionWindow() {
   const ui: ViewExtensionUISettingsOrNull = useMemo(() => {
     return viewExtensionOpened[4] as ViewExtensionUISettingsOrNull;
   }, [viewExtensionOpened]);
-  const resizable = ui?.resizable;
+  const resizable = forceResizable ? true : ui?.resizable;
   const hideScrollbar = ui?.hide_scrollbar ?? true;
+  const detachable = ui?.detachable ?? false;
 
   const uiWidth = ui && typeof ui.width === "number" ? ui.width : null;
   const uiHeight = ui && typeof ui.height === "number" ? ui.height : null;
-  const hasExplicitWindowSize = uiWidth != null && uiHeight != null;
+  const hasExplicitWindowSize =
+    uiWidth != null && uiHeight != null && !ignoreExplicitSize;
 
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const prevWindowRef = useRef<WindowSnapshot | null>(null);
-  const fullscreenPrevRef = useRef<WindowSnapshot | null>(null);
   const [scale, setScale] = useState(1);
   const [fallbackViewSize, setFallbackViewSize] = useState<{
     width: number;
@@ -76,119 +94,69 @@ export function useViewExtensionWindow() {
       setScale(1);
       return;
     }
-    const size = await platformAdapter.getWindowSize();
-    const nextScale = Math.min(size.width / baseWidth, size.height / baseHeight);
+    
+    let availableWidth: number;
+    let availableHeight: number;
+
+    if (containerRef?.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      availableWidth = Math.max(0, rect.width - padding);
+      availableHeight = Math.max(0, rect.height - padding);
+    } else {
+      const size = await platformAdapter.getWindowSize();
+      availableWidth = Math.max(0, size.width - padding);
+      availableHeight = Math.max(0, size.height - padding);
+    }
+
+    const ratioW = availableWidth / baseWidth;
+    const ratioH = availableHeight / baseHeight;
+    const nextScale = Math.min(ratioW, ratioH);
     setScale(Math.max(nextScale, 0.1));
-  }, [baseHeight, baseWidth, hasExplicitWindowSize]);
-
-  const applyFullscreen = useCallback(
-    async (next: boolean, options?: { centerOnExit?: boolean }) => {
-      const centerOnExit = options?.centerOnExit ?? true;
-      if (next) {
-        const size = await platformAdapter.getWindowSize();
-        const resizable = await platformAdapter.isWindowResizable();
-        const pos = await platformAdapter.getWindowPosition();
-        fullscreenPrevRef.current = {
-          width: size.width,
-          height: size.height,
-          resizable,
-          x: pos.x,
-          y: pos.y,
-        };
-
-        if (isMac && isTauri) {
-          const monitor = await platformAdapter.getMonitorFromCursor();
-          if (!monitor) return;
-
-          const window = await platformAdapter.getCurrentWebviewWindow();
-          const factor = await window.scaleFactor();
-
-          const { size, position } = monitor;
-          const { width, height } = size.toLogical(factor);
-          const { x, y } = position.toLogical(factor);
-
-          await platformAdapter.setWindowSize(width, height);
-          await platformAdapter.setWindowPosition(x, y);
-          await platformAdapter.setWindowResizable(true);
-          await recomputeScale();
-        } else {
-          await platformAdapter.setWindowFullscreen(true);
-          await recomputeScale();
-        }
-      } else {
-        const prevPos =
-          fullscreenPrevRef.current != null
-            ? { x: fullscreenPrevRef.current.x, y: fullscreenPrevRef.current.y }
-            : null;
-
-        if (!isMac) {
-          await platformAdapter.setWindowFullscreen(false);
-        }
-
-        if (fullscreenPrevRef.current) {
-          const prev = fullscreenPrevRef.current;
-          await platformAdapter.setWindowSize(prev.width, prev.height);
-          await platformAdapter.setWindowResizable(prev.resizable);
-          fullscreenPrevRef.current = null;
-        } else if (hasExplicitWindowSize) {
-          const nextResizable =
-            ui && typeof ui.resizable === "boolean" ? ui.resizable : true;
-          await platformAdapter.setWindowSize(uiWidth, uiHeight);
-          await platformAdapter.setWindowResizable(nextResizable);
-        }
-
-        if (centerOnExit) {
-          await platformAdapter.centerOnCurrentMonitor();
-        } else if (prevPos != null) {
-          await platformAdapter.setWindowPosition(prevPos.x, prevPos.y);
-        }
-
-        await recomputeScale();
-        focusIframeSoon();
-      }
-    },
-    [
-      focusIframeSoon,
-      hasExplicitWindowSize,
-      isTauri,
-      recomputeScale,
-      ui,
-      uiHeight,
-      uiWidth,
-    ]
-  );
-
-  const toggleFullscreen = useCallback(async () => {
-    const next = !isFullscreen;
-    await applyFullscreen(next);
-    setIsFullscreen(next);
-    if (next) focusIframe();
-  }, [applyFullscreen, focusIframe, isFullscreen]);
+  }, [baseHeight, baseWidth, hasExplicitWindowSize, padding, containerRef]);
 
   useEffect(() => {
     const applyWindowSettings = async () => {
       const size = await platformAdapter.getWindowSize();
-      const resizable = await platformAdapter.isWindowResizable();
+      const windowResizable = await platformAdapter.isWindowResizable();
       const pos = await platformAdapter.getWindowPosition();
       setFallbackViewSize({ width: size.width, height: size.height });
       prevWindowRef.current = {
         width: size.width,
         height: size.height,
-        resizable,
+        resizable: windowResizable,
         x: pos.x,
         y: pos.y,
       };
 
+      if (isTauri && (await platformAdapter.isWindowFullscreen())) {
+        return;
+      }
+
       if (hasExplicitWindowSize) {
         const nextResizable =
-          ui && typeof ui.resizable === "boolean" ? ui.resizable : true;
-        await platformAdapter.setWindowSize(uiWidth, uiHeight);
+          forceResizable
+            ? true
+            : ui && typeof ui.resizable === "boolean"
+            ? ui.resizable
+            : true;
+        
+        const targetWidth = uiWidth! + padding;
+        const targetHeight = uiHeight! + padding;
+        await platformAdapter.setWindowSize(targetWidth, targetHeight);
         await platformAdapter.setWindowResizable(nextResizable);
         await platformAdapter.centerOnCurrentMonitor();
         await recomputeScale();
       } else {
         await recomputeScale();
       }
+      
+      if (isStandalone) {
+        await platformAdapter.showWindow();
+        // Force window to top
+        await platformAdapter.setAlwaysOnTop(true);
+        await platformAdapter.setAlwaysOnTop(false);
+      }
+      
       focusIframeSoon();
     };
 
@@ -196,15 +164,11 @@ export function useViewExtensionWindow() {
     return () => {
       if (prevWindowRef.current) {
         const prev = prevWindowRef.current;
-        if (!isMac && fullscreenPrevRef.current != null) {
-          platformAdapter.setWindowFullscreen(false);
-        }
         platformAdapter.setWindowSize(prev.width, prev.height);
         platformAdapter.setWindowResizable(prev.resizable);
         platformAdapter.setWindowPosition(prev.x, prev.y);
 
         prevWindowRef.current = null;
-        fullscreenPrevRef.current = null;
       }
     };
   }, [
@@ -214,31 +178,50 @@ export function useViewExtensionWindow() {
     ui,
     uiHeight,
     uiWidth,
+    isStandalone,
+    padding,
+    forceResizable,
+    isTauri
   ]);
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isFullscreen) {
-        applyFullscreen(false);
-        setIsFullscreen(false);
+    const handleResize = async () => {
+      if (hasExplicitWindowSize) {
+        recomputeScale();
       }
     };
-    window.addEventListener("keydown", handleKeyDown, { capture: true });
+    
+    window.addEventListener("resize", handleResize);
+    
+    let observer: ResizeObserver | null = null;
+    if (containerRef?.current) {
+        observer = new ResizeObserver(() => {
+            handleResize();
+        });
+        observer.observe(containerRef.current);
+    }
+
     return () => {
-      window.removeEventListener("keydown", handleKeyDown, {
-        capture: true,
-      } as any);
+      window.removeEventListener("resize", handleResize);
+      observer?.disconnect();
     };
-  }, [applyFullscreen, isFullscreen]);
+  }, [hasExplicitWindowSize, recomputeScale, containerRef]);
 
   return {
     ui,
     resizable,
+    detachable,
     hideScrollbar,
     scale,
+    baseWidth,
+    baseHeight,
     iframeRef,
-    isFullscreen,
-    toggleFullscreen,
     focusIframe,
+    setBaseSize: (width: number, height: number) => {
+      if (!hasExplicitWindowSize) {
+        setFallbackViewSize({ width, height });
+        recomputeScale();
+      }
+    },
   };
 }

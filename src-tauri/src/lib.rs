@@ -12,7 +12,9 @@ mod shortcut;
 pub mod util;
 
 use crate::common::register::SearchSourceRegistry;
-use crate::common::{CHECK_WINDOW_LABEL, MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL};
+use crate::common::{
+    CHECK_WINDOW_LABEL, MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL, VIEW_EXTENSION_WINDOW_LABEL,
+};
 use crate::server::servers::{
     load_or_insert_default_server, load_servers_token, start_bg_heartbeat_worker,
 };
@@ -23,7 +25,8 @@ use lazy_static::lazy_static;
 use std::sync::Mutex;
 use std::sync::OnceLock;
 use tauri::{
-    AppHandle, Emitter, LogicalPosition, Manager, PhysicalPosition, WebviewWindow, WindowEvent,
+    AppHandle, Emitter, LogicalPosition, Manager, PhysicalPosition, WebviewUrl, WebviewWindow,
+    WebviewWindowBuilder, WindowEvent,
 };
 use tauri_plugin_autostart::MacosLauncher;
 
@@ -98,6 +101,7 @@ pub fn run() {
             show_coco,
             hide_coco,
             show_settings,
+            show_view_extension,
             show_check,
             hide_check,
             server::servers::add_coco_server,
@@ -392,6 +396,56 @@ async fn show_settings(app_handle: AppHandle) {
     window.show().unwrap();
     window.unminimize().unwrap();
     window.set_focus().unwrap();
+}
+
+#[tauri::command]
+async fn show_view_extension(
+    app_handle: AppHandle,
+    label: Option<String>,
+    query: String,
+    width: Option<f64>,
+    height: Option<f64>,
+    title: Option<String>,
+) -> Result<(), String> {
+    log::debug!("view extension menu item was clicked");
+    if !(query.contains("manual=1") && query.contains("ext=")) {
+        log::error!("Invalid query for view extension: manual=1 and ext= required");
+        return Err("invalid argument: manual=1 and ext= should be provided".into());
+    }
+    let window_label = label.unwrap_or_else(|| VIEW_EXTENSION_WINDOW_LABEL.to_string());
+
+    if let Some(window) = app_handle.get_webview_window(&window_label) {
+        window.show().unwrap();
+        window.unminimize().unwrap();
+        window.set_focus().unwrap();
+        return Ok(());
+    }
+
+    // If window doesn't exist (e.g. was closed), create it
+    let url_suffix = query;
+    let url = WebviewUrl::App(format!("/ui/view-extension{}", url_suffix).into());
+    let w = width.unwrap_or(1000.0);
+    let h = height.unwrap_or(800.0);
+
+    let build_result = WebviewWindowBuilder::new(&app_handle, &window_label, url)
+        .title(title.unwrap_or_else(|| "View Extension".to_string()))
+        .inner_size(w, h)
+        .min_inner_size(800.0, 600.0)
+        .resizable(true)
+        .center()
+        .visible(false)
+        .build();
+
+    match build_result {
+        Ok(win) => {
+            let _ = win.set_focus();
+            Ok(())
+        }
+        Err(e) => {
+            log::error!("Failed to create view extension window: {}", e);
+            Err(e.to_string())
+        }
+    }
 }
 
 #[tauri::command]
