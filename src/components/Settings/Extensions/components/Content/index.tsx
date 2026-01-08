@@ -336,7 +336,9 @@ const Item: FC<ItemProps> = (props) => {
                   <FontIcon name={icon} className="size-full" />
                 ) : (
                   <img
-                    src={platformAdapter.convertFileSrc(icon)}
+                    src={`${platformAdapter.convertFileSrc(
+                      icon
+                    )}?${Date.now()}`}
                     className="size-full dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
                   />
                 )}
