@@ -25,7 +25,7 @@ export function useMessageHandler(
   }
 ) {
   const messageTimeoutRef = useRef<NodeJS.Timeout>();
-  const connectionTimeout = useConnectStore((state) => state.connectionTimeout);
+  const responseTimeout = useConnectStore((state) => state.responseTimeout);
   const inThinkRef = useRef<boolean>(false);
 
   const dealMsg = useCallback(
@@ -38,7 +38,7 @@ export function useMessageHandler(
         // console.log("AI response timeout");
         setTimedoutShow(true);
         onCancel();
-      }, (connectionTimeout ?? 120) * 1000);
+      }, (responseTimeout ?? 120) * 1000);
 
       try {
         const chunkData = JSON.parse(msg);
@@ -116,7 +116,7 @@ export function useMessageHandler(
         console.error("parse error:", error);
       }
     },
-    [onCancel, setCurChatEnd, setTimedoutShow, connectionTimeout]
+    [onCancel, setCurChatEnd, setTimedoutShow, responseTimeout]
   );
 
   return {

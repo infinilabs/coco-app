@@ -24,8 +24,8 @@ export type IConnectStore = {
   setConnectorData: (connector_data: any[], key: string) => void;
   datasourceData: keyArrayObject;
   setDatasourceData: (datasourceData: any[], key: string) => void;
-  connectionTimeout?: number;
-  setConnectionTimeout: (connectionTimeout?: number) => void;
+  responseTimeout?: number;
+  setResponseTimeout: (responseTimeout?: number) => void;
   currentSessionId?: string;
   setCurrentSessionId: (currentSessionId?: string) => void;
   assistantList: any[];
@@ -114,9 +114,9 @@ export const useConnectStore = create<IConnectStore>()(
             set({ datasourceData });
           });
         },
-        connectionTimeout: 120,
-        setConnectionTimeout: (connectionTimeout) => {
-          return set(() => ({ connectionTimeout }));
+        responseTimeout: 120,
+        setResponseTimeout: (responseTimeout) => {
+          return set(() => ({ responseTimeout }));
         },
         setCurrentSessionId(currentSessionId) {
           return set(() => ({ currentSessionId }));
@@ -166,7 +166,7 @@ export const useConnectStore = create<IConnectStore>()(
           cloudSelectService: state.cloudSelectService,
           connector_data: state.connector_data,
           datasourceData: state.datasourceData,
-          connectionTimeout: state.connectionTimeout,
+          responseTimeout: state.responseTimeout,
           currentAssistant: state.currentAssistant,
           querySourceTimeout: state.querySourceTimeout,
           allowSelfSignature: state.allowSelfSignature,

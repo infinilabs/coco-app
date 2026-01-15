@@ -76,8 +76,8 @@ export const useSyncStore = () => {
   const setResetFixedWindow = useShortcutsStore((state) => {
     return state.setResetFixedWindow;
   });
-  const setConnectionTimeout = useConnectStore((state) => {
-    return state.setConnectionTimeout;
+  const setResponseTimeout = useConnectStore((state) => {
+    return state.setResponseTimeout;
   });
   const setQueryTimeout = useConnectStore((state) => {
     return state.setQuerySourceTimeout;
@@ -187,14 +187,14 @@ export const useSyncStore = () => {
 
       platformAdapter.listenEvent("change-connect-store", ({ payload }) => {
         const {
-          connectionTimeout,
+          responseTimeout,
           querySourceTimeout,
           searchDelay,
           allowSelfSignature,
           compactModeAutoCollapseDelay,
         } = payload;
-        if (isNumber(connectionTimeout)) {
-          setConnectionTimeout(connectionTimeout);
+        if (isNumber(responseTimeout)) {
+          setResponseTimeout(responseTimeout);
         }
         if (isNumber(querySourceTimeout)) {
           setQueryTimeout(querySourceTimeout);

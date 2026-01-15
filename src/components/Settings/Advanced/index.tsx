@@ -51,11 +51,11 @@ const Advanced = () => {
   const setDefaultContentForChatWindow = useStartupStore((state) => {
     return state.setDefaultContentForChatWindow;
   });
-  const connectionTimeout = useConnectStore((state) => {
-    return state.connectionTimeout;
+  const responseTimeout = useConnectStore((state) => {
+    return state.responseTimeout;
   });
-  const setConnectionTimeout = useConnectStore((state) => {
-    return state.setConnectionTimeout;
+  const setResponseTimeout = useConnectStore((state) => {
+    return state.setResponseTimeout;
   });
   const queryTimeout = useConnectStore((state) => {
     return state.querySourceTimeout;
@@ -211,17 +211,17 @@ const Advanced = () => {
       <div className="space-y-6">
         <SettingsItem
           icon={Unplug}
-          title={t("settings.advanced.other.connectionTimeout.title")}
+          title={t("settings.advanced.other.responseTimeout.title")}
           description={t(
-            "settings.advanced.other.connectionTimeout.description"
+            "settings.advanced.other.responseTimeout.description"
           )}
         >
           <SettingsInput
             type="number"
             min={10}
-            value={connectionTimeout}
+            value={responseTimeout}
             onChange={(value) => {
-              setConnectionTimeout(!value ? void 0 : Number(value));
+              setResponseTimeout(!value ? void 0 : Number(value));
             }}
           />
         </SettingsItem>
