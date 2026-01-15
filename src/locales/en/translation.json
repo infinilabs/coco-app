@@ -189,17 +189,17 @@
       },
       "other": {
         "title": "Other Settings",
-        "connectionTimeout": {
-          "title": "Connection Timeout",
-          "description": "Retries the connection if no response is received within this time. Default: 120s."
+        "responseTimeout": {
+          "title": "Chat Response Timeout",
+          "description": "Stops the current AI response if no data is received within this time. Default: 120 s."
         },
         "queryTimeout": {
-          "title": "Query Timeout",
-          "description": "Terminates the query if no search results are returned within this time. Default: 500ms."
+          "title": "Query Request Timeout",
+          "description": "Terminates the query if no search results are returned within this time. Default: 500 ms."
         },
         "searchDelay": {
-          "title": "Search Delay",
-          "description": "Delay before search is triggered after user stops typing. Default: 300 ms."
+          "title": "Query Request Delay",
+          "description": "Delay before a query is triggered after the user stops typing. Default: 300 ms."
         },
         "allowSelfSignature": {
           "title": "Allow Self-Signed Certificates",

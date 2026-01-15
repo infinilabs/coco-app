@@ -189,17 +189,17 @@
       },
       "other": {
         "title": "其它设置",
-        "connectionTimeout": {
-          "title": "连接超时",
-          "description": "如果在此时间内未收到响应，则重试连接。默认值：120 秒。"
+        "responseTimeout": {
+          "title": "聊天响应超时",
+          "description": "在此时间内未收到 AI 返回数据时，停止本次响应。默认值：120 秒。"
         },
         "queryTimeout": {
-          "title": "查询超时",
+          "title": "查询请求超时",
           "description": "在此时间内未返回搜索结果，则终止查询。默认值：500 毫秒。"
         },
         "searchDelay": {
-          "title": "搜索延迟",
-          "description": "停止输入后触发搜索的延迟时间。默认值：300 毫秒。 "
+          "title": "查询请求延迟",
+          "description": "停止输入后触发查询的延迟时间。默认值：300 毫秒。"
         },
         "allowSelfSignature": {
           "title": "允许自签名证书",
