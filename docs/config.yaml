@@ -20,6 +20,11 @@ markup:
       unsafe: true
   tableOfContents:
     startLevel: 2
+  highlight:
+    style: dracula
+    lineNos: false
+    codeFences: true
+    guessSyntax: false
 
 # Multi-lingual mode config
 # There are different options to translate files
