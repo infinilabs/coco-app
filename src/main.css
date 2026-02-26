@@ -6,6 +6,7 @@
 /* Tailwind v4 custom variant for dark mode */
 @custom-variant dark (&:where(.dark, .dark *));
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+@custom-variant mobile (@media (max-width: 679px));
 
 /* Base variables */
 .coco-container,
