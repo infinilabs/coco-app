@@ -273,10 +273,7 @@ mod tests {
 
     #[test]
     fn test_strip_thousand_separators_multiple_commas() {
-        assert_eq!(
-            strip_thousand_separators("1,000,000*2"),
-            "1000000*2"
-        );
+        assert_eq!(strip_thousand_separators("1,000,000*2"), "1000000*2");
     }
 
     #[test]
@@ -297,10 +294,7 @@ mod tests {
 
     #[test]
     fn test_strip_thousand_separators_both_operands() {
-        assert_eq!(
-            strip_thousand_separators("1,000+2,000"),
-            "1000+2000"
-        );
+        assert_eq!(strip_thousand_separators("1,000+2,000"), "1000+2000");
     }
 
     #[test]
