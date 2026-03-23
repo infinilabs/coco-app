@@ -37,6 +37,27 @@ impl CalculatorSource {
     }
 }
 
+/// Strip thousand separators (commas between digits) from the input string.
+/// For example, `5,032,104/171` becomes `5032104/171`.
+fn strip_thousand_separators(input: &str) -> String {
+    let chars: Vec<char> = input.chars().collect();
+    let mut result = String::with_capacity(input.len());
+
+    for i in 0..chars.len() {
+        if chars[i] == ','
+            && i > 0
+            && i + 1 < chars.len()
+            && chars[i - 1].is_ascii_digit()
+            && chars[i + 1].is_ascii_digit()
+        {
+            continue;
+        }
+        result.push(chars[i]);
+    }
+
+    result
+}
+
 fn parse_query(query: &str) -> Value {
     let mut query_json = serde_json::Map::new();
 
@@ -150,11 +171,12 @@ impl SearchSource for CalculatorSource {
             });
         }
 
-        let query_string_clone = query_string.to_string();
+        let original_query = query_string.to_string();
+        let eval_query = strip_thousand_separators(query_string);
         let query_source = self.get_type();
         let base_score = self.base_score;
         let closure = move || -> QueryResponse {
-            let Ok(tokens) = meval::tokenizer::tokenize(&query_string_clone) else {
+            let Ok(tokens) = meval::tokenizer::tokenize(&eval_query) else {
                 // Invalid expression, return nothing.
                 return QueryResponse {
                     source: query_source,
@@ -178,13 +200,13 @@ impl SearchSource for CalculatorSource {
                 };
             }
 
-            let res_num = meval::eval_str(&query_string_clone);
+            let res_num = meval::eval_str(&eval_query);
 
             match res_num {
                 Ok(num) => {
                     let mut payload: HashMap<String, Value> = HashMap::new();
 
-                    let payload_query = parse_query(&query_string_clone);
+                    let payload_query = parse_query(&original_query);
                     let payload_result = parse_result(num);
 
                     payload.insert("query".to_string(), payload_query);
@@ -227,5 +249,66 @@ impl SearchSource for CalculatorSource {
             Ok(response) => Ok(response),
             Err(e) => std::panic::resume_unwind(e.into_panic()),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_strip_thousand_separators_basic() {
+        assert_eq!(strip_thousand_separators("5,032,104/171"), "5032104/171");
+    }
+
+    #[test]
+    fn test_strip_thousand_separators_no_commas() {
+        assert_eq!(strip_thousand_separators("100+200"), "100+200");
+    }
+
+    #[test]
+    fn test_strip_thousand_separators_single_comma() {
+        assert_eq!(strip_thousand_separators("1,000"), "1000");
+    }
+
+    #[test]
+    fn test_strip_thousand_separators_multiple_commas() {
+        assert_eq!(strip_thousand_separators("1,000,000*2"), "1000000*2");
+    }
+
+    #[test]
+    fn test_strip_thousand_separators_empty() {
+        assert_eq!(strip_thousand_separators(""), "");
+    }
+
+    #[test]
+    fn test_strip_thousand_separators_leading_comma() {
+        // Comma not between digits should be preserved
+        assert_eq!(strip_thousand_separators(",100"), ",100");
+    }
+
+    #[test]
+    fn test_strip_thousand_separators_trailing_comma() {
+        assert_eq!(strip_thousand_separators("100,"), "100,");
+    }
+
+    #[test]
+    fn test_strip_thousand_separators_both_operands() {
+        assert_eq!(strip_thousand_separators("1,000+2,000"), "1000+2000");
+    }
+
+    #[test]
+    fn test_eval_with_thousand_separators() {
+        let cleaned = strip_thousand_separators("5,032,104/171");
+        let result = meval::eval_str(&cleaned).unwrap();
+        let expected = 5_032_104.0 / 171.0;
+        assert!((result - expected).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_parse_query_preserves_original() {
+        let query = parse_query("5,032,104/171");
+        assert_eq!(query["value"], "5,032,104/171");
+        assert_eq!(query["type"], "divide");
     }
 }
