@@ -120,9 +120,16 @@ export default function ChatInput({
     },
   });
 
-  const handleToggleFocus = useCallback(() => {
-    textareaRef.current?.focus();
-  }, [textareaRef]);
+  const handleToggleFocus = () => {
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 100);
+  };
+
+  useTauriFocus({
+    enableWebFocus: true,
+    onFocus: handleToggleFocus,
+  });
 
   const handleSubmit = useCallback(() => {
     const trimmedValue = inputValue.trim();
@@ -148,7 +155,7 @@ export default function ChatInput({
         onSend({ message: value });
       }
     },
-    [changeInput, isChatMode, onSend]
+    [changeInput, isChatMode, onSend],
   );
 
   useEffect(() => {
@@ -289,8 +296,8 @@ export default function ChatInput({
             isChatMode
               ? assistantConfig.placeholder || chatPlaceholder
               : goAskAi
-              ? assistantDetail?._source?.chat_settings?.placeholder
-              : searchPlaceholder || t("search.input.searchPlaceholder")
+                ? assistantDetail?._source?.chat_settings?.placeholder
+                : searchPlaceholder || t("search.input.searchPlaceholder")
           }
           lineCount={lineCount}
           onLineCountChange={setLineCount}
@@ -317,7 +324,7 @@ export default function ChatInput({
               "min-h-10 w-full p-[7px] bg-[#ededed] dark:bg-[#202126]",
               {
                 "flex items-center gap-2": lineCount === 1,
-              }
+              },
             )}
           >
             {renderTextarea()}

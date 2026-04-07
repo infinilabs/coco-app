@@ -9,33 +9,64 @@ import platformAdapter from "@/utils/platformAdapter";
 interface Props {
   onFocus?: () => void;
   onBlur?: () => void;
+  enableWebFocus?: boolean;
 }
 
 export const useTauriFocus = (props: Props) => {
-  const { onFocus, onBlur } = props;
+  const { onFocus, onBlur, enableWebFocus = false } = props;
   const { isTauri } = useAppStore();
   const unlistenRef = useRef(noop);
 
   useMount(async () => {
-    if (!isTauri) return;
+    if (isTauri) {
+      const appWindow = await platformAdapter.getCurrentWebviewWindow();
 
-    const appWindow = await platformAdapter.getCurrentWebviewWindow();
+      const wait = isMac ? 0 : 100;
 
-    const wait = isMac ? 0 : 100;
+      const debounced = debounce(({ payload }) => {
+        if (payload) {
+          console.log("Window focused");
 
-    const debounced = debounce(({ payload }) => {
-      if (payload) {
-        console.log("Window focused");
+          onFocus?.();
+        } else {
+          console.log("Window blurred");
 
-        onFocus?.();
-      } else {
-        console.log("Window blurred");
+          onBlur?.();
+        }
+      }, wait);
 
-        onBlur?.();
-      }
-    }, wait);
+      unlistenRef.current = await appWindow.onFocusChanged(debounced);
 
-    unlistenRef.current = await appWindow.onFocusChanged(debounced);
+      return;
+    }
+
+    if (!enableWebFocus) return;
+
+    const handleFocus = () => {
+      console.log("Window focused");
+
+      onFocus?.();
+    };
+
+    const handleBlur = () => {
+      console.log("Window blurred");
+
+      onBlur?.();
+    };
+
+    window.addEventListener("focus", handleFocus);
+
+    window.addEventListener("blur", handleBlur);
+
+    if (document.hasFocus()) {
+      handleFocus();
+    }
+
+    unlistenRef.current = () => {
+      window.removeEventListener("focus", handleFocus);
+
+      window.removeEventListener("blur", handleBlur);
+    };
   });
 
   useUnmount(() => {
