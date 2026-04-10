@@ -180,6 +180,9 @@ Information about release notes of Coco App is provided here.
 
 ### 🚀 Features
 
+- feat: add infinite scroll support for extension store
+  #1055
+
 ### 🐛 Bug fix
 
 - fix: correct enter key behavior #828
