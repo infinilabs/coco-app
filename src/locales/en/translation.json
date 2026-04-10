@@ -441,7 +441,8 @@
       "title": "{{0}} {{1}}",
       "placeholder": "Ask More",
       "continueInChat": "Continue in chat",
-      "copy": "Copy"
+      "copy": "Copy",
+      "emptyResponse": "No response content returned. Please try again."
     },
     "fuzziness": {
       "fuzzyMatch": "Fuzzy Match"
@@ -624,7 +625,8 @@
   "extensionStore": {
     "hints": {
       "installationCompleted": "installation completed",
-      "uninstallationCompleted": "uninstallation completed"
+      "uninstallationCompleted": "uninstallation completed",
+      "noMore": "No more"
     }
   },
   "extensionDetail": {

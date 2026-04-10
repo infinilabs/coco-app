@@ -1,5 +1,10 @@
-import { useAsyncEffect, useDebounce, useKeyPress, useUnmount } from "ahooks";
-import { useCallback, useEffect, useState } from "react";
+import {
+  useDebounce,
+  useInfiniteScroll,
+  useKeyPress,
+  useUnmount,
+} from "ahooks";
+import { useCallback, useEffect, useRef } from "react";
 import { CircleCheck, FolderDown, Loader } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
@@ -12,6 +17,24 @@ import ExtensionDetail from "./ExtensionDetail";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
 import { useAppStore } from "@/stores/appStore";
 import { platform } from "@/utils/platform";
+
+const PAGE_SIZE = 20;
+
+const filterNewExtensions = (
+  currentItems: SearchExtensionItem[],
+  nextItems: SearchExtensionItem[],
+) => {
+  const seen = new Set(currentItems.map((item) => item.id));
+
+  return nextItems.filter((item) => {
+    if (seen.has(item.id)) {
+      return false;
+    }
+
+    seen.add(item.id);
+    return true;
+  });
+};
 
 export interface SearchExtensionItem {
   id: string;
@@ -93,10 +116,14 @@ const ExtensionStore = ({
     setVisibleContextMenu,
   } = useSearchStore();
   const debouncedSearchValue = useDebounce(searchValue);
-  const [list, setList] = useState<SearchExtensionItem[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const searchRequestKey = `${extensionId ?? ""}:${debouncedSearchValue.trim()}`;
+  const currentSearchRequestKeyRef = useRef(searchRequestKey);
   const { modifierKey } = useShortcutsStore();
   const { addError } = useAppStore();
   const { t } = useTranslation();
+
+  currentSearchRequestKeyRef.current = searchRequestKey;
 
   useEffect(() => {
     const unlisten1 = platformAdapter.listenEvent("install-extension", () => {
@@ -119,38 +146,110 @@ const ExtensionStore = ({
         "extension_detail",
         {
           id: extensionId,
-        }
+        },
       );
       setSelectedExtension(detail);
       setVisibleExtensionDetail(true);
     } catch (error) {
       addError(String(error));
     }
-  }, [extensionId, installingExtensions]);
+  }, [addError, extensionId, setSelectedExtension, setVisibleExtensionDetail]);
 
-  useAsyncEffect(async () => {
+  const { data, loading, loadingMore, noMore, mutate } = useInfiniteScroll(
+    async (d) => {
+      if (extensionId) {
+        return {
+          list: [],
+          hasMore: false,
+        };
+      }
+
+      const requestKey = searchRequestKey;
+
+      const from = d?.list?.length ?? 0;
+
+      const result = await platformAdapter.invokeBackend<SearchExtensionItem[]>(
+        "search_extension",
+        {
+          queryParams: parseSearchQuery({
+            query: debouncedSearchValue.trim(),
+            from,
+            size: PAGE_SIZE,
+            filters: {
+              platforms: [platform()],
+            },
+          }),
+        },
+      );
+
+      if (requestKey !== currentSearchRequestKeyRef.current) {
+        throw new Error("stale extension search request");
+      }
+
+      const currentList = d?.list ?? [];
+      const nextList = filterNewExtensions(currentList, result ?? []);
+
+      console.log("ExtensionStore nextList", nextList);
+
+      return {
+        list: nextList,
+        hasMore: nextList.length === PAGE_SIZE,
+      };
+    },
+    {
+      target: containerRef,
+      isNoMore: (d) => !d?.hasMore,
+      reloadDeps: [debouncedSearchValue, extensionId],
+      onError: (error) => {
+        if (String(error) === "Error: stale extension search request") {
+          return;
+        }
+
+        addError(String(error));
+      },
+    },
+  );
+
+  const list = data?.list ?? [];
+  const showLoadingState = !visibleExtensionDetail && (loading || loadingMore);
+  const showInitialLoadingState = showLoadingState && list.length === 0;
+  const showLoadMoreState = showLoadingState && list.length > 0;
+  const showNoMoreState =
+    !visibleExtensionDetail && !showLoadingState && noMore && list.length > 0;
+
+  useEffect(() => {
+    mutate(void 0);
+
+    if (!extensionId) {
+      setSelectedExtension(void 0);
+    }
+  }, [extensionId, mutate, searchRequestKey, setSelectedExtension]);
+
+  useEffect(() => {
     if (extensionId) {
-      return handleExtensionDetail();
+      handleExtensionDetail();
+    }
+  }, [extensionId, handleExtensionDetail]);
+
+  useEffect(() => {
+    if (extensionId) return;
+
+    if (list.length === 0) {
+      if (selectedExtension) {
+        setSelectedExtension(void 0);
+      }
+      return;
     }
 
-    const result = await platformAdapter.invokeBackend<SearchExtensionItem[]>(
-      "search_extension",
-      {
-        queryParams: parseSearchQuery({
-          query: debouncedSearchValue.trim(),
-          filters: {
-            platforms: [platform()],
-          },
-        }),
-      }
-    );
+    const selectedId = selectedExtension?.id;
+    const hasSelected = selectedId
+      ? list.some((item) => item.id === selectedId)
+      : false;
 
-    // console.log("search_extension", result);
-
-    setList(result ?? []);
-
-    setSelectedExtension(result?.[0]);
-  }, [debouncedSearchValue, extensionId]);
+    if (!hasSelected) {
+      setSelectedExtension(list[0]);
+    }
+  }, [extensionId, list, selectedExtension, setSelectedExtension]);
 
   useUnmount(() => {
     setSelectedExtension(void 0);
@@ -167,7 +266,7 @@ const ExtensionStore = ({
 
       setVisibleExtensionDetail(true);
     },
-    { exactMatch: true }
+    { exactMatch: true },
   );
 
   useKeyPress(
@@ -179,7 +278,7 @@ const ExtensionStore = ({
 
       handleInstall();
     },
-    { exactMatch: true }
+    { exactMatch: true },
   );
 
   useKeyPress(["uparrow", "downarrow"], (_, key) => {
@@ -206,14 +305,19 @@ const ExtensionStore = ({
 
     const { id, installed } = extension;
 
-    setList((prev) => {
-      return prev.map((item) => {
-        if (item.id === id) {
-          return { ...item, installed: !installed };
-        }
+    mutate((prev) => {
+      if (!prev) return prev;
 
-        return item;
-      });
+      return {
+        ...prev,
+        list: prev.list.map((item) => {
+          if (item.id === id) {
+            return { ...item, installed: !installed };
+          }
+
+          return item;
+        }),
+      };
     });
 
     const { selectedExtension } = useSearchStore.getState();
@@ -247,7 +351,7 @@ const ExtensionStore = ({
 
       addError(
         `${name} ${t("extensionStore.hints.installationCompleted")}`,
-        "info"
+        "info",
       );
     } catch (error) {
       installExtensionError(error);
@@ -255,7 +359,7 @@ const ExtensionStore = ({
       const { installingExtensions } = useSearchStore.getState();
 
       setInstallingExtensions(
-        installingExtensions.filter((item) => item !== id)
+        installingExtensions.filter((item) => item !== id),
       );
     }
   };
@@ -282,7 +386,7 @@ const ExtensionStore = ({
 
       addError(
         `${name} ${t("extensionStore.hints.uninstallationCompleted")}`,
-        "info"
+        "info",
       );
     } catch (error) {
       addError(String(error), "error");
@@ -290,13 +394,16 @@ const ExtensionStore = ({
       const { uninstallingExtensions } = useSearchStore.getState();
 
       setUninstallingExtensions(
-        uninstallingExtensions.filter((item) => item !== id)
+        uninstallingExtensions.filter((item) => item !== id),
       );
     }
   };
 
   return (
-    <div className="h-full text-sm p-4 overflow-auto custom-scrollbar">
+    <div
+      ref={containerRef}
+      className="h-full text-sm p-4 overflow-auto custom-scrollbar"
+    >
       {visibleExtensionDetail ? (
         <ExtensionDetail
           onInstall={handleInstall}
@@ -317,7 +424,7 @@ const ExtensionStore = ({
                     {
                       "bg-black/10 dark:bg-white/15":
                         selectedExtension?.id === id,
-                    }
+                    },
                   )}
                   onMouseOver={() => {
                     setSelectedExtension(item);
@@ -354,9 +461,26 @@ const ExtensionStore = ({
                 </div>
               );
             })
-          ) : (
+          ) : showInitialLoadingState ? (
+            <div className="flex flex-col justify-center items-center h-full min-h-[50vh] gap-3 text-[#666] dark:text-[#a8a8a8]">
+              <Loader className="size-5 text-blue-500 animate-spin" />
+              <span className="text-sm">{t("common.loading")}</span>
+            </div>
+          ) : !showLoadingState ? (
             <div className="flex justify-center items-center h-full">
               <SearchEmpty />
+            </div>
+          ) : null}
+
+          {showLoadMoreState && (
+            <div className="flex justify-center items-center py-4">
+              <Loader className="size-4 text-blue-500 animate-spin" />
+            </div>
+          )}
+
+          {showNoMoreState && (
+            <div className="text-center text-xs text-[#999] py-3">
+              {t("extensionStore.hints.noMore")}
             </div>
           )}
         </>

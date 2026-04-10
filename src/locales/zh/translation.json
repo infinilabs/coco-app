@@ -441,7 +441,8 @@
       "title": "{{0}}{{1}}",
       "placeholder": "问更多",
       "continueInChat": "继续聊天",
-      "copy": "复制"
+      "copy": "复制",
+      "emptyResponse": "未返回有效内容，请重试。"
     },
     "fuzziness": {
       "fuzzyMatch": "模糊匹配"
@@ -623,7 +624,8 @@
   "extensionStore": {
     "hints": {
       "installationCompleted": "安装成功",
-      "uninstallationCompleted": "卸载成功"
+      "uninstallationCompleted": "卸载成功",
+      "noMore": "没有更多了"
     }
   },
   "extensionDetail": {
