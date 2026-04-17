@@ -1,17 +1,57 @@
 # VERSIONS=latest,v1.0 hugo    --minify --baseURL="/product/v1.0/"  -d public/product/v1.0
 
-title: Coco AI App
+title: Coco AI App | Coco AI - Connect & Collaborate
 theme: book
 
 # Book configuration
 disablePathToLower: true
 enableGitInfo: false
 
+# Security configuration to allow theme to access environment variables
+security:
+  funcs:
+    getenv:
+      - '^HUGO_'
+      - '^CI$'
+      - 'CURRENT_VERSION'
+      - 'VERSIONS'
+
+
+mediaTypes:
+  "text/markdown":
+    suffixes:
+      - md
+  "text/plain":
+    suffixes:
+      - txt
+
+outputFormats:
+  markdown:
+    name: "markdown"
+    baseName: "index"
+    mediaType: "text/markdown"
+    isPlainText: true
+  llms_txt: # Use a unique key here
+    name: "llms_txt"
+    mediaType: "text/plain"
+    baseName: "llms"
+    isPlainText: true
+    notAlternative: true
+
 outputs:
   home:
     - HTML
     - RSS
     - JSON
+    - markdown
+    - llms_txt  # Match the unique key from above
+  page:
+    - HTML
+    - markdown
+  section:
+    - HTML
+    - markdown
+
 
 # Needed for mermaid/katex shortcodes
 markup:
