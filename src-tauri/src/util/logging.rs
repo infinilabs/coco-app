@@ -149,14 +149,14 @@ pub(crate) fn set_up_tauri_logger() -> TauriPlugin<tauri::Wry> {
         builder
     }
 
-    // When running the built binary, set `COCO_LOG` to `coco_lib=trace` to capture all logs
-    // that come from Coco in the log file, which helps with debugging.
+    // When running the built binary, set `COCO_LOG` to capture all logs from Coco and the
+    // webview (frontend) in the log file, which helps with debugging.
     if !tauri::is_dev() {
         // We have absolutely no guarantee that we (We have control over the Rust
         // code, but definitely no idea about the libc C code, all the shared objects
         // that we will link) will not concurrently read/write `envp`, so just use unsafe.
         unsafe {
-            std::env::set_var("COCO_LOG", "coco_lib=trace");
+            std::env::set_var("COCO_LOG", "coco_lib=trace,webview=trace");
         }
     }
 
