@@ -343,22 +343,18 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       };
 
       if (data?.on_opened) {
-        // Hide the window immediately so the user doesn't have to wait for the
-        // command to finish executing before the Coco window disappears.
-        hideCoco();
-
-        return invoke("open", {
+        await invoke("open", {
           onOpened: data.on_opened,
           extraArgs: null,
-        }).catch((err: unknown) => {
-          error(`Failed to open item: ${JSON.stringify(data.on_opened)}, error: ${err}`);
         });
+
+        return hideCoco();
       }
 
       if (data?.url) {
-        hideCoco();
+        OpenURLWithBrowser(data.url);
 
-        return OpenURLWithBrowser(data.url);
+        return hideCoco();
       }
 
       if (data?.payload?.result?.value) {
