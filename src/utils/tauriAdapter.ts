@@ -347,22 +347,18 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
         // command to finish executing before the Coco window disappears.
         hideCoco();
 
-        invoke("open", {
+        return invoke("open", {
           onOpened: data.on_opened,
           extraArgs: null,
         }).catch((err: unknown) => {
           console.error("Failed to open item:", data.on_opened, err);
         });
-
-        return;
       }
 
       if (data?.url) {
         hideCoco();
 
-        OpenURLWithBrowser(data.url);
-
-        return;
+        return OpenURLWithBrowser(data.url);
       }
 
       if (data?.payload?.result?.value) {
