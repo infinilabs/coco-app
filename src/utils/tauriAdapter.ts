@@ -351,7 +351,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
           onOpened: data.on_opened,
           extraArgs: null,
         }).catch((err: unknown) => {
-          console.error("Failed to open item:", data.on_opened, err);
+          error(`Failed to open item: ${JSON.stringify(data.on_opened)}, error: ${err}`);
         });
       }
 
