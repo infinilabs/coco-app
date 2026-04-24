@@ -1,4 +1,4 @@
-import { useBoolean } from "ahooks";
+import { useBoolean, useEventListener } from "ahooks";
 import clsx from "clsx";
 import { CircleChevronLeft, CircleChevronRight } from "lucide-react";
 import { FC, useState } from "react";
@@ -16,6 +16,41 @@ const PreviewImage: FC<PreviewImageProps> = (props) => {
   const { urls, classNames } = props;
   const [open, { setTrue, setFalse }] = useBoolean();
   const [index, setIndex] = useState(0);
+
+  useEventListener(
+    "keydown",
+    (event: KeyboardEvent) => {
+      if (
+        event.key !== "Escape" &&
+        event.key !== "ArrowLeft" &&
+        event.key !== "ArrowRight"
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+
+      if (event.key === "ArrowLeft") {
+        handlePrev();
+
+        return;
+      }
+
+      if (event.key === "ArrowRight") {
+        handleNext();
+
+        return;
+      }
+
+      setFalse();
+    },
+    {
+      capture: true,
+      enable: open,
+    }
+  );
 
   const handlePrev = () => {
     const nextIndex = index === 0 ? urls.length - 1 : index - 1;
