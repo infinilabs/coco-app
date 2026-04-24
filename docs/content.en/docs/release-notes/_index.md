@@ -181,8 +181,8 @@ Information about release notes of Coco App is provided here.
 
 ### 🚀 Features
 
-- feat: add infinite scroll support for extension store
-  #1055
+- feat: add infinite scroll support for extension store #1055
+- feat: add keyboard navigation support for PreviewImage component #1061
 
 ### 🐛 Bug fix
 
