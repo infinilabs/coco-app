@@ -2,7 +2,7 @@ import type { OpenDialogOptions } from "@tauri-apps/plugin-dialog";
 import { isWindows10 } from "tauri-plugin-windows-version-api";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { metadata } from "tauri-plugin-fs-pro-api";
-import { error } from "@tauri-apps/plugin-log";
+import { error, info } from "@tauri-apps/plugin-log";
 
 import {
   windowWrapper,
@@ -30,10 +30,11 @@ import {
 
 export interface TauriPlatformAdapter extends BasePlatformAdapter {
   openFileDialog: (
-    options: OpenDialogOptions
+    options: OpenDialogOptions,
   ) => Promise<string | string[] | null>;
   metadata: typeof metadata;
   error: typeof error;
+  info: typeof info;
   openLogDir: () => Promise<void>;
   getCurrentWebviewWindow: () => Promise<WebviewWindow>;
   getWindowTheme: () => Promise<Theme | null>;
@@ -146,45 +147,39 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     async setAlwaysOnTop(isPinned) {
-      const { getCurrentWebviewWindow } = await import(
-        "@tauri-apps/api/webviewWindow"
-      );
+      const { getCurrentWebviewWindow } =
+        await import("@tauri-apps/api/webviewWindow");
       const window = getCurrentWebviewWindow();
       return window.setAlwaysOnTop(isPinned);
     },
 
     async requestScreenRecordingPermission() {
-      const { requestScreenRecordingPermission } = await import(
-        "tauri-plugin-macos-permissions-api"
-      );
+      const { requestScreenRecordingPermission } =
+        await import("tauri-plugin-macos-permissions-api");
       return requestScreenRecordingPermission();
     },
 
     async checkMicrophonePermission() {
-      const { checkMicrophonePermission } = await import(
-        "tauri-plugin-macos-permissions-api"
-      );
+      const { checkMicrophonePermission } =
+        await import("tauri-plugin-macos-permissions-api");
       return checkMicrophonePermission();
     },
 
     async requestMicrophonePermission() {
-      const { requestMicrophonePermission } = await import(
-        "tauri-plugin-macos-permissions-api"
-      );
+      const { requestMicrophonePermission } =
+        await import("tauri-plugin-macos-permissions-api");
       return requestMicrophonePermission();
     },
 
     async getScreenshotableMonitors() {
-      const { getScreenshotableMonitors } = await import(
-        "tauri-plugin-screenshots-api"
-      );
+      const { getScreenshotableMonitors } =
+        await import("tauri-plugin-screenshots-api");
       return getScreenshotableMonitors();
     },
 
     async getScreenshotableWindows() {
-      const { getScreenshotableWindows } = await import(
-        "tauri-plugin-screenshots-api"
-      );
+      const { getScreenshotableWindows } =
+        await import("tauri-plugin-screenshots-api");
       return getScreenshotableWindows();
     },
 
@@ -214,7 +209,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
 
       if (snapshotUpdate) {
         endpoints.unshift(
-          "https://release.infinilabs.com/coco/app/snapshot/.latest.json?target={{target}}&arch={{arch}}&current_version={{current_version}}"
+          "https://release.infinilabs.com/coco/app/snapshot/.latest.json?target={{target}}&arch={{arch}}&current_version={{current_version}}",
         );
       }
 
@@ -236,9 +231,8 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     async getCurrentWebviewWindow() {
-      const { getCurrentWebviewWindow } = await import(
-        "@tauri-apps/api/webviewWindow"
-      );
+      const { getCurrentWebviewWindow } =
+        await import("@tauri-apps/api/webviewWindow");
       return getCurrentWebviewWindow();
     },
 
@@ -276,9 +270,8 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     async getAllWindows() {
-      const { getAllWebviewWindows } = await import(
-        "@tauri-apps/api/webviewWindow"
-      );
+      const { getAllWebviewWindows } =
+        await import("@tauri-apps/api/webviewWindow");
       return getAllWebviewWindows();
     },
 
@@ -305,9 +298,8 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     isWindows10,
 
     async setShadow(enable) {
-      const { getCurrentWebviewWindow } = await import(
-        "@tauri-apps/api/webviewWindow"
-      );
+      const { getCurrentWebviewWindow } =
+        await import("@tauri-apps/api/webviewWindow");
       const appWindow = getCurrentWebviewWindow();
       return appWindow.setShadow(enable);
     },
@@ -363,6 +355,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     error,
+    info,
 
     async searchMCPServers(serverId, queryParams) {
       if (await unrequitable()) {
