@@ -187,6 +187,7 @@ Information about release notes of Coco App is provided here.
 ### 🐛 Bug fix
 
 - fix: correct enter key behavior #828
+- fix: prevent multiple tray instances from being created #1062
 
 ### ✈️ Improvements
 
