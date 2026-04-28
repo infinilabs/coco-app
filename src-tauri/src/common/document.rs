@@ -178,12 +178,13 @@ pub(crate) async fn open(
             }
             OnOpened::Extension(ext_on_opened) => {
                 // Apply the settings that would affect open behavior
-                if let Some(settings) = ext_on_opened.settings {
-                    if let Some(should_hide) = settings.hide_before_open {
-                        if should_hide {
-                            crate::hide_coco(tauri_app_handle.clone()).await;
-                        }
-                    }
+                // Default to hiding the Coco window before opening, unless explicitly disabled
+                let should_hide = ext_on_opened
+                    .settings
+                    .and_then(|s| s.hide_before_open)
+                    .unwrap_or(true);
+                if should_hide {
+                    crate::hide_coco(tauri_app_handle.clone()).await;
                 }
                 let permission = ext_on_opened.permission;
 
