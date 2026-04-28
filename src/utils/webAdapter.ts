@@ -7,6 +7,7 @@ export interface WebPlatformAdapter extends BasePlatformAdapter {
   openFileDialog: (options: any) => Promise<string | string[] | null>;
   metadata: (path: string, options: any) => Promise<Record<string, any>>;
   error: (message: string) => void;
+  info: (message: string) => void;
   openLogDir: () => Promise<void>;
   getCurrentWebviewWindow: () => Promise<any>;
   getWindowTheme: () => Promise<string>;
@@ -29,7 +30,7 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     async commands(commandName, ...args) {
       console.warn(
         `Command "${commandName}" is not supported in web environment`,
-        args
+        args,
       );
       return Promise.reject(new Error("Not supported in web environment"));
     },
@@ -244,7 +245,7 @@ export const createWebAdapter = (): WebPlatformAdapter => {
       console.log(
         "metadata is not supported in web environment",
         path,
-        options
+        options,
       );
       return Promise.resolve({ isAbsolute: false });
     },
@@ -269,11 +270,12 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     },
 
     error: console.error,
+    info: console.log,
 
     async searchMCPServers(_serverId, queryParams) {
       const [error, res]: any = await Post(
         `/mcp_server/_search?${queryParams?.join("&")}`,
-        undefined
+        undefined,
       );
 
       if (error) {
@@ -293,7 +295,7 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     async searchDataSources(_serverId, queryParams) {
       const [error, res]: any = await Post(
         `/datasource/_search?${queryParams?.join("&")}`,
-        undefined
+        undefined,
       );
 
       if (error) {
@@ -313,7 +315,7 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     async fetchAssistant(_serverId, queryParams) {
       const [error, res]: any = await Post(
         `/assistant/_search?${queryParams?.join("&")}`,
-        undefined
+        undefined,
       );
       if (error) {
         console.error("_search", error);
