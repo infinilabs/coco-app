@@ -20,18 +20,93 @@ use crate::util::logging::set_up_tauri_logger;
 use crate::util::prevent_default;
 use autostart::change_autostart;
 use lazy_static::lazy_static;
+use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 use std::sync::OnceLock;
 use tauri::{
     AppHandle, Emitter, LogicalPosition, Manager, PhysicalPosition, WebviewWindow, WindowEvent,
 };
 use tauri_plugin_autostart::MacosLauncher;
+use tauri_plugin_store::StoreExt;
 
 /// Tauri store name
 pub(crate) const COCO_TAURI_STORE: &str = "coco_tauri_store";
 
 lazy_static! {
     static ref PREVIOUS_MONITOR_NAME: Mutex<Option<String>> = Mutex::new(None);
+}
+
+const WINDOW_POSITION_STORE_PREFIX: &str = "window_position";
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+struct SavedWindowPosition {
+    /// Offset from monitor's top-left corner (physical pixels)
+    offset_x: i32,
+    offset_y: i32,
+    /// Monitor resolution at time of saving
+    monitor_width: u32,
+    monitor_height: u32,
+}
+
+/// Save the current window position relative to its monitor, along with monitor resolution.
+fn save_window_position(app_handle: &AppHandle, window: &WebviewWindow) {
+    let position = match window.outer_position() {
+        Ok(p) => p,
+        Err(e) => {
+            log::error!("Failed to get window position for saving: {}", e);
+            return;
+        }
+    };
+
+    let monitor = match window.current_monitor() {
+        Ok(Some(m)) => m,
+        Ok(None) => {
+            log::error!("No monitor found for current window");
+            return;
+        }
+        Err(e) => {
+            log::error!("Failed to get current monitor: {}", e);
+            return;
+        }
+    };
+
+    let monitor_position = monitor.position();
+    let monitor_size = monitor.size();
+    let monitor_name = monitor.name().map_or("unknown".to_string(), |v| v.clone());
+
+    let saved = SavedWindowPosition {
+        offset_x: position.x - monitor_position.x,
+        offset_y: position.y - monitor_position.y,
+        monitor_width: monitor_size.width,
+        monitor_height: monitor_size.height,
+    };
+
+    let store_key = format!("{}_{}", WINDOW_POSITION_STORE_PREFIX, monitor_name);
+
+    match app_handle.store(COCO_TAURI_STORE) {
+        Ok(store) => {
+            if let Ok(value) = serde_json::to_value(&saved) {
+                store.set(&store_key, value);
+                log::debug!(
+                    "Saved window position for monitor '{}': {:?}",
+                    monitor_name,
+                    saved
+                );
+            }
+        }
+        Err(e) => {
+            log::error!("Failed to open store for saving window position: {}", e);
+        }
+    }
+}
+
+/// Load saved window position for a specific monitor.
+fn load_window_position(app_handle: &AppHandle, monitor_name: &str) -> Option<SavedWindowPosition> {
+    let store_key = format!("{}_{}", WINDOW_POSITION_STORE_PREFIX, monitor_name);
+
+    let store = app_handle.store(COCO_TAURI_STORE).ok()?;
+    let value = store.get(&store_key)?;
+    serde_json::from_value::<SavedWindowPosition>(value).ok()
 }
 /// To allow us to access tauri's `AppHandle` when its context is inaccessible,
 /// store it globally. It will be set in `init()`.
@@ -296,6 +371,17 @@ async fn show_coco(app_handle: AppHandle) {
 
 #[tauri::command]
 async fn hide_coco(app_handle: AppHandle) {
+    // Save window position before hiding so it can be restored later
+    if let Some(window) = app_handle.get_webview_window(MAIN_WINDOW_LABEL) {
+        save_window_position(&app_handle, &window);
+    }
+
+    // Clear previous monitor name so next show will re-evaluate position
+    {
+        let mut previous_monitor = PREVIOUS_MONITOR_NAME.lock().unwrap();
+        *previous_monitor = None;
+    }
+
     cfg_if::cfg_if! {
         if #[cfg(target_os = "macos")] {
             use tauri_nspanel::ManagerExt;
@@ -326,10 +412,13 @@ fn move_window_to_active_monitor(window: &WebviewWindow) {
 
     match window.monitor_from_point(x, y) {
         Ok(Some(monitor)) => {
-            if let Some(name) = monitor.name() {
+            let monitor_name = monitor.name().map_or("unknown".to_string(), |v| v.clone());
+
+            // If still on the same monitor, don't reposition
+            {
                 let previous_monitor_name = PREVIOUS_MONITOR_NAME.lock().unwrap();
                 if let Some(ref prev_name) = *previous_monitor_name {
-                    if name.to_string() == *prev_name {
+                    if monitor_name == *prev_name {
                         log::debug!("Currently on the same monitor");
                         return;
                     }
@@ -339,7 +428,54 @@ fn move_window_to_active_monitor(window: &WebviewWindow) {
             let monitor_position = monitor.position();
             let monitor_size = monitor.size();
 
-            // Current window size for horizontal centering
+            // Try to restore saved position if resolution matches
+            if let Some(app_handle) = GLOBAL_TAURI_APP_HANDLE.get() {
+                if let Some(saved) = load_window_position(app_handle, &monitor_name) {
+                    if saved.monitor_width == monitor_size.width
+                        && saved.monitor_height == monitor_size.height
+                    {
+                        let restored_x = monitor_position.x + saved.offset_x;
+                        let restored_y = monitor_position.y + saved.offset_y;
+
+                        // Validate the restored position is within monitor bounds
+                        if restored_x >= monitor_position.x
+                            && restored_x < monitor_position.x + monitor_size.width as i32
+                            && restored_y >= monitor_position.y
+                            && restored_y < monitor_position.y + monitor_size.height as i32
+                        {
+                            log::debug!(
+                                "Restoring saved window position on monitor '{}': ({}, {})",
+                                monitor_name,
+                                restored_x,
+                                restored_y
+                            );
+                            if let Err(e) =
+                                window.set_position(PhysicalPosition::new(restored_x, restored_y))
+                            {
+                                log::error!("Failed to restore window position: {}", e);
+                            } else {
+                                let mut previous_monitor = PREVIOUS_MONITOR_NAME.lock().unwrap();
+                                *previous_monitor = Some(monitor_name);
+                                return;
+                            }
+                        } else {
+                            log::debug!(
+                                "Saved position out of monitor bounds, using default center"
+                            );
+                        }
+                    } else {
+                        log::debug!(
+                            "Monitor resolution changed (saved: {}x{}, current: {}x{}), using default center",
+                            saved.monitor_width,
+                            saved.monitor_height,
+                            monitor_size.width,
+                            monitor_size.height
+                        );
+                    }
+                }
+            }
+
+            // Default: center the window on the monitor
             let window_size = match window.inner_size() {
                 Ok(size) => size,
                 Err(e) => {
@@ -359,11 +495,9 @@ fn move_window_to_active_monitor(window: &WebviewWindow) {
                 log::error!("Failed to move window: {}", e);
             }
 
-            if let Some(name) = monitor.name() {
-                log::debug!("Window moved to monitor: {}", name);
-                let mut previous_monitor = PREVIOUS_MONITOR_NAME.lock().unwrap();
-                *previous_monitor = Some(name.to_string());
-            }
+            log::debug!("Window centered on monitor: {}", monitor_name);
+            let mut previous_monitor = PREVIOUS_MONITOR_NAME.lock().unwrap();
+            *previous_monitor = Some(monitor_name);
         }
         Ok(None) => {
             log::error!("No monitor found at the specified point");
