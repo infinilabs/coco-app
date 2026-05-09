@@ -35,7 +35,7 @@ const Camera = ({ onClose }: CameraProps) => {
       if (!authorized) {
         platformAdapter.requestCameraPermission();
 
-        return new Promise<void>((resolve) => {
+        await new Promise<void>((resolve) => {
           const timer = setInterval(async () => {
             const granted = await platformAdapter.checkCameraPermission();
             if (granted) {
@@ -46,7 +46,6 @@ const Camera = ({ onClose }: CameraProps) => {
         });
       }
     }
-    setPermissionChecked(true);
   }, []);
 
   const getDevices = useCallback(async () => {
@@ -121,16 +120,6 @@ const Camera = ({ onClose }: CameraProps) => {
     // selected device changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDeviceId, permissionChecked]);
-
-  // Clean up stream on unmount
-  useEffect(() => {
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const takePhoto = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current) return;
