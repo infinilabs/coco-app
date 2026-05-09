@@ -32,7 +32,8 @@ const CameraPage = () => {
       if (videoDevices.length > 0 && !selectedDeviceId) {
         setSelectedDeviceId(videoDevices[0].deviceId);
       }
-    } catch {
+    } catch (err) {
+      console.error("Failed to enumerate camera devices:", err);
       setError(t("camera.errorAccess"));
     }
   }, [selectedDeviceId, t]);
@@ -59,7 +60,8 @@ const CameraPage = () => {
       }
 
       setError("");
-    } catch {
+    } catch (err) {
+      console.error("Failed to access camera:", err);
       setError(t("camera.errorAccess"));
     }
   }, [selectedDeviceId, stream, t]);
@@ -78,6 +80,9 @@ const CameraPage = () => {
         stream.getTracks().forEach((track) => track.stop());
       }
     };
+    // `stream` is intentionally excluded from deps to avoid restarting the
+    // camera on every stream change; the effect should only re-run when the
+    // selected device changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDeviceId]);
 
@@ -197,16 +202,6 @@ const CameraPage = () => {
           <button
             onClick={switchCamera}
             className="p-2 rounded-full bg-white/10 text-white/60 hover:text-white hover:bg-white/20 transition-colors"
-            title={t("camera.switchCamera")}
-          >
-            <SwitchCamera size={20} />
-          </button>
-        )}
-
-        {devices.length <= 1 && (
-          <button
-            disabled
-            className="p-2 rounded-full bg-white/10 text-white/20 cursor-not-allowed invisible"
             title={t("camera.switchCamera")}
           >
             <SwitchCamera size={20} />
