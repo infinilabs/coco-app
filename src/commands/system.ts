@@ -35,3 +35,11 @@ export function show_check(): Promise<void> {
 export function hide_check(): Promise<void> {
   return invoke('hide_check');
 }
+
+export function show_camera(): Promise<void> {
+  return invoke('show_camera');
+}
+
+export function hide_camera(): Promise<void> {
+  return invoke('hide_camera');
+}

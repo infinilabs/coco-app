@@ -570,6 +570,7 @@
     "selectionDisable": "禁用划词工具栏",
     "selectionEnable": "启用划词工具栏",
     "settings": "偏好设置",
+    "camera": "打开摄像头",
     "quitCoco": "退出 Coco",
     "checkUpdate": "检查更新"
   },
@@ -729,5 +730,12 @@
     "preview": {
       "readonly": "预览仅供查看"
     }
+  },
+  "camera": {
+    "title": "摄像头",
+    "mirror": "切换镜像",
+    "takePhoto": "拍照",
+    "switchCamera": "切换摄像头",
+    "errorAccess": "无法访问摄像头，请检查权限设置。"
   }
 }

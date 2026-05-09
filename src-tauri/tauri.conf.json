@@ -101,6 +101,27 @@
           "state": "active",
           "radius": 7
         }
+      },
+      {
+        "label": "camera",
+        "title": "Coco AI Camera",
+        "url": "/ui/camera",
+        "width": 660,
+        "minWidth": 480,
+        "height": 550,
+        "minHeight": 400,
+        "center": true,
+        "transparent": true,
+        "maximizable": false,
+        "skipTaskbar": false,
+        "dragDropEnabled": false,
+        "hiddenTitle": true,
+        "visible": false,
+        "resizable": true,
+        "windowEffects": {
+          "effects": ["sidebar"],
+          "state": "active"
+        }
       }
     ],
     "security": {
