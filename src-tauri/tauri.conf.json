@@ -16,6 +16,7 @@
         "label": "main",
         "title": "Coco AI",
         "url": "/ui",
+        "useHttpsScheme": true,
         "height": 590,
         "width": 680,
         "decorations": false,
@@ -105,7 +106,9 @@
     ],
     "security": {
       "csp": {
-        "default-src": "'self' asset: http: https: ipc: blob: data:"
+        "default-src": "'self' asset: http: https: ipc: blob: data:",
+        "media-src": "'self' blob: mediastream: asset: https: http:",
+        "img-src": "'self' asset: blob: data: https: http:"
       },
       "dangerousDisableAssetCspModification": true,
       "assetProtocol": {

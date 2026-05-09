@@ -21,105 +21,173 @@ const Camera = ({ onClose }: CameraProps) => {
   const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  // Use a ref to track stream to avoid stale closure issues in cleanup
+  const streamRef = useRef<MediaStream | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
   const [mirrored, setMirrored] = useState(true);
   const [error, setError] = useState<string>("");
   const [flashVisible, setFlashVisible] = useState(false);
-  const [permissionChecked, setPermissionChecked] = useState(false);
+  const [ready, setReady] = useState(false);
 
-  const checkPermission = useCallback(async () => {
-    if (isMac) {
-      const authorized = await platformAdapter.checkCameraPermission();
-      if (!authorized) {
-        platformAdapter.requestCameraPermission();
-
-        await new Promise<void>((resolve) => {
-          const timer = setInterval(async () => {
-            const granted = await platformAdapter.checkCameraPermission();
-            if (granted) {
-              clearInterval(timer);
-              resolve();
-            }
-          }, 500);
-        });
-      }
+  const stopCurrentStream = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
     }
   }, []);
 
-  const getDevices = useCallback(async () => {
-    try {
-      const allDevices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = allDevices.filter((d) => d.kind === "videoinput");
-      setDevices(videoDevices);
-      if (videoDevices.length > 0 && !selectedDeviceId) {
-        setSelectedDeviceId(videoDevices[0].deviceId);
-      }
-    } catch (err) {
-      console.error("Failed to enumerate camera devices:", err);
-      setError(t("camera.errorAccess"));
-    }
-  }, [selectedDeviceId, t]);
-
-  const startCamera = useCallback(async () => {
-    try {
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
-      }
-
-      const constraints: MediaStreamConstraints = {
-        video: selectedDeviceId
-          ? { deviceId: { exact: selectedDeviceId } }
-          : true,
-        audio: false,
-      };
-
-      const mediaStream =
-        await navigator.mediaDevices.getUserMedia(constraints);
-      setStream(mediaStream);
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
-
-      setError("");
-    } catch (err) {
-      console.error("Failed to access camera:", err);
-      setError(t("camera.errorAccess"));
-    }
-  }, [selectedDeviceId, stream, t]);
-
-  // Check permissions first
+  // Initialize: check permissions, enumerate devices, start camera
   useEffect(() => {
-    checkPermission().then(() => {
-      setPermissionChecked(true);
-    });
-  }, [checkPermission]);
+    let cancelled = false;
 
-  // Get devices after permission is granted
-  useEffect(() => {
-    if (permissionChecked) {
-      getDevices();
-    }
-  }, [permissionChecked, getDevices]);
+    const init = async () => {
+      try {
+        // Step 1: Check/request macOS native camera permission
+        if (isMac) {
+          const authorized = await platformAdapter.checkCameraPermission();
+          if (!authorized) {
+            platformAdapter.requestCameraPermission();
+            // Poll until permission is granted
+            await new Promise<void>((resolve) => {
+              const timer = setInterval(async () => {
+                const granted =
+                  await platformAdapter.checkCameraPermission();
+                if (granted) {
+                  clearInterval(timer);
+                  resolve();
+                }
+              }, 500);
+            });
+          }
+        }
+        if (cancelled) return;
 
-  // Start camera when device is selected
-  useEffect(() => {
-    if (selectedDeviceId && permissionChecked) {
-      startCamera();
-    }
+        // Step 2: Request an initial stream to trigger browser permission prompt
+        // and enable device enumeration with labels
+        let initialStream: MediaStream;
+        try {
+          initialStream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false,
+          });
+        } catch (err) {
+          console.error("Camera getUserMedia failed:", err);
+          if (!cancelled) {
+            setError(t("camera.errorAccess"));
+          }
+          return;
+        }
+        if (cancelled) {
+          initialStream.getTracks().forEach((track) => track.stop());
+          return;
+        }
 
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
+        // Step 3: Enumerate devices now that we have permission
+        const allDevices =
+          await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = allDevices.filter(
+          (d) => d.kind === "videoinput"
+        );
+        if (cancelled) {
+          initialStream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+
+        setDevices(videoDevices);
+
+        // Step 4: Use the initial stream directly and set the selected device
+        streamRef.current = initialStream;
+        setStream(initialStream);
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = initialStream;
+        }
+
+        if (videoDevices.length > 0) {
+          // Find the device that matches the current stream's track
+          const currentTrack = initialStream.getVideoTracks()[0];
+          const trackSettings = currentTrack?.getSettings();
+          const currentDeviceId = trackSettings?.deviceId || "";
+
+          const matchedDevice = videoDevices.find(
+            (d) => d.deviceId === currentDeviceId
+          );
+          setSelectedDeviceId(
+            matchedDevice?.deviceId || videoDevices[0].deviceId
+          );
+        }
+
+        setReady(true);
+        setError("");
+      } catch (err) {
+        console.error("Camera initialization failed:", err);
+        if (!cancelled) {
+          setError(t("camera.errorAccess"));
+        }
       }
     };
-    // `stream` is intentionally excluded from deps to avoid restarting the
-    // camera on every stream change; the effect should only re-run when the
-    // selected device changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDeviceId, permissionChecked]);
+
+    init();
+
+    return () => {
+      cancelled = true;
+      stopCurrentStream();
+    };
+  }, [t, stopCurrentStream]);
+
+  // Switch camera when device selection changes (after initial setup)
+  useEffect(() => {
+    if (!ready || !selectedDeviceId) return;
+
+    // Check if the current stream already uses the selected device
+    if (streamRef.current) {
+      const currentTrack = streamRef.current.getVideoTracks()[0];
+      const currentDeviceId = currentTrack?.getSettings()?.deviceId;
+      if (currentDeviceId === selectedDeviceId) {
+        return; // Already using this device
+      }
+    }
+
+    let cancelled = false;
+
+    const switchToDevice = async () => {
+      try {
+        stopCurrentStream();
+
+        const mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: { exact: selectedDeviceId } },
+          audio: false,
+        });
+
+        if (cancelled) {
+          mediaStream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+
+        streamRef.current = mediaStream;
+        setStream(mediaStream);
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
+        }
+
+        setError("");
+      } catch (err) {
+        console.error("Failed to switch camera:", err);
+        if (!cancelled) {
+          setError(t("camera.errorAccess"));
+        }
+      }
+    };
+
+    switchToDevice();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedDeviceId, ready, t, stopCurrentStream]);
 
   const takePhoto = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current) return;
@@ -175,6 +243,11 @@ const Camera = ({ onClose }: CameraProps) => {
     setSelectedDeviceId(devices[nextIndex].deviceId);
   }, [devices, selectedDeviceId]);
 
+  const handleClose = useCallback(() => {
+    stopCurrentStream();
+    onClose();
+  }, [onClose, stopCurrentStream]);
+
   return (
     <div className="flex flex-col h-full bg-black select-none overflow-hidden rounded-b-lg">
       {/* Header with title and close */}
@@ -183,7 +256,7 @@ const Camera = ({ onClose }: CameraProps) => {
           {t("camera.title")}
         </span>
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="p-1 rounded-full text-white/60 hover:text-white hover:bg-white/20 transition-colors"
           title={t("camera.close")}
         >
