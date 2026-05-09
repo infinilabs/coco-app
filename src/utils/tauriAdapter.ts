@@ -171,6 +171,18 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       return requestMicrophonePermission();
     },
 
+    async checkCameraPermission() {
+      const { checkCameraPermission } =
+        await import("tauri-plugin-macos-permissions-api");
+      return checkCameraPermission();
+    },
+
+    async requestCameraPermission() {
+      const { requestCameraPermission } =
+        await import("tauri-plugin-macos-permissions-api");
+      return requestCameraPermission();
+    },
+
     async getScreenshotableMonitors() {
       const { getScreenshotableMonitors } =
         await import("tauri-plugin-screenshots-api");
@@ -321,7 +333,8 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       if (
         data?.type === "AI Assistant" ||
         data?.id === "Extension Store" ||
-        data?.category === "View"
+        data?.category === "View" ||
+        data?.category === "Camera"
       ) {
         return dispatchEvent("Tab", 9);
       }

@@ -9,7 +9,6 @@ const SettingsPage = lazy(() => import("@/pages/settings/index"));
 const StandaloneChat = lazy(() => import("@/pages/chat/index"));
 const CheckPage = lazy(() => import("@/pages/check/index"));
 const SelectionWindow = lazy(() => import("@/pages/selection/index"));
-const CameraPage = lazy(() => import("@/pages/camera/index"));
 
 const routerOptions = {
   basename: "/",
@@ -31,7 +30,6 @@ export const router = createBrowserRouter(
         { path: "/ui/chat", element: (<Suspense fallback={<></>}><StandaloneChat /></Suspense>) },
         { path: "/ui/check", element: (<Suspense fallback={<></>}><CheckPage /></Suspense>) },
         { path: "/ui/selection", element: (<Suspense fallback={<></>}><SelectionWindow /></Suspense>) },
-        { path: "/ui/camera", element: (<Suspense fallback={<></>}><CameraPage /></Suspense>) },
       ],
     },
   ],

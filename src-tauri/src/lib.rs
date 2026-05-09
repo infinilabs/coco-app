@@ -12,7 +12,7 @@ mod shortcut;
 pub mod util;
 
 use crate::common::register::SearchSourceRegistry;
-use crate::common::{CAMERA_WINDOW_LABEL, CHECK_WINDOW_LABEL, MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL};
+use crate::common::{CHECK_WINDOW_LABEL, MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL};
 use crate::server::servers::{
     load_or_insert_default_server, load_servers_token, start_bg_heartbeat_worker,
 };
@@ -175,8 +175,6 @@ pub fn run() {
             show_settings,
             show_check,
             hide_check,
-            show_camera,
-            hide_camera,
             save_camera_photo,
             server::servers::add_coco_server,
             server::servers::remove_coco_server,
@@ -550,29 +548,6 @@ async fn hide_check(app_handle: AppHandle) {
     let window = &app_handle
         .get_webview_window(CHECK_WINDOW_LABEL)
         .expect("we have a check window");
-
-    window.hide().unwrap();
-}
-
-#[tauri::command]
-async fn show_camera(app_handle: AppHandle) {
-    log::debug!("camera menu item was clicked");
-    let window = app_handle
-        .get_webview_window(CAMERA_WINDOW_LABEL)
-        .expect("we have a camera window");
-
-    window.center().unwrap();
-    window.show().unwrap();
-    window.unminimize().unwrap();
-    window.set_focus().unwrap();
-}
-
-#[tauri::command]
-async fn hide_camera(app_handle: AppHandle) {
-    log::debug!("camera window was closed");
-    let window = &app_handle
-        .get_webview_window(CAMERA_WINDOW_LABEL)
-        .expect("we have a camera window");
 
     window.hide().unwrap();
 }

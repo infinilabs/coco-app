@@ -9,7 +9,7 @@ import { exit } from "@tauri-apps/plugin-process";
 import { isMac } from "@/utils/platform";
 import { useAppStore } from "@/stores/appStore";
 import platformAdapter from "@/utils/platformAdapter";
-import { show_coco, show_settings, show_check, show_camera } from "@/commands";
+import { show_coco, show_settings, show_check } from "@/commands";
 import { useSelectionStore } from "@/stores/selectionStore";
 
 const TRAY_ID = "COCO_TRAY";
@@ -108,15 +108,6 @@ export const useTray = () => {
         // accelerator: "CommandOrControl+,",
         action: () => {
           show_settings();
-        },
-      }),
-    );
-
-    itemPromises.push(
-      MenuItem.new({
-        text: t("tray.camera"),
-        action: () => {
-          show_camera();
         },
       }),
     );

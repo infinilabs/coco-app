@@ -131,6 +131,14 @@ export const createWebAdapter = (): WebPlatformAdapter => {
       return false;
     },
 
+    async checkCameraPermission() {
+      return false;
+    },
+
+    async requestCameraPermission() {
+      return false;
+    },
+
     requestScreenRecordingPermission() {
       console.log("Web mode simulated request screen recording permission");
     },

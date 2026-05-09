@@ -570,7 +570,6 @@
     "selectionDisable": "Disable Selection Toolbar",
     "selectionEnable": "Enable Selection Toolbar",
     "settings": "Settings",
-    "camera": "Open Camera",
     "quitCoco": "Quit Coco",
     "checkUpdate": "Check for Updates"
   },
@@ -737,6 +736,7 @@
     "mirror": "Toggle Mirror",
     "takePhoto": "Take Photo",
     "switchCamera": "Switch Camera",
+    "close": "Close Camera",
     "errorAccess": "Unable to access camera. Please check permissions."
   }
 }

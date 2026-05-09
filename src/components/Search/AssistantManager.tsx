@@ -39,6 +39,7 @@ export function useAssistantManager({
     sourceData,
     setSourceData,
     setVisibleExtensionDetail,
+    setCameraOpened,
   } = useSearchStore();
 
   const { quickAiAccessAssistant, disabledExtensions } = useExtensionsStore();
@@ -172,6 +173,12 @@ export function useAssistantManager({
     const { id, type, category } = selectedSearchContent ?? {};
 
     if (isChatMode || !isTauri || id === "Calculator") return;
+
+    if (category === "Camera") {
+      clearSearchValue();
+      setCameraOpened(true);
+      return;
+    }
 
     if (visibleExtensionStore) {
       clearSearchValue();

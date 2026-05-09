@@ -88,6 +88,9 @@ export type ISearchStore = {
 
   filterMultiSelectOpened: boolean;
   setFilterMultiSelectOpened: (filterMultiSelectOpened: boolean) => void;
+
+  cameraOpened: boolean;
+  setCameraOpened: (cameraOpened: boolean) => void;
 };
 
 export const DEFAULT_FUZZINESS = 3;
@@ -184,6 +187,10 @@ export const useSearchStore = create<ISearchStore>()(
       filterMultiSelectOpened: false,
       setFilterMultiSelectOpened: (filterMultiSelectOpened) => {
         return set({ filterMultiSelectOpened });
+      },
+      cameraOpened: false,
+      setCameraOpened: (cameraOpened) => {
+        return set({ cameraOpened });
       },
     }),
     {

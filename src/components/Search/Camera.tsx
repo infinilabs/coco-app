@@ -1,19 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Camera,
+  Camera as CameraIcon,
   CameraOff,
   FlipHorizontal,
   SwitchCamera,
+  X,
 } from "lucide-react";
 import { save } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
 
-import { useSyncStore } from "@/hooks/useSyncStore";
+import platformAdapter from "@/utils/platformAdapter";
+import { isMac } from "@/utils/platform";
 
-const CameraPage = () => {
-  useSyncStore();
+interface CameraProps {
+  onClose: () => void;
+}
 
+const Camera = ({ onClose }: CameraProps) => {
   const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -23,6 +27,27 @@ const CameraPage = () => {
   const [mirrored, setMirrored] = useState(true);
   const [error, setError] = useState<string>("");
   const [flashVisible, setFlashVisible] = useState(false);
+  const [permissionChecked, setPermissionChecked] = useState(false);
+
+  const checkPermission = useCallback(async () => {
+    if (isMac) {
+      const authorized = await platformAdapter.checkCameraPermission();
+      if (!authorized) {
+        platformAdapter.requestCameraPermission();
+
+        return new Promise<void>((resolve) => {
+          const timer = setInterval(async () => {
+            const granted = await platformAdapter.checkCameraPermission();
+            if (granted) {
+              clearInterval(timer);
+              resolve();
+            }
+          }, 500);
+        });
+      }
+    }
+    setPermissionChecked(true);
+  }, []);
 
   const getDevices = useCallback(async () => {
     try {
@@ -66,12 +91,23 @@ const CameraPage = () => {
     }
   }, [selectedDeviceId, stream, t]);
 
+  // Check permissions first
   useEffect(() => {
-    getDevices();
-  }, [getDevices]);
+    checkPermission().then(() => {
+      setPermissionChecked(true);
+    });
+  }, [checkPermission]);
 
+  // Get devices after permission is granted
   useEffect(() => {
-    if (selectedDeviceId) {
+    if (permissionChecked) {
+      getDevices();
+    }
+  }, [permissionChecked, getDevices]);
+
+  // Start camera when device is selected
+  useEffect(() => {
+    if (selectedDeviceId && permissionChecked) {
       startCamera();
     }
 
@@ -84,7 +120,17 @@ const CameraPage = () => {
     // camera on every stream change; the effect should only re-run when the
     // selected device changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDeviceId]);
+  }, [selectedDeviceId, permissionChecked]);
+
+  // Clean up stream on unmount
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const takePhoto = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current) return;
@@ -141,13 +187,20 @@ const CameraPage = () => {
   }, [devices, selectedDeviceId]);
 
   return (
-    <div className="flex flex-col h-screen bg-black select-none overflow-hidden">
-      {/* Titlebar drag region */}
-      <div
-        data-tauri-drag-region
-        className="h-8 w-full flex-shrink-0"
-        style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
-      />
+    <div className="flex flex-col h-full bg-black select-none overflow-hidden rounded-b-lg">
+      {/* Header with title and close */}
+      <div className="flex items-center justify-between px-3 py-2 bg-black/80 flex-shrink-0">
+        <span className="text-white/80 text-sm font-medium">
+          {t("camera.title")}
+        </span>
+        <button
+          onClick={onClose}
+          className="p-1 rounded-full text-white/60 hover:text-white hover:bg-white/20 transition-colors"
+          title={t("camera.close")}
+        >
+          <X size={16} />
+        </button>
+      </div>
 
       {/* Camera viewport */}
       <div className="relative flex-1 flex items-center justify-center overflow-hidden">
@@ -195,7 +248,7 @@ const CameraPage = () => {
           className="p-3 rounded-full bg-white text-black hover:bg-white/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           title={t("camera.takePhoto")}
         >
-          <Camera size={24} />
+          <CameraIcon size={24} />
         </button>
 
         {devices.length > 1 && (
@@ -215,4 +268,4 @@ const CameraPage = () => {
   );
 };
 
-export default CameraPage;
+export default Camera;

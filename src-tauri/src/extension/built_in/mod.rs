@@ -4,6 +4,7 @@ pub mod ai_overview;
 pub mod application;
 pub mod calculator;
 pub mod file_search;
+pub mod open_camera;
 pub mod pizza_engine_runtime;
 pub mod quick_ai_access;
 #[cfg(target_os = "macos")]
@@ -186,6 +187,15 @@ pub(crate) async fn list_built_in_extensions(
         .await?,
     );
 
+    built_in_extensions.push(
+        load_built_in_extension(
+            &dir,
+            open_camera::EXTENSION_ID,
+            open_camera::PLUGIN_JSON_FILE,
+        )
+        .await?,
+    );
+
     cfg_if::cfg_if! {
       if #[cfg(target_os = "macos")] {
           built_in_extensions.push(
@@ -232,6 +242,14 @@ pub(super) async fn init_built_in_extension(
             .await;
         let file_search_config = FileSearchConfig::get(tauri_app_handle);
         file_search_apply_config(&file_search_config)?;
+        log::debug!("built-in extension [{}] initialized", extension.id);
+    }
+
+    if extension.id == open_camera::EXTENSION_ID {
+        let camera_search = open_camera::OpenCameraSearchSource::new(1500f64);
+        search_source_registry
+            .register_source(camera_search)
+            .await;
         log::debug!("built-in extension [{}] initialized", extension.id);
     }
 
@@ -336,6 +354,19 @@ pub(crate) async fn enable_built_in_extension(
         )?;
         let file_search_config = FileSearchConfig::get(tauri_app_handle);
         file_search_apply_config(&file_search_config)?;
+        return Ok(());
+    }
+
+    if bundle_id.extension_id == open_camera::EXTENSION_ID {
+        let camera_search = open_camera::OpenCameraSearchSource::new(1500f64);
+        search_source_registry_tauri_state
+            .register_source(camera_search)
+            .await;
+        alter_extension_json_file(
+            &get_built_in_extension_directory(tauri_app_handle),
+            bundle_id,
+            update_extension,
+        )?;
         return Ok(());
     }
 
@@ -445,6 +476,18 @@ pub(crate) async fn disable_built_in_extension(
     }
 
     if bundle_id.extension_id == file_search::EXTENSION_ID {
+        search_source_registry_tauri_state
+            .remove_source(bundle_id.extension_id)
+            .await;
+        alter_extension_json_file(
+            &get_built_in_extension_directory(tauri_app_handle),
+            bundle_id,
+            update_extension,
+        )?;
+        return Ok(());
+    }
+
+    if bundle_id.extension_id == open_camera::EXTENSION_ID {
         search_source_registry_tauri_state
             .remove_source(bundle_id.extension_id)
             .await;
