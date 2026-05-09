@@ -49,16 +49,30 @@ const Camera = ({ onClose }: CameraProps) => {
           const authorized = await platformAdapter.checkCameraPermission();
           if (!authorized) {
             platformAdapter.requestCameraPermission();
-            // Poll until permission is granted
-            await new Promise<void>((resolve) => {
+            // Poll until permission is granted (timeout after 60 seconds)
+            const POLL_TIMEOUT_MS = 60000;
+            const POLL_INTERVAL_MS = 500;
+            await new Promise<void>((resolve, reject) => {
+              let elapsed = 0;
               const timer = setInterval(async () => {
+                if (cancelled) {
+                  clearInterval(timer);
+                  reject(new Error("cancelled"));
+                  return;
+                }
+                elapsed += POLL_INTERVAL_MS;
+                if (elapsed >= POLL_TIMEOUT_MS) {
+                  clearInterval(timer);
+                  reject(new Error("Camera permission timeout"));
+                  return;
+                }
                 const granted =
                   await platformAdapter.checkCameraPermission();
                 if (granted) {
                   clearInterval(timer);
                   resolve();
                 }
-              }, 500);
+              }, POLL_INTERVAL_MS);
             });
           }
         }

@@ -107,8 +107,7 @@
     "security": {
       "csp": {
         "default-src": "'self' asset: http: https: ipc: blob: data:",
-        "media-src": "'self' blob: mediastream: asset: https: http:",
-        "img-src": "'self' asset: blob: data: https: http:"
+        "media-src": "'self' blob: mediastream:"
       },
       "dangerousDisableAssetCspModification": true,
       "assetProtocol": {
