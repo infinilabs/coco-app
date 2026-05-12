@@ -247,9 +247,7 @@ pub(super) async fn init_built_in_extension(
 
     if extension.id == open_camera::EXTENSION_ID {
         let camera_search = open_camera::OpenCameraSearchSource::new(1500f64);
-        search_source_registry
-            .register_source(camera_search)
-            .await;
+        search_source_registry.register_source(camera_search).await;
         log::debug!("built-in extension [{}] initialized", extension.id);
     }
 
