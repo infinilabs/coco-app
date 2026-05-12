@@ -6,9 +6,6 @@ import {
   FlipHorizontal2,
   SwitchCamera,
 } from "lucide-react";
-import { save } from "@tauri-apps/plugin-dialog";
-import { invoke } from "@tauri-apps/api/core";
-
 import clsx from "clsx";
 
 import platformAdapter from "@/utils/platformAdapter";
@@ -234,7 +231,7 @@ const Camera = () => {
     if (!blob) return;
 
     const filePath = await withVisibility(() =>
-      save({
+      platformAdapter.saveFileDialog({
         defaultPath: `coco-photo-${Date.now()}.png`,
         filters: [{ name: "Image", extensions: ["png"] }],
       })
@@ -242,7 +239,7 @@ const Camera = () => {
 
     if (filePath) {
       const arrayBuffer = await blob.arrayBuffer();
-      await invoke("save_camera_photo", {
+      await platformAdapter.invokeBackend("save_camera_photo", {
         path: filePath,
         data: Array.from(new Uint8Array(arrayBuffer)),
       });
@@ -300,7 +297,7 @@ const Camera = () => {
       </div>
 
       {/* Controls bar */}
-      <div className="flex items-center justify-center gap-4 py-3 px-4 bg-black/80 flex-shrink-0">
+      <div className="flex items-center justify-center gap-4 py-3 px-4 bg-black/80 shrink-0">
         <button
           onClick={toggleMirror}
           className={clsx("p-2 rounded-full transition-colors", {

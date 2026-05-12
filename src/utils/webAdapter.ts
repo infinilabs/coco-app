@@ -5,6 +5,7 @@ import { Post } from "@/api/axiosRequest";
 export interface WebPlatformAdapter extends BasePlatformAdapter {
   // Add web-specific methods here
   openFileDialog: (options: any) => Promise<string | string[] | null>;
+  saveFileDialog: (options?: any) => Promise<string | null>;
   metadata: (path: string, options: any) => Promise<Record<string, any>>;
   error: (message: string) => void;
   info: (message: string) => void;
@@ -165,6 +166,11 @@ export const createWebAdapter = (): WebPlatformAdapter => {
 
     async openFileDialog(options) {
       console.log("Web mode simulated open file dialog", options);
+      return null;
+    },
+
+    async saveFileDialog(options) {
+      console.log("Web mode simulated save file dialog", options);
       return null;
     },
 

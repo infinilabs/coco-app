@@ -1,4 +1,4 @@
-import type { OpenDialogOptions } from "@tauri-apps/plugin-dialog";
+import type { OpenDialogOptions, SaveDialogOptions } from "@tauri-apps/plugin-dialog";
 import { isWindows10 } from "tauri-plugin-windows-version-api";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { metadata } from "tauri-plugin-fs-pro-api";
@@ -32,6 +32,9 @@ export interface TauriPlatformAdapter extends BasePlatformAdapter {
   openFileDialog: (
     options: OpenDialogOptions,
   ) => Promise<string | string[] | null>;
+  saveFileDialog: (
+    options?: SaveDialogOptions,
+  ) => Promise<string | null>;
   metadata: typeof metadata;
   error: typeof error;
   info: typeof info;
@@ -198,6 +201,11 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     async openFileDialog(options) {
       const { open } = await import("@tauri-apps/plugin-dialog");
       return open(options);
+    },
+
+    async saveFileDialog(options) {
+      const { save } = await import("@tauri-apps/plugin-dialog");
+      return save(options);
     },
 
     async getFileMetadata(path) {
