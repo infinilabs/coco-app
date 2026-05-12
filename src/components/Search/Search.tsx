@@ -56,7 +56,6 @@ const SearchResultsPanel = memo<{
     visibleExtensionStore,
     viewExtensionOpened,
     cameraOpened,
-    setCameraOpened,
   } = useSearchStore();
 
   useEffect(() => {
