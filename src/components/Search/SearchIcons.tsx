@@ -117,7 +117,7 @@ export default function SearchIcons({
     }
 
     if (cameraOpened) {
-      return <MultilevelWrapper title="Open Camera" icon="/assets/open_camera_icon.svg" />;
+      return <MultilevelWrapper title="Open Camera" icon="font_camera" />;
     }
 
     return (

@@ -60,7 +60,7 @@ function CommonIcon({
         if (item.id === "OpenCamera") {
           return (
             <UniversalIcon
-              icon="/assets/open_camera_icon.svg"
+              icon="font_camera"
               className={className}
               onClick={onClick}
             />
