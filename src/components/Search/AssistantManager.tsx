@@ -174,10 +174,22 @@ export function useAssistantManager({
 
     if (isChatMode || !isTauri || id === "Calculator") return;
 
-    if (category === "Camera") {
-      clearSearchValue();
-      setCameraOpened(true);
-      return;
+    if (category === "View") {
+      if (id === "OpenCamera") {
+        clearSearchValue();
+        setCameraOpened(true);
+        return;
+      }
+
+      const onOpened = selectedSearchContent?.on_opened;
+
+      if (onOpened?.Extension?.ty?.View) {
+        clearSearchValue();
+        return platformAdapter.invokeBackend("open", {
+          onOpened: onOpened,
+          extraArgs: null,
+        });
+      }
     }
 
     if (visibleExtensionStore) {
@@ -188,18 +200,6 @@ export function useAssistantManager({
     if (id === "Extension Store") {
       clearSearchValue();
       return setVisibleExtensionStore(true);
-    }
-
-    if (category === "View") {
-      const onOpened = selectedSearchContent?.on_opened;
-
-      if (onOpened?.Extension?.ty?.View) {
-        clearSearchValue();
-        return platformAdapter.invokeBackend("open", {
-          onOpened: onOpened,
-          extraArgs: null,
-        });
-      }
     }
 
     if (type === "AI Assistant") {

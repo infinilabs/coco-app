@@ -134,7 +134,7 @@ const SearchResultsPanel = memo<{
 
   // Render the camera view
   if (cameraOpened) {
-    return <Camera onClose={() => setCameraOpened(false)} />;
+    return <Camera />;
   }
 
   // Render the view extension

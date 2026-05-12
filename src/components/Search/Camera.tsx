@@ -3,22 +3,21 @@ import { useTranslation } from "react-i18next";
 import {
   Camera as CameraIcon,
   CameraOff,
-  FlipHorizontal,
+  FlipHorizontal2,
   SwitchCamera,
-  X,
 } from "lucide-react";
 import { save } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
 
+import clsx from "clsx";
+
 import platformAdapter from "@/utils/platformAdapter";
 import { isMac } from "@/utils/platform";
+import { useAppStore } from "@/stores/appStore";
 
-interface CameraProps {
-  onClose: () => void;
-}
-
-const Camera = ({ onClose }: CameraProps) => {
+const Camera = () => {
   const { t } = useTranslation();
+  const withVisibility = useAppStore((state) => state.withVisibility);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   // Use a ref to track stream to avoid stale closure issues in cleanup
@@ -101,6 +100,7 @@ const Camera = ({ onClose }: CameraProps) => {
         // Step 3: Enumerate devices now that we have permission
         const allDevices =
           await navigator.mediaDevices.enumerateDevices();
+          console.log('allDevices',allDevices)
         const videoDevices = allDevices.filter(
           (d) => d.kind === "videoinput"
         );
@@ -108,6 +108,8 @@ const Camera = ({ onClose }: CameraProps) => {
           initialStream.getTracks().forEach((track) => track.stop());
           return;
         }
+
+        console.log('videoDevices',videoDevices)
 
         setDevices(videoDevices);
 
@@ -133,7 +135,7 @@ const Camera = ({ onClose }: CameraProps) => {
           );
         }
 
-        setReady(true);
+        // ready will be set to true when the video fires onPlaying
         setError("");
       } catch (err) {
         console.error("Camera initialization failed:", err);
@@ -168,6 +170,7 @@ const Camera = ({ onClose }: CameraProps) => {
 
     const switchToDevice = async () => {
       try {
+        setReady(false);
         stopCurrentStream();
 
         const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -230,10 +233,12 @@ const Camera = ({ onClose }: CameraProps) => {
     );
     if (!blob) return;
 
-    const filePath = await save({
-      defaultPath: `coco-photo-${Date.now()}.png`,
-      filters: [{ name: "Image", extensions: ["png"] }],
-    });
+    const filePath = await withVisibility(() =>
+      save({
+        defaultPath: `coco-photo-${Date.now()}.png`,
+        filters: [{ name: "Image", extensions: ["png"] }],
+      })
+    );
 
     if (filePath) {
       const arrayBuffer = await blob.arrayBuffer();
@@ -257,27 +262,10 @@ const Camera = ({ onClose }: CameraProps) => {
     setSelectedDeviceId(devices[nextIndex].deviceId);
   }, [devices, selectedDeviceId]);
 
-  const handleClose = useCallback(() => {
-    stopCurrentStream();
-    onClose();
-  }, [onClose, stopCurrentStream]);
+
 
   return (
     <div className="flex flex-col h-full bg-black select-none overflow-hidden rounded-b-lg">
-      {/* Header with title and close */}
-      <div className="flex items-center justify-between px-3 py-2 bg-black/80 flex-shrink-0">
-        <span className="text-white/80 text-sm font-medium">
-          {t("camera.title")}
-        </span>
-        <button
-          onClick={handleClose}
-          className="p-1 rounded-full text-white/60 hover:text-white hover:bg-white/20 transition-colors"
-          title={t("camera.close")}
-        >
-          <X size={16} />
-        </button>
-      </div>
-
       {/* Camera viewport */}
       <div className="relative flex-1 flex items-center justify-center overflow-hidden">
         {error ? (
@@ -287,11 +275,18 @@ const Camera = ({ onClose }: CameraProps) => {
           </div>
         ) : (
           <>
+            {!ready && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/80 z-10">
+                <div className="w-8 h-8 border-2 border-white/30 border-t-white/80 rounded-full animate-spin" />
+                <p className="text-sm">{t("camera.initializing")}</p>
+              </div>
+            )}
             <video
               ref={videoRef}
               autoPlay
               playsInline
               muted
+              onPlaying={() => setReady(true)}
               className="w-full h-full object-cover"
               style={{
                 transform: mirrored ? "scaleX(-1)" : "none",
@@ -308,14 +303,13 @@ const Camera = ({ onClose }: CameraProps) => {
       <div className="flex items-center justify-center gap-4 py-3 px-4 bg-black/80 flex-shrink-0">
         <button
           onClick={toggleMirror}
-          className={`p-2 rounded-full transition-colors ${
-            mirrored
-              ? "bg-white/20 text-white"
-              : "bg-white/10 text-white/60 hover:text-white hover:bg-white/20"
-          }`}
+          className={clsx("p-2 rounded-full transition-colors", {
+            "bg-white/20 text-white": mirrored,
+            "bg-white/10 text-white/60 hover:text-white hover:bg-white/20": !mirrored,
+          })}
           title={t("camera.mirror")}
         >
-          <FlipHorizontal size={20} />
+          <FlipHorizontal2 size={20} />
         </button>
 
         <button

@@ -333,8 +333,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       if (
         data?.type === "AI Assistant" ||
         data?.id === "Extension Store" ||
-        data?.category === "View" ||
-        data?.category === "Camera"
+        data?.category === "View"
       ) {
         return dispatchEvent("Tab", 9);
       }

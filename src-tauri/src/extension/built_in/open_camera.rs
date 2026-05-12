@@ -20,8 +20,9 @@ pub(crate) const PLUGIN_JSON_FILE: &str = r#"
   "name": "Open Camera",
   "platforms": ["macos", "linux", "windows"],
   "description": "Open the camera to check your appearance before video meetings, take quick photos, and toggle mirror mode.",
-  "icon": "font_Camera",
-  "type": "command",
+  "icon": "/assets/open_camera_icon.svg",
+  "type": "view",
+  "page": "",
   "enabled": true
 }
 "#;
@@ -109,13 +110,13 @@ impl SearchSource for OpenCameraSearchSource {
         let doc = Document {
             id: EXTENSION_ID.to_string(),
             title: Some(EXTENSION_NAME.to_string()),
-            category: Some("Camera".to_string()),
-            icon: Some("font_Camera".to_string()),
+            category: Some("View".to_string()),
+            icon: Some("/assets/open_camera_icon.svg".to_string()),
             source: Some(DataSourceReference {
-                r#type: Some(LOCAL_QUERY_SOURCE_TYPE.into()),
-                name: Some(EXTENSION_ID.into()),
+                r#type: Some("View".to_string()),
+                name: Some("View".to_string()),
                 id: Some(EXTENSION_ID.into()),
-                icon: Some("font_Camera".to_string()),
+                icon: None,
             }),
             ..Default::default()
         };
