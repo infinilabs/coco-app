@@ -294,6 +294,10 @@
         "title": "计算器",
         "description": "在搜索框中快速调用的计算工具，支持基本数学运算。"
       },
+      "openCamera": {
+        "title": "打开摄像头",
+        "description": "在视频会议前打开摄像头检查仪容、快速拍照，支持切换镜像模式和多摄像头设备。"
+      },
       "shardAi": {
         "details": {
           "linkedAssistant": {
@@ -729,5 +733,14 @@
     "preview": {
       "readonly": "预览仅供查看"
     }
+  },
+  "camera": {
+    "title": "摄像头",
+    "mirror": "切换镜像",
+    "takePhoto": "拍照",
+    "switchCamera": "切换摄像头",
+    "close": "关闭摄像头",
+    "errorAccess": "无法访问摄像头，请检查权限设置。",
+    "initializing": "摄像头启动中，请稍候..."
   }
 }

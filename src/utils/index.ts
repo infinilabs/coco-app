@@ -231,6 +231,7 @@ export const canNavigateBack = () => {
     visibleExtensionDetail,
     viewExtensionOpened,
     sourceData,
+    cameraOpened,
   } = useSearchStore.getState();
 
   return (
@@ -238,7 +239,8 @@ export const canNavigateBack = () => {
     visibleExtensionStore ||
     visibleExtensionDetail ||
     viewExtensionOpened ||
-    sourceData
+    sourceData ||
+    cameraOpened
   );
 };
 
@@ -248,11 +250,13 @@ export const navigateBack = () => {
     visibleExtensionStore,
     visibleExtensionDetail,
     viewExtensionOpened,
+    cameraOpened,
     setGoAskAi,
     setVisibleExtensionDetail,
     setVisibleExtensionStore,
     setSourceData,
     setViewExtensionOpened,
+    setCameraOpened,
   } = useSearchStore.getState();
 
   if (goAskAi) {
@@ -265,6 +269,10 @@ export const navigateBack = () => {
 
   if (visibleExtensionStore) {
     return setVisibleExtensionStore(false);
+  }
+
+  if (cameraOpened) {
+    return setCameraOpened(false);
   }
 
   if (viewExtensionOpened) {
@@ -304,10 +312,10 @@ export const dispatchEvent = (
 };
 
 export const visibleSearchBar = () => {
-  const { viewExtensionOpened, visibleExtensionDetail } =
+  const { viewExtensionOpened, visibleExtensionDetail, cameraOpened } =
     useSearchStore.getState();
 
-  if (visibleExtensionDetail) return false;
+  if (visibleExtensionDetail || cameraOpened) return false;
 
   if (isNil(viewExtensionOpened)) return true;
 
@@ -322,9 +330,10 @@ export const visibleFilterBar = () => {
     visibleExtensionStore,
     visibleExtensionDetail,
     goAskAi,
+    cameraOpened,
   } = useSearchStore.getState();
 
-  if (visibleExtensionStore || visibleExtensionDetail || goAskAi) return false;
+  if (visibleExtensionStore || visibleExtensionDetail || goAskAi || cameraOpened) return false;
 
   if (isNil(viewExtensionOpened)) return true;
 
@@ -334,7 +343,9 @@ export const visibleFilterBar = () => {
 };
 
 export const visibleFooterBar = () => {
-  const { viewExtensionOpened } = useSearchStore.getState();
+  const { viewExtensionOpened, cameraOpened } = useSearchStore.getState();
+
+  if (cameraOpened) return false;
 
   if (isNil(viewExtensionOpened)) return true;
 

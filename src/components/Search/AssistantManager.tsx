@@ -39,6 +39,7 @@ export function useAssistantManager({
     sourceData,
     setSourceData,
     setVisibleExtensionDetail,
+    setCameraOpened,
   } = useSearchStore();
 
   const { quickAiAccessAssistant, disabledExtensions } = useExtensionsStore();
@@ -173,17 +174,13 @@ export function useAssistantManager({
 
     if (isChatMode || !isTauri || id === "Calculator") return;
 
-    if (visibleExtensionStore) {
-      clearSearchValue();
-      return setVisibleExtensionDetail(true);
-    }
-
-    if (id === "Extension Store") {
-      clearSearchValue();
-      return setVisibleExtensionStore(true);
-    }
-
     if (category === "View") {
+      if (id === "OpenCamera") {
+        clearSearchValue();
+        setCameraOpened(true);
+        return;
+      }
+
       const onOpened = selectedSearchContent?.on_opened;
 
       if (onOpened?.Extension?.ty?.View) {
@@ -193,6 +190,16 @@ export function useAssistantManager({
           extraArgs: null,
         });
       }
+    }
+
+    if (visibleExtensionStore) {
+      clearSearchValue();
+      return setVisibleExtensionDetail(true);
+    }
+
+    if (id === "Extension Store") {
+      clearSearchValue();
+      return setVisibleExtensionStore(true);
     }
 
     if (type === "AI Assistant") {

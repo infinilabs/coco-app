@@ -12,6 +12,7 @@ import { useSearch } from "@/hooks/useSearch";
 import ExtensionStore from "./ExtensionStore";
 import platformAdapter from "@/utils/platformAdapter";
 import ViewExtension from "./ViewExtension";
+import Camera from "./Camera";
 import { visibleFooterBar } from "@/utils";
 
 const SearchResultsPanel = memo<{
@@ -54,6 +55,7 @@ const SearchResultsPanel = memo<{
     selectedSearchContent,
     visibleExtensionStore,
     viewExtensionOpened,
+    cameraOpened,
   } = useSearchStore();
 
   useEffect(() => {
@@ -127,6 +129,11 @@ const SearchResultsPanel = memo<{
     return (
       <ExtensionStore extensionId={extensionId} changeInput={changeInput} />
     );
+  }
+
+  // Render the camera view
+  if (cameraOpened) {
+    return <Camera />;
   }
 
   // Render the view extension

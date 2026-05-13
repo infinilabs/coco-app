@@ -76,6 +76,7 @@ export default function SearchIcons({
     visibleExtensionDetail,
     selectedExtension,
     viewExtensionOpened,
+    cameraOpened,
   } = useSearchStore();
 
   if (isChatMode) {
@@ -113,6 +114,10 @@ export default function SearchIcons({
       const iconPath = icon ? platformAdapter.convertFileSrc(icon) : void 0;
 
       return <MultilevelWrapper title={name} icon={iconPath} />;
+    }
+
+    if (cameraOpened) {
+      return <MultilevelWrapper title="Open Camera" icon="font_camera" />;
     }
 
     return (

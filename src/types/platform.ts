@@ -108,6 +108,8 @@ export interface SystemOperations {
   checkScreenRecordingPermission: () => Promise<boolean>;
   checkMicrophonePermission: () => Promise<boolean>;
   requestMicrophonePermission: () => void;
+  checkCameraPermission: () => Promise<boolean>;
+  requestCameraPermission: () => void;
   requestScreenRecordingPermission: () => void;
   getScreenshotableMonitors: () => Promise<any[]>;
   getScreenshotableWindows: () => Promise<any[]>;

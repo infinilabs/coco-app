@@ -11,7 +11,7 @@ const useEscape = () => {
     event.preventDefault();
     event.stopPropagation();
 
-    const { visibleContextMenu, viewExtensionOpened } =
+    const { visibleContextMenu, viewExtensionOpened, cameraOpened } =
       useSearchStore.getState();
 
     if (
@@ -31,7 +31,7 @@ const useEscape = () => {
       return closeHistoryPanel();
     }
 
-    if (viewExtensionOpened != null) {
+    if (viewExtensionOpened != null || cameraOpened) {
       return;
     }
 

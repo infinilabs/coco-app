@@ -175,6 +175,7 @@ pub fn run() {
             show_settings,
             show_check,
             hide_check,
+            save_camera_photo,
             server::servers::add_coco_server,
             server::servers::remove_coco_server,
             server::servers::list_coco_servers,
@@ -549,4 +550,9 @@ async fn hide_check(app_handle: AppHandle) {
         .expect("we have a check window");
 
     window.hide().unwrap();
+}
+
+#[tauri::command]
+async fn save_camera_photo(path: String, data: Vec<u8>) -> Result<(), String> {
+    std::fs::write(&path, &data).map_err(|e| format!("Failed to save photo: {}", e))
 }

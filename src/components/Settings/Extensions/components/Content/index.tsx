@@ -334,6 +334,11 @@ const Item: FC<ItemProps> = (props) => {
               >
                 {icon.startsWith("font_") ? (
                   <FontIcon name={icon} className="size-full" />
+                ) : icon.startsWith("/assets") ? (
+                  <img
+                    src={icon}
+                    className="size-full dark:drop-shadow-[0_0_6px_rgb(255,255,255)]"
+                  />
                 ) : (
                   <img
                     src={`${platformAdapter.convertFileSrc(

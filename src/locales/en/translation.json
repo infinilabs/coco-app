@@ -294,6 +294,10 @@
         "title": "Calculator",
         "description": "A calculator you can quickly invoke in the search bar, supporting basic math operations."
       },
+      "openCamera": {
+        "title": "Open Camera",
+        "description": "Open the camera to check your appearance before video meetings, take quick photos, toggle mirror mode, and switch between multiple cameras."
+      },
       "shardAi": {
         "details": {
           "linkedAssistant": {
@@ -730,5 +734,14 @@
     "preview": {
       "readonly": "Preview is read-only"
     }
+  },
+  "camera": {
+    "title": "Camera",
+    "mirror": "Toggle Mirror",
+    "takePhoto": "Take Photo",
+    "switchCamera": "Switch Camera",
+    "close": "Close Camera",
+    "errorAccess": "Unable to access camera. Please check permissions.",
+    "initializing": "Starting camera, please wait..."
   }
 }

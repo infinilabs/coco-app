@@ -8,6 +8,7 @@ import SharedAi from "./SharedAi";
 import AiOverview from "./AiOverview";
 import Calculator from "./Calculator";
 import FileSearch from "./FileSearch";
+import OpenCamera from "./OpenCamera";
 import { Ellipsis, Info } from "lucide-react";
 import {
   DropdownMenu,
@@ -93,6 +94,10 @@ const Details = () => {
 
     if (id === "File Search") {
       return <FileSearch />;
+    }
+
+    if (id === "OpenCamera") {
+      return <OpenCamera />;
     }
 
     return <div className="text-[#999]">{description}</div>;

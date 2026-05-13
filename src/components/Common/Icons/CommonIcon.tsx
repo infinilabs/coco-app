@@ -57,6 +57,16 @@ function CommonIcon({
           );
         }
 
+        if (item.id === "OpenCamera") {
+          return (
+            <UniversalIcon
+              icon="font_camera"
+              className={className}
+              onClick={onClick}
+            />
+          );
+        }
+
         if (isAbsolute) {
           return (
             <UniversalIcon

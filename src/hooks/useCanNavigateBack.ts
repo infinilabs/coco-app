@@ -8,6 +8,7 @@ export const useCanNavigateBack = () => {
     visibleExtensionDetail,
     viewExtensionOpened,
     sourceData,
+    cameraOpened,
   } = useSearchStore();
 
   const canNavigateBack = useMemo(() => {
@@ -16,7 +17,8 @@ export const useCanNavigateBack = () => {
       visibleExtensionStore ||
       visibleExtensionDetail ||
       viewExtensionOpened ||
-      sourceData
+      sourceData ||
+      cameraOpened
     );
   }, [
     goAskAi,
@@ -24,6 +26,7 @@ export const useCanNavigateBack = () => {
     visibleExtensionDetail,
     viewExtensionOpened,
     sourceData,
+    cameraOpened,
   ]);
 
   return { canNavigateBack };
