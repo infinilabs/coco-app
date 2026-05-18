@@ -255,15 +255,26 @@ const Camera = () => {
   }, [t, stopCurrentStream, recheckNonce]);
 
   // Switch camera when device selection changes (after initial setup).
+  //
+  // NOTE: `ready` is intentionally NOT in the dependency array. We DO call
+  // `setReady(false)` below to show the loading spinner during the switch,
+  // but if `ready` were a dep, that state change would re-run this effect,
+  // which would (a) trip the cleanup's `cancelled = true` on the in-flight
+  // switch and (b) immediately early-return on the new run because `ready`
+  // is false. The old stream is already stopped by then, so the video stays
+  // frozen until the component remounts — which is exactly the bug the user
+  // reported ("I have to close and re-open the extension to switch camera").
   useEffect(() => {
-    if (permission !== "granted" || !ready || !selectedDeviceId) return;
+    if (permission !== "granted" || !selectedDeviceId) return;
 
-    // Check if the current stream already uses the selected device.
+    // Check if the current stream already uses the selected device. This
+    // makes the initial render (where selectedDeviceId is set from the
+    // already-running stream) a no-op.
     if (streamRef.current) {
       const currentTrack = streamRef.current.getVideoTracks()[0];
       const currentDeviceId = currentTrack?.getSettings()?.deviceId;
       if (currentDeviceId === selectedDeviceId) {
-        return; // Already using this device.
+        return;
       }
     }
 
@@ -289,6 +300,16 @@ const Camera = () => {
 
         if (videoRef.current) {
           videoRef.current.srcObject = mediaStream;
+          // Some browsers don't auto-resume play() after srcObject swap
+          // even with the `autoPlay` attribute; calling .play() explicitly
+          // is harmless if it's already playing.
+          videoRef.current.play().catch((err) => {
+            console.error(
+              `[Camera] video.play() after switch failed: ${
+                (err as { name?: string })?.name ?? "Error"
+              } - ${(err as { message?: string })?.message ?? err}`
+            );
+          });
         }
 
         setLastError(null);
@@ -312,7 +333,8 @@ const Camera = () => {
     return () => {
       cancelled = true;
     };
-  }, [selectedDeviceId, ready, permission, stopCurrentStream]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDeviceId, permission, stopCurrentStream]);
 
   const takePhoto = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current) return;
