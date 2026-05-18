@@ -13,6 +13,9 @@ on:
       - 'src-tauri/Info.plist'
       - 'scripts/check-info-plist.cjs'
 
+permissions:
+  contents: read
+
 jobs:
   # Quick syntactic / duplicate-key check that runs on every platform.
   source-check:

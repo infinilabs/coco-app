@@ -233,6 +233,9 @@ const Camera = () => {
         console.error(
           `[Camera] initialization failed: ${classified.name} - ${classified.message}`
         );
+        // Always release any probe stream we may have acquired before
+        // the failure, otherwise the camera light stays on.
+        stopCurrentStream();
         if (!cancelled) {
           setLastError({
             name: classified.name,
