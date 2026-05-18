@@ -2,45 +2,52 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>NSCameraUsageDescription</key>
-  <string>Request camera access for WebRTC</string>
-  <key>NSMicrophoneUsageDescription</key>
-  <string>Request microphone access for WebRTC</string>
-
 	<key>CFBundleIdentifier</key>
 	<string>rs.coco.app</string>
 	<key>CFBundleExecutable</key>
-    <string>coco</string>
+	<string>coco</string>
 	<key>NSPrefPaneIconLabel</key>
 	<string>coco-ai</string>
 
 	<key>LSUIElement</key>
-    <true/>
+	<true/>
 
-      <key>ITSAppUsesNonExemptEncryption</key>
-      <false/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 
-  <key>CFBundleURLTypes</key>
-  <array>
-    <dict>
-      <key>CFBundleURLName</key>
-      <string>rs.coco.app</string>
-      <key>CFBundleURLSchemes</key>
-      <array>
-        <string>coco</string>
-      </array>
-    </dict>
-  </array>
-  
-  <key>NSMicrophoneUsageDescription</key>
-  <string>Coco AI needs access to your microphone for voice input and audio recording features.</string>
-  <key>NSCameraUsageDescription</key>
-  <string>Coco AI requires camera access for scanning documents and capturing images.</string>
-  <key>NSSpeechRecognitionUsageDescription</key>
-  <string>Coco AI uses speech recognition to convert your voice into text for a hands-free experience.</string>
-  <key>NSAppleEventsUsageDescription</key>
-  <string>Coco AI requires access to Apple Events to enable certain features, such as opening files and applications.</string>
-  <key>NSAccessibility</key>
-  <true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>rs.coco.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>coco</string>
+			</array>
+		</dict>
+	</array>
+
+	<!--
+	  Privacy usage descriptions.
+
+	  NOTE: Each NS*UsageDescription key MUST appear exactly once in this file.
+	  Duplicate keys cause undefined behavior in the macOS plist parsers used
+	  during signing/notarization and can lead to the key being silently
+	  stripped from the final bundled Info.plist, which causes the OS to
+	  refuse the TCC prompt and `getUserMedia` / native APIs to fail with
+	  permission errors that the user cannot recover from.
+
+	  A CI check (`scripts/check-info-plist.cjs`) enforces this invariant.
+	-->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Coco AI needs access to your microphone for voice input and audio recording features.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Coco AI requires camera access for scanning documents and capturing images.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Coco AI uses speech recognition to convert your voice into text for a hands-free experience.</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Coco AI requires access to Apple Events to enable certain features, such as opening files and applications.</string>
+	<key>NSAccessibility</key>
+	<true/>
 </dict>
 </plist>

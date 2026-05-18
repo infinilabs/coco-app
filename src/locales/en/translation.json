@@ -225,6 +225,7 @@
       "extensions": "Extensions",
       "connect": "Connect",
       "advanced": "Advanced",
+      "privacy": "Privacy",
       "about": "About",
       "extensionsContent": "Extensions settings content",
       "advancedContent": "Advanced Settings content"
@@ -742,6 +743,66 @@
     "switchCamera": "Switch Camera",
     "close": "Close Camera",
     "errorAccess": "Unable to access camera. Please check permissions.",
-    "initializing": "Starting camera, please wait..."
+    "initializing": "Starting camera, please wait...",
+    "prompting": "Waiting for camera permission...",
+    "denied": {
+      "title": "Camera access is blocked",
+      "body": "macOS is blocking camera access for Coco AI.\nOpen System Settings, allow camera access for Coco AI, then click Re-check."
+    },
+    "restricted": {
+      "title": "Camera access is restricted",
+      "body": "Camera access is restricted on this Mac, likely by Screen Time, parental controls, or your organization's device management. Contact your administrator to enable it."
+    },
+    "error": {
+      "body": "Coco AI could not start the camera. The camera may be missing, in use by another app, or otherwise unavailable. See diagnostics below for details."
+    },
+    "actions": {
+      "openSystemSettings": "Open System Settings → Privacy & Security → Camera",
+      "recheck": "Re-check"
+    },
+    "diagnostics": {
+      "title": "Diagnostics",
+      "copy": "Copy to clipboard",
+      "copied": "Copied!"
+    }
+  },
+  "privacy": {
+    "title": "Privacy & Permissions",
+    "description": "These macOS permissions are managed by the system. Click \"Open\" to allow or revoke access in System Settings.",
+    "status": {
+      "granted": "Granted",
+      "denied": "Not granted",
+      "unknown": "Unknown"
+    },
+    "actions": {
+      "open": "Open",
+      "refresh": "Refresh"
+    },
+    "items": {
+      "camera": {
+        "name": "Camera",
+        "description": "Used for the Open Camera extension to capture photos."
+      },
+      "microphone": {
+        "name": "Microphone",
+        "description": "Used for voice input and audio recording."
+      },
+      "accessibility": {
+        "name": "Accessibility",
+        "description": "Used for global shortcuts and text-selection features."
+      },
+      "screenRecording": {
+        "name": "Screen Recording",
+        "description": "Used to capture screenshots of monitors and windows."
+      },
+      "automation": {
+        "name": "Automation (Apple Events)",
+        "description": "Used to open files and control other applications."
+      }
+    },
+    "tccHint": {
+      "title": "Still not working?",
+      "body": "If macOS refuses to re-prompt for a permission after you toggle it, open Terminal and run:\n\n    tccutil reset <Service> rs.coco.app\n\nReplace <Service> with Camera, Microphone, Accessibility, ScreenCapture, or AppleEvents. Then relaunch Coco AI. We can't run this for you because the app is sandboxed."
+    }
   }
 }

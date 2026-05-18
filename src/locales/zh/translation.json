@@ -225,6 +225,7 @@
       "extensions": "扩展",
       "connect": "连接",
       "advanced": "高级",
+      "privacy": "隐私",
       "about": "关于",
       "extensionsContent": "扩展设置内容",
       "advancedContent": "高级设置内容"
@@ -741,6 +742,66 @@
     "switchCamera": "切换摄像头",
     "close": "关闭摄像头",
     "errorAccess": "无法访问摄像头，请检查权限设置。",
-    "initializing": "摄像头启动中，请稍候..."
+    "initializing": "摄像头启动中，请稍候...",
+    "prompting": "等待授予摄像头权限...",
+    "denied": {
+      "title": "摄像头访问被拒绝",
+      "body": "macOS 已阻止 Coco AI 访问摄像头。\n请打开「系统设置」，允许 Coco AI 使用摄像头后，点击「重新检查」。"
+    },
+    "restricted": {
+      "title": "摄像头访问受限",
+      "body": "本机的摄像头访问受到限制，可能由「屏幕使用时间」、家长控制或企业设备管理策略导致。请联系管理员开启。"
+    },
+    "error": {
+      "body": "Coco AI 无法启动摄像头。可能是设备缺失、被其他应用占用或不可用。详情见下方诊断信息。"
+    },
+    "actions": {
+      "openSystemSettings": "打开「系统设置 → 隐私与安全性 → 摄像头」",
+      "recheck": "重新检查"
+    },
+    "diagnostics": {
+      "title": "诊断信息",
+      "copy": "复制到剪贴板",
+      "copied": "已复制！"
+    }
+  },
+  "privacy": {
+    "title": "隐私与权限",
+    "description": "以下 macOS 权限由系统管理。点击「打开」可在「系统设置」中授予或撤销访问权限。",
+    "status": {
+      "granted": "已授予",
+      "denied": "未授予",
+      "unknown": "未知"
+    },
+    "actions": {
+      "open": "打开",
+      "refresh": "刷新"
+    },
+    "items": {
+      "camera": {
+        "name": "摄像头",
+        "description": "用于「打开摄像头」扩展进行拍照。"
+      },
+      "microphone": {
+        "name": "麦克风",
+        "description": "用于语音输入与录音功能。"
+      },
+      "accessibility": {
+        "name": "辅助功能",
+        "description": "用于全局快捷键和文本选择相关功能。"
+      },
+      "screenRecording": {
+        "name": "屏幕录制",
+        "description": "用于截取显示器和窗口截图。"
+      },
+      "automation": {
+        "name": "自动化（Apple Events）",
+        "description": "用于打开文件和控制其他应用。"
+      }
+    },
+    "tccHint": {
+      "title": "仍然无法使用？",
+      "body": "如果切换权限后 macOS 仍不再提示，请在终端中运行：\n\n    tccutil reset <服务名> rs.coco.app\n\n将 <服务名> 替换为 Camera、Microphone、Accessibility、ScreenCapture 或 AppleEvents 之一，然后重启 Coco AI。由于应用运行在沙盒中，我们无法自动执行此命令。"
+    }
   }
 }

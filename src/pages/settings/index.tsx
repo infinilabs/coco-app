@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Settings, Puzzle, Settings2, Info, Server } from "lucide-react";
+import { Settings, Puzzle, Settings2, Info, Server, Shield } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { listen } from "@tauri-apps/api/event";
 
 import SettingsPanel from "@/components/Settings/SettingsPanel";
 import GeneralSettings from "@/components/Settings/GeneralSettings";
 import AboutView from "@/components/Settings/AboutView";
+import PrivacySettings from "@/components/Settings/PrivacySettings";
 import Cloud from "@/components/Cloud/Cloud";
 import Footer from "@/components/Common/UI/SettingsFooter";
 import { useTray } from "@/hooks/useTray";
@@ -17,12 +18,14 @@ import platformAdapter from "@/utils/platformAdapter";
 import { useAppStore } from "@/stores/appStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useAppearanceStore } from "@/stores/appearanceStore";
+import { isMac } from "@/utils/platform";
 
 const tabValues = [
   "general",
   "extensions",
   "connect",
   "advanced",
+  "privacy",
   "about",
 ] as const;
 type TabValue = (typeof tabValues)[number];
@@ -38,6 +41,16 @@ function SettingsPage() {
     { name: t("settings.tabs.extensions"), icon: Puzzle, value: "extensions" },
     { name: t("settings.tabs.connect"), icon: Server, value: "connect" },
     { name: t("settings.tabs.advanced"), icon: Settings2, value: "advanced" },
+    // Privacy/TCC is a macOS-only story; hide the tab elsewhere.
+    ...(isMac
+      ? [
+          {
+            name: t("settings.tabs.privacy"),
+            icon: Shield,
+            value: "privacy" as TabValue,
+          },
+        ]
+      : []),
     { name: t("settings.tabs.about"), icon: Info, value: "about" },
   ];
 
@@ -126,6 +139,13 @@ function SettingsPage() {
                 <Advanced />
               </SettingsPanel>
             </TabsContent>
+            {isMac && (
+              <TabsContent value="privacy">
+                <SettingsPanel title="">
+                  <PrivacySettings />
+                </SettingsPanel>
+              </TabsContent>
+            )}
             <TabsContent value="about">
               <SettingsPanel title="">
                 <AboutView />

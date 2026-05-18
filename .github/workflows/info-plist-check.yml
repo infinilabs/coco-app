@@ -1,0 +1,47 @@
+name: Info.plist Check
+
+on:
+  pull_request:
+    paths:
+      - 'src-tauri/Info.plist'
+      - 'scripts/check-info-plist.cjs'
+      - '.github/workflows/info-plist-check.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'src-tauri/Info.plist'
+      - 'scripts/check-info-plist.cjs'
+
+jobs:
+  # Quick syntactic / duplicate-key check that runs on every platform.
+  source-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate src-tauri/Info.plist
+        run: node scripts/check-info-plist.cjs
+
+  # Post-build check: build the macOS bundle and run `plutil -lint` plus the
+  # duplicate-key check against the Info.plist that actually ships to users.
+  # This catches cases where tauri / signing rewrites the plist incorrectly.
+  bundled-check:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate source Info.plist with plutil -lint
+        run: node scripts/check-info-plist.cjs src-tauri/Info.plist
