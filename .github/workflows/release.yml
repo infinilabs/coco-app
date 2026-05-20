@@ -86,7 +86,7 @@ jobs:
       - name: Checkout dependency repository
         uses: actions/checkout@v4
         with:
-          repository: 'infinilabs/pizza'
+          repository: "infinilabs/pizza"
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
           submodules: recursive
           ref: main
@@ -98,7 +98,7 @@ jobs:
           node-version: 20
       - uses: pnpm/action-setup@v3
         with:
-          version: latest
+          version: 9
 
       - name: Install dependencies (ubuntu only)
         if: startsWith(matrix.platform, 'ubuntu-22.04')
@@ -106,15 +106,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils libtracker-sparql-3.0-dev
 
-
       # On Windows, we need to generate bindings for 'searchapi.h' using bindgen.
       # And bindgen relies on 'libclang'
       # https://rust-lang.github.io/rust-bindgen/requirements.html#windows
       #
-      # We don't need to install it because it is already included in GitHub 
+      # We don't need to install it because it is already included in GitHub
       # Action runner image:
       # https://github.com/actions/runner-images/blob/main/images/windows/Windows2025-Readme.md#language-and-runtime
-
 
       - name: Add Rust build target
         working-directory: src-tauri
@@ -149,7 +147,7 @@ jobs:
 
       - name: Install app dependencies and build web
         run: pnpm install --frozen-lockfile
-      
+
       - name: Build the coco at ${{ matrix.platform}} for ${{ matrix.target }} @ ${{ env.APP_VERSION }}
         uses: tauri-apps/tauri-action@v0
         env:
