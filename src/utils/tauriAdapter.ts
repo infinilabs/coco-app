@@ -163,27 +163,23 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     async checkMicrophonePermission() {
-      const { checkMicrophonePermission } =
-        await import("tauri-plugin-macos-permissions-api");
-      return checkMicrophonePermission();
+      const { invoke } = await import("@tauri-apps/api/core");
+      return invoke<boolean>("check_microphone_permission");
     },
 
     async requestMicrophonePermission() {
-      const { requestMicrophonePermission } =
-        await import("tauri-plugin-macos-permissions-api");
-      return requestMicrophonePermission();
+      const { invoke } = await import("@tauri-apps/api/core");
+      return invoke<boolean>("request_microphone_permission");
     },
 
     async checkCameraPermission() {
-      const { checkCameraPermission } =
-        await import("tauri-plugin-macos-permissions-api");
-      return checkCameraPermission();
+      const { invoke } = await import("@tauri-apps/api/core");
+      return invoke<boolean>("check_camera_permission");
     },
 
     async requestCameraPermission() {
-      const { requestCameraPermission } =
-        await import("tauri-plugin-macos-permissions-api");
-      return requestCameraPermission();
+      const { invoke } = await import("@tauri-apps/api/core");
+      return invoke<boolean>("request_camera_permission");
     },
 
     async getScreenshotableMonitors() {

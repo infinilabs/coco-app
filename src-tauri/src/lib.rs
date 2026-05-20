@@ -2,6 +2,7 @@ mod assistant;
 mod autostart;
 mod common;
 mod extension;
+mod permissions;
 mod search;
 mod selection_monitor;
 mod server;
@@ -176,6 +177,10 @@ pub fn run() {
             show_check,
             hide_check,
             save_camera_photo,
+            permissions::check_camera_permission,
+            permissions::request_camera_permission,
+            permissions::check_microphone_permission,
+            permissions::request_microphone_permission,
             server::servers::add_coco_server,
             server::servers::remove_coco_server,
             server::servers::list_coco_servers,

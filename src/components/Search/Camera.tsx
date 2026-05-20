@@ -43,33 +43,22 @@ const Camera = () => {
         // Step 1: Check/request macOS native camera permission
         if (isMac) {
           const authorized = await platformAdapter.checkCameraPermission();
+          console.log("[Camera] Initial permission check:", authorized);
+
           if (!authorized) {
-            platformAdapter.requestCameraPermission();
-            // Poll until permission is granted (timeout after 60 seconds)
-            const POLL_TIMEOUT_MS = 60000;
-            const POLL_INTERVAL_MS = 500;
-            await new Promise<void>((resolve, reject) => {
-              let elapsed = 0;
-              const timer = setInterval(async () => {
-                if (cancelled) {
-                  clearInterval(timer);
-                  reject(new Error("cancelled"));
-                  return;
-                }
-                elapsed += POLL_INTERVAL_MS;
-                if (elapsed >= POLL_TIMEOUT_MS) {
-                  clearInterval(timer);
-                  reject(new Error("Camera permission timeout"));
-                  return;
-                }
-                const granted =
-                  await platformAdapter.checkCameraPermission();
-                if (granted) {
-                  clearInterval(timer);
-                  resolve();
-                }
-              }, POLL_INTERVAL_MS);
-            });
+            console.log("[Camera] Requesting camera permission...");
+            // The new implementation waits for user response
+            const granted = await platformAdapter.requestCameraPermission();
+            console.log("[Camera] Permission request result:", granted);
+
+            if (!granted) {
+              // User denied permission
+              console.error("[Camera] Permission denied by user");
+              if (!cancelled) {
+                setError(t("camera.errorAccess"));
+              }
+              return;
+            }
           }
         }
         if (cancelled) return;
