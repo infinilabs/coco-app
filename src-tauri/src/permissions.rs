@@ -7,7 +7,8 @@ use tauri::command;
 
 #[cfg(target_os = "macos")]
 use {
-    objc2::{class, msg_send, runtime::Bool, ClassType},
+    block2::RcBlock,
+    objc2::{class, msg_send, runtime::Bool},
     objc2_foundation::NSString,
     std::sync::mpsc,
     std::time::Duration,
@@ -78,78 +79,18 @@ pub async fn request_camera_permission() -> Result<bool, String> {
         }
 
         // Create a channel to receive the callback result
-        let (tx, rx) = mpsc::channel();
+        let (tx, rx) = mpsc::channel::<bool>();
 
-        // Create a completion handler that sends the result through the channel
-        let completion_block = Box::new(move |granted: Bool| {
+        // Create a completion handler block using block2
+        let block = RcBlock::new(move |granted: Bool| {
             let _ = tx.send(granted.as_bool());
         });
-
-        // Convert the closure to a raw pointer
-        let completion_ptr = Box::into_raw(completion_block);
-
-        // Define the block structure for Objective-C runtime
-        type CompletionHandler = extern "C" fn(*mut std::ffi::c_void, Bool);
-
-        extern "C" fn trampoline(block_ptr: *mut std::ffi::c_void, granted: Bool) {
-            unsafe {
-                let closure: Box<Box<dyn FnOnce(Bool)>> =
-                    Box::from_raw(block_ptr as *mut Box<dyn FnOnce(Bool)>);
-                closure(granted);
-            }
-        }
-
-        #[repr(C)]
-        struct Block {
-            isa: *const std::ffi::c_void,
-            flags: i32,
-            reserved: i32,
-            invoke: CompletionHandler,
-            descriptor: *const BlockDescriptor,
-            closure: *mut std::ffi::c_void,
-        }
-
-        #[repr(C)]
-        struct BlockDescriptor {
-            reserved: usize,
-            size: usize,
-            copy_helper: Option<extern "C" fn(*mut std::ffi::c_void, *const std::ffi::c_void)>,
-            dispose_helper: Option<extern "C" fn(*mut std::ffi::c_void)>,
-        }
-
-        static DESCRIPTOR: BlockDescriptor = BlockDescriptor {
-            reserved: 0,
-            size: std::mem::size_of::<Block>(),
-            copy_helper: None,
-            dispose_helper: Some(dispose_helper),
-        };
-
-        extern "C" fn dispose_helper(block: *mut std::ffi::c_void) {
-            unsafe {
-                let block = block as *mut Block;
-                let _ = Box::from_raw((*block).closure as *mut Box<dyn FnOnce(Bool)>);
-            }
-        }
-
-        // Get the _NSConcreteStackBlock class
-        extern "C" {
-            static _NSConcreteStackBlock: *const std::ffi::c_void;
-        }
-
-        let block = Block {
-            isa: &_NSConcreteStackBlock,
-            flags: 1 << 25, // BLOCK_HAS_COPY_DISPOSE
-            reserved: 0,
-            invoke: trampoline,
-            descriptor: &DESCRIPTOR,
-            closure: completion_ptr as *mut std::ffi::c_void,
-        };
 
         // Call the requestAccessForMediaType with our completion handler
         let _: () = msg_send![
             class!(AVCaptureDevice),
             requestAccessForMediaType: &*av_media_type,
-            completionHandler: &block
+            completionHandler: &*block
         ];
 
         // Wait for the callback with a timeout
@@ -210,73 +151,16 @@ pub async fn request_microphone_permission() -> Result<bool, String> {
             return Ok(false);
         }
 
-        let (tx, rx) = mpsc::channel();
+        let (tx, rx) = mpsc::channel::<bool>();
 
-        let completion_block = Box::new(move |granted: Bool| {
+        let block = RcBlock::new(move |granted: Bool| {
             let _ = tx.send(granted.as_bool());
         });
-
-        let completion_ptr = Box::into_raw(completion_block);
-
-        type CompletionHandler = extern "C" fn(*mut std::ffi::c_void, Bool);
-
-        extern "C" fn trampoline(block_ptr: *mut std::ffi::c_void, granted: Bool) {
-            unsafe {
-                let closure: Box<Box<dyn FnOnce(Bool)>> =
-                    Box::from_raw(block_ptr as *mut Box<dyn FnOnce(Bool)>);
-                closure(granted);
-            }
-        }
-
-        #[repr(C)]
-        struct Block {
-            isa: *const std::ffi::c_void,
-            flags: i32,
-            reserved: i32,
-            invoke: CompletionHandler,
-            descriptor: *const BlockDescriptor,
-            closure: *mut std::ffi::c_void,
-        }
-
-        #[repr(C)]
-        struct BlockDescriptor {
-            reserved: usize,
-            size: usize,
-            copy_helper: Option<extern "C" fn(*mut std::ffi::c_void, *const std::ffi::c_void)>,
-            dispose_helper: Option<extern "C" fn(*mut std::ffi::c_void)>,
-        }
-
-        static DESCRIPTOR: BlockDescriptor = BlockDescriptor {
-            reserved: 0,
-            size: std::mem::size_of::<Block>(),
-            copy_helper: None,
-            dispose_helper: Some(dispose_helper),
-        };
-
-        extern "C" fn dispose_helper(block: *mut std::ffi::c_void) {
-            unsafe {
-                let block = block as *mut Block;
-                let _ = Box::from_raw((*block).closure as *mut Box<dyn FnOnce(Bool)>);
-            }
-        }
-
-        extern "C" {
-            static _NSConcreteStackBlock: *const std::ffi::c_void;
-        }
-
-        let block = Block {
-            isa: &_NSConcreteStackBlock,
-            flags: 1 << 25,
-            reserved: 0,
-            invoke: trampoline,
-            descriptor: &DESCRIPTOR,
-            closure: completion_ptr as *mut std::ffi::c_void,
-        };
 
         let _: () = msg_send![
             class!(AVCaptureDevice),
             requestAccessForMediaType: &*av_media_type,
-            completionHandler: &block
+            completionHandler: &*block
         ];
 
         match rx.recv_timeout(Duration::from_secs(60)) {
