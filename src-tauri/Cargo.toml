@@ -1,6 +1,6 @@
 [package]
 name = "coco"
-version = "0.10.0"
+version = "0.11.0-0"
 description = "Search, connect, collaborate – all in one place."
 authors = ["INFINI Labs"]
 edition = "2024"
