@@ -78,7 +78,7 @@ export interface WindowOperations {
   createWebviewWindow: (label: string, options: any) => Promise<any>;
   listenWindowEvent: (
     event: string,
-    callback: (event: any) => void
+    callback: (event: any) => void,
   ) => Promise<() => void>;
   getCurrentWindowLabel: () => Promise<string>;
 }
@@ -87,17 +87,17 @@ export interface WindowOperations {
 export interface ThemeAndEvents {
   emitEvent: <K extends keyof EventPayloads>(
     event: K,
-    payload?: any
+    payload?: any,
   ) => Promise<void>;
   listenEvent: <K extends keyof EventPayloads>(
     event: K,
-    callback: (event: { payload: EventPayloads[K] }) => void
+    callback: (event: { payload: EventPayloads[K] }) => void,
   ) => Promise<() => void>;
   onThemeChanged: (
-    callback: (payload: { payload: string }) => void
+    callback: (payload: { payload: string }) => void,
   ) => Promise<void>;
   listenThemeChanged: (
-    callback: (theme: AppTheme) => void
+    callback: (theme: AppTheme) => void,
   ) => Promise<() => void>;
 }
 
@@ -109,7 +109,7 @@ export interface SystemOperations {
   checkMicrophonePermission: () => Promise<boolean>;
   requestMicrophonePermission: () => void;
   checkCameraPermission: () => Promise<boolean>;
-  requestCameraPermission: () => void;
+  requestCameraPermission: () => Promise<boolean>;
   requestScreenRecordingPermission: () => void;
   getScreenshotableMonitors: () => Promise<any[]>;
   getScreenshotableWindows: () => Promise<any[]>;
@@ -126,12 +126,12 @@ export interface SystemOperations {
   revealItemInDir: (path: string) => Promise<unknown>;
   openSearchItem: (
     data: SearchDocument,
-    formatUrl?: (item: SearchDocument) => string
+    formatUrl?: (item: SearchDocument) => string,
   ) => Promise<unknown>;
   searchMCPServers: (serverId: string, queryParams: string[]) => Promise<any[]>;
   searchDataSources: (
     serverId: string,
-    queryParams: string[]
+    queryParams: string[],
   ) => Promise<any[]>;
   fetchAssistant: (serverId: string, queryParams: string[]) => Promise<any>;
   openLogDir: () => Promise<void>;
@@ -139,6 +139,4 @@ export interface SystemOperations {
 
 // Base platform adapter interface
 export interface BasePlatformAdapter
-  extends WindowOperations,
-    ThemeAndEvents,
-    SystemOperations {}
+  extends WindowOperations, ThemeAndEvents, SystemOperations {}
