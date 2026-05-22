@@ -62,8 +62,7 @@ const Camera = () => {
                   reject(new Error("Camera permission timeout"));
                   return;
                 }
-                const granted =
-                  await platformAdapter.checkCameraPermission();
+                const granted = await platformAdapter.checkCameraPermission();
                 if (granted) {
                   clearInterval(timer);
                   resolve();
@@ -95,18 +94,12 @@ const Camera = () => {
         }
 
         // Step 3: Enumerate devices now that we have permission
-        const allDevices =
-          await navigator.mediaDevices.enumerateDevices();
-          console.log('allDevices',allDevices)
-        const videoDevices = allDevices.filter(
-          (d) => d.kind === "videoinput"
-        );
+        const allDevices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = allDevices.filter((d) => d.kind === "videoinput");
         if (cancelled) {
           initialStream.getTracks().forEach((track) => track.stop());
           return;
         }
-
-        console.log('videoDevices',videoDevices)
 
         setDevices(videoDevices);
 
@@ -125,10 +118,10 @@ const Camera = () => {
           const currentDeviceId = trackSettings?.deviceId || "";
 
           const matchedDevice = videoDevices.find(
-            (d) => d.deviceId === currentDeviceId
+            (d) => d.deviceId === currentDeviceId,
           );
           setSelectedDeviceId(
-            matchedDevice?.deviceId || videoDevices[0].deviceId
+            matchedDevice?.deviceId || videoDevices[0].deviceId,
           );
         }
 
@@ -152,22 +145,23 @@ const Camera = () => {
 
   // Switch camera when device selection changes (after initial setup)
   useEffect(() => {
-    if (!ready || !selectedDeviceId) return;
+    // Guard: skip if no device selected or stream not yet initialized
+    if (!selectedDeviceId || !streamRef.current) return;
 
     // Check if the current stream already uses the selected device
-    if (streamRef.current) {
-      const currentTrack = streamRef.current.getVideoTracks()[0];
-      const currentDeviceId = currentTrack?.getSettings()?.deviceId;
-      if (currentDeviceId === selectedDeviceId) {
-        return; // Already using this device
-      }
-    }
+    const currentTrack = streamRef.current.getVideoTracks()[0];
+    const currentDeviceId = currentTrack?.getSettings()?.deviceId;
+    if (currentDeviceId === selectedDeviceId) return;
 
     let cancelled = false;
 
     const switchToDevice = async () => {
       try {
-        setReady(false);
+        // setReady(false) must NOT be called before getUserMedia resolves,
+        // because `ready` is not in the dependency array. Calling it earlier
+        // would have previously triggered a re-run of this effect, which runs
+        // the cleanup (cancelled = true) and kills the in-progress switch,
+        // leaving the component permanently stuck in the loading spinner.
         stopCurrentStream();
 
         const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -180,6 +174,7 @@ const Camera = () => {
           return;
         }
 
+        setReady(false);
         streamRef.current = mediaStream;
         setStream(mediaStream);
 
@@ -201,7 +196,11 @@ const Camera = () => {
     return () => {
       cancelled = true;
     };
-  }, [selectedDeviceId, ready, t, stopCurrentStream]);
+    // `ready` intentionally excluded from deps: including it would cause this
+    // effect to re-run when setReady(false) is called mid-switch, triggering
+    // cleanup and cancelling the ongoing getUserMedia, resulting in a deadlock.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDeviceId, t, stopCurrentStream]);
 
   const takePhoto = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current) return;
@@ -226,7 +225,7 @@ const Camera = () => {
     setTimeout(() => setFlashVisible(false), 150);
 
     const blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, "image/png")
+      canvas.toBlob(resolve, "image/png"),
     );
     if (!blob) return;
 
@@ -234,7 +233,7 @@ const Camera = () => {
       platformAdapter.saveFileDialog({
         defaultPath: `coco-photo-${Date.now()}.png`,
         filters: [{ name: "Image", extensions: ["png"] }],
-      })
+      }),
     );
 
     if (filePath) {
@@ -253,13 +252,11 @@ const Camera = () => {
   const switchCamera = useCallback(() => {
     if (devices.length < 2) return;
     const currentIndex = devices.findIndex(
-      (d) => d.deviceId === selectedDeviceId
+      (d) => d.deviceId === selectedDeviceId,
     );
     const nextIndex = (currentIndex + 1) % devices.length;
     setSelectedDeviceId(devices[nextIndex].deviceId);
   }, [devices, selectedDeviceId]);
-
-
 
   return (
     <div className="flex flex-col h-full bg-black select-none overflow-hidden rounded-b-lg">
@@ -302,7 +299,8 @@ const Camera = () => {
           onClick={toggleMirror}
           className={clsx("p-2 rounded-full transition-colors", {
             "bg-white/20 text-white": mirrored,
-            "bg-white/10 text-white/60 hover:text-white hover:bg-white/20": !mirrored,
+            "bg-white/10 text-white/60 hover:text-white hover:bg-white/20":
+              !mirrored,
           })}
           title={t("camera.mirror")}
         >
