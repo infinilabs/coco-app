@@ -141,7 +141,7 @@ const SearchResultsPanel = memo<{
     return <ViewExtension />;
   }
 
-  if (goAskAi) return <AskAi isChatMode={isChatMode} />;
+  if (goAskAi) return <AskAi isChatMode={isChatMode} changeMode={changeMode} />;
 
   if (sourceData) {
     return <SearchResults input={input} isChatMode={isChatMode} />;
