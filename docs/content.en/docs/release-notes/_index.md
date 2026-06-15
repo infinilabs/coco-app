@@ -26,6 +26,7 @@ Information about release notes of Coco App is provided here.
 - fix: resolve extension icon caching issue #1046
 - fix(logging): include webview target in production log level config #1059
 - fix(camera): fix device switching not working properly #1071
+- fix: fix quick ai continue chat shortcut #1072
 
 ### ✈️ Improvements
 
