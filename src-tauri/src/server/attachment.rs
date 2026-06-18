@@ -194,7 +194,11 @@ pub async fn fetch_attachment_binary(
         .await
         .context(HttpRequestSnafu)?;
 
-    let bytes = response.bytes().await.context(SendSnafu).context(HttpRequestSnafu)?;
+    let bytes = response
+        .bytes()
+        .await
+        .context(SendSnafu)
+        .context(HttpRequestSnafu)?;
 
     Ok(FetchAttachmentBinaryResponse {
         content_base64: base64::encode(bytes),
