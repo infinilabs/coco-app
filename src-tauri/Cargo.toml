@@ -173,3 +173,12 @@ windows-sys = { version = "0.61", features = ["Win32", "Win32_System", "Win32_Sy
 
 [target."cfg(target_os = \"windows\")".build-dependencies]
 bindgen = "0.72.1"
+
+# When pizza-engine is added as a CI dependency, it uses infinilabs/fst-no-std
+# while its transitive dependency fst-regex uses pizza-rs/fst-no-std. These two
+# forks are treated as separate crates by Cargo, causing Automaton trait
+# incompatibility errors. This patch redirects infinilabs/fst-no-std to
+# pizza-rs/fst-no-std to unify the dependency. It has no effect on normal
+# builds that do not include pizza-engine.
+[patch."https://github.com/infinilabs/fst-no-std"]
+fst-no-std = { git = "https://github.com/pizza-rs/fst-no-std", branch = "main" }
