@@ -289,8 +289,8 @@ function SearchChat({
     [isChatMode]
   );
 
-  const cancelChat = useCallback(() => {
-    chatAIRef.current?.cancelChat();
+  const requestCancelChat = useCallback(() => {
+    chatAIRef.current?.requestCancelChat();
   }, []);
 
   const setInput = useCallback((value: string) => {
@@ -496,7 +496,7 @@ function SearchChat({
           inputValue={input}
           onSend={handleSendMessage}
           disabled={isTyping}
-          disabledChange={cancelChat}
+          disabledChange={requestCancelChat}
           changeMode={changeMode}
           changeInput={setInput}
           isSearchActive={isSearchActive}

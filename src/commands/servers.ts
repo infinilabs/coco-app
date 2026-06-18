@@ -357,6 +357,27 @@ export const get_attachment_by_ids = (payload: GetAttachmentByIdsPayload) => {
   );
 };
 
+export const fetch_attachment_text = (payload: {
+  serverId: string;
+  path: string;
+}) => {
+  return invokeWithErrorHandler<{ content: string }>("fetch_attachment_text", {
+    ...payload,
+  });
+};
+
+export const fetch_attachment_binary = (payload: {
+  serverId: string;
+  path: string;
+}) => {
+  return invokeWithErrorHandler<{ content_base64: string }>(
+    "fetch_attachment_binary",
+    {
+      ...payload,
+    }
+  );
+};
+
 export const delete_attachment = (payload: DeleteAttachmentPayload) => {
   return invokeWithErrorHandler<boolean>("delete_attachment", { ...payload });
 };

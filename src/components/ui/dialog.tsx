@@ -24,13 +24,16 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 type DialogContentProps = React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
   overlayClassName?: string;
+  portalContainer?: React.ComponentPropsWithoutRef<
+    typeof DialogPrimitive.Portal
+  >["container"];
 };
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogContentProps
->(({ className, overlayClassName, ...props }, ref) => (
-  <DialogPortal>
+>(({ className, overlayClassName, portalContainer, ...props }, ref) => (
+  <DialogPortal container={portalContainer}>
     <DialogOverlay className={overlayClassName} />
     <DialogPrimitive.Content
       ref={ref}

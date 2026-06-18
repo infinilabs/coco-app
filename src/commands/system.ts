@@ -35,3 +35,17 @@ export function show_check(): Promise<void> {
 export function hide_check(): Promise<void> {
   return invoke('hide_check');
 }
+
+export function write_text_file(payload: {
+  path: string;
+  content: string;
+}): Promise<{ saved: boolean }> {
+  return invoke('write_text_file', payload);
+}
+
+export function write_binary_file(payload: {
+  path: string;
+  contentBase64: string;
+}): Promise<{ saved: boolean }> {
+  return invoke('write_binary_file', payload);
+}

@@ -24,6 +24,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { useAuthStore } from "@/stores/authStore";
 import Splash from "./Splash";
+import { DeepResearchCancelDialog } from "@/components/ChatMessage/DeepResearch/DeepResearchCancelDialog";
 
 interface ChatAIProps {
   isSearchActive?: boolean;
@@ -52,6 +53,7 @@ export interface SendMessageParams {
 export interface ChatAIRef {
   init: (params: SendMessageParams) => void;
   cancelChat: () => void;
+  requestCancelChat: () => void;
   clearChat: () => void;
   onSelectChat: (chat: Chat) => void;
 }
@@ -82,6 +84,7 @@ const ChatAI = memo(
       useImperativeHandle(ref, () => ({
         init: init,
         cancelChat: () => cancelChat(activeChat),
+        requestCancelChat,
         clearChat: clearChat,
         onSelectChat: onSelectChat,
       }));
@@ -102,6 +105,8 @@ const ChatAI = memo(
 
       const [activeChat, setActiveChat] = useState<Chat>();
       const [timedoutShow, setTimedoutShow] = useState(false);
+      const [deepResearchCancelDialogOpen, setDeepResearchCancelDialogOpen] =
+        useState(false);
 
       const curIdRef = useRef("");
       const curSessionIdRef = useRef("");
@@ -160,6 +165,8 @@ const ChatAI = memo(
           deep_read,
           think,
           response,
+          deepResearch,
+          replyEnd,
         },
         handlers,
         clearAllChunkData,
@@ -208,6 +215,18 @@ const ChatAI = memo(
         showChatHistory,
         getChatHistoryChatPage
       );
+
+      const hasRunningDeepResearch =
+        deepResearch.length > 0 && replyEnd.length === 0 && !curChatEnd;
+
+      const requestCancelChat = useCallback(() => {
+        if (hasRunningDeepResearch) {
+          setDeepResearchCancelDialogOpen(true);
+          return;
+        }
+
+        cancelChat(activeChat);
+      }, [activeChat, cancelChat, hasRunningDeepResearch]);
 
       const { dealMsg } = useMessageHandler(
         curIdRef,
@@ -414,12 +433,16 @@ const ChatAI = memo(
                   deep_read={deep_read}
                   think={think}
                   response={response}
+                  deepResearch={deepResearch}
+                  replyEnd={replyEnd}
                   loadingStep={loadingStep}
                   timedoutShow={timedoutShow}
                   Question={Question}
                   handleSendMessage={(message) =>
                     handleSendMessage(activeChat, { message })
                   }
+                  onCancel={() => cancelChat(activeChat)}
+                  onRequestDeepResearchCancel={requestCancelChat}
                   getFileUrl={getFileUrl}
                   formatUrl={formatUrl}
                   curIdRef={curIdRef}
@@ -437,6 +460,11 @@ const ChatAI = memo(
                 }}
               />
             )}
+            <DeepResearchCancelDialog
+              open={deepResearchCancelDialogOpen}
+              onOpenChange={setDeepResearchCancelDialogOpen}
+              onConfirm={() => cancelChat(activeChat)}
+            />
           </div>
         </>
       );

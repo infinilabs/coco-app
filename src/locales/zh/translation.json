@@ -1,4 +1,72 @@
 {
+  "deepResearch": {
+    "window": {
+      "title": "研究报告"
+    },
+    "status": {
+      "completedWithCount": "深度研究完成 · 找到 {{count}} 条相关结果",
+      "completed": "深度研究完成",
+      "running": "正在执行深度研究",
+      "preparing": "正在准备深度研究",
+      "executingPlan": "正在执行研究计划",
+      "planningResearch": "正在规划研究计划",
+      "cancelled": "研究已取消",
+      "error": "研究出错",
+      "timeout": "研究超时",
+      "reportHeader": "编写研究报告",
+      "reportDescription": "已为您生成最终的研究报告结果"
+    },
+    "button": {
+      "view": "查看",
+      "download": "下载",
+      "share": "分享"
+    },
+    "tab": {
+      "report": "研究报告",
+      "steps": "研究步骤",
+      "searchResults": "搜索结果"
+    },
+    "report": {
+      "generatingTitle": "研究报告生成中",
+      "generatingDescription": "我正在根据你的问题执行完整的研究流程，整理结构化的研究报告。研究完成后，报告会自动展示在这里。",
+      "defaultTitle": "研究报告",
+      "loading": "正在加载研究报告...",
+      "loadFailed": "研究报告加载失败",
+      "downloadSuccess": "研究报告已保存",
+      "downloadFailed": "研究报告下载失败",
+      "openSourceFailed": "打开来源失败"
+    },
+    "steps": {
+      "intro": "将为你整理与该主题相关的信息，包括其定义、用途、市场情况以及常见问题。如果是指特定领域的主题，我还会进一步深入研究其在该领域的具体应用和影响。完成后我会向你汇报结果。",
+      "planTitle": "规划研究计划",
+      "planDescription": "我正在针对该主题，进行规划研究计划",
+      "generatedPlans": "生成的计划",
+      "executeTitle": "执行研究计划",
+      "searching": "正在搜索",
+      "searchTitle": "搜索资料",
+      "optimizePlan": "优化研究计划",
+      "reportTitle": "生成研究报告"
+    },
+    "cancelDialog": {
+      "title": "要取消研究吗？",
+      "description": "已完成的分析会保留在对话中，未进行的部分将取消。",
+      "confirm": "是",
+      "cancel": "否"
+    }
+  },
+  "labels": {
+    "openSource": "打开来源",
+    "cancelled": "生成已取消",
+    "error": "生成出错",
+    "timeout": "生成超时",
+    "timeout_assistant_generation": "助手生成超时",
+    "timeout_attachment_processing": "附件处理超时",
+    "stop": "停止",
+    "expand": "展开",
+    "collapse": "收起",
+    "arguments": "参数",
+    "result": "结果"
+  },
   "settings": {
     "general": "通用设置",
     "startup": {
@@ -678,12 +746,6 @@
   "common": {
     "loading": "加载中...",
     "notFound": "未找到"
-  },
-  "labels": {
-    "expand": "展开",
-    "collapse": "收起",
-    "arguments": "参数",
-    "result": "结果"
   },
   "selection": {
     "title": "划词工具栏设置",

@@ -22,6 +22,18 @@ interface AskAiProps {
   changeMode?: (isChatMode: boolean) => void;
 }
 
+const DEEP_RESEARCH_CHUNK_TYPES = [
+  "research_planner_start",
+  "research_planner_progress",
+  "research_planner_end",
+  "research_researcher_start",
+  "research_researcher_step_start",
+  "research_researcher_step_end",
+  "research_researcher_end",
+  "research_reporter_start",
+  "research_reporter_end",
+];
+
 interface State {
   serverId?: string;
   assistantId?: string;
@@ -53,6 +65,8 @@ const AskAi: FC<AskAiProps> = (props) => {
       deep_read,
       think,
       response,
+      deepResearch,
+      replyEnd,
     },
     handlers,
     clearAllChunkData,
@@ -172,6 +186,7 @@ const AskAi: FC<AskAiProps> = (props) => {
             deep_read: false,
             think: false,
             response: false,
+            deepResearch: false,
             [chunkData.chunk_type]: true,
           }));
 
@@ -189,7 +204,12 @@ const AskAi: FC<AskAiProps> = (props) => {
             handlers.deal_think(chunkData);
           } else if (chunkData.chunk_type === "response") {
             handlers.deal_response(chunkData);
+          } else if (
+            DEEP_RESEARCH_CHUNK_TYPES.includes(chunkData.chunk_type)
+          ) {
+            handlers.deal_deep_research(chunkData);
           } else if (chunkData.chunk_type === "reply_end") {
+            handlers.deal_reply_end(chunkData);
             console.log("AI finished output");
             setIsTyping(false);
             return;
@@ -272,6 +292,8 @@ const AskAi: FC<AskAiProps> = (props) => {
               deep_read={deep_read}
               think={think}
               response={response}
+              deepResearch={deepResearch}
+              replyEnd={replyEnd}
               loadingStep={loadingStep}
               copyButtonId={state.copyButtonId}
             />

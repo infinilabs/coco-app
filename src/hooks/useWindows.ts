@@ -45,7 +45,9 @@ export const useWindows = () => {
       console.log("Window already exists>>", existWin, existWin.show);
       await existWin.show();
       await existWin.setFocus();
-      await existWin.center();
+      if (args.center) {
+        await existWin.center();
+      }
       return;
     }
 

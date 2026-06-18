@@ -125,8 +125,8 @@ export default function StandaloneChat({}: StandaloneChatProps) {
     chatAIRef.current?.onSelectChat(chat);
   };
 
-  const cancelChat = async () => {
-    chatAIRef.current?.cancelChat();
+  const requestCancelChat = async () => {
+    chatAIRef.current?.requestCancelChat();
   };
 
   const clearChat = () => {
@@ -280,7 +280,7 @@ export default function StandaloneChat({}: StandaloneChatProps) {
               onSend={handleSendMessage}
               changeInput={setInput}
               disabled={isTyping}
-              disabledChange={cancelChat}
+              disabledChange={requestCancelChat}
               isSearchActive={isSearchActive}
               setIsSearchActive={() => setIsSearchActive((prev) => !prev)}
               isDeepThinkActive={isDeepThinkActive}

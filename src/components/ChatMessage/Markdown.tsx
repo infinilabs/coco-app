@@ -66,7 +66,7 @@ function Mermaid(props: { code: string }) {
 }
 
 // 7
-function PreCode(props: { children?: any }) {
+function PreCode(props: { children?: any; enableMermaid?: boolean }) {
   const ref = useRef<HTMLPreElement>(null);
   // const previewRef = useRef<HTMLPreviewHander>(null);
   const [mermaidCode, setMermaidCode] = useState("");
@@ -76,6 +76,8 @@ function PreCode(props: { children?: any }) {
 
   const renderArtifacts = useDebouncedCallback(() => {
     if (!ref.current) return;
+    if (!props.enableMermaid) return;
+
     const mermaidDom = ref.current.querySelector("code.language-mermaid");
     if (mermaidDom) {
       setMermaidCode((mermaidDom as HTMLElement).innerText);
@@ -231,26 +233,53 @@ function tryWrapHtmlCode(text: string) {
 }
 
 // 3
-function _MarkDownContent(props: { content: string }) {
+function _MarkDownContent(props: {
+  content: string;
+  enableSyntaxHighlight?: boolean;
+  enableMermaid?: boolean;
+  enableMath?: boolean;
+}) {
+  const enableMath = props.enableMath !== false;
+
   const escapedContent = useMemo(() => {
-    return tryWrapHtmlCode(escapeBrackets(props.content));
-  }, [props.content]);
+    const content = enableMath ? escapeBrackets(props.content) : props.content;
+    return tryWrapHtmlCode(content);
+  }, [enableMath, props.content]);
+
+  const remarkPlugins = useMemo(() => {
+    return enableMath
+      ? [RemarkMath, RemarkGfm, RemarkBreaks]
+      : [RemarkGfm, RemarkBreaks];
+  }, [enableMath]);
+
+  const rehypePlugins = useMemo(() => {
+    const plugins = [];
+
+    if (enableMath) {
+      plugins.push(RehypeKatex);
+    }
+
+    if (props.enableSyntaxHighlight !== false) {
+      plugins.push([
+        RehypeHighlight,
+        {
+          detect: false,
+          ignoreMissing: true,
+        },
+      ]);
+    }
+
+    return plugins;
+  }, [enableMath, props.enableSyntaxHighlight]);
 
   return (
     <ReactMarkdown
-      remarkPlugins={[RemarkMath, RemarkGfm, RemarkBreaks]}
-      rehypePlugins={[
-        RehypeKatex,
-        [
-          RehypeHighlight,
-          {
-            detect: false,
-            ignoreMissing: true,
-          },
-        ],
-      ]}
+      remarkPlugins={remarkPlugins}
+      rehypePlugins={rehypePlugins as any}
       components={{
-        pre: PreCode,
+        pre: (preProps) => (
+          <PreCode {...preProps} enableMermaid={props.enableMermaid !== false} />
+        ),
         code: CustomCode,
         p: (pProps) => <p {...pProps} dir="auto" />,
         a: (aProps) => {
@@ -292,6 +321,9 @@ export default function Markdown(
     fontFamily?: string;
     parentRef?: RefObject<HTMLDivElement>;
     defaultShow?: boolean;
+    enableSyntaxHighlight?: boolean;
+    enableMermaid?: boolean;
+    enableMath?: boolean;
   } & React.DOMAttributes<HTMLDivElement>
 ) {
   const mdRef = useRef<HTMLDivElement>(null);
@@ -309,7 +341,12 @@ export default function Markdown(
         onDoubleClickCapture={props.onDoubleClickCapture}
         dir="auto"
       >
-        <MarkdownContent content={props.content} />
+        <MarkdownContent
+          content={props.content}
+          enableSyntaxHighlight={props.enableSyntaxHighlight}
+          enableMermaid={props.enableMermaid}
+          enableMath={props.enableMath}
+        />
       </div>
     </div>
   );

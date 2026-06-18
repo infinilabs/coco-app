@@ -39,6 +39,9 @@ export interface EventPayloads {
   "change-extensions-store": IExtensionsStore;
   "quick-ai-access-client-id": any;
   "ai-overview-client-id": any;
+  "app:language-changed": {
+    language: string;
+  };
   "change-app-store": IAppStore;
   "open-extension-store": void;
   "install-extension": void;
