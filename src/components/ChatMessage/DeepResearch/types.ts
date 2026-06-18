@@ -46,6 +46,7 @@ export interface ResearchReportData {
   created?: string;
   attachment?: string;
   format?: string;
+  content?: string;
 }
 
 /** 从 chunk 数组派生出的深度研究展示状态 */

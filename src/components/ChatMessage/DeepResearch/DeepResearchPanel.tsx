@@ -17,6 +17,7 @@ import {
   buildSteps,
   deriveDeepResearchState,
 } from "./deriveState";
+import { normalizeResearchReportData } from "./payload";
 import { resolveReportUrl } from "./resolveReportUrl";
 import type {
   DeepResearchEndChunk,
@@ -94,11 +95,15 @@ export const buildDeepResearchViewFromChunks = (
   const steps = buildSteps(state);
   const searchHits = buildSearchHits(state);
   const statuses = buildStatuses(state, steps);
-  const reportData = reportDataOverride || state.deepResearchReportData;
+  const reportData =
+    normalizeResearchReportData(reportDataOverride) ||
+    state.deepResearchReportData;
   const isEnd =
     !!endChunk?.payload?.reason ||
     state.deepResearchReporterFinished ||
-    !!reportData?.url;
+    !!reportData?.url ||
+    !!reportData?.attachment ||
+    !!reportData?.content;
 
   return {
     steps,
@@ -136,7 +141,7 @@ export const buildDeepResearchPanelFromHistory = async (
     viewKey: `${sessionId}:${messageId}`,
     chunks,
     defaultTab,
-    reportData: msg?._source?.payload,
+    reportData: normalizeResearchReportData(msg?._source?.payload),
     serverId: msg?._source?.server_id,
     endChunk: endDetail,
     question: msg?._source?.question,
@@ -208,7 +213,9 @@ export function DeepResearchPanel({
     ]
   );
 
-  const reportUrl = resolveReportUrl(view.reportData?.url);
+  const reportUrl = resolveReportUrl(
+    view.reportData?.url || view.reportData?.attachment
+  );
 
   const handleDownloadReport = useCallback(async () => {
     if (!reportUrl || !view.reportData) return;

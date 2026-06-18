@@ -7,6 +7,7 @@ import { nanoid } from "nanoid";
 import type { IChunkData } from "@/types/chat";
 import { useConnectStore } from "@/stores/connectStore";
 import { deriveDeepResearchState } from "./deriveState";
+import { normalizeResearchReportData } from "./payload";
 import type { DeepResearchEndChunk, ResearchReportData } from "./types";
 import { resolveReportUrl } from "./resolveReportUrl";
 import { DeepResearchCancelDialog } from "./DeepResearchCancelDialog";
@@ -93,8 +94,15 @@ export const DeepResearch = ({
   const isCancelled = endChunk?.payload?.reason === "user_cancelled";
   const isError = endChunk?.payload?.reason === "error";
   const isTimeout = endChunk?.payload?.reason === "timeout";
-  const mergedPayload = payload || deepResearchReportData;
-  const hasReportData = !!mergedPayload?.url;
+  const mergedPayload = useMemo(
+    () => normalizeResearchReportData(payload) || deepResearchReportData,
+    [deepResearchReportData, payload]
+  );
+  const hasReportData = !!(
+    mergedPayload?.url ||
+    mergedPayload?.attachment ||
+    mergedPayload?.content
+  );
   const isCompleted =
     !isCancelled &&
     !isError &&
@@ -186,10 +194,13 @@ export const DeepResearch = ({
     defaultTab: DeepResearchTabKey
   ): DeepResearchPanelPayload => {
     const reportData =
-      mergedPayload && mergedPayload.url
+      mergedPayload && (mergedPayload.url || mergedPayload.attachment)
         ? {
             ...mergedPayload,
-            url: resolveReportUrl(mergedPayload.url, formatUrl),
+            url: resolveReportUrl(
+              mergedPayload.url || mergedPayload.attachment,
+              formatUrl
+            ),
           }
         : mergedPayload;
 

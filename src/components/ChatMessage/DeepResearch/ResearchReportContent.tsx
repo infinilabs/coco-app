@@ -51,7 +51,8 @@ const ResearchReportContentComponent = ({
   const cloudServiceId = useConnectStore((state) => state.cloudSelectService?.id);
   const serverId = serverIdProp || currentServiceId || cloudServiceId;
   const endpointHttp = useAppStore((state) => state.endpoint_http);
-  const resolvedUrl = resolveReportUrl(data?.url, formatUrl);
+  const resolvedUrl = resolveReportUrl(data?.url || data?.attachment, formatUrl);
+  const embeddedContent = data?.content;
   const [remoteContent, setRemoteContent] = useState<string | undefined>(() =>
     resolvedUrl ? getCachedReportText(resolvedUrl, serverId) : undefined
   );
@@ -61,7 +62,7 @@ const ResearchReportContentComponent = ({
   const endReason = endChunk?.payload?.reason;
 
   useEffect(() => {
-    if (content) {
+    if (content || embeddedContent) {
       setRemoteContent(undefined);
       return;
     }
@@ -72,7 +73,7 @@ const ResearchReportContentComponent = ({
     }
 
     setRemoteContent(getCachedReportText(resolvedUrl, serverId));
-  }, [content, data?.format, resolvedUrl, serverId]);
+  }, [content, data?.format, embeddedContent, resolvedUrl, serverId]);
 
   useEffect(() => {
     if (data?.format === "pdf") {
@@ -82,7 +83,7 @@ const ResearchReportContentComponent = ({
       return;
     }
 
-    if (content || !resolvedUrl) {
+    if (content || embeddedContent || !resolvedUrl) {
       setRemoteContent(undefined);
       setFetchError(undefined);
       setIsFetching(false);
@@ -119,7 +120,7 @@ const ResearchReportContentComponent = ({
     return () => {
       cancelled = true;
     };
-  }, [content, data?.format, endpointHttp, resolvedUrl, serverId]);
+  }, [content, data?.format, embeddedContent, endpointHttp, resolvedUrl, serverId]);
 
   useEffect(() => {
     if (data?.format !== "pdf" || !resolvedUrl) {
@@ -159,7 +160,7 @@ const ResearchReportContentComponent = ({
     };
   }, [data?.format, endpointHttp, resolvedUrl, serverId]);
 
-  const reportContent = content || remoteContent;
+  const reportContent = content || embeddedContent || remoteContent;
   const htmlContent = useMemo(
     () =>
       data?.format === "html" && reportContent

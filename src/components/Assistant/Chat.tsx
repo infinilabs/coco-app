@@ -25,6 +25,10 @@ import { useSearchStore } from "@/stores/searchStore";
 import { useAuthStore } from "@/stores/authStore";
 import Splash from "./Splash";
 import { DeepResearchCancelDialog } from "@/components/ChatMessage/DeepResearch/DeepResearchCancelDialog";
+import {
+  normalizeResearchReportData,
+  parseReplyEndPayload,
+} from "@/components/ChatMessage/DeepResearch/payload";
 
 interface ChatAIProps {
   isSearchActive?: boolean;
@@ -227,8 +231,113 @@ const ChatAI = memo(
         }
       }, [deepResearch.length]);
 
+      const buildDeepResearchPatchedChat = useCallback(
+        (current?: Chat): Chat | undefined => {
+          if (!deepResearch.length && !replyEnd.length) return current;
+          if (!current) return current;
+
+          const latestDeepResearch = [...deepResearch];
+          const latestReplyEnd = replyEnd[replyEnd.length - 1];
+          const messageId =
+            latestDeepResearch[0]?.message_id ||
+            latestReplyEnd?.message_id ||
+            curIdRef.current;
+          const replyPayload = parseReplyEndPayload(
+            latestReplyEnd?.message_chunk
+          );
+          const reportData = normalizeResearchReportData(
+            latestDeepResearch
+              .slice()
+              .reverse()
+              .find((chunk) => chunk.chunk_type === "research_reporter_end")
+              ?.message_chunk
+          );
+          const detailsPatch: any[] = [];
+
+          if (latestDeepResearch.length) {
+            detailsPatch.push({
+              type: "deep_research",
+              payload: latestDeepResearch,
+            });
+          }
+
+          if (replyPayload) {
+            detailsPatch.push({ type: "reply_end", payload: replyPayload });
+          }
+
+          if (!detailsPatch.length || !messageId) return current;
+
+          const messages = current.messages || [];
+          let targetIndex = messages.findIndex(
+            (item) =>
+              item._id === messageId && item._source?.type === "assistant"
+          );
+
+          if (targetIndex === -1) {
+            for (let index = messages.length - 1; index >= 0; index -= 1) {
+              if (messages[index]?._source?.type === "assistant") {
+                targetIndex = index;
+                break;
+              }
+            }
+          }
+
+          if (targetIndex === -1) {
+            return {
+              ...current,
+              messages: [
+                ...messages,
+                {
+                  _id: messageId,
+                  _source: {
+                    type: "assistant",
+                    message: "",
+                    question: Question,
+                    session_id: current._id || curSessionIdRef.current,
+                    details: detailsPatch,
+                    payload: reportData,
+                  },
+                },
+              ],
+            };
+          }
+
+          const target = messages[targetIndex];
+          const details: any[] = Array.isArray(target._source?.details)
+            ? target._source.details
+            : [];
+          const nextDetails = details.filter(
+            (item) => item?.type !== "deep_research" && item?.type !== "reply_end"
+          );
+          nextDetails.push(...detailsPatch);
+
+          const nextMessage = {
+            ...target,
+            _source: {
+              ...target._source,
+              details: nextDetails,
+              payload: reportData || target._source?.payload,
+            },
+          };
+          const nextMessages = [...messages];
+          nextMessages[targetIndex] = nextMessage;
+
+          return {
+            ...current,
+            messages: nextMessages,
+          };
+        },
+        [Question, deepResearch, replyEnd]
+      );
+
+      const patchActiveDeepResearchMessage = useCallback(() => {
+        setActiveChat((current) => buildDeepResearchPatchedChat(current));
+      }, [buildDeepResearchPatchedChat]);
+
       const refreshChatAfterReplyEnd = useCallback(async () => {
         if (!hasDeepResearchRef.current) return;
+
+        patchActiveDeepResearchMessage();
 
         const sessionId = curSessionIdRef.current || activeChat?._id;
         if (!sessionId) return;
@@ -237,12 +346,19 @@ const ChatAI = memo(
           const response = await openSessionChat({ _id: sessionId });
           if (response) {
             chatHistory(response, async () => {
+              setActiveChat((current) => buildDeepResearchPatchedChat(current));
               await clearAllChunkData();
               hasDeepResearchRef.current = false;
             });
           }
         }, 300);
-      }, [activeChat?._id, chatHistory, clearAllChunkData, openSessionChat]);
+      }, [
+        activeChat?._id,
+        chatHistory,
+        clearAllChunkData,
+        openSessionChat,
+        patchActiveDeepResearchMessage,
+      ]);
 
       const requestCancelChat = useCallback(() => {
         if (hasRunningDeepResearch) {

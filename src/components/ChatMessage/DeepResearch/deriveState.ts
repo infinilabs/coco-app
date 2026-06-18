@@ -7,6 +7,7 @@ import type {
   StepSearchStatus,
   StepSearchHit,
 } from "./types";
+import { normalizeResearchReportData, parseMaybeJson } from "./payload";
 
 /**
  * 从原始 chunk 数组派生深度研究展示状态。
@@ -49,7 +50,7 @@ export const deriveDeepResearchState = (
     if (chunkData.chunk_type === "research_planner_end") {
       if (typeof chunkData.message_chunk === "string") {
         try {
-          const payload = JSON.parse(chunkData.message_chunk);
+          const payload = parseMaybeJson(chunkData.message_chunk) as any;
           if (Array.isArray(payload)) {
             const plans = payload.map((item) => String(item));
             state.deepResearchPlans = plans;
@@ -69,7 +70,7 @@ export const deriveDeepResearchState = (
         chunkData.message_chunk
       ) {
         try {
-          const payload = JSON.parse(chunkData.message_chunk);
+          const payload = parseMaybeJson(chunkData.message_chunk) as any;
           const planText =
             typeof payload?.plan === "string" ? payload.plan : "";
           if (planText) {
@@ -101,7 +102,7 @@ export const deriveDeepResearchState = (
         chunkData.message_chunk
       ) {
         try {
-          const payload = JSON.parse(chunkData.message_chunk);
+          const payload = parseMaybeJson(chunkData.message_chunk) as any;
           const planText =
             typeof payload?.plan === "string" ? payload.plan : "";
           const stepQuery = payload?.step?.payload?.query;
@@ -139,7 +140,7 @@ export const deriveDeepResearchState = (
         chunkData.message_chunk
       ) {
         try {
-          const payload = JSON.parse(chunkData.message_chunk);
+          const payload = parseMaybeJson(chunkData.message_chunk) as any;
           const planText =
             typeof payload?.plan === "string" ? payload.plan : "";
           const hits = payload?.step?.payload?.hits;
@@ -180,8 +181,9 @@ export const deriveDeepResearchState = (
         chunkData.message_chunk
       ) {
         try {
-          const payload = JSON.parse(chunkData.message_chunk);
-          state.deepResearchReportData = payload;
+          state.deepResearchReportData = normalizeResearchReportData(
+            chunkData.message_chunk
+          );
         } catch (error) {
           console.error(error);
         }

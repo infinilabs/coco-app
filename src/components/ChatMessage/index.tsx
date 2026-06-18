@@ -19,6 +19,7 @@ import { useConnectStore } from "@/stores/connectStore";
 import { useThemeStore } from "@/stores/themeStore";
 import FontIcon from "@/components/Common/Icons/FontIcon";
 import type { DeepResearchPanelPayload } from "./DeepResearch/DeepResearchPanel";
+import { parseReplyEndPayload } from "./DeepResearch/payload";
 
 interface ChatMessageProps {
   message: Message;
@@ -124,13 +125,7 @@ export const ChatMessage = memo(function ChatMessage({
       return endDetail;
     }
     const last = replyEnd.length > 0 ? replyEnd[replyEnd.length - 1] : undefined;
-    let endPayload;
-    try {
-      endPayload =
-        last && last.message_chunk ? JSON.parse(last.message_chunk) : undefined;
-    } catch (e) {
-      // ignore malformed end chunk payload
-    }
+    const endPayload = parseReplyEndPayload(last?.message_chunk);
     return last ? { type: last.chunk_type, payload: endPayload } : undefined;
   }, [details, replyEnd]);
 
