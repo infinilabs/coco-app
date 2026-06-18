@@ -5236,7 +5236,7 @@ dependencies = [
 [[package]]
 name = "pizza-common"
 version = "0.1.0"
-source = "git+https://github.com/infinilabs/pizza-common?branch=main#60ff2901bd302777b8c754cfd0bc436fac377838"
+source = "git+https://github.com/pizza-rs/common?branch=main#07ed18464d2dd6b962b084b757b9c8a446361091"
 dependencies = [
  "bytes",
  "camino",
@@ -9995,3 +9995,8 @@ dependencies = [
  "syn 2.0.111",
  "winnow 0.7.13",
 ]
+
+[[patch.unused]]
+name = "fst-no-std"
+version = "0.4.8"
+source = "git+https://github.com/pizza-rs/fst-no-std?branch=main#6563d798a10757c38be39fc63436ab7d316cf719"
