@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { isPlainObject } from "lodash-es";
 
@@ -14,6 +14,10 @@ import type { StartPage } from "@/types/chat";
 import ErrorNotification from "@/components/Common/ErrorNotification";
 import { Get } from "@/api/axiosRequest";
 import { useWebConfigStore } from "@/stores/webConfigStore";
+import {
+  appendAppIntegrationIdToUrl,
+  getAppIntegrationIdFromHeaders,
+} from "@/utils/webIntegrationUrl";
 
 import "@/i18n";
 import { useIconfontScript } from "@/hooks/useScript";
@@ -70,10 +74,25 @@ function WebApp({
     return state.setInternetSearch;
   });
   const { i18n } = useTranslation();
+  const appIntegrationId = useMemo(() => {
+    return getAppIntegrationIdFromHeaders(headers);
+  }, [headers]);
+  const formatUrlWithIntegrationId = useCallback(
+    (item: any) => {
+      const url = (formatUrl && formatUrl(item)) || item?.url;
+
+      return appendAppIntegrationIdToUrl(url, appIntegrationId) || "";
+    },
+    [appIntegrationId, formatUrl]
+  );
 
   useEffect(() => {
     i18n.changeLanguage(language);
   }, [language]);
+
+  useEffect(() => {
+    localStorage.setItem("headers", JSON.stringify(headers || {}));
+  }, [headers]);
 
   const {
     integration,
@@ -108,7 +127,6 @@ function WebApp({
       return refreshSettings?.();
     });
 
-    localStorage.setItem("headers", JSON.stringify(headers || {}));
   }, []);
 
   const isMobile = useIsMobile();
@@ -165,7 +183,7 @@ function WebApp({
         isMobile={isMobile}
         assistantIDs={assistantIDs}
         startPage={startPage}
-        formatUrl={formatUrl}
+        formatUrl={formatUrlWithIntegrationId}
       />
       <ErrorNotification isTauri={false} />
     </div>

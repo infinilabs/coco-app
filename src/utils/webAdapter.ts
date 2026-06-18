@@ -1,6 +1,7 @@
 import type { BasePlatformAdapter } from "@/types/platform";
 import { copyToClipboard, OpenURLWithBrowser } from ".";
 import { Post } from "@/api/axiosRequest";
+import { appendAppIntegrationIdToUrl } from "@/utils/webIntegrationUrl";
 
 export interface WebPlatformAdapter extends BasePlatformAdapter {
   // Add web-specific methods here
@@ -244,8 +245,10 @@ export const createWebAdapter = (): WebPlatformAdapter => {
     },
 
     async openUrl(url) {
-      console.log(`Web mode opening URL: ${url}`);
-      window.open(url, "_blank");
+      const urlWithIntegrationId = appendAppIntegrationIdToUrl(url);
+
+      console.log(`Web mode opening URL: ${urlWithIntegrationId}`);
+      window.open(urlWithIntegrationId, "_blank");
     },
 
     isWindows10: async () => false,
@@ -273,7 +276,9 @@ export const createWebAdapter = (): WebPlatformAdapter => {
         return;
       }
 
-      const url = (formatUrl && formatUrl(data)) || data.url;
+      const url = appendAppIntegrationIdToUrl(
+        (formatUrl && formatUrl(data)) || data.url
+      );
       if (url) {
         return OpenURLWithBrowser(url);
       }
