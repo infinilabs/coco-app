@@ -36,7 +36,8 @@ export function useMessageHandler(
     deal_response: (data: IChunkData) => void;
     deal_deep_research: (data: IChunkData) => void;
     deal_reply_end: (data: IChunkData) => void;
-  }
+  },
+  onReplyEnd?: (data: IChunkData) => void
 ) {
   const messageTimeoutRef = useRef<NodeJS.Timeout>();
   const responseTimeout = useConnectStore((state) => state.responseTimeout);
@@ -130,6 +131,7 @@ export function useMessageHandler(
             clearTimeout(messageTimeoutRef.current);
           }
           setCurChatEnd(true);
+          onReplyEnd?.(chunkData);
           // console.log("AI finished output");
           return;
         }
@@ -138,7 +140,7 @@ export function useMessageHandler(
         console.error("parse error:", error);
       }
     },
-    [onCancel, setCurChatEnd, setTimedoutShow, responseTimeout]
+    [onCancel, onReplyEnd, setCurChatEnd, setTimedoutShow, responseTimeout]
   );
 
   return {

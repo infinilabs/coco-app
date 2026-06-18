@@ -11,7 +11,7 @@ import Markdown from "@/components/ChatMessage/Markdown";
 import { useAppStore } from "@/stores/appStore";
 import { useConnectStore } from "@/stores/connectStore";
 import { DeepResearchLoadingState } from "./DeepResearchLoadingState";
-import type { ResearchReportData } from "./types";
+import type { DeepResearchEndChunk, ResearchReportData } from "./types";
 import { PdfReportViewer } from "./PdfReportViewer";
 import { resolveReportUrl } from "./resolveReportUrl";
 import {
@@ -26,6 +26,7 @@ export interface ResearchReportContentProps {
   /** 已抓取的报告正文（markdown 或 html 文本）。优先于 data.url 渲染。 */
   content?: string;
   data?: ResearchReportData;
+  endChunk?: DeepResearchEndChunk;
   serverId?: string;
   formatUrl?: (data: any) => string;
   t?: TFunction;
@@ -39,6 +40,7 @@ export interface ResearchReportContentProps {
 const ResearchReportContentComponent = ({
   content,
   data,
+  endChunk,
   serverId: serverIdProp,
   formatUrl,
   t: tProp,
@@ -56,6 +58,7 @@ const ResearchReportContentComponent = ({
   const [isFetching, setIsFetching] = useState(false);
   const [fetchError, setFetchError] = useState<string>();
   const [pdfBlob, setPdfBlob] = useState<Blob>();
+  const endReason = endChunk?.payload?.reason;
 
   useEffect(() => {
     if (content) {
@@ -165,6 +168,24 @@ const ResearchReportContentComponent = ({
     [data?.format, reportContent, resolvedUrl]
   );
 
+  if (!content && !data && endReason === "user_cancelled") {
+    return (
+      <DeepResearchLoadingState
+        label={t("deepResearch.report.cancelled")}
+        variant="failed"
+      />
+    );
+  }
+
+  if (!content && !data && (endReason === "error" || endReason === "timeout")) {
+    return (
+      <DeepResearchLoadingState
+        label={t("deepResearch.report.failed")}
+        variant="failed"
+      />
+    );
+  }
+
   if (!content && !data) {
     return (
       <DeepResearchLoadingState label={t("deepResearch.report.generatingTitle")} />
@@ -200,9 +221,10 @@ const ResearchReportContentComponent = ({
       )}
 
       {!reportContent && !pdfBlob && fetchError && (
-        <div className="px-4 h-full min-h-[520px] flex items-center justify-center text-xs text-[#999] dark:text-[#A6A6A6]">
-          {t("deepResearch.report.loadFailed")}
-        </div>
+        <DeepResearchLoadingState
+          label={t("deepResearch.report.loadFailed")}
+          variant="failed"
+        />
       )}
     </div>
   );

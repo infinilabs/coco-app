@@ -94,15 +94,20 @@ export const buildDeepResearchViewFromChunks = (
   const steps = buildSteps(state);
   const searchHits = buildSearchHits(state);
   const statuses = buildStatuses(state, steps);
+  const reportData = reportDataOverride || state.deepResearchReportData;
+  const isEnd =
+    !!endChunk?.payload?.reason ||
+    state.deepResearchReporterFinished ||
+    !!reportData?.url;
 
   return {
     steps,
     searchHits,
-    reportData: reportDataOverride || state.deepResearchReportData,
+    reportData,
     serverId,
     endChunk,
     question,
-    isEnd: !!endChunk?.payload?.reason,
+    isEnd,
     ...statuses,
   };
 };
@@ -369,6 +374,7 @@ export function DeepResearchPanel({
             >
               <ResearchReportContent
                 data={view.reportData}
+                endChunk={view.endChunk}
                 serverId={view.serverId}
                 t={t}
               />

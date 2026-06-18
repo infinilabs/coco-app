@@ -219,6 +219,31 @@ const ChatAI = memo(
       const hasRunningDeepResearch =
         deepResearch.length > 0 && replyEnd.length === 0 && !curChatEnd;
 
+      const hasDeepResearchRef = useRef(false);
+
+      useEffect(() => {
+        if (deepResearch.length > 0) {
+          hasDeepResearchRef.current = true;
+        }
+      }, [deepResearch.length]);
+
+      const refreshChatAfterReplyEnd = useCallback(async () => {
+        if (!hasDeepResearchRef.current) return;
+
+        const sessionId = curSessionIdRef.current || activeChat?._id;
+        if (!sessionId) return;
+
+        window.setTimeout(async () => {
+          const response = await openSessionChat({ _id: sessionId });
+          if (response) {
+            chatHistory(response, async () => {
+              await clearAllChunkData();
+              hasDeepResearchRef.current = false;
+            });
+          }
+        }, 300);
+      }, [activeChat?._id, chatHistory, clearAllChunkData, openSessionChat]);
+
       const requestCancelChat = useCallback(() => {
         if (hasRunningDeepResearch) {
           setDeepResearchCancelDialogOpen(true);
@@ -235,7 +260,8 @@ const ChatAI = memo(
         setTimedoutShow,
         (chat) => cancelChat(chat || activeChat),
         setLoadingStep,
-        handlers
+        handlers,
+        refreshChatAfterReplyEnd
       );
 
       const updateDealMsg = useCallback(

@@ -32,6 +32,8 @@
       "defaultTitle": "Research Report",
       "loading": "Loading research report...",
       "loadFailed": "Failed to load research report",
+      "cancelled": "Generate research report cancelled",
+      "failed": "Generate research report failed",
       "downloadSuccess": "Research report saved",
       "downloadFailed": "Failed to download research report",
       "openSourceFailed": "Failed to open source"

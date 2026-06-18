@@ -90,12 +90,21 @@ export const DeepResearch = ({
   const stepTitle = hasDeepResearchPlan
     ? deepResearchPlans[deepResearchCurrentStepIndex]
     : "";
-  const isCompleted = endChunk?.payload?.reason === "completed";
   const isCancelled = endChunk?.payload?.reason === "user_cancelled";
   const isError = endChunk?.payload?.reason === "error";
   const isTimeout = endChunk?.payload?.reason === "timeout";
+  const mergedPayload = payload || deepResearchReportData;
+  const hasReportData = !!mergedPayload?.url;
+  const isCompleted =
+    !isCancelled &&
+    !isError &&
+    !isTimeout &&
+    (endChunk?.payload?.reason === "completed" ||
+      deepResearchReporterFinished ||
+      hasReportData);
   const isEnd = isCompleted || isCancelled || isError || isTimeout;
-  const isReportPhase = deepResearchReporterStarted || deepResearchReporterFinished;
+  const isReportPhase =
+    deepResearchReporterStarted || deepResearchReporterFinished || hasReportData;
   const isExecutionPhase =
     !isReportPhase && deepResearchResearcherStarted && hasDeepResearchPlan;
   const cardHeaderTitle = isCompleted
@@ -124,18 +133,9 @@ export const DeepResearch = ({
       deepResearchReportProgress) /
     3;
 
-  const mergedPayload = payload || deepResearchReportData;
-
   const statusText = useMemo(() => {
-    if (endChunk?.payload?.reason === "completed") {
+    if (isCompleted) {
       return mergedPayload?.title || t("deepResearch.status.completed");
-    } else if (deepResearchReporterFinished) {
-      if (typeof deepResearchResultCount === "number") {
-        return t("deepResearch.status.completedWithCount", {
-          count: deepResearchResultCount,
-        });
-      }
-      return t("deepResearch.status.completed");
     }
     if (deepResearchReporterStarted) {
       return t("deepResearch.report.generatingTitle");
@@ -148,22 +148,21 @@ export const DeepResearch = ({
     }
     return undefined;
   }, [
-    deepResearchReporterFinished,
-    deepResearchResultCount,
+    isCompleted,
     deepResearchReporterStarted,
     deepResearchResearcherStarted,
     deepResearchPlans.length,
-    endChunk,
     mergedPayload,
     t,
   ]);
 
   const normalizedProgress = useMemo(() => {
+    if (isCompleted) return 1;
     if (typeof progress !== "number" || Number.isNaN(progress)) return 0;
     if (progress < 0) return 0;
     if (progress > 1) return 1;
     return progress;
-  }, [progress]);
+  }, [isCompleted, progress]);
 
   const displayStatus = useMemo(() => {
     if (statusText) return statusText;
