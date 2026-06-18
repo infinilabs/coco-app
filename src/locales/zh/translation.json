@@ -497,7 +497,7 @@
       "thinkingButton": "查看思考过程",
       "steps": {
         "query_intent": "理解查询",
-        "tools": "调用大模型工具",
+        "tools": "调用 {{count}} 个工具",
         "source_zero": "正在搜索相关文档",
         "fetch_source": "检索 {{count}} 份文档",
         "pick_source": "智能预选 {{count}} 个结果",
@@ -678,6 +678,12 @@
   "common": {
     "loading": "加载中...",
     "notFound": "未找到"
+  },
+  "labels": {
+    "expand": "展开",
+    "collapse": "收起",
+    "arguments": "参数",
+    "result": "结果"
   },
   "selection": {
     "title": "划词工具栏设置",

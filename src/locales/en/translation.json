@@ -497,7 +497,7 @@
       "thinkingButton": "View thinking process",
       "steps": {
         "query_intent": "Understand the query",
-        "tools": "Call LLM Tools",
+        "tools": "Call {{count}} Tools",
         "source_zero": "Searching for relevant documents",
         "fetch_source": "Retrieve {{count}} documents",
         "pick_source": "Intelligent pick {{count}} results",
@@ -675,6 +675,12 @@
     "buttons": {
       "login": "Login"
     }
+  },
+  "labels": {
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "arguments": "Arguments",
+    "result": "Result"
   },
   "common": {
     "loading": "Loading...",
