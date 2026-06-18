@@ -5,7 +5,7 @@ import {
   useReactive,
   useUnmount,
 } from "ahooks";
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { noop } from "lodash-es";
 import { nanoid } from "nanoid";
 
@@ -19,6 +19,7 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 
 interface AskAiProps {
   isChatMode: boolean;
+  changeMode?: (isChatMode: boolean) => void;
 }
 
 interface State {
@@ -29,7 +30,7 @@ interface State {
 }
 
 const AskAi: FC<AskAiProps> = (props) => {
-  const { isChatMode } = props;
+  const { isChatMode, changeMode } = props;
 
   const {
     askAiMessage,
@@ -83,6 +84,46 @@ const AskAi: FC<AskAiProps> = (props) => {
   });
 
   const modifierKey = useShortcutsStore((state) => state.modifierKey);
+
+  const continueInChat = useCallback(() => {
+    if (isChatMode || isTyping) return;
+
+    const { serverId, assistantId } = state;
+
+    setAskAiServerId(serverId);
+    setAskAiSessionId(sessionIdRef.current);
+    setAskAiAssistantId(assistantId);
+
+    changeMode?.(true);
+    platformAdapter.emitEvent("toggle-to-chat-mode");
+  }, [changeMode, isChatMode, isTyping]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Enter" || event.shiftKey || event.repeat) return;
+
+      const normalizedModifierKey = modifierKey.toLowerCase();
+      const modifierKeyPressed =
+        (["meta", "command"].includes(normalizedModifierKey) &&
+          event.metaKey) ||
+        (["ctrl", "control"].includes(normalizedModifierKey) &&
+          event.ctrlKey) ||
+        (["alt", "option"].includes(normalizedModifierKey) && event.altKey);
+
+      if (!modifierKeyPressed) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      continueInChat();
+    };
+
+    window.addEventListener("keydown", handleKeyDown, true);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown, true);
+    };
+  }, [continueInChat, modifierKey]);
 
   useEffect(() => {
     if (state.serverId) return;
@@ -188,24 +229,6 @@ const AskAi: FC<AskAiProps> = (props) => {
       addError(String(error));
     }
   }, [askAiMessage]);
-
-  useKeyPress(
-    `${modifierKey}.enter`,
-    async () => {
-      if (isChatMode || isTyping) return;
-
-      const { serverId, assistantId } = state;
-
-      setAskAiServerId(serverId);
-      setAskAiSessionId(sessionIdRef.current);
-      setAskAiAssistantId(assistantId);
-
-      platformAdapter.emitEvent("toggle-to-chat-mode");
-    },
-    {
-      exactMatch: true,
-    }
-  );
 
   useKeyPress(
     "enter",

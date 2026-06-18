@@ -140,12 +140,14 @@ const ChatAI = memo(
       }, [currentService?.enabled, showChatHistory]);
 
       useEffect(() => {
-        if (askAiServerId || !askAiSessionId) return;
+        if (!askAiSessionId) return;
+
+        if (askAiServerId && askAiServerId !== currentService?.id) return;
 
         onSelectChat({ _id: askAiSessionId });
 
         setAskAiSessionId(void 0);
-      }, [askAiSessionId, askAiServerId]);
+      }, [askAiSessionId, askAiServerId, currentService?.id]);
 
       const [Question, setQuestion] = useState<string>("");
 
