@@ -20,7 +20,7 @@ jobs:
     - name: Checkout dependency (pizza-engine) repository
       uses: actions/checkout@v4
       with:
-        repository: 'infinilabs/pizza'
+        repository: 'pizza-rs/pizza'
         ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
         submodules: recursive
         ref: main
