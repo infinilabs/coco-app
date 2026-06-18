@@ -32,7 +32,7 @@
       "defaultTitle": "研究报告",
       "loading": "正在加载研究报告...",
       "loadFailed": "研究报告加载失败",
-      "cancelled": "研究报告生成已取消",
+      "cancelled": "研究已取消",
       "failed": "研究报告生成失败",
       "downloadSuccess": "研究报告已保存",
       "downloadFailed": "研究报告下载失败",
