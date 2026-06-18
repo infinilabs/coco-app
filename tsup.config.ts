@@ -10,6 +10,7 @@ import { join, resolve } from "path";
 import postcss from "postcss";
 import tailwindcssPostcss from "@tailwindcss/postcss";
 import autoprefixer from "autoprefixer";
+import { compile } from "sass";
 
 const projectPackageJson = JSON.parse(
   readFileSync(join(__dirname, "package.json"), "utf-8")
@@ -165,6 +166,14 @@ export default defineConfig({
     // so we run PostCSS with Tailwind + Autoprefixer here to produce index.css.
     try {
       const cssInPath = join(__dirname, "src/main.css");
+      const markdownCssPath = join(
+        __dirname,
+        "src/components/ChatMessage/markdown.scss"
+      );
+      const highlightCssPath = join(
+        __dirname,
+        "src/components/ChatMessage/highlight.css"
+      );
       const cssOutPath = join(__dirname, "out/search-chat/index.css");
       const cssIn = readFileSync(cssInPath, "utf-8");
 
@@ -178,10 +187,22 @@ export default defineConfig({
         map: false,
       });
 
+      const markdownCss = compile(markdownCssPath, {
+        style: "compressed",
+      }).css;
+      const highlightCss = readFileSync(highlightCssPath, "utf-8");
+      const bundledCss = [
+        result.css,
+        "/* Chat markdown styles */",
+        markdownCss,
+        "/* Chat syntax highlight styles */",
+        highlightCss,
+      ].join("\n");
+
       // Inline absolute asset URLs as Base64 data URIs to avoid shipping extra files
       // This fixes consumer bundlers failing to resolve "/assets/*.png" from node_modules
       const assetRegex = /url\((['"])\/assets\/([^'"\)]+)\1\)/g;
-      const rewrittenCss = result.css.replace(assetRegex, (_m, quote, file) => {
+      const rewrittenCss = bundledCss.replace(assetRegex, (_m, quote, file) => {
         const srcAssetPath = join(__dirname, "src/assets", file);
         if (!existsSync(srcAssetPath)) {
           console.warn(`[build:web] Asset not found: ${srcAssetPath}`);

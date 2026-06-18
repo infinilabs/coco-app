@@ -2,7 +2,7 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main", "chat", "settings", "check", "selection"],
+  "windows": ["*"],
   "permissions": [
     "core:default",
     "core:event:allow-emit",
@@ -32,6 +32,7 @@
     "core:window:allow-set-shadow",
     "core:window:allow-set-position",
     "core:window:allow-set-theme",
+    "core:window:allow-set-title",
     "core:window:allow-unminimize",
     "core:window:allow-set-fullscreen",
     "core:window:allow-set-resizable",

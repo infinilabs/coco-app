@@ -189,6 +189,12 @@ export default function GeneralSettings() {
 
   const currentLanguage = language || i18n.language;
 
+  const changeLanguage = (lang: string) => {
+    setLanguage(lang);
+    platformAdapter.emitEvent("app:language-changed", { language: lang });
+    platformAdapter.invokeBackend("update_app_lang", { lang });
+  };
+
   const windowModes: Array<{
     icon: ReactElement;
     value: WindowMode;
@@ -320,10 +326,7 @@ export default function GeneralSettings() {
             <div className="flex items-center gap-2">
               <Select
                 value={currentLanguage}
-                onValueChange={(lang) => {
-                  setLanguage(lang);
-                  platformAdapter.invokeBackend("update_app_lang", { lang });
-                }}
+                onValueChange={changeLanguage}
               >
                 <SelectTrigger className="h-8 w-44">
                   <SelectValue className="truncate" />

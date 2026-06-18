@@ -8,6 +8,18 @@ import platformAdapter from "@/utils/platformAdapter";
 import useMessageChunkData from "./useMessageChunkData";
 import { nanoid } from "nanoid";
 
+const DEEP_RESEARCH_CHUNK_TYPES = [
+  "research_planner_start",
+  "research_planner_progress",
+  "research_planner_end",
+  "research_researcher_start",
+  "research_researcher_step_start",
+  "research_researcher_step_end",
+  "research_researcher_end",
+  "research_reporter_start",
+  "research_reporter_end",
+];
+
 interface Options {
   message: string;
   clientId: keyof EventPayloads;
@@ -81,6 +93,7 @@ export const useStreamChat = (options: Options) => {
             deep_read: false,
             think: false,
             response: false,
+            deepResearch: false,
             [chunkData.chunk_type]: true,
           }));
 
@@ -98,7 +111,12 @@ export const useStreamChat = (options: Options) => {
             handlers.deal_think(chunkData);
           } else if (chunkData.chunk_type === "response") {
             handlers.deal_response(chunkData);
+          } else if (
+            DEEP_RESEARCH_CHUNK_TYPES.includes(chunkData.chunk_type)
+          ) {
+            handlers.deal_deep_research(chunkData);
           } else if (chunkData.chunk_type === "reply_end") {
+            handlers.deal_reply_end(chunkData);
             console.log("AI finished output");
             state.isTyping = false;
             return;

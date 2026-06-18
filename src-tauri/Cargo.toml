@@ -28,7 +28,7 @@ cargo-clippy = []
 #  
 # ```toml
 # [dependencies]
-# pizza-engine = { git = "ssh://git@github.com/infinilabs/pizza.git", features = ["query_string_parser", "persistence"] }
+# pizza-engine = { git = "ssh://git@github.com/pizza-rs/pizza.git", features = ["query_string_parser", "persistence"] }
 # ```
 #
 # 2. It is a private repo, you have access to it.
@@ -43,7 +43,7 @@ cargo-clippy = []
 use_pizza_engine = []
 
 [dependencies]
-pizza-common = { git = "https://github.com/infinilabs/pizza-common", branch = "main" }
+pizza-common = { git = "https://github.com/pizza-rs/common", branch = "main" }
 
 tauri = { version = "2", features = ["protocol-asset", "macos-private-api", "tray-icon", "image-ico", "image-png"] }
 tauri-plugin-shell = "2"
@@ -173,3 +173,12 @@ windows-sys = { version = "0.61", features = ["Win32", "Win32_System", "Win32_Sy
 
 [target."cfg(target_os = \"windows\")".build-dependencies]
 bindgen = "0.72.1"
+
+# When pizza-engine is added as a CI dependency, it uses infinilabs/fst-no-std
+# while its transitive dependency fst-regex uses pizza-rs/fst-no-std. These two
+# forks are treated as separate crates by Cargo, causing Automaton trait
+# incompatibility errors. This patch redirects infinilabs/fst-no-std to
+# pizza-rs/fst-no-std to unify the dependency. It has no effect on normal
+# builds that do not include pizza-engine.
+[patch."https://github.com/infinilabs/fst-no-std"]
+fst-no-std = { git = "https://github.com/pizza-rs/fst-no-std", branch = "main" }

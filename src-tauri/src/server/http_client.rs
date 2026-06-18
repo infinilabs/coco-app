@@ -23,6 +23,14 @@ pub(crate) fn new_reqwest_http_client(accept_invalid_certs: bool) -> Client {
         .expect("Failed to build client")
 }
 
+pub(crate) fn new_reqwest_streaming_http_client(accept_invalid_certs: bool) -> Client {
+    Client::builder()
+        .connect_timeout(Duration::from_secs(30))
+        .danger_accept_invalid_certs(accept_invalid_certs)
+        .build()
+        .expect("Failed to build streaming client")
+}
+
 pub static HTTP_CLIENT: Lazy<Mutex<Client>> = Lazy::new(|| {
     let allow_self_signature = crate::settings::_get_allow_self_signature(
         crate::GLOBAL_TAURI_APP_HANDLE
@@ -31,6 +39,16 @@ pub static HTTP_CLIENT: Lazy<Mutex<Client>> = Lazy::new(|| {
             .clone(),
     );
     Mutex::new(new_reqwest_http_client(allow_self_signature))
+});
+
+pub static STREAMING_HTTP_CLIENT: Lazy<Mutex<Client>> = Lazy::new(|| {
+    let allow_self_signature = crate::settings::_get_allow_self_signature(
+        crate::GLOBAL_TAURI_APP_HANDLE
+            .get()
+            .expect("global tauri app store not set")
+            .clone(),
+    );
+    Mutex::new(new_reqwest_streaming_http_client(allow_self_signature))
 });
 
 /// Errors that could happen when handling a HTTP request.
@@ -148,15 +166,14 @@ impl HttpClient {
         Ok(response)
     }
 
-    pub async fn get_request_builder(
+    async fn get_request_builder_with_client(
+        client: &Client,
         method: Method,
         url: &str,
         headers: Option<HashMap<String, String>>,
         query_params: Option<Vec<String>>, // Add query parameters
         body: Option<reqwest::Body>,
     ) -> RequestBuilder {
-        let client = HTTP_CLIENT.lock().await; // Acquire the lock on HTTP_CLIENT
-
         // Build the request
         let mut request_builder = client.request(method.clone(), url);
 
@@ -222,6 +239,30 @@ impl HttpClient {
         request_builder
     }
 
+    pub async fn get_request_builder(
+        method: Method,
+        url: &str,
+        headers: Option<HashMap<String, String>>,
+        query_params: Option<Vec<String>>, // Add query parameters
+        body: Option<reqwest::Body>,
+    ) -> RequestBuilder {
+        let client = HTTP_CLIENT.lock().await;
+        Self::get_request_builder_with_client(&client, method, url, headers, query_params, body)
+            .await
+    }
+
+    async fn get_streaming_request_builder(
+        method: Method,
+        url: &str,
+        headers: Option<HashMap<String, String>>,
+        query_params: Option<Vec<String>>,
+        body: Option<reqwest::Body>,
+    ) -> RequestBuilder {
+        let client = STREAMING_HTTP_CLIENT.lock().await;
+        Self::get_request_builder_with_client(&client, method, url, headers, query_params, body)
+            .await
+    }
+
     pub async fn send_request(
         server_id: &str,
         method: Method,
@@ -267,6 +308,60 @@ impl HttpClient {
         }
     }
 
+    pub async fn send_streaming_request(
+        server_id: &str,
+        method: Method,
+        path: &str,
+        custom_headers: Option<HashMap<String, String>>,
+        query_params: Option<Vec<String>>,
+        body: Option<reqwest::Body>,
+    ) -> Result<reqwest::Response, HttpRequestError> {
+        let server = get_server_by_id(server_id).await;
+        if let Some(s) = server {
+            let url = HttpClient::join_url(&s.endpoint, path);
+            let token = get_server_token(server_id)
+                .await
+                .map(|t| t.access_token.clone());
+
+            let mut headers = custom_headers.unwrap_or_default();
+            if let Some(t) = token {
+                headers.insert("X-API-TOKEN".to_string(), t);
+            }
+
+            let request_builder = Self::get_streaming_request_builder(
+                method,
+                &url,
+                Some(headers),
+                query_params,
+                body,
+            )
+            .await;
+
+            let response = match request_builder.send().await {
+                Ok(response) => response,
+                Err(e) => {
+                    if e.is_timeout() {
+                        return Err(HttpRequestError::ConnectionTimeout);
+                    }
+                    return Err(HttpRequestError::SendError { source: e });
+                }
+            };
+
+            log::debug!(
+                "Streaming request: {}, response status: {:?}, header: {:?}",
+                &url,
+                &response.status(),
+                &response.headers()
+            );
+
+            Ok(response)
+        } else {
+            Err(HttpRequestError::ServerNotFound {
+                id: server_id.to_string(),
+            })
+        }
+    }
+
     // Convenience method for GET requests (as it's the most common)
     pub async fn get(
         server_id: &str,
@@ -284,24 +379,6 @@ impl HttpClient {
         body: Option<reqwest::Body>,
     ) -> Result<reqwest::Response, HttpRequestError> {
         HttpClient::send_request(server_id, Method::POST, path, None, query_params, body).await
-    }
-
-    pub async fn advanced_post(
-        server_id: &str,
-        path: &str,
-        custom_headers: Option<HashMap<String, String>>,
-        query_params: Option<Vec<String>>,
-        body: Option<reqwest::Body>,
-    ) -> Result<reqwest::Response, HttpRequestError> {
-        HttpClient::send_request(
-            server_id,
-            Method::POST,
-            path,
-            custom_headers,
-            query_params,
-            body,
-        )
-        .await
     }
 
     // Convenience method for PUT requests

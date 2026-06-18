@@ -2,6 +2,7 @@ use super::servers::{get_server_by_id, get_server_token};
 use crate::common::error::serialize_error;
 use crate::common::http::get_response_body_text;
 use crate::server::http_client::{HttpClient, HttpRequestError, SendSnafu};
+use base64::{DecodeError, decode};
 use reqwest::multipart::{Form, Part};
 use serde::Deserialize;
 use serde::Serialize;
@@ -26,6 +27,21 @@ pub struct DeleteAttachmentResponse {
     pub result: String,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FetchAttachmentTextResponse {
+    pub content: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FetchAttachmentBinaryResponse {
+    pub content_base64: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct WriteTextFileResponse {
+    pub saved: bool,
+}
+
 #[derive(Debug, Snafu, Serialize)]
 #[snafu(visibility(pub(crate)))]
 pub(crate) enum AttachmentError {
@@ -48,6 +64,11 @@ pub(crate) enum AttachmentError {
     JsonDecodingError {
         #[serde(serialize_with = "serialize_error")]
         source: serde_json::Error,
+    },
+    #[snafu(display("decoding base64 failed"))]
+    Base64DecodingError {
+        #[serde(serialize_with = "serialize_error")]
+        source: DecodeError,
     },
 }
 
@@ -146,6 +167,64 @@ pub async fn get_attachment_by_ids(
         .context(HttpRequestSnafu)?;
 
     serde_json::from_str::<Value>(&body).context(JsonDecodingSnafu)
+}
+
+#[command]
+pub async fn fetch_attachment_text(
+    server_id: String,
+    path: String,
+) -> Result<FetchAttachmentTextResponse, AttachmentError> {
+    let response = HttpClient::get(&server_id, &path, None)
+        .await
+        .context(HttpRequestSnafu)?;
+
+    let content = get_response_body_text(response)
+        .await
+        .context(HttpRequestSnafu)?;
+
+    Ok(FetchAttachmentTextResponse { content })
+}
+
+#[command]
+pub async fn fetch_attachment_binary(
+    server_id: String,
+    path: String,
+) -> Result<FetchAttachmentBinaryResponse, AttachmentError> {
+    let response = HttpClient::get(&server_id, &path, None)
+        .await
+        .context(HttpRequestSnafu)?;
+
+    let bytes = response
+        .bytes()
+        .await
+        .context(SendSnafu)
+        .context(HttpRequestSnafu)?;
+
+    Ok(FetchAttachmentBinaryResponse {
+        content_base64: base64::encode(bytes),
+    })
+}
+
+#[command]
+pub async fn write_text_file(
+    path: PathBuf,
+    content: String,
+) -> Result<WriteTextFileResponse, AttachmentError> {
+    tokio::fs::write(path, content).await.context(IoSnafu)?;
+
+    Ok(WriteTextFileResponse { saved: true })
+}
+
+#[command]
+pub async fn write_binary_file(
+    path: PathBuf,
+    content_base64: String,
+) -> Result<WriteTextFileResponse, AttachmentError> {
+    let content = decode(content_base64).context(Base64DecodingSnafu)?;
+
+    tokio::fs::write(path, content).await.context(IoSnafu)?;
+
+    Ok(WriteTextFileResponse { saved: true })
 }
 
 #[command]

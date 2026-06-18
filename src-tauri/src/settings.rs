@@ -37,7 +37,10 @@ pub async fn set_allow_self_signature(tauri_app_handle: AppHandle, value: bool) 
     store.set(SETTINGS_ALLOW_SELF_SIGNATURE, value);
 
     let mut guard = http_client::HTTP_CLIENT.lock().await;
-    *guard = http_client::new_reqwest_http_client(value)
+    *guard = http_client::new_reqwest_http_client(value);
+
+    let mut streaming_guard = http_client::STREAMING_HTTP_CLIENT.lock().await;
+    *streaming_guard = http_client::new_reqwest_streaming_http_client(value);
 }
 
 /// Synchronous version of `async get_allow_self_signature()`.

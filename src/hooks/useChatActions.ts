@@ -372,8 +372,6 @@ export function useChatActions(
           queryParams,
           clientId: `chat-stream-${clientId}-${timestamp}`,
         });
-        // console.log("_create end", message);
-        resetChatState();
       } else {
         await streamPost({
           url: "/chat/_create",
@@ -440,8 +438,6 @@ export function useChatActions(
           attachments,
           clientId: `chat-stream-${clientId}-${timestamp}`,
         });
-        // console.log("chat_chat end", message, clientId);
-        resetChatState();
       } else {
         await streamPost({
           url: `/chat/${newChat?._id}/_chat`,

@@ -20,7 +20,7 @@ jobs:
     - name: Checkout dependency (pizza-engine) repository
       uses: actions/checkout@v4
       with:
-        repository: 'infinilabs/pizza'
+        repository: 'pizza-rs/pizza'
         ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
         submodules: recursive
         ref: main
@@ -43,7 +43,13 @@ jobs:
     - name: Add pizza engine as a dependency
       working-directory: src-tauri
       shell: bash
-      run: cargo add --path ../pizza/lib/engine --features query_string_parser,persistence
+      run: |
+        cargo add --path ../pizza/lib/engine --features query_string_parser,persistence
+        # Add fst-no-std with the std feature to enable MapBuilder and Error::Io.
+        # The [patch] in Cargo.toml redirects infinilabs/fst-no-std (used by pizza-engine)
+        # to pizza-rs/fst-no-std (used by fst-regex) so both resolve to the same crate.
+        # The std feature activates the Error::Io variant and MapBuilder that pizza-engine requires.
+        cargo add fst-no-std --git https://github.com/pizza-rs/fst-no-std --branch main --features std
 
     - name: Format check
       working-directory: src-tauri

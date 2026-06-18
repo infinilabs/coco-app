@@ -1,4 +1,74 @@
 {
+  "deepResearch": {
+    "window": {
+      "title": "Research Report"
+    },
+    "status": {
+      "completedWithCount": "Deep research completed · Found {{count}} related results",
+      "completed": "Deep research completed",
+      "running": "Deep research in progress",
+      "preparing": "Preparing deep research",
+      "executingPlan": "Executing research plan",
+      "planningResearch": "Planning research",
+      "cancelled": "Research cancelled",
+      "error": "Research error",
+      "timeout": "Research timeout",
+      "reportHeader": "Research Report",
+      "reportDescription": "The final research report has been generated for you"
+    },
+    "button": {
+      "view": "View",
+      "download": "Download",
+      "share": "Share"
+    },
+    "tab": {
+      "report": "Research Report",
+      "steps": "Research Steps",
+      "searchResults": "Search Results"
+    },
+    "report": {
+      "generatingTitle": "Generating research report",
+      "generatingDescription": "Running a complete research workflow based on your question and compiling a structured report. It will appear here once ready.",
+      "defaultTitle": "Research Report",
+      "loading": "Loading research report...",
+      "loadFailed": "Failed to load research report",
+      "cancelled": "Generate research report cancelled",
+      "failed": "Generate research report failed",
+      "downloadSuccess": "Research report saved",
+      "downloadFailed": "Failed to download research report",
+      "openSourceFailed": "Failed to open source"
+    },
+    "steps": {
+      "intro": "I will collect and analyze information related to this topic, including its definition, use cases, market landscape and common questions. If it refers to a specific domain, I will further study its concrete applications and impact in that domain, and then report the results to you.",
+      "planTitle": "Plan research steps",
+      "planDescription": "I am planning a research workflow around this topic.",
+      "generatedPlans": "Generated plans",
+      "executeTitle": "Execute research plans",
+      "searching": "Searching",
+      "searchTitle": "Search sources",
+      "optimizePlan": "Optimize research plan",
+      "reportTitle": "Generate research report"
+    },
+    "cancelDialog": {
+      "title": "Cancel research?",
+      "description": "Completed analysis will be kept in the conversation. Unfinished parts will be cancelled.",
+      "confirm": "Yes",
+      "cancel": "No"
+    }
+  },
+  "labels": {
+    "openSource": "Open Source",
+    "cancelled": "Generation Cancelled",
+    "error": "Generation Error",
+    "timeout": "Generation Timeout",
+    "timeout_assistant_generation": "Assistant Generation Timeout",
+    "timeout_attachment_processing": "Attachment Processing Timeout",
+    "stop": "Stop",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "arguments": "Arguments",
+    "result": "Result"
+  },
   "settings": {
     "general": "General Settings",
     "startup": {
@@ -675,12 +745,6 @@
     "buttons": {
       "login": "Login"
     }
-  },
-  "labels": {
-    "expand": "Expand",
-    "collapse": "Collapse",
-    "arguments": "Arguments",
-    "result": "Result"
   },
   "common": {
     "loading": "Loading...",
