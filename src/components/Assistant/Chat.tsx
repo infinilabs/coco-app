@@ -29,6 +29,7 @@ import {
   normalizeResearchReportData,
   parseReplyEndPayload,
 } from "@/components/ChatMessage/DeepResearch/payload";
+import type { DeepResearchEndChunk } from "@/components/ChatMessage/DeepResearch/types";
 
 interface ChatAIProps {
   isSearchActive?: boolean;
@@ -232,8 +233,12 @@ const ChatAI = memo(
       }, [deepResearch.length]);
 
       const buildDeepResearchPatchedChat = useCallback(
-        (current?: Chat): Chat | undefined => {
-          if (!deepResearch.length && !replyEnd.length) return current;
+        (
+          current?: Chat,
+          replyPayloadOverride?: DeepResearchEndChunk["payload"]
+        ): Chat | undefined => {
+          if (!deepResearch.length && !replyEnd.length && !replyPayloadOverride)
+            return current;
           if (!current) return current;
 
           const latestDeepResearch = [...deepResearch];
@@ -242,9 +247,9 @@ const ChatAI = memo(
             latestDeepResearch[0]?.message_id ||
             latestReplyEnd?.message_id ||
             curIdRef.current;
-          const replyPayload = parseReplyEndPayload(
-            latestReplyEnd?.message_chunk
-          );
+          const replyPayload =
+            replyPayloadOverride ||
+            parseReplyEndPayload(latestReplyEnd?.message_chunk);
           const reportData = normalizeResearchReportData(
             latestDeepResearch
               .slice()
@@ -330,9 +335,44 @@ const ChatAI = memo(
         [Question, deepResearch, replyEnd]
       );
 
-      const patchActiveDeepResearchMessage = useCallback(() => {
-        setActiveChat((current) => buildDeepResearchPatchedChat(current));
-      }, [buildDeepResearchPatchedChat]);
+      const patchActiveDeepResearchMessage = useCallback(
+        (replyPayloadOverride?: DeepResearchEndChunk["payload"]) => {
+          setActiveChat((current) =>
+            buildDeepResearchPatchedChat(current, replyPayloadOverride)
+          );
+        },
+        [buildDeepResearchPatchedChat]
+      );
+
+      const confirmCancelDeepResearch = useCallback(() => {
+        const cancelledPayload: DeepResearchEndChunk["payload"] = {
+          reason: "user_cancelled",
+        };
+        const messageId = deepResearch[0]?.message_id || curIdRef.current;
+
+        handlers.deal_reply_end({
+          session_id: curSessionIdRef.current || activeChat?._id || "",
+          message_id: messageId,
+          message_type: "assistant",
+          reply_to_message: curIdRef.current,
+          chunk_sequence: Date.now(),
+          chunk_type: "reply_end",
+          message_chunk: JSON.stringify(cancelledPayload),
+        });
+        patchActiveDeepResearchMessage(cancelledPayload);
+        window.setTimeout(() => {
+          void clearAllChunkData();
+          hasDeepResearchRef.current = false;
+        }, 0);
+        void cancelChat(activeChat);
+      }, [
+        activeChat,
+        cancelChat,
+        clearAllChunkData,
+        deepResearch,
+        handlers,
+        patchActiveDeepResearchMessage,
+      ]);
 
       const refreshChatAfterReplyEnd = useCallback(async () => {
         if (!hasDeepResearchRef.current) return;
@@ -605,7 +645,7 @@ const ChatAI = memo(
             <DeepResearchCancelDialog
               open={deepResearchCancelDialogOpen}
               onOpenChange={setDeepResearchCancelDialogOpen}
-              onConfirm={() => cancelChat(activeChat)}
+              onConfirm={confirmCancelDeepResearch}
             />
           </div>
         </>
