@@ -28,7 +28,7 @@ cargo-clippy = []
 #  
 # ```toml
 # [dependencies]
-# pizza-engine = { git = "ssh://git@github.com/infinilabs/pizza.git", features = ["query_string_parser", "persistence"] }
+# pizza-engine = { git = "ssh://git@github.com/pizza-rs/pizza.git", features = ["query_string_parser", "persistence"] }
 # ```
 #
 # 2. It is a private repo, you have access to it.
@@ -43,7 +43,7 @@ cargo-clippy = []
 use_pizza_engine = []
 
 [dependencies]
-pizza-common = { git = "https://github.com/infinilabs/pizza-common", branch = "main" }
+pizza-common = { git = "https://github.com/pizza-rs/common", branch = "main" }
 
 tauri = { version = "2", features = ["protocol-asset", "macos-private-api", "tray-icon", "image-ico", "image-png"] }
 tauri-plugin-shell = "2"
