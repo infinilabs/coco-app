@@ -16,10 +16,15 @@ import useMessageChunkData from "@/hooks/useMessageChunkData";
 import { useAppStore } from "@/stores/appStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
+import {
+  DeepResearchPanel,
+  type DeepResearchPanelPayload,
+} from "@/components/ChatMessage/DeepResearch/DeepResearchPanel";
 
 interface AskAiProps {
   isChatMode: boolean;
   changeMode?: (isChatMode: boolean) => void;
+  formatUrl?: (data: any) => string;
 }
 
 const DEEP_RESEARCH_CHUNK_TYPES = [
@@ -34,6 +39,17 @@ const DEEP_RESEARCH_CHUNK_TYPES = [
   "research_reporter_end",
 ];
 
+const EMPTY_LOADING_STEP: Record<string, boolean> = {
+  query_intent: false,
+  tools: false,
+  fetch_source: false,
+  pick_source: false,
+  deep_read: false,
+  think: false,
+  response: false,
+  deepResearch: false,
+};
+
 interface State {
   serverId?: string;
   assistantId?: string;
@@ -42,7 +58,7 @@ interface State {
 }
 
 const AskAi: FC<AskAiProps> = (props) => {
-  const { isChatMode, changeMode } = props;
+  const { isChatMode, changeMode, formatUrl } = props;
 
   const {
     askAiMessage,
@@ -77,18 +93,14 @@ const AskAi: FC<AskAiProps> = (props) => {
   });
 
   const [isTyping, setIsTyping] = useState(false);
-  const [loadingStep, setLoadingStep] = useState<Record<string, boolean>>({
-    query_intent: false,
-    tools: false,
-    fetch_source: false,
-    pick_source: false,
-    deep_read: false,
-    think: false,
-    response: false,
-  });
+  const [deepResearchPanel, setDeepResearchPanel] =
+    useState<DeepResearchPanelPayload | null>(null);
+  const [loadingStep, setLoadingStep] =
+    useState<Record<string, boolean>>(EMPTY_LOADING_STEP);
 
   const unlisten = useRef<() => void>(noop);
   const sessionIdRef = useRef<string>("");
+  const cancelledSessionIdRef = useRef<string>("");
 
   const { quickAiAccessServer, quickAiAccessAssistant } = useExtensionsStore();
 
@@ -176,6 +188,10 @@ const AskAi: FC<AskAiProps> = (props) => {
             return;
           }
 
+          if (cancelledSessionIdRef.current === chunkData.session_id) {
+            return;
+          }
+
           setIsTyping(true);
 
           setLoadingStep(() => ({
@@ -230,6 +246,9 @@ const AskAi: FC<AskAiProps> = (props) => {
     if (!askAiMessage || !state.serverId || !state.assistantId) return;
 
     await clearAllChunkData();
+    sessionIdRef.current = "";
+    cancelledSessionIdRef.current = "";
+    setDeepResearchPanel(null);
 
     const { serverId, assistantId } = state;
 
@@ -250,6 +269,43 @@ const AskAi: FC<AskAiProps> = (props) => {
     }
   }, [askAiMessage]);
 
+  const cancelQuickAiResearch = useCallback(async () => {
+    const sessionId = sessionIdRef.current || deepResearch[0]?.session_id;
+    const messageId = deepResearch[0]?.message_id || state.messageId;
+    const serverId = state.serverId;
+    const cancelledPayload = { reason: "user_cancelled" };
+
+    if (sessionId) {
+      cancelledSessionIdRef.current = sessionId;
+    }
+
+    handlers.deal_reply_end({
+      session_id: sessionId || "",
+      message_id: messageId,
+      message_type: "assistant",
+      reply_to_message: deepResearch[0]?.reply_to_message || state.messageId,
+      chunk_sequence: Date.now(),
+      chunk_type: "reply_end",
+      message_chunk: JSON.stringify(cancelledPayload),
+    });
+    setIsTyping(false);
+    setLoadingStep(EMPTY_LOADING_STEP);
+
+    if (!serverId || !sessionId) return;
+
+    try {
+      await platformAdapter.commands("cancel_session_chat", {
+        serverId,
+        sessionId,
+        queryParams: {
+          message_id: messageId,
+        },
+      });
+    } catch (error) {
+      addError(String(error));
+    }
+  }, [addError, deepResearch, handlers, state.messageId, state.serverId]);
+
   useKeyPress(
     "enter",
     () => {
@@ -266,7 +322,7 @@ const AskAi: FC<AskAiProps> = (props) => {
 
   return (
     askAiMessage && (
-      <div className="p-4 h-full">
+      <div className="p-4 h-full relative">
         <div className="h-full px-3 py-4 overflow-auto">
           <div className="mb-4 text-xs text-[#999] font-semibold user-select-text truncate">
             {askAiMessage}
@@ -281,7 +337,8 @@ const AskAi: FC<AskAiProps> = (props) => {
                 _source: {
                   type: "assistant",
                   message: "",
-                  question: "",
+                  question: askAiMessage,
+                  session_id: sessionIdRef.current,
                 },
               }}
               isTyping={isTyping}
@@ -296,9 +353,29 @@ const AskAi: FC<AskAiProps> = (props) => {
               replyEnd={replyEnd}
               loadingStep={loadingStep}
               copyButtonId={state.copyButtonId}
+              formatUrl={formatUrl}
+              onCancel={cancelQuickAiResearch}
+              activeDeepResearchViewKey={deepResearchPanel?.viewKey}
+              onOpenDeepResearch={setDeepResearchPanel}
+              onUpdateDeepResearch={(payload) => {
+                setDeepResearchPanel((current) => {
+                  return current?.viewKey === payload.viewKey
+                    ? payload
+                    : current;
+                });
+              }}
             />
           </div>
         </div>
+
+        {deepResearchPanel && (
+          <div className="absolute inset-0 z-20 bg-white/95 dark:bg-black/95 backdrop-blur-sm">
+            <DeepResearchPanel
+              payload={deepResearchPanel}
+              onClose={() => setDeepResearchPanel(null)}
+            />
+          </div>
+        )}
       </div>
     )
   );
