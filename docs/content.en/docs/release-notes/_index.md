@@ -7,7 +7,13 @@ title: "Release Notes"
 
 Information about release notes of Coco App is provided here.
 
-## Latest (In development)
+## Latest (In development)  
+### ❌ Breaking changes  
+### 🚀 Features  
+### 🐛 Bug fix  
+### ✈️ Improvements  
+
+## 0.11.0 (2026-06-23)
 
 ### ❌ Breaking changes
 
