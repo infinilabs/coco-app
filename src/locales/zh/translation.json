@@ -59,7 +59,17 @@
   "markdown": {
     "mermaid": {
       "renderFailed": "思维导图无法显示",
-      "renderFailedDescription": "内容格式异常，暂时无法生成预览"
+      "renderFailedDescription": "内容格式异常，暂时无法生成预览",
+      "image": "图片",
+      "code": "代码",
+      "showImage": "显示图片",
+      "showCode": "显示代码",
+      "zoomIn": "放大",
+      "zoomOut": "缩小",
+      "resetView": "重置视图",
+      "downloadPng": "下载 PNG",
+      "copyCode": "复制代码",
+      "pngImage": "PNG 图片"
     }
   },
   "labels": {

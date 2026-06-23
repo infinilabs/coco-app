@@ -1116,27 +1116,164 @@
     filter: invert(50%);
   }
 
-  .markdown-body .mermaid {
-    border: var(--border-in-light);
-    margin-bottom: 10px;
-    border-radius: 4px;
-    padding: 10px;
-    background-color: var(--white);
+  .markdown-body .mermaid-viewer {
+    position: relative;
+    width: 100%;
     max-width: 100%;
-    max-height: 70vh;
+    margin: 12px 0 16px;
+    overflow: visible;
+    border: 1px solid var(--color-border-muted);
+    border-radius: 8px;
+    background: #fff;
   }
 
-  .markdown-body .mermaid:empty {
-    min-height: 180px;
+  .markdown-body .mermaid-viewer-toolbar {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    min-height: 54px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px 10px 16px;
+    border-radius: 8px 8px 0 0;
+    background: #f1f1f1;
   }
 
-  .markdown-body .mermaid.mermaid-error {
+  .markdown-body .mermaid-viewer-tabs {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    border-radius: 8px;
+    background: #f5f5f5;
+  }
+
+  .markdown-body .mermaid-viewer-tab,
+  .markdown-body .mermaid-viewer-action {
+    appearance: none;
+    border: 0;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .markdown-body .mermaid-viewer-tab {
+    min-width: 74px;
+    padding: 8px 14px;
+    border-radius: 7px;
+    background: transparent;
+    color: #4d4d4d;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+  }
+
+  .markdown-body .mermaid-viewer-tab.active {
+    background: #fff;
+    color: #222;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+  }
+
+  .markdown-body .mermaid-viewer-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .markdown-body .mermaid-viewer-action {
+    display: inline-flex;
+    width: 32px;
+    height: 32px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: transparent;
+    color: #222;
+  }
+
+  .markdown-body .mermaid-viewer-action:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.06);
+  }
+
+  .markdown-body .mermaid-viewer-action:disabled {
+    cursor: not-allowed;
+    opacity: 0.38;
+  }
+
+  .markdown-body .mermaid-viewer-content {
+    overflow: hidden;
+    border-radius: 0 0 8px 8px;
+    background: #fff;
+  }
+
+  .markdown-body .mermaid-diagram-stage {
+    display: flex;
+    height: clamp(320px, 52vh, 560px);
+    min-height: 320px;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    padding: 28px;
+    background: #fff;
+  }
+
+  .markdown-body .mermaid-diagram-stage[hidden],
+  .markdown-body .mermaid-source-code[hidden] {
+    display: none;
+  }
+
+  .markdown-body .mermaid-diagram-canvas {
+    display: inline-flex;
+    min-width: max-content;
+    min-height: max-content;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .markdown-body .mermaid-render-target:empty {
+    min-width: 240px;
+    min-height: 160px;
+  }
+
+  .markdown-body .mermaid-render-target svg {
+    display: block;
+    max-width: none;
+  }
+
+  .markdown-body .mermaid-source-code {
+    min-height: 320px;
+    max-height: 560px;
+    margin: 0;
+    overflow: auto;
+    border: 0;
+    border-radius: 0;
+    background: #fff;
+    color: #444;
+    font-size: 14px;
+    line-height: 1.75;
+    white-space: pre;
+  }
+
+  .markdown-body .mermaid-source-code code {
+    display: block;
+    padding: 24px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    white-space: inherit;
+  }
+
+  .markdown-body .mermaid-error {
     display: flex;
     min-height: 140px;
+    width: min(420px, 100%);
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 6px;
+    padding: 24px;
+    border: 1px solid var(--color-mermaid-error-border);
+    border-radius: 8px;
     border-color: var(--color-mermaid-error-border);
     background: var(--color-mermaid-error-bg);
     color: var(--color-mermaid-error-title);
@@ -1162,11 +1299,54 @@
     display: none;
   }
 
-  .markdown-body .mermaid svg {
-    max-width: none;
-  }
-
   #dmermaid {
     display: none;
+  }
+
+  :where(.dark, [data-theme="dark"]) & {
+    .markdown-body .mermaid-viewer {
+      border-color: var(--color-border-muted);
+      background: #0f1115;
+    }
+
+    .markdown-body .mermaid-viewer-toolbar {
+      background: #202328;
+    }
+
+    .markdown-body .mermaid-viewer-tabs {
+      background: #262a30;
+    }
+
+    .markdown-body .mermaid-viewer-tab {
+      color: #c2c7cf;
+    }
+
+    .markdown-body .mermaid-viewer-tab.active {
+      background: #111418;
+      color: #f2f4f8;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+    }
+
+    .markdown-body .mermaid-viewer-action {
+      color: #eef1f5;
+    }
+
+    .markdown-body .mermaid-viewer-action:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .markdown-body .mermaid-viewer-content,
+    .markdown-body .mermaid-diagram-stage {
+      background: #0f1115;
+    }
+
+    .markdown-body .mermaid-render-target svg {
+      background: transparent !important;
+    }
+
+    .markdown-body .mermaid-source-code {
+      background: #0f1115;
+      color: #d7dbe2;
+    }
   }
 }

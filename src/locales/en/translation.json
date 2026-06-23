@@ -59,7 +59,17 @@
   "markdown": {
     "mermaid": {
       "renderFailed": "Mind map can't be displayed",
-      "renderFailedDescription": "The content format looks invalid, so the preview can't be generated yet"
+      "renderFailedDescription": "The content format looks invalid, so the preview can't be generated yet",
+      "image": "Image",
+      "code": "Code",
+      "showImage": "Show image",
+      "showCode": "Show code",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "resetView": "Reset view",
+      "downloadPng": "Download PNG",
+      "copyCode": "Copy code",
+      "pngImage": "PNG Image"
     }
   },
   "labels": {
