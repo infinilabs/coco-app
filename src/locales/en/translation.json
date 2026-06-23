@@ -56,6 +56,12 @@
       "cancel": "No"
     }
   },
+  "markdown": {
+    "mermaid": {
+      "renderFailed": "Mind map can't be displayed",
+      "renderFailedDescription": "The content format looks invalid, so the preview can't be generated yet"
+    }
+  },
   "labels": {
     "openSource": "Open Source",
     "cancelled": "Generation Cancelled",
@@ -497,6 +503,7 @@
     },
     "contextMenu": {
       "open": "Open",
+      "openInBrowser": "Open in Browser",
       "copyLink": "Copy Link",
       "copyAnswer": "Copy Answer",
       "copyUppercaseAnswer": "Copy Answer (in Word)",
@@ -749,6 +756,29 @@
   "common": {
     "loading": "Loading...",
     "notFound": "Not found"
+  },
+  "documentPreview": {
+    "labels": {
+      "preview": "Preview",
+      "aiInterpretation": "AI Interpretation"
+    },
+    "buttons": {
+      "openSource": "Open Source",
+      "reload": "Reload"
+    },
+    "hints": {
+      "previewUnavailable": "Preview is not available for this document type.",
+      "previewUnavailableTitle": "This file can't be previewed",
+      "previewUnavailableDescription": "The file format may be unsupported or the content is temporarily unavailable"
+    },
+    "loading": {
+      "document": "Loading document...",
+      "preview": "Loading preview..."
+    },
+    "errors": {
+      "missingParams": "Missing document preview parameters.",
+      "loadFailed": "Failed to load document"
+    }
   },
   "selection": {
     "title": "Selection Toolbar Settings",

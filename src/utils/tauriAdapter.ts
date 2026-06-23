@@ -13,7 +13,7 @@ import {
 import type { BasePlatformAdapter } from "@/types/platform";
 import type { AppTheme } from "@/types/index";
 import { useAppearanceStore } from "@/stores/appearanceStore";
-import { copyToClipboard, dispatchEvent, OpenURLWithBrowser } from ".";
+import { copyToClipboard, dispatchEvent } from ".";
 import { useAppStore } from "@/stores/appStore";
 import { unrequitable } from "@/utils";
 import {
@@ -58,6 +58,102 @@ export interface TauriPlatformAdapter extends BasePlatformAdapter {
 
 // Create Tauri adapter functions
 export const createTauriAdapter = (): TauriPlatformAdapter => {
+  const getWebviewWindowTitle = (url: string) => {
+    try {
+      return new URL(url).hostname || "Coco";
+    } catch {
+      return "Coco";
+    }
+  };
+
+  const openUrlInWebviewWindow = async (url: string) => {
+    const documentPreview = getDocumentPreviewRoute(url);
+    const label = `webview-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 8)}`;
+    const route = documentPreview || `/ui/webview?url=${encodeURIComponent(url)}`;
+
+    return new WebviewWindow(label, {
+      title: getWebviewWindowTitle(url),
+      url: route,
+      width: 1100,
+      height: 760,
+      minWidth: 640,
+      minHeight: 420,
+      center: true,
+      resizable: true,
+      maximizable: true,
+      minimizable: true,
+      closable: true,
+      decorations: true,
+      transparent: false,
+      shadow: true,
+      dragDropEnabled: false,
+    });
+  };
+
+  const getDocumentPreviewRoute = (
+    url: string,
+    options?: { serverId?: string; sourceUrl?: string }
+  ) => {
+    try {
+      const parsed = new URL(url);
+      const hashPath = parsed.hash.replace(/^#/, "");
+      const routePath = `${parsed.pathname}${hashPath}`;
+      const match = routePath.match(/\/preview\/document\/([^/?#]+)/);
+      const documentId = match?.[1];
+      const serverId = options?.serverId;
+
+      if (!documentId || !serverId) return "";
+
+      const params = new URLSearchParams({
+        serverId,
+        documentId,
+      });
+
+      if (options?.sourceUrl) {
+        params.set("sourceUrl", options.sourceUrl);
+      }
+
+      return `/ui/document-preview?${params.toString()}`;
+    } catch {
+      return "";
+    }
+  };
+
+  const openSearchUrl = async (url: string, data?: any) => {
+    const documentPreviewRoute = getDocumentPreviewRoute(url, {
+      serverId: data?.querySource?.id,
+      sourceUrl: data?.metadata?.raw_content || data?.url,
+    });
+
+    if (documentPreviewRoute) {
+      const label = `document-preview-${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2, 8)}`;
+
+      return new WebviewWindow(label, {
+        title: data?.title || getWebviewWindowTitle(url),
+        url: documentPreviewRoute,
+        width: 1100,
+        height: 760,
+        minWidth: 720,
+        minHeight: 480,
+        center: true,
+        resizable: true,
+        maximizable: true,
+        minimizable: true,
+        closable: true,
+        decorations: true,
+        transparent: false,
+        shadow: true,
+        dragDropEnabled: false,
+      });
+    }
+
+    return openUrlInWebviewWindow(url);
+  };
+
   return {
     async setWindowSize(width, height) {
       return windowWrapper.setLogicalSize(width, height);
@@ -310,9 +406,13 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
     },
 
     async openUrl(url) {
+      return openUrlInWebviewWindow(url);
+    },
+
+    async openUrlWithBrowser(url) {
       const { openUrl } = await import("@tauri-apps/plugin-opener");
 
-      openUrl(url);
+      return openUrl(url);
     },
 
     isWindows10,
@@ -332,7 +432,7 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
       revealItemInDir(path);
     },
 
-    async openSearchItem(data) {
+    async openSearchItem(data, formatUrl) {
       const { invoke } = await import("@tauri-apps/api/core");
 
       console.log("openSearchItem", data);
@@ -354,17 +454,19 @@ export const createTauriAdapter = (): TauriPlatformAdapter => {
         return invoke("hide_coco");
       };
 
+      const url = (formatUrl && formatUrl(data)) || data?.url;
+
+      if (url?.startsWith("http://") || url?.startsWith("https://")) {
+        await openSearchUrl(url, data);
+
+        return hideCoco();
+      }
+
       if (data?.on_opened) {
         await invoke("open", {
           onOpened: data.on_opened,
           extraArgs: null,
         });
-
-        return hideCoco();
-      }
-
-      if (data?.url) {
-        OpenURLWithBrowser(data.url);
 
         return hideCoco();
       }

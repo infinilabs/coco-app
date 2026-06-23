@@ -7,7 +7,7 @@ import {
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
-import { OpenURLWithBrowser } from "@/utils/index";
+import platformAdapter from "@/utils/platformAdapter";
 import type { IChunkData } from "@/types/chat";
 import RetrieveIcon from "@/icons/Retrieve";
 
@@ -83,7 +83,7 @@ export const FetchSource = ({
   const sourceClick = (item: ISourceData) => () => {
     const url = (formatUrl && formatUrl(item)) || item.url;
     if (url) {
-      OpenURLWithBrowser(url);
+      platformAdapter.openUrl(url);
     }
   };
 

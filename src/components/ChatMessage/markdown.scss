@@ -42,6 +42,10 @@
   --color-accent-emphasis: #0969da;
   --color-attention-subtle: #fff8c5;
   --color-danger-fg: #cf222e;
+  --color-mermaid-error-bg: #fffafa;
+  --color-mermaid-error-border: #f2d0d0;
+  --color-mermaid-error-title: #7f2f2f;
+  --color-mermaid-error-message: #999;
 }
 
 @mixin dark {
@@ -88,6 +92,10 @@
   --color-accent-emphasis: #1f6feb;
   --color-attention-subtle: rgba(187, 128, 9, 0.15);
   --color-danger-fg: #f85149;
+  --color-mermaid-error-bg: rgba(127, 47, 47, 0.12);
+  --color-mermaid-error-border: rgba(248, 81, 73, 0.25);
+  --color-mermaid-error-title: #ffb4ad;
+  --color-mermaid-error-message: #a6a6a6;
 }
 
 .light {
@@ -1114,6 +1122,48 @@
     border-radius: 4px;
     padding: 10px;
     background-color: var(--white);
+    max-width: 100%;
+    max-height: 70vh;
+  }
+
+  .markdown-body .mermaid:empty {
+    min-height: 180px;
+  }
+
+  .markdown-body .mermaid.mermaid-error {
+    display: flex;
+    min-height: 140px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-color: var(--color-mermaid-error-border);
+    background: var(--color-mermaid-error-bg);
+    color: var(--color-mermaid-error-title);
+    text-align: center;
+  }
+
+  .markdown-body .mermaid-error-title {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+  }
+
+  .markdown-body .mermaid-error-message {
+    max-width: 100%;
+    color: var(--color-mermaid-error-message);
+    font-size: 12px;
+    line-height: 18px;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+
+  .markdown-body pre.hidden-mermaid-source {
+    display: none;
+  }
+
+  .markdown-body .mermaid svg {
+    max-width: none;
   }
 
   #dmermaid {

@@ -4,6 +4,7 @@ pub mod attachment;
 pub mod auth;
 pub mod connector;
 pub mod datasource;
+pub mod document;
 pub mod http_client;
 pub mod profile;
 pub mod search;

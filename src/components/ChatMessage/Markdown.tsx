@@ -7,7 +7,7 @@ import RehypeKatex from "rehype-katex";
 import RemarkGfm from "remark-gfm";
 import RehypeHighlight from "rehype-highlight";
 import mermaid from "mermaid";
-import { useDebouncedCallback } from "use-debounce";
+import { useTranslation } from "react-i18next";
 
 import {
   copyToClipboard,
@@ -17,25 +17,116 @@ import {
 import "./markdown.scss";
 import "./highlight.css";
 
+let mermaidDiagramId = 0;
+
+function removeMermaidTempElements(id: string) {
+  if (typeof document === "undefined") return;
+
+  [id, `d${id}`, `i${id}`].forEach((elementId) => {
+    document.getElementById(elementId)?.remove();
+  });
+}
+
+function getNodeText(node: React.ReactNode): string {
+  return React.Children.toArray(node)
+    .map((child) => {
+      if (typeof child === "string" || typeof child === "number") {
+        return String(child);
+      }
+      if (React.isValidElement(child)) {
+        return getNodeText(
+          (child.props as { children?: React.ReactNode }).children
+        );
+      }
+      return "";
+    })
+    .join("");
+}
+
+function getCodeClassName(node: React.ReactNode): string {
+  let className = "";
+
+  React.Children.forEach(node, (child) => {
+    if (className || !React.isValidElement(child)) return;
+
+    const childProps = child.props as {
+      className?: string;
+      children?: React.ReactNode;
+    };
+
+    if (typeof childProps.className === "string") {
+      className = childProps.className;
+      return;
+    }
+
+    className = getCodeClassName(childProps.children);
+  });
+
+  return className;
+}
+
 // 8
-function Mermaid(props: { code: string }) {
+function Mermaid(props: { code: string; onError?: () => void }) {
+  const { t } = useTranslation();
   const ref = useRef<HTMLDivElement>(null);
-  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [svg, setSvg] = useState("");
+  const [diagramId] = useState(() => `mermaid-${++mermaidDiagramId}`);
+  const bindFunctionsRef = useRef<((element: Element) => void) | undefined>();
 
   useEffect(() => {
-    if (props.code && ref.current) {
-      mermaid
-        .run({
-          nodes: [ref.current],
+    if (props.code) {
+      let cancelled = false;
+
+      setErrorMessage("");
+      setSvg("");
+      bindFunctionsRef.current = undefined;
+      mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: "loose",
+        suppressErrorRendering: true,
+      });
+
+      const renderDiagram = async () => {
+        const canParse = await mermaid.parse(props.code, {
           suppressErrors: true,
+        });
+
+        if (!canParse) {
+          throw new Error("Invalid Mermaid syntax");
+        }
+
+        return mermaid.render(diagramId, props.code, ref.current || undefined);
+      };
+
+      renderDiagram()
+        .then(({ svg, bindFunctions }) => {
+          if (cancelled) return;
+          bindFunctionsRef.current = bindFunctions;
+          setSvg(svg);
         })
         .catch((e) => {
-          setHasError(true);
-          console.error("[Mermaid] ", e.message);
+          if (cancelled) return;
+          const message = e instanceof Error ? e.message : String(e);
+          removeMermaidTempElements(diagramId);
+          setErrorMessage(message);
+          props.onError?.();
+          console.error("[Mermaid] ", message);
         });
+
+      return () => {
+        cancelled = true;
+        removeMermaidTempElements(diagramId);
+      };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.code]);
+
+  useEffect(() => {
+    if (svg && ref.current) {
+      bindFunctionsRef.current?.(ref.current);
+    }
+  }, [svg]);
 
   function viewSvgInNewWindow() {
     const svg = ref.current?.querySelector("svg");
@@ -46,8 +137,20 @@ function Mermaid(props: { code: string }) {
     // URL.createObjectURL(blob);
   }
 
-  if (hasError) {
-    return null;
+  if (errorMessage) {
+    return (
+      <div
+        className={clsx("no-dark", "mermaid", "mermaid-error")}
+        title={errorMessage}
+      >
+        <div className="mermaid-error-title">
+          {t("markdown.mermaid.renderFailed")}
+        </div>
+        <div className="mermaid-error-message">
+          {t("markdown.mermaid.renderFailedDescription")}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -59,37 +162,31 @@ function Mermaid(props: { code: string }) {
       }}
       ref={ref}
       onClick={() => viewSvgInNewWindow()}
-    >
-      {props.code}
-    </div>
+      dangerouslySetInnerHTML={svg ? { __html: svg } : undefined}
+    />
   );
 }
 
 // 7
-function PreCode(props: { children?: any; enableMermaid?: boolean }) {
+function PreCode(props: {
+  children?: any;
+  enableMermaid?: boolean;
+  hideMermaidSource?: boolean;
+}) {
   const ref = useRef<HTMLPreElement>(null);
   // const previewRef = useRef<HTMLPreviewHander>(null);
-  const [mermaidCode, setMermaidCode] = useState("");
   // const [htmlCode, setHtmlCode] = useState("");
   // const { height } = useWindowSize();
   // console.log(htmlCode, height);
 
-  const renderArtifacts = useDebouncedCallback(() => {
-    if (!ref.current) return;
-    if (!props.enableMermaid) return;
+  const mermaidCode = useMemo(() => {
+    if (!props.enableMermaid) return "";
 
-    const mermaidDom = ref.current.querySelector("code.language-mermaid");
-    if (mermaidDom) {
-      setMermaidCode((mermaidDom as HTMLElement).innerText);
-    }
-    // const htmlDom = ref.current.querySelector("code.language-html");
-    // const refText = ref.current.querySelector("code")?.innerText;
-    // if (htmlDom) {
-    //   setHtmlCode((htmlDom as HTMLElement).innerText);
-    // } else if (refText?.startsWith("<!DOCTYPE")) {
-    //   setHtmlCode(refText);
-    // }
-  }, 600);
+    const className = getCodeClassName(props.children);
+    if (!/\blanguage-mermaid\b/.test(className)) return "";
+
+    return getNodeText(props.children).trim();
+  }, [props.children, props.enableMermaid]);
 
   // const enableArtifacts = true;
   // console.log(enableArtifacts);
@@ -117,25 +214,33 @@ function PreCode(props: { children?: any; enableMermaid?: boolean }) {
           codeElement.style.whiteSpace = "pre-wrap";
         }
       });
-      setTimeout(renderArtifacts, 1);
     }
-  }, []);
+  }, [props.children]);
+
+  const hideSource = props.hideMermaidSource && mermaidCode.length > 0;
 
   return (
     <>
-      <pre ref={ref}>
-        <span
-          className="copy-code-button"
-          onClick={() => {
-            if (ref.current) {
-              copyToClipboard(
-                ref.current.querySelector("code")?.innerText ?? ""
-              );
-            }
-          }}
-        ></span>
-        {props.children}
-      </pre>
+      {!hideSource && (
+        <pre
+          ref={ref}
+          className={clsx({
+            "hidden-mermaid-source": hideSource,
+          })}
+        >
+          <span
+            className="copy-code-button"
+            onClick={() => {
+              if (ref.current) {
+                copyToClipboard(
+                  ref.current.querySelector("code")?.innerText ?? ""
+                );
+              }
+            }}
+          ></span>
+          {props.children}
+        </pre>
+      )}
       {mermaidCode.length > 0 && (
         <Mermaid code={mermaidCode} key={mermaidCode} />
       )}
@@ -238,6 +343,7 @@ function _MarkDownContent(props: {
   enableSyntaxHighlight?: boolean;
   enableMermaid?: boolean;
   enableMath?: boolean;
+  hideMermaidSource?: boolean;
 }) {
   const enableMath = props.enableMath !== false;
 
@@ -278,7 +384,11 @@ function _MarkDownContent(props: {
       rehypePlugins={rehypePlugins as any}
       components={{
         pre: (preProps) => (
-          <PreCode {...preProps} enableMermaid={props.enableMermaid !== false} />
+          <PreCode
+            {...preProps}
+            enableMermaid={props.enableMermaid !== false}
+            hideMermaidSource={props.hideMermaidSource}
+          />
         ),
         code: CustomCode,
         p: (pProps) => <p {...pProps} dir="auto" />,
@@ -324,6 +434,7 @@ export default function Markdown(
     enableSyntaxHighlight?: boolean;
     enableMermaid?: boolean;
     enableMath?: boolean;
+    hideMermaidSource?: boolean;
   } & React.DOMAttributes<HTMLDivElement>
 ) {
   const mdRef = useRef<HTMLDivElement>(null);
@@ -346,6 +457,7 @@ export default function Markdown(
           enableSyntaxHighlight={props.enableSyntaxHighlight}
           enableMermaid={props.enableMermaid}
           enableMath={props.enableMath}
+          hideMermaidSource={props.hideMermaidSource}
         />
       </div>
     </div>
