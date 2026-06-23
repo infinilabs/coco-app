@@ -112,6 +112,7 @@ const ChatAI = memo(
       const [timedoutShow, setTimedoutShow] = useState(false);
       const [deepResearchCancelDialogOpen, setDeepResearchCancelDialogOpen] =
         useState(false);
+      const afterDeepResearchCancelRef = useRef<(() => void) | null>(null);
 
       const curIdRef = useRef("");
       const curSessionIdRef = useRef("");
@@ -365,6 +366,8 @@ const ChatAI = memo(
           hasDeepResearchRef.current = false;
         }, 0);
         void cancelChat(activeChat);
+        afterDeepResearchCancelRef.current?.();
+        afterDeepResearchCancelRef.current = null;
       }, [
         activeChat,
         cancelChat,
@@ -373,6 +376,31 @@ const ChatAI = memo(
         handlers,
         patchActiveDeepResearchMessage,
       ]);
+
+      const guardRunningDeepResearch = useCallback(
+        (action?: () => void) => {
+          if (!hasRunningDeepResearch) {
+            action?.();
+            return false;
+          }
+
+          afterDeepResearchCancelRef.current = action || null;
+          setDeepResearchCancelDialogOpen(true);
+          return true;
+        },
+        [hasRunningDeepResearch]
+      );
+
+      const handleDeepResearchCancelDialogOpenChange = useCallback(
+        (open: boolean) => {
+          setDeepResearchCancelDialogOpen(open);
+
+          if (!open) {
+            afterDeepResearchCancelRef.current = null;
+          }
+        },
+        []
+      );
 
       const refreshChatAfterReplyEnd = useCallback(async () => {
         if (!hasDeepResearchRef.current) return;
@@ -401,13 +429,10 @@ const ChatAI = memo(
       ]);
 
       const requestCancelChat = useCallback(() => {
-        if (hasRunningDeepResearch) {
-          setDeepResearchCancelDialogOpen(true);
-          return;
-        }
+        if (guardRunningDeepResearch()) return;
 
         cancelChat(activeChat);
-      }, [activeChat, cancelChat, hasRunningDeepResearch]);
+      }, [activeChat, cancelChat, guardRunningDeepResearch]);
 
       const { dealMsg } = useMessageHandler(
         curIdRef,
@@ -434,7 +459,7 @@ const ChatAI = memo(
         }
       }, [dealMsg, updateDealMsg]);
 
-      const clearChat = useCallback(() => {
+      const clearChatImmediately = useCallback(() => {
         //console.log("clearChat");
         setTimedoutShow(false);
         chatClose(activeChat);
@@ -442,6 +467,10 @@ const ChatAI = memo(
         setCurChatEnd(true);
         clearChatPage && clearChatPage();
       }, [activeChat, chatClose]);
+
+      const clearChat = useCallback(() => {
+        guardRunningDeepResearch(clearChatImmediately);
+      }, [clearChatImmediately, guardRunningDeepResearch]);
 
       const init = useCallback(
         async (params: SendMessageParams) => {
@@ -478,7 +507,7 @@ const ChatAI = memo(
         createChatWindow(createWin);
       }, [createChatWindow, createWin]);
 
-      const onSelectChat = useCallback(
+      const selectChatImmediately = useCallback(
         async (chat: Chat) => {
           setTimedoutShow(false);
 
@@ -491,6 +520,15 @@ const ChatAI = memo(
           }
         },
         [cancelChat, activeChat, chatClose, openSessionChat, chatHistory]
+      );
+
+      const onSelectChat = useCallback(
+        (chat: Chat) => {
+          guardRunningDeepResearch(() => {
+            void selectChatImmediately(chat);
+          });
+        },
+        [guardRunningDeepResearch, selectChatImmediately]
       );
 
       const deleteChat = useCallback(
@@ -644,7 +682,7 @@ const ChatAI = memo(
             )}
             <DeepResearchCancelDialog
               open={deepResearchCancelDialogOpen}
-              onOpenChange={setDeepResearchCancelDialogOpen}
+              onOpenChange={handleDeepResearchCancelDialogOpenChange}
               onConfirm={confirmCancelDeepResearch}
             />
           </div>

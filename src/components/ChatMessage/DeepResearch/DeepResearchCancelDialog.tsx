@@ -32,8 +32,8 @@ export function DeepResearchCancelDialog({
   const t = tProp || tOriginal;
 
   const confirmCancelResearch = () => {
-    onOpenChange(false);
     onConfirm?.();
+    onOpenChange(false);
   };
 
   return (
