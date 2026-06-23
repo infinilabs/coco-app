@@ -16,10 +16,15 @@ import useMessageChunkData from "@/hooks/useMessageChunkData";
 import { useAppStore } from "@/stores/appStore";
 import { useExtensionsStore } from "@/stores/extensionsStore";
 import { useShortcutsStore } from "@/stores/shortcutsStore";
+import {
+  DeepResearchPanel,
+  type DeepResearchPanelPayload,
+} from "@/components/ChatMessage/DeepResearch/DeepResearchPanel";
 
 interface AskAiProps {
   isChatMode: boolean;
   changeMode?: (isChatMode: boolean) => void;
+  formatUrl?: (data: any) => string;
 }
 
 const DEEP_RESEARCH_CHUNK_TYPES = [
@@ -42,7 +47,7 @@ interface State {
 }
 
 const AskAi: FC<AskAiProps> = (props) => {
-  const { isChatMode, changeMode } = props;
+  const { isChatMode, changeMode, formatUrl } = props;
 
   const {
     askAiMessage,
@@ -77,6 +82,8 @@ const AskAi: FC<AskAiProps> = (props) => {
   });
 
   const [isTyping, setIsTyping] = useState(false);
+  const [deepResearchPanel, setDeepResearchPanel] =
+    useState<DeepResearchPanelPayload | null>(null);
   const [loadingStep, setLoadingStep] = useState<Record<string, boolean>>({
     query_intent: false,
     tools: false,
@@ -230,6 +237,7 @@ const AskAi: FC<AskAiProps> = (props) => {
     if (!askAiMessage || !state.serverId || !state.assistantId) return;
 
     await clearAllChunkData();
+    setDeepResearchPanel(null);
 
     const { serverId, assistantId } = state;
 
@@ -266,7 +274,7 @@ const AskAi: FC<AskAiProps> = (props) => {
 
   return (
     askAiMessage && (
-      <div className="p-4 h-full">
+      <div className="p-4 h-full relative">
         <div className="h-full px-3 py-4 overflow-auto">
           <div className="mb-4 text-xs text-[#999] font-semibold user-select-text truncate">
             {askAiMessage}
@@ -281,7 +289,8 @@ const AskAi: FC<AskAiProps> = (props) => {
                 _source: {
                   type: "assistant",
                   message: "",
-                  question: "",
+                  question: askAiMessage,
+                  session_id: sessionIdRef.current,
                 },
               }}
               isTyping={isTyping}
@@ -296,9 +305,28 @@ const AskAi: FC<AskAiProps> = (props) => {
               replyEnd={replyEnd}
               loadingStep={loadingStep}
               copyButtonId={state.copyButtonId}
+              formatUrl={formatUrl}
+              activeDeepResearchViewKey={deepResearchPanel?.viewKey}
+              onOpenDeepResearch={setDeepResearchPanel}
+              onUpdateDeepResearch={(payload) => {
+                setDeepResearchPanel((current) => {
+                  return current?.viewKey === payload.viewKey
+                    ? payload
+                    : current;
+                });
+              }}
             />
           </div>
         </div>
+
+        {deepResearchPanel && (
+          <div className="absolute inset-0 z-20 bg-white/95 dark:bg-black/95 backdrop-blur-sm">
+            <DeepResearchPanel
+              payload={deepResearchPanel}
+              onClose={() => setDeepResearchPanel(null)}
+            />
+          </div>
+        )}
       </div>
     )
   );
