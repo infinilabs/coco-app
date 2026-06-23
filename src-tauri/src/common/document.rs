@@ -180,10 +180,8 @@ pub(crate) async fn open(
                 // Apply the settings that would affect open behavior
                 // Default to hiding the Coco window before opening for Command extensions,
                 // keep the window visible for other extension types unless explicitly configured
-                let default_hide = matches!(
-                    ext_on_opened.ty,
-                    ExtensionOnOpenedType::Command { .. }
-                );
+                let default_hide =
+                    matches!(ext_on_opened.ty, ExtensionOnOpenedType::Command { .. });
                 let should_hide = ext_on_opened
                     .settings
                     .and_then(|s| s.hide_before_open)
