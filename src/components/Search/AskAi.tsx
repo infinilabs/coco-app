@@ -39,6 +39,17 @@ const DEEP_RESEARCH_CHUNK_TYPES = [
   "research_reporter_end",
 ];
 
+const EMPTY_LOADING_STEP: Record<string, boolean> = {
+  query_intent: false,
+  tools: false,
+  fetch_source: false,
+  pick_source: false,
+  deep_read: false,
+  think: false,
+  response: false,
+  deepResearch: false,
+};
+
 interface State {
   serverId?: string;
   assistantId?: string;
@@ -84,18 +95,12 @@ const AskAi: FC<AskAiProps> = (props) => {
   const [isTyping, setIsTyping] = useState(false);
   const [deepResearchPanel, setDeepResearchPanel] =
     useState<DeepResearchPanelPayload | null>(null);
-  const [loadingStep, setLoadingStep] = useState<Record<string, boolean>>({
-    query_intent: false,
-    tools: false,
-    fetch_source: false,
-    pick_source: false,
-    deep_read: false,
-    think: false,
-    response: false,
-  });
+  const [loadingStep, setLoadingStep] =
+    useState<Record<string, boolean>>(EMPTY_LOADING_STEP);
 
   const unlisten = useRef<() => void>(noop);
   const sessionIdRef = useRef<string>("");
+  const cancelledSessionIdRef = useRef<string>("");
 
   const { quickAiAccessServer, quickAiAccessAssistant } = useExtensionsStore();
 
@@ -183,6 +188,10 @@ const AskAi: FC<AskAiProps> = (props) => {
             return;
           }
 
+          if (cancelledSessionIdRef.current === chunkData.session_id) {
+            return;
+          }
+
           setIsTyping(true);
 
           setLoadingStep(() => ({
@@ -237,6 +246,8 @@ const AskAi: FC<AskAiProps> = (props) => {
     if (!askAiMessage || !state.serverId || !state.assistantId) return;
 
     await clearAllChunkData();
+    sessionIdRef.current = "";
+    cancelledSessionIdRef.current = "";
     setDeepResearchPanel(null);
 
     const { serverId, assistantId } = state;
@@ -257,6 +268,43 @@ const AskAi: FC<AskAiProps> = (props) => {
       addError(String(error));
     }
   }, [askAiMessage]);
+
+  const cancelQuickAiResearch = useCallback(async () => {
+    const sessionId = sessionIdRef.current || deepResearch[0]?.session_id;
+    const messageId = deepResearch[0]?.message_id || state.messageId;
+    const serverId = state.serverId;
+    const cancelledPayload = { reason: "user_cancelled" };
+
+    if (sessionId) {
+      cancelledSessionIdRef.current = sessionId;
+    }
+
+    handlers.deal_reply_end({
+      session_id: sessionId || "",
+      message_id: messageId,
+      message_type: "assistant",
+      reply_to_message: deepResearch[0]?.reply_to_message || state.messageId,
+      chunk_sequence: Date.now(),
+      chunk_type: "reply_end",
+      message_chunk: JSON.stringify(cancelledPayload),
+    });
+    setIsTyping(false);
+    setLoadingStep(EMPTY_LOADING_STEP);
+
+    if (!serverId || !sessionId) return;
+
+    try {
+      await platformAdapter.commands("cancel_session_chat", {
+        serverId,
+        sessionId,
+        queryParams: {
+          message_id: messageId,
+        },
+      });
+    } catch (error) {
+      addError(String(error));
+    }
+  }, [addError, deepResearch, handlers, state.messageId, state.serverId]);
 
   useKeyPress(
     "enter",
@@ -306,6 +354,7 @@ const AskAi: FC<AskAiProps> = (props) => {
               loadingStep={loadingStep}
               copyButtonId={state.copyButtonId}
               formatUrl={formatUrl}
+              onCancel={cancelQuickAiResearch}
               activeDeepResearchViewKey={deepResearchPanel?.viewKey}
               onOpenDeepResearch={setDeepResearchPanel}
               onUpdateDeepResearch={(payload) => {
