@@ -8,6 +8,10 @@ use serde_json::Value as Json;
 use std::collections::HashMap;
 use tauri::{AppHandle, Emitter};
 
+fn is_web_url(url: &str) -> bool {
+    url.starts_with("http://") || url.starts_with("https://")
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RichLabel {
     pub label: Option<String>,
@@ -165,7 +169,13 @@ pub(crate) async fn open(
             OnOpened::Document { url } => {
                 log::debug!("open document [{}]", url);
 
-                homemade_tauri_shell_open(tauri_app_handle.clone(), url).await?
+                if is_web_url(&url) {
+                    tauri_app_handle
+                        .emit("open_url_window", url)
+                        .map_err(|e| e.to_string())?;
+                } else {
+                    homemade_tauri_shell_open(tauri_app_handle.clone(), url).await?
+                }
             }
             #[cfg(target_os = "macos")]
             OnOpened::WindowManagementAction { action } => {
