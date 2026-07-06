@@ -126,6 +126,10 @@ params:
   # Configuration for indexing can be adjusted in i18n folder per language.
   BookSearch: false
 
+  # (Optional, default false) Enables search box in the header.
+  BookSearchBox: true
+  BookSearchWidget: "https://coco.infini.cloud/integration/d95h6kuk7e3tu0abb9rg/widget"
+
   # (Optional, default true) Enables comments template on pages
   # By default partals/docs/comments.html includes Disqus template
   # See https://gohugo.io/content-management/comments/#configure-disqus
