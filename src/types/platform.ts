@@ -54,6 +54,7 @@ export interface EventPayloads {
   oauth_success: any;
   extension_install_success: any;
   open_view_extension: ViewExtensionOpened;
+  open_url_window: string;
   "server-list-changed": Server[];
   "selection-text": string;
   "selection-ask-ai": any;
@@ -124,6 +125,7 @@ export interface SystemOperations {
   relaunchApp: () => Promise<void>;
   isTauri: () => boolean;
   openUrl: (url: string) => Promise<unknown>;
+  openUrlWithBrowser: (url: string) => Promise<unknown>;
   commands: <T>(commandName: string, ...args: any[]) => Promise<T>;
   isWindows10: () => Promise<boolean>;
   revealItemInDir: (path: string) => Promise<unknown>;

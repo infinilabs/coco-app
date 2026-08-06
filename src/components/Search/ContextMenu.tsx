@@ -2,6 +2,7 @@ import { useClickAway, useCreation, useReactive } from "ahooks";
 import clsx from "clsx";
 import { isNil, lowerCase, noop } from "lodash-es";
 import {
+  Compass,
   Copy,
   Download,
   Info,
@@ -22,6 +23,7 @@ import { useShortcutsStore } from "@/stores/shortcutsStore";
 import VisibleKey from "../Common/VisibleKey";
 import platformAdapter from "@/utils/platformAdapter";
 import SearchEmpty from "../Common/SearchEmpty";
+import { OpenURLWithBrowser } from "@/utils";
 
 interface State {
   activeMenuIndex: number;
@@ -112,6 +114,7 @@ const ContextMenu = ({ formatUrl }: ContextMenuProps) => {
 
     const { id, url, category, type, payload, source } = selectedSearchContent;
     const { query, result } = payload ?? {};
+    const formattedUrl = (formatUrl && formatUrl(selectedSearchContent)) || url;
 
     if (category === "AI Overview") {
       return [];
@@ -132,6 +135,21 @@ const ContextMenu = ({ formatUrl }: ContextMenuProps) => {
         },
       },
       {
+        name: t("search.contextMenu.openInBrowser"),
+        icon: <Compass />,
+        keys: isMac ? ["⌘", "B"] : ["Ctrl", "B"],
+        shortcut: isMac ? "meta.b" : "ctrl.b",
+        hide:
+          !platformAdapter.isTauri() ||
+          category === "Calculator" ||
+          type === "AI Assistant" ||
+          id === "Extension Store" ||
+          !formattedUrl,
+        clickEvent() {
+          OpenURLWithBrowser(formattedUrl);
+        },
+      },
+      {
         name: t("search.contextMenu.copyLink"),
         icon: <Link />,
         keys: isMac ? ["⌘", "L"] : ["Ctrl", "L"],
@@ -141,9 +159,7 @@ const ContextMenu = ({ formatUrl }: ContextMenuProps) => {
           type === "AI Assistant" ||
           id === "Extension Store",
         clickEvent() {
-          copyToClipboard(
-            (formatUrl && formatUrl(selectedSearchContent)) || url
-          );
+          copyToClipboard(formattedUrl);
         },
       },
       {

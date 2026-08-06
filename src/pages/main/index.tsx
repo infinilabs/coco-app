@@ -25,6 +25,12 @@ function MainApp() {
 
       setViewExtensionOpened(payload);
     });
+
+    platformAdapter.listenEvent("open_url_window", async ({ payload }) => {
+      if (typeof payload === "string" && payload) {
+        await platformAdapter.openUrl(payload);
+      }
+    });
   }, []);
 
   const { synthesizeItem } = useChatStore();

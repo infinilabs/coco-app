@@ -251,6 +251,13 @@ export const createWebAdapter = (): WebPlatformAdapter => {
       window.open(urlWithIntegrationId, "_blank");
     },
 
+    async openUrlWithBrowser(url) {
+      const urlWithIntegrationId = appendAppIntegrationIdToUrl(url);
+
+      console.log(`Web mode opening URL in browser: ${urlWithIntegrationId}`);
+      window.open(urlWithIntegrationId, "_blank");
+    },
+
     isWindows10: async () => false,
 
     async setShadow(enable) {

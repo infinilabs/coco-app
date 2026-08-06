@@ -211,6 +211,8 @@ pub fn run() {
             server::attachment::write_text_file,
             server::attachment::write_binary_file,
             server::attachment::delete_attachment,
+            server::document::fetch_document_preview_resource,
+            server::document::get_document_preview,
             server::transcription::transcription,
             server::system_settings::get_system_settings,
             extension::built_in::application::get_app_list,
